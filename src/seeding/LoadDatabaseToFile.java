@@ -16,37 +16,45 @@ public class LoadDatabaseToFile {
 		// Training Data
 		DatabaseIterator iter = new DatabaseIterator(false);
 		String rootFolder = Constants.COMPDB_TRAIN_FOLDER;
-		while(iter.hasNextDocuments()) {
-			List<LabelledDocument> documents = iter.nextDocuments();
-			Set<String> labels = new HashSet<>(iter.getCurrentLabels());
-			String patentNumber = iter.getCurrentPatentNumber();
-			int i = 0;
-			for(LabelledDocument doc : documents) {
-				for(String label : labels) {
-					File folder = new File(rootFolder+label);
-					if(!(folder.exists()&&folder.isDirectory())) {
-						// make folder
-						folder.mkdirs();
+		if((new File(rootFolder)).exists()) {
+			System.out.println("Skipping Training Patents");
+		} else {
+			while(iter.hasNextDocuments()) {
+				List<LabelledDocument> documents = iter.nextDocuments();
+				Set<String> labels = new HashSet<>(iter.getCurrentLabels());
+				String patentNumber = iter.getCurrentPatentNumber();
+				int i = 0;
+				for(LabelledDocument doc : documents) {
+					for(String label : labels) {
+						File folder = new File(rootFolder+label);
+						if(!(folder.exists()&&folder.isDirectory())) {
+							// make folder
+							folder.mkdirs();
+						}
+						writeToFile(rootFolder+label+"/"+patentNumber+"_"+i, doc.getContent());
 					}
-					writeToFile(rootFolder+label+"/"+patentNumber+"_"+i, doc.getContent());
+					i++;
 				}
-				i++;
+	
 			}
-
 		}
 		
 		// Testing Data
 		DatabaseIterator testIter = new DatabaseIterator(true);
 		String testFolder = Constants.COMPDB_TEST_FOLDER;
-		while(testIter.hasNextDocuments()) {
-			List<LabelledDocument> documents = testIter.nextDocuments();
-			String patentNumber = testIter.getCurrentPatentNumber();
-			int i = 0;
-			for(LabelledDocument doc : documents) {
-				writeToFile(testFolder+patentNumber+"_"+i, doc.getContent());
-				i++;
+		if((new File(testFolder)).exists()) {
+			System.out.println("Skipping Testing Patents");
+		} else {
+			(new File(testFolder)).mkdir();
+			while(testIter.hasNextDocuments()) {
+				List<LabelledDocument> documents = testIter.nextDocuments();
+				String patentNumber = testIter.getCurrentPatentNumber();
+				int i = 0;
+				for(LabelledDocument doc : documents) {
+					writeToFile(testFolder+patentNumber+"_"+i, doc.getContent());
+					i++;
+				}
 			}
-
 		}
 	}
 	
