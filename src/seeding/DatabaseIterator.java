@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -72,10 +73,15 @@ public class DatabaseIterator implements LabelAwareIterator {
     	while(rs.next()) {
     		technologyHash.put(rs.getInt(1), rs.getString(2));
     	}
-    	StringJoiner sj = new StringJoiner(",");
-    	technologyHash.keySet().forEach(key->{
-    		sj.add(key+": "+technologyHash.get(key));
+    	StringJoiner sj = new StringJoiner("','","new String[]{'","'};");
+    	String[] technologies = new String[Collections.max(technologyHash.keySet())+1];
+    	technologyHash.entrySet().forEach(entry->{
+    		technologies[entry.getKey()]=entry.getValue();
     	});
+    	for(int i = 0; i < technologies.length; i++ ){
+    		if(technologies[i]!=null)sj.add(technologies[i]);
+    		else sj.add("");
+    	}
     	System.out.println(sj.toString());
 
     }

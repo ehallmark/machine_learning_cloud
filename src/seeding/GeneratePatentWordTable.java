@@ -1,10 +1,11 @@
 package seeding;
 
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-
+import java.io.File;
 import java.sql.SQLException;
-import java.util.Arrays;
+
+import org.deeplearning4j.text.documentiterator.FileLabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 
 public class GeneratePatentWordTable {
 	private static DefaultTokenizerFactory tokenizerFactory;
@@ -18,7 +19,7 @@ public class GeneratePatentWordTable {
 		try {
 			Database.setupSeedConn();
 			Database.setupMainConn();
-			DatabaseIterator iterator = new DatabaseIterator(false);
+			LabelAwareIterator iterator = new FileLabelAwareIterator.Builder().addSourceFolder(new File(Constants.COMPDB_TRAIN_FOLDER)).build();
 			int i = 0;
 			while(iterator.hasNextDocument()) {
 				for(String word : tokenizerFactory.create(iterator.nextDocument().getContent()).getTokens()) {
