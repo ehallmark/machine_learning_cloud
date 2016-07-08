@@ -51,6 +51,7 @@ public class LoadDatabaseToFile {
 	}
 	
 	public void writeToFile(String filename, String contents) throws IOException {
+		if(contents == null || contents.length() < 10) return;
 		BufferedWriter bw = new BufferedWriter(new FileWriter(new File(filename)));
 		System.out.println(filename);
 		bw.write(contents);

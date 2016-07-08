@@ -37,7 +37,8 @@ public class DatabaseIterator implements LabelAwareIterator {
     private String currentPatent;
 
     private List<String> currentLabels;
-    private static final Set<String> badTechnologies = new HashSet<String>(Arrays.asList(new String[]{"large","empty","manual review","large portfolio","various technologies","huge portfolio"}));
+    private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(new Integer[]{136,182,301,316,519,527}));
+    
     private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_to_string(array_agg(class||' '||subclass), ' ') FROM patent_grant_uspto_classification as q join patent_grant as p on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) group by p.pub_doc_number order by p.pub_doc_number";
     private static final int COLUMNS_OF_TEXT = 4;
     private static final int SEED = 123;
@@ -84,18 +85,17 @@ public class DatabaseIterator implements LabelAwareIterator {
         numPatents=0;
         Set<String> technologySet = new HashSet<>();
         patentToTechnologyHash = new HashMap<>();
-        PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct name) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND lower(t.name)!=ANY(?) GROUP BY r.deal_id");
-        ps.setArray(1, compDBConn.createArrayOf("varchar",badTechnologies.toArray()));
+        PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
+        ps.setArray(1, compDBConn.createArrayOf("INT",badTech.toArray()));
         ResultSet rs = ps.executeQuery();
         Set<String> offLimits = new HashSet<>();
 
         while(rs.next()) {
-            List<String> technologies = Arrays.asList((String[])rs.getArray(1).getArray());
-            if(technologies==null||technologies.isEmpty()) continue;
+            List<String> technologies = new ArrayList<String>();
             boolean valid = true;
-            // validation check
-            for(String t : technologies) {
-                if(badTechnologies.contains(t.toLowerCase())) valid=false;
+            for(Integer tech : (Integer[])rs.getArray(1).getArray()) {
+                if(badTech.contains(tech)) { valid=false; break;}
+            	technologies.add(tech.toString());
             }
             if(!valid)continue;
 
@@ -249,7 +249,9 @@ public class DatabaseIterator implements LabelAwareIterator {
     @Override
     public LabelsSource getLabelsSource() {
         return new LabelsSource() {
-            @Override
+			private static final long serialVersionUID = 1L;
+
+			@Override
             public List<String> getLabels() {
                 return labels;
             }
