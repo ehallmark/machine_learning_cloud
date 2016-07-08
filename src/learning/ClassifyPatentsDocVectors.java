@@ -1,25 +1,20 @@
 package learning;
 
-import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
-import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
-import seeding.DatabaseIterator;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import seeding.Constants;
-import seeding.MyPreprocessor;
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+
+import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.text.documentiterator.FileLabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+
+import seeding.Constants;
+import seeding.DatabaseIterator;
+import seeding.MyPreprocessor;
 
 
 /**
@@ -57,7 +52,9 @@ public class ClassifyPatentsDocVectors {
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         // build a iterator for our dataset
-        iterator = new DatabaseIterator(false);
+        iterator = new FileLabelAwareIterator.Builder()
+        					.addSourceFolder(new File(Constants.COMPDB_TRAIN_FOLDER))
+        					.build();
     }
 
 	private void saveParagraphVectors() throws IOException {
@@ -77,11 +74,11 @@ public class ClassifyPatentsDocVectors {
               .minLearningRate(0.00001)
               .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
               .epochs(50)
-              .batchSize(((DatabaseIterator)iterator).numPatents())
+              .batchSize(CountFiles.getNumberOfTrainingPatents())
               .windowSize(5)
               .iterations(5)
               .iterate(iterator)
-              .layerSize(((DatabaseIterator)iterator).numTechnologies())
+              .layerSize(CountFiles.getNumberOfTrainingPatents())
               .stopWords(Arrays.asList(Constants.STOP_WORDS))
               .trainWordVectors(true)
               .trainElementsRepresentation(true)

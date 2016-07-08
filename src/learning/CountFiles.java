@@ -1,21 +1,17 @@
 package learning;
 
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.ObjectInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import seeding.Constants;
+
 public class CountFiles {
 	public static void main(String[] args) {
-		File root = new File("patents/");
+		File root = new File(Constants.COMPDB_TRAIN_FOLDER);
 		File[] headers = root.listFiles();
 		int numFiles = 0;
 		List<String> patentNumbers = new ArrayList<String>();
@@ -30,7 +26,7 @@ public class CountFiles {
 	}
 	
 	public static List<String> getIngestedPatents() {
-		File root = new File("patents/");
+		File root = new File(Constants.COMPDB_TRAIN_FOLDER);
 		File[] headers = root.listFiles();
 		List<String> patentNumbers = new ArrayList<String>();
 		for(int i = 0; i < headers.length; i++) {
@@ -40,7 +36,7 @@ public class CountFiles {
 	}
 
 	public static int getNumberOfTrainingPatents() {
-		File root = new File("patents/");
+		File root = new File(Constants.COMPDB_TRAIN_FOLDER);
 		File[] headers = root.listFiles();
 		int patentCount = 0;
 		for(int i = 0; i < headers.length; i++) {
@@ -57,7 +53,7 @@ public class CountFiles {
 	}
 
 	public static int getNumberOfClassifications() {
-		File root = new File("patents/");
+		File root = new File(Constants.COMPDB_TRAIN_FOLDER);
 		File[] headers = root.listFiles();
 		if(headers == null) return 0;
 		int num = 0;

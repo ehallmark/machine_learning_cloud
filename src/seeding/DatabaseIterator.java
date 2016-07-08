@@ -15,10 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.documentiterator.LabelsSource;
+
 
 /**
  * Created by ehallmark on 6/24/16.
@@ -47,7 +49,7 @@ public class DatabaseIterator implements LabelAwareIterator {
     private boolean testing;
     private List<String> labels;
     private ResultSet latestResults;
-
+    private HashMap<Integer,String> technologyHash;
 
     public DatabaseIterator(boolean isTesting) throws SQLException {
         this.testing=isTesting;
@@ -55,11 +57,32 @@ public class DatabaseIterator implements LabelAwareIterator {
         setupMainConn();
         setupCompDBConn();
         setupSeedConn();
+        setupTechHash();
         setupPatentToTechnologyHash();
         cursor=0;
         System.out.println("Loading data...");
         latestResults = getPatentData();
     }
+    
+    public void setupTechHash() throws SQLException {
+    	technologyHash = new HashMap<Integer,String>();
+    	PreparedStatement ps = compDBConn.prepareStatement("SELECT DISTINCT id,name FROM technologies");
+    	ResultSet rs = ps.executeQuery();
+    	while(rs.next()) {
+    		technologyHash.put(rs.getInt(1), rs.getString(2));
+    	}
+    	StringJoiner sj = new StringJoiner(",\n","[\n","\n]");
+    	technologyHash.keySet().forEach(key->{
+    		sj.add("\t"+key+": "+technologyHash.get(key));
+    	});
+    	System.out.println(sj.toString());
+
+    }
+    
+    public String getTechnologyName(Integer n) {
+    	return technologyHash.get(n);
+    }
+   
 
     public List<String> getLabels() {
         return labels;
