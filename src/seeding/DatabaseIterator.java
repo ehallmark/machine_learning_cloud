@@ -39,7 +39,7 @@ public class DatabaseIterator implements LabelAwareIterator {
     private List<String> currentLabels;
     private static final Set<String> badTechnologies = new HashSet<String>(Arrays.asList(new String[]{"large","empty","manual review","large portfolio","various technologies","huge portfolio"}));
     private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_to_string(array_agg(class||' '||subclass), ' ') FROM patent_grant_uspto_classification as q join patent_grant as p on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) group by p.pub_doc_number order by p.pub_doc_number";
-    private static final int COLUMNS_OF_TEXT = 5;
+    private static final int COLUMNS_OF_TEXT = 4;
     private static final int SEED = 123;
     private static final double THRESHOLD = 0.67;
     private Random rand;
