@@ -1,15 +1,24 @@
 package seeding;
 
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 import org.deeplearning4j.text.documentiterator.LabelsSource;
-import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
-import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-
-import java.sql.*;
-import java.util.*;
 
 /**
  * Created by ehallmark on 6/24/16.
@@ -25,13 +34,11 @@ public class DatabaseIterator implements LabelAwareIterator {
     private int numPatents;
     private int numTechnologies;
     private int cursor;
+    private String currentPatent;
 
     private List<String> currentLabels;
     private static final Set<String> badTechnologies = new HashSet<String>(Arrays.asList(new String[]{"large","empty","manual review","large portfolio","various technologies","huge portfolio"}));
-    private static final String selectPatentAbstractWords = "SELECT regexp_replace(lower(regexp_replace(abstract, '[-_]' , ' ', 'g')), '[^a-z ]', '', 'g') as text FROM patent_grant WHERE pub_doc_number=?";
-    private static final String selectPatentDescriptionWords = "SELECT  as text FROM patent_grant WHERE pub_doc_number=?";
-    private static final String selectPatentTitleWords = "SELECT regexp_replace(lower(regexp_replace(invention_title, '[-_]' , ' ', 'g')), '[^a-z ]', '', 'g') as text FROM patent_grant WHERE pub_doc_number=?";
-    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, array_to_string(array_agg(class||' '||subclass), '>><<'), array_to_string(array_agg(patent_cited_invention_title), '<<>>'), array_to_string(array_agg(patent_cited_abstract),'<<>>') FROM patent_grant_uspto_classification as q join patent_grant as p on (p.pub_doc_number=q.pub_doc_number) join patent_grant_citation as r on (p.pub_doc_number=r.pub_doc_number) WHERE r.pub_doc_number=ANY(?) AND p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) group by p.pub_doc_number order by p.pub_doc_number";
+    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_to_string(array_agg(class||' '||subclass), ' ') FROM patent_grant_uspto_classification as q join patent_grant as p on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) group by p.pub_doc_number order by p.pub_doc_number";
     private static final int COLUMNS_OF_TEXT = 5;
     private static final int SEED = 123;
     private static final double THRESHOLD = 0.67;
@@ -141,43 +148,6 @@ public class DatabaseIterator implements LabelAwareIterator {
     }
 
 
-    public String getPatentAbstractWords(String patent) {
-        try {
-            PreparedStatement ps = mainConn.prepareStatement(selectPatentAbstractWords);
-            ps.setString(1, patent);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString(1);
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
-        return null;
-    }
-
-
-    public String getPatentDescriptionWords(String patent) {
-        try {
-            PreparedStatement ps = mainConn.prepareStatement(selectPatentDescriptionWords);
-            ps.setString(1, patent);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString(1);
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
-        return null;
-    }
-
-    public String getPatentTitleWords(String patent) {
-        try {
-            PreparedStatement ps = mainConn.prepareStatement(selectPatentTitleWords);
-            ps.setString(1, patent);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getString(1);
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
-        return null;
-    }
-
     public ResultSet getPatentData() {
         try {
             PreparedStatement ps = mainConn.prepareStatement(selectPatentData);
@@ -225,6 +195,7 @@ public class DatabaseIterator implements LabelAwareIterator {
             try {
                 latestResults.next();
                 currentLabels = patentToTechnologyHash.get(latestResults.getString(1));
+                currentPatent = latestResults.getString(1);
             } catch (SQLException sql) { sql.printStackTrace(); }
         }
         try {
@@ -235,10 +206,7 @@ public class DatabaseIterator implements LabelAwareIterator {
         cursor = (cursor+1) % COLUMNS_OF_TEXT;
         if(toReturn==null && hasNextDocument()) return nextDocument();
         if(toReturn==null) toReturn="";
-        if(toReturn.contains("<<>>")) {
-            String[] contents = toReturn.split("<<>>");
-            toReturn = contents[Math.abs(rand.nextInt())%contents.length];
-        }
+
         return setupDocument(toReturn, currentLabels.get(Math.abs(rand.nextInt())%currentLabels.size()));
 
     }
@@ -287,6 +255,11 @@ public class DatabaseIterator implements LabelAwareIterator {
             }
         };
     }
+
+	public String getCurrentPatentNumber() {
+		// TODO Auto-generated method stub
+		return currentPatent;
+	}
 
 
 }
