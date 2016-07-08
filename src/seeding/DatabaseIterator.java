@@ -65,15 +65,16 @@ public class DatabaseIterator implements LabelAwareIterator {
     }
     
     public void setupTechHash() throws SQLException {
+    	System.out.println("Loading classifications...");
     	technologyHash = new HashMap<Integer,String>();
     	PreparedStatement ps = compDBConn.prepareStatement("SELECT DISTINCT id,name FROM technologies");
     	ResultSet rs = ps.executeQuery();
     	while(rs.next()) {
     		technologyHash.put(rs.getInt(1), rs.getString(2));
     	}
-    	StringJoiner sj = new StringJoiner(",\n","[\n","\n]");
+    	StringJoiner sj = new StringJoiner(",");
     	technologyHash.keySet().forEach(key->{
-    		sj.add("\t"+key+": "+technologyHash.get(key));
+    		sj.add(key+": "+technologyHash.get(key));
     	});
     	System.out.println(sj.toString());
 
