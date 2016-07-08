@@ -5,7 +5,7 @@
   <artifactId>PatentClassLearning</artifactId>
   <version>0.0.1-SNAPSHOT</version>
       <properties>
-        <nd4j.backend>nd4j-cuda-7.5</nd4j.backend>
+        <nd4j.backend>nd4j-native</nd4j.backend>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <shadedClassifier>bin</shadedClassifier>
         <java.version>1.8</java.version>
@@ -118,7 +118,7 @@
         </dependency>
         <dependency>
             <groupId>org.nd4j</groupId>
-            <artifactId>nd4j-cuda-7.5</artifactId>
+            <artifactId>${nd4j.backend}</artifactId>
             <version>${nd4j.version}</version>
         </dependency>
         <!-- Arbiter: used for hyperparameter optimization examples -->
