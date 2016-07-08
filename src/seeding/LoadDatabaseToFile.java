@@ -26,7 +26,7 @@ public class LoadDatabaseToFile {
 					File folder = new File(rootFolder+label);
 					if(!(folder.exists()&&folder.isDirectory())) {
 						// make folder
-						folder.mkdir();
+						folder.mkdirs();
 					}
 					writeToFile(rootFolder+label+"/"+patentNumber+"_"+i, doc.getContent());
 				}

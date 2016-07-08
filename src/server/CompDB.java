@@ -65,11 +65,11 @@ public class CompDB {
             return "Home";
         });
 
-        get("/find_by_text", (req, res) -> {
+        get("/similar_patents", (req, res) -> {
             String patent = req.queryParams("patent");
             if(patent==null) return "Please enter a patent";
             LabelledDocument document = new LabelledDocument();
-            document.setContent(iterator.getPatentAbstractWords(patent));
+            //document.setContent(iterator.getPatentAbstractWords(patent));
             document.setLabel(patent);
             System.out.println("Document label: "+patent);
 
