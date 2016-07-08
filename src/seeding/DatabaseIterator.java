@@ -39,8 +39,8 @@ public class DatabaseIterator implements LabelAwareIterator {
     private List<String> currentLabels;
     private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(new Integer[]{136,182,301,316,519,527}));
     
-    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_to_string(array_agg(class||' '||subclass), ' ') FROM patent_grant_uspto_classification as q join patent_grant as p on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) group by p.pub_doc_number order by p.pub_doc_number";
-    private static final int COLUMNS_OF_TEXT = 4;
+    private static final String selectPatentData = "SELECT pub_doc_number, abstract, invention_title, description FROM patent_grant WHERE pub_doc_number=ANY(?) AND (abstract IS NOT NULL OR invention_title IS NOT NULL OR description IS NOT NULL) group by pub_doc_number order by pub_doc_number";
+    private static final int COLUMNS_OF_TEXT = 3;
     private static final int SEED = 123;
     private static final double THRESHOLD = 0.67;
     private Random rand;
@@ -153,7 +153,6 @@ public class DatabaseIterator implements LabelAwareIterator {
             PreparedStatement ps = mainConn.prepareStatement(selectPatentData);
             Array pubNums = mainConn.createArrayOf("VARCHAR",patentToTechnologyHash.keySet().toArray());
             ps.setArray(1, pubNums);
-            ps.setArray(2, pubNums);
             ps.setFetchSize(5);
             return ps.executeQuery();
         } catch(SQLException sql) {
