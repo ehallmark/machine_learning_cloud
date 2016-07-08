@@ -154,8 +154,7 @@ public class DatabaseIterator implements LabelAwareIterator {
             Array pubNums = mainConn.createArrayOf("VARCHAR",patentToTechnologyHash.keySet().toArray());
             ps.setArray(1, pubNums);
             ps.setArray(2, pubNums);
-            ps.setArray(3, pubNums);
-            ps.setFetchSize(10);
+            ps.setFetchSize(5);
             return ps.executeQuery();
         } catch(SQLException sql) {
             sql.printStackTrace();
