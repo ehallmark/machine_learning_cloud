@@ -221,6 +221,7 @@ public class DatabaseIterator implements LabelAwareIterator {
         try {
             latestResults.next();
             currentLabels = patentToTechnologyHash.get(latestResults.getString(1));
+            currentPatent = latestResults.getString(1);
             List<LabelledDocument> toReturn = new ArrayList<>();
             for(int i = 0; i < COLUMNS_OF_TEXT; i++) {
                 try {

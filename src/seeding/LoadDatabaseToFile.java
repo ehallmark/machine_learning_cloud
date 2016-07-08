@@ -15,7 +15,7 @@ public class LoadDatabaseToFile {
 	public LoadDatabaseToFile() throws Exception {
 		// Training Data
 		DatabaseIterator iter = new DatabaseIterator(false);
-		String rootFolder = "compdb_testing_data/";
+		String rootFolder = Constants.COMPDB_TRAIN_FOLDER;
 		while(iter.hasNextDocuments()) {
 			List<LabelledDocument> documents = iter.nextDocuments();
 			Set<String> labels = new HashSet<>(iter.getCurrentLabels());
@@ -37,21 +37,13 @@ public class LoadDatabaseToFile {
 		
 		// Testing Data
 		DatabaseIterator testIter = new DatabaseIterator(true);
-		String testFolder = "compdb_testing_data/";
+		String testFolder = Constants.COMPDB_TEST_FOLDER;
 		while(testIter.hasNextDocuments()) {
 			List<LabelledDocument> documents = testIter.nextDocuments();
-			Set<String> labels = new HashSet<>(testIter.getCurrentLabels());
 			String patentNumber = testIter.getCurrentPatentNumber();
 			int i = 0;
 			for(LabelledDocument doc : documents) {
-				for(String label : labels) {
-					File folder = new File(testFolder+label);
-					if(!(folder.exists()&&folder.isDirectory())) {
-						// make folder
-						folder.mkdir();
-					}
-					writeToFile(testFolder+label+"/"+patentNumber+"_"+i, doc.getContent());
-				}
+				writeToFile(testFolder+patentNumber+"_"+i, doc.getContent());
 				i++;
 			}
 

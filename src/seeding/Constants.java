@@ -18,6 +18,9 @@ public class Constants {
 	};
 	
 	public static final Set<String> STOP_WORD_SET = new HashSet<String>(Arrays.asList(STOP_WORDS));
+
+	public static final String COMPDB_TRAIN_FOLDER = "compdb_training_data/";
+	public static final String COMPDB_TEST_FOLDER = "compdb_testing_data/";
 	
 
 }
