@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.deeplearning4j:arbiter-deeplearning4j:0.0.0.7">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/deeplearning4j/arbiter-deeplearning4j/0.0.0.7/arbiter-deeplearning4j-0.0.0.7.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/deeplearning4j/arbiter-deeplearning4j/0.0.0.7/arbiter-deeplearning4j-0.0.0.7-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/deeplearning4j/arbiter-deeplearning4j/0.0.0.7/arbiter-deeplearning4j-0.0.0.7-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,5 +1,6 @@
 package seeding;
 
+import java.io.*;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -42,15 +43,15 @@ public class DatabaseIterator implements LabelAwareIterator {
     private List<String> currentLabels;
     private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(new Integer[]{136,182,301,316,519,527}));
     
-    private static final String selectPatentData = "SELECT pub_doc_number, abstract, invention_title, description FROM patent_grant WHERE pub_doc_number=ANY(?) AND (abstract IS NOT NULL OR invention_title IS NOT NULL OR description IS NOT NULL) group by pub_doc_number order by pub_doc_number";
+    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_agg(distinct class), array_agg(distinct subclass) FROM patent_grant as p join patent_grant_uspto_classification as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) AND (abstract IS NOT NULL OR invention_title IS NOT NULL OR description IS NOT NULL) group by p.pub_doc_number order by p.pub_doc_number";
     private static final int COLUMNS_OF_TEXT = 3;
+    private static final int COLUMNS_OF_ARRAYS = 2;
     private static final int SEED = 123;
     private static final double THRESHOLD = 0.67;
     private Random rand;
     private boolean testing;
     private List<String> labels;
     private ResultSet latestResults;
-    private HashMap<Integer,String> technologyHash;
 
     public DatabaseIterator(boolean isTesting) throws SQLException {
         this.testing=isTesting;
@@ -58,38 +59,29 @@ public class DatabaseIterator implements LabelAwareIterator {
         setupMainConn();
         setupCompDBConn();
         setupSeedConn();
-        setupTechHash();
         setupPatentToTechnologyHash();
         cursor=0;
         System.out.println("Loading data...");
         latestResults = getPatentData();
     }
     
-    public void setupTechHash() throws SQLException {
-    	System.out.println("Loading classifications...");
-    	technologyHash = new HashMap<Integer,String>();
-    	PreparedStatement ps = compDBConn.prepareStatement("SELECT DISTINCT id,name FROM technologies");
-    	ResultSet rs = ps.executeQuery();
-    	while(rs.next()) {
-    		technologyHash.put(rs.getInt(1), rs.getString(2));
-    	}
-    	StringJoiner sj = new StringJoiner("','","new String[]{'","'};");
-    	String[] technologies = new String[Collections.max(technologyHash.keySet())+1];
-    	technologyHash.entrySet().forEach(entry->{
-    		technologies[entry.getKey()]=entry.getValue();
-    	});
-    	for(int i = 0; i < technologies.length; i++ ){
-    		if(technologies[i]!=null)sj.add(technologies[i]);
-    		else sj.add("");
-    	}
-    	System.out.println(sj.toString());
+    public Map<Integer, String> initializeTechnologyHash() throws SQLException, IOException, ClassNotFoundException {
+        if(!new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP).isFile()) {
+            System.out.println("Loading classifications...");
 
+            HashMap<Integer,String> technologyHash = new HashMap<>();
+            PreparedStatement ps = compDBConn.prepareStatement("SELECT DISTINCT id,name FROM technologies WHERE name is not null and char_length(name) > 0 and id!=ANY(?)");
+            ps.setArray(1, compDBConn.createArrayOf("INT", badTech.toArray()));
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                technologyHash.put(rs.getInt(1), rs.getString(2));
+            }
+            return technologyHash;
+        } else {
+            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP))));
+            return (Map<Integer, String>)ois.readObject();
+        }
     }
-    
-    public String getTechnologyName(Integer n) {
-    	return technologyHash.get(n);
-    }
-   
 
     public List<String> getLabels() {
         return labels;
@@ -183,6 +175,7 @@ public class DatabaseIterator implements LabelAwareIterator {
             PreparedStatement ps = mainConn.prepareStatement(selectPatentData);
             Array pubNums = mainConn.createArrayOf("VARCHAR",patentToTechnologyHash.keySet().toArray());
             ps.setArray(1, pubNums);
+            ps.setArray(2, pubNums);
             ps.setFetchSize(5);
             return ps.executeQuery();
         } catch(SQLException sql) {
@@ -235,12 +228,12 @@ public class DatabaseIterator implements LabelAwareIterator {
         if(toReturn==null && hasNextDocument()) return nextDocument();
         if(toReturn==null) toReturn="";
 
-        return setupDocument(toReturn, currentLabels.get(Math.abs(rand.nextInt())%currentLabels.size()));
+        return setupDocument(toReturn, currentLabels.get(Math.abs(rand.nextInt())%currentLabels.size()),"");
 
     }
 
-    public LabelledDocument setupDocument(String input, String label) {
-        LabelledDocument doc =new LabelledDocument();
+    public LabelledDocument setupDocument(String input, String label, String type) {
+        LabelledDocument doc =new PatentDocument(type);
         doc.setContent(input);
         doc.setLabel(label);
         return doc;
@@ -253,8 +246,31 @@ public class DatabaseIterator implements LabelAwareIterator {
             currentPatent = latestResults.getString(1);
             List<LabelledDocument> toReturn = new ArrayList<>();
             for(int i = 0; i < COLUMNS_OF_TEXT; i++) {
+                String type;
+                if(i==0)type=Constants.ABSTRACT;
+                else if(i==1)type=Constants.INVENTION_TITLE;
+                else if(i==2)type=Constants.DESCRIPTION;
+                else throw new RuntimeException("Unknown PatentDocument type!");
                 try {
-                    toReturn.add(setupDocument(latestResults.getString(i+2),latestResults.getString(1)));
+                    toReturn.add(setupDocument(latestResults.getString(i+2),currentPatent,type));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            for(int i = 0; i < COLUMNS_OF_ARRAYS; i++) {
+                String type;
+                if(i==0)type=Constants.USPTO_CLASS;
+                else if(i==1)type=Constants.USPTO_SUBCLASS;
+                else throw new RuntimeException("Unknown PatentDocument type!");
+                try {
+                    String[] arrayText = (String[])latestResults.getArray(COLUMNS_OF_TEXT+i+2).getArray();
+                    if(arrayText!=null) {
+                        int j = 0;
+                        for(String text : arrayText) {
+                            toReturn.add(setupDocument(text,currentPatent,type+j));
+                            j++;
+                        }
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
