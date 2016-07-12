@@ -267,7 +267,7 @@ public class DatabaseIterator implements LabelAwareIterator {
                     if(arrayText!=null) {
                         int j = 0;
                         for(String text : arrayText) {
-                            toReturn.add(setupDocument(text,currentPatent,type+j));
+                            toReturn.add(setupDocument(text,currentPatent,type+"_"+j));
                             j++;
                         }
                     }
