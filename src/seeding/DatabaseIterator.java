@@ -41,8 +41,8 @@ public class DatabaseIterator implements LabelAwareIterator {
     private List<String> currentLabels;
     private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(new Integer[]{136,182,301,316,519,527}));
     
-    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, array_agg(distinct class), array_agg(distinct subclass) FROM patent_grant as p join patent_grant_uspto_classification as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) AND (abstract IS NOT NULL OR invention_title IS NOT NULL) group by p.pub_doc_number order by p.pub_doc_number";
-    private static final int COLUMNS_OF_TEXT = 2;
+    private static final String selectPatentData = "SELECT p.pub_doc_number, abstract, invention_title, description, array_agg(distinct class), array_agg(distinct subclass) FROM patent_grant as p join patent_grant_uspto_classification as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) AND q.pub_doc_number=ANY(?) AND (abstract IS NOT NULL OR invention_title IS NOT NULL OR description IS NOT NULL) group by p.pub_doc_number order by p.pub_doc_number";
+    private static final int COLUMNS_OF_TEXT = 3;
     private static final int COLUMNS_OF_ARRAYS = 2;
     private static final int SEED = 123;
     private static final double THRESHOLD = 0.67;
@@ -248,9 +248,18 @@ public class DatabaseIterator implements LabelAwareIterator {
                 String type;
                 if(i==0)type=Constants.ABSTRACT;
                 else if(i==1)type=Constants.INVENTION_TITLE;
+                else if (i==2)type=Constants.DESCRIPTION;
                 else throw new RuntimeException("Unknown PatentDocument type!");
                 try {
-                    toReturn.add(setupDocument(latestResults.getString(i+2),currentPatent,type));
+                    if(!type.equals(Constants.INVENTION_TITLE)) {
+                        // get sentences
+                        int j = 0;
+                        for(String sentence : latestResults.getString(i+2).split("\\.")) {
+                            toReturn.add(setupDocument(sentence,currentPatent,type+"_"+j));
+                        }
+                    } else {
+                        toReturn.add(setupDocument(latestResults.getString(i+2),currentPatent,type));
+                    }
                 } catch(Exception e) {
                     e.printStackTrace();
                 }

@@ -51,9 +51,9 @@ public class LoadDatabaseToFile {
 				if(doc==null||doc.getContent()==null)continue;
 				String type = ((PatentDocument)doc).getType();
 				String fName = rootFolderName + patentNumber + "/" + ((PatentDocument) doc).getType();
-				if(type.equals("abstract")) {
+				if(type.equals(Constants.ABSTRACT)) {
 					int i = 0;
-					for (String sentence : doc.getContent().split(".")) {
+					for (String sentence : doc.getContent().split("\\.")) {
 						String sentenceFile = fName+"_"+i;
 						if(!new File(sentenceFile).exists())writeToFile(sentenceFile, preprocessor.preProcess(sentence));
 						i++;
