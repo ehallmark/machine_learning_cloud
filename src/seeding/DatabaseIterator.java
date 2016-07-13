@@ -17,15 +17,13 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.deeplearning4j.text.documentiterator.LabelsSource;
 
 
 /**
  * Created by ehallmark on 6/24/16.
  */
-public class DatabaseIterator implements LabelAwareIterator {
+public class DatabaseIterator {
 
     private String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
     private static String compDBUrl = "jdbc:postgresql://192.168.1.148/compdb_production?user=postgres&password=&tcpKeepAlive=true";
@@ -35,7 +33,6 @@ public class DatabaseIterator implements LabelAwareIterator {
     private Map<String,List<String>> patentToTechnologyHash;
     private int numPatents;
     private int numTechnologies;
-    private int cursor;
     private String currentPatent;
 
     private List<String> currentLabels;
@@ -48,7 +45,6 @@ public class DatabaseIterator implements LabelAwareIterator {
     private static final double THRESHOLD = 0.67;
     private Random rand;
     private boolean testing;
-    private List<String> labels;
     private ResultSet latestResults;
 
     public DatabaseIterator(boolean isTesting) throws SQLException {
@@ -58,7 +54,6 @@ public class DatabaseIterator implements LabelAwareIterator {
         setupCompDBConn();
         setupSeedConn();
         setupPatentToTechnologyHash();
-        cursor=0;
         System.out.println("Loading data...");
         latestResults = getPatentData();
     }
@@ -79,10 +74,6 @@ public class DatabaseIterator implements LabelAwareIterator {
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP))));
             return (Map<Integer, String>)ois.readObject();
         }
-    }
-
-    public List<String> getLabels() {
-        return labels;
     }
 
     public List<String> getCurrentLabels(){
@@ -149,7 +140,6 @@ public class DatabaseIterator implements LabelAwareIterator {
         rs.close();
         ps.close();
         numTechnologies=technologySet.size();
-        labels = new LinkedList<>(technologySet);
     }
 
     public void setupMainConn() throws SQLException {
@@ -182,18 +172,7 @@ public class DatabaseIterator implements LabelAwareIterator {
         return null;
     }
 
-    @Override
-    public boolean hasNextDocument() {
-        try {
-            if(latestResults.isAfterLast()) return false;
-            if(latestResults.isLast() && cursor >= (COLUMNS_OF_TEXT-1)) return false;
 
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
     public boolean hasNextDocuments() {
         try {
@@ -207,28 +186,6 @@ public class DatabaseIterator implements LabelAwareIterator {
         }
     }
 
-    @Override
-    public LabelledDocument nextDocument() {
-        String toReturn = null;
-        if(cursor==0) {
-            try {
-                latestResults.next();
-                currentLabels = patentToTechnologyHash.get(latestResults.getString(1));
-                currentPatent = latestResults.getString(1);
-            } catch (SQLException sql) { sql.printStackTrace(); }
-        }
-        try {
-            toReturn = latestResults.getString(cursor + 2);
-        } catch (SQLException sql) {
-            sql.printStackTrace();
-        }
-        cursor = (cursor+1) % COLUMNS_OF_TEXT;
-        if(toReturn==null && hasNextDocument()) return nextDocument();
-        if(toReturn==null) toReturn="";
-
-        return setupDocument(toReturn, currentLabels.get(Math.abs(rand.nextInt())%currentLabels.size()),"");
-
-    }
 
     public LabelledDocument setupDocument(String input, String label, String type) {
         LabelledDocument doc =new PatentDocument(type);
@@ -256,6 +213,7 @@ public class DatabaseIterator implements LabelAwareIterator {
                         int j = 0;
                         for(String sentence : latestResults.getString(i+2).split("\\.")) {
                             toReturn.add(setupDocument(sentence,currentPatent,type+"_"+j));
+                            j++;
                         }
                     } else {
                         toReturn.add(setupDocument(latestResults.getString(i+2),currentPatent,type));
@@ -291,24 +249,6 @@ public class DatabaseIterator implements LabelAwareIterator {
 
     }
 
-    @Override
-    public void reset() {
-        try {latestResults.close(); } catch(Exception e) {e.printStackTrace();}
-        cursor=0;
-        latestResults = getPatentData();
-    }
-
-    @Override
-    public LabelsSource getLabelsSource() {
-        return new LabelsSource() {
-			private static final long serialVersionUID = 1L;
-
-			@Override
-            public List<String> getLabels() {
-                return labels;
-            }
-        };
-    }
 
 	public String getCurrentPatentNumber() {
 		// TODO Auto-generated method stub

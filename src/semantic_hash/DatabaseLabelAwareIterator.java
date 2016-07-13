@@ -1,7 +1,5 @@
 package semantic_hash;
 
-import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 
@@ -28,7 +26,8 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     private int endDate;
     private String currentLabel;
     private SentencePreProcessor processor;
-    private Iterator<LabelledDocument> innerIterator;
+    private Iterator<String> innerIterator;
+    private static int COLUMNS_OF_TEXT=2;
     private final String mainQuery = "SELECT pub_doc_number, invention_title, abstract FROM patent_grant WHERE ((invention_title is not null) AND (abstract is not null)) AND pub_date BETWEEN ? AND ?";
 
     public DatabaseLabelAwareIterator(int startDate, int endDate) throws SQLException {
@@ -44,23 +43,16 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
         ps.setInt(2,endDate);
         ps.setFetchSize(10);
         System.out.println(ps);
+        innerIterator=null;
+        if(results!=null)results.close();
+        labels=new LinkedList<>();
         results = ps.executeQuery();
-        labels = new LinkedList<>();
-        while(results.next()) {
-            String pubDocNumber = results.getString(1);
-            labels.add(pubDocNumber);
-            System.out.println(results.getString(2));
-        }
     }
 
     public void setupMainConn() throws SQLException {
         System.out.println("Setting up main connection...");
         mainConn = DriverManager.getConnection(patentDBUrl);
         mainConn.setAutoCommit(false);
-    }
-
-    public List<String> getLabels() {
-        return labels;
     }
 
     @Override
@@ -79,31 +71,26 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
         if(innerIterator==null || !innerIterator.hasNext()) {
             setupIterator();
         }
-        LabelledDocument doc = innerIterator.next();
-        currentLabel=doc.getLabel();
-        System.out.println(doc.getContent());
-        return doc.getContent();
+        return innerIterator.next();
+    }
+
+    public List<String> getLabels() {
+        return labels;
     }
 
     private void setupIterator() {
         try {
             results.next();
             String pubDocNumber = results.getString(1);
-            List<LabelledDocument> toIterator = new LinkedList<>();
-            LabelledDocument titleDoc = new LabelledDocument();
-            titleDoc.setLabel(pubDocNumber);
-            titleDoc.setContent(results.getString(2).replaceAll(".",""));
-            toIterator.add(titleDoc);
-            labels.add(pubDocNumber);
-            for(String sentence : results.getString(3).trim().split(".")) {
-                LabelledDocument abstractDoc = new LabelledDocument();
-                abstractDoc.setLabel(pubDocNumber);
-                abstractDoc.setContent(sentence);
-                toIterator.add(abstractDoc);
-                labels.add(pubDocNumber);
+            List<String> toIterator = new LinkedList<>();
+            currentLabel = pubDocNumber;
+            for(int i = 0; i < COLUMNS_OF_TEXT; i++) {
+                for(String sentence : results.getString(i+2).split("\\.")) {
+                    toIterator.add(sentence);
+                    labels.add(pubDocNumber);
+                }
             }
             innerIterator=toIterator.iterator();
-            System.out.println("SETUP ITERATOR COMPLETE");
         } catch(SQLException sql) {
             sql.printStackTrace();
             throw new RuntimeException("ERROR WITH SETUP ITERATOR");
@@ -114,7 +101,7 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     public boolean hasNext() {
         try {
             if(results.isAfterLast()) return false;
-            else if(results.isLast() && innerIterator!=null) return innerIterator.hasNext();
+            else if(innerIterator!=null && results.isLast()) return innerIterator.hasNext();
             else return true;
         } catch (SQLException sql) {
             sql.printStackTrace();
@@ -125,9 +112,6 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     @Override
     public void reset() {
         try {
-            innerIterator=null;
-            labels=new LinkedList<>();
-            if(results!=null)results.close();
             initializeQuery();
         } catch(SQLException sql) {
             sql.printStackTrace();
