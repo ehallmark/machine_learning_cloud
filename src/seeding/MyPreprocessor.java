@@ -8,6 +8,6 @@ import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 public class MyPreprocessor implements TokenPreProcess {
     @Override
     public String preProcess(String token) {
-        return token.toLowerCase().replaceAll("[-_]"," ").replaceAll("[^a-z ]", "");
+        return token.toLowerCase().replaceAll("[-_]"," ").replaceAll("[^a-z. ]", "");
     }
 }

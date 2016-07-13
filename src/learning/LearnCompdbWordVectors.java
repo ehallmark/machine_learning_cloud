@@ -8,6 +8,7 @@ import java.util.Arrays;
 import org.deeplearning4j.models.embeddings.learning.ElementsLearningAlgorithm;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
+import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
@@ -105,8 +106,8 @@ public class LearnCompdbWordVectors {
 
 	private void saveWordVectors() throws IOException {
     	// dont overwrite
-    	File pVectors = new File(Constants.COMPDB_WORD_VECTORS);
-        if(!pVectors.exists())WordVectorSerializer.writeFullModel(wordVectors, pVectors.getAbsolutePath());
+    	File wordVectorFile = new File(Constants.COMPDB_WORD_VECTORS);
+        if(!wordVectorFile.exists())WordVectorSerializer.writeFullModel(wordVectors, wordVectorFile.getAbsolutePath());
     }
 
 	void loadOrCreateWordVectors()  throws Exception {
@@ -119,8 +120,9 @@ public class LearnCompdbWordVectors {
                     .learningRate(0.025)
                     .minLearningRate(0.001)
                     .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                    .epochs(5)
+                    .epochs(1)
                     .batchSize(1000)
+                    .seed(41)
                     .iterations(3)
                     .useAdaGrad(false)
                     .negativeSample(10)
@@ -166,6 +168,7 @@ public class LearnCompdbWordVectors {
                     .tokenizerFactory(tokenizerFactory)
                     .layerSize(numClassifications)
                     .epochs(10)
+                    .vocabCache(vocabCache)
                     .windowSize(5)
                     .batchSize(1000)
                     .iterate(iterator)

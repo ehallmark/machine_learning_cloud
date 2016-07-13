@@ -17,6 +17,7 @@ public class PatentIterator implements SentenceIterator {
     protected Map<String, Set<String>> labelsMap;
     protected File labelFile;
     protected Iterator<File> iterator;
+    protected Iterator<String> innerIterator;
     protected SentencePreProcessor preProcessor;
     protected List<File> filesToIterate;
     protected String currentPatent;
@@ -42,7 +43,7 @@ public class PatentIterator implements SentenceIterator {
 
     @Override
     public boolean hasNext() {
-        return iterator.hasNext();
+        return iterator.hasNext() || (innerIterator!=null && innerIterator.hasNext());
     }
 
     @Override
@@ -67,16 +68,20 @@ public class PatentIterator implements SentenceIterator {
 
     @Override
     public String nextSentence() {
-        try {
-            File file = iterator.next();
-            currentPatent = file.getParentFile().getName().replaceAll("/","");
-            String sentence = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-            if(preProcessor!=null) sentence=preProcessor.preProcess(sentence);
-            return sentence;
-        } catch (IOException ioe) {
-            ioe.printStackTrace();
-            throw new RuntimeException("CANNOT READ NEXT SENTENCE");
+        if(innerIterator==null || !innerIterator.hasNext()) {
+            try {
+                File file = iterator.next();
+                currentPatent = file.getParentFile().getName().replaceAll("/", "");
+                String sentence = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
+                innerIterator = Arrays.asList(sentence.split(".")).iterator();
+                return sentence;
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                throw new RuntimeException("CANNOT READ NEXT SENTENCE");
+            }
         }
+        if(preProcessor!=null)return preProcessor.preProcess(innerIterator.next());
+        else return innerIterator.next();
     }
 
     protected Map<String, Set<String>> readPatentLabelsMap() throws IOException {
