@@ -152,8 +152,8 @@ public class LearnCompdbWordVectors {
 
             paragraphVectors = new ParagraphBuilder()
                     .useWordVectors(wordVectors)
-                    .trainElementsRepresentation(true)
-                    .trainSequencesRepresentation(false)
+                    .trainElementsRepresentation(false)
+                    .trainSequencesRepresentation(true)
                     .vocabCache(vocabCache)
                     .resetModel(false)
                     .seed(41)
