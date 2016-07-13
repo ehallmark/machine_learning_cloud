@@ -165,6 +165,7 @@ public class LearnCompdbWordVectors {
                     .trainSequencesRepresentation(false)
                     .vocabCache(vocabCache)
                     .resetModel(false)
+                    .seed(41)
                     .tokenizerFactory(tokenizerFactory)
                     .layerSize(numClassifications)
                     .epochs(10)
