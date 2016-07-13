@@ -33,16 +33,20 @@ public class Training {
 
     private void saveParagraphVectors() throws IOException {
         // dont overwrite
-        File pVectors = new File("SemanticHashParagraphVectors.txt");
+        File pVectors = new File(Constants.SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE);
         if(pVectors.exists())pVectors.delete();
         // Write word vectors
-        WordVectorSerializer.writeWordVectors(paragraphVectors, new File("SemanticHashParagraphVectors.txt"));
+        WordVectorSerializer.writeWordVectors(paragraphVectors, new File(Constants.SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE));
 
     }
 
     void makeParagraphVectors()  throws Exception {
         // build a iterator for our dataset
-        iterator = new DatabaseLabelAwareIterator(50000,1000);
+        iterator = new DatabaseLabelAwareIterator(20110000,20150000);
+
+        while(iterator.hasNext()) {
+            System.out.println(iterator.nextSentence());
+        }
 
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -52,7 +56,7 @@ public class Training {
                 .learningRate(0.001)
                 .minLearningRate(0.0001)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .epochs(5)
+                .epochs(1)
                 .batchSize(1000)
                 .windowSize(5)
                 .iterations(3)
@@ -60,8 +64,8 @@ public class Training {
                 .layerSize(500)
                 .stopWords(Arrays.asList(Constants.STOP_WORDS))
                 .trainWordVectors(true)
-                .trainElementsRepresentation(false)
-                .trainSequencesRepresentation(true)
+                .trainElementsRepresentation(true)
+                .trainSequencesRepresentation(false)
                 .tokenizerFactory(tokenizerFactory)
                 .build();
 

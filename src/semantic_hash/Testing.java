@@ -38,7 +38,7 @@ public class Testing {
         tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
 
         // build a iterator for our dataset
-        iterator = new DatabaseLabelAwareIterator(50000,1000);
+        iterator = new DatabaseLabelAwareIterator(20150000,20160000);
 
         File pVectors = new File("SemanticHashParagraphVectors.txt");
         if(pVectors.exists()) {
@@ -64,11 +64,13 @@ public class Testing {
         MeansBuilder meansBuilder = new MeansBuilder(
                 (InMemoryLookupTable<VocabWord>)paragraphVectors.getLookupTable(),
                 tokenizerFactory);
-        LabelSeeker seeker = new LabelSeeker(iterator.getLabelsSource().getLabels(),
+        LabelSeeker seeker = new LabelSeeker(iterator.getLabels(),
                 (InMemoryLookupTable<VocabWord>) paragraphVectors.getLookupTable());
 
-       while (unClassifiedIterator.hasNextDocument()) {
-            LabelledDocument document = unClassifiedIterator.nextDocument();
+       while (unClassifiedIterator.hasNext()) {
+            LabelledDocument document = new LabelledDocument();
+            document.setContent(unClassifiedIterator.nextSentence());
+            document.setLabel(unClassifiedIterator.currentLabel());
             System.out.println("Document label: "+document.getLabel());
             INDArray documentAsCentroid = meansBuilder.documentAsVector(document);
             List<Pair<String, Double>> scores = seeker.getScores(documentAsCentroid);
@@ -76,7 +78,7 @@ public class Testing {
 
 
             System.out.println("Document '" + document.getLabel() + "' falls into the following categories: ");
-            for (Pair<String, Double> score: scores.subList(0, 5)) {
+            for (Pair<String, Double> score: scores.subList(0, 10)) {
                 System.out.println("        " + score.getFirst() + ": " + score.getSecond());
             }
         }

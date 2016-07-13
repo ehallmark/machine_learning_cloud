@@ -49,9 +49,18 @@ public class LoadDatabaseToFile {
 			}
 			for(LabelledDocument doc : documents) {
 				if(doc==null||doc.getContent()==null)continue;
-				String fName = rootFolderName+patentNumber+"/"+((PatentDocument)doc).getType();
+				String type = ((PatentDocument)doc).getType();
+				String fName = rootFolderName + patentNumber + "/" + ((PatentDocument) doc).getType();
+				if(type.equals("abstract")) {
+					int i = 0;
+					for (String sentence : doc.getContent().split(".")) {
+						if(!new File(fName).exists())writeToFile(fName+"_"+i, preprocessor.preProcess(sentence));
+						i++;
+					}
+				} else {
+					if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(doc.getContent()));
+				}
 				System.out.println(fName);
-				if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(doc.getContent()));
 			}
 		}
 		return toReturn;
