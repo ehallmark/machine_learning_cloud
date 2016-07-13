@@ -54,7 +54,8 @@ public class LoadDatabaseToFile {
 				if(type.equals("abstract")) {
 					int i = 0;
 					for (String sentence : doc.getContent().split(".")) {
-						if(!new File(fName).exists())writeToFile(fName+"_"+i, preprocessor.preProcess(sentence));
+						String sentenceFile = fName+"_"+i;
+						if(!new File(sentenceFile).exists())writeToFile(sentenceFile, preprocessor.preProcess(sentence));
 						i++;
 					}
 				} else {
