@@ -1,5 +1,6 @@
 package learning;
 
+import org.deeplearning4j.text.sentenceiterator.LineSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 
@@ -16,11 +17,11 @@ public class PatentIterator implements SentenceIterator {
     protected Set<String> patents;
     protected Map<String, Set<String>> labelsMap;
     protected File labelFile;
-    protected Iterator<File> iterator;
-    protected Iterator<String> innerIterator;
     protected SentencePreProcessor preProcessor;
-    protected List<File> filesToIterate;
     protected String currentPatent;
+    protected LineSentenceIterator currentSentenceIterator;
+    protected List<File> filesToIterate;
+    protected Iterator<File> iterator;
 
     public PatentIterator(File labelFile) throws IOException {
         this.labelFile=labelFile;
@@ -43,7 +44,7 @@ public class PatentIterator implements SentenceIterator {
 
     @Override
     public boolean hasNext() {
-        return iterator.hasNext() || (innerIterator!=null && innerIterator.hasNext());
+        return iterator.hasNext() || (currentSentenceIterator!=null && currentSentenceIterator.hasNext());
     }
 
     @Override
@@ -68,20 +69,14 @@ public class PatentIterator implements SentenceIterator {
 
     @Override
     public String nextSentence() {
-        if(innerIterator==null || !innerIterator.hasNext()) {
-            try {
-                File file = iterator.next();
-                currentPatent = file.getParentFile().getName().replaceAll("/", "");
-                String sentence = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                innerIterator = Arrays.asList(sentence.split(".")).iterator();
-                return sentence;
-            } catch (IOException ioe) {
-                ioe.printStackTrace();
-                throw new RuntimeException("CANNOT READ NEXT SENTENCE");
-            }
+        if(currentSentenceIterator==null || !currentSentenceIterator.hasNext()) {
+            if(currentSentenceIterator!=null)currentSentenceIterator.finish();
+            File file = iterator.next();
+            currentPatent = file.getParentFile().getName().replaceAll("/", "");
+            currentSentenceIterator=new LineSentenceIterator(file);
         }
-        if(preProcessor!=null)return preProcessor.preProcess(innerIterator.next());
-        else return innerIterator.next();
+        if(preProcessor!=null)return preProcessor.preProcess(currentSentenceIterator.nextSentence());
+        else return currentSentenceIterator.nextSentence();
     }
 
     protected Map<String, Set<String>> readPatentLabelsMap() throws IOException {

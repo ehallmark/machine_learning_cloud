@@ -51,16 +51,17 @@ public class LoadDatabaseToFile {
 				if(doc==null||doc.getContent()==null)continue;
 				String type = ((PatentDocument)doc).getType();
 				String fName = rootFolderName + patentNumber + "/" + ((PatentDocument) doc).getType();
-				if(type.equals(Constants.ABSTRACT)) {
-					int i = 0;
+				String content;
+				if(type.equals(Constants.ABSTRACT)||type.equals(Constants.DESCRIPTION)) {
+					StringJoiner document = new StringJoiner("\n");
 					for (String sentence : doc.getContent().split("\\.")) {
-						String sentenceFile = fName+"_"+i;
-						if(!new File(sentenceFile).exists())writeToFile(sentenceFile, preprocessor.preProcess(sentence));
-						i++;
+						document.add(preprocessor.preProcess(sentence));
 					}
+					content = document.toString();
 				} else {
-					if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(doc.getContent()));
+					content = doc.getContent();
 				}
+				if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(content));
 				System.out.println(fName);
 			}
 		}

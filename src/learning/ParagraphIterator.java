@@ -4,6 +4,7 @@ import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIte
 import seeding.Constants;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,9 +17,10 @@ public class ParagraphIterator extends PatentIterator implements LabelAwareSente
     public ParagraphIterator(File sourceFile, File labelFile) throws IOException {
         super(labelFile);
         filesToIterate = new LinkedList<>();
+        FilenameFilter filter = (dir,name)->(name.contains("description") || name.contains("abstract"));
         for(File patentFolder : sourceFile.listFiles()) {
             if(patentFolder.isDirectory()&&patents.contains(patentFolder.getName().replaceAll("/",""))) {
-                for(File potentialMatch : patentFolder.listFiles()) {
+                for(File potentialMatch : patentFolder.listFiles(filter)) {
                     if(potentialMatch.getName().equals(Constants.ABSTRACT)||potentialMatch.getName().equals(Constants.DESCRIPTION)) {
                         filesToIterate.add(potentialMatch);
                     }
