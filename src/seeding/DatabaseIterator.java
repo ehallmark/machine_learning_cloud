@@ -209,11 +209,11 @@ public class DatabaseIterator {
                         StringJoiner sentences = new StringJoiner(System.getProperty("line.separator"));
                         for(String sentence : latestResults.getString(i+2).replaceAll("fig\\.","fig").split("\\.\\s+")) {
                             String toAdd = preProcessor.preProcess(sentence);
-                            if(toAdd.split("\\s+").length > 5) sentences.add(toAdd);
+                            if(toAdd.split("\\s+").length > 4) sentences.add(toAdd);
                         }
-                        toReturn.add(setupDocument(sentences.toString(),currentPatent,type));
+                        if(sentences.length() > 0)toReturn.add(setupDocument(sentences.toString(),currentPatent,type));
                     } else {
-                        toReturn.add(setupDocument(preProcessor.preProcess(latestResults.getString(i+2)),currentPatent,type));
+                        if(latestResults.getString(i+2).length() >0) toReturn.add(setupDocument(preProcessor.preProcess(latestResults.getString(i+2)),currentPatent,type));
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
