@@ -6,11 +6,9 @@ import java.util.*;
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
 
 public class LoadDatabaseToFile {
-	private MyPreprocessor preprocessor;
-
 	public LoadDatabaseToFile() throws Exception {
 		// Training Data
-		preprocessor = new MyPreprocessor();
+		MyPreprocessor preprocessor = new MyPreprocessor();
 		DatabaseIterator iter = new DatabaseIterator(false, preprocessor);
 
 		if(!new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP).exists()) serializeToFile(iter.initializeTechnologyHash(),new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP));
@@ -49,7 +47,7 @@ public class LoadDatabaseToFile {
 			for(LabelledDocument doc : documents) {
 				if(doc==null||doc.getContent()==null)continue;
 				String fName = rootFolderName + patentNumber + "/" + ((PatentDocument) doc).getType();
-				if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(doc.getContent()));
+				if(!new File(fName).exists())writeToFile(fName, doc.getContent());
 				System.out.println(fName);
 			}
 		}

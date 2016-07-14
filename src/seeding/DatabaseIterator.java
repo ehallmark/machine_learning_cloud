@@ -206,12 +206,11 @@ public class DatabaseIterator {
                 try {
                     if(!type.equals(Constants.INVENTION_TITLE)) {
                         // get sentences
-                        StringJoiner sentences = new StringJoiner("\n");
+                        StringJoiner sentences = new StringJoiner(System.getProperty("line.separator"));
                         for(String sentence : latestResults.getString(i+2).split("\\.")) {
                             sentences.add(preProcessor.preProcess(sentence));
                         }
                         toReturn.add(setupDocument(sentences.toString(),currentPatent,type));
-
                     } else {
                         toReturn.add(setupDocument(preProcessor.preProcess(latestResults.getString(i+2)),currentPatent,type));
                     }
