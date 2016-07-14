@@ -80,7 +80,6 @@ public class Training {
         // Start model training
         paragraphVectors.fit();
 
-        labels = iterator.getLabels();
 
     }
 

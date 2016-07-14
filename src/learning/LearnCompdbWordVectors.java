@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
@@ -38,14 +39,22 @@ import seeding.Constants;
  * @author raver119@gmail.com
  */
 public class LearnCompdbWordVectors {
-    private Word2Vec wordVectors;
-    private ParagraphVectors paragraphVectors;
-    private SentenceIterator iterator;
-    private TokenizerFactory tokenizerFactory;
-    private VocabCache<VocabWord> vocabCache;
-    private int numOuputs;
+    protected Word2Vec wordVectors;
+    protected ParagraphVectors paragraphVectors;
+    protected SentenceIterator iterator;
+    protected LabelAwareSentenceIterator labelAwareIterator;
+    protected TokenizerFactory tokenizerFactory;
+    protected VocabCache<VocabWord> vocabCache;
+    protected int numOuputs;
+    protected File paragraphVectorFile;
+    protected File vocabCacheFile;
+    protected File wordVectorFile;
 
-    private void initializeVariables() throws SQLException,IOException,ClassNotFoundException {
+    protected void initializeVariables() throws SQLException,IOException,ClassNotFoundException {
+        paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
+        vocabCacheFile = new File(Constants.COMPDB_VOCAB_CACHE_FILE);
+        wordVectorFile = new File(Constants.COMPDB_WORD_VECTORS);
+
         // Check for paragraphVectors.obj file
         tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(token->token);
@@ -56,12 +65,11 @@ public class LearnCompdbWordVectors {
         numOuputs = 200;
     }
 
-    private void loadOrCreateVocabCache() throws IOException {
+    protected void loadOrCreateAndSaveVocabCache() throws IOException {
         System.out.println("Starting to load vocab cache...");
 
-        File vCache = new File(Constants.COMPDB_VOCAB_CACHE_FILE);
-        if(vCache.exists()) {
-            vocabCache = WordVectorSerializer.readVocabCache(vCache);
+        if(vocabCacheFile.exists()) {
+            vocabCache = WordVectorSerializer.readVocabCache(vocabCacheFile);
         } else {
             vocabCache = new AbstractCache.Builder<VocabWord>()
                     .hugeModelExpected(true)
@@ -84,28 +92,26 @@ public class LearnCompdbWordVectors {
                     .build();
 
             constructor.buildJointVocabulary(false, true);
+            saveVocabCache();
 
         }
         System.out.println("Done loading vocab cache...");
 
     }
 
-    private void saveVocabCache() throws IOException {
+    protected void saveVocabCache() throws IOException {
         // dont overwrite
-        File vCache = new File(Constants.COMPDB_VOCAB_CACHE_FILE);
-        if(!vCache.exists()) WordVectorSerializer.writeVocabCache(vocabCache, vCache);
+        if(!vocabCacheFile.exists()) WordVectorSerializer.writeVocabCache(vocabCache, vocabCacheFile);
     }
 
-	private void saveWordVectors() throws IOException {
+    protected void saveWordVectors() throws IOException {
     	// dont overwrite
-    	File wordVectorFile = new File(Constants.COMPDB_WORD_VECTORS);
         WordVectorSerializer.writeFullModel(wordVectors, wordVectorFile.getAbsolutePath());
     }
 
-	void loadOrCreateAndSaveWordVectors()  throws Exception {
+    protected void loadOrCreateAndSaveWordVectors()  throws Exception {
         System.out.println("Starting to load word vectors...");
         // ParagraphVectors training configuration
-        File wordVectorFile = new File(Constants.COMPDB_WORD_VECTORS);
         if(!wordVectorFile.exists()) {
             wordVectors = new Word2Vec.Builder()
                     .learningRate(0.025)
@@ -134,16 +140,19 @@ public class LearnCompdbWordVectors {
         System.out.println("Done loading word vectors...");
 	}
 
-    public void loadOrCreateAndSaveParagraphVectors() throws IOException {
+    protected void setupLabelAwareIterator() throws IOException {
+        labelAwareIterator = new ParagraphIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
+    }
+
+    protected void loadOrCreateAndSaveParagraphVectors() throws IOException {
         System.out.println("Starting to load paragraph vectors...");
 
-        File pFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
-        if(!pFile.exists()) {
+        if(!paragraphVectorFile.exists()) {
             // Otherwise build from scratch
             if (wordVectors == null) throw new RuntimeException("Please have word vectors!!!");
             if (vocabCache == null) throw new RuntimeException("Please have vocab cache!!!");
 
-            iterator = new ParagraphIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
+            setupLabelAwareIterator();
 
             paragraphVectors = new ParagraphBuilder()
                     .useWordVectors(wordVectors)
@@ -158,7 +167,7 @@ public class LearnCompdbWordVectors {
                     .vocabCache(vocabCache)
                     .windowSize(5)
                     .batchSize(1000)
-                    .iterate(iterator)
+                    .iterate(labelAwareIterator)
                     .stopWords(Arrays.asList(Constants.STOP_WORDS))
                     .iterations(3)
                     .negativeSample(10)
@@ -171,21 +180,19 @@ public class LearnCompdbWordVectors {
             saveParagraphVectors();
 
         }
-        paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(pFile);
+        paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(paragraphVectorFile);
         System.out.println("Done loading paragraph vectors...");
 
     }
 
-    private void saveParagraphVectors() {
-        File pFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
-        WordVectorSerializer.writeWordVectors(paragraphVectors,pFile);
+    protected void saveParagraphVectors() {
+        WordVectorSerializer.writeWordVectors(paragraphVectors,paragraphVectorFile);
     }
 
     public static void main(String[] args) throws Exception {
         LearnCompdbWordVectors app = new LearnCompdbWordVectors();
         app.initializeVariables();
-        app.loadOrCreateVocabCache();
-        app.saveVocabCache();
+        app.loadOrCreateAndSaveVocabCache();
         app.loadOrCreateAndSaveWordVectors();
         app.loadOrCreateAndSaveParagraphVectors();
     }

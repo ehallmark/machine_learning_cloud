@@ -31,5 +31,7 @@ public class Constants {
 	public static final String DESCRIPTION = "description";
 	public static final String USPTO_CLASS = "class";
 	public static final String USPTO_SUBCLASS = "subclass";
-	public static final String SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE = "SemanticHashParagraphVectors.txt";
+	public static final String SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE = "semantic_hash_paragraph_vectors.txt";
+	public static final String SEMANTIC_HASH_VOCAB_CACHE_FILE = "semantic_hash_vocab_cache.txt";
+	public static final String SEMANTIC_HASH_WORD_VECTORS = "semantic_hash_word_vectors.txt";
 }

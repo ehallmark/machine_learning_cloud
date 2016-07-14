@@ -21,17 +21,14 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     private String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
     private Connection mainConn;
     private ResultSet results;
-    private List<String> labels;
-    private int startDate;
-    private int endDate;
+    private int limit;
+    private int offset;
     private String currentLabel;
     private SentencePreProcessor processor;
     private Iterator<String> innerIterator;
-    private static int COLUMNS_OF_TEXT=2;
-    private final String mainQuery = "SELECT pub_doc_number, invention_title, abstract FROM patent_grant WHERE ((invention_title is not null) AND (abstract is not null)) AND pub_date BETWEEN ? AND ?";
-
-    public DatabaseLabelAwareIterator(int startDate, int endDate) throws SQLException {
-        this.startDate = startDate; this.endDate = endDate; this.labels=new LinkedList<>();
+    private final String mainQuery = "SELECT pub_doc_number, abstract FROM patent_grant WHERE abstract is not null AND pub_date BETWEEN to_char(now()::date, 'YYYYMMDD')::int-150000 AND to_char(now()::date, 'YYYYMMDD')::int order by pub_doc_number desc limit ? offset ?";
+    public DatabaseLabelAwareIterator(int limit, int offset) throws SQLException {
+        this.limit = limit; this.offset = offset;
         setupMainConn();
         initializeQuery();
     }
@@ -39,13 +36,12 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     private void initializeQuery() throws SQLException {
         System.out.println("Starting query...");
         PreparedStatement ps = mainConn.prepareStatement(mainQuery);
-        ps.setInt(1,startDate);
-        ps.setInt(2,endDate);
+        ps.setInt(1,limit);
+        ps.setInt(2,offset);
         ps.setFetchSize(10);
         System.out.println(ps);
         innerIterator=null;
         if(results!=null)results.close();
-        labels=new LinkedList<>();
         results = ps.executeQuery();
     }
 
@@ -74,21 +70,15 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
         return innerIterator.next();
     }
 
-    public List<String> getLabels() {
-        return labels;
-    }
-
     private void setupIterator() {
         try {
             results.next();
             String pubDocNumber = results.getString(1);
             List<String> toIterator = new LinkedList<>();
             currentLabel = pubDocNumber;
-            for(int i = 0; i < COLUMNS_OF_TEXT; i++) {
-                for(String sentence : results.getString(i+2).split("\\.")) {
-                    toIterator.add(sentence);
-                    labels.add(pubDocNumber);
-                }
+            for(String sentence : results.getString(2).split("\\.")) {
+                if(processor!=null)sentence= processor.preProcess(sentence);
+                toIterator.add(sentence);
             }
             innerIterator=toIterator.iterator();
         } catch(SQLException sql) {
