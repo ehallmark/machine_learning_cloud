@@ -11,16 +11,15 @@ public class LoadDatabaseToFile {
 	public LoadDatabaseToFile() throws Exception {
 		// Training Data
 		preprocessor = new MyPreprocessor();
-		DatabaseIterator iter = new DatabaseIterator(false);
+		DatabaseIterator iter = new DatabaseIterator(false, preprocessor);
 
 		if(!new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP).exists()) serializeToFile(iter.initializeTechnologyHash(),new File(Constants.COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP));
 
 		System.out.println("Starting Training Patents");
 		serializeToFile(downloadFiles(Constants.COMPDB_TRAIN_FOLDER, iter), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
-
 		
 		// Testing Data
-		DatabaseIterator testIter = new DatabaseIterator(true);
+		DatabaseIterator testIter = new DatabaseIterator(true, preprocessor);
 		System.out.println("Starting Testing Patents");
 		serializeToFile(downloadFiles(Constants.COMPDB_TEST_FOLDER, testIter),new File(Constants.COMPDB_TEST_LABEL_FILE));
 
@@ -49,19 +48,8 @@ public class LoadDatabaseToFile {
 			}
 			for(LabelledDocument doc : documents) {
 				if(doc==null||doc.getContent()==null)continue;
-				String type = ((PatentDocument)doc).getType();
 				String fName = rootFolderName + patentNumber + "/" + ((PatentDocument) doc).getType();
-				String content;
-				if(type.equals(Constants.ABSTRACT)||type.equals(Constants.DESCRIPTION)) {
-					StringJoiner document = new StringJoiner("\n");
-					for (String sentence : doc.getContent().split("\\.")) {
-						document.add(preprocessor.preProcess(sentence));
-					}
-					content = document.toString();
-				} else {
-					content = doc.getContent();
-				}
-				if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(content));
+				if(!new File(fName).exists())writeToFile(fName, preprocessor.preProcess(doc.getContent()));
 				System.out.println(fName);
 			}
 		}

@@ -7,17 +7,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 
 
 /**
@@ -46,10 +40,12 @@ public class DatabaseIterator {
     private Random rand;
     private boolean testing;
     private ResultSet latestResults;
+    private TokenPreProcess preProcessor;
 
-    public DatabaseIterator(boolean isTesting) throws SQLException {
+    public DatabaseIterator(boolean isTesting, TokenPreProcess preProcessor) throws SQLException {
         this.testing=isTesting;
         this.rand = new Random(SEED);
+        this.preProcessor=preProcessor;
         setupMainConn();
         setupCompDBConn();
         setupSeedConn();
@@ -210,13 +206,14 @@ public class DatabaseIterator {
                 try {
                     if(!type.equals(Constants.INVENTION_TITLE)) {
                         // get sentences
-                        int j = 0;
+                        StringJoiner sentences = new StringJoiner("\n");
                         for(String sentence : latestResults.getString(i+2).split("\\.")) {
-                            toReturn.add(setupDocument(sentence,currentPatent,type+"_"+j));
-                            j++;
+                            sentences.add(preProcessor.preProcess(sentence));
                         }
+                        toReturn.add(setupDocument(sentences.toString(),currentPatent,type));
+
                     } else {
-                        toReturn.add(setupDocument(latestResults.getString(i+2),currentPatent,type));
+                        toReturn.add(setupDocument(preProcessor.preProcess(latestResults.getString(i+2)),currentPatent,type));
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
