@@ -207,8 +207,9 @@ public class DatabaseIterator {
                     if(!type.equals(Constants.INVENTION_TITLE)) {
                         // get sentences
                         StringJoiner sentences = new StringJoiner(System.getProperty("line.separator"));
-                        for(String sentence : latestResults.getString(i+2).split("\\.")) {
-                            sentences.add(preProcessor.preProcess(sentence));
+                        for(String sentence : latestResults.getString(i+2).split("\\.\\s+")) {
+                            String toAdd = preProcessor.preProcess(sentence);
+                            if(toAdd.split("\\s+").length > 5) sentences.add(toAdd);
                         }
                         toReturn.add(setupDocument(sentences.toString(),currentPatent,type));
                     } else {
