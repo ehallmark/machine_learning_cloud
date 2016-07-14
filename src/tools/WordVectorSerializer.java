@@ -1540,11 +1540,6 @@ public class WordVectorSerializer {
         private String object;
         private double[] vector;
 
-        ElementPair(String object, double[] vector) {
-            this.object=object;
-            this.vector=vector;
-        }
-
         /**
          * This utility method serializes ElementPair into JSON + packs it into Base64-encoded string
          *
@@ -1560,22 +1555,6 @@ public class WordVectorSerializer {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }
-
-        public double[] getVector() {
-            return vector;
-        }
-
-        public String getObject() {
-            return object;
-        }
-
-        public void setObject(String object) {
-            this.object=object;
-        }
-
-        public void setVector(double[] vector) {
-            this.vector=vector;
         }
 
         /**
