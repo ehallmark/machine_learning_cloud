@@ -5,18 +5,10 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
+import org.deeplearning4j.text.documentiterator.BasicLabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
-import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
-import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 
@@ -39,33 +31,20 @@ import seeding.Constants;
  * @author raver119@gmail.com
  */
 public class LearnCompdbWordVectors {
-    protected Word2Vec wordVectors;
     protected ParagraphVectors paragraphVectors;
-    protected SentenceIterator iterator;
-    protected LabelAwareSentenceIterator labelAwareIterator;
+    protected LabelAwareIterator labelAwareIterator;
     protected TokenizerFactory tokenizerFactory;
-    protected VocabCache<VocabWord> vocabCache;
     protected int numOuputs;
     protected File paragraphVectorFile;
-    protected File vocabCacheFile;
-    protected File wordVectorFile;
 
-    protected void initializeVariables() throws SQLException,IOException,ClassNotFoundException {
-        paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
-        vocabCacheFile = new File(Constants.COMPDB_VOCAB_CACHE_FILE);
-        wordVectorFile = new File(Constants.COMPDB_WORD_VECTORS);
-
-        // Check for paragraphVectors.obj file
-        tokenizerFactory = new DefaultTokenizerFactory();
-        tokenizerFactory.setTokenPreProcessor(token->token);
-
-        // build a iterator for our dataset
-        iterator = new PatentIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
-
-        numOuputs = 200;
+    protected void initializeVariables(LabelAwareIterator labelAwareIterator, int numOutputs, TokenizerFactory tokenizerFactory, File paragraphVectorFile) throws SQLException,IOException,ClassNotFoundException {
+        this.labelAwareIterator=labelAwareIterator;
+        this.numOuputs=numOutputs;
+        this.tokenizerFactory=tokenizerFactory;
+        this.paragraphVectorFile=paragraphVectorFile;
     }
 
-    protected void loadOrCreateAndSaveVocabCache() throws IOException {
+    /*protected void loadOrCreateAndSaveVocabCache() throws IOException {
         System.out.println("Starting to load vocab cache...");
 
         if(vocabCacheFile.exists()) {
@@ -114,8 +93,8 @@ public class LearnCompdbWordVectors {
         // ParagraphVectors training configuration
         if(!wordVectorFile.exists()) {
             wordVectors = new Word2Vec.Builder()
-                    .learningRate(0.025)
-                    .minLearningRate(0.001)
+                    .learningRate(0.005)
+                    .minLearningRate(0.0001)
                     .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                     .epochs(1)
                     .batchSize(1000)
@@ -138,34 +117,22 @@ public class LearnCompdbWordVectors {
         }
         wordVectors = WordVectorSerializer.loadFullModel(wordVectorFile.getAbsolutePath());
         System.out.println("Done loading word vectors...");
-	}
+	}*/
 
-    protected void setupLabelAwareIterator() throws IOException {
-        labelAwareIterator = new ParagraphIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
-    }
 
     protected void loadOrCreateAndSaveParagraphVectors() throws IOException {
         System.out.println("Starting to load paragraph vectors...");
 
         if(!paragraphVectorFile.exists()) {
             // Otherwise build from scratch
-            if (wordVectors == null) throw new RuntimeException("Please have word vectors!!!");
-            if (vocabCache == null) throw new RuntimeException("Please have vocab cache!!!");
-
-            setupLabelAwareIterator();
-
             paragraphVectors = new ParagraphBuilder()
-                    .useWordVectors(wordVectors)
-                    .trainElementsRepresentation(false)
-                    .trainSequencesRepresentation(true)
-                    .vocabCache(vocabCache)
-                    .resetModel(false)
+                    .resetModel(true)
                     .seed(41)
                     .tokenizerFactory(tokenizerFactory)
                     .layerSize(numOuputs)
                     .epochs(10)
-                    .vocabCache(vocabCache)
                     .windowSize(5)
+                    .useAdaGrad(false)
                     .batchSize(1000)
                     .iterate(labelAwareIterator)
                     .stopWords(Arrays.asList(Constants.STOP_WORDS))
@@ -173,7 +140,7 @@ public class LearnCompdbWordVectors {
                     .negativeSample(10)
                     .learningRate(0.001)
                     .minLearningRate(0.0001)
-                    .trainWordVectors(false)
+                    .trainWordVectors(true)
                     .build();
 
             paragraphVectors.fit();
@@ -190,10 +157,19 @@ public class LearnCompdbWordVectors {
     }
 
     public static void main(String[] args) throws Exception {
+        File paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
+        int numOutputs = 200;
+        TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
+        tokenizerFactory.setTokenPreProcessor(token->token);
+        LabelAwareIterator labelAwareIterator = new BasicLabelAwareIterator.Builder(
+                new ParagraphIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE))
+        ).build();
+
+
         LearnCompdbWordVectors app = new LearnCompdbWordVectors();
-        app.initializeVariables();
-        app.loadOrCreateAndSaveVocabCache();
-        app.loadOrCreateAndSaveWordVectors();
+        app.initializeVariables(labelAwareIterator,numOutputs,tokenizerFactory,paragraphVectorFile);
+        //app.loadOrCreateAndSaveVocabCache();
+        //app.loadOrCreateAndSaveWordVectors();
         app.loadOrCreateAndSaveParagraphVectors();
     }
 

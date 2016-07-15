@@ -1,7 +1,12 @@
-package semantic_hash;
+package learning;
 
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.deeplearning4j.text.documentiterator.LabelsSource;
+import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
+import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
+import seeding.MyPreprocessor;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,26 +16,39 @@ import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Arrays;
 
 /**
  * Created by ehallmark on 6/21/16.
  */
-public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
+public class DatabaseLabelAwareIterator implements LabelAwareIterator, SentenceIterator {
 
     private String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
     private Connection mainConn;
+    private SentencePreProcessor sentencePreprocessor;
     private ResultSet results;
     private int limit;
     private int offset;
-    private String currentLabel;
-    private SentencePreProcessor processor;
-    private Iterator<String> innerIterator;
+    private LabelsSource source;
+    private TokenPreProcess processor;
+    private Iterator<LabelledDocument> innerIterator;
     private final String mainQuery = "SELECT pub_doc_number, abstract FROM patent_grant WHERE abstract is not null AND pub_date BETWEEN to_char(now()::date, 'YYYYMMDD')::int-150000 AND to_char(now()::date, 'YYYYMMDD')::int order by pub_doc_number desc limit ? offset ?";
     public DatabaseLabelAwareIterator(int limit, int offset) throws SQLException {
-        this.limit = limit; this.offset = offset;
+        this.limit = limit; this.offset = offset; this.processor=new MyPreprocessor();
         setupMainConn();
-        initializeQuery();
+        reset();
+        setupLabelsSource();
+        reset();
+    }
+
+
+    private void setupLabelsSource() {
+        List<String> labels = new LinkedList<>();
+        while(hasNextDocument()) {
+            LabelledDocument doc = nextDocument();
+            if(!labels.contains(doc.getLabel()))labels.add(doc.getLabel());
+            if(doc.getLabel()==null) throw new RuntimeException("NULL!!!!!!!!!");
+        }
+        source = new LabelsSource(labels);
     }
 
     private void initializeQuery() throws SQLException {
@@ -51,19 +69,9 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
         mainConn.setAutoCommit(false);
     }
 
-    @Override
-    public String currentLabel() {
-        return currentLabel;
-    }
 
     @Override
-    public List<String> currentLabels() {
-        return Arrays.asList(new String[]{currentLabel});
-    }
-
-
-    @Override
-    public String nextSentence() {
+    public LabelledDocument nextDocument() {
         if(innerIterator==null || !innerIterator.hasNext()) {
             setupIterator();
         }
@@ -74,11 +82,13 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
         try {
             results.next();
             String pubDocNumber = results.getString(1);
-            List<String> toIterator = new LinkedList<>();
-            currentLabel = pubDocNumber;
+            List<LabelledDocument> toIterator = new LinkedList<>();
             for(String sentence : results.getString(2).split("\\.")) {
-                if(processor!=null)sentence= processor.preProcess(sentence);
-                toIterator.add(sentence);
+                if(processor!=null)sentence=processor.preProcess(sentence);
+                LabelledDocument doc = new LabelledDocument();
+                doc.setContent(sentence);
+                doc.setLabel(pubDocNumber);
+                toIterator.add(doc);
             }
             innerIterator=toIterator.iterator();
         } catch(SQLException sql) {
@@ -88,7 +98,7 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNextDocument() {
         try {
             if(results.isAfterLast()) return false;
             else if(innerIterator!=null && results.isLast()) return innerIterator.hasNext();
@@ -97,6 +107,17 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
             sql.printStackTrace();
             return false;
         }
+    }
+
+
+    @Override
+    public String nextSentence() {
+        return nextDocument().getContent();
+    }
+
+    @Override
+    public boolean hasNext() {
+        return hasNextDocument();
     }
 
     @Override
@@ -110,21 +131,26 @@ public class DatabaseLabelAwareIterator implements LabelAwareSentenceIterator {
 
     @Override
     public void finish() {
-        try{
+        try {
             mainConn.close();
-        } catch(Exception e) {
-            e.printStackTrace();
+        } catch(SQLException sql) {
+            sql.printStackTrace();
         }
     }
 
     @Override
     public SentencePreProcessor getPreProcessor() {
-        return processor;
+        return sentencePreprocessor;
     }
 
     @Override
     public void setPreProcessor(SentencePreProcessor preProcessor) {
-        processor = preProcessor;
+        this.sentencePreprocessor = preProcessor;
+    }
+
+    @Override
+    public LabelsSource getLabelsSource() {
+        return source;
     }
 
 }

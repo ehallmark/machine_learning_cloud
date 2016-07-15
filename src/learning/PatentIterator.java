@@ -3,6 +3,7 @@ package learning;
 import org.deeplearning4j.text.sentenceiterator.LineSentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 
 
 import java.io.*;
@@ -13,7 +14,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 7/11/16.
  */
-public class PatentIterator implements SentenceIterator {
+public class PatentIterator implements SentenceIterator, LabelAwareSentenceIterator {
     protected Set<String> patents;
     protected Map<String, Set<String>> labelsMap;
     protected File labelFile;
@@ -22,6 +23,8 @@ public class PatentIterator implements SentenceIterator {
     protected LineSentenceIterator currentSentenceIterator;
     protected List<File> filesToIterate;
     protected Iterator<File> iterator;
+    protected List<String> currentLabels;
+    protected static Random rand = new Random(41);
 
     public PatentIterator(File labelFile) throws IOException {
         this.labelFile=labelFile;
@@ -73,6 +76,7 @@ public class PatentIterator implements SentenceIterator {
             if(currentSentenceIterator!=null)currentSentenceIterator.finish();
             File file = iterator.next();
             currentPatent = file.getParentFile().getName().replaceAll("/", "");
+            currentLabels = new ArrayList<>(labelsMap.get(currentPatent));
             currentSentenceIterator=new LineSentenceIterator(file);
         }
         if(preProcessor!=null)return preProcessor.preProcess(currentSentenceIterator.nextSentence());
@@ -87,5 +91,15 @@ public class PatentIterator implements SentenceIterator {
             cnfe.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public String currentLabel() {
+        return currentLabels.get(rand.nextInt()%currentLabels.size());
+    }
+
+    @Override
+    public List<String> currentLabels() {
+        return currentLabels;
     }
 }
