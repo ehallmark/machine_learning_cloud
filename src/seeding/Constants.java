@@ -23,8 +23,6 @@ public class Constants {
 	public static final String COMPDB_TRAIN_LABEL_FILE = "compdb_training_labels.obj";
 	public static final String COMPDB_TEST_LABEL_FILE = "compdb_testing_labels.obj";
 	public static final String COMPDB_TECHNOLOGIES_INTEGER_TO_STRING_MAP = "compdb_tech_int_to_str_hash.obj";
-	public static final String COMPDB_WORD_VECTORS = "compdb_word_vectors.txt";
-	public static final String COMPDB_VOCAB_CACHE_FILE = "compdb_vocab_cache.txt";
 	public static final String COMPDB_PARAGRAPH_VECTORS = "compdb_paragraph_vectors.txt";
 	public static final String ABSTRACT = "abstract";
 	public static final String INVENTION_TITLE = "title";
@@ -32,6 +30,4 @@ public class Constants {
 	public static final String USPTO_CLASS = "class";
 	public static final String USPTO_SUBCLASS = "subclass";
 	public static final String SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE = "semantic_hash_paragraph_vectors.txt";
-	public static final String SEMANTIC_HASH_VOCAB_CACHE_FILE = "semantic_hash_vocab_cache.txt";
-	public static final String SEMANTIC_HASH_WORD_VECTORS = "semantic_hash_word_vectors.txt";
 }

@@ -16,7 +16,7 @@ public class LearnAllWordVectors extends LearnCompdbWordVectors {
 
 
     public static void main(String[] args) throws Exception {
-        File paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
+        File paragraphVectorFile = new File(Constants.SEMANTIC_HASH_PARAGRAPH_VECTORS_FILE);
         int numOutputs = 200;
         TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(token->token);
