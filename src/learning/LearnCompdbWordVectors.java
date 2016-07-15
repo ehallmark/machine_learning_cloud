@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 
-import org.deeplearning4j.text.documentiterator.BasicLabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -161,10 +161,8 @@ public class LearnCompdbWordVectors {
         int numOutputs = 200;
         TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(token->token);
-        LabelAwareIterator labelAwareIterator = new BasicLabelAwareIterator.Builder(
-                new ParagraphIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE))
-        ).build();
 
+        LabelAwareIterator labelAwareIterator = new PatentIterator(new File(Constants.COMPDB_TRAIN_FOLDER), new File(Constants.COMPDB_TRAIN_LABEL_FILE));
 
         LearnCompdbWordVectors app = new LearnCompdbWordVectors();
         app.initializeVariables(labelAwareIterator,numOutputs,tokenizerFactory,paragraphVectorFile);
