@@ -20,10 +20,12 @@ public class LearnAllWordVectors extends LearnCompdbWordVectors {
         int numOutputs = 200;
         TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(token->token);
-        LabelAwareIterator labelAwareIterator = new FileLabelAwareIterator.Builder()
-                .addSourceFolder(new File(Constants.COMPDB_TRAIN_FOLDER))
-                .build();
 
+        //LabelAwareIterator labelAwareIterator = new FileLabelAwareIterator.Builder()
+        //        .addSourceFolder(new File(Constants.COMPDB_TRAIN_FOLDER))
+        //        .build();
+
+        LabelAwareIterator labelAwareIterator = new DatabaseLabelAwareIterator(100000,1000);
 
         LearnAllWordVectors app = new LearnAllWordVectors();
         app.initializeVariables(labelAwareIterator,numOutputs,tokenizerFactory,paragraphVectorFile);
