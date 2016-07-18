@@ -53,23 +53,16 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             int endIndex = 4;
             List<String> preIterator = new LinkedList<>();
             for(int i = startIndex; i < endIndex; i++) {
-                List<String> sentences = new ArrayList<>(Arrays.asList(resultSet.getString(i).split("\\.")));
-                sentences.removeIf(str->str==null||str.split("\\s+").length<Constants.MIN_WORDS_PER_SENTENCE);
-                if(sentences.size() > Constants.MAX_SENTENCES_PER_DOCUMENT) {
-                    // Take a random subset of sentences if document is "too long"
-                    Collections.shuffle(sentences);
-                    sentences = sentences.subList(0,Constants.MAX_SENTENCES_PER_DOCUMENT);
-                }
+                List<String> sentences = new ArrayList<>(Arrays.asList(resultSet.getString(i).replaceAll("fig\\.","fig").split("\\.")));
 
-                // Strip excess input and add to preIterator list
-                preIterator.addAll(sentences.stream().map(str->{
-                    String[] strArray=str.split("\\s+");
-                    if(strArray.length>Constants.MAX_WORDS_PER_SENTENCE) {
-                        return String.join(" ",Arrays.copyOfRange(strArray, 0, Constants.MAX_WORDS_PER_SENTENCE));
-                    } else {
-                        return str;
-                    }
-                }).collect(Collectors.toList()));
+                // Strip end of truncated description
+                if(sentences.size() > 1)sentences.remove(sentences.size()-1);
+
+                // Remove bad sentences
+                sentences.removeIf(str->sentenceLengthCheck(str));
+
+                // Add to preIterator list
+                preIterator.addAll(sentences);
 
             }
             currentPatentIterator = preIterator.iterator();
@@ -79,6 +72,22 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             sql.printStackTrace();
             throw new RuntimeException("SQL ERROR");
         }
+    }
+
+    public boolean sentenceLengthCheck(String str) {
+        if(str==null)return false;
+        boolean wasChar = false;
+        int wordCount = 0;
+        for(Character c : str.toCharArray()) {
+            if(Character.isSpaceChar(c) && wasChar) {
+                wordCount++;
+                wasChar = false;
+            } else if(Character.isAlphabetic(c)) {
+                wasChar = true;
+            }
+            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return true;
+        }
+        return false;
     }
 
     @Override

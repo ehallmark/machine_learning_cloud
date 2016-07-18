@@ -7,9 +7,8 @@ import java.util.Set;
 
 public class Constants {
 	public static final int DEFAULT_MIN_WORD_FREQUENCY = 10;
-	public static final int MAX_SENTENCES_PER_DOCUMENT = 50;
+	public static final int MAX_DESCRIPTION_LENGTH = 10000;
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
-	public static final int MAX_WORDS_PER_SENTENCE = 100;
 	public static final int VECTOR_LENGTH = 400;
 
 	public static final List<String> ALL_TECHNOLOGIES = Arrays.asList(new String[] {
