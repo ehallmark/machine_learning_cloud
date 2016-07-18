@@ -49,25 +49,18 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             // Check for more results in result set
             resultSet.next();
             currentPatent = resultSet.getString(1);
-            int startIndex = 2;
-            int endIndex = 4;
             List<String> preIterator = new LinkedList<>();
-            int size = 0;
-            for(int i = startIndex; i < endIndex; i++) {
-                List<String> sentences = new ArrayList<>(Arrays.asList((String[])resultSet.getArray(i).getArray()));
-                // Strip end of truncated description
-                if(sentences.size() > 1)sentences.remove(sentences.size()-1);
-                size+= sentences.size();
 
-                // Remove bad sentences
-                sentences.removeIf(str->sentenceLengthCheck(str));
+            // Abstract
+            List<String> abstractSentences = cleanedList(Arrays.asList((String[])resultSet.getArray(2).getArray()), false);
+            preIterator.addAll(abstractSentences);
 
-                // Add to preIterator list
-                preIterator.addAll(sentences);
+            // Description
+            List<String> descriptionSentences = cleanedList(Arrays.asList((String[])resultSet.getArray(3).getArray()), true);
+            preIterator.addAll(descriptionSentences);
 
-            }
             currentPatentIterator = preIterator.iterator();
-            System.out.println("Number of sentences for "+currentPatent+": Before="+size+" After="+preIterator.size());
+            System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
             return nextSentence();
 
         } catch(SQLException sql) {
@@ -76,8 +69,17 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         }
     }
 
-    public boolean sentenceLengthCheck(String str) {
-        if(str==null)return false;
+    public List<String> cleanedList(List<String> dirtyList, boolean truncateEnd) {
+        if(truncateEnd && dirtyList.size() > 1)dirtyList.remove(dirtyList.size()-1);
+        // Remove bad sentences
+        List<String> cleanList = new ArrayList<>(dirtyList);
+        cleanList.removeIf(str->removeSentence(str));
+        return cleanList;
+    }
+
+
+    public boolean removeSentence(String str) {
+        if(str==null)return true;
         boolean wasChar = false;
         int wordCount = 0;
         for(Character c : str.toCharArray()) {
@@ -87,9 +89,9 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             } else if(Character.isAlphabetic(c)) {
                 wasChar = true;
             }
-            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return true;
+            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return false;
         }
-        return false;
+        return true;
     }
 
     @Override
