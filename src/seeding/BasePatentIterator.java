@@ -6,7 +6,6 @@ import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIte
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 7/18/16.
@@ -21,6 +20,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
+        this.preProcessor = new MyPreprocessor();
         Database.setupSeedConn();
     }
 
@@ -43,7 +43,8 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                return currentPatentIterator.next();
+                if(preProcessor!=null)return preProcessor.preProcess(currentPatentIterator.next());
+                else return currentPatentIterator.next();
             }
             // Check for more results in result set
             resultSet.next();
