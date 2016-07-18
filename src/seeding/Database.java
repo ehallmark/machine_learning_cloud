@@ -1,20 +1,21 @@
 package seeding;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 
 
 public class Database {
 	private static String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
-
+	private final static String patentTable = "patent_vectors";
 	private static Connection seedConn;
 	private static Connection mainConn;
 	private static final String addOrUpdateWord = "INSERT INTO patent_words (word,count) VALUES (?,1) ON CONFLICT (word) DO UPDATE SET (count)=(patent_words.count+1) WHERE patent_words.word=?";
-	private static final String selectCitations = "SELECT p.pub_doc_number, patent_cited_doc_number, invention_title, abstract from patent_grant as p join patent_grant_citation as q on (p.pub_doc_number=q.pub_doc_number) where p.pub_doc_number=ANY(?) AND (invention_title IS NOT NULL OR abstract IS NOT NULL) and q.pub_doc_number=ANY(?)";
-	private static final String updateCitation = "UPDATE patent_grant_citation SET (patent_cited_invention_title,patent_cited_abstract)=(?,?) WHERE pub_doc_number=? AND patent_cited_doc_number=?";
+	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) > 2";
+	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
+	private static final String patentVectorStatement = "SELECT pub_doc_number, STRING_TO_ARRAY(abstract, '.' ,''), STRING_TO_ARRAY(REGEXP_REPLACE(description, 'fig.', 'fig', 'g'), '.' , '') FROM patent_grant WHERE pub_date >= ? AND (invention_title IS NOT NULL AND abstract IS NOT NULL AND description IS NOT NULL)";
+	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
+	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)) FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
+	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number) FROM patent_grant where pub_date > ? group by pub_date";
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
 		mainConn.setAutoCommit(false);
@@ -42,7 +43,71 @@ public class Database {
 		}
 	}
 
-	
+	public static ResultSet getPatentsAfter(int pubDate) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(allPatentsAfterGivenDate);
+		ps.setInt(1, pubDate);
+		ps.setFetchSize(10);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet getClassificationsAndTitleFromList(List<String> list) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT invention_title, array_agg(distinct class), array_agg(distinct subclass) from patent_grant as p join patent_grant_uspto_classification as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) and q.pub_doc_number=ANY(?) AND invention_title is not null GROUP BY p.pub_doc_number");
+		Array docNums = seedConn.createArrayOf("varchar", list.toArray());
+		ps.setArray(1, docNums);
+		ps.setArray(2, docNums);
+		ps.setFetchSize(10);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet getClassificationsFromPatents(Array patentArray) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(classificationsFromPatents);
+		ps.setArray(1,patentArray);
+		ps.setFetchSize(5);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet getPatentVectorData(int startDate) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(patentVectorStatement);
+		ps.setInt(1,startDate);
+		ps.setFetchSize(5);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	public static List<String> getDistinctClassifications() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(distinctClassificationsStatement);
+		ps.setFetchSize(100);
+		ResultSet rs = ps.executeQuery();
+		List<String> distinctClassifications = new ArrayList<>();
+		Set<String> duplicationCheck = new HashSet<>();
+		while(rs.next()) {
+			String klass = rs.getString(1).trim();
+			if(!duplicationCheck.contains(klass)) {
+				distinctClassifications.add(klass);
+				duplicationCheck.add(klass);
+			}
+		}
+		ps.close();
+		Collections.sort(distinctClassifications);
+		return distinctClassifications;
+	}
+
+
+	public static ResultSet getValuablePatents() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(valuablePatentsQuery);
+		ps.setFetchSize(10);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet getUnValuablePatents() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(unValuablePatentsQuery);
+		ps.setFetchSize(10);
+		return ps.executeQuery();
+	}
+
+
 	public static void addOrUpdateWord(String word) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement(addOrUpdateWord);
 		ps.setString(1, word);
@@ -56,21 +121,5 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static ResultSet selectCitationTitleAndAbstract(Collection<String> patents) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement(selectCitations);
-		Array p = seedConn.createArrayOf("VARCHAR", patents.toArray());
-		ps.setArray(1, p);
-		ps.setArray(2, p);
-		ps.setFetchSize(10);
-		System.out.println(ps);
-		return ps.executeQuery();
-	}
-
-	public static void updateCitation(String pubDocNumber, String citedPubDocNumber, String citedTitle, String citedAbstract) throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement(updateCitation);
-		ps.setString(1, citedTitle); ps.setString(2, citedAbstract);
-		ps.setString(3, pubDocNumber); ps.setString(4, citedPubDocNumber);
-		ps.executeUpdate();
-	}
 
 }

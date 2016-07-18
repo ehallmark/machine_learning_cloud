@@ -31,7 +31,7 @@ public class DatabaseLabelAwareIterator implements LabelAwareIterator, SentenceI
     private LabelsSource source;
     private TokenPreProcess processor;
     private Iterator<LabelledDocument> innerIterator;
-    private final String mainQuery = "SELECT pub_doc_number, abstract FROM patent_grant WHERE abstract is not null AND pub_date BETWEEN to_char(now()::date, 'YYYYMMDD')::int-150000 AND to_char(now()::date, 'YYYYMMDD')::int order by pub_doc_number desc limit ? offset ?";
+    private final String mainQuery = "SELECT pub_doc_number, abstract FROM patent_grant WHERE abstract is not null AND pub_date > to_char(now()::date, 'YYYYMMDD')::int-150000 order by pub_doc_number desc limit ? offset ?";
     public DatabaseLabelAwareIterator(int limit, int offset) throws SQLException {
         this.limit = limit; this.offset = offset; this.processor=new MyPreprocessor();
         setupMainConn();
