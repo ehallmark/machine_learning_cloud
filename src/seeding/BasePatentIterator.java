@@ -60,7 +60,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             preIterator.addAll(descriptionSentences);
 
             currentPatentIterator = preIterator.iterator();
-            System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
+            //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
             return nextSentence();
 
         } catch(SQLException sql) {
