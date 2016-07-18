@@ -70,9 +70,9 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     }
 
     public List<String> cleanedList(List<String> dirtyList, boolean truncateEnd) {
-        if(truncateEnd && dirtyList.size() > 1)dirtyList.remove(dirtyList.size()-1);
+        List<String> cleanList = new ArrayList<>(dirtyList); // For ability to delete
+        if(truncateEnd && cleanList.size() > 1)cleanList.remove(cleanList.size()-1);
         // Remove bad sentences
-        List<String> cleanList = new ArrayList<>(dirtyList);
         cleanList.removeIf(str->removeSentence(str));
         return cleanList;
     }
