@@ -53,7 +53,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             int endIndex = 4;
             List<String> preIterator = new LinkedList<>();
             for(int i = startIndex; i < endIndex; i++) {
-                List<String> sentences = new ArrayList<>(Arrays.asList((String[])resultSet.getArray(i).getArray()));
+                List<String> sentences = new ArrayList<>(Arrays.asList(resultSet.getString(i).split("\\.")));
                 sentences.removeIf(str->str==null||str.split("\\s+").length<Constants.MIN_WORDS_PER_SENTENCE);
                 if(sentences.size() > Constants.MAX_SENTENCES_PER_DOCUMENT) {
                     // Take a random subset of sentences if document is "too long"
