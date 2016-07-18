@@ -53,7 +53,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             int endIndex = 4;
             List<String> preIterator = new LinkedList<>();
             for(int i = startIndex; i < endIndex; i++) {
-                List<String> sentences = new ArrayList<>(Arrays.asList(resultSet.getString(i).replaceAll("fig\\.","fig").split("\\.")));
+                List<String> sentences = new ArrayList<>(Arrays.asList(resultSet.getString(i).split("\\.")));
 
                 // Strip end of truncated description
                 if(sentences.size() > 1)sentences.remove(sentences.size()-1);
@@ -66,6 +66,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
 
             }
             currentPatentIterator = preIterator.iterator();
+            System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
             return nextSentence();
 
         } catch(SQLException sql) {
