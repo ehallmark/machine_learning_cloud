@@ -43,8 +43,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                if(preProcessor!=null)return preProcessor.preProcess(currentPatentIterator.next());
-                else return currentPatentIterator.next();
+                return currentPatentIterator.next();
             }
             // Check for more results in result set
             resultSet.next();
@@ -52,12 +51,12 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
             List<String> preIterator = new LinkedList<>();
 
             // Abstract
-            List<String> abstractSentences = cleanedList(Arrays.asList((String[])resultSet.getArray(2).getArray()), false);
-            preIterator.addAll(abstractSentences);
+            String abstractText = preProcessor.preProcess(resultSet.getString(2));
+            if(!removeSentence(abstractText))preIterator.add(abstractText);
 
             // Description
-            List<String> descriptionSentences = cleanedList(Arrays.asList((String[])resultSet.getArray(3).getArray()), true);
-            preIterator.addAll(descriptionSentences);
+            String descriptionText = preProcessor.preProcess(resultSet.getString(3));
+            if(!removeSentence(descriptionText))preIterator.add(descriptionText.substring(0, descriptionText.lastIndexOf(" ")));
 
             currentPatentIterator = preIterator.iterator();
             //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
@@ -69,13 +68,6 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         }
     }
 
-    public List<String> cleanedList(List<String> dirtyList, boolean truncateEnd) {
-        List<String> cleanList = new ArrayList<>(dirtyList); // For ability to delete
-        if(truncateEnd && cleanList.size() > 1)cleanList.remove(cleanList.size()-1);
-        // Remove bad sentences
-        cleanList.removeIf(str->removeSentence(str));
-        return cleanList;
-    }
 
 
     public boolean removeSentence(String str) {

@@ -37,9 +37,8 @@ public class SeedPatentVectors {
     public SeedPatentVectors(int startDate) throws Exception {
         this.date=startDate;
 
-        // Tokenizer Factor (Default)
+        // Tokenizer Factor (Default with no preprocessor)
         tokenizerFactory = new DefaultTokenizerFactory();
-        tokenizerFactory.setTokenPreProcessor(str->str);
 
         // Create Iterator
         iterator = new BasicLabelAwareIterator.Builder(new BasePatentIterator(date))

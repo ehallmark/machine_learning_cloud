@@ -9,6 +9,7 @@ import org.deeplearning4j.text.tokenization.tokenizer.TokenPreProcess;
 public class MyPreprocessor implements TokenPreProcess, SentencePreProcessor {
     @Override
     public String preProcess(String token) {
-        return token.toLowerCase().replaceAll("[-_\\s\\s+]"," ").replaceAll("[^a-z ]", "");
+        if(token==null) return null;
+        return token.toLowerCase().replaceAll("[-_\\t\\f\\n\\r]"," ").replaceAll("[^a-z ]", "");
     }
 }
