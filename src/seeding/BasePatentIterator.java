@@ -16,12 +16,11 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     private final int startDate;
     private ResultSet resultSet;
     private String currentPatent;
-    private Iterator<String> currentPatentIterator;
     private SentencePreProcessor preProcessor;
+    private Iterator<String> currentPatentIterator;
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
-        this.preProcessor = new MyPreprocessor();
         Database.setupSeedConn();
     }
 
@@ -44,7 +43,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                return preProcessor.preProcess(currentPatentIterator.next());
+                return currentPatentIterator.next();
             }
             // Check for more results in result set
             resultSet.next();

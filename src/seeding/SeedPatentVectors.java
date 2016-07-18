@@ -39,7 +39,7 @@ public class SeedPatentVectors {
 
         // Tokenizer Factor (Default)
         tokenizerFactory = new DefaultTokenizerFactory();
-        tokenizerFactory.setTokenPreProcessor(new CommonPreprocessor());
+        tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
 
         // Create Iterator
         iterator = new BasicLabelAwareIterator.Builder(new BasePatentIterator(date))
