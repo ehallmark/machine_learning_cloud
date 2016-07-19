@@ -78,17 +78,19 @@ public class SeedPatentVectors {
     }
 
     private Double[] computeAvgWordVectorsFrom(String sentence) {
-        INDArray wordVector = Nd4j.zeros(paragraphVectors.getLayerSize());
+        INDArray wordVector = null;
         if(sentence!=null) {
             int size = 0;
             for (String word : sentence.split("\\s+")) {
                 if (word == null || !paragraphVectors.hasWord(word)) continue;
-                wordVector.add(paragraphVectors.getWordVectorMatrix(word));
+                if(wordVector==null) wordVector = paragraphVectors.getWordVectorMatrix(word);
+                else wordVector.add(paragraphVectors.getWordVectorMatrix(word));
                 size++;
             }
             if (size > 0) wordVector.div(size);
         }
-        return toObject(wordVector.data().asDouble());
+        if(wordVector!=null) return toObject(wordVector.data().asDouble());
+        else return null;
     }
 
     private Double[] toObject(double[] primArray) {
