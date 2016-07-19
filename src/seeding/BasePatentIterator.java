@@ -31,7 +31,7 @@ public class BasePatentIterator implements LabelAwareIterator {
     }
 
     public void setupLabelsSource() throws SQLException {
-        List<String> labels = new LinkedList<>();
+        List<String> labels = Collections.synchronizedList(new LinkedList<>());
         ResultSet rs = Database.getPatentNumbersAfter(startDate);
         while(rs.next()) {
             labels.add(rs.getString(1));
