@@ -6,6 +6,7 @@ import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
+import org.deeplearning4j.models.word2vec.wordstore.VocabularyWord;
 import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
@@ -15,6 +16,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/18/16.
@@ -23,46 +25,21 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
 
     private final int startDate;
     private ResultSet resultSet;
-    private String currentPatent;
-    private VocabCache<VocabWord> vocab;
-    private SentencePreProcessor preProcessor;
+    private VocabWord currentPatent;
     private Iterator<List<VocabWord>> currentPatentIterator;
+    // used to tag each sequence with own Id
+    protected AtomicInteger tagger = new AtomicInteger(0);
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
-        this.preProcessor = new MyPreprocessor();
-
-        vocab = new AbstractCache.Builder<VocabWord>()
-                .hugeModelExpected(true)
-                .minElementFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .build();
-        VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
-                .setTargetVocabCache(vocab)
-                .fetchLabels(true)
-                .addSource(this, Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .setStopWords(Arrays.asList(Constants.STOP_WORDS))
-                .build();
-
-        constructor.buildJointVocabulary(true, false);
     }
 
     public void resetQuery() throws SQLException {
         resultSet = Database.getPatentVectorData(startDate);
     }
 
-    /*@Override
-    public String currentLabel() {
-        return currentPatent;
-    }
-
-    @Override
-    public List<String> currentLabels() {
-        return Arrays.asList(currentPatent);
-    }
-    */
-
     protected void setCurrentPatent() throws SQLException {
-        currentPatent = resultSet.getString(1);
+        currentPatent = new VocabWord(2,resultSet.getString(1));
     }
 
     protected Iterator<List<VocabWord>> processedSentenceIterator() throws SQLException {
@@ -73,7 +50,7 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
         if(abstractText.length >= Constants.MIN_WORDS_PER_SENTENCE) {
             List<VocabWord> abstractWords = new ArrayList<>();
             for(String word : abstractText) {
-                if(word!=null && vocab.hasToken(word))abstractWords.add(vocab.tokenFor(word));
+                if(word!=null && word.length() > 0)abstractWords.add(new VocabWord(0, word));
             }
         }
 
@@ -82,7 +59,7 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
         if(descriptionText.length >= Constants.MIN_WORDS_PER_SENTENCE) {
             List<VocabWord> descriptionWords = new ArrayList<>();
             for(String word : descriptionText) {
-                if(word!=null && vocab.hasToken(word))descriptionWords.add(vocab.tokenFor(word));
+                if(word!=null && word.length() > 0)descriptionWords.add(new VocabWord(0, word));
             }
         }
         return preIterator.iterator();
@@ -122,7 +99,8 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
                 Sequence<VocabWord> sequence = new Sequence<>(currentPatentIterator.next());
-                sequence.setSequenceLabel(new VocabWord(2,currentPatent));
+                sequence.setSequenceId(tagger.getAndIncrement());
+                sequence.setSequenceLabel(currentPatent);
                 return sequence;
             }
             // Check for more results in result set
@@ -141,6 +119,7 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public void reset() {
+        tagger.set(0);
         try {
             if(resultSet!=null && !resultSet.isClosed()) resultSet.close();
         } catch(SQLException sql) {
@@ -152,6 +131,7 @@ public class BasePatentIterator implements SequenceIterator<VocabWord> {
             sql.printStackTrace();
             throw new RuntimeException("UNABLE TO RESET QUERY");
         }
+        currentPatent=null;
         currentPatentIterator=null;
     }
 

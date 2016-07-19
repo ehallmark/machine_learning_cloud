@@ -1,15 +1,15 @@
 package seeding;
 
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.sequencevectors.sequence.SequenceElement;
-import org.deeplearning4j.models.sequencevectors.serialization.AbstractElementFactory;
+import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
 import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
 import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
+import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.WordVectorSerializer;
 import java.io.File;
@@ -23,8 +23,8 @@ import java.util.Arrays;
  */
 public class SeedPatentVectors {
     private int date;
-    private static final File paragraphVectorFile = new File(Constants.PARAGRAPH_VECTORS_FILE);
-    private SequenceVectors<VocabWord> paragraphVectors;
+    private static final File sequenceVectorsFile = new File(Constants.SEQUENCE_VECTORS_FILE);
+    private SequenceVectors<VocabWord> sequenceVectors;
     private SequenceIterator<VocabWord> iterator;
 
     public SeedPatentVectors(int startDate) throws Exception {
@@ -35,10 +35,11 @@ public class SeedPatentVectors {
 
         // Start on ParagraphVectors
         System.out.println("Starting Paragraph Vectors...");
-        if(!paragraphVectorFile.exists()) buildAndWriteParagraphVectors();
+        if(!sequenceVectorsFile.exists()) buildAndWriteParagraphVectors();
         else {
-            paragraphVectors = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), paragraphVectorFile);
+            sequenceVectors = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), sequenceVectorsFile);
         }
+
 
         System.out.println("Finished loading Paragraph Vector Model...");
         // Now write vectors to DB
@@ -82,15 +83,15 @@ public class SeedPatentVectors {
     private void printVector(String name, Double[] vector) {
         System.out.println(name+": "+Arrays.toString(vector));
     }
-    
+
     private Double[] computeAvgWordVectorsFrom(String sentence) {
         INDArray wordVector = null;
         if(sentence!=null) {
             int size = 0;
             for (String word : sentence.split("\\s+")) {
-                if (word == null || !paragraphVectors.hasWord(word)) continue;
-                if(wordVector==null) wordVector = paragraphVectors.getWordVectorMatrix(word);
-                else wordVector.add(paragraphVectors.getWordVectorMatrix(word));
+                if (word == null || !sequenceVectors.hasWord(word)) continue;
+                if(wordVector==null) wordVector = sequenceVectors.getWordVectorMatrix(word);
+                else wordVector.add(sequenceVectors.getWordVectorMatrix(word));
                 size++;
             }
             if (size > 0) wordVector.div(size);
@@ -110,13 +111,13 @@ public class SeedPatentVectors {
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
-        paragraphVectors = new SequenceVectors.Builder<VocabWord>()
+        sequenceVectors = new SequenceVectors.Builder<VocabWord>()
                 .seed(41)
                 .useAdaGrad(false)
                 .resetModel(true)
                 .batchSize(1000)
                 .trainElementsRepresentation(true)
-                .trainSequencesRepresentation(true)
+                .trainSequencesRepresentation(false)
                 .epochs(1)
                 .iterations(4)
                 .windowSize(7)
@@ -128,9 +129,9 @@ public class SeedPatentVectors {
                 .minLearningRate(0.0001)
                 .build();
 
-        paragraphVectors.fit();
+        sequenceVectors.fit();
 
-        WordVectorSerializer.writeSequenceVectors(paragraphVectors, new VocabWordFactory(), paragraphVectorFile);
+        WordVectorSerializer.writeSequenceVectors(sequenceVectors, new VocabWordFactory(), sequenceVectorsFile);
     }
 
     public static void main(String[] args) {

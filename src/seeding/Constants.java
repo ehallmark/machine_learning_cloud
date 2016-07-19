@@ -41,6 +41,7 @@ public class Constants {
 	public static final String GOOGLE_WORD_VECTORS_PATH = "GoogleNews-vectors-negative300.bin";
 	public static final String VALUABLE_PATENTS_CSV = "patent_value_labels.csv";
 	public static final String PARAGRAPH_VECTORS_FILE = "paragraph_vectors_model.txt";
+	public static final String SEQUENCE_VECTORS_FILE = "sequence_vectors_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_paragraph_vectors.txt";
 
 }
