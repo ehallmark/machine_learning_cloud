@@ -1,9 +1,7 @@
 package seeding;
 
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.deeplearning4j.text.documentiterator.LabelledDocument;
-import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,35 +10,32 @@ import java.util.*;
 /**
  * Created by ehallmark on 7/18/16.
  */
-public class BasePatentIterator implements LabelAwareIterator {
+public class BasePatentIterator implements LabelAwareSentenceIterator {
 
     private final int startDate;
     private ResultSet resultSet;
     private String currentPatent;
     private SentencePreProcessor preProcessor;
     private Iterator<String> currentPatentIterator;
-    private LabelsSource source;
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         this.preProcessor = new MyPreprocessor();
         Database.setupSeedConn();
-        reset();
-        setupLabelsSource();
-        reset();
-    }
-
-    public void setupLabelsSource() throws SQLException {
-        List<String> labels = Collections.synchronizedList(new LinkedList<>());
-        ResultSet rs = Database.getPatentNumbersAfter(startDate);
-        while(rs.next()) {
-            labels.add(rs.getString(1));
-        }
-        source = new LabelsSource(labels);
     }
 
     public void resetQuery() throws SQLException {
         resultSet = Database.getPatentVectorData(startDate);
+    }
+
+    @Override
+    public String currentLabel() {
+        return currentPatent;
+    }
+
+    @Override
+    public List<String> currentLabels() {
+        return Arrays.asList(currentPatent);
     }
 
 
@@ -79,7 +74,7 @@ public class BasePatentIterator implements LabelAwareIterator {
     }
 
     @Override
-    public boolean hasNextDocument() {
+    public boolean hasNext() {
         try {
             return ((currentPatentIterator == null || currentPatentIterator.hasNext()) || (resultSet == null || !(resultSet.isAfterLast() || resultSet.isLast())));
         } catch (SQLException sql) {
@@ -89,14 +84,11 @@ public class BasePatentIterator implements LabelAwareIterator {
     }
 
     @Override
-    public LabelledDocument nextDocument() {
+    public String nextSentence() {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                LabelledDocument doc = new LabelledDocument();
-                doc.setLabel(currentPatent);
-                doc.setContent(currentPatentIterator.next());
-                return doc;
+                return currentPatentIterator.next();
             }
             // Check for more results in result set
             resultSet.next();
@@ -104,7 +96,7 @@ public class BasePatentIterator implements LabelAwareIterator {
             setCurrentPatent();
             currentPatentIterator = processedSentenceIterator();
             //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
-            return nextDocument();
+            return nextSentence();
 
         } catch(SQLException sql) {
             sql.printStackTrace();
@@ -129,8 +121,18 @@ public class BasePatentIterator implements LabelAwareIterator {
     }
 
     @Override
-    public LabelsSource getLabelsSource() {
-        return source;
+    public void finish() {
+        Database.close();
+    }
+
+    @Override
+    public SentencePreProcessor getPreProcessor() {
+        return preProcessor;
+    }
+
+    @Override
+    public void setPreProcessor(SentencePreProcessor preProcessor) {
+        this.preProcessor=preProcessor;
     }
 
 

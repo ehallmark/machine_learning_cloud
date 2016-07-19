@@ -42,56 +42,24 @@ public class SeedPatentVectors {
         //tokenizerFactory.setTokenPreProcessor(str->str);
 
         // Create Iterator
-        iterator = new BasePatentIterator(date);
-
-        // Create or load existing Vocabulary
-        System.out.println("Getting Vocabulary...");
-        if(!vocabFile.exists()) buildAndWriteVocab();
-        else vocab = WordVectorSerializer.readVocabCache(vocabFile);
+        iterator = new BasicLabelAwareIterator.Builder(new BasePatentIterator(date)).build();
 
         // Start on ParagraphVectors
-        System.out.println("Getting Paragraph Vectors...");
+        System.out.println("Starting Paragraph Vectors...");
         if(!paragraphVectorFile.exists()) buildAndWriteParagraphVectors();
         else paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(paragraphVectorFile);
 
-    }
-
-    private void buildAndWriteVocab() throws IOException {
-        vocab = new AbstractCache.Builder<VocabWord>()
-                .hugeModelExpected(true)
-                .minElementFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .build();
-
-        SentenceTransformer transformer = new SentenceTransformer.Builder()
-                .iterator(iterator)
-                .tokenizerFactory(tokenizerFactory)
-                .build();
-
-        SequenceIterator<VocabWord> sequenceIterator = new AbstractSequenceIterator.Builder<>(transformer)
-                .build();
-
-        VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
-                .setTargetVocabCache(vocab)
-                .setStopWords(Arrays.asList(Constants.STOP_WORDS))
-                .fetchLabels(false)
-                .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .build();
-
-        constructor.buildJointVocabulary(false, true);
-        WordVectorSerializer.writeVocabCache(vocab,vocabFile);
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
         paragraphVectors = new ParagraphVectors.Builder()
                 .seed(41)
                 .useAdaGrad(false)
-                .resetModel(false)
-                .vocabCache(vocab)
+                .resetModel(true)
                 .batchSize(1000)
                 .trainWordVectors(true)
                 .epochs(1)
                 .iterations(5)
-                .labelsSource(iterator.getLabelsSource())
                 .tokenizerFactory(tokenizerFactory)
                 .windowSize(10)
                 .iterate(iterator)
