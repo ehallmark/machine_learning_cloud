@@ -1,6 +1,12 @@
 package seeding;
 
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.sequencevectors.sequence.SequenceElement;
+import org.deeplearning4j.models.sequencevectors.serialization.AbstractElementFactory;
+import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -18,16 +24,11 @@ import java.util.Arrays;
 public class SeedPatentVectors {
     private int date;
     private static final File paragraphVectorFile = new File(Constants.PARAGRAPH_VECTORS_FILE);
-    private ParagraphVectors paragraphVectors;
-    private TokenizerFactory tokenizerFactory;
-    private LabelAwareSentenceIterator iterator;
+    private SequenceVectors<VocabWord> paragraphVectors;
+    private SequenceIterator<VocabWord> iterator;
 
     public SeedPatentVectors(int startDate) throws Exception {
         this.date=startDate;
-
-        // Tokenizer Factor
-        tokenizerFactory = new DefaultTokenizerFactory();
-        //tokenizerFactory.setTokenPreProcessor(str->str);
 
         // Create Iterator
         iterator = new BasePatentIterator(date);
@@ -36,8 +37,7 @@ public class SeedPatentVectors {
         System.out.println("Starting Paragraph Vectors...");
         if(!paragraphVectorFile.exists()) buildAndWriteParagraphVectors();
         else {
-            paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(paragraphVectorFile);
-            paragraphVectors.setTokenizerFactory(tokenizerFactory);
+            paragraphVectors = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), paragraphVectorFile);
         }
 
         System.out.println("Finished loading Paragraph Vector Model...");
@@ -82,12 +82,7 @@ public class SeedPatentVectors {
     private void printVector(String name, Double[] vector) {
         System.out.println(name+": "+Arrays.toString(vector));
     }
-
-    // Deeplearning4j has not yet implemented ParagraphVectors#inferVector(String)
-    private Double[] getParagraphVectorMatrixFrom(String sentence) {
-        return toObject(paragraphVectors.inferVector(sentence).data().asDouble());
-    }
-
+    
     private Double[] computeAvgWordVectorsFrom(String sentence) {
         INDArray wordVector = null;
         if(sentence!=null) {
@@ -115,16 +110,15 @@ public class SeedPatentVectors {
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
-        paragraphVectors = new ParagraphVectors.Builder()
+        paragraphVectors = new SequenceVectors.Builder<VocabWord>()
                 .seed(41)
                 .useAdaGrad(false)
                 .resetModel(true)
                 .batchSize(1000)
-                .trainWordVectors(true)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 .epochs(1)
                 .iterations(4)
-                .tokenizerFactory(tokenizerFactory)
                 .windowSize(7)
                 .iterate(iterator)
                 .layerSize(Constants.VECTOR_LENGTH)
@@ -136,7 +130,7 @@ public class SeedPatentVectors {
 
         paragraphVectors.fit();
 
-        WordVectorSerializer.writeWordVectors(paragraphVectors, paragraphVectorFile);
+        WordVectorSerializer.writeSequenceVectors(paragraphVectors, new VocabWordFactory(), paragraphVectorFile);
     }
 
     public static void main(String[] args) {
