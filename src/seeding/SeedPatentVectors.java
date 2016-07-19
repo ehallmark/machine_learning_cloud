@@ -78,7 +78,7 @@ public class SeedPatentVectors {
     }
 
     private Double[] computeAvgWordVectorsFrom(String sentence) {
-        INDArray wordVector = Nd4j.zeros(Constants.VECTOR_LENGTH);
+        INDArray wordVector = Nd4j.zeros(paragraphVectors.getLayerSize());
         if(sentence!=null) {
             int size = 0;
             for (String word : sentence.split("\\s+")) {
