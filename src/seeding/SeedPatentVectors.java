@@ -95,7 +95,7 @@ public class SeedPatentVectors {
                 .seed(41)
                 .useAdaGrad(false)
                 .resetModel(false)
-                //.lookupTable(lookupTable)
+                .lookupTable(lookupTable)
                 .vocabCache(vocab)
                 .batchSize(1000)
                 .trainWordVectors(true)
@@ -110,6 +110,8 @@ public class SeedPatentVectors {
                 .learningRate(0.01)
                 .minLearningRate(0.0001)
                 .build();
+
+        paragraphVectors.fit();
 
         WordVectorSerializer.writeWordVectors(paragraphVectors, paragraphVectorFile);
     }
