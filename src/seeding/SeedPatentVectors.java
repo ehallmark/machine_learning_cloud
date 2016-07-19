@@ -5,11 +5,11 @@ import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIte
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import tools.WordVectorSerializer;
 import java.io.File;
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 
 /**
@@ -17,7 +17,7 @@ import java.util.Arrays;
  */
 public class SeedPatentVectors {
     private int date;
-    private static final File paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
+    private static final File paragraphVectorFile = new File(Constants.PARAGRAPH_VECTORS_FILE);
     private ParagraphVectors paragraphVectors;
     private TokenizerFactory tokenizerFactory;
     private LabelAwareSentenceIterator iterator;
@@ -46,30 +46,37 @@ public class SeedPatentVectors {
         int timeToCommit = 0;
         final int commitLength = 1000;
         ResultSet rs = Database.getPatentDataWithTitleAndDate(startDate);
-        while(rs.next()) {
-            timeToCommit++;
-            String pub_doc_number = rs.getString(1);
-            Integer pub_date = rs.getInt(2);
-            try {
-                Double[] invention_title = computeAvgWordVectorsFrom(rs.getString(3));
-                printVector("Invention Title",invention_title);
-                // Use average word vectors for now
-                //Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
-                Double[] abstract_vectors = computeAvgWordVectorsFrom(rs.getString(4));
-                printVector("Abstract",abstract_vectors);
-                //Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
-                Double[] description = computeAvgWordVectorsFrom(rs.getString(5));
-                printVector("Description",description);
+        try {
+            while (rs.next()) {
+                timeToCommit++;
+                String pub_doc_number = rs.getString(1);
+                Integer pub_date = rs.getInt(2);
+                try {
+                    Double[] invention_title = computeAvgWordVectorsFrom(rs.getString(3));
+                    printVector("Invention Title", invention_title);
+                    // Use average word vectors for now
+                    //Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
+                    Double[] abstract_vectors = computeAvgWordVectorsFrom(rs.getString(4));
+                    printVector("Abstract", abstract_vectors);
+                    //Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
+                    Double[] description = computeAvgWordVectorsFrom(rs.getString(5));
+                    printVector("Description", description);
 
-                //Database.insertPatentVectors(pub_doc_number,pub_date,invention_title,abstract_vectors,description);
-            } catch(Exception e) {
-                System.out.print("WHILE CALCULATING PATENT: "+pub_doc_number);
-                e.printStackTrace();
+                    // make sure nothing is null
+                    if (!(invention_title == null || abstract_vectors == null || description == null)) {
+                        Database.insertPatentVectors(pub_doc_number, pub_date, invention_title, abstract_vectors, description);
+                    }
+                } catch (Exception e) {
+                    System.out.print("WHILE CALCULATING PATENT: " + pub_doc_number);
+                    e.printStackTrace();
+                    if (e instanceof SQLException) throw new RuntimeException("Database Error!!"); // Termin
+                }
+                if (timeToCommit % commitLength == 0) Database.commit();
+                timeToCommit = (timeToCommit + 1) % commitLength;
             }
-            if(timeToCommit % commitLength == 0) Database.commit();
-            timeToCommit = (timeToCommit+1) % commitLength;
+        } finally {
+            Database.commit();
         }
-        Database.commit();
     }
 
     private void printVector(String name, Double[] vector) {
@@ -114,8 +121,8 @@ public class SeedPatentVectors {
                 .resetModel(true)
                 .batchSize(1000)
                 .trainWordVectors(true)
-                .epochs(1)
-                .iterations(5)
+                .epochs(2)
+                .iterations(3)
                 .tokenizerFactory(tokenizerFactory)
                 .windowSize(10)
                 .iterate(iterator)
