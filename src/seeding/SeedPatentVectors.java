@@ -17,7 +17,7 @@ import java.util.Arrays;
  */
 public class SeedPatentVectors {
     private int date;
-    private static final File paragraphVectorFile = new File(Constants.PARAGRAPH_VECTORS_FILE);
+    private static final File paragraphVectorFile = new File(Constants.COMPDB_PARAGRAPH_VECTORS);
     private ParagraphVectors paragraphVectors;
     private TokenizerFactory tokenizerFactory;
     private LabelAwareSentenceIterator iterator;
@@ -52,9 +52,13 @@ public class SeedPatentVectors {
             Integer pub_date = rs.getInt(2);
             try {
                 Double[] invention_title = computeAvgWordVectorsFrom(rs.getString(3));
+                printVector("Invention Title",invention_title);
                 Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
+                printVector("Abstract",abstract_vectors);
                 Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
-                Database.insertPatentVectors(pub_doc_number,pub_date,invention_title,abstract_vectors,description);
+                printVector("Description",description);
+
+                //Database.insertPatentVectors(pub_doc_number,pub_date,invention_title,abstract_vectors,description);
             } catch(Exception e) {
                 System.out.print("WHILE CALCULATING PATENT: "+pub_doc_number);
                 e.printStackTrace();
@@ -63,6 +67,10 @@ public class SeedPatentVectors {
             timeToCommit = (timeToCommit+1) % commitLength;
         }
         Database.commit();
+    }
+
+    private void printVector(String name, Double[] vector) {
+        System.out.println(name+": "+Arrays.toString(vector));
     }
 
     private Double[] getParagraphVectorMatrixFrom(String sentence) {
