@@ -21,7 +21,6 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         this.preProcessor = new MyPreprocessor();
-        Database.setupSeedConn();
     }
 
     public void resetQuery() throws SQLException {

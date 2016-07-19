@@ -7,7 +7,6 @@ import java.util.*;
 public class Database {
 	private static final String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://192.168.1.148/compdb_production?user=postgres&password=&tcpKeepAlive=true";
-	private final static String patentTable = "patent_vectors";
 	private static Connection seedConn;
 	private static Connection mainConn;
 	private static Connection compDBConn;
@@ -15,10 +14,11 @@ public class Database {
 	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) > 2";
 	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
 	private static final String patentVectorStatement = "SELECT pub_doc_number, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL AND description IS NOT NULL)";
+	private static final String patentVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL AND description IS NOT NULL && invention_title IS NOT NULL)";
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)) FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number) FROM patent_grant where pub_date > ? group by pub_date";
-
+	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_wv,abstract_pv,description_pv) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_wv,abstract_pv,description_pv)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
@@ -51,6 +51,24 @@ public class Database {
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
+	}
+
+	public static void insertPatentVectors(String pub_doc_number,int pub_date, Double[] invention_title, Double[] abstract_vectors, Double[] description) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement(insertPatentVectorsQuery);
+		Array invention_array = mainConn.createArrayOf("float8", invention_title);
+		Array abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
+		Array description_array = mainConn.createArrayOf("float8", description);
+		ps.setString(1, pub_doc_number);
+		ps.setInt(2, pub_date);
+		ps.setArray(3, invention_array);
+		ps.setArray(4, abstract_array);
+		ps.setArray(5, description_array);
+		ps.setInt(6, pub_date);
+		ps.setArray(7, invention_array);
+		ps.setArray(8, abstract_array);
+		ps.setArray(9, description_array);
+		ps.setString(10, pub_doc_number);
+		ps.executeUpdate();
 	}
 
 	public static ResultSet getPatentsAfter(int pubDate) throws SQLException {
@@ -87,15 +105,19 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static ResultSet getPatentNumbersAfter(int startDate) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patent_grant WHERE pub_date >= ?");
-		ps.setInt(1, startDate);
-		ps.setFetchSize(1000);
+	public static ResultSet getPatentDataWithTitleAndDate(int startDate) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(patentVectorWithTitleAndDateStatement);
+		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
+		ps.setInt(2,startDate);
+		ps.setFetchSize(5);
+		System.out.println(ps);
 		return ps.executeQuery();
 	}
 
+
 	public static int getNumberOfCompDBClassifications() throws SQLException {
-		PreparedStatement ps = compDBConn.prepareStatement("SELECT COUNT(DISTINCT id) FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY('{136,182,301,316,519,527}'::int[])");
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT COUNT(DISTINCT id) FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY(?)");
+		ps.setArray(1, compDBConn.createArrayOf("int4",Constants.BAD_TECHNOLOGY_IDS.toArray()));
 		System.out.println(ps);
 		ResultSet rs = ps.executeQuery();
 		if(rs.next()) {

@@ -1,38 +1,26 @@
 package seeding;
 
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
-import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
-import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-import org.deeplearning4j.text.documentiterator.BasicLabelAwareIterator;
-import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
-import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import tools.WordVectorSerializer;
-
 import java.io.File;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.util.Arrays;
-import java.util.logging.Logger;
 
 /**
  * Created by ehallmark on 7/18/16.
  */
 public class SeedPatentVectors {
     private int date;
-    private static final File vocabFile = new File(Constants.VOCAB_FILE);
     private static final File paragraphVectorFile = new File(Constants.PARAGRAPH_VECTORS_FILE);
-    private VocabCache<VocabWord> vocab;
     private ParagraphVectors paragraphVectors;
     private TokenizerFactory tokenizerFactory;
-    private LabelAwareIterator iterator;
+    private LabelAwareSentenceIterator iterator;
 
     public SeedPatentVectors(int startDate) throws Exception {
         this.date=startDate;
@@ -42,13 +30,67 @@ public class SeedPatentVectors {
         //tokenizerFactory.setTokenPreProcessor(str->str);
 
         // Create Iterator
-        iterator = new BasicLabelAwareIterator.Builder(new BasePatentIterator(date)).build();
+        iterator = new BasePatentIterator(date);
 
         // Start on ParagraphVectors
         System.out.println("Starting Paragraph Vectors...");
         if(!paragraphVectorFile.exists()) buildAndWriteParagraphVectors();
-        else paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(paragraphVectorFile);
+        else {
+            paragraphVectors = WordVectorSerializer.readParagraphVectorsFromText(paragraphVectorFile);
+            paragraphVectors.setTokenizerFactory(tokenizerFactory);
+        }
 
+
+        // Now write vectors to DB
+        Database.setupMainConn();
+        int timeToCommit = 0;
+        final int commitLength = 1000;
+        ResultSet rs = Database.getPatentDataWithTitleAndDate(startDate);
+        while(rs.next()) {
+            timeToCommit++;
+            String pub_doc_number = rs.getString(1);
+            Integer pub_date = rs.getInt(2);
+            try {
+                Double[] invention_title = computeAvgWordVectorsFrom(rs.getString(3));
+                Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
+                Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
+                Database.insertPatentVectors(pub_doc_number,pub_date,invention_title,abstract_vectors,description);
+            } catch(Exception e) {
+                System.out.print("WHILE CALCULATING PATENT: "+pub_doc_number);
+                e.printStackTrace();
+            }
+            if(timeToCommit % commitLength == 0) Database.commit();
+            timeToCommit = (timeToCommit+1) % commitLength;
+        }
+        Database.commit();
+    }
+
+    private Double[] getParagraphVectorMatrixFrom(String sentence) {
+        return toObject(paragraphVectors.inferVector(sentence).data().asDouble());
+    }
+
+    private Double[] computeAvgWordVectorsFrom(String sentence) {
+        INDArray wordVector = Nd4j.zeros(Constants.VECTOR_LENGTH);
+        if(sentence!=null) {
+            int size = 0;
+            for (String word : sentence.split("\\s+")) {
+                if (word == null || !paragraphVectors.hasWord(word)) continue;
+                wordVector.add(paragraphVectors.getWordVectorMatrix(word));
+                size++;
+            }
+            if (size > 0) wordVector.div(size);
+        }
+        return toObject(wordVector.data().asDouble());
+    }
+
+    private Double[] toObject(double[] primArray) {
+        Double[] vec = new Double[primArray.length];
+        int i = 0;
+        for(double d: primArray) {
+            vec[i] = d;
+            i++;
+        }
+        return vec;
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
@@ -77,9 +119,12 @@ public class SeedPatentVectors {
 
     public static void main(String[] args) {
         try {
+            Database.setupSeedConn();
             new SeedPatentVectors(20050000);
         } catch(Exception e) {
             e.printStackTrace();
+        } finally {
+            Database.close();
         }
     }
 
