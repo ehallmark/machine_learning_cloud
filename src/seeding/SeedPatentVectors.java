@@ -92,9 +92,10 @@ public class SeedPatentVectors {
 
 
         paragraphVectors = new ParagraphVectors.Builder()
+                .seed(41)
                 .useAdaGrad(false)
                 .resetModel(false)
-                .lookupTable(lookupTable)
+                //.lookupTable(lookupTable)
                 .vocabCache(vocab)
                 .batchSize(1000)
                 .trainWordVectors(true)
