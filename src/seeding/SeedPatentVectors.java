@@ -82,7 +82,6 @@ public class SeedPatentVectors {
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
-        iterator.reset();
         paragraphVectors = new ParagraphVectors.Builder()
                 .seed(41)
                 .useAdaGrad(false)
@@ -92,6 +91,7 @@ public class SeedPatentVectors {
                 .trainWordVectors(true)
                 .epochs(1)
                 .iterations(5)
+                .labelsSource(iterator.getLabelsSource())
                 .tokenizerFactory(tokenizerFactory)
                 .windowSize(10)
                 .iterate(iterator)
