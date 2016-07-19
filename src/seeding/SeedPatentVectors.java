@@ -53,9 +53,12 @@ public class SeedPatentVectors {
             try {
                 Double[] invention_title = computeAvgWordVectorsFrom(rs.getString(3));
                 printVector("Invention Title",invention_title);
-                Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
+                // Use average word vectors for now
+                //Double[] abstract_vectors = getParagraphVectorMatrixFrom(rs.getString(4));
+                Double[] abstract_vectors = computeAvgWordVectorsFrom(rs.getString(4));
                 printVector("Abstract",abstract_vectors);
-                Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
+                //Double[] description = getParagraphVectorMatrixFrom(rs.getString(5));
+                Double[] description = computeAvgWordVectorsFrom(rs.getString(5));
                 printVector("Description",description);
 
                 //Database.insertPatentVectors(pub_doc_number,pub_date,invention_title,abstract_vectors,description);
@@ -73,6 +76,7 @@ public class SeedPatentVectors {
         System.out.println(name+": "+Arrays.toString(vector));
     }
 
+    // Deeplearning4j has not yet implemented ParagraphVectors#inferVector(String)
     private Double[] getParagraphVectorMatrixFrom(String sentence) {
         return toObject(paragraphVectors.inferVector(sentence).data().asDouble());
     }
