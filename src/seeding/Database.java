@@ -77,6 +77,13 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	public static ResultSet getPatentNumbersAfter(int startDate) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patent_grant WHERE pub_date >= ?");
+		ps.setInt(1, startDate);
+		ps.setFetchSize(1000);
+		return ps.executeQuery();
+	}
+
 	public static List<String> getDistinctClassifications() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(distinctClassificationsStatement);
 		ps.setFetchSize(100);

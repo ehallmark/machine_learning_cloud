@@ -42,8 +42,7 @@ public class SeedPatentVectors {
         //tokenizerFactory.setTokenPreProcessor(str->str);
 
         // Create Iterator
-        iterator = new BasicLabelAwareIterator.Builder(new BasePatentIterator(date))
-                .build();
+        iterator = new BasePatentIterator(date);
 
         // Create or load existing Vocabulary
         System.out.println("Getting Vocabulary...");

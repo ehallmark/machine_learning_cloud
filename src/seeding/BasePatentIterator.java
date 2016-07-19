@@ -1,7 +1,9 @@
 package seeding;
 
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,67 +12,57 @@ import java.util.*;
 /**
  * Created by ehallmark on 7/18/16.
  */
-public class BasePatentIterator implements LabelAwareSentenceIterator {
+public class BasePatentIterator implements LabelAwareIterator {
 
     private final int startDate;
     private ResultSet resultSet;
     private String currentPatent;
     private SentencePreProcessor preProcessor;
     private Iterator<String> currentPatentIterator;
+    private LabelsSource source;
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         this.preProcessor = new MyPreprocessor();
         Database.setupSeedConn();
+        reset();
+        setupLabelsSource();
+        reset();
+    }
+
+    public void setupLabelsSource() throws SQLException {
+        List<String> labels = new LinkedList<>();
+        ResultSet rs = Database.getPatentNumbersAfter(startDate);
+        while(rs.next()) {
+            labels.add(rs.getString(1));
+        }
+        source = new LabelsSource(labels);
     }
 
     public void resetQuery() throws SQLException {
         resultSet = Database.getPatentVectorData(startDate);
     }
 
-    @Override
-    public String currentLabel() {
-        return currentPatent;
+
+    protected void setCurrentPatent() throws SQLException {
+        currentPatent = resultSet.getString(1);
     }
 
-    @Override
-    public List<String> currentLabels() {
-        return null;
-    }
+    protected Iterator<String> processedSentenceIterator() throws SQLException {
+        List<String> preIterator = new LinkedList<>();
 
-    @Override
-    public String nextSentence() {
-        try {
-            // Check patent iterator
-            if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                return currentPatentIterator.next();
-            }
-            // Check for more results in result set
-            resultSet.next();
-            currentPatent = resultSet.getString(1);
-            List<String> preIterator = new LinkedList<>();
+        // Abstract
+        String abstractText = preProcessor.preProcess(resultSet.getString(2));
+        if(!shouldRemoveSentence(abstractText))preIterator.add(abstractText);
 
-            // Abstract
-            String abstractText = preProcessor.preProcess(resultSet.getString(2));
-            if(!removeSentence(abstractText))preIterator.add(abstractText);
-
-            // Description
-            String descriptionText = preProcessor.preProcess(resultSet.getString(3));
-            if(!removeSentence(descriptionText))preIterator.add(descriptionText.substring(0, descriptionText.lastIndexOf(" ")));
-
-            currentPatentIterator = preIterator.iterator();
-            //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
-            return nextSentence();
-
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-            throw new RuntimeException("SQL ERROR");
-        }
+        // Description
+        String descriptionText = preProcessor.preProcess(resultSet.getString(3));
+        if(!shouldRemoveSentence(descriptionText))preIterator.add(descriptionText.substring(0, descriptionText.lastIndexOf(" ")));
+        return preIterator.iterator();
     }
 
 
-
-    public boolean removeSentence(String str) {
+    public boolean shouldRemoveSentence(String str) {
         if(str==null)return true;
         boolean wasChar = false;
         int wordCount = 0;
@@ -87,12 +79,36 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNextDocument() {
         try {
             return ((currentPatentIterator == null || currentPatentIterator.hasNext()) || (resultSet == null || !(resultSet.isAfterLast() || resultSet.isLast())));
         } catch (SQLException sql) {
             sql.printStackTrace();
             throw new RuntimeException("SQL ERROR WHILE ITERATING");
+        }
+    }
+
+    @Override
+    public LabelledDocument nextDocument() {
+        try {
+            // Check patent iterator
+            if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
+                LabelledDocument doc = new LabelledDocument();
+                doc.setLabel(currentPatent);
+                doc.setContent(currentPatentIterator.next());
+                return doc;
+            }
+            // Check for more results in result set
+            resultSet.next();
+
+            setCurrentPatent();
+            currentPatentIterator = processedSentenceIterator();
+            //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
+            return nextDocument();
+
+        } catch(SQLException sql) {
+            sql.printStackTrace();
+            throw new RuntimeException("SQL ERROR");
         }
     }
 
@@ -113,17 +129,9 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     }
 
     @Override
-    public void finish() {
-        Database.close();
+    public LabelsSource getLabelsSource() {
+        return source;
     }
 
-    @Override
-    public SentencePreProcessor getPreProcessor() {
-        return preProcessor;
-    }
 
-    @Override
-    public void setPreProcessor(SentencePreProcessor preProcessor) {
-        this.preProcessor=preProcessor;
-    }
 }
