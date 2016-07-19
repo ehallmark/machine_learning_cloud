@@ -125,7 +125,7 @@ public class LearnCompdbWordVectors {
 
         if(!paragraphVectorFile.exists()) {
             // Otherwise build from scratch
-            paragraphVectors = new ParagraphBuilder()
+            paragraphVectors = new ParagraphVectors.Builder()
                     .resetModel(true)
                     .seed(41)
                     .tokenizerFactory(tokenizerFactory)
