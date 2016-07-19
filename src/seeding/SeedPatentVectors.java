@@ -40,7 +40,7 @@ public class SeedPatentVectors {
             paragraphVectors.setTokenizerFactory(tokenizerFactory);
         }
 
-
+        System.out.println("Finished loading Paragraph Vector Model...");
         // Now write vectors to DB
         Database.setupMainConn();
         int timeToCommit = 0;
