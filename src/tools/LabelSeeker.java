@@ -1,4 +1,4 @@
-package learning;
+package tools;
 
 import lombok.NonNull;
 import org.deeplearning4j.berkeley.Pair;

@@ -5,10 +5,12 @@ import java.util.*;
 
 
 public class Database {
-	private static String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
+	private static final String patentDBUrl = "jdbc:postgresql://192.168.1.148/patentdb?user=postgres&password=&tcpKeepAlive=true";
+	private static final String compDBUrl = "jdbc:postgresql://192.168.1.148/compdb_production?user=postgres&password=&tcpKeepAlive=true";
 	private final static String patentTable = "patent_vectors";
 	private static Connection seedConn;
 	private static Connection mainConn;
+	private static Connection compDBConn;
 	private static final String addOrUpdateWord = "INSERT INTO patent_words (word,count) VALUES (?,1) ON CONFLICT (word) DO UPDATE SET (count)=(patent_words.count+1) WHERE patent_words.word=?";
 	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) > 2";
 	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
@@ -16,6 +18,8 @@ public class Database {
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)) FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number) FROM patent_grant where pub_date > ? group by pub_date";
+
+
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
 		mainConn.setAutoCommit(false);
@@ -24,6 +28,11 @@ public class Database {
 	public static void setupSeedConn() throws SQLException {
 		seedConn = DriverManager.getConnection(patentDBUrl);
 		seedConn.setAutoCommit(false);
+	}
+
+	public static void setupCompDBConn() throws SQLException {
+		compDBConn = DriverManager.getConnection(compDBUrl);
+		compDBConn.setAutoCommit(false);
 	}
 
 	public static void commit() {
@@ -36,8 +45,9 @@ public class Database {
 
 	public static void close(){
 		try {
-			if(mainConn!=null)mainConn.close();
-			if(seedConn!=null)seedConn.close();
+			if(mainConn!=null && !mainConn.isClosed())mainConn.close();
+			if(seedConn!=null && !seedConn.isClosed())seedConn.close();
+			if(compDBConn!=null && !compDBConn.isClosed())compDBConn.close();
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
@@ -82,6 +92,17 @@ public class Database {
 		ps.setInt(1, startDate);
 		ps.setFetchSize(1000);
 		return ps.executeQuery();
+	}
+
+	public static int getNumberOfCompDBClassifications() throws SQLException {
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT COUNT(DISTINCT id) FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY('{136,182,301,316,519,527}'::int[])");
+		System.out.println(ps);
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) {
+			return rs.getInt(1);
+		} else {
+			throw new RuntimeException("Unable to get number of compdb classifications!");
+		}
 	}
 
 	public static List<String> getDistinctClassifications() throws SQLException {

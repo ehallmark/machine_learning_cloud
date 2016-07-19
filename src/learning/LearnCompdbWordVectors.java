@@ -169,6 +169,8 @@ public class LearnCompdbWordVectors {
         //app.loadOrCreateAndSaveVocabCache();
         //app.loadOrCreateAndSaveWordVectors();
         app.loadOrCreateAndSaveParagraphVectors();
+
+
     }
 
 }
