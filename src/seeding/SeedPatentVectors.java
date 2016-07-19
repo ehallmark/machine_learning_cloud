@@ -83,19 +83,11 @@ public class SeedPatentVectors {
     }
 
     private void buildAndWriteParagraphVectors() throws IOException {
-        WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
-                .cache(vocab)
-                .vectorLength(Constants.VECTOR_LENGTH)
-                .useAdaGrad(false)
-                .seed(41)
-                .build();
-
-
+        iterator.reset();
         paragraphVectors = new ParagraphVectors.Builder()
                 .seed(41)
                 .useAdaGrad(false)
                 .resetModel(false)
-                .lookupTable(lookupTable)
                 .vocabCache(vocab)
                 .batchSize(1000)
                 .trainWordVectors(true)
