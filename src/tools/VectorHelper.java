@@ -29,6 +29,8 @@ public class VectorHelper {
 
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
 
+            if(tokens.isEmpty()) return null;
+
             final int bucketSize = Math.max(1,tokens.size()/Constants.NUM_ROWS_OF_WORD_VECTORS);
             for(int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
                 int begin = Math.max(0, i*bucketSize-padding);
@@ -46,7 +48,7 @@ public class VectorHelper {
         Double[] data = null;
         if(sentence!=null) {
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
-            data = toObject(centroidVector(wordVectors, tokens).data().asDouble());
+            if(!tokens.isEmpty())data = toObject(centroidVector(wordVectors, tokens).data().asDouble());
         }
         return data;
     }
