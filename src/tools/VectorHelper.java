@@ -5,9 +5,13 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.INDArrayIndex;
+import org.nd4j.linalg.indexing.IntervalIndex;
+import org.nd4j.linalg.indexing.PointIndex;
 import seeding.Constants;
 import seeding.MyPreprocessor;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -22,7 +26,7 @@ public class VectorHelper {
     }
 
     public static Double[][] compute2DAvgWordVectorsFrom(WordVectors wordVectors, String sentence) {
-        Double[][] data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
+        Double[][] data = null;
 
         if(sentence!=null) {
             final int padding = 2;
@@ -30,6 +34,8 @@ public class VectorHelper {
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
 
             if(tokens.isEmpty()) return null;
+
+            data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
 
             final int bucketSize = Math.max(1,tokens.size()/Constants.NUM_ROWS_OF_WORD_VECTORS);
             for(int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
@@ -43,6 +49,45 @@ public class VectorHelper {
 
     }
 
+    public static Double[][] createAndMerge2DWordVectors(WordVectors wordVectors, String[] sentences) {
+        if(sentences==null)return null;
+        Double[][] data;
+
+        List<INDArray> validSentences = new ArrayList<>(sentences.length);
+
+        for(String sentence : sentences) {
+            List<String> tokens = createAndPrefilterTokens(wordVectors, sentence);
+            if(!tokens.isEmpty()) validSentences.add(centroidVector(wordVectors, tokens));
+        }
+
+        INDArray allSentences = Nd4j.create(validSentences.size(), Constants.NUM_ROWS_OF_WORD_VECTORS, Constants.VECTOR_LENGTH);
+        AtomicInteger cnt = new AtomicInteger(0);
+
+        if(validSentences.isEmpty()) return null;
+
+        validSentences.forEach(sentence->{
+            INDArrayIndex[] indices = new INDArrayIndex[]{
+                    new PointIndex(cnt.getAndIncrement()),
+                    new IntervalIndex(true, 1),
+                    new IntervalIndex(true, 1)
+            };
+            indices[1].init(0, Constants.NUM_ROWS_OF_WORD_VECTORS);
+            indices[2].init(0, Constants.VECTOR_LENGTH);
+            allSentences.put(indices,sentence);
+        });
+
+        data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
+
+        INDArray mean = allSentences.mean(0);
+
+        if(!mean.isMatrix()) throw new RuntimeException("DIMENSION HAS TO BE 2!!!!");
+
+        for(int row = 0; row < Constants.NUM_ROWS_OF_WORD_VECTORS; row++) {
+            Double[] innerRow = toObject(mean.getRow(0).data().asDouble());
+            data[row] = innerRow;
+        }
+        return data;
+    }
 
     public static Double[] computeAvgWordVectorsFrom(WordVectors wordVectors, String sentence) {
         Double[] data = null;

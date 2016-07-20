@@ -16,8 +16,8 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import tools.WordVectorSerializer;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/18/16.
@@ -72,29 +72,25 @@ public class SeedPatentVectors {
         final int commitLength = 1000;
         long startTime = System.currentTimeMillis();
         AvgWordVectorIterator vectorIterator = new AvgWordVectorIterator(wordVectors, date);
+        AtomicInteger count = new AtomicInteger(0);
         try {
             while (vectorIterator.hasNext()) {
                 timeToCommit++;
                 PatentVectors patent = vectorIterator.next();
-                System.out.println(patent.getPubDocNumber());
-                try {
-                    // make sure nothing is null
-                    if (patent.isValid()) {
-                        Database.insertPatentVectors(patent.getPubDocNumber(), patent.getPubDate(),
-                                patent.getTitleWordVectors(), patent.getAbstractWordVectors(), patent.getDescriptionWordVectors());
+                // make sure something is not null
+                if (patent.isValid()) {
+                    Database.insertPatentVectors(patent.getPubDocNumber(), patent.getPubDate(),
+                            patent.getTitleWordVectors(), patent.getAbstractWordVectors(), patent.getDescriptionWordVectors());
+
+                    if (timeToCommit % commitLength == 0) {
+                        Database.commit();
+                        long endTime = System.currentTimeMillis();
+                        System.out.println("Seconds to complete 1000 patents: " + new Double(endTime - startTime) / 1000);
+                        startTime = endTime;
                     }
-                } catch (Exception e) {
-                    System.out.print("WHILE CALCULATING PATENT: " + patent.getPubDocNumber());
-                    e.printStackTrace();
-                    if (e instanceof SQLException) throw new RuntimeException("Database Error!!"); // Termin
+                    timeToCommit = (timeToCommit + 1) % commitLength;
                 }
-                if (timeToCommit % commitLength == 0) {
-                    Database.commit();
-                    long endTime = System.currentTimeMillis();
-                    System.out.println("Seconds to complete 1000 patents: "+new Double(endTime-startTime)/1000);
-                    startTime = endTime;
-                }
-                timeToCommit = (timeToCommit + 1) % commitLength;
+                System.out.println(count.getAndIncrement());
             }
         } finally {
             Database.commit();

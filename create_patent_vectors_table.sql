@@ -1,7 +1,5 @@
 \connect patentdb
 
-DROP TABLE IF EXISTS patent_vectors;
-
 CREATE TABLE patent_vectors (
     pub_doc_number VARCHAR(10) PRIMARY KEY,
     pub_date INTEGER,

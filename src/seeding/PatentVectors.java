@@ -48,7 +48,7 @@ public class PatentVectors {
     }
 
     public boolean isValid() {
-        return (descriptionWordVectors!=null && abstractWordVectors!=null && titleWordVectors!=null && pubDate!=null && pubDocNumber!=null);
+        return ((descriptionWordVectors!=null || abstractWordVectors!=null || titleWordVectors!=null) && pubDate!=null && pubDocNumber!=null);
     }
 
 }

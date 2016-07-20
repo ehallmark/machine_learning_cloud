@@ -21,6 +21,7 @@ public class Database {
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
+	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claim_vectors) VALUES (?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claim_vectors)=(?,?) WHERE patent_vectors.pub_doc_number=?";
 
 
 	public static void setupMainConn() throws SQLException {
@@ -56,11 +57,28 @@ public class Database {
 		}
 	}
 
+	public static void insertClaims(String pubDocNumber, Integer pubDate, Double[][] claimVector) throws SQLException {
+		if(claimVector==null) return;
+		PreparedStatement ps = mainConn.prepareStatement(insertClaimsVectorQuery);
+		Array claimArray = null;
+		if(claimVector!=null) claimArray = mainConn.createArrayOf("float8", claimVector);
+		ps.setString(1, pubDocNumber);
+		ps.setInt(2, pubDate);
+		ps.setArray(3, claimArray);
+		ps.setInt(4, pubDate);
+		ps.setArray(5, claimArray);
+		ps.setString(6, pubDocNumber);
+		ps.executeUpdate();
+	}
+
 	public static void insertClassifications(String pubDocNumber, Integer pubDate, Double[] classSoftMax, Double[] classVector, Double[] subClassVector) throws SQLException{
 		PreparedStatement ps = mainConn.prepareStatement(insertClassificationVectorsQuery);
-		Array softMaxArray = mainConn.createArrayOf("float8", classSoftMax);
-		Array classArray = mainConn.createArrayOf("float8", classVector);
-		Array subClassArray = mainConn.createArrayOf("float8", subClassVector);
+		Array softMaxArray = null;
+		if(classSoftMax!=null) softMaxArray = mainConn.createArrayOf("float8", classSoftMax);
+		Array classArray = null;
+		if(classVector!=null) classArray = mainConn.createArrayOf("float8", classVector);
+		Array subClassArray = null;
+		if(subClassVector!=null) subClassArray = mainConn.createArrayOf("float8", subClassVector);
 		ps.setString(1, pubDocNumber);
 		ps.setInt(2, pubDate);
 		ps.setArray(3, softMaxArray);
@@ -76,9 +94,12 @@ public class Database {
 
 	public static void insertPatentVectors(String pub_doc_number,int pub_date, Double[] invention_title, Double[][] abstract_vectors, Double[][] description) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement(insertPatentVectorsQuery);
-		Array invention_array = mainConn.createArrayOf("float8", invention_title);
-		Array abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
-		Array description_array = mainConn.createArrayOf("float8", description);
+		Array invention_array = null;
+		if(invention_title!=null) invention_array = mainConn.createArrayOf("float8", invention_title);
+		Array abstract_array = null;
+		if(abstract_vectors!=null) abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
+		Array description_array = null;
+		if(description!=null) description_array = mainConn.createArrayOf("float8", description);
 		ps.setString(1, pub_doc_number);
 		ps.setInt(2, pub_date);
 		ps.setArray(3, invention_array);
@@ -102,6 +123,14 @@ public class Database {
 
 	public static ResultSet getClassificationsFromPatents(Array patentArray) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(classificationsFromPatents);
+		ps.setArray(1,patentArray);
+		ps.setFetchSize(5);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet getClaimsFromPatents(Array patentArray) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(claimsFromPatents);
 		ps.setArray(1,patentArray);
 		ps.setFetchSize(5);
 		System.out.println(ps);
