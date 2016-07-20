@@ -3,7 +3,7 @@
 DROP TABLE IF EXISTS patent_vectors;
 
 CREATE TABLE patent_vectors (
-    pub_doc_number INTEGER PRIMARY KEY,
+    pub_doc_number VARCHAR(10) PRIMARY KEY,
     pub_date INTEGER,
     abstract_vectors  DOUBLE PRECISION[][],
     description_vectors DOUBLE PRECISION[][],
