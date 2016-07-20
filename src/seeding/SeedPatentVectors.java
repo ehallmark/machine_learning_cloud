@@ -2,6 +2,8 @@ package seeding;
 
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
+import org.deeplearning4j.models.embeddings.learning.ElementsLearningAlgorithm;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
@@ -15,11 +17,9 @@ import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
 import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.WordVectorSerializer;
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
@@ -141,8 +141,9 @@ public class SeedPatentVectors {
                 .layerSize(Constants.VECTOR_LENGTH)
                 .stopWords(Arrays.asList(Constants.STOP_WORDS))
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .learningRate(0.01)
+                .learningRate(0.0025)
                 .minLearningRate(0.0001)
+                .sampling(0.0001)
                 .build();
 
         wordVectors.fit();

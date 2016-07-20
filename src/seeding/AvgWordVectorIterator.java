@@ -6,12 +6,12 @@ import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/20/16.
@@ -32,7 +32,7 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
     }
 
     protected void resetQuery() throws SQLException {
-        resultSet = Database.getPatentDataWithClassifications(startDate);
+        resultSet = Database.getPatentDataWithTitleAndDate(startDate);
     }
 
     protected PatentVectors getPatentVectors() throws SQLException {
@@ -65,6 +65,7 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
         if(sentence!=null) {
             final int padding = 2;
             List<String> tokens = tokenizerFactory.create(sentence).getTokens();
+
             // prefilter
             tokens.removeIf(token->(token==null || !wordVectors.hasWord(token)));
 
@@ -72,24 +73,27 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
             for(int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
                 int begin = Math.max(0, i*bucketSize-padding);
                 int end = Math.min(tokens.size(), i*bucketSize+bucketSize+padding);
-                int size = 0;
-                INDArray wordVector = null;
-                for (String word : tokens.subList(begin,end)) {
-                    if(wordVector==null) wordVector = wordVectors.getWordVectorMatrix(word);
-                    else wordVector.add(wordVectors.getWordVectorMatrix(word));
-                    size++;
-                }
-                if (size > 0) {
-                    wordVector.div(size);
-                    data[i]= toObject(wordVector.data().asDouble());
-                }
+                INDArray wordVector = centroidVector(tokens.subList(begin, end));
+                data[i]= toObject(wordVector.data().asDouble());
             }
-
         }
         return data;
+
+    }
+
+    // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
+    private INDArray centroidVector(List<String> tokens) {
+        INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
+        AtomicInteger cnt = new AtomicInteger(0);
+        for (String token : tokens) {
+            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token));
+        }
+        INDArray mean = allWords.mean(0);
+        return mean;
     }
 
     private Double[] toObject(double[] primArray) {
+        if(primArray==null) return null;
         Double[] vec = new Double[primArray.length];
         int i = 0;
         for(double d: primArray) {
