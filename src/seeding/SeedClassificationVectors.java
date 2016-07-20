@@ -76,9 +76,12 @@ public class SeedClassificationVectors {
                         startTime = endTime;
                     }
                     timeToCommit = (timeToCommit + 1) % commitLength;
+                    System.out.println(count.getAndIncrement());
+
+                } else {
+                    System.out.println("-");
                 }
 
-                System.out.println(count.getAndIncrement());
 
             }
             Database.commit();
