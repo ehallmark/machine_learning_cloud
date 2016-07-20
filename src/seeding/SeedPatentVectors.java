@@ -75,7 +75,7 @@ public class SeedPatentVectors {
                 timeToCommit++;
                 PatentVectors patent = vectorIterator.next();
                 System.out.println(patent.getPubDocNumber());
-                printVector("Title", patent.getTitleWordVectors());
+                printVector("Title", new Double[][]{patent.getTitleWordVectors()});
                 try {
                     // make sure nothing is null
                     if (patent.isValid()) {
@@ -154,7 +154,7 @@ public class SeedPatentVectors {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new SeedPatentVectors(20050000);
+            new SeedPatentVectors(Constants.START_DATE);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

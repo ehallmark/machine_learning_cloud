@@ -16,9 +16,12 @@ public class Database {
 	private static final String patentVectorStatement = "SELECT pub_doc_number, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String patentVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL and description IS NOT NULL AND invention_title IS NOT NULL)";
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
-	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)) FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
-	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number) FROM patent_grant where pub_date > ? group by pub_date";
+	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)), array_to_string(array_agg(class), ' '), array_to_string(array_agg(subclass), ' ') FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
+	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL AND char_length(claim_text) > 50 group by pub_doc_number";
+	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
+	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
+
 
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
@@ -53,7 +56,25 @@ public class Database {
 		}
 	}
 
-	public static void insertPatentVectors(String pub_doc_number,int pub_date, Double[][] invention_title, Double[][] abstract_vectors, Double[][] description) throws SQLException {
+	public static void insertClassifications(String pubDocNumber, Integer pubDate, Double[] classSoftMax, Double[] classVector, Double[] subClassVector) throws SQLException{
+		PreparedStatement ps = mainConn.prepareStatement(insertClassificationVectorsQuery);
+		Array softMaxArray = mainConn.createArrayOf("float8", classSoftMax);
+		Array classArray = mainConn.createArrayOf("float8", classVector);
+		Array subClassArray = mainConn.createArrayOf("float8", subClassVector);
+		ps.setString(1, pubDocNumber);
+		ps.setInt(2, pubDate);
+		ps.setArray(3, softMaxArray);
+		ps.setArray(4, classArray);
+		ps.setArray(5, subClassArray);
+		ps.setInt(6, pubDate);
+		ps.setArray(7, softMaxArray);
+		ps.setArray(8, classArray);
+		ps.setArray(9, subClassArray);
+		ps.setString(10, pubDocNumber);
+		ps.executeUpdate();
+	}
+
+	public static void insertPatentVectors(String pub_doc_number,int pub_date, Double[] invention_title, Double[][] abstract_vectors, Double[][] description) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement(insertPatentVectorsQuery);
 		Array invention_array = mainConn.createArrayOf("float8", invention_title);
 		Array abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
@@ -76,15 +97,6 @@ public class Database {
 		ps.setInt(1, pubDate);
 		ps.setFetchSize(10);
 		System.out.println(ps);
-		return ps.executeQuery();
-	}
-
-	public static ResultSet getClassificationsAndTitleFromList(List<String> list) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("SELECT invention_title, array_agg(distinct class), array_agg(distinct subclass) from patent_grant as p join patent_grant_uspto_classification as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) and q.pub_doc_number=ANY(?) AND invention_title is not null GROUP BY p.pub_doc_number");
-		Array docNums = seedConn.createArrayOf("varchar", list.toArray());
-		ps.setArray(1, docNums);
-		ps.setArray(2, docNums);
-		ps.setFetchSize(10);
 		return ps.executeQuery();
 	}
 

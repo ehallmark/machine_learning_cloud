@@ -1,17 +1,13 @@
 package seeding;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
-import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+import tools.VectorHelper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/20/16.
@@ -19,15 +15,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class AvgWordVectorIterator implements Iterator<PatentVectors> {
     private final int startDate;
     private ResultSet resultSet;
-    private TokenizerFactory tokenizerFactory;
+    private static TokenizerFactory tokenizerFactory;
+    static {
+        tokenizerFactory=new DefaultTokenizerFactory();
+        tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
+    }
     private WordVectors wordVectors;
-    // used to tag each sequence with own Id
 
     public AvgWordVectorIterator(WordVectors wordVectors, int startDate) throws SQLException {
         this.wordVectors=wordVectors;
         this.startDate=startDate;
-        tokenizerFactory=new DefaultTokenizerFactory();
-        tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         reset();
     }
 
@@ -46,61 +43,17 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
 
         // Invention Title
         String titleText = resultSet.getString(3);
-        if(!shouldRemoveSentence(titleText)) p.setTitleWordVectors(computeAvgWordVectorsFrom(titleText));
+        if(!shouldRemoveSentence(titleText)) p.setTitleWordVectors(VectorHelper.computeAvgWordVectorsFrom(wordVectors,titleText));
 
         // Abstract
         String abstractText = resultSet.getString(4);
-        if(!shouldRemoveSentence(abstractText)) p.setAbstractWordVectors(computeAvgWordVectorsFrom(abstractText));
+        if(!shouldRemoveSentence(abstractText)) p.setAbstractWordVectors(VectorHelper.compute2DAvgWordVectorsFrom(wordVectors,abstractText));
 
         // Description
         String descriptionText = resultSet.getString(5);
-        if(!shouldRemoveSentence(descriptionText)) p.setDescriptionWordVectors(computeAvgWordVectorsFrom(descriptionText));
+        if(!shouldRemoveSentence(descriptionText)) p.setDescriptionWordVectors(VectorHelper.compute2DAvgWordVectorsFrom(wordVectors,descriptionText));
 
         return p;
-    }
-
-    private Double[][] computeAvgWordVectorsFrom(String sentence) {
-        Double[][] data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
-
-        if(sentence!=null) {
-            final int padding = 2;
-            List<String> tokens = tokenizerFactory.create(sentence).getTokens();
-
-            // prefilter
-            tokens.removeIf(token->(token==null || !wordVectors.hasWord(token)));
-
-            final int bucketSize = Math.max(1,tokens.size()/Constants.NUM_ROWS_OF_WORD_VECTORS);
-            for(int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
-                int begin = Math.max(0, i*bucketSize-padding);
-                int end = Math.min(tokens.size(), i*bucketSize+bucketSize+padding);
-                INDArray wordVector = centroidVector(tokens.subList(begin, end));
-                data[i]= toObject(wordVector.data().asDouble());
-            }
-        }
-        return data;
-
-    }
-
-    // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
-    private INDArray centroidVector(List<String> tokens) {
-        INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
-        AtomicInteger cnt = new AtomicInteger(0);
-        for (String token : tokens) {
-            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token));
-        }
-        INDArray mean = allWords.mean(0);
-        return mean;
-    }
-
-    private Double[] toObject(double[] primArray) {
-        if(primArray==null) return null;
-        Double[] vec = new Double[primArray.length];
-        int i = 0;
-        for(double d: primArray) {
-            vec[i] = d;
-            i++;
-        }
-        return vec;
     }
 
     protected boolean shouldRemoveSentence(String str) {
@@ -114,7 +67,7 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
             } else if(Character.isAlphabetic(c)) {
                 wasChar = true;
             }
-            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return false;
+            if(wordCount >= 1) return false;
         }
         return true;
     }

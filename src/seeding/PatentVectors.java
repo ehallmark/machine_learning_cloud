@@ -4,7 +4,7 @@ package seeding;
  * Created by ehallmark on 7/20/16.
  */
 public class PatentVectors {
-    private Double[][] titleWordVectors;
+    private Double[] titleWordVectors;
     private Double[][] abstractWordVectors;
     private Double[][] descriptionWordVectors;
     private String pubDocNumber;
@@ -15,7 +15,7 @@ public class PatentVectors {
         this.pubDate=pubDate;
     }
 
-    public void setTitleWordVectors(Double[][] v) {
+    public void setTitleWordVectors(Double[] v) {
         titleWordVectors=v;
     }
 
@@ -27,7 +27,7 @@ public class PatentVectors {
         descriptionWordVectors=v;
     }
 
-    public Double[][] getTitleWordVectors() {
+    public Double[] getTitleWordVectors() {
         return titleWordVectors;
     }
 
