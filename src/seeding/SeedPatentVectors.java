@@ -2,13 +2,9 @@ package seeding;
 
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
-import org.deeplearning4j.models.embeddings.learning.ElementsLearningAlgorithm;
-import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
-import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
-import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
-import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
@@ -29,39 +25,44 @@ import java.util.Arrays;
 public class SeedPatentVectors {
     private int date;
     private static final File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
+    private static final File googleVectorsFile = new File(Constants.GOOGLE_WORD_VECTORS_PATH);
     private static final File vocabFile = new File(Constants.VOCAB_FILE);
-    private Word2Vec wordVectors;
+    private WordVectors wordVectors;
     private SequenceIterator<VocabWord> iterator;
     private VocabCache<VocabWord> vocab;
 
-    public SeedPatentVectors(int startDate) throws Exception {
+    public SeedPatentVectors(int startDate, boolean useGoogleModel) throws Exception {
         this.date=startDate;
 
-        // Create Iterator
-        SentenceIterator sentenceIterator = new BasePatentIterator(date);
+        if(!useGoogleModel) {
+            // Create Iterator
+            SentenceIterator sentenceIterator = new BasePatentIterator(date);
 
-        SentenceTransformer transformer = new SentenceTransformer.Builder()
-                .readOnly(true)
-                .tokenizerFactory(new DefaultTokenizerFactory())
-                .iterator(sentenceIterator)
-                .build();
+            SentenceTransformer transformer = new SentenceTransformer.Builder()
+                    .readOnly(true)
+                    .tokenizerFactory(new DefaultTokenizerFactory())
+                    .iterator(sentenceIterator)
+                    .build();
 
-        iterator = new AbstractSequenceIterator.Builder<>(transformer).build();
+            iterator = new AbstractSequenceIterator.Builder<>(transformer).build();
 
-        // Start on Vocabulary
-        if(!vocabFile.exists()) {
-            System.out.println("Starting to build vocabulary...");
-            buildAndWriteVocabulary();
+            // Start on Vocabulary
+            if (!vocabFile.exists()) {
+                System.out.println("Starting to build vocabulary...");
+                buildAndWriteVocabulary();
+            } else {
+                System.out.println("Loading vocabulary...");
+                vocab = WordVectorSerializer.readVocabCache(vocabFile);
+            }
+
+            // Start on WordVectors
+            System.out.println("Starting Word Vectors...");
+            if (!wordVectorsFile.exists()) buildAndWriteParagraphVectors();
+            else {
+                wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
+            }
         } else {
-            System.out.println("Loading vocabulary...");
-            vocab = WordVectorSerializer.readVocabCache(vocabFile);
-        }
-
-        // Start on WordVectors
-        System.out.println("Starting Word Vectors...");
-        if(!wordVectorsFile.exists()) buildAndWriteParagraphVectors();
-        else {
-            wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
+            wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
         }
         System.out.println("Finished loading Word Vector Model...");
 
@@ -146,15 +147,16 @@ public class SeedPatentVectors {
                 .sampling(0.0001)
                 .build();
 
-        wordVectors.fit();
+        ((Word2Vec)wordVectors).fit();
 
-        WordVectorSerializer.writeFullModel(wordVectors, wordVectorsFile.getAbsolutePath());
+        WordVectorSerializer.writeFullModel((Word2Vec)wordVectors, wordVectorsFile.getAbsolutePath());
     }
 
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new SeedPatentVectors(Constants.START_DATE);
+            boolean useGoogle = true;
+            new SeedPatentVectors(Constants.START_DATE,useGoogle);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

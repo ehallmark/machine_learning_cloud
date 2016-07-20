@@ -16,11 +16,14 @@ import java.util.List;
 public class SeedClassificationVectors {
     private List<String> classifications;
     private WordVectors wordVectors;
-    private File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
+    private static final File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
+    private static final File googleVectorsFile = new File(Constants.GOOGLE_WORD_VECTORS_PATH);
 
-    public SeedClassificationVectors(int startDate) throws Exception {
-        if(!wordVectorsFile.exists()) throw new RuntimeException("NO WORD VECTORS FILE FOUND!");
-        wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
+    public SeedClassificationVectors(int startDate, boolean useGoogleModel) throws Exception {
+        if((!wordVectorsFile.exists() && !useGoogleModel) || (!googleVectorsFile.exists() && useGoogleModel)) throw new RuntimeException("Inconsistent Word Vector File Option");
+
+        if(useGoogleModel) wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
+        else wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
 
         classifications = Database.getDistinctClassifications();
         System.out.println("Number of classifications: "+classifications.size());
@@ -72,7 +75,8 @@ public class SeedClassificationVectors {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            new SeedClassificationVectors(Constants.START_DATE);
+            boolean useGoogle = true;
+            new SeedClassificationVectors(Constants.START_DATE, useGoogle);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
