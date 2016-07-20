@@ -27,9 +27,7 @@ public class PatentVectors {
         descriptionWordVectors=v;
     }
 
-    public Double[] getTitleWordVectors() {
-        return titleWordVectors;
-    }
+    public Double[] getTitleWordVectors() { return titleWordVectors; }
 
     public Double[][] getAbstractWordVectors() {
         return abstractWordVectors;
