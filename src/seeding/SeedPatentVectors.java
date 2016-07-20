@@ -75,7 +75,6 @@ public class SeedPatentVectors {
         AtomicInteger count = new AtomicInteger(0);
         try {
             while (vectorIterator.hasNext()) {
-                timeToCommit++;
                 PatentVectors patent = vectorIterator.next();
                 // make sure something is not null
                 if (patent.isValid()) {
