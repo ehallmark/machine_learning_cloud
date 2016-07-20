@@ -76,7 +76,6 @@ public class SeedPatentVectors {
                 timeToCommit++;
                 PatentVectors patent = vectorIterator.next();
                 System.out.println(patent.getPubDocNumber());
-                printVector("Title", new Double[][]{patent.getTitleWordVectors()});
                 try {
                     // make sure nothing is null
                     if (patent.isValid()) {
@@ -95,11 +94,7 @@ public class SeedPatentVectors {
             Database.commit();
         }
     }
-
-    private void printVector(String name, Double[][] vector) {
-        System.out.println(name+": "+Arrays.toString(vector));
-    }
-
+    
     private void buildAndWriteVocabulary() throws IOException {
         vocab = new AbstractCache.Builder<VocabWord>()
                 .minElementFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
