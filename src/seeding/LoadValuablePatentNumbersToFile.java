@@ -41,7 +41,7 @@ public class LoadValuablePatentNumbersToFile {
         } else {
             System.out.println("Skipping unvaluable patents...");
         }
-        downloadClassificationDataToCSV();
+        //downloadClassificationDataToCSV();
         System.out.println("Number of valuable patents: "+numValuablePatents);
         System.out.println("Number of unvaluable patents: "+numUnValuablePatents);
 
@@ -64,7 +64,7 @@ public class LoadValuablePatentNumbersToFile {
         oos.close();
     }
 
-    private void downloadClassificationDataToCSV() throws IOException, SQLException {
+    /*private void downloadClassificationDataToCSV() throws IOException, SQLException {
         System.out.println("Loading google model...");
         WordVectors wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true, false);
         System.out.println("Loaded google model...");
@@ -85,7 +85,7 @@ public class LoadValuablePatentNumbersToFile {
 
         bw.close();
 
-    }
+    }*/
 
     private String generateVectorLineForCSV(ResultSet rs, String label, int layerSize, WordVectors wordVectors) throws SQLException {
         String[] invention_title = new String[]{rs.getString(1)};
