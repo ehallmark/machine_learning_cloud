@@ -70,6 +70,7 @@ public class SeedPatentVectors {
         Database.setupMainConn();
         int timeToCommit = 0;
         final int commitLength = 1000;
+        long startTime = System.currentTimeMillis();
         AvgWordVectorIterator vectorIterator = new AvgWordVectorIterator(wordVectors, date);
         try {
             while (vectorIterator.hasNext()) {
@@ -87,14 +88,19 @@ public class SeedPatentVectors {
                     e.printStackTrace();
                     if (e instanceof SQLException) throw new RuntimeException("Database Error!!"); // Termin
                 }
-                if (timeToCommit % commitLength == 0) Database.commit();
+                if (timeToCommit % commitLength == 0) {
+                    Database.commit();
+                    long endTime = System.currentTimeMillis();
+                    System.out.println("Seconds to complete 1000 patents: "+new Double(endTime-startTime)/1000);
+                    startTime = endTime;
+                }
                 timeToCommit = (timeToCommit + 1) % commitLength;
             }
         } finally {
             Database.commit();
         }
     }
-    
+
     private void buildAndWriteVocabulary() throws IOException {
         vocab = new AbstractCache.Builder<VocabWord>()
                 .minElementFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)

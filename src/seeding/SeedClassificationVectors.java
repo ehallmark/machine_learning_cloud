@@ -30,6 +30,9 @@ public class SeedClassificationVectors {
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsAfter(startDate);
+        int timeToCommit = 0;
+        final int commitLength = 1000;
+        long startTime = System.currentTimeMillis();
         while(patentNumbers.next()) {
             ResultSet rs = Database.getClassificationsFromPatents(patentNumbers.getArray(1));
             Integer pubDate = patentNumbers.getInt(2);
@@ -63,12 +66,17 @@ public class SeedClassificationVectors {
                 System.out.println(pubDocNumber);
                 // Update patent classification vector
                 Database.insertClassifications(pubDocNumber, pubDate, classSoftMax, classVector, subClassVector);
+
+                if (timeToCommit % commitLength == 0) {
+                    Database.commit();
+                    long endTime = System.currentTimeMillis();
+                    System.out.println("Seconds to complete 1000 patents: "+new Double(endTime-startTime)/1000);
+                    startTime = endTime;
+                }
+                timeToCommit = (timeToCommit + 1) % commitLength;
             }
             Database.commit();
-
         }
-
-
     }
 
     public static void main(String[] args) {
