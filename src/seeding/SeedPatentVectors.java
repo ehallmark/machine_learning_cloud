@@ -89,8 +89,10 @@ public class SeedPatentVectors {
                         startTime = endTime;
                     }
                     timeToCommit = (timeToCommit + 1) % commitLength;
+                    System.out.println(count.getAndIncrement());
+                } else {
+                    System.out.println("-");
                 }
-                System.out.println(count.getAndIncrement());
             }
         } finally {
             Database.commit();
