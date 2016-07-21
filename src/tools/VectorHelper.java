@@ -1,5 +1,6 @@
 package tools;
 
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -12,6 +13,7 @@ import seeding.Constants;
 import seeding.MyPreprocessor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,21 +31,21 @@ public class VectorHelper {
         Double[][] data = null;
 
         if(sentence!=null) {
-            final int padding = 2;
-
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
-
             if(tokens.isEmpty()) return null;
 
             data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
 
-            final int bucketSize = Math.max(1,tokens.size()/Constants.NUM_ROWS_OF_WORD_VECTORS);
-            for(int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
-                int begin = Math.max(0, i*bucketSize-padding);
-                int end = Math.min(tokens.size(), i*bucketSize+bucketSize+padding);
-                INDArray wordVector = centroidVector(wordVectors, tokens.subList(begin, end));
-                data[i]= toObject(wordVector.data().asDouble());
+            final int bucketSize = Math.max(1, tokens.size() / Constants.NUM_ROWS_OF_WORD_VECTORS);
+            for (int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
+                int begin = i * bucketSize;
+                int end = Math.min(tokens.size(), i * bucketSize + bucketSize);
+                if(begin==end) begin--;
+                List<String> subList = tokens.subList(begin, end);
+                INDArray wordVector = centroidVector(wordVectors, subList);
+                data[i] = toObject(wordVector.data().asDouble());
             }
+
         }
         return data;
 
