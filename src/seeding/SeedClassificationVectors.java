@@ -8,6 +8,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -33,6 +34,7 @@ public class SeedClassificationVectors {
         final int commitLength = 1000;
         long startTime = System.currentTimeMillis();
         AtomicInteger count = new AtomicInteger(0);
+        ForkJoinPool pool = new ForkJoinPool();
         while(patentNumbers.next()) {
             ResultSet rs = Database.getClassificationsFromPatents(patentNumbers.getArray(1));
             Integer pubDate = patentNumbers.getInt(2);

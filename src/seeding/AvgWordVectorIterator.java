@@ -8,6 +8,7 @@ import tools.VectorHelper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by ehallmark on 7/20/16.
@@ -32,7 +33,7 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
         resultSet = Database.getPatentDataWithTitleAndDate(startDate);
     }
 
-    protected PatentVectors getPatentVectors() throws SQLException {
+    protected PatentVectors getPatentVectors() throws SQLException, InterruptedException, ExecutionException {
         // Pub Doc Number
         String pubDocNumber = resultSet.getString(1);
 
@@ -43,15 +44,31 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
 
         // Invention Title
         String titleText = resultSet.getString(3);
-        if(!shouldRemoveSentence(titleText)) p.setTitleWordVectors(VectorHelper.computeAvgWordVectorsFrom(wordVectors,titleText));
+        VectorBuilderThread titleThread = null;
+        if(!shouldRemoveSentence(titleText)) titleThread = new VectorBuilderThread(wordVectors, titleText);
+        if(titleThread!=null) {
+            titleThread.fork();
+        }
 
         // Abstract
         String abstractText = resultSet.getString(4);
-        if(!shouldRemoveSentence(abstractText)) p.setAbstractWordVectors(VectorHelper.compute2DAvgWordVectorsFrom(wordVectors,abstractText));
+        VectorBuilderThread2D abstractThread = null;
+        if(!shouldRemoveSentence(abstractText)) abstractThread = new VectorBuilderThread2D(wordVectors, abstractText);
+        if(abstractThread!=null) {
+            abstractThread.fork();
+        }
 
         // Description
         String descriptionText = resultSet.getString(5);
-        if(!shouldRemoveSentence(descriptionText)) p.setDescriptionWordVectors(VectorHelper.compute2DAvgWordVectorsFrom(wordVectors,descriptionText));
+        VectorBuilderThread2D descriptionThread = null;
+        if(!shouldRemoveSentence(descriptionText)) descriptionThread = new VectorBuilderThread2D(wordVectors, descriptionText);
+        if(descriptionThread!=null) {
+            descriptionThread.fork();
+        }
+
+        if(titleThread!=null)p.setTitleWordVectors(titleThread.get());
+        if(abstractThread!=null)p.setAbstractWordVectors(abstractThread.get());
+        if(descriptionThread!=null)p.setDescriptionWordVectors(descriptionThread.get());
 
         return p;
     }
@@ -79,9 +96,9 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
             resultSet.next();
             return getPatentVectors();
 
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-            throw new RuntimeException("SQL ERROR");
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("ERROR ITERATING NEXT PATENT VECTORS OBJECT");
         }
     }
 

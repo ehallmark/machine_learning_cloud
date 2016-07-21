@@ -40,7 +40,7 @@ public class VectorHelper {
             for (int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
                 int begin = i * bucketSize;
                 int end = Math.min(tokens.size(), i * bucketSize + bucketSize);
-                if(begin==end) begin--;
+                if(begin>=end) begin=end-1;
                 List<String> subList = tokens.subList(begin, end);
                 INDArray wordVector = centroidVector(wordVectors, subList);
                 data[i] = toObject(wordVector.data().asDouble());
@@ -73,8 +73,8 @@ public class VectorHelper {
                     new IntervalIndex(true, 1),
                     new IntervalIndex(true, 1)
             };
-            indices[1].init(0, Constants.NUM_ROWS_OF_WORD_VECTORS);
-            indices[2].init(0, Constants.VECTOR_LENGTH);
+            indices[1].init(0, Constants.NUM_ROWS_OF_WORD_VECTORS-1);
+            indices[2].init(0, Constants.VECTOR_LENGTH-1);
             allSentences.put(indices,sentence);
         });
 
