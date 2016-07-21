@@ -1,6 +1,7 @@
 package learning;
 
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
+import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -8,12 +9,14 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 import seeding.Database;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by ehallmark on 7/21/16.
@@ -23,8 +26,13 @@ public class SimilarityAutoEncoderModel {
         int batchSize = 100;
         int seed=41;
         int iterations = 5;
+        List<String> twoDList = Arrays.asList(Constants.ABSTRACT_VECTORS,Constants.DESCRIPTION_VECTORS);
+        List<String> oneDList = Arrays.asList(Constants.TITLE_VECTORS);
+
         System.out.println("Load data....");
-        DataSetIterator iter = new SimilarityAutoEncoderIterator(batchSize, Arrays.asList(Constants.TITLE_VECTORS), Arrays.asList(Constants.ABSTRACT_VECTORS,Constants.DESCRIPTION_VECTORS));
+        DataSetIterator iter = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, true);
+        DataSetIterator test = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, false);
+
         int vectorSize = iter.inputColumns();
         System.out.println("Number of vectors in input: "+vectorSize);
 
@@ -60,8 +68,18 @@ public class SimilarityAutoEncoderModel {
         while(iter.hasNext()) {
             DataSet next = iter.next();
             model.fit(new DataSet(next.getFeatureMatrix(), next.getFeatureMatrix()));
-            // Evaluation
         }
+
+        Evaluation evaluation = new Evaluation();
+        while(test.hasNext()){
+            DataSet t = test.next();
+            INDArray features = t.getFeatureMatrix();
+            INDArray predicted = model.output(features,false);
+
+            evaluation.eval(features,predicted);
+        }
+
+        System.out.println(evaluation.stats());
     }
 
     public static void main(String[] args) {

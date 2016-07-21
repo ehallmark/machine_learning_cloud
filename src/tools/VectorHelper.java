@@ -59,15 +59,14 @@ public class VectorHelper {
         List<INDArray> validSentences = new ArrayList<>(sentences.length);
 
         for(String sentence : sentences) {
-            if(sentence==null)continue;
+            if (sentence == null) continue;
             List<String> tokens = createAndPrefilterTokens(wordVectors, sentence);
-            if(!tokens.isEmpty()) validSentences.add(centroidVector(wordVectors, tokens));
+            if (!tokens.isEmpty()) validSentences.add(centroidVector(wordVectors, tokens));
         }
+        if(validSentences.isEmpty()) return null;
 
         INDArray allSentences = Nd4j.create(validSentences.size(), Constants.NUM_ROWS_OF_WORD_VECTORS, Constants.VECTOR_LENGTH);
         AtomicInteger cnt = new AtomicInteger(0);
-
-        if(validSentences.isEmpty()) return null;
 
         validSentences.forEach(sentence->{
             int index = cnt.getAndIncrement();

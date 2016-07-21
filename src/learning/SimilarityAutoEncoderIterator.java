@@ -9,7 +9,6 @@ import seeding.Constants;
 import seeding.Database;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,15 +24,15 @@ public class SimilarityAutoEncoderIterator implements DataSetIterator {
     private ResultSet results;
     private String query;
 
-    public SimilarityAutoEncoderIterator(int batchSize, List<String> oneDNames, List<String> twoDNames) {
+    public SimilarityAutoEncoderIterator(int batchSize, List<String> oneDNames, List<String> twoDNames, boolean isTraining) {
         this.batchSize=batchSize;
         this.num1DVectors = oneDNames.size();
         this.num2DVectors = twoDNames.size();
         this.numVectors=(num2DVectors*Constants.NUM_ROWS_OF_WORD_VECTORS)+num1DVectors;
-        buildQuery(oneDNames,twoDNames);
+        buildQuery(oneDNames,twoDNames, isTraining);
     }
 
-    private void buildQuery(List<String> oneDNames, List<String> twoDNames) {
+    private void buildQuery(List<String> oneDNames, List<String> twoDNames, boolean isTraining) {
         StringJoiner select = new StringJoiner(",","SELECT "," FROM patent_vectors ");
         for(String s : oneDNames) {
             select.add(s);
@@ -48,6 +47,9 @@ public class SimilarityAutoEncoderIterator implements DataSetIterator {
         for(String s : twoDNames) {
             where.add(s+" IS NOT NULL");
         }
+        if(isTraining) where.add("is_testing = 'f'");
+        else where.add("is_testing = 't'");
+
         query = select.toString()+where.toString();
         System.out.println(query);
     }
