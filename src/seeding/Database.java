@@ -47,6 +47,12 @@ public class Database {
 		}
 	}
 
+	public static ResultSet executeQuery(String query) throws SQLException{
+		PreparedStatement ps = seedConn.prepareStatement(query);
+		ps.setFetchSize(5);
+		return ps.executeQuery();
+	}
+
 	public static void close(){
 		try {
 			if(mainConn!=null && !mainConn.isClosed())mainConn.close();

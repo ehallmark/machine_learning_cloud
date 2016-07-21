@@ -45,4 +45,9 @@ public class Constants {
 	public static final String WORD_VECTORS_PATH = "word_vector_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_word_vectors.txt";
 
+	public static final String TITLE_VECTORS = "invention_title_vectors";
+	public static final String ABSTRACT_VECTORS = "abstract_vectors";
+	public static final String DESCRIPTION_VECTORS = "description_vectors";
+
+
 }
