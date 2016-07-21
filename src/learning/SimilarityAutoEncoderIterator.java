@@ -95,7 +95,7 @@ public class SimilarityAutoEncoderIterator implements DataSetIterator {
             }
             colCount.set(0);
         }
-        return new DataSet(features,null);
+        return new DataSet(features,features);
     }
 
     @Override

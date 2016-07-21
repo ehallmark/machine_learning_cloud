@@ -20,7 +20,7 @@ import java.util.Arrays;
  */
 public class SimilarityAutoEncoderModel {
     public SimilarityAutoEncoderModel() throws Exception {
-        int batchSize = 1000;
+        int batchSize = 100;
         int seed=41;
         int iterations = 5;
         System.out.println("Load data....");
@@ -59,9 +59,7 @@ public class SimilarityAutoEncoderModel {
         System.out.println("Train model....");
         while(iter.hasNext()) {
             DataSet next = iter.next();
-            System.out.println(next.getFeatureMatrix().toString());
             model.fit(new DataSet(next.getFeatureMatrix(), next.getFeatureMatrix()));
-
             // Evaluation
         }
     }
