@@ -21,7 +21,7 @@ public class Database {
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
-	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claim_vectors) VALUES (?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claim_vectors)=(?,?) WHERE patent_vectors.pub_doc_number=?";
+	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claims_vectors) VALUES (?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claims_vectors)=(?,?) WHERE patent_vectors.pub_doc_number=?";
 
 
 	public static void setupMainConn() throws SQLException {

@@ -9,6 +9,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.INDArrayIndex;
 import org.nd4j.linalg.indexing.IntervalIndex;
 import org.nd4j.linalg.indexing.PointIndex;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.MyPreprocessor;
 
@@ -68,20 +69,17 @@ public class VectorHelper {
         if(validSentences.isEmpty()) return null;
 
         validSentences.forEach(sentence->{
-            INDArrayIndex[] indices = new INDArrayIndex[]{
-                    new PointIndex(cnt.getAndIncrement()),
-                    new IntervalIndex(true, 1),
-                    new IntervalIndex(true, 1)
-            };
-            indices[1].init(0, Constants.NUM_ROWS_OF_WORD_VECTORS-1);
-            indices[2].init(0, Constants.VECTOR_LENGTH-1);
-            allSentences.put(indices,sentence);
+            int index = cnt.getAndIncrement();
+            for(int row = 0; row < sentence.rows(); row++) {
+                for(int col=0; col < sentence.columns(); col++) {
+                    allSentences.put(new int[]{index,row,col},sentence.getScalar(row,col));
+                }
+            }
         });
 
         data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
 
         INDArray mean = allSentences.mean(0);
-
         if(!mean.isMatrix()) throw new RuntimeException("DIMENSION HAS TO BE 2!!!!");
 
         for(int row = 0; row < Constants.NUM_ROWS_OF_WORD_VECTORS; row++) {
