@@ -59,6 +59,7 @@ public class VectorHelper {
         List<INDArray> validSentences = new ArrayList<>(sentences.length);
 
         for(String sentence : sentences) {
+            if(sentence==null)continue;
             List<String> tokens = createAndPrefilterTokens(wordVectors, sentence);
             if(!tokens.isEmpty()) validSentences.add(centroidVector(wordVectors, tokens));
         }
