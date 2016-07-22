@@ -7,7 +7,6 @@ import java.sql.SQLException;
  * Created by ehallmark on 7/21/16.
  */
 public class SeedValuablePatentsData {
-    // RATIO HARD CODED AT 10%
     public SeedValuablePatentsData() throws Exception {
         ResultSet rs = Database.getValuablePatents();
         while(rs.next()) {
