@@ -126,7 +126,7 @@ public class Database {
 	public static void updateValuablePatents(String patentNumber, boolean isValuable) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable=? WHERE pub_doc_number=?");
 		ps.setBoolean(1, isValuable);
-		ps.setString(1, patentNumber);
+		ps.setString(2, patentNumber);
 		ps.executeUpdate();
 	}
 
