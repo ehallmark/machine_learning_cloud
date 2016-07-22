@@ -23,7 +23,7 @@ public class Database {
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claims_vectors) VALUES (?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claims_vectors)=(?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String updateTestingData = "UPDATE patent_vectors SET is_testing='t' WHERE pub_doc_number like '%7'";
-	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE not (pub_doc_number like '%7')";
+	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
@@ -65,10 +65,10 @@ public class Database {
 	}
 
 	public static void updateTestingData() throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement(updateTestingData);
-		ps.executeUpdate();
 		PreparedStatement ps2 = mainConn.prepareStatement(updateTrainingData);
 		ps2.executeUpdate();
+		PreparedStatement ps = mainConn.prepareStatement(updateTestingData);
+		ps.executeUpdate();
 	}
 
 	public static void insertClaims(String pubDocNumber, Integer pubDate, Double[][] claimVector) throws SQLException {
