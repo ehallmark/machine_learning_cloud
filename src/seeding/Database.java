@@ -251,7 +251,7 @@ public class Database {
 	public static Map<String, Integer[]> getCompDBTechnologyMap() throws SQLException {
 		Map<String, Integer[]> patentToTechnologyHash = new HashMap<>();
 		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
-		ps.setArray(1, compDBConn.createArrayOf("INT",badTech.toArray()));
+		ps.setArray(1, compDBConn.createArrayOf("int4",badTech.toArray()));
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {
 			List<Integer> technologies = new ArrayList<>();
