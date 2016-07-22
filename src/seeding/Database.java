@@ -223,19 +223,57 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	// Only for the AvgWordVectorIterator Class
-	public static ResultSet getPatentDataWithTitleAndDate(int startDate) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement(patentVectorWithTitleAndDateStatement);
-		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
-		ps.setInt(2,startDate);
-		ps.setFetchSize(10);
+	public static List<Integer> getDistinctCompDBTechnologyIds() throws SQLException {
+		List<Integer> technologies = new LinkedList<>();
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT DISTINCT id FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY(?) ORDER BY id");
+		ps.setArray(1, compDBConn.createArrayOf("int4",Constants.BAD_TECHNOLOGY_IDS.toArray()));
 		System.out.println(ps);
-		return ps.executeQuery();
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			technologies.add(rs.getInt(1));
+		}
+		return technologies;
 	}
 
-	// Only for the AvgWordVectorIterator Class
-	public static ResultSet getCompDBPatentData() throws SQLException {
-		return getMainVectorsFromPatentArray(getCompDBPatents());
+	public static void updateCompDBTechnologies(String patent, Double[] softmax) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET compdb_technologies=? WHERE pub_doc_number=?");
+		ps.setArray(1,mainConn.createArrayOf("float8", softmax));
+		ps.setString(2, patent);
+		ps.executeUpdate();
+	}
+
+	public static Map<String, Integer[]> getCompDBTechnologyMap() throws SQLException {
+		Map<String, Integer[]> patentToTechnologyHash = new HashMap<>();
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
+		ps.setArray(1, compDBConn.createArrayOf("INT",badTech.toArray()));
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			List<Integer> technologies = new ArrayList<>();
+			boolean valid = true;
+			for(Integer tech : (Integer[])rs.getArray(1).getArray()) {
+				if(badTech.contains(tech)) { valid=false; break;}
+				technologies.add(tech);
+			}
+			if(!valid)continue;
+
+			Array reelFrames = rs.getArray(2);
+			PreparedStatement ps2 = seedConn.prepareStatement("SELECT DISTINCT doc_number FROM patent_assignment_property_document WHERE (doc_kind='B1' OR doc_kind='B2') AND doc_number IS NOT NULL AND assignment_reel_frame=ANY(?)");
+			ps2.setArray(1, reelFrames);
+			ps2.setFetchSize(10);
+			ResultSet rs2 = ps2.executeQuery();
+			// Collect patent numbers
+			while(rs2.next()) {
+				String docNumber = rs2.getString(1);
+				if(docNumber!=null) {
+					patentToTechnologyHash.put(docNumber, technologies.toArray(new Integer[]{}));
+				}
+			}
+			rs2.close();
+			ps2.close();
+		}
+		rs.close();
+		ps.close();
+		return patentToTechnologyHash;
 	}
 
 	public static int getNumberOfCompDBClassifications() throws SQLException {
