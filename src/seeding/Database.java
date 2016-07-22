@@ -15,7 +15,7 @@ public class Database {
 	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
 	private static final String patentVectorStatement = "SELECT pub_doc_number, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String patentVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
-	private static final String compdbVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number = ANY(?) AND (abstract is NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
+	private static final String patentVectorDataByPubDocNumbers = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number = ANY(?) AND (abstract is NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)), array_to_string(array_agg(class), ' '), array_to_string(array_agg(subclass), ' ') FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL group by pub_doc_number";
@@ -191,7 +191,7 @@ public class Database {
 	public static ResultSet getClassificationsFromPatents(Array patentArray) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(classificationsFromPatents);
 		ps.setArray(1,patentArray);
-		ps.setFetchSize(5);
+		ps.setFetchSize(10);
 		System.out.println(ps);
 		return ps.executeQuery();
 	}
@@ -199,11 +199,21 @@ public class Database {
 	public static ResultSet getClaimsFromPatents(Array patentArray) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(claimsFromPatents);
 		ps.setArray(1,patentArray);
-		ps.setFetchSize(5);
+		ps.setFetchSize(10);
 		System.out.println(ps);
 		return ps.executeQuery();
 	}
 
+	public static ResultSet getMainVectorsFromPatentArray(Array patentArray) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(patentVectorDataByPubDocNumbers);
+		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
+		ps.setArray(2,patentArray);
+		ps.setFetchSize(10);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	// Only for the BasePatentIterator Class
 	public static ResultSet getPatentVectorData(int startDate) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(patentVectorStatement);
 		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
@@ -213,6 +223,7 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	// Only for the AvgWordVectorIterator Class
 	public static ResultSet getPatentDataWithTitleAndDate(int startDate) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(patentVectorWithTitleAndDateStatement);
 		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
@@ -222,13 +233,9 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	// Only for the AvgWordVectorIterator Class
 	public static ResultSet getCompDBPatentData() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement(compdbVectorWithTitleAndDateStatement);
-		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
-		ps.setArray(2,getCompDBPatents());
-		ps.setFetchSize(10);
-		System.out.println(ps);
-		return ps.executeQuery();
+		return getMainVectorsFromPatentArray(getCompDBPatents());
 	}
 
 	public static int getNumberOfCompDBClassifications() throws SQLException {

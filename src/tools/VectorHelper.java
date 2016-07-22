@@ -1,21 +1,18 @@
 package tools;
 
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.INDArrayIndex;
-import org.nd4j.linalg.indexing.IntervalIndex;
-import org.nd4j.linalg.indexing.PointIndex;
-import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Constants;
-import seeding.MyPreprocessor;
 
+import seeding.*;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -71,8 +68,9 @@ public class VectorHelper {
         validSentences.forEach(sentence->{
             int index = cnt.getAndIncrement();
             for(int row = 0; row < sentence.rows(); row++) {
+                INDArray rowArray = sentence.getRow(row);
                 for(int col=0; col < sentence.columns(); col++) {
-                    allSentences.put(new int[]{index,row,col},sentence.getScalar(row,col));
+                    allSentences.put(new int[]{index,row,col},rowArray.getScalar(col));
                 }
             }
         });
@@ -136,6 +134,63 @@ public class VectorHelper {
             i++;
         }
         return vec;
+    }
+
+
+    public static PatentVectors getPatentVectors(ResultSet resultSet, WordVectors wordVectors) throws SQLException, InterruptedException, ExecutionException {
+        // Pub Doc Number
+        String pubDocNumber = resultSet.getString(1);
+
+        // Publication Date
+        Integer pubDate = resultSet.getInt(2);
+
+        PatentVectors p = new PatentVectors(pubDocNumber,pubDate);
+
+        // Invention Title
+        String titleText = resultSet.getString(3);
+        VectorBuilderThread titleThread = null;
+        if(!shouldRemoveSentence(titleText)) titleThread = new VectorBuilderThread(wordVectors, titleText);
+        if(titleThread!=null) {
+            titleThread.fork();
+        }
+
+        // Abstract
+        String abstractText = resultSet.getString(4);
+        VectorBuilderThread2D abstractThread = null;
+        if(!shouldRemoveSentence(abstractText)) abstractThread = new VectorBuilderThread2D(wordVectors, abstractText);
+        if(abstractThread!=null) {
+            abstractThread.fork();
+        }
+
+        // Description
+        String descriptionText = resultSet.getString(5);
+        VectorBuilderThread2D descriptionThread = null;
+        if(!shouldRemoveSentence(descriptionText)) descriptionThread = new VectorBuilderThread2D(wordVectors, descriptionText);
+        if(descriptionThread!=null) {
+            descriptionThread.fork();
+        }
+
+        if(titleThread!=null)p.setTitleWordVectors(titleThread.get());
+        if(abstractThread!=null)p.setAbstractWordVectors(abstractThread.get());
+        if(descriptionThread!=null)p.setDescriptionWordVectors(descriptionThread.get());
+
+        return p;
+    }
+
+    private static boolean shouldRemoveSentence(String str) {
+        if(str==null)return true;
+        boolean wasChar = false;
+        int wordCount = 0;
+        for(Character c : str.toCharArray()) {
+            if(Character.isSpaceChar(c) && wasChar) {
+                wordCount++;
+                wasChar = false;
+            } else if(Character.isAlphabetic(c)) {
+                wasChar = true;
+            }
+            if(wordCount >= 1) return false;
+        }
+        return true;
     }
 
 }

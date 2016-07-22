@@ -13,10 +13,14 @@ import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
 import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+import tools.VectorHelper;
 import tools.WordVectorSerializer;
 import java.io.File;
 import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,6 +34,10 @@ public class SeedPatentVectors {
     private WordVectors wordVectors;
     private SequenceIterator<VocabWord> iterator;
     private VocabCache<VocabWord> vocab;
+    private int timeToCommit;
+    private long startTime;
+    private final int commitLength;
+    private AtomicInteger count;
 
     public SeedPatentVectors(int startDate, boolean useGoogleModel) throws Exception {
         this.date=startDate;
@@ -69,33 +77,53 @@ public class SeedPatentVectors {
         // Now write vectors to DB
         Database.setupMainConn();
         Database.setupCompDBConn();
-        int timeToCommit = 0;
-        final int commitLength = 1000;
-        long startTime = System.currentTimeMillis();
-        AvgWordVectorIterator vectorIterator = new AvgWordVectorIterator(wordVectors, date);
-        AtomicInteger count = new AtomicInteger(0);
-        try {
-            while (vectorIterator.hasNext()) {
-                PatentVectors patent = vectorIterator.next();
-                // make sure something is not null
-                if (patent.isValid()) {
-                    Database.insertPatentVectors(patent.getPubDocNumber(), patent.getPubDate(),
-                            patent.getTitleWordVectors(), patent.getAbstractWordVectors(), patent.getDescriptionWordVectors());
+        timeToCommit = 0;
+        commitLength = 1000;
+        startTime = System.currentTimeMillis();
+        count = new AtomicInteger(0);
 
-                    if (timeToCommit % commitLength == 0) {
-                        Database.commit();
-                        long endTime = System.currentTimeMillis();
-                        System.out.println("Seconds to complete 1000 patents: " + new Double(endTime - startTime) / 1000);
-                        startTime = endTime;
-                    }
-                    timeToCommit = (timeToCommit + 1) % commitLength;
-                    System.out.println(count.getAndIncrement());
-                } else {
-                    System.out.println("-");
-                }
-            }
-        } finally {
+        // Get compdbPatents
+        ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
+        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
+
+        // Get pub_doc_numbers grouped by date
+        ResultSet patentNumbers = Database.getPatentsAfter(startDate);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
+    }
+
+    private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers, boolean updateDate) throws SQLException, InterruptedException, ExecutionException {
+        while(patentNumbers.next()) {
+            Integer pubDate = patentNumbers.getInt(2);
+            if(pubDate==null) continue;
+            ResultSet rs = Database.getMainVectorsFromPatentArray(patentNumbers.getArray(1));
+            handleResultSetGroupedByDate(rs);
+            // update date
+            if(updateDate)Database.updateLastDate(Constants.PATENT_VECTOR_TYPE,pubDate);
             Database.commit();
+        }
+    }
+
+    private void handleResultSetGroupedByDate(ResultSet rs) throws SQLException, InterruptedException, ExecutionException{
+        while(rs.next()) {
+            handlePatentVectorObject(VectorHelper.getPatentVectors(rs,wordVectors));
+        }
+    }
+
+    private void handlePatentVectorObject(PatentVectors patent) throws SQLException {
+        if (patent.isValid()) {
+            Database.insertPatentVectors(patent.getPubDocNumber(), patent.getPubDate(),
+                    patent.getTitleWordVectors(), patent.getAbstractWordVectors(), patent.getDescriptionWordVectors());
+
+            if (timeToCommit % commitLength == 0) {
+                Database.commit();
+                long endTime = System.currentTimeMillis();
+                System.out.println("Seconds to complete 1000 patents: " + new Double(endTime - startTime) / 1000);
+                startTime = endTime;
+            }
+            timeToCommit = (timeToCommit + 1) % commitLength;
+            System.out.println(count.getAndIncrement());
+        } else {
+            System.out.println("-");
         }
     }
 

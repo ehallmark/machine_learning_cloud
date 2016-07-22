@@ -33,22 +33,22 @@ public class SeedClaimVectors {
 
         // Get compdbPatents
         ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
-        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers);
+        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsAfter(startDate);
-        getPubDateAndPatentNumbersFromResultSet(patentNumbers);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
 
     }
 
-    private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers) throws SQLException {
+    private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers, boolean updateDate) throws SQLException {
         while(patentNumbers.next()) {
             Integer pubDate = patentNumbers.getInt(2);
             if(pubDate==null) continue;
             ResultSet rs = Database.getClaimsFromPatents(patentNumbers.getArray(1));
             handleResultSetGroupedByDate(rs, pubDate);
             // update date
-            Database.updateLastDate(Constants.CLAIM_VECTOR_TYPE,pubDate);
+            if(updateDate)Database.updateLastDate(Constants.CLAIM_VECTOR_TYPE,pubDate);
             Database.commit();
         }
     }

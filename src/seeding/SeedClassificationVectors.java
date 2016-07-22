@@ -39,24 +39,23 @@ public class SeedClassificationVectors {
         startTime = System.currentTimeMillis();
         count = new AtomicInteger(0);
 
-
         // Get compdb patents grouped by date
         ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
-        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers);
+        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsAfter(startDate);
-        getPubDateAndPatentNumbersFromResultSet(patentNumbers);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
 
     }
 
-    private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers) throws SQLException {
+    private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers, boolean updateDate) throws SQLException {
         while(patentNumbers.next()) {
             ResultSet rs = Database.getClassificationsFromPatents(patentNumbers.getArray(1));
             Integer pubDate = patentNumbers.getInt(2);
             if(pubDate==null) continue;
             handleResultSetGroupedByDate(rs, pubDate);
-            Database.updateLastDate(Constants.CLASSIFICATION_VECTOR_TYPE,pubDate);
+            if(updateDate)Database.updateLastDate(Constants.CLASSIFICATION_VECTOR_TYPE,pubDate);
             Database.commit();
         }
     }
