@@ -3,7 +3,6 @@ package seeding;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import tools.VectorHelper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 public class AvgWordVectorIterator implements Iterator<PatentVectors> {
     private final int startDate;
     private ResultSet resultSet;
+    private ResultSet compdbResultSet;
     private static TokenizerFactory tokenizerFactory;
     static {
         tokenizerFactory=new DefaultTokenizerFactory();
@@ -31,9 +31,10 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
 
     protected void resetQuery() throws SQLException {
         resultSet = Database.getPatentDataWithTitleAndDate(startDate);
+        compdbResultSet = Database.getCompDBPatentData();
     }
 
-    protected PatentVectors getPatentVectors() throws SQLException, InterruptedException, ExecutionException {
+    protected PatentVectors getPatentVectors(ResultSet resultSet) throws SQLException, InterruptedException, ExecutionException {
         // Pub Doc Number
         String pubDocNumber = resultSet.getString(1);
 
@@ -93,8 +94,14 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
     public PatentVectors next() {
         try {
             // Check patent iterator
-            resultSet.next();
-            return getPatentVectors();
+            if(hasNextCompDB()) {
+                compdbResultSet.next();
+                return getPatentVectors(compdbResultSet);
+
+            } else {
+                resultSet.next();
+                return getPatentVectors(resultSet);
+            }
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -105,16 +112,29 @@ public class AvgWordVectorIterator implements Iterator<PatentVectors> {
     @Override
     public boolean hasNext() {
         try {
-            return ((resultSet == null || !(resultSet.isAfterLast() || resultSet.isLast())));
+            return hasNextOriginal() || hasNextCompDB();
         } catch (SQLException sql) {
             sql.printStackTrace();
             throw new RuntimeException("SQL ERROR WHILE ITERATING");
         }
     }
 
+    private boolean hasNextOriginal() throws SQLException {
+        return ((resultSet == null || !(resultSet.isAfterLast() || resultSet.isLast())));
+    }
+
+    private boolean hasNextCompDB() throws SQLException {
+        return ((compdbResultSet == null || !(compdbResultSet.isAfterLast() || compdbResultSet.isLast())));
+    }
+
     public void reset() {
         try {
             if(resultSet!=null && !resultSet.isClosed()) resultSet.close();
+        } catch(SQLException sql) {
+            sql.printStackTrace();
+        }
+        try {
+            if(compdbResultSet!=null && !compdbResultSet.isClosed()) compdbResultSet.close();
         } catch(SQLException sql) {
             sql.printStackTrace();
         }

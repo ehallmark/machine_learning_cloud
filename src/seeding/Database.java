@@ -14,7 +14,8 @@ public class Database {
 	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) > 2";
 	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
 	private static final String patentVectorStatement = "SELECT pub_doc_number, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
-	private static final String patentVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL and description IS NOT NULL AND invention_title IS NOT NULL)";
+	private static final String patentVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
+	private static final String compdbVectorWithTitleAndDateStatement = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number = ANY(?) AND (abstract is NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)), array_to_string(array_agg(class), ' '), array_to_string(array_agg(subclass), ' ') FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL group by pub_doc_number";
@@ -24,6 +25,9 @@ public class Database {
 	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claims_vectors) VALUES (?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claims_vectors)=(?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String updateTestingData = "UPDATE patent_vectors SET is_testing='t' WHERE pub_doc_number like '%7'";
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
+	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
+	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
+	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
 		mainConn = DriverManager.getConnection(patentDBUrl);
@@ -46,6 +50,55 @@ public class Database {
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
+	}
+
+	public static ResultSet compdbPatentsGroupedByDate() throws SQLException{
+		// patents loaded
+		PreparedStatement ps2 = seedConn.prepareStatement("SELECT array_agg(pub_doc_number), pub_date FROM patent_grant WHERE pub_doc_number = ANY(?) group by pub_date");
+		ps2.setArray(1, getCompDBPatents());
+		return ps2.executeQuery();
+	}
+
+	private static Array getCompDBPatents() throws SQLException {
+		Set<String> pubDocNums = new HashSet<>();
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
+		ps.setArray(1, compDBConn.createArrayOf("int4",badTech.toArray()));
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			boolean valid = true;
+			for (Integer tech : (Integer[]) rs.getArray(1).getArray()) {
+				if (badTech.contains(tech)) {
+					valid = false;
+					break;
+				}
+			}
+			if (!valid) continue;
+
+			Array reelFrames = rs.getArray(2);
+			PreparedStatement ps2 = seedConn.prepareStatement("SELECT DISTINCT doc_number FROM patent_assignment_property_document WHERE (doc_kind='B1' OR doc_kind='B2') AND doc_number IS NOT NULL AND assignment_reel_frame=ANY(?)");
+			ps2.setArray(1, reelFrames);
+			ps2.setFetchSize(10);
+			ResultSet inner = ps2.executeQuery();
+			while (inner.next()) {
+				pubDocNums.add(inner.getString(1));
+			}
+		}
+		return seedConn.createArrayOf("varchar", pubDocNums.toArray());
+	}
+
+	public static void updateLastDate(String programType, int pubDate) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement(updateDateStatement);
+		ps.setInt(1, pubDate);
+		ps.setString(2, programType);
+		ps.executeUpdate();
+	}
+
+	public static int selectLastDate(String programType) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement(selectDateStatement);
+		ps.setString(1, programType);
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) return rs.getInt(1);
+		else throw new RuntimeException("Unable to get last date from Database!");
 	}
 
 	public static ResultSet executeQuery(String query) throws SQLException{
@@ -169,6 +222,14 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	public static ResultSet getCompDBPatentData() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(compdbVectorWithTitleAndDateStatement);
+		ps.setInt(1, Constants.MAX_DESCRIPTION_LENGTH);
+		ps.setArray(2,getCompDBPatents());
+		ps.setFetchSize(10);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
 
 	public static int getNumberOfCompDBClassifications() throws SQLException {
 		PreparedStatement ps = compDBConn.prepareStatement("SELECT COUNT(DISTINCT id) FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY(?)");

@@ -68,6 +68,7 @@ public class SeedPatentVectors {
 
         // Now write vectors to DB
         Database.setupMainConn();
+        Database.setupCompDBConn();
         int timeToCommit = 0;
         final int commitLength = 1000;
         long startTime = System.currentTimeMillis();
@@ -154,7 +155,8 @@ public class SeedPatentVectors {
         try {
             Database.setupSeedConn();
             boolean useGoogle = true;
-            new SeedPatentVectors(Constants.START_DATE,useGoogle);
+            int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
+            new SeedPatentVectors(startDate,useGoogle);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
