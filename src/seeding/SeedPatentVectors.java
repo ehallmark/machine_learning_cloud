@@ -75,8 +75,6 @@ public class SeedPatentVectors {
         System.out.println("Finished loading Word Vector Model...");
 
         // Now write vectors to DB
-        Database.setupMainConn();
-        Database.setupCompDBConn();
         timeToCommit = 0;
         commitLength = 1000;
         startTime = System.currentTimeMillis();
@@ -182,6 +180,8 @@ public class SeedPatentVectors {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
+            Database.setupMainConn();
+            Database.setupCompDBConn();
             boolean useGoogle = true;
             int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
             new SeedPatentVectors(startDate,useGoogle);
