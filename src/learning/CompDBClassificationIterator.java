@@ -69,7 +69,6 @@ public class CompDBClassificationIterator extends AbstractPatentIterator {
                     features.put(currentRowCount, colCount.getAndIncrement(), d);
                 }
             }
-            System.out.println("colcount after 1 d: "+colCount.get());
             for (int i = num1DVectors+1; i <=num1DVectors+num2DVectors; i++) {
                 Double[][] array2D = (Double[][])results.getArray(i).getArray();
                 Double[] array1D = IteratorHelper.flatten2Dto1D(array2D);
