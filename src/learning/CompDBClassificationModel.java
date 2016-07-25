@@ -64,7 +64,6 @@ public class CompDBClassificationModel extends AbstractPatentModel {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            Database.setupCompDBConn();
             System.out.println("Load data....");
 
             int batchSize = 100;

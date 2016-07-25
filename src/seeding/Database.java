@@ -283,7 +283,7 @@ public class Database {
 	}
 
 	public static int getNumberOfCompDBClassifications() throws SQLException {
-		PreparedStatement ps = compDBConn.prepareStatement("select array_length(compdb_technologies, 1) from patent_vectors where compdb_technologies is not null limit 1");
+		PreparedStatement ps = seedConn.prepareStatement("select array_length(compdb_technologies, 1) from patent_vectors where compdb_technologies is not null limit 1");
 		System.out.println(ps);
 		ResultSet rs = ps.executeQuery();
 		if(rs.next()) {
