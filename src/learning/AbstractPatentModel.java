@@ -1,8 +1,11 @@
 package learning;
 
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import seeding.Constants;
 
 import java.io.File;
@@ -19,21 +22,52 @@ public abstract class AbstractPatentModel {
     protected int iterations;
     protected List<String> oneDList;
     protected List<String> twoDList;
-    public AbstractPatentModel(int batchSize, int iterations, List<String> oneDList, List<String> twoDList, File toSaveModel) throws Exception {
+    protected AbstractPatentIterator iter;
+    protected AbstractPatentIterator test;
+
+    public AbstractPatentModel(AbstractPatentIterator iter, AbstractPatentIterator test, int batchSize, int iterations, int numEpochs, List<String> oneDList, List<String> twoDList, File toSaveModel) throws Exception {
         this.batchSize=batchSize;
         this.iterations=iterations;
         this.oneDList=oneDList;
         this.twoDList=twoDList;
-        model=buildAndFitModel();
+        this.iter = iter;
+        this.test = test;
+        model=buildModel();
+        model.setListeners(new ScoreIterationListener(10));
+        fitModel(numEpochs);
         saveModel(toSaveModel);
     }
 
-    public AbstractPatentModel(int batchSize, int iterations, File toSaveModel) throws Exception {
-        this(batchSize, iterations, Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS,Constants.CLAIM_VECTORS),
-                Arrays.asList(Constants.TITLE_VECTORS,Constants.CLASS_VECTORS,Constants.SUBCLASS_VECTORS), toSaveModel);
+    public AbstractPatentModel(AbstractPatentIterator iter, AbstractPatentIterator test, int batchSize, int iterations, int numEpochs, File toSaveModel) throws Exception {
+        this(iter, test, batchSize, iterations, numEpochs, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, toSaveModel);
     }
 
-    protected abstract MultiLayerNetwork buildAndFitModel();
+    protected void fitModel(int numEpochs) {
+        System.out.println("Train model...");
+        for(int i = 0; i < numEpochs; i++) {
+            System.out.println("Epoch #: "+(numEpochs+1));
+            while(iter.hasNext()) {
+                DataSet data = iter.next();
+                model.fit(data.getFeatureMatrix(), data.getLabels());
+            }
+            iter.reset();
+
+
+            Evaluation evaluation = new Evaluation();
+            while(test.hasNext()){
+                DataSet t = test.next();
+                INDArray features = t.getFeatureMatrix();
+                System.out.println("Features: "+features.toString());
+                INDArray predicted = model.output(features,false);
+                System.out.println("Predicted: "+predicted.toString());
+                evaluation.eval(features,predicted);
+            }
+            test.reset();
+            System.out.println(evaluation.stats());
+        }
+    }
+
+    protected abstract MultiLayerNetwork buildModel();
 
     protected void saveModel(File toSave) throws IOException {
         ModelSerializer.writeModel(model, toSave, true);

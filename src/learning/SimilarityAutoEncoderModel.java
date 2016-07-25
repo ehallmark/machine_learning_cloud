@@ -22,16 +22,12 @@ import java.io.File;
  * Created by ehallmark on 7/21/16.
  */
 public class SimilarityAutoEncoderModel extends AbstractPatentModel{
-    public SimilarityAutoEncoderModel() throws Exception {
-        super(100, 5, new File(Constants.SIMILARITY_MODEL_FILE));
+    public SimilarityAutoEncoderModel(SimilarityAutoEncoderIterator iter, SimilarityAutoEncoderIterator test, int batchSize, int iterations, int numEpochs) throws Exception {
+        super(iter, test, batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
     }
 
     @Override
-    protected MultiLayerNetwork buildAndFitModel() {
-        System.out.println("Load data....");
-        DataSetIterator iter = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, true);
-        DataSetIterator test = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, false);
-
+    protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
         System.out.println("Number of vectors in input: "+vectorSize);
 
@@ -60,34 +56,21 @@ public class SimilarityAutoEncoderModel extends AbstractPatentModel{
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
         model.init();
-
-        model.setListeners(new ScoreIterationListener(10));
-
-        System.out.println("Train model....");
-        while(iter.hasNext()) {
-            DataSet next = iter.next();
-            model.fit(new DataSet(next.getFeatureMatrix(), next.getFeatureMatrix()));
-        }
-
-        Evaluation evaluation = new Evaluation();
-        while(test.hasNext()){
-            DataSet t = test.next();
-            INDArray features = t.getFeatureMatrix();
-            System.out.println("Features: "+features.toString());
-            INDArray predicted = model.output(features,false);
-            System.out.println("Predicted: "+predicted.toString());
-            evaluation.eval(features,predicted);
-        }
-
-        System.out.println(evaluation.stats());
-
         return model;
     }
 
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new SimilarityAutoEncoderModel();
+            System.out.println("Load data....");
+
+            int batchSize = 100;
+            int iterations = 5;
+            int numEpochs = 1;
+            SimilarityAutoEncoderIterator iter = new SimilarityAutoEncoderIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
+            SimilarityAutoEncoderIterator test = new SimilarityAutoEncoderIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
+
+            new SimilarityAutoEncoderModel(iter, test, batchSize, iterations, numEpochs);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
