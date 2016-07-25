@@ -45,18 +45,15 @@ public abstract class AbstractPatentModel {
         System.out.println("Train model...");
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Epoch #: "+(i+1));
-            while(iter.hasNext()) {
-                DataSet data = iter.next();
-                model.fit(data.getFeatureMatrix(), data.getLabels());
-            }
+            model.fit(iter);
             iter.reset();
 
 
-            Evaluation evaluation = new Evaluation();
+            Evaluation evaluation = new Evaluation(iter.totalOutcomes());
             while(test.hasNext()){
                 DataSet t = test.next();
                 INDArray labels = t.getLabels();
-                INDArray predicted = model.output(t.getFeatures(),false);
+                INDArray predicted = model.output(t.getFeatureMatrix(),false);
                 assert labels.columns()==predicted.columns() && labels.rows()==predicted.rows();
                 assert labels.sumNumber().doubleValue() >= 1.0;
                 evaluation.eval(labels,predicted);

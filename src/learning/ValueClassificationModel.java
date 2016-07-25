@@ -8,8 +8,6 @@ import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 import seeding.Database;
@@ -19,18 +17,19 @@ import java.io.File;
 /**
  * Created by ehallmark on 7/19/16.
  */
-public class CompDBClassificationModel extends AbstractPatentModel {
+public class ValueClassificationModel extends AbstractPatentModel {
 
-    public CompDBClassificationModel(CompDBClassificationIterator iter, CompDBClassificationIterator test, int batchSize, int iterations, int numEpochs) throws Exception {
+    public ValueClassificationModel(ValueClassificationIterator iter, ValueClassificationIterator test, int batchSize, int iterations, int numEpochs) throws Exception {
         super(iter, test, batchSize, iterations, numEpochs, new File(Constants.COMPDB_TECHNOLOGY_MODEL_FILE));
     }
 
     @Override
     protected MultiLayerNetwork buildModel() {
         int numHiddenNodes = 750;
+        int numHiddenNodes2 = 350;
 
         int vectorLength = iter.inputColumns();
-        int numOutcomes = iter.totalOutcomes();
+        int numOutcomes = 2;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(41)
@@ -42,12 +41,16 @@ public class CompDBClassificationModel extends AbstractPatentModel {
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(vectorLength).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("relu")
+                        .activation("sigmoid")
                         .build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                .layer(1, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes2)
+                        .weightInit(WeightInit.XAVIER)
+                        .activation("sigmoid")
+                        .build())
+                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .weightInit(WeightInit.XAVIER)
                         .activation("softmax")
-                        .nIn(numHiddenNodes).nOut(numOutcomes).build())
+                        .nIn(numHiddenNodes2).nOut(numOutcomes).build())
                 .pretrain(false).backprop(true).build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
@@ -65,10 +68,10 @@ public class CompDBClassificationModel extends AbstractPatentModel {
             int iterations = 5;
             int numEpochs = 1;
 
-            CompDBClassificationIterator iter = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
-            CompDBClassificationIterator test = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
+            ValueClassificationIterator iter = new ValueClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
+            ValueClassificationIterator test = new ValueClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
 
-            new CompDBClassificationModel(iter, test, batchSize, iterations, numEpochs);
+            new ValueClassificationModel(iter, test, batchSize, iterations, numEpochs);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

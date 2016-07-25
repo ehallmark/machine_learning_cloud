@@ -82,7 +82,7 @@ public class VectorHelper {
             INDArray matrix = Nd4j.create(Constants.NUM_ROWS_OF_WORD_VECTORS, Constants.VECTOR_LENGTH);
             for(int row = 0; row < matrix.rows(); row++) {
                 for(int col=0; col<matrix.columns(); col++) {
-                    matrix.put(new int[]{sentence, row, col}, allSentences.getScalar(new int[]{sentence,row,col}));
+                    matrix.put(new int[]{row, col}, allSentences.getScalar(new int[]{sentence,row,col}));
                 }
             }
             mean.addi(matrix);
