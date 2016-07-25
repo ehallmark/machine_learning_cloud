@@ -55,10 +55,10 @@ public abstract class AbstractPatentModel {
             Evaluation evaluation = new Evaluation();
             while(test.hasNext()){
                 DataSet t = test.next();
-                INDArray features = t.getFeatureMatrix();
-                INDArray predicted = model.output(features,false);
-                assert features.columns()==predicted.columns() && features.rows()==predicted.rows();
-                evaluation.eval(features,predicted);
+                INDArray labels = t.getLabels();
+                INDArray predicted = model.output(t.getFeatureMatrix(),false);
+                assert labels.columns()==predicted.columns() && labels.rows()==predicted.rows();
+                evaluation.eval(labels,predicted);
             }
             test.reset();
             System.out.println(evaluation.stats());
