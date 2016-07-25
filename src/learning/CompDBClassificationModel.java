@@ -29,8 +29,6 @@ public class CompDBClassificationModel extends AbstractPatentModel {
     protected MultiLayerNetwork buildModel() {
         int numHiddenNodesL1 = 750;
         int numHiddenNodesL2 = 750;
-        CompDBClassificationIterator iter = new CompDBClassificationIterator(batchSize, oneDList, twoDList, true);
-        //CompDBClassificationIterator test = new CompDBClassificationIterator(batchSize, oneDList, twoDList, false);
 
         int vectorLength = iter.inputColumns();
         int numOutcomes = iter.totalOutcomes();
