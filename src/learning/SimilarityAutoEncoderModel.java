@@ -68,7 +68,7 @@ public class SimilarityAutoEncoderModel extends AbstractPatentModel{
             int iterations = 5;
             int numEpochs = 1;
             SimilarityAutoEncoderIterator iter = new SimilarityAutoEncoderIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
-            SimilarityAutoEncoderIterator test = new SimilarityAutoEncoderIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
+            SimilarityAutoEncoderIterator test = new SimilarityAutoEncoderIterator(1, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
 
             new SimilarityAutoEncoderModel(iter, test, batchSize, iterations, numEpochs);
         } catch(Exception e) {

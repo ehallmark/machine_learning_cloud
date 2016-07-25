@@ -10,7 +10,6 @@ import seeding.Constants;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,9 +56,8 @@ public abstract class AbstractPatentModel {
             while(test.hasNext()){
                 DataSet t = test.next();
                 INDArray features = t.getFeatureMatrix();
-                System.out.println("Features: "+features.toString());
                 INDArray predicted = model.output(features,false);
-                System.out.println("Predicted: "+predicted.toString());
+                assert features.columns()==predicted.columns() && features.rows()==predicted.rows();
                 evaluation.eval(features,predicted);
             }
             test.reset();

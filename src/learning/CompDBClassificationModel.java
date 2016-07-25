@@ -71,7 +71,7 @@ public class CompDBClassificationModel extends AbstractPatentModel {
             int numEpochs = 1;
 
             CompDBClassificationIterator iter = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
-            CompDBClassificationIterator test = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
+            CompDBClassificationIterator test = new CompDBClassificationIterator(1, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
 
             new CompDBClassificationModel(iter, test, batchSize, iterations, numEpochs);
         } catch(Exception e) {
