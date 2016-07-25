@@ -45,7 +45,7 @@ public abstract class AbstractPatentModel {
     protected void fitModel(int numEpochs) {
         System.out.println("Train model...");
         for(int i = 0; i < numEpochs; i++) {
-            System.out.println("Epoch #: "+(numEpochs+1));
+            System.out.println("Epoch #: "+(i+1));
             while(iter.hasNext()) {
                 DataSet data = iter.next();
                 model.fit(data.getFeatureMatrix(), data.getLabels());

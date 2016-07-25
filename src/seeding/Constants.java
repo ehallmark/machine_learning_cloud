@@ -59,6 +59,8 @@ public class Constants {
 	public static final String SIMILARITY_MODEL_FILE="similarity_model.txt";
 	public static final String COMPDB_TECHNOLOGY_MODEL_FILE="compdb_technology_model.txt";
 
-	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS,Constants.CLAIM_VECTORS);
+	//public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS,Constants.CLAIM_VECTORS);
+	// Claim vectors are not working yet...
+	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS);
 	public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS,Constants.CLASS_VECTORS,Constants.SUBCLASS_VECTORS);
 }

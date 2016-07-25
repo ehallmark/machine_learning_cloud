@@ -46,10 +46,10 @@ public class SimilarityAutoEncoderIterator extends AbstractPatentIterator {
     protected DataSet nextDataSet(int num) throws SQLException {
         if(results==null) reset();
         INDArray features = Nd4j.create(num, inputColumns());
-        AtomicInteger colCount = new AtomicInteger(0);
         AtomicInteger rowCount = new AtomicInteger(0);
         int currentRowCount;
         while((currentRowCount = rowCount.getAndIncrement())<num) {
+            AtomicInteger colCount = new AtomicInteger(0);
             results.next();
             for (int i = 1; i <= num1DVectors; i++) {
                 for (double d : (Double[]) results.getArray(i).getArray()) {
@@ -63,7 +63,6 @@ public class SimilarityAutoEncoderIterator extends AbstractPatentIterator {
                     features.put(currentRowCount, colCount.getAndIncrement(), d);
                 }
             }
-            colCount.set(0);
         }
         return new DataSet(features,features);
     }
