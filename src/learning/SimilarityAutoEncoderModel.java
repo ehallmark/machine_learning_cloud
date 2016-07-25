@@ -15,20 +15,19 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
 import seeding.Database;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.File;
+
 
 /**
  * Created by ehallmark on 7/21/16.
  */
-public class SimilarityAutoEncoderModel {
+public class SimilarityAutoEncoderModel extends AbstractPatentModel{
     public SimilarityAutoEncoderModel() throws Exception {
-        int batchSize = 100;
-        int seed=41;
-        int iterations = 5;
-        List<String> twoDList = Arrays.asList(Constants.ABSTRACT_VECTORS,Constants.DESCRIPTION_VECTORS);
-        List<String> oneDList = Arrays.asList(Constants.TITLE_VECTORS);
+        super(100, 5, new File(Constants.SIMILARITY_MODEL_FILE));
+    }
 
+    @Override
+    protected MultiLayerNetwork buildAndFitModel() {
         System.out.println("Load data....");
         DataSetIterator iter = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, true);
         DataSetIterator test = new SimilarityAutoEncoderIterator(batchSize, oneDList, twoDList, false);
@@ -38,7 +37,7 @@ public class SimilarityAutoEncoderModel {
 
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
-                .seed(seed)
+                .seed(41)
                 .iterations(iterations)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
@@ -74,12 +73,15 @@ public class SimilarityAutoEncoderModel {
         while(test.hasNext()){
             DataSet t = test.next();
             INDArray features = t.getFeatureMatrix();
+            System.out.println("Features: "+features.toString());
             INDArray predicted = model.output(features,false);
-
+            System.out.println("Predicted: "+predicted.toString());
             evaluation.eval(features,predicted);
         }
 
         System.out.println(evaluation.stats());
+
+        return model;
     }
 
     public static void main(String[] args) {

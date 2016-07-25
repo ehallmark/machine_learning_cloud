@@ -48,9 +48,14 @@ public class Constants {
 	public static final String TITLE_VECTORS = "invention_title_vectors";
 	public static final String ABSTRACT_VECTORS = "abstract_vectors";
 	public static final String DESCRIPTION_VECTORS = "description_vectors";
+	public static final String CLAIM_VECTORS = "claim_vectors";
+	public static final String CLASS_VECTORS = "class_vectors";
+	public static final String SUBCLASS_VECTORS = "subclass_vectors";
 
 	public static final String PATENT_VECTOR_TYPE = "patent_vectors";
 	public static final String CLAIM_VECTOR_TYPE = "claim_vectors";
 	public static final String CLASSIFICATION_VECTOR_TYPE = "classification_vectors";
 
+	public static final String SIMILARITY_MODEL_FILE="similarity_model.txt";
+	public static final String COMPDB_TECHNOLOGY_MODEL_FILE="compdb_technology_model.txt";
 }

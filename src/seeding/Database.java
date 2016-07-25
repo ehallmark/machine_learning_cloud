@@ -283,8 +283,7 @@ public class Database {
 	}
 
 	public static int getNumberOfCompDBClassifications() throws SQLException {
-		PreparedStatement ps = compDBConn.prepareStatement("SELECT COUNT(DISTINCT id) FROM technologies WHERE name is not null and char_length(name) > 0 and id != ANY(?)");
-		ps.setArray(1, compDBConn.createArrayOf("int4",Constants.BAD_TECHNOLOGY_IDS.toArray()));
+		PreparedStatement ps = compDBConn.prepareStatement("select array_length(compdb_technologies, 1) from patent_vectors where compdb_technologies is not null limit 1");
 		System.out.println(ps);
 		ResultSet rs = ps.executeQuery();
 		if(rs.next()) {
