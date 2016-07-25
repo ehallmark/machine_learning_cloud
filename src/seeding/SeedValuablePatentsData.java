@@ -12,6 +12,8 @@ public class SeedValuablePatentsData {
         while(rs.next()) {
             try {
                 Database.updateValuablePatents(rs.getString(1),true);
+                System.out.println(rs.getString(1));
+
             } catch (SQLException sql) {
                 sql.printStackTrace();
             }
@@ -21,6 +23,8 @@ public class SeedValuablePatentsData {
         while(rs2.next()) {
             try {
                 Database.updateValuablePatents(rs2.getString(1),false);
+                System.out.println(rs.getString(1));
+
             } catch (SQLException sql) {
                 sql.printStackTrace();
             }
