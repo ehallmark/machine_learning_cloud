@@ -48,7 +48,7 @@ public class Constants {
 	public static final String TITLE_VECTORS = "invention_title_vectors";
 	public static final String ABSTRACT_VECTORS = "abstract_vectors";
 	public static final String DESCRIPTION_VECTORS = "description_vectors";
-	public static final String CLAIM_VECTORS = "claim_vectors";
+	public static final String CLAIM_VECTORS = "claims_vectors";
 	public static final String CLASS_VECTORS = "class_vectors";
 	public static final String SUBCLASS_VECTORS = "subclass_vectors";
 
