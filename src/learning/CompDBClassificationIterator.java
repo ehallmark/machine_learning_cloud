@@ -61,7 +61,7 @@ public class CompDBClassificationIterator extends AbstractPatentIterator {
         INDArray labels = Nd4j.create(num, totalOutcomes());
         AtomicInteger rowCount = new AtomicInteger(0);
         int currentRowCount;
-        while((currentRowCount = rowCount.getAndIncrement())<num) {
+        while(!(results.isLast()||results.isAfterLast())&&(currentRowCount = rowCount.getAndIncrement())<num) {
             results.next();
             AtomicInteger colCount = new AtomicInteger(0);
             for (int i = 1; i <= num1DVectors; i++) {

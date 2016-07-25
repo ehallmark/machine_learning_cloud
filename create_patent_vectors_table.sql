@@ -14,3 +14,4 @@ CREATE TABLE patent_vectors (
 
 
 CREATE INDEX patent_vectors_pub_date_idx ON patent_vectors (pub_date);
+

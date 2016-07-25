@@ -48,7 +48,7 @@ public class SimilarityAutoEncoderIterator extends AbstractPatentIterator {
         INDArray features = Nd4j.create(num, inputColumns());
         AtomicInteger rowCount = new AtomicInteger(0);
         int currentRowCount;
-        while((currentRowCount = rowCount.getAndIncrement())<num) {
+        while(!(results.isLast()||results.isAfterLast())&&(currentRowCount = rowCount.getAndIncrement())<num) {
             AtomicInteger colCount = new AtomicInteger(0);
             results.next();
             for (int i = 1; i <= num1DVectors; i++) {
