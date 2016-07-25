@@ -77,8 +77,19 @@ public class VectorHelper {
 
         data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
 
-        INDArray mean = allSentences.mean(0);
-        if(!mean.isMatrix()) throw new RuntimeException("DIMENSION HAS TO BE 2!!!!");
+        INDArray mean = Nd4j.zeros(Constants.NUM_ROWS_OF_WORD_VECTORS, Constants.VECTOR_LENGTH);
+        for(int sentence = 0; sentence < validSentences.size(); sentence++) {
+            INDArray matrix = Nd4j.create(Constants.NUM_ROWS_OF_WORD_VECTORS, Constants.VECTOR_LENGTH);
+            for(int row = 0; row < matrix.rows(); row++) {
+                for(int col=0; col<matrix.columns(); col++) {
+                    matrix.put(new int[]{sentence, row, col}, allSentences.getScalar(new int[]{sentence,row,col}));
+                }
+            }
+            mean.addi(matrix);
+        }
+        mean.divi(validSentences.size());
+
+        assert mean.rows()==Constants.NUM_ROWS_OF_WORD_VECTORS && mean.columns()==Constants.VECTOR_LENGTH;
 
         for(int row = 0; row < Constants.NUM_ROWS_OF_WORD_VECTORS; row++) {
             Double[] innerRow = toObject(mean.getRow(0).data().asDouble());

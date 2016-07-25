@@ -36,7 +36,7 @@ public abstract class AbstractPatentIterator implements DataSetIterator {
 
     @Override
     public int totalExamples() {
-        return 0;
+        throw new UnsupportedOperationException("totalExamples operation is not available!");
     }
 
     @Override

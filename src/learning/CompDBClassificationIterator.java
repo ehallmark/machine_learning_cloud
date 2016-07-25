@@ -3,10 +3,13 @@ package learning;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.util.FeatureUtil;
 import seeding.Database;
 
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -58,9 +61,10 @@ public class CompDBClassificationIterator extends AbstractPatentIterator {
     protected DataSet nextDataSet(int num) throws SQLException {
         if(results==null) reset();
         INDArray features = Nd4j.create(num, inputColumns());
-        INDArray labels = Nd4j.create(num, totalOutcomes());
+        INDArray labels = Nd4j.zeros(num, totalOutcomes());
         AtomicInteger rowCount = new AtomicInteger(0);
         int currentRowCount;
+        Set<Integer> set = new HashSet<>();
         while(!(results.isLast()||results.isAfterLast())&&(currentRowCount = rowCount.getAndIncrement())<num) {
             results.next();
             AtomicInteger colCount = new AtomicInteger(0);
@@ -80,9 +84,14 @@ public class CompDBClassificationIterator extends AbstractPatentIterator {
             int labelIndex = num1DVectors+num2DVectors+1;
             colCount.set(0);
             for (double d : (Double[]) results.getArray(labelIndex).getArray()) {
-                labels.put(currentRowCount, colCount.getAndIncrement(), d);
+                int index = colCount.getAndIncrement();
+                if(d > 0.0) {
+                    labels.put(currentRowCount, index, 1);
+                    set.add(index);
+                }
             }
         }
+        System.out.println("Number of distinct labels: "+set.size());
         return new DataSet(features,labels);
     }
 

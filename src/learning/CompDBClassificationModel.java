@@ -27,8 +27,7 @@ public class CompDBClassificationModel extends AbstractPatentModel {
 
     @Override
     protected MultiLayerNetwork buildModel() {
-        int numHiddenNodesL1 = 750;
-        int numHiddenNodesL2 = 750;
+        int numHiddenNodes = 750;
 
         int vectorLength = iter.inputColumns();
         int numOutcomes = iter.totalOutcomes();
@@ -41,18 +40,14 @@ public class CompDBClassificationModel extends AbstractPatentModel {
                 .momentum(0.7)
                 .updater(Updater.NESTEROVS)
                 .list()
-                .layer(0, new DenseLayer.Builder().nIn(vectorLength).nOut(numHiddenNodesL1)
+                .layer(0, new DenseLayer.Builder().nIn(vectorLength).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("sigmoid")
+                        .activation("relu")
                         .build())
-                .layer(1, new DenseLayer.Builder().nIn(numHiddenNodesL1).nOut(numHiddenNodesL2)
-                        .weightInit(WeightInit.XAVIER)
-                        .activation("sigmoid")
-                        .build())
-                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .weightInit(WeightInit.XAVIER)
                         .activation("softmax")
-                        .nIn(numHiddenNodesL2).nOut(numOutcomes).build())
+                        .nIn(numHiddenNodes).nOut(numOutcomes).build())
                 .pretrain(false).backprop(true).build();
 
         MultiLayerNetwork model = new MultiLayerNetwork(conf);
@@ -66,12 +61,12 @@ public class CompDBClassificationModel extends AbstractPatentModel {
             Database.setupSeedConn();
             System.out.println("Load data....");
 
-            int batchSize = 100;
+            int batchSize = 10000;
             int iterations = 5;
             int numEpochs = 1;
 
             CompDBClassificationIterator iter = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);
-            CompDBClassificationIterator test = new CompDBClassificationIterator(1, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
+            CompDBClassificationIterator test = new CompDBClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, false);
 
             new CompDBClassificationModel(iter, test, batchSize, iterations, numEpochs);
         } catch(Exception e) {
