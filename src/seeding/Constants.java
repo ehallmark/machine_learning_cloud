@@ -44,6 +44,7 @@ public class Constants {
 	public static final String VALUABLE_PATENTS_CSV = "patent_value_labels.csv";
 	public static final String WORD_VECTORS_PATH = "word_vector_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_word_vectors.txt";
+	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
 
 	public static final String TITLE_VECTORS = "invention_title_vectors";
 	public static final String ABSTRACT_VECTORS = "abstract_vectors";

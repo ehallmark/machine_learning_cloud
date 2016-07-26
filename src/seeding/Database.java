@@ -26,6 +26,8 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
+	private static final String selectVectorsStatement = "SELECT pub_doc_number, flatten_vector(abstract_vectors)||flatten_vector(description_vectors)||invention_title_vectors||class_vectors||subclass_vectors as vector FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and is_valuable='t'";
+	private static final String selectSingleVectorStatement = "SELECT flatten_vector(abstract_vectors)||flatten_vector(description_vectors)||invention_title_vectors||class_vectors||subclass_vectors as vector FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and pub_doc_number=?";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
@@ -98,6 +100,24 @@ public class Database {
 		ResultSet rs = ps.executeQuery();
 		if(rs.next()) return rs.getInt(1);
 		else throw new RuntimeException("Unable to get last date from Database!");
+	}
+
+	public static ResultSet selectPatentVectors() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);
+		ps.setFetchSize(1000);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
+	public static Double[] getBaseVectorFor(String patent)throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(selectSingleVectorStatement);
+		ps.setString(1, patent);
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) {
+			return (Double[])rs.getArray(1).getArray();
+		} else {
+			return null;
+		}
 	}
 
 	public static ResultSet executeQuery(String query) throws SQLException{
