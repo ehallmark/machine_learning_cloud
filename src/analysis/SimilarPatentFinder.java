@@ -52,11 +52,15 @@ public class SimilarPatentFinder {
     // returns empty if no results found
     public List<Patent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
         setupMinHeap(limit);
-        Double[] baseVector = Database.getBaseVectorFor(patentNumber);
-        if(baseVector==null) return null; // patent not found
-        INDArray vector = Nd4j.create(VectorHelper.toPrim(baseVector));
+        int num1DVectors = 3;
+        int num2DVectors = 2;
+        ResultSet rs = Database.getBaseVectorFor(patentNumber);
+        if(!rs.next()) {
+            return null; // nothing found
+        }
+        INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         synchronized(Patent.class) {
-            Patent.setBaseVector(vector);
+            Patent.setBaseVector(baseVector);
             patentList.parallelStream().forEach(patent -> heap.add(patent));
             List<Patent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {

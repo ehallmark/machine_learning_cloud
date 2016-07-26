@@ -109,15 +109,10 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static Double[] getBaseVectorFor(String patent)throws SQLException {
+	public static ResultSet getBaseVectorFor(String patent)throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectSingleVectorStatement);
 		ps.setString(1, patent);
-		ResultSet rs = ps.executeQuery();
-		if(rs.next()) {
-			return (Double[])rs.getArray(1).getArray();
-		} else {
-			return null;
-		}
+		return ps.executeQuery();
 	}
 
 	public static ResultSet executeQuery(String query) throws SQLException{
