@@ -3,10 +3,13 @@ package analysis;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
+import java.io.Serializable;
+
 /**
  * Created by ehallmark on 7/26/16.
  */
-public class Patent implements Comparable<Patent> {
+public class Patent implements Comparable<Patent>, Serializable {
+    private static final long serialVersionUID = 1L;
     private INDArray vector;
     private String name;
     private static INDArray baseVector;
