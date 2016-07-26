@@ -40,7 +40,7 @@ public class CompDBClassificationIterator extends AbstractPatentIterator {
             select.add(s);
         }
         // add labels array
-        select.add("compdb_technologies::int[]");
+        select.add("compdb_technologies");
         StringJoiner where = new StringJoiner(" AND ", " WHERE ", "");
         where.add("compdb_technologies IS NOT NULL");
         for (String s : oneDNames) {

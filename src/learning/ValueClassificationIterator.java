@@ -31,7 +31,7 @@ public class ValueClassificationIterator extends AbstractPatentIterator {
             select.add(s);
         }
         // add labels array
-        select.add("CASE WHEN (is_valuable) THEN '{1}'::int[] ELSE '{0}'::int[] END");
+        select.add("CASE WHEN (is_valuable) THEN '{1.0}'::double precision[] ELSE '{0.0}'::double precision[] END");
         StringJoiner where = new StringJoiner(" AND ", " WHERE ", "");
         where.add("is_valuable IS NOT NULL");
         for (String s : oneDNames) {
