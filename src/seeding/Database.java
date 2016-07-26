@@ -104,7 +104,7 @@ public class Database {
 
 	public static ResultSet selectPatentVectors() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);
-		ps.setFetchSize(1000);
+		ps.setFetchSize(5);
 		System.out.println(ps);
 		return ps.executeQuery();
 	}
