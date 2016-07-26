@@ -20,15 +20,17 @@ import java.util.List;
 public class SimilarPatentFinder {
     private MinHeap<Patent> heap;
     private List<Patent> patentList;
+    private int num1DVectors = Constants.DEFAULT_1D_VECTORS.size();
+    private int num2DVectors = Constants.DEFAULT_2D_VECTORS.size();
     public SimilarPatentFinder(File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         if(!patentListFile.exists()) {
             patentList = new LinkedList<>();
             ResultSet rs = Database.selectPatentVectors();
             int count = 0;
+            int offset = 1; // Due to the pub_doc_number field
             while (rs.next()) {
-                INDArray vector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(2).getArray()));
-                patentList.add(new Patent(rs.getString(1), vector));
+                patentList.add(new Patent(rs.getString(1), VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors, offset)));
                 System.out.println(++count);
             }
             // Serialize List
@@ -52,8 +54,6 @@ public class SimilarPatentFinder {
     // returns empty if no results found
     public List<Patent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
         setupMinHeap(limit);
-        int num1DVectors = 3;
-        int num2DVectors = 2;
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found

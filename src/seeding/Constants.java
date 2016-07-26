@@ -22,14 +22,7 @@ public class Constants {
 	
 	public static final Set<String> STOP_WORD_SET = new HashSet<String>(Arrays.asList(STOP_WORDS));
 
-	public static final String ABSTRACT = "abstract";
-	public static final String INVENTION_TITLE = "title";
-	public static final String DESCRIPTION = "description";
-	public static final String USPTO_CLASS = "class";
-	public static final String USPTO_SUBCLASS = "subclass";
-
 	public static final String GOOGLE_WORD_VECTORS_PATH = "GoogleNews-vectors-negative300.bin";
-	public static final String VALUABLE_PATENTS_CSV = "patent_value_labels.csv";
 	public static final String WORD_VECTORS_PATH = "word_vector_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_word_vectors.txt";
 	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
