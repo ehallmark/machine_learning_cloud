@@ -147,6 +147,17 @@ public class VectorHelper {
         return vec;
     }
 
+    public static int[] toPrim(Integer[] objArray) {
+        if(objArray==null) return null;
+        int[] vec = new int[objArray.length];
+        int i = 0;
+        for(int d: objArray) {
+            vec[i] = d;
+            i++;
+        }
+        return vec;
+    }
+
 
     public static PatentVectors getPatentVectors(ResultSet resultSet, WordVectors wordVectors) throws SQLException, InterruptedException, ExecutionException {
         // Pub Doc Number
@@ -202,6 +213,43 @@ public class VectorHelper {
             if(wordCount >= 1) return false;
         }
         return true;
+    }
+
+    private static Double[] flatten2Dto1D(Double[][] array2D) {
+        if(array2D==null || array2D.length==0)return null;
+        int innerLength = array2D[0].length;
+        Double[] array1D = new Double[array2D.length*innerLength];
+        for(int i = 0; i < array2D.length; i++) {
+            for(int j = 0; j < innerLength; j++) {
+                array1D[i*innerLength+j]=array2D[i][j];
+            }
+        }
+        return array1D;
+    }
+
+    public static INDArray extractResultSetToVector(ResultSet results, int num1DVectors, int num2DVectors) throws SQLException {
+        double[] values = null;
+        for (int i = 1; i <= num1DVectors; i++) {
+            double[] nextValues = VectorHelper.toPrim((Double[])results.getArray(i).getArray());
+            if(values==null) values = nextValues;
+            else values = concat(values, nextValues);
+        }
+        for (int i = num1DVectors+1; i <=num1DVectors+num2DVectors; i++) {
+            Double[][] array2D = (Double[][])results.getArray(i).getArray();
+            double[] nextValues = VectorHelper.toPrim(flatten2Dto1D(array2D));
+            if(values==null) values = nextValues;
+            else values = concat(values, nextValues);
+        }
+        return Nd4j.create(values);
+    }
+
+    private static double[] concat(double[] a, double[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+        double[] c = new double[aLen+bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
     }
 
 }

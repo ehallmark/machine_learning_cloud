@@ -183,12 +183,6 @@ public class MinHeap<T extends Comparable<T>>  {
         return i / 2;
     }
 
-
-    protected T[] resize() {
-        return Arrays.copyOf(array, array.length * 2);
-    }
-
-
     protected void swap(int index1, int index2) {
         T tmp = array[index1];
         array[index1] = array[index2];

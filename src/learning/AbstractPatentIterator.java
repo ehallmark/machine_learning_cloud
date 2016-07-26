@@ -7,6 +7,7 @@ import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import tools.VectorHelper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -114,5 +115,25 @@ public abstract class AbstractPatentIterator implements DataSetIterator {
     public void remove() {
         throw new UnsupportedOperationException("Remove operation is not available!");
     }
+
+    protected DataSet getNextDataSet(int num, int numLabels) throws SQLException{
+        if(results==null) reset();
+        INDArray features = Nd4j.create(num, inputColumns());
+        INDArray labels = null;
+        if(numLabels>0)labels = Nd4j.create(num, numLabels);
+        AtomicInteger rowCount = new AtomicInteger(0);
+        int currentRowCount;
+        while(results.next()&&(currentRowCount = rowCount.getAndIncrement())<num) {
+            features.putRow(currentRowCount, VectorHelper.extractResultSetToVector(results, num1DVectors, num2DVectors));
+            if(numLabels > 0) {
+                // get labels
+                int labelIndex = num1DVectors+num2DVectors+1;
+                labels.putRow(currentRowCount, Nd4j.create(VectorHelper.toPrim((Integer[])results.getArray(labelIndex).getArray())));
+            }
+        }
+        if(numLabels <= 0) return new DataSet(features,features);
+        else return new DataSet(features, labels);
+    }
+
 }
 

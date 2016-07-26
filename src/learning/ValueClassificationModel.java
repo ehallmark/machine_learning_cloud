@@ -4,6 +4,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.distribution.UniformDistribution;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -20,16 +21,16 @@ import java.io.File;
 public class ValueClassificationModel extends AbstractPatentModel {
 
     public ValueClassificationModel(ValueClassificationIterator iter, ValueClassificationIterator test, int batchSize, int iterations, int numEpochs) throws Exception {
-        super(iter, test, batchSize, iterations, numEpochs, new File(Constants.COMPDB_TECHNOLOGY_MODEL_FILE));
+        super(iter, test, batchSize, iterations, numEpochs, new File(Constants.VALUABLE_PATENT_MODEL_FILE));
     }
 
     @Override
     protected MultiLayerNetwork buildModel() {
         int numHiddenNodes = 750;
-        int numHiddenNodes2 = 350;
+        int numHiddenNodes2 = 750;
 
         int vectorLength = iter.inputColumns();
-        int numOutcomes = 2;
+        int numOutcomes = 1;
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(41)
@@ -41,15 +42,16 @@ public class ValueClassificationModel extends AbstractPatentModel {
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(vectorLength).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("sigmoid")
+                        .activation("relu")
                         .build())
                 .layer(1, new DenseLayer.Builder().nIn(numHiddenNodes).nOut(numHiddenNodes2)
                         .weightInit(WeightInit.XAVIER)
-                        .activation("sigmoid")
+                        .activation("relu")
                         .build())
-                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .weightInit(WeightInit.XAVIER)
-                        .activation("softmax")
+                .layer(2, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT)
+                        .weightInit(WeightInit.DISTRIBUTION)
+                        .dist(new UniformDistribution(0, 1))
+                        .activation("sigmoid")
                         .nIn(numHiddenNodes2).nOut(numOutcomes).build())
                 .pretrain(false).backprop(true).build();
 
@@ -65,7 +67,7 @@ public class ValueClassificationModel extends AbstractPatentModel {
             System.out.println("Load data....");
 
             int batchSize = 100;
-            int iterations = 5;
+            int iterations = 3;
             int numEpochs = 1;
 
             ValueClassificationIterator iter = new ValueClassificationIterator(batchSize, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, true);

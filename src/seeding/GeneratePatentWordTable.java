@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.deeplearning4j.text.documentiterator.FileLabelAwareIterator;
 import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 
 public class GeneratePatentWordTable {
@@ -19,10 +20,10 @@ public class GeneratePatentWordTable {
 		try {
 			Database.setupSeedConn();
 			Database.setupMainConn();
-			LabelAwareIterator iterator = new FileLabelAwareIterator.Builder().addSourceFolder(new File(Constants.COMPDB_TRAIN_FOLDER)).build();
+			SentenceIterator iterator = new BasePatentIterator(Constants.START_DATE);
 			int i = 0;
-			while(iterator.hasNextDocument()) {
-				for(String word : tokenizerFactory.create(iterator.nextDocument().getContent()).getTokens()) {
+			while(iterator.hasNext()) {
+				for(String word : tokenizerFactory.create(iterator.nextSentence()).getTokens()) {
 					try {
 						if(!Constants.STOP_WORD_SET.contains(word))Database.addOrUpdateWord(word);
 						System.out.print(word + ' ');
