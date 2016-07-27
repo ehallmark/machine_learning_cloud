@@ -1,4 +1,4 @@
-package analysis;
+package server;
 
 /**
  * Created by ehallmark on 7/27/16.
