@@ -26,10 +26,12 @@ public class SimilarPatentServer {
 
     public static void server() {
         get("/similar_patents", (req, res) -> {
-            res.type("application/json");
+            //res.type("application/json");
             String pubDocNumber = req.queryParams("patent");
             if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
+            System.out.println("Searching for: "+pubDocNumber);
             int limit = extractLimit(req);
+            System.out.println("\tLimit: "+limit);
             return new Gson().toJson(new PatentResponse(finder.findSimilarPatentsTo(pubDocNumber, limit)));
         });
     }
