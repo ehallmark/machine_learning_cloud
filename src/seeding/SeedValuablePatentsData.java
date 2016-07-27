@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class SeedValuablePatentsData { // IS VALUABLE IF IT IS A PANASONIC PATENT!!!!
     public SeedValuablePatentsData() throws Exception {
         Database.resetValuablePatents();
+        Database.commit();
         ResultSet rs = Database.getValuablePatents();
         AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
