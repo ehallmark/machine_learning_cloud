@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import spark.Request;
 import seeding.Database;
 
-import static spark.Spark.get;
+import static spark.Spark.post;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -25,8 +25,8 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        get("/similar_patents", (req, res) -> {
-            //res.type("application/json");
+        post("/similar_patents", (req, res) -> {
+            res.type("application/json");
             String pubDocNumber = req.queryParams("patent");
             if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
             System.out.println("Searching for: "+pubDocNumber);
@@ -40,7 +40,7 @@ public class SimilarPatentServer {
         try {
             return Integer.valueOf(req.queryParams("limit"));
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("No limit parameter specified... using default");
             return DEFAULT_LIMIT;
         }
     }
