@@ -37,14 +37,8 @@ public class Patent implements Comparable<Patent>, Serializable {
         return similarity;
     }
 
-    public double getSimilarityTo(INDArray otherVector) {
-        return Transforms.cosineSim(otherVector,vector);
-    }
-
     public void calculateSimilarityToTarget() {
-        System.out.println("Starting to calculate similarity");
         similarity = Transforms.cosineSim(baseVector,vector);
-        System.out.println("Finished calculating similarity");
     }
 
     public static void setBaseVector(INDArray baseVector) {
