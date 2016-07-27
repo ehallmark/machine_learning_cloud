@@ -122,11 +122,11 @@ public class SimilarPatentFinder {
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
             System.out.println("Searching similar patents for 7056704");
             finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
-                System.out.println(p.getName()+": "+p.getSimilarityToTarget());
+                System.out.println(p.getName()+": "+p.getSimilarityToTarget()+" Assignee: "+p.getAssignee());
             });
             System.out.println("Searching similar patents for 8481929");
             finder.findSimilarPatentsTo("8481929", 20).forEach(p->{
-                System.out.println(p.getName()+": "+p.getSimilarityToTarget());
+                System.out.println(p.getName()+": "+p.getSimilarityToTarget()+" Assignee: "+p.getAssignee());
             });
         } catch(Exception e) {
             e.printStackTrace();
