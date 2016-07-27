@@ -26,6 +26,7 @@
     <orderEntry type="library" name="Maven: org.eclipse.jetty.websocket:websocket-servlet:9.3.6.v20151106" level="project" />
     <orderEntry type="library" name="Maven: org.eclipse.jetty.websocket:websocket-api:9.3.6.v20151106" level="project" />
     <orderEntry type="library" name="Maven: org.postgresql:postgresql:9.4-1206-jdbc42" level="project" />
+    <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.7" level="project" />
     <orderEntry type="library" name="Maven: org.deeplearning4j:deeplearning4j-nlp:0.4-rc3.10" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-analyzers-common:5.3.1" level="project" />
     <orderEntry type="library" name="Maven: org.apache.lucene:lucene-core:5.3.1" level="project" />
