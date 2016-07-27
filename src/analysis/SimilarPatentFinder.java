@@ -113,19 +113,12 @@ public class SimilarPatentFinder {
         if(!rs.next()) {
             return null; // nothing found
         }
-        System.out.println("Found patent!");
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         assert baseVector!=null : "Base vector is null!";
-        System.out.println("Found vector!");
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
-            System.out.println("Starting iteration!");
             patentList.forEach(patent -> {
-                System.out.println("Iterating...");
-                assert patent!=null : "Patent is null!";
-                assert patent.getName()!=null : "Patent name is null!";
                 if(!patent.getName().equals(patentNumber)){
-                    System.out.println(patent.getName()); // debugging
                     patent.calculateSimilarityToTarget();
                     heap.add(patent);
                 }
