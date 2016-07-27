@@ -112,7 +112,13 @@ public class SimilarPatentFinder {
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
-            patentList.forEach(patent -> {if(!patent.getName().equals(patentNumber)){patent.calculateSimilarityToTarget(); heap.add(patent);}});
+            patentList.forEach(patent -> {
+                if(!patent.getName().equals(patentNumber)){
+                    patent.calculateSimilarityToTarget();
+                    heap.add(patent);
+                    System.out.println(patent); // debugging
+                }
+            });
             List<AbstractPatent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
                 Patent p = heap.remove();
