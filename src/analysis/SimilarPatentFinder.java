@@ -47,7 +47,7 @@ public class SimilarPatentFinder {
         if(!assigneeMapFile.exists()) {
             // Construct assignee map
             assigneeMap = new HashMap<>();
-            int chunkSize = 10000;
+            int chunkSize = 10;
             AtomicInteger cnt = new AtomicInteger(0);
             AtomicInteger total = new AtomicInteger(0);
             List<String> patentsSoFar = new ArrayList<>();
