@@ -27,7 +27,7 @@ public class Database {
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
 	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and is_valuable='t'";
-	private static final String selectSingleVectorStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and pub_doc_number=?";
+	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and pub_doc_number=?";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {

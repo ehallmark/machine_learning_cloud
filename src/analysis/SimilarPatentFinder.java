@@ -61,7 +61,7 @@ public class SimilarPatentFinder {
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
-            patentList.parallelStream().forEach(patent -> heap.add(patent));
+            patentList.forEach(patent -> heap.add(patent));
             List<Patent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
                 Patent p = heap.remove();
