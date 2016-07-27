@@ -53,6 +53,7 @@ public class SimilarPatentFinder {
     // returns null if patentNumber not found
     // returns empty if no results found
     public List<Patent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
+        long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
@@ -61,12 +62,15 @@ public class SimilarPatentFinder {
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
-            patentList.forEach(patent -> {patent.calculateSimilarityToTarget(); heap.add(patent);});
+            patentList.forEach(patent -> {if(!patent.getName().equals(patentNumber))patent.calculateSimilarityToTarget(); heap.add(patent);});
             List<Patent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
                 Patent p = Patent.clone(heap.remove());
                 results.add(0, p);
             }
+            long endTime = System.currentTimeMillis();
+            double time = new Double(endTime-startTime)/1000;
+            System.out.println("Time to find similar patents for "+patentNumber+": "+time+" seconds");
             return results;
         }
     }
