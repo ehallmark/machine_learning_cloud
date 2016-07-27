@@ -5,6 +5,8 @@ import com.google.gson.Gson;
 import spark.Request;
 import seeding.Database;
 
+import java.util.List;
+
 import static spark.Spark.get;
 
 /**
@@ -32,7 +34,10 @@ public class SimilarPatentServer {
             System.out.println("Searching for: "+pubDocNumber);
             int limit = extractLimit(req);
             System.out.println("\tLimit: "+limit);
-            return new Gson().toJson(new PatentResponse(finder.findSimilarPatentsTo(pubDocNumber, limit)));
+            List<AbstractPatent> patents = finder.findSimilarPatentsTo(pubDocNumber, limit);
+            if(patents==null) return new Gson().toJson(new PatentNotFound());
+            if(patents.isEmpty()) return new Gson().toJson(new EmptyResults());
+            else return new Gson().toJson(new PatentResponse(patents));
         });
     }
 

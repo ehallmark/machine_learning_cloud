@@ -7,26 +7,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by ehallmark on 7/21/16.
  */
-public class SeedValuablePatentsData {
+public class SeedValuablePatentsData { // IS VALUABLE IF IT IS A PANASONIC PATENT!!!!
     public SeedValuablePatentsData() throws Exception {
+        Database.resetValuablePatents();
         ResultSet rs = Database.getValuablePatents();
         AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             try {
                 Database.updateValuablePatents(rs.getString(1),true);
-                System.out.println("Valuable: "+cnt.getAndIncrement());
-
-            } catch (SQLException sql) {
-                sql.printStackTrace();
-            }
-        }
-        Database.commit();
-        ResultSet rs2 = Database.getUnValuablePatents();
-        cnt.set(0);
-        while(rs2.next()) {
-            try {
-                Database.updateValuablePatents(rs2.getString(1),false);
-                System.out.println("Unvaluable: "+cnt.getAndIncrement());
+                System.out.println(cnt.getAndIncrement());
 
             } catch (SQLException sql) {
                 sql.printStackTrace();

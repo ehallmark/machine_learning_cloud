@@ -11,7 +11,6 @@ import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import server.AbstractPatent;
 
 /**
@@ -22,15 +21,15 @@ public class SimilarPatentFinder {
     private List<Patent> patentList;
     private int num1DVectors = Constants.DEFAULT_1D_VECTORS.size();
     private int num2DVectors = Constants.DEFAULT_2D_VECTORS.size();
-    private Map<String, String> assigneeMap;
+    //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
-        this(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
+        this(new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
-    public SimilarPatentFinder(File patentListFile, File assigneeMapFile) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
-        System.out.println("--- Started Loading Patent Vector List ---");
+        System.out.println("--- Started Loading Panasonic Patent Vector List ---");
         if(!patentListFile.exists()) {
             patentList = new LinkedList<>();
             ResultSet rs = Database.selectPatentVectors();
@@ -51,7 +50,8 @@ public class SimilarPatentFinder {
             patentList = (List<Patent>) ois.readObject();
             ois.close();
         }
-        System.out.println("--- Finished Loading Patent Vector List ---");
+        System.out.println("--- Finished Loading Panasonic Patent Vector List ---");
+        /*
         System.out.println("--- Started Loading Assignee Map ---");
         if(!assigneeMapFile.exists()) {
             // Construct assignee map
@@ -85,16 +85,17 @@ public class SimilarPatentFinder {
             assigneeMap = (Map<String,String>) ois.readObject();
             ois.close();
         }
-        System.out.println("--- Finished Loading Assignee Map ---");
+        System.out.println("--- Finished Loading Assignee Map ---"); */
     }
 
+    /*
     private void handlePatentsSoFar(List<String> patentsSoFar)throws SQLException{
         ResultSet rs = Database.selectAssignees(patentsSoFar);
         while(rs.next()) {
             assigneeMap.put(rs.getString(1),rs.getString(2));
         }
         rs.close();
-    }
+    }*/
 
     private void setupMinHeap(int capacity) {
         heap = MinHeap.setupPatentHeap(capacity);
@@ -106,7 +107,6 @@ public class SimilarPatentFinder {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
-        assert assigneeMap!=null : "Assignee map is nulL!";
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
@@ -126,9 +126,9 @@ public class SimilarPatentFinder {
             List<AbstractPatent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
                 Patent p = heap.remove();
-                String assignee = assigneeMap.get(p.getName());
-                if(assignee==null)assignee="";
-                results.add(0, Patent.abstractClone(p, assignee));
+                //String assignee = assigneeMap.get(p.getName());
+                //if(assignee==null)assignee="";
+                results.add(0, Patent.abstractClone(p));
             }
             long endTime = System.currentTimeMillis();
             double time = new Double(endTime-startTime)/1000;
@@ -141,7 +141,7 @@ public class SimilarPatentFinder {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
+            SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
             System.out.println("Searching similar patents for 7056704");
             finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
                 System.out.println(new Gson().toJson(p));

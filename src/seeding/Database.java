@@ -11,8 +11,8 @@ public class Database {
 	private static Connection mainConn;
 	private static Connection compDBConn;
 	private static final String addOrUpdateWord = "INSERT INTO patent_words (word,count) VALUES (?,1) ON CONFLICT (word) DO UPDATE SET (count)=(patent_words.count+1) WHERE patent_words.word=?";
-	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) >= 2";
-	private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-150000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
+	private static final String valuablePatentsQuery = "select p.pub_doc_number from patent_grant as p join patent_grant_assignee as q on (p.pub_doc_number=q.pub_doc_number) where upper(orgname) like '%PANASONIC%'";
+	//private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-150000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
 	private static final String patentVectorStatement = "SELECT pub_doc_number, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_date >= ? AND (abstract IS NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String patentVectorDataByPubDocNumbers = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number = ANY(?) AND (abstract is NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
@@ -26,7 +26,7 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
-	private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
+	//private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
 	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and is_valuable='t'";
 	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and pub_doc_number=?";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
@@ -54,12 +54,17 @@ public class Database {
 		}
 	}
 
-	public static ResultSet selectAssignees(List<String> pubDocNumbers) throws SQLException {
+	public static void resetValuablePatents() throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable=null WHERE is_valuable is not null");
+		ps.executeUpdate();
+	}
+
+	/*public static ResultSet selectAssignees(List<String> pubDocNumbers) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectAssigneeStatement);
 		ps.setArray(1, seedConn.createArrayOf("varchar", pubDocNumbers.toArray()));
 		ps.setFetchSize(5);
 		return ps.executeQuery();
-	}
+	}*/
 
 	public static ResultSet compdbPatentsGroupedByDate() throws SQLException{
 		// patents loaded
@@ -341,11 +346,11 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static ResultSet getUnValuablePatents() throws SQLException {
+	/*public static ResultSet getUnValuablePatents() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(unValuablePatentsQuery);
 		ps.setFetchSize(10);
 		return ps.executeQuery();
-	}
+	}*/
 
 
 	public static void addOrUpdateWord(String word) throws SQLException {

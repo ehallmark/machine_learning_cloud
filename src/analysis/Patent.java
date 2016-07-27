@@ -15,15 +15,14 @@ public class Patent implements Comparable<Patent>, Serializable {
     private String name;
     private double similarity;
     private static INDArray baseVector;
-    private String assignee;
 
     public Patent(String name, INDArray vector) {
         this.name=name;
         this.vector=vector;
     }
 
-    public static AbstractPatent abstractClone(Patent old, String assigneeName) {
-        AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), assigneeName);
+    public static AbstractPatent abstractClone(Patent old) {
+        AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget());
         return  clone;
     }
 
@@ -43,15 +42,6 @@ public class Patent implements Comparable<Patent>, Serializable {
 
     public static void setBaseVector(INDArray baseVector) {
         Patent.baseVector=baseVector;
-    }
-
-    public void setAssignee(String assignee) {
-        this.assignee=assignee;
-    }
-
-    public String getAssignee() {
-        assert assignee!=null : "Please set assignee name!";
-        return assignee;
     }
 
     public String getName() {

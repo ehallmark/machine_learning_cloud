@@ -5,12 +5,10 @@ package server;
  */
 public class AbstractPatent {
     protected String name;
-    protected String assignee;
     protected double similarity;
-    public AbstractPatent(String name, double similarity, String assignee) {
+    public AbstractPatent(String name, double similarity) {
         this.name = name;
         this.similarity=similarity;
-        this.assignee=assignee;
     }
     public AbstractPatent() {
 
