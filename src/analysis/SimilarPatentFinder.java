@@ -110,9 +110,12 @@ public class SimilarPatentFinder {
             return null; // nothing found
         }
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
+        assert baseVector!=null : "Base vector is null!";
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
             patentList.forEach(patent -> {
+                assert patent!=null : "Patent is null!";
+                assert patent.getName()!=null : "Patent name is null!";
                 if(!patent.getName().equals(patentNumber)){
                     patent.calculateSimilarityToTarget();
                     heap.add(patent);
