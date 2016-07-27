@@ -2,7 +2,6 @@ package analysis;
 
 import com.google.gson.Gson;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
@@ -13,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import server.AbstractPatent;
 
 /**
  * Created by ehallmark on 7/26/16.

@@ -1,7 +1,5 @@
 package server;
 
-import analysis.AbstractPatent;
-
 import java.util.List;
 
 /**
