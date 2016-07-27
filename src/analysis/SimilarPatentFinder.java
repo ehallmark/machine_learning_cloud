@@ -85,7 +85,7 @@ public class SimilarPatentFinder {
             assigneeMap = (Map<String,String>) ois.readObject();
             ois.close();
         }
-        System.out.println("--- Finished Loading Patent Vector List ---");
+        System.out.println("--- Finished Loading Assignee Map ---");
     }
 
     private void handlePatentsSoFar(List<String> patentsSoFar)throws SQLException{
