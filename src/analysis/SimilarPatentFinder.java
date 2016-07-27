@@ -52,6 +52,7 @@ public class SimilarPatentFinder {
             AtomicInteger total = new AtomicInteger(0);
             List<String> patentsSoFar = new ArrayList<>();
             for(Patent p : patentList) {
+                patentsSoFar.add(p.getName());
                 if(cnt.getAndIncrement() >= chunkSize) {
                     handlePatentsSoFar(patentsSoFar);
                     patentsSoFar.clear();
