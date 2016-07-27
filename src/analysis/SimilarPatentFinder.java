@@ -104,6 +104,9 @@ public class SimilarPatentFinder {
     // returns empty if no results found
     public List<AbstractPatent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
+        assert heap!=null : "Heap is null!";
+        assert patentList!=null : "Patent list is null!";
+        assert assigneeMap!=null : "Assignee map is nulL!";
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
@@ -122,9 +125,9 @@ public class SimilarPatentFinder {
                 assert patent!=null : "Patent is null!";
                 assert patent.getName()!=null : "Patent name is null!";
                 if(!patent.getName().equals(patentNumber)){
+                    System.out.println(patent.getName()); // debugging
                     patent.calculateSimilarityToTarget();
                     heap.add(patent);
-                    System.out.println(patent.getName()); // debugging
                 }
             });
             List<AbstractPatent> results = new ArrayList<>(limit);

@@ -38,7 +38,9 @@ public class Patent extends AbstractPatent implements Comparable<Patent>, Serial
     }
 
     public void calculateSimilarityToTarget() {
+        System.out.println("Starting to calculate similarity");
         similarity = Transforms.cosineSim(baseVector,vector);
+        System.out.println("Finished calculating similarity");
     }
 
     public static void setBaseVector(INDArray baseVector) {
