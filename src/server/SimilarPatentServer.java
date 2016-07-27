@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import spark.Request;
 import seeding.Database;
 
-import static spark.Spark.post;
+import static spark.Spark.get;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -25,7 +25,7 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        post("/similar_patents", (req, res) -> {
+        get("/similar_patents", (req, res) -> {
             res.type("application/json");
             String pubDocNumber = req.queryParams("patent");
             if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
