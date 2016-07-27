@@ -23,7 +23,6 @@ public class Patent implements Comparable<Patent>, Serializable {
 
     public static Patent clone(Patent old) {
         Patent clone = new Patent(old.getName(), old.getVector());
-        clone.setAssignee(old.getAssignee());
         clone.setSimilarity(old.getSimilarityToTarget());
         return  clone;
     }
@@ -62,6 +61,7 @@ public class Patent implements Comparable<Patent>, Serializable {
     }
 
     public String getAssignee() {
+        assert assignee!=null : "Please set assignee name!";
         return assignee;
     }
 

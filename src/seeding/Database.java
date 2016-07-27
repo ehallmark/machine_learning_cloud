@@ -26,6 +26,7 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
+	private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
 	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and is_valuable='t'";
 	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+" FROM patent_vectors WHERE class_vectors is not null and subclass_vectors is not null and invention_title_vectors is not null and description_vectors is not null and abstract_vectors is not null and pub_doc_number=?";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
@@ -51,6 +52,13 @@ public class Database {
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
+	}
+
+	public static ResultSet selectAssignees(List<String> pubDocNumbers) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(selectAssigneeStatement);
+		ps.setArray(1, seedConn.createArrayOf("varchar", pubDocNumbers.toArray()));
+		ps.setFetchSize(5);
+		return ps.executeQuery();
 	}
 
 	public static ResultSet compdbPatentsGroupedByDate() throws SQLException{

@@ -10,9 +10,8 @@ import tools.VectorHelper;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -22,7 +21,8 @@ public class SimilarPatentFinder {
     private List<Patent> patentList;
     private int num1DVectors = Constants.DEFAULT_1D_VECTORS.size();
     private int num2DVectors = Constants.DEFAULT_2D_VECTORS.size();
-    public SimilarPatentFinder(File patentListFile) throws SQLException,IOException, ClassNotFoundException {
+    private Map<String, String> assigneeMap;
+    public SimilarPatentFinder(File patentListFile, File assigneeMapFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         if(!patentListFile.exists()) {
             patentList = new LinkedList<>();
@@ -39,11 +39,47 @@ public class SimilarPatentFinder {
             oos.flush();
             oos.close();
         } else {
-            // read from list
+            // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
             patentList = (List<Patent>) ois.readObject();
             ois.close();
         }
+        if(!assigneeMapFile.exists()) {
+            // Construct assignee map
+            assigneeMap = new HashMap<>();
+            int chunkSize = 1000;
+            AtomicInteger cnt = new AtomicInteger(0);
+            List<String> patentsSoFar = new ArrayList<>();
+            for(Patent p : patentList) {
+                if(cnt.getAndIncrement() >= chunkSize) {
+                    handlePatentsSoFar(patentsSoFar);
+                    patentsSoFar.clear();
+                }
+            }
+            // get remaining
+            if(!patentsSoFar.isEmpty()) {
+                handlePatentsSoFar(patentsSoFar);
+            }
+
+            // Serialize Map to file
+            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(assigneeMapFile)));
+            oos.writeObject(assigneeMap);
+            oos.flush();
+            oos.close();
+        } else {
+            // read from file
+            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(assigneeMapFile)));
+            assigneeMap = (Map<String,String>) ois.readObject();
+            ois.close();
+        }
+    }
+
+    private void handlePatentsSoFar(List<String> patentsSoFar)throws SQLException{
+        ResultSet rs = Database.selectAssignees(patentsSoFar);
+        while(rs.next()) {
+            assigneeMap.put(rs.getString(1),rs.getString(2));
+        }
+        rs.close();
     }
 
     private void setupMinHeap(int capacity) {
@@ -66,6 +102,7 @@ public class SimilarPatentFinder {
             List<Patent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
                 Patent p = Patent.clone(heap.remove());
+                p.setAssignee(assigneeMap.get(p.getName()));
                 results.add(0, p);
             }
             long endTime = System.currentTimeMillis();
@@ -78,7 +115,7 @@ public class SimilarPatentFinder {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
+            SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
             System.out.println("Searching similar patents for 7056704");
             finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
                 System.out.println(p.getName()+": "+p.getSimilarityToTarget());
