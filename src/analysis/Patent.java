@@ -8,32 +8,21 @@ import java.io.Serializable;
 /**
  * Created by ehallmark on 7/26/16.
  */
-public class Patent implements Comparable<Patent>, Serializable {
+public class Patent extends AbstractPatent implements Comparable<Patent>, Serializable {
     private static final long serialVersionUID = 1L;
     private INDArray vector;
-    private String name;
     private static INDArray baseVector;
-    private String assignee;
-    private double similarity;
 
     public Patent(String name, INDArray vector) {
         this.name=name;
         this.vector=vector;
     }
 
-    public static Patent clone(Patent old) {
-        Patent clone = new Patent(old.getName(), old.getVector());
-        clone.setSimilarity(old.getSimilarityToTarget());
+    public static AbstractPatent abstractClone(Patent old, String assigneeName) {
+        AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), assigneeName);
         return  clone;
     }
 
-    private void setSimilarity(double similarity) {
-        this.similarity=similarity;
-    }
-
-    private INDArray getVector() {
-        return vector;
-    }
 
     @Override
     public int compareTo(Patent o) {

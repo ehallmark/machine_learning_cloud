@@ -1,5 +1,6 @@
 package analysis;
 
+import com.google.gson.Gson;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -22,6 +23,11 @@ public class SimilarPatentFinder {
     private int num1DVectors = Constants.DEFAULT_1D_VECTORS.size();
     private int num2DVectors = Constants.DEFAULT_2D_VECTORS.size();
     private Map<String, String> assigneeMap;
+
+    public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
+        this(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
+    }
+
     public SimilarPatentFinder(File patentListFile, File assigneeMapFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         System.out.println("--- Started Loading Patent Vector List ---");
@@ -96,7 +102,7 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     // returns empty if no results found
-    public List<Patent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
+    public List<AbstractPatent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
@@ -107,11 +113,12 @@ public class SimilarPatentFinder {
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
             patentList.forEach(patent -> {if(!patent.getName().equals(patentNumber))patent.calculateSimilarityToTarget(); heap.add(patent);});
-            List<Patent> results = new ArrayList<>(limit);
+            List<AbstractPatent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
-                Patent p = Patent.clone(heap.remove());
-                p.setAssignee(assigneeMap.get(p.getName()));
-                results.add(0, p);
+                Patent p = heap.remove();
+                String assignee = assigneeMap.get(p.getName());
+                if(assignee==null)assignee="";
+                results.add(0, Patent.abstractClone(p, assignee));
             }
             long endTime = System.currentTimeMillis();
             double time = new Double(endTime-startTime)/1000;
@@ -120,17 +127,18 @@ public class SimilarPatentFinder {
         }
     }
 
+    // unit test!
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE), new File(Constants.ASSIGNEE_MAP_FILE));
             System.out.println("Searching similar patents for 7056704");
             finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
-                System.out.println(p.getName()+": "+p.getSimilarityToTarget()+" Assignee: "+p.getAssignee());
+                System.out.println(new Gson().toJson(p));
             });
             System.out.println("Searching similar patents for 8481929");
             finder.findSimilarPatentsTo("8481929", 20).forEach(p->{
-                System.out.println(p.getName()+": "+p.getSimilarityToTarget()+" Assignee: "+p.getAssignee());
+                System.out.println(new Gson().toJson(p));
             });
         } catch(Exception e) {
             e.printStackTrace();
