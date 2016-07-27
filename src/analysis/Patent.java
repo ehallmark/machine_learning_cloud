@@ -21,20 +21,35 @@ public class Patent implements Comparable<Patent>, Serializable {
         this.vector=vector;
     }
 
+    public static Patent clone(Patent old) {
+        Patent clone = new Patent(old.getName(), old.getVector());
+        clone.setAssignee(old.getAssignee());
+        clone.setSimilarity(old.getSimilarityToTarget());
+        return  clone;
+    }
+
+    private void setSimilarity(double similarity) {
+        this.similarity=similarity;
+    }
+
+    private INDArray getVector() {
+        return vector;
+    }
+
     @Override
     public int compareTo(Patent o) {
-        assert baseVector!=null : "Please set base vector before comparing!";
-        Double sim1 = Transforms.cosineSim(baseVector,vector);
-        Double sim2 = Transforms.cosineSim(baseVector,o.vector);
-        return sim1.compareTo(sim2);
+        return Double.compare(similarity,Transforms.cosineSim(baseVector,o.vector));
     }
 
     public double getSimilarityToTarget() {
         return similarity;
     }
 
+    public double getSimilarityTo(INDArray otherVector) {
+        return Transforms.cosineSim(otherVector,vector);
+    }
+
     public void calculateSimilarityToTarget() {
-        assert baseVector!=null: "Please set base vector!";
         similarity = Transforms.cosineSim(baseVector,vector);
     }
 

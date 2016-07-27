@@ -61,12 +61,11 @@ public class SimilarPatentFinder {
         INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
-            patentList.forEach(patent -> heap.add(patent));
+            patentList.forEach(patent -> {patent.calculateSimilarityToTarget(); heap.add(patent);});
             List<Patent> results = new ArrayList<>(limit);
             while (!heap.isEmpty()) {
-                Patent p = heap.remove();
-                p.calculateSimilarityToTarget();
-                results.add(0, heap.remove());
+                Patent p = Patent.clone(heap.remove());
+                results.add(0, p);
             }
             return results;
         }
@@ -76,7 +75,12 @@ public class SimilarPatentFinder {
         try {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
+            System.out.println("Searching similar patents for 7056704");
             finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
+                System.out.println(p.getName()+": "+p.getSimilarityToTarget());
+            });
+            System.out.println("Searching similar patents for 8481929");
+            finder.findSimilarPatentsTo("8481929", 20).forEach(p->{
                 System.out.println(p.getName()+": "+p.getSimilarityToTarget());
             });
         } catch(Exception e) {
