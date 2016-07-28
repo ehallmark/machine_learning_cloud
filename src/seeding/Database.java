@@ -239,11 +239,10 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static ResultSet getClaimsFromPatent(String patent) throws SQLException {
+	public static PreparedStatement getClaimsFromPatentStatement() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(claimsFromPatent);
-		ps.setString(1,patent);
 		ps.setFetchSize(5);
-		return ps.executeQuery();
+		return ps;
 	}
 
 	public static ResultSet getMainVectorsFromPatentArray(Array patentArray) throws SQLException {

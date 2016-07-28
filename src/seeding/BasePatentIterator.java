@@ -4,6 +4,7 @@ import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -17,11 +18,13 @@ public class BasePatentIterator implements SentenceIterator {
     private ResultSet resultSet;
     private Iterator<String> currentPatentIterator;
     private SentencePreProcessor preProcessor;
+    private PreparedStatement claimStatement;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
+        claimStatement = Database.getClaimsFromPatentStatement();
     }
 
     protected void resetQuery() throws SQLException {
@@ -43,7 +46,8 @@ public class BasePatentIterator implements SentenceIterator {
         String descriptionText = resultSet.getString(4);
         if(!shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
 
-        ResultSet claimResults = Database.getClaimsFromPatent(resultSet.getString(1));
+        claimStatement.setString(1, resultSet.getString(1));
+        ResultSet claimResults = claimStatement.executeQuery();
         while(claimResults.next()) {
             String claimText = claimResults.getString(1);
             if(!shouldRemoveSentence(claimText)) preIterator.add(claimText);
