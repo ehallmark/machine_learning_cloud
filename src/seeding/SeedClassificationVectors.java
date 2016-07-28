@@ -40,8 +40,8 @@ public class SeedClassificationVectors {
         count = new AtomicInteger(0);
 
         // Get compdb patents grouped by date
-        ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
-        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
+        //ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
+        //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsAfter(startDate);

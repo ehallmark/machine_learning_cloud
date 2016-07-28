@@ -32,8 +32,8 @@ public class SeedClaimVectors {
         startTime = System.currentTimeMillis();
 
         // Get compdbPatents
-        ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
-        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
+        //ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
+        //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsAfter(startDate);
@@ -67,6 +67,7 @@ public class SeedClaimVectors {
 
             // Update patent claim vector
             if(claimVector !=null) {
+                assert claimVector.length == Constants.NUM_ROWS_OF_WORD_VECTORS && claimVector[0].length == Constants.VECTOR_LENGTH : "Invalid claim vector dimensions: "+claimVector.length+"x"+claimVector[0].length;
                 Database.insertClaims(pubDocNumber, pubDate, claimVector);
                 if (timeToCommit % commitLength == 0) {
                     Database.commit();
