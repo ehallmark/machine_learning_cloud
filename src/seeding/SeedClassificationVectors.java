@@ -76,7 +76,7 @@ public class SeedClassificationVectors {
                         if (classes != null) {
                             for (String klass : classes) {
                                 int index = classifications.indexOf(klass);
-                                if(index>=0)classSoftMax[index] = 1.0;
+                                if(index>=0)classSoftMax[index] = 1.0/classes.length;
                             }
                         }
                         return classSoftMax;

@@ -1,6 +1,5 @@
 package tools;
 
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
@@ -130,11 +129,11 @@ public class VectorHelper {
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            double invDocFreq = Math.log(1+((double)N/vocab.docAppearedIn(token)));
+            double invDocFreq = Math.log(1+((double)N/Math.max(1,vocab.docAppearedIn(token))));
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
-        INDArray mean = allWords.div(total).mean(0);
+        INDArray mean = allWords.mean(0).div(total/tokens.size());
         return mean;
     }
 

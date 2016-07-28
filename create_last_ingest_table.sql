@@ -3,7 +3,7 @@
 DROP TABLE IF EXISTS last_vectors_ingest;
 
 CREATE TABLE last_vectors_ingest (
-    program_name VARCHAR(255),
+    program_name VARCHAR(255) PRIMARY KEY,
     pub_date INTEGER
 );
 

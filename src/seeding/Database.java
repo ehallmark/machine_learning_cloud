@@ -162,8 +162,9 @@ public class Database {
 	public static void insertClaims(String pubDocNumber, Integer pubDate, Double[][] claimVector) throws SQLException {
 		if(claimVector==null) return;
 		PreparedStatement ps = mainConn.prepareStatement(insertClaimsVectorQuery);
-		Array claimArray = null;
-		if(claimVector!=null) claimArray = mainConn.createArrayOf("float8", claimVector);
+		Array claimArray;
+		assert claimVector.length==Constants.NUM_ROWS_OF_WORD_VECTORS && claimVector[0].length==Constants.VECTOR_LENGTH;
+		claimArray = mainConn.createArrayOf("float8", claimVector);
 		ps.setString(1, pubDocNumber);
 		ps.setInt(2, pubDate);
 		ps.setArray(3, claimArray);
@@ -178,9 +179,15 @@ public class Database {
 		Array softMaxArray = null;
 		if(classSoftMax!=null) softMaxArray = mainConn.createArrayOf("float8", classSoftMax);
 		Array classArray = null;
-		if(classVector!=null) classArray = mainConn.createArrayOf("float8", classVector);
+		if(classVector!=null) {
+			assert classVector.length==Constants.VECTOR_LENGTH;
+			classArray = mainConn.createArrayOf("float8", classVector);
+		}
 		Array subClassArray = null;
-		if(subClassVector!=null) subClassArray = mainConn.createArrayOf("float8", subClassVector);
+		if(subClassVector!=null) {
+			assert subClassVector.length == Constants.VECTOR_LENGTH;
+			subClassArray = mainConn.createArrayOf("float8", subClassVector);
+		}
 		ps.setString(1, pubDocNumber);
 		ps.setInt(2, pubDate);
 		ps.setArray(3, softMaxArray);
@@ -197,11 +204,20 @@ public class Database {
 	public static void insertPatentVectors(String pub_doc_number,int pub_date, Double[] invention_title, Double[][] abstract_vectors, Double[][] description) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement(insertPatentVectorsQuery);
 		Array invention_array = null;
-		if(invention_title!=null) invention_array = mainConn.createArrayOf("float8", invention_title);
+		if(invention_title!=null) {
+			assert invention_title.length==Constants.VECTOR_LENGTH;
+			invention_array = mainConn.createArrayOf("float8", invention_title);
+		}
 		Array abstract_array = null;
-		if(abstract_vectors!=null) abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
+		if(abstract_vectors!=null) {
+			assert abstract_vectors.length==Constants.NUM_ROWS_OF_WORD_VECTORS && abstract_vectors[0].length==Constants.VECTOR_LENGTH;
+			abstract_array = mainConn.createArrayOf("float8", abstract_vectors);
+		}
 		Array description_array = null;
-		if(description!=null) description_array = mainConn.createArrayOf("float8", description);
+		if(description!=null) {
+			assert description.length==Constants.NUM_ROWS_OF_WORD_VECTORS && description[0].length==Constants.VECTOR_LENGTH;
+			description_array = mainConn.createArrayOf("float8", description);
+		}
 		ps.setString(1, pub_doc_number);
 		ps.setInt(2, pub_date);
 		ps.setArray(3, invention_array);
