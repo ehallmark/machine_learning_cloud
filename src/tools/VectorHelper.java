@@ -1,6 +1,9 @@
 package tools;
 
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -8,6 +11,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import seeding.*;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,14 +24,21 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class VectorHelper {
     private static TokenizerFactory tokenizerFactory;
+    private static VocabCache<VocabWord> vocab;
+    private static int N;
     static {
         tokenizerFactory=new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
+        try {
+            vocab = WordVectorSerializer.readVocabCache(new File(Constants.VOCAB_FILE));
+            N = vocab.totalNumberOfDocs();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static Double[][] compute2DAvgWordVectorsFrom(WordVectors wordVectors, String sentence) {
         Double[][] data = null;
-
         if(sentence!=null) {
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
             if(tokens.isEmpty()) return null;
@@ -40,13 +51,12 @@ public class VectorHelper {
                 int end = Math.min(tokens.size(), i * bucketSize + bucketSize);
                 if(begin>=end) begin=end-1;
                 List<String> subList = tokens.subList(begin, end);
-                INDArray wordVector = centroidVector(wordVectors, subList);
+                INDArray wordVector = TFIDFcentroidVector(wordVectors, subList);
                 data[i] = toObject(wordVector.data().asDouble());
             }
 
         }
         return data;
-
     }
 
     public static Double[][] createAndMerge2DWordVectors(WordVectors wordVectors, String[] sentences) {
@@ -58,7 +68,7 @@ public class VectorHelper {
         for(String sentence : sentences) {
             if (sentence == null) continue;
             List<String> tokens = createAndPrefilterTokens(wordVectors, sentence);
-            if (!tokens.isEmpty()) validSentences.add(centroidVector(wordVectors, tokens));
+            if (!tokens.isEmpty()) validSentences.add(TFIDFcentroidVector(wordVectors, tokens));
         }
         if(validSentences.isEmpty()) return null;
 
@@ -102,7 +112,7 @@ public class VectorHelper {
         Double[] data = null;
         if(sentence!=null) {
             List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
-            if(!tokens.isEmpty())data = toObject(centroidVector(wordVectors, tokens).data().asDouble());
+            if(!tokens.isEmpty())data = toObject(TFIDFcentroidVector(wordVectors, tokens).data().asDouble());
         }
         return data;
     }
@@ -110,18 +120,21 @@ public class VectorHelper {
     private static List<String> createAndPrefilterTokens(WordVectors wordVectors, String sentence) {
         List<String> tokens = tokenizerFactory.create(sentence).getTokens();
         // filter
-        tokens.removeIf(token->(token==null || !wordVectors.hasWord(token)));
+        tokens.removeIf(token->(token==null || Constants.STOP_WORD_SET.contains(token) || !wordVectors.hasWord(token)));
         return tokens;
     }
 
     // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
-    private static INDArray centroidVector(WordVectors wordVectors, List<String> tokens) {
+    private static INDArray TFIDFcentroidVector(WordVectors wordVectors, List<String> tokens) {
         INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
+        double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token));
+            double invDocFreq = Math.log(1+((double)N/vocab.docAppearedIn(token)));
+            total+=invDocFreq;
+            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
-        INDArray mean = allWords.mean(0);
+        INDArray mean = allWords.div(total).mean(0);
         return mean;
     }
 

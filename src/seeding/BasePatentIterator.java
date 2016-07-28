@@ -43,6 +43,13 @@ public class BasePatentIterator implements SentenceIterator {
         String descriptionText = resultSet.getString(4);
         if(!shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
 
+        ResultSet claimResults = Database.getClaimsFromPatent(resultSet.getString(1));
+        while(claimResults.next()) {
+            String claimText = claimResults.getString(1);
+            if(!shouldRemoveSentence(claimText)) preIterator.add(claimText);
+        }
+        claimResults.close();
+
         return preIterator.iterator();
     }
 
