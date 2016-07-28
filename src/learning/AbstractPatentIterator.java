@@ -125,7 +125,7 @@ public abstract class AbstractPatentIterator implements DataSetIterator {
         int currentRowCount;
         final int labelIndex = num1DVectors+num2DVectors+1;
         while(results.next()&&(currentRowCount = rowCount.getAndIncrement())<num) {
-            features.putRow(currentRowCount, VectorHelper.extractResultSetToVector(results, num1DVectors, num2DVectors));
+            features.putRow(currentRowCount, VectorHelper.extractResultSetToVector(results));
             if(numLabels > 0) {
                 // get labels
                 labels.putRow(currentRowCount, Nd4j.create(VectorHelper.toPrim((Double[])results.getArray(labelIndex).getArray())));

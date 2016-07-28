@@ -19,8 +19,6 @@ import server.AbstractPatent;
 public class SimilarPatentFinder {
     private MinHeap<Patent> heap;
     private List<Patent> patentList;
-    private int num1DVectors = Constants.DEFAULT_1D_VECTORS.size();
-    private int num2DVectors = Constants.DEFAULT_2D_VECTORS.size();
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
@@ -36,7 +34,7 @@ public class SimilarPatentFinder {
             int count = 0;
             int offset = 1; // Due to the pub_doc_number field
             while (rs.next()) {
-                patentList.add(new Patent(rs.getString(1), VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors, offset)));
+                patentList.add(new Patent(rs.getString(1), VectorHelper.extractResultSetToVector(rs, offset)));
                 System.out.println(++count);
             }
             // Serialize List
@@ -113,7 +111,7 @@ public class SimilarPatentFinder {
         if(!rs.next()) {
             return null; // nothing found
         }
-        INDArray baseVector = VectorHelper.extractResultSetToVector(rs, num1DVectors, num2DVectors);
+        INDArray baseVector = VectorHelper.extractResultSetToVector(rs);
         assert baseVector!=null : "Base vector is null!";
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);

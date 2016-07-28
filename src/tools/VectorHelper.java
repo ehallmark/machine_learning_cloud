@@ -227,11 +227,15 @@ public class VectorHelper {
         return array1D;
     }
 
-    public static INDArray extractResultSetToVector(ResultSet results, int num1DVectors, int num2DVectors) throws SQLException {
-        return extractResultSetToVector(results, num1DVectors, num2DVectors, 0);
+    public static INDArray extractResultSetToVector(ResultSet results) throws SQLException {
+        return extractResultSetToVector(results, 0);
     }
 
-    public static INDArray extractResultSetToVector(ResultSet results, int num1DVectors, int num2DVectors, int offset) throws SQLException {
+    public static INDArray extractResultSetToVector(ResultSet results, int offset) throws SQLException {
+        return extractResultSetToVector(results, Constants.NUM_1D_VECTORS, Constants.NUM_2D_VECTORS, offset);
+    }
+
+    private static INDArray extractResultSetToVector(ResultSet results, int num1DVectors, int num2DVectors, int offset) throws SQLException {
         double[] values = null;
         for (int i = 1+offset; i <= num1DVectors+offset; i++) {
             double[] nextValues = VectorHelper.toPrim((Double[])results.getArray(i).getArray());
