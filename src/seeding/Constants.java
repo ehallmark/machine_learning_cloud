@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 public class Constants {
-	public static final int DEFAULT_MIN_WORD_FREQUENCY = 10;
+	public static final int DEFAULT_MIN_WORD_FREQUENCY = 5;
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
 	public static final int VECTOR_LENGTH = 300;
