@@ -1,6 +1,7 @@
 package seeding;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import tools.VectorBuilderThread;
 import tools.WordVectorSerializer;
 
 import java.io.File;

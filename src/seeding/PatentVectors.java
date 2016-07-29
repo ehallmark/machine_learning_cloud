@@ -5,8 +5,8 @@ package seeding;
  */
 public class PatentVectors {
     private Double[] titleWordVectors;
-    private Double[][] abstractWordVectors;
-    private Double[][] descriptionWordVectors;
+    private Double[] abstractWordVectors;
+    private Double[] descriptionWordVectors;
     private String pubDocNumber;
     private Integer pubDate;
 
@@ -19,21 +19,19 @@ public class PatentVectors {
         titleWordVectors=v;
     }
 
-    public void setAbstractWordVectors(Double[][] v) {
-        abstractWordVectors=v;
-    }
+    public void setAbstractWordVectors(Double[] v) { abstractWordVectors=v; }
 
-    public void setDescriptionWordVectors(Double[][] v) {
+    public void setDescriptionWordVectors(Double[] v) {
         descriptionWordVectors=v;
     }
 
     public Double[] getTitleWordVectors() { return titleWordVectors; }
 
-    public Double[][] getAbstractWordVectors() {
+    public Double[] getAbstractWordVectors() {
         return abstractWordVectors;
     }
 
-    public Double[][] getDescriptionWordVectors() {
+    public Double[] getDescriptionWordVectors() {
         return descriptionWordVectors;
     }
 

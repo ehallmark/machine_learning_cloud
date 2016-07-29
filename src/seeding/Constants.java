@@ -10,7 +10,7 @@ public class Constants {
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
 	public static final int VECTOR_LENGTH = 300;
-	public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
+	//public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
 	public static final int START_DATE = 20050000;
 	public static final int VOCAB_START_DATE = 20100000;
 
@@ -47,8 +47,8 @@ public class Constants {
 
 	//public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS,Constants.CLAIM_VECTORS);
 	// Claim vectors are not working yet...
-	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS);
-	public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS);
+	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.CLAIM_VECTORS);
+	public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS,Constants.ABSTRACT_VECTORS,Constants.DESCRIPTION_VECTORS);
 	public static final int NUM_2D_VECTORS = DEFAULT_2D_VECTORS.size();
 	public static final int NUM_1D_VECTORS = DEFAULT_1D_VECTORS.size();
 }

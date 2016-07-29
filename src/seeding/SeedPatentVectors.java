@@ -1,18 +1,7 @@
 package seeding;
 
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
-import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.Word2Vec;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
-import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
-import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+
 import tools.VectorHelper;
 import tools.WordVectorSerializer;
 import java.io.File;
@@ -27,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 7/18/16.
  */
 public class SeedPatentVectors {
-    private int date;
     private static final File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
     private static final File googleVectorsFile = new File(Constants.GOOGLE_WORD_VECTORS_PATH);
     private WordVectors wordVectors;
@@ -37,8 +25,6 @@ public class SeedPatentVectors {
     private AtomicInteger count;
 
     public SeedPatentVectors(int startDate, boolean useGoogleModel) throws Exception {
-        this.date=startDate;
-
         if(!useGoogleModel) wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
         else wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
 

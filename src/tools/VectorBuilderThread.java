@@ -1,4 +1,4 @@
-package seeding;
+package tools;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import tools.VectorHelper;

@@ -61,14 +61,14 @@ public class SeedClaimVectors {
             // Claim vectors
             Double[][] claimVector = null;
             String[] claims = (String[])rs.getArray(2).getArray();
-            if(claims!=null) {
-                claimVector = VectorHelper.createAndMerge2DWordVectors(wordVectors, claims);
+            Integer[] claimNumbers = (Integer[])rs.getArray(3).getArray();
+            if(claims!=null && claimNumbers!=null) {
+                claimVector = VectorHelper.compute2DAvgWordVectorsFrom(wordVectors, claims);
             }
 
             // Update patent claim vector
             if(claimVector !=null) {
-                assert claimVector.length == Constants.NUM_ROWS_OF_WORD_VECTORS && claimVector[0].length == Constants.VECTOR_LENGTH : "Invalid claim vector dimensions: "+claimVector.length+"x"+claimVector[0].length;
-                Database.insertClaims(pubDocNumber, pubDate, claimVector);
+                Database.insertClaims(pubDocNumber, pubDate, claimVector, claimNumbers);
                 if (timeToCommit % commitLength == 0) {
                     Database.commit();
                     long endTime = System.currentTimeMillis();

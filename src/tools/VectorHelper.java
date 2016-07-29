@@ -14,6 +14,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,29 +37,21 @@ public class VectorHelper {
         }
     }
 
-    public static Double[][] compute2DAvgWordVectorsFrom(WordVectors wordVectors, String sentence) {
-        Double[][] data = null;
-        if(sentence!=null) {
-            List<String> tokens = createAndPrefilterTokens(wordVectors,sentence);
-            if(tokens.isEmpty()) return null;
-
-            data = new Double[Constants.NUM_ROWS_OF_WORD_VECTORS][];
-
-            final int bucketSize = Math.max(1, tokens.size() / Constants.NUM_ROWS_OF_WORD_VECTORS);
-            for (int i = 0; i < Constants.NUM_ROWS_OF_WORD_VECTORS; i++) {
-                int begin = i * bucketSize;
-                int end = Math.min(tokens.size(), i * bucketSize + bucketSize);
-                if(begin>=end) begin=end-1;
-                List<String> subList = tokens.subList(begin, end);
-                INDArray wordVector = TFIDFcentroidVector(wordVectors, subList);
-                data[i] = toObject(wordVector.data().asDouble());
+    public static Double[][] compute2DAvgWordVectorsFrom(WordVectors wordVectors, String[] sentences) {
+        Double[][] data = new Double[sentences.length][];
+        int count = 0;
+        for(String sentence : sentences) {
+            Double[] vec = computeAvgWordVectorsFrom(wordVectors, sentence);
+            data[count] = vec;
+            if(vec!=null) {
+                count++;
             }
-
         }
-        return data;
+        if(count > 0) return Arrays.copyOfRange(data, 0, count);
+        else return null;
     }
 
-    public static Double[][] createAndMerge2DWordVectors(WordVectors wordVectors, String[] sentences) {
+    /*public static Double[][] createAndMerge2DWordVectors(WordVectors wordVectors, String[] sentences) {
         if(sentences==null)return null;
         Double[][] data;
 
@@ -105,7 +98,7 @@ public class VectorHelper {
             data[row] = innerRow;
         }
         return data;
-    }
+    }*/
 
     public static Double[] computeAvgWordVectorsFrom(WordVectors wordVectors, String sentence) {
         Double[] data = null;
@@ -190,16 +183,16 @@ public class VectorHelper {
 
         // Abstract
         String abstractText = resultSet.getString(4);
-        VectorBuilderThread2D abstractThread = null;
-        if(!shouldRemoveSentence(abstractText)) abstractThread = new VectorBuilderThread2D(wordVectors, abstractText);
+        VectorBuilderThread abstractThread = null;
+        if(!shouldRemoveSentence(abstractText)) abstractThread = new VectorBuilderThread(wordVectors, abstractText);
         if(abstractThread!=null) {
             abstractThread.fork();
         }
 
         // Description
         String descriptionText = resultSet.getString(5);
-        VectorBuilderThread2D descriptionThread = null;
-        if(!shouldRemoveSentence(descriptionText)) descriptionThread = new VectorBuilderThread2D(wordVectors, descriptionText);
+        VectorBuilderThread descriptionThread = null;
+        if(!shouldRemoveSentence(descriptionText)) descriptionThread = new VectorBuilderThread(wordVectors, descriptionText);
         if(descriptionThread!=null) {
             descriptionThread.fork();
         }
