@@ -102,14 +102,5 @@ public class GenerateVocabulary{
         WordVectorSerializer.writeFullModel((Word2Vec)wordVectors, wordVectorsFile.getAbsolutePath());
     }*/
 
-    public static void main(String[] args) {
-        try {
-            Database.setupSeedConn();
-            new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
-        } catch(Exception e) {
-            e.printStackTrace();
-        } finally {
-            Database.close();
-        }
-    }
+ 
 }
