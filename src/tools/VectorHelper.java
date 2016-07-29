@@ -25,13 +25,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VectorHelper {
     private static TokenizerFactory tokenizerFactory;
     private static VocabCache<VocabWord> vocab;
+    private static double LOG_N;
     private static int N;
     static {
         tokenizerFactory=new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
+    }
+
+    public static void setupVocab(File vocabFile) {
         try {
-            vocab = WordVectorSerializer.readVocabCache(new File(Constants.VOCAB_FILE));
+            vocab = WordVectorSerializer.readVocabCache(vocabFile);
             N = vocab.totalNumberOfDocs();
+            LOG_N = Math.log(1+N);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -122,7 +127,7 @@ public class VectorHelper {
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            double invDocFreq = Math.log(1+((double)N/Math.max(1,vocab.docAppearedIn(token))));
+            double invDocFreq = (vocab.hasToken(token)) ? Math.log(1+((double)N/Math.max(1,vocab.docAppearedIn(token)))) : LOG_N;
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }

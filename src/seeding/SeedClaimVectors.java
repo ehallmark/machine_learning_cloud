@@ -87,6 +87,7 @@ public class SeedClaimVectors {
             Database.setupSeedConn();
             Database.setupMainConn();
             Database.setupCompDBConn();
+            VectorHelper.setupVocab(new File(Constants.CLAIM_VOCAB_FILE));
             boolean useGoogle = true;
             // Get Last Date
             int dateToStartFrom = Database.selectLastDate(Constants.CLAIM_VECTOR_TYPE);

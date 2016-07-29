@@ -2,6 +2,7 @@ package seeding;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import tools.VectorBuilderThread;
+import tools.VectorHelper;
 import tools.WordVectorSerializer;
 
 import java.io.File;
@@ -146,6 +147,8 @@ public class SeedClassificationVectors {
             Database.setupSeedConn();
             Database.setupMainConn();
             Database.setupCompDBConn();
+            VectorHelper.setupVocab(new File(Constants.VOCAB_FILE));
+
             boolean useGoogle = true;
             int startDate = Database.selectLastDate(Constants.CLASSIFICATION_VECTOR_TYPE);
             new SeedClassificationVectors(startDate, useGoogle);
