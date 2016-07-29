@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class GenerateVocabularyFile {
     public GenerateVocabularyFile(File vocabFile) throws Exception{
         // Create Iterator
-        SentenceIterator sentenceIterator = new BasePatentIterator(Constants.START_DATE);
+        SentenceIterator sentenceIterator = new BasePatentIterator(Constants.VOCAB_START_DATE);
 
         SentenceTransformer transformer = new SentenceTransformer.Builder()
                 .readOnly(true)
