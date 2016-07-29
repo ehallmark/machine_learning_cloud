@@ -57,6 +57,9 @@ public class GenerateVocabularyFile {
 
         constructor.buildJointVocabulary(false, true);
         vocab.saveVocab();
+        System.out.println("Document count: "+vocab.totalNumberOfDocs());
+        System.out.println("Count of word 'method': "+vocab.docAppearedIn("method"));
+        System.out.println("Count of word 'touchscreen': "+vocab.docAppearedIn("touchscreen"));
         return vocab;
     }
 
