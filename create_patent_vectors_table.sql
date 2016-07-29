@@ -3,9 +3,10 @@
 CREATE TABLE patent_vectors (
     pub_doc_number VARCHAR(10) PRIMARY KEY,
     pub_date INTEGER,
-    abstract_vectors  DOUBLE PRECISION[][],
-    description_vectors DOUBLE PRECISION[][],
+    abstract_vectors  DOUBLE PRECISION[],
+    description_vectors DOUBLE PRECISION[],
     claims_vectors DOUBLE PRECISION[][],
+    claims_numbers INTEGER[],
     invention_title_vectors DOUBLE PRECISION[],
     class_softmax DOUBLE PRECISION[],
     class_vectors DOUBLE PRECISION[],

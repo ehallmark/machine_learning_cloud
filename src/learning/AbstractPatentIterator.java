@@ -29,7 +29,7 @@ public abstract class AbstractPatentIterator implements DataSetIterator {
         this.batchSize=batchSize;
         this.num1DVectors = oneDNames.size();
         this.num2DVectors = twoDNames.size();
-        this.numVectors=(num2DVectors* Constants.NUM_ROWS_OF_WORD_VECTORS)+num1DVectors;
+        this.numVectors=num2DVectors+num1DVectors;
         query = buildAndReturnQuery(oneDNames,twoDNames, isTraining);
     }
 
