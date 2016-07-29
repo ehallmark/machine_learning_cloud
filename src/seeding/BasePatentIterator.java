@@ -18,6 +18,8 @@ public class BasePatentIterator implements SentenceIterator {
     private ResultSet resultSet;
     private Iterator<String> currentPatentIterator;
     private SentencePreProcessor preProcessor;
+    private int queueSize = 100;
+    private List<String> claimQueue = new ArrayList<>(queueSize+1);
     private PreparedStatement claimStatement;
     // used to tag each sequence with own Id
 
@@ -34,6 +36,17 @@ public class BasePatentIterator implements SentenceIterator {
 
     protected Iterator<String> processedSentenceIterator() throws SQLException {
         List<String> preIterator = new LinkedList<>();
+        claimQueue.add(resultSet.getString(1));
+        if(claimQueue.size()>=queueSize)  {
+            claimStatement.setArray(1, Database.varCharArray(claimQueue));
+            claimQueue.clear();
+            ResultSet claimResults = claimStatement.executeQuery();
+            while(claimResults.next()) {
+                String claimText = claimResults.getString(1);
+                if(!shouldRemoveSentence(claimText)) preIterator.add(claimText);
+            }
+            claimResults.close();
+        }
         // Title
         String titleText = resultSet.getString(2);
         if(!shouldRemoveSentence(titleText)) preIterator.add(titleText);
@@ -45,14 +58,6 @@ public class BasePatentIterator implements SentenceIterator {
         // Description
         String descriptionText = resultSet.getString(4);
         if(!shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
-
-        claimStatement.setString(1, resultSet.getString(1));
-        ResultSet claimResults = claimStatement.executeQuery();
-        while(claimResults.next()) {
-            String claimText = claimResults.getString(1);
-            if(!shouldRemoveSentence(claimText)) preIterator.add(claimText);
-        }
-        claimResults.close();
 
         return preIterator.iterator();
     }
