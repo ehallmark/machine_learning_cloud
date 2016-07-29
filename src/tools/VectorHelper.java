@@ -127,15 +127,11 @@ public class VectorHelper {
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
             double invDocFreq = Math.log(1.0+(N/Math.max(1,vocab.docAppearedIn(token))));
-            System.out.println("Inverse Document Frequency: "+invDocFreq);
-            System.out.println("Doc appeared: "+vocab.docAppearedIn(token));
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
-        assert total > 0;
+        assert total > 0.0 : "Cannot divide by 0!";
         INDArray mean = allWords.mean(0).div(total/tokens.size());
-        System.out.println("Total: "+total);
-        System.out.println(mean.toString());
         return mean;
     }
 

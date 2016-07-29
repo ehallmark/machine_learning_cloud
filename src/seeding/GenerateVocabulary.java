@@ -102,5 +102,5 @@ public class GenerateVocabulary{
         WordVectorSerializer.writeFullModel((Word2Vec)wordVectors, wordVectorsFile.getAbsolutePath());
     }*/
 
- 
+
 }
