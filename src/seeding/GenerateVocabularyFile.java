@@ -56,6 +56,7 @@ public class GenerateVocabularyFile {
                 .build();
 
         constructor.buildJointVocabulary(false, true);
+        vocab.saveVocab();
         return vocab;
     }
 

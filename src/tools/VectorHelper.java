@@ -33,7 +33,8 @@ public class VectorHelper {
 
     public static void setupVocab(File vocabFile) {
         try {
-            vocab = WordVectorSerializer.readVocabCache(vocabFile);
+            vocab = WordVectorSerializer.readVocabCache(vocabFile); 
+            vocab.loadVocab();
             N = ((double) vocab.totalNumberOfDocs());
             System.out.println("Total number of documents: "+N);
         } catch(Exception e) {
