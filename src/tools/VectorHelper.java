@@ -181,7 +181,7 @@ public class VectorHelper {
         // Invention Title
         String titleText = resultSet.getString(3);
         VectorBuilderThread titleThread = null;
-        if(!shouldRemoveSentence(titleText)) titleThread = new VectorBuilderThread(wordVectors, titleText);
+        if(titleText!=null) titleThread = new VectorBuilderThread(wordVectors, titleText);
         if(titleThread!=null) {
             titleThread.fork();
         }
