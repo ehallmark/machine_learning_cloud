@@ -25,8 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class VectorHelper {
     private static TokenizerFactory tokenizerFactory;
     private static VocabCache<VocabWord> vocab;
-    private static double LOG_N;
-    private static int N;
+    private static double N;
     static {
         tokenizerFactory=new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -35,8 +34,8 @@ public class VectorHelper {
     public static void setupVocab(File vocabFile) {
         try {
             vocab = WordVectorSerializer.readVocabCache(vocabFile);
-            N = vocab.totalNumberOfDocs();
-            LOG_N = Math.log(1+N);
+            N = ((double) vocab.totalNumberOfDocs());
+            System.out.println("Total number of documents: "+N);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -127,12 +126,13 @@ public class VectorHelper {
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            double invDocFreq = (vocab.hasToken(token)) ? Math.log(1+((double)N/Math.max(1,vocab.docAppearedIn(token)))) : LOG_N;
+            double invDocFreq = Math.log(1.0+(N/Math.max(1,vocab.docAppearedIn(token))));
             System.out.println("Inverse Document Frequency: "+invDocFreq);
+            System.out.println("Doc appeared: "+vocab.docAppearedIn(token));
             total+=invDocFreq;
-            assert invDocFreq > 0 && invDocFreq < Double.POSITIVE_INFINITY;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
+        assert total > 0;
         INDArray mean = allWords.mean(0).div(total/tokens.size());
         System.out.println("Total: "+total);
         System.out.println(mean.toString());
