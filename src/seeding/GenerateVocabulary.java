@@ -18,8 +18,9 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 7/28/16.
  */
-public class GenerateVocabularyFile {
-    public GenerateVocabularyFile(File vocabFile, SentenceIterator sentenceIterator) throws Exception{
+public class GenerateVocabulary{
+    private VocabCache<VocabWord> cache;
+    public GenerateVocabulary(SentenceIterator sentenceIterator) throws Exception{
         // Create Iterator
 
         SentenceTransformer transformer = new SentenceTransformer.Builder()
@@ -32,14 +33,18 @@ public class GenerateVocabularyFile {
 
         // Start on Vocabulary
         System.out.println("Starting to build vocabulary...");
-        WordVectorSerializer.writeVocabCache(buildAndWriteVocabulary(iterator), vocabFile);
-
+        //WordVectorSerializer.writeVocabCache(buildAndWriteVocabulary(iterator), vocabFile);
+        cache = buildAndWriteVocabulary(iterator);
         /*// Start on WordVectors
         System.out.println("Starting Word Vectors...");
         if (!wordVectorsFile.exists()) buildAndWriteParagraphVectors();
         else {
             wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
         }*/
+    }
+
+    public VocabCache<VocabWord> getCache() {
+        return cache;
     }
 
     private VocabCache<VocabWord> buildAndWriteVocabulary(SequenceIterator<VocabWord> iterator) throws IOException {
@@ -100,7 +105,7 @@ public class GenerateVocabularyFile {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new GenerateVocabularyFile(new File(Constants.VOCAB_FILE), new BasePatentIterator(Constants.VOCAB_START_DATE));
+            new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

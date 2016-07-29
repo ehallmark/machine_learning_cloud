@@ -31,10 +31,9 @@ public class VectorHelper {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-    public static void setupVocab(File vocabFile) {
+    public static void setupVocab(VocabCache<VocabWord> vocab) {
         try {
-            vocab = WordVectorSerializer.readVocabCache(vocabFile); 
-            vocab.loadVocab();
+            VectorHelper.vocab=vocab;
             N = ((double) vocab.totalNumberOfDocs());
             System.out.println("Total number of documents: "+N);
         } catch(Exception e) {

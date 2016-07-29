@@ -87,7 +87,8 @@ public class SeedClaimVectors {
             Database.setupSeedConn();
             Database.setupMainConn();
             Database.setupCompDBConn();
-            VectorHelper.setupVocab(new File(Constants.CLAIM_VOCAB_FILE));
+            GenerateVocabulary genVocab = new GenerateVocabulary(new PatentClaimIterator(Constants.VOCAB_START_DATE));
+            VectorHelper.setupVocab(genVocab.getCache());
             boolean useGoogle = true;
             // Get Last Date
             int dateToStartFrom = Database.selectLastDate(Constants.CLAIM_VECTOR_TYPE);

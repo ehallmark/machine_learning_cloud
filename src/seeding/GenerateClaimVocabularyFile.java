@@ -22,7 +22,7 @@ public class GenerateClaimVocabularyFile {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new GenerateVocabularyFile(new File(Constants.CLAIM_VOCAB_FILE), new PatentClaimIterator(Constants.VOCAB_START_DATE));
+            new GenerateVocabulary(new PatentClaimIterator(Constants.VOCAB_START_DATE));
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
