@@ -19,9 +19,8 @@ import java.util.Arrays;
  * Created by ehallmark on 7/28/16.
  */
 public class GenerateVocabularyFile {
-    public GenerateVocabularyFile(File vocabFile) throws Exception{
+    public GenerateVocabularyFile(File vocabFile, SentenceIterator sentenceIterator) throws Exception{
         // Create Iterator
-        SentenceIterator sentenceIterator = new BasePatentIterator(Constants.VOCAB_START_DATE);
 
         SentenceTransformer transformer = new SentenceTransformer.Builder()
                 .readOnly(true)
@@ -97,7 +96,7 @@ public class GenerateVocabularyFile {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            new GenerateVocabularyFile(new File(Constants.VOCAB_FILE));
+            new GenerateVocabularyFile(new File(Constants.VOCAB_FILE), new BasePatentIterator(Constants.VOCAB_START_DATE));
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

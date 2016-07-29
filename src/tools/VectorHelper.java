@@ -204,7 +204,7 @@ public class VectorHelper {
         return p;
     }
 
-    private static boolean shouldRemoveSentence(String str) {
+    public static boolean shouldRemoveSentence(String str) {
         if(str==null)return true;
         boolean wasChar = false;
         int wordCount = 0;
@@ -215,7 +215,7 @@ public class VectorHelper {
             } else if(Character.isAlphabetic(c)) {
                 wasChar = true;
             }
-            if(wordCount >= 1) return false;
+            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return false;
         }
         return true;
     }

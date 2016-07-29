@@ -18,7 +18,7 @@ public class Database {
 	private static final String distinctClassificationsStatement = "SELECT distinct main_class FROM us_class_titles";
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)), array_to_string(array_agg(class), ' '), array_to_string(array_agg(subclass), ' ') FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text), array_agg(number) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL and parent_claim_id is null group by pub_doc_number";
-	private static final String claimsFromPatent = "SELECT claim_text FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL and parent_claim_id is null";
+	private static final String claimsFromPatent = "SELECT claim_text FROM patent_grant_claim WHERE uid > 95000000 AND claim_text IS NOT NULL and parent_claim_id is null";
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date order by pub_date";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
@@ -99,10 +99,6 @@ public class Database {
 			}
 		}
 		return seedConn.createArrayOf("varchar", pubDocNums.toArray());
-	}
-
-	public static Array varCharArray(List<String> names) throws SQLException {
-		return seedConn.createArrayOf("varchar", names.toArray());
 	}
 
 	public static void updateLastDate(String programType, int pubDate) throws SQLException {
@@ -262,10 +258,10 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static PreparedStatement getClaimsFromPatentStatement() throws SQLException {
+	public static ResultSet getPatentClaimVectorData() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(claimsFromPatent);
 		ps.setFetchSize(5);
-		return ps;
+		return ps.executeQuery();
 	}
 
 	public static ResultSet getMainVectorsFromPatentArray(Array patentArray) throws SQLException {

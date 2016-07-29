@@ -2,6 +2,7 @@ package seeding;
 
 import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import tools.VectorHelper;
 
 
 import java.sql.PreparedStatement;
@@ -14,19 +15,15 @@ import java.util.*;
  */
 public class BasePatentIterator implements SentenceIterator {
 
-    private final int startDate;
-    private ResultSet resultSet;
-    private Iterator<String> currentPatentIterator;
-    private SentencePreProcessor preProcessor;
-    private int queueSize = 100;
-    private List<String> claimQueue = new ArrayList<>(queueSize+1);
-    private PreparedStatement claimStatement;
+    protected final int startDate;
+    protected ResultSet resultSet;
+    protected Iterator<String> currentPatentIterator;
+    protected SentencePreProcessor preProcessor;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
-        claimStatement = Database.getClaimsFromPatentStatement();
     }
 
     protected void resetQuery() throws SQLException {
@@ -36,47 +33,20 @@ public class BasePatentIterator implements SentenceIterator {
 
     protected Iterator<String> processedSentenceIterator() throws SQLException {
         List<String> preIterator = new LinkedList<>();
-        claimQueue.add(resultSet.getString(1));
-        if(claimQueue.size()>=queueSize)  {
-            claimStatement.setArray(1, Database.varCharArray(claimQueue));
-            claimQueue.clear();
-            ResultSet claimResults = claimStatement.executeQuery();
-            while(claimResults.next()) {
-                String claimText = claimResults.getString(1);
-                if(!shouldRemoveSentence(claimText)) preIterator.add(claimText);
-            }
-            claimResults.close();
-        }
+
         // Title
         String titleText = resultSet.getString(2);
-        if(!shouldRemoveSentence(titleText)) preIterator.add(titleText);
+        if(!VectorHelper.shouldRemoveSentence(titleText)) preIterator.add(titleText);
 
         // Abstract
         String abstractText = resultSet.getString(3);
-        if(!shouldRemoveSentence(abstractText)) preIterator.add(abstractText);
+        if(!VectorHelper.shouldRemoveSentence(abstractText)) preIterator.add(abstractText);
 
         // Description
         String descriptionText = resultSet.getString(4);
-        if(!shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
+        if(!VectorHelper.shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
 
         return preIterator.iterator();
-    }
-
-
-    protected boolean shouldRemoveSentence(String str) {
-        if(str==null)return true;
-        boolean wasChar = false;
-        int wordCount = 0;
-        for(Character c : str.toCharArray()) {
-            if(Character.isSpaceChar(c) && wasChar) {
-                wordCount++;
-                wasChar = false;
-            } else if(Character.isAlphabetic(c)) {
-                wasChar = true;
-            }
-            if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return false;
-        }
-        return true;
     }
 
     @Override

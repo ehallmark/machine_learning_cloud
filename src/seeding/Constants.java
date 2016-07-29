@@ -26,6 +26,7 @@ public class Constants {
 	public static final String GOOGLE_WORD_VECTORS_PATH = "GoogleNews-vectors-negative300.bin";
 	public static final String WORD_VECTORS_PATH = "word_vector_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_word_vectors.txt";
+	public static final String CLAIM_VOCAB_FILE = "claim_vocabulary.txt";
 	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
 
 	public static final String TITLE_VECTORS = "invention_title_vectors";
