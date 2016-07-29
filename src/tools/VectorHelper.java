@@ -126,7 +126,7 @@ public class VectorHelper {
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            double invDocFreq = Math.log(1.0+(N/Math.max(1,vocab.docAppearedIn(token))));
+            double invDocFreq = Math.log(N/Math.max(1,vocab.docAppearedIn(token)));
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
