@@ -128,10 +128,14 @@ public class VectorHelper {
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
             double invDocFreq = (vocab.hasToken(token)) ? Math.log(1+((double)N/Math.max(1,vocab.docAppearedIn(token)))) : LOG_N;
+            System.out.println("Inverse Document Frequency: "+invDocFreq);
             total+=invDocFreq;
+            assert invDocFreq > 0 && invDocFreq < Double.POSITIVE_INFINITY;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
         INDArray mean = allWords.mean(0).div(total/tokens.size());
+        System.out.println("Total: "+total);
+        System.out.println(mean.toString());
         return mean;
     }
 
