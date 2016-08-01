@@ -132,7 +132,7 @@ public class SimilarPatentFinder {
         if(!rs.next()) {
             return null; // nothing found
         }
-        int colIndex = Constants.VECTOR_TYPES.indexOf(type)+1;
+        int colIndex = Constants.VECTOR_TYPES.indexOf(type);
         List<Integer> indices = new ArrayList<>();
         if(colIndex<0) {
             // do all
