@@ -18,6 +18,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder finder;
     private static boolean failed = false;
     private static int DEFAULT_LIMIT = 25;
+    private static boolean DEFAULT_STRICTNESS = false;
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     static {
         try {
@@ -39,8 +40,9 @@ public class SimilarPatentServer {
             System.out.println("\tLimit: "+limit);
             Patent.Type type = extractType(req);
             System.out.println("\tType: "+type.toString());
-
-            List<PatentList> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit);
+            boolean strictness = extractStrictness(req);
+            System.out.println("\tStrictness: "+strictness);
+            List<PatentList> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit,strictness);
             if(patents==null) return new Gson().toJson(new PatentNotFound());
             if(patents.isEmpty()) return new Gson().toJson(new EmptyResults());
             else return new Gson().toJson(new PatentResponse(patents));
@@ -62,6 +64,15 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No type parameter specified... using default");
             return DEFAULT_TYPE;
+        }
+    }
+
+    private static boolean extractStrictness(Request req) {
+        try {
+            return req.queryParams("strict").startsWith("t");
+        } catch(Exception e) {
+            System.out.println("No strictness parameter specified... using default");
+            return DEFAULT_STRICTNESS;
         }
     }
 

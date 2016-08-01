@@ -122,7 +122,7 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit, boolean strictness) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
@@ -134,10 +134,8 @@ public class SimilarPatentFinder {
         }
         int colIndex = Constants.VECTOR_TYPES.indexOf(type);
         List<Integer> indices = new ArrayList<>();
-        boolean restrictLikeTypes=true;
         if(colIndex<0) {
             // do all
-            restrictLikeTypes=false;
             for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
                 indices.add(i);
             }
@@ -158,7 +156,7 @@ public class SimilarPatentFinder {
                     INDArray baseVector = Nd4j.create(VectorHelper.toPrim(vec));
                     assert baseVector != null : "Base vector is null!";
                     Patent.Type cType;
-                    if(type.equals(Patent.Type.ALL)) cType=Patent.Type.ALL;
+                    if(!strictness) cType=Patent.Type.ALL;
                     else cType=Patent.Type.CLAIM;
                     patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, "claim "+claimIndices[i], limit));
                     i++;
@@ -168,7 +166,7 @@ public class SimilarPatentFinder {
                 assert baseVector != null : "Base vector is null!";
                 Patent.Type t = Constants.VECTOR_TYPES.get(index);
                 Patent.Type cType;
-                if(type.equals(Patent.Type.ALL)) cType=Patent.Type.ALL;
+                if(!strictness) cType=Patent.Type.ALL;
                 else cType=t;
                 patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, t.toString().toLowerCase(), limit));
             }
@@ -206,13 +204,13 @@ public class SimilarPatentFinder {
         try {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
-            System.out.println("Searching ALL similar patents for 7056704");
-            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20);
+            System.out.println("Searching ALL (STRICT) similar patents for 7056704");
+            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20, true);
             if(list!=null)list.forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
-            System.out.println("Searching similar patent CLAIMS for 7056704");
-            finder.findSimilarPatentsTo("7056704", Patent.Type.CLAIM, 20).forEach(p->{
+            System.out.println("Searching similar patent CLAIMS (NON STRICT) for 7056704");
+            finder.findSimilarPatentsTo("7056704", Patent.Type.CLAIM, 20, false).forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
         } catch(Exception e) {
