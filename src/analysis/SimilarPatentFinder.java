@@ -148,16 +148,20 @@ public class SimilarPatentFinder {
         for(int index : indices) {
             if (rs.getArray(index) == null) continue;
             if(index==claimIndex) {
+                Integer[] claimIndices = (Integer[])rs.getArray(index+1).getArray();
+                int i=0;
                 for(Double[] vec : (Double[][]) rs.getArray(index).getArray()) {
                     if(vec==null)continue;
                     INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index).getArray()));
                     assert baseVector != null : "Base vector is null!";
-                    patentLists.add(similarPatentsHelper(baseVector, patentNumber, Constants.VECTOR_TYPES.get(index), limit));
+                    patentLists.add(similarPatentsHelper(baseVector, patentNumber, Patent.Type.CLAIM, "claim "+claimIndices[i], limit));
+                    i++;
                 }
             } else {
                 INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index).getArray()));
                 assert baseVector != null : "Base vector is null!";
-                patentLists.add(similarPatentsHelper(baseVector, patentNumber, Constants.VECTOR_TYPES.get(index), limit));
+                Patent.Type t = Constants.VECTOR_TYPES.get(index);
+                patentLists.add(similarPatentsHelper(baseVector, patentNumber, t, t.toString().toLowerCase(), limit));
             }
         }
 
@@ -168,7 +172,7 @@ public class SimilarPatentFinder {
         return patentLists;
     }
 
-    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Patent.Type type, int limit) {
+    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Patent.Type type, String name, int limit) {
         Patent.setBaseVector(baseVector);
         Patent.setSortType(type);
         patentList.forEach(patent -> {
@@ -177,7 +181,7 @@ public class SimilarPatentFinder {
                 heap.add(patent);
             }
         });
-        PatentList results = new PatentList(limit, type);
+        PatentList results = new PatentList(limit, name);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
             //String assignee = assigneeMap.get(p.getName());
@@ -194,7 +198,8 @@ public class SimilarPatentFinder {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
             System.out.println("Searching ALL similar patents for 7056704");
-            finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20).forEach(p->{
+            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20);
+            if(list!=null)list.forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
             System.out.println("Searching similar patent CLAIMS for 7056704");
