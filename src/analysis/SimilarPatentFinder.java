@@ -182,14 +182,14 @@ public class SimilarPatentFinder {
                 heap.add(patent);
             }
         });
-        PatentList results = new PatentList(limit, name);
+        List<AbstractPatent> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
             //String assignee = assigneeMap.get(p.getName());
             //if(assignee==null)assignee="";
-            results.add(0, Patent.abstractClone(p));
+            resultList.add(0, Patent.abstractClone(p));
         }
-
+        PatentList results = new PatentList(resultList, name);
         return results;
     }
 
