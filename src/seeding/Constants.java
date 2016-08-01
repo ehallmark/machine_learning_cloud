@@ -52,7 +52,7 @@ public class Constants {
 	// Claim vectors are not working yet...
 	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.CLAIM_VECTORS);
 	public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS,Constants.ABSTRACT_VECTORS,Constants.DESCRIPTION_VECTORS,Constants.CLASS_VECTORS, Constants.SUBCLASS_VECTORS);
-	public static final List<Patent.Type> VECTOR_TYPES = Arrays.asList(Patent.Type.INVENTION_TITLE, Patent.Type.ABSTRACT, Patent.Type.DESCRIPTION, Patent.Type.CLASS, Patent.Type.SUBCLASS, Patent.Type.CLAIM);
+	public static final List<Patent.Type> VECTOR_TYPES = Arrays.asList(Patent.Type.TITLE, Patent.Type.ABSTRACT, Patent.Type.DESCRIPTION, Patent.Type.CLASS, Patent.Type.SUBCLASS, Patent.Type.CLAIM);
 	public static final int NUM_2D_VECTORS = DEFAULT_2D_VECTORS.size();
 	public static final int NUM_1D_VECTORS = DEFAULT_1D_VECTORS.size();
 }
