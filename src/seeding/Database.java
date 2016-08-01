@@ -56,7 +56,7 @@ public class Database {
 	}
 
 	public static void resetValuablePatents() throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable=null WHERE is_valuable is not null");
+		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable='f' WHERE is_valuable='t'");
 		ps.executeUpdate();
 	}
 
