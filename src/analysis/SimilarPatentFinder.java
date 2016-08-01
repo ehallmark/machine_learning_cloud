@@ -147,7 +147,7 @@ public class SimilarPatentFinder {
         int offset = 1;
         List<PatentList> patentLists = new ArrayList<>();
         for(int index : indices) {
-            if (rs.getArray(index) == null) continue;
+            if (rs.getArray(index+offset) == null) continue;
             if(index==claimIndex) {
                 Integer[] claimIndices = (Integer[])rs.getArray(index+offset+1).getArray();
                 int i=0;
