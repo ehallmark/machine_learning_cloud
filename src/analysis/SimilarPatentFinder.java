@@ -153,7 +153,7 @@ public class SimilarPatentFinder {
                 int i=0;
                 for(Double[] vec : (Double[][]) rs.getArray(index+offset).getArray()) {
                     if(vec==null)continue;
-                    INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index+offset).getArray()));
+                    INDArray baseVector = Nd4j.create(VectorHelper.toPrim(vec));
                     assert baseVector != null : "Base vector is null!";
                     patentLists.add(similarPatentsHelper(baseVector, patentNumber, Patent.Type.CLAIM, "claim "+claimIndices[i], limit));
                     i++;
