@@ -9,6 +9,7 @@ import tools.MinHeap;
 import tools.VectorHelper;
 
 import java.io.*;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -39,23 +40,23 @@ public class SimilarPatentFinder {
                 String patentNumber = rs.getString(1);
                 //System.out.println(patentNumber);
                 for(int i = 0; i < Constants.VECTOR_TYPES.size()-1; i++) {
-                    Double[] data = (Double[])rs.getArray(i+offset).getArray();
+                    Array data = rs.getArray(i+offset);
                     System.out.println(i);
                     if(data!=null) {
                         Patent.Type type = Constants.VECTOR_TYPES.get(i);
-                        patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim(data)), type));
+                        patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim((Double[])data.getArray())), type));
                     }
                 }
                 System.out.println("Starting claims");
                 // handle claims index VECTOR_TYPES.size()-1
-                Integer[] claimIndices = (Integer[])rs.getArray(offset+Constants.VECTOR_TYPES.size()).getArray();
-                Double[][] claims = (Double[][])rs.getArray(offset+Constants.VECTOR_TYPES.size()-1).getArray();
-                if(claimIndices!=null&&claims!=null) {
-                    assert claimIndices.length==claims.length;
-                    for(int i = 0; i < claimIndices.length; i++) {
-                        assert(claims[i]!=null);
+                if(rs.getArray(offset+Constants.VECTOR_TYPES.size())!=null) {
+                    Integer[] claimIndices = (Integer[]) rs.getArray(offset + Constants.VECTOR_TYPES.size()).getArray();
+                    Double[][] claims = (Double[][]) rs.getArray(offset + Constants.VECTOR_TYPES.size() - 1).getArray();
+                    assert claimIndices.length == claims.length;
+                    for (int i = 0; i < claimIndices.length; i++) {
+                        assert (claims[i] != null);
                         Integer index = claimIndices[i];
-                        patentList.add(new Patent(patentNumber+" claim "+index.toString(), Nd4j.create(VectorHelper.toPrim(claims[i])), Patent.Type.CLAIM));
+                        patentList.add(new Patent(patentNumber + " claim " + index.toString(), Nd4j.create(VectorHelper.toPrim(claims[i])), Patent.Type.CLAIM));
                     }
                 }
                 System.out.println(++count);
