@@ -5,6 +5,7 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import spark.Request;
 import seeding.Database;
+import tools.PatentList;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class SimilarPatentServer {
             Patent.Type type = extractType(req);
             System.out.println("\tType: "+type.toString());
 
-            List<AbstractPatent> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit);
+            List<PatentList> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit);
             if(patents==null) return new Gson().toJson(new PatentNotFound());
             if(patents.isEmpty()) return new Gson().toJson(new EmptyResults());
             else return new Gson().toJson(new PatentResponse(patents));

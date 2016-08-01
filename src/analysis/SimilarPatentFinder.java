@@ -6,6 +6,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
+import tools.PatentList;
 import tools.VectorHelper;
 
 import java.io.*;
@@ -121,7 +122,7 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     // returns empty if no results found
-    public List<AbstractPatent> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
@@ -131,29 +132,60 @@ public class SimilarPatentFinder {
         if(!rs.next()) {
             return null; // nothing found
         }
-        INDArray baseVector = VectorHelper.extractResultSetToVector(rs);
-        assert baseVector!=null : "Base vector is null!";
-        synchronized(Patent.class) {
-            Patent.setBaseVector(baseVector);
-            Patent.setSortType(type);
-            patentList.forEach(patent -> {
-                if(!patent.getName().equals(patentNumber)){
-                    patent.calculateSimilarityToTarget();
-                    heap.add(patent);
-                }
-            });
-            List<AbstractPatent> results = new ArrayList<>(limit);
-            while (!heap.isEmpty()) {
-                Patent p = heap.remove();
-                //String assignee = assigneeMap.get(p.getName());
-                //if(assignee==null)assignee="";
-                results.add(0, Patent.abstractClone(p));
+        int colIndex = Constants.VECTOR_TYPES.indexOf(type)+1;
+        List<Integer> indices = new ArrayList<>();
+        if(colIndex<0) {
+            // do all
+            for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
+                indices.add(i);
             }
-            long endTime = System.currentTimeMillis();
-            double time = new Double(endTime-startTime)/1000;
-            System.out.println("Time to find similar patents for "+patentNumber+": "+time+" seconds");
-            return results;
+        } else {
+            indices.add(colIndex);
         }
+        int claimIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLAIM);
+
+        List<PatentList> patentLists = new ArrayList<>();
+        for(int index : indices) {
+            if (rs.getArray(index) == null) continue;
+            if(index==claimIndex) {
+                for(Double[] vec : (Double[][]) rs.getArray(index).getArray()) {
+                    if(vec==null)continue;
+                    INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index).getArray()));
+                    assert baseVector != null : "Base vector is null!";
+                    patentLists.add(similarPatentsHelper(baseVector, patentNumber, Constants.VECTOR_TYPES.get(index), limit));
+                }
+            } else {
+                INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index).getArray()));
+                assert baseVector != null : "Base vector is null!";
+                patentLists.add(similarPatentsHelper(baseVector, patentNumber, Constants.VECTOR_TYPES.get(index), limit));
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        double time = new Double(endTime-startTime)/1000;
+        System.out.println("Time to find similar patents for "+patentNumber+": "+time+" seconds");
+
+        return patentLists;
+    }
+
+    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Patent.Type type, int limit) {
+        Patent.setBaseVector(baseVector);
+        Patent.setSortType(type);
+        patentList.forEach(patent -> {
+            if(!patent.getName().equals(patentNumber)){
+                patent.calculateSimilarityToTarget();
+                heap.add(patent);
+            }
+        });
+        PatentList results = new PatentList(limit, type);
+        while (!heap.isEmpty()) {
+            Patent p = heap.remove();
+            //String assignee = assigneeMap.get(p.getName());
+            //if(assignee==null)assignee="";
+            results.add(0, Patent.abstractClone(p));
+        }
+
+        return results;
     }
 
     // unit test!
