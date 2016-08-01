@@ -34,8 +34,10 @@ public class SimilarPatentFinder {
             ResultSet rs = Database.selectPatentVectors();
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
+            System.out.println("Starting iterations!");
             while (rs.next()) {
                 String patentNumber = rs.getString(1);
+                System.out.println(patentNumber);
                 for(int i = 0; i < Constants.VECTOR_TYPES.size()-1; i++) {
                     Double[] data = (Double[])rs.getArray(i+offset).getArray();
                     if(data!=null) {
