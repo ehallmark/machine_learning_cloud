@@ -34,17 +34,19 @@ public class SimilarPatentFinder {
             ResultSet rs = Database.selectPatentVectors();
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
-            System.out.println("Starting iterations!");
+            System.out.println("Starting iterations...");
             while (rs.next()) {
                 String patentNumber = rs.getString(1);
-                System.out.println(patentNumber);
+                //System.out.println(patentNumber);
                 for(int i = 0; i < Constants.VECTOR_TYPES.size()-1; i++) {
                     Double[] data = (Double[])rs.getArray(i+offset).getArray();
+                    System.out.println(i);
                     if(data!=null) {
                         Patent.Type type = Constants.VECTOR_TYPES.get(i);
                         patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim(data)), type));
                     }
                 }
+                System.out.println("Starting claims");
                 // handle claims index VECTOR_TYPES.size()-1
                 Integer[] claimIndices = (Integer[])rs.getArray(offset+Constants.VECTOR_TYPES.size()).getArray();
                 Double[][] claims = (Double[][])rs.getArray(offset+Constants.VECTOR_TYPES.size()-1).getArray();
