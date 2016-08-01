@@ -2,6 +2,7 @@ package analysis;
 
 import com.google.gson.Gson;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
@@ -32,9 +33,27 @@ public class SimilarPatentFinder {
             patentList = new LinkedList<>();
             ResultSet rs = Database.selectPatentVectors();
             int count = 0;
-            int offset = 1; // Due to the pub_doc_number field
+            int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
-                patentList.add(new Patent(rs.getString(1), VectorHelper.extractResultSetToVector(rs, offset)));
+                String patentNumber = rs.getString(1);
+                for(int i = 0; i < Constants.VECTOR_TYPES.size()-1; i++) {
+                    Double[] data = (Double[])rs.getArray(i+offset).getArray();
+                    if(data!=null) {
+                        Patent.Type type = Constants.VECTOR_TYPES.get(i);
+                        patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim(data)), type));
+                    }
+                }
+                // handle claims index VECTOR_TYPES.size()-1
+                Integer[] claimIndices = (Integer[])rs.getArray(offset+Constants.VECTOR_TYPES.size()).getArray();
+                Double[][] claims = (Double[][])rs.getArray(offset+Constants.VECTOR_TYPES.size()-1).getArray();
+                if(claimIndices!=null&&claims!=null) {
+                    assert claimIndices.length==claims.length;
+                    for(int i = 0; i < claimIndices.length; i++) {
+                        assert(claims[i]!=null);
+                        Integer index = claimIndices[i];
+                        patentList.add(new Patent(patentNumber+" claim "+index.toString(), Nd4j.create(VectorHelper.toPrim(claims[i])), Patent.Type.CLAIM));
+                    }
+                }
                 System.out.println(++count);
             }
             // Serialize List
@@ -101,7 +120,7 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     // returns empty if no results found
-    public List<AbstractPatent> findSimilarPatentsTo(String patentNumber, int limit) throws SQLException {
+    public List<AbstractPatent> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
@@ -115,6 +134,7 @@ public class SimilarPatentFinder {
         assert baseVector!=null : "Base vector is null!";
         synchronized(Patent.class) {
             Patent.setBaseVector(baseVector);
+            Patent.setSortType(type);
             patentList.forEach(patent -> {
                 if(!patent.getName().equals(patentNumber)){
                     patent.calculateSimilarityToTarget();
@@ -140,12 +160,12 @@ public class SimilarPatentFinder {
         try {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
-            System.out.println("Searching similar patents for 7056704");
-            finder.findSimilarPatentsTo("7056704", 20).forEach(p->{
+            System.out.println("Searching ALL similar patents for 7056704");
+            finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20).forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
-            System.out.println("Searching similar patents for 8481929");
-            finder.findSimilarPatentsTo("8481929", 20).forEach(p->{
+            System.out.println("Searching similar patent CLAIMS for 7056704");
+            finder.findSimilarPatentsTo("7056704", Patent.Type.CLAIM, 20).forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
         } catch(Exception e) {

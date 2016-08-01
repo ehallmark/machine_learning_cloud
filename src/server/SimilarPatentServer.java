@@ -1,5 +1,6 @@
 package server;
 
+import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import spark.Request;
@@ -16,6 +17,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder finder;
     private static boolean failed = false;
     private static int DEFAULT_LIMIT = 25;
+    private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     static {
         try {
             Database.setupSeedConn();
@@ -34,7 +36,10 @@ public class SimilarPatentServer {
             System.out.println("Searching for: "+pubDocNumber);
             int limit = extractLimit(req);
             System.out.println("\tLimit: "+limit);
-            List<AbstractPatent> patents = finder.findSimilarPatentsTo(pubDocNumber, limit);
+            Patent.Type type = extractType(req);
+            System.out.println("\tType: "+type.toString());
+
+            List<AbstractPatent> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit);
             if(patents==null) return new Gson().toJson(new PatentNotFound());
             if(patents.isEmpty()) return new Gson().toJson(new EmptyResults());
             else return new Gson().toJson(new PatentResponse(patents));
@@ -47,6 +52,15 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No limit parameter specified... using default");
             return DEFAULT_LIMIT;
+        }
+    }
+
+    private static Patent.Type extractType(Request req) {
+        try {
+            return Patent.Type.valueOf(req.queryParams("type").toUpperCase());
+        } catch(Exception e) {
+            System.out.println("No type parameter specified... using default");
+            return DEFAULT_TYPE;
         }
     }
 

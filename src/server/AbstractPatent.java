@@ -10,8 +10,5 @@ public class AbstractPatent {
         this.name = name;
         this.similarity=similarity;
     }
-    public AbstractPatent() {
-
-    }
-
+    
 }
