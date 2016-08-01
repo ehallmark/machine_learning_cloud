@@ -134,8 +134,10 @@ public class SimilarPatentFinder {
         }
         int colIndex = Constants.VECTOR_TYPES.indexOf(type);
         List<Integer> indices = new ArrayList<>();
+        boolean restrictLikeTypes=true;
         if(colIndex<0) {
             // do all
+            restrictLikeTypes=false;
             for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
                 indices.add(i);
             }
@@ -155,14 +157,20 @@ public class SimilarPatentFinder {
                     if(vec==null)continue;
                     INDArray baseVector = Nd4j.create(VectorHelper.toPrim(vec));
                     assert baseVector != null : "Base vector is null!";
-                    patentLists.add(similarPatentsHelper(baseVector, patentNumber, Patent.Type.CLAIM, "claim "+claimIndices[i], limit));
+                    Patent.Type cType;
+                    if(type.equals(Patent.Type.ALL)) cType=Patent.Type.ALL;
+                    else cType=Patent.Type.CLAIM;
+                    patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, "claim "+claimIndices[i], limit));
                     i++;
                 }
             } else {
                 INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index+offset).getArray()));
                 assert baseVector != null : "Base vector is null!";
                 Patent.Type t = Constants.VECTOR_TYPES.get(index);
-                patentLists.add(similarPatentsHelper(baseVector, patentNumber, t, t.toString().toLowerCase(), limit));
+                Patent.Type cType;
+                if(type.equals(Patent.Type.ALL)) cType=Patent.Type.ALL;
+                else cType=t;
+                patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, t.toString().toLowerCase(), limit));
             }
         }
 
