@@ -144,8 +144,10 @@ public class SimilarPatentFinder {
         }
         int claimIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLAIM);
 
+        int offset = 1;
         List<PatentList> patentLists = new ArrayList<>();
         for(int index : indices) {
+            index+=offset;
             if (rs.getArray(index) == null) continue;
             if(index==claimIndex) {
                 Integer[] claimIndices = (Integer[])rs.getArray(index+1).getArray();
