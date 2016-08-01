@@ -177,7 +177,7 @@ public class SimilarPatentFinder {
         Patent.setBaseVector(baseVector);
         Patent.setSortType(type);
         patentList.forEach(patent -> {
-            if(!patent.getName().equals(patentNumber)){
+            if(!patent.getName().startsWith(patentNumber)){
                 patent.calculateSimilarityToTarget();
                 heap.add(patent);
             }
