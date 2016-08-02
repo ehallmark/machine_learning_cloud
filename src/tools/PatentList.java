@@ -16,4 +16,12 @@ public class PatentList implements Serializable {
         this.patents=patentList;
         bySimilarityTo=type;
     }
+
+    public String getBySimilarityTo() {
+        return bySimilarityTo;
+    }
+
+    public List<AbstractPatent> getPatents() {
+        return patents;
+    }
 }

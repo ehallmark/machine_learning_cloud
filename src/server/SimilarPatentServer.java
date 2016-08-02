@@ -5,6 +5,7 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import spark.Request;
 import seeding.Database;
+import tools.CSVHelper;
 import tools.PatentList;
 
 import java.util.List;
@@ -32,20 +33,32 @@ public class SimilarPatentServer {
 
     public static void server() {
         get("/similar_patents", (req, res) -> {
-            res.type("application/json");
+            ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
-            if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
-            System.out.println("Searching for: "+pubDocNumber);
-            int limit = extractLimit(req);
-            System.out.println("\tLimit: "+limit);
-            Patent.Type type = extractType(req);
-            System.out.println("\tType: "+type.toString());
-            boolean strictness = extractStrictness(req);
-            System.out.println("\tStrictness: "+strictness);
-            List<PatentList> patents = finder.findSimilarPatentsTo(pubDocNumber,type,limit,strictness);
-            if(patents==null) return new Gson().toJson(new PatentNotFound());
-            if(patents.isEmpty()) return new Gson().toJson(new EmptyResults());
-            else return new Gson().toJson(new PatentResponse(patents));
+            List<PatentList> patents=null;
+            if(pubDocNumber == null) response=new NoPatentProvided();
+            else {
+                System.out.println("Searching for: " + pubDocNumber);
+                int limit = extractLimit(req);
+                System.out.println("\tLimit: " + limit);
+                Patent.Type type = extractType(req);
+                System.out.println("\tType: " + type.toString());
+                boolean strictness = extractStrictness(req);
+                System.out.println("\tStrictness: " + strictness);
+                patents = finder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+            }
+            if(patents==null) response=new PatentNotFound(pubDocNumber);
+            else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
+            else response=new PatentResponse(patents,pubDocNumber);
+
+            // Handle csv or json
+            if(req.contentType().contains("csv")) {
+                res.type("text/csv");
+                return CSVHelper.to_csv(response);
+            } else {
+                res.type("application/json");
+                return new Gson().toJson(response);
+            }
         });
     }
 

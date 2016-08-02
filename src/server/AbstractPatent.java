@@ -10,5 +10,11 @@ public class AbstractPatent {
         this.name = name;
         this.similarity=similarity;
     }
-    
+    public String getName() {
+        return name;
+    }
+
+    public double getSimilarity() {
+        return similarity;
+    }
 }
