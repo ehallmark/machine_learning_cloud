@@ -52,7 +52,7 @@ public class SimilarPatentServer {
             else response=new PatentResponse(patents,pubDocNumber);
 
             // Handle csv or json
-            if(req.contentType().contains("csv")) {
+            if(responseWithCSV(req)) {
                 res.type("text/csv");
                 return CSVHelper.to_csv(response);
             } else {
@@ -60,6 +60,11 @@ public class SimilarPatentServer {
                 return new Gson().toJson(response);
             }
         });
+    }
+
+    private static boolean responseWithCSV(Request req) {
+        String param = req.queryParams("format");
+        return (param!=null && param.contains("csv"));
     }
 
     private static int extractLimit(Request req) {
