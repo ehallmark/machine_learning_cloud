@@ -19,7 +19,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder finder;
     private static boolean failed = false;
     private static int DEFAULT_LIMIT = 25;
-    private static boolean DEFAULT_STRICTNESS = false;
+    private static boolean DEFAULT_STRICTNESS = true; // faster
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     static {
         try {
