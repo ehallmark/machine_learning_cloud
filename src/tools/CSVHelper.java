@@ -14,7 +14,6 @@ public class CSVHelper {
 
         // List
         List<PatentList> patentLists = response.results;
-        patentLists.sort((PatentList o1, PatentList o2)->o1.getBySimilarityTo().compareTo(o2.getBySimilarityTo()));
 
         StringJoiner rows = new StringJoiner(System.getProperty("line.separator"));
         rows.add("Similar Patents to "+response.query.trim());
