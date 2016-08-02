@@ -17,8 +17,8 @@ public class CSVHelper {
         patentLists.sort((PatentList o1, PatentList o2)->o1.getBySimilarityTo().compareTo(o2.getBySimilarityTo()));
 
         StringJoiner rows = new StringJoiner(System.getProperty("line.separator"));
-        rows.add("Similar Patents to "+response.query);
-        rows.add("").add("");
+        rows.add("Similar Patents to "+response.query.trim());
+        rows.add("");
         patentLists.forEach(patentList->{
             rows.add("By Similarity of "+patentList.getBySimilarityTo());
             rows.add("Patent Number,Cosine Similarity");
