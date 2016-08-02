@@ -1,6 +1,5 @@
 package tools;
 
-import server.PatentResponse;
 import server.ServerResponse;
 
 import java.util.List;
@@ -11,14 +10,14 @@ import java.util.StringJoiner;
  */
 public class CSVHelper {
     public static String to_csv(ServerResponse response) {
-        if(!(response instanceof PatentResponse)) return response.results.toString();
+        if(response.results==null) return response.message;
 
         // List
-        List<PatentList> patentLists = ((PatentResponse)response).results;
+        List<PatentList> patentLists = response.results;
         patentLists.sort((PatentList o1, PatentList o2)->o1.getBySimilarityTo().compareTo(o2.getBySimilarityTo()));
 
         StringJoiner rows = new StringJoiner(System.getProperty("line.separator"));
-        rows.add("Similar Patents to "+((PatentResponse)response).query);
+        rows.add("Similar Patents to "+response.query);
         rows.add("").add("");
         patentLists.forEach(patentList->{
             rows.add("By Similarity of "+patentList.getBySimilarityTo());
