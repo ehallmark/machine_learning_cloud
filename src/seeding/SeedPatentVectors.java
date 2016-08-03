@@ -24,7 +24,8 @@ public class SeedPatentVectors {
     private final int commitLength;
     private AtomicInteger count;
 
-    public SeedPatentVectors(int startDate, boolean useGoogleModel) throws Exception {
+    public SeedPatentVectors(int startDate, int endDate, boolean useGoogleModel, boolean updateDates) throws Exception {
+        assert startDate < endDate: "Start date must be before end date!";
         if(!useGoogleModel) wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
         else wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
 
@@ -41,8 +42,8 @@ public class SeedPatentVectors {
         //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
-        ResultSet patentNumbers = Database.getPatentsAfter(startDate);
-        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate,endDate);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,updateDates);
     }
 
     private void getPubDateAndPatentNumbersFromResultSet(ResultSet patentNumbers, boolean updateDate) throws SQLException, InterruptedException, ExecutionException {
@@ -89,8 +90,11 @@ public class SeedPatentVectors {
             GenerateVocabulary genVocab = new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
             VectorHelper.setupVocab(genVocab.getCache());
             boolean useGoogle = true;
-            int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
-            new SeedPatentVectors(startDate,useGoogle);
+            //int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
+            int startDate = Constants.START_DATE;
+            int endDate = 20050001;
+            boolean updateDates = false;
+            new SeedPatentVectors(startDate,endDate, useGoogle, updateDates);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

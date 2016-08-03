@@ -19,7 +19,7 @@ public class Database {
 	private static final String classificationsFromPatents = "SELECT pub_doc_number, array_agg(distinct substring(classification_code FROM 1 FOR 3)), array_to_string(array_agg(class), ' '), array_to_string(array_agg(subclass), ' ') FROM patent_grant_uspto_classification WHERE pub_doc_number=ANY(?) AND classification_code IS NOT NULL group by pub_doc_number";
 	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text), array_agg(number) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL and parent_claim_id is null group by pub_doc_number";
 	private static final String claimsFromPatent = "SELECT claim_text FROM patent_grant_claim WHERE uid > 55000000 AND claim_text IS NOT NULL and parent_claim_id is null";
-	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date order by pub_date";
+	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? and pub_date <= ? group by pub_date order by pub_date";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claims_vectors,claims_numbers) VALUES (?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claims_vectors,claims_numbers)=(?,?,?) WHERE patent_vectors.pub_doc_number=?";
@@ -66,13 +66,6 @@ public class Database {
 		ps.setFetchSize(5);
 		return ps.executeQuery();
 	}*/
-
-	public static ResultSet compdbPatentsGroupedByDate() throws SQLException{
-		// patents loaded
-		PreparedStatement ps2 = seedConn.prepareStatement("SELECT array_agg(pub_doc_number), pub_date FROM patent_grant WHERE pub_doc_number = ANY(?) group by pub_date");
-		ps2.setArray(1, getCompDBPatents());
-		return ps2.executeQuery();
-	}
 
 	private static Array getCompDBPatents() throws SQLException {
 		Set<String> pubDocNums = new HashSet<>();
@@ -234,9 +227,10 @@ public class Database {
 		ps.executeUpdate();
 	}
 
-	public static ResultSet getPatentsAfter(int pubDate) throws SQLException {
+	public static ResultSet getPatentsBetween(int start, int end) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(allPatentsAfterGivenDate);
-		ps.setInt(1, pubDate);
+		ps.setInt(1, start);
+		ps.setInt(2, end);
 		ps.setFetchSize(10);
 		System.out.println(ps);
 		return ps.executeQuery();

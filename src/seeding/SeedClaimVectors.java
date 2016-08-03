@@ -20,7 +20,8 @@ public class SeedClaimVectors {
     private final int commitLength;
     private int timeToCommit;
     private long startTime;
-    public SeedClaimVectors(int startDate, boolean useGoogleModel) throws Exception {
+    public SeedClaimVectors(int startDate, int endDate, boolean useGoogleModel, boolean updateDates) throws Exception {
+        assert startDate < endDate: "Start date must be before end date!";
         if((!wordVectorsFile.exists() && !useGoogleModel) || (!googleVectorsFile.exists() && useGoogleModel)) throw new RuntimeException("Inconsistent Word Vector File Option");
 
         if(useGoogleModel) wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
@@ -36,8 +37,8 @@ public class SeedClaimVectors {
         //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
-        ResultSet patentNumbers = Database.getPatentsAfter(startDate);
-        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate, endDate);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,updateDates);
 
     }
 
@@ -91,8 +92,11 @@ public class SeedClaimVectors {
             VectorHelper.setupVocab(genVocab.getCache());
             boolean useGoogle = true;
             // Get Last Date
-            int dateToStartFrom = Database.selectLastDate(Constants.CLAIM_VECTOR_TYPE);
-            new SeedClaimVectors(dateToStartFrom, useGoogle);
+            //int startDate = Database.selectLastDate(Constants.CLAIM_VECTOR_TYPE);
+            int startDate = Constants.START_DATE;
+            int endDate = 20050001;
+            boolean updateDates = false;
+            new SeedClaimVectors(startDate, endDate, useGoogle, updateDates);
 
         } catch(Exception e) {
             e.printStackTrace();

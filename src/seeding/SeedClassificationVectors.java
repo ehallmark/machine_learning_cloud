@@ -27,7 +27,8 @@ public class SeedClassificationVectors {
     private long startTime;
     private AtomicInteger count;
 
-    public SeedClassificationVectors(int startDate, boolean useGoogleModel) throws Exception {
+    public SeedClassificationVectors(int startDate, int endDate, boolean useGoogleModel, boolean updateDates) throws Exception {
+        assert startDate < endDate: "Start date must be before end date!";
         if((!wordVectorsFile.exists() && !useGoogleModel) || (!googleVectorsFile.exists() && useGoogleModel)) throw new RuntimeException("Inconsistent Word Vector File Option");
 
         if(useGoogleModel) wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
@@ -46,8 +47,8 @@ public class SeedClassificationVectors {
         //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
-        ResultSet patentNumbers = Database.getPatentsAfter(startDate);
-        getPubDateAndPatentNumbersFromResultSet(patentNumbers,true);
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate, endDate);
+        getPubDateAndPatentNumbersFromResultSet(patentNumbers,updateDates);
 
     }
 
@@ -150,8 +151,11 @@ public class SeedClassificationVectors {
             GenerateVocabulary genVocab = new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
             VectorHelper.setupVocab(genVocab.getCache());
             boolean useGoogle = true;
-            int startDate = Database.selectLastDate(Constants.CLASSIFICATION_VECTOR_TYPE);
-            new SeedClassificationVectors(startDate, useGoogle);
+            //int startDate = Database.selectLastDate(Constants.CLASSIFICATION_VECTOR_TYPE);
+            int startDate = Constants.START_DATE;
+            int endDate = 20050001;
+            boolean updateDates = false;
+            new SeedClassificationVectors(startDate, endDate, useGoogle, updateDates);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
