@@ -118,7 +118,7 @@ public class SimilarPatentServer {
     }
 
     private static List<String> preProcess(String str) {
-        return Arrays.asList(str.split(",")).stream().map(s->s.toUpperCase().trim()).collect(Collectors.toList());
+        return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
     }
 
     private static Tag templateWrapper(Response res, Tag form, String formId) {
@@ -204,7 +204,7 @@ public class SimilarPatentServer {
                 label("Name"),br(),
                 input().withType("text").withName("name"),
                 br(),
-                label("Patents (comma-delimited)"), br(),
+                label("Patents (space separated)"), br(),
                 textarea().withName("patents"),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
