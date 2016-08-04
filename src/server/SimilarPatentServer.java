@@ -120,7 +120,27 @@ public class SimilarPatentServer {
     }
 
     private static List<String> preProcess(String str) {
-        return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
+        // try to break on spaces
+        String chunk = str.substring(0,Math.min(20,str.length()));
+        if(chunk.split("\\s+").length==0) {
+            // try commas
+            if(chunk.split(",").length==0) {
+                // try US -- last fail safe
+                return Arrays.asList(str.toUpperCase().split("US"));
+            } else {
+                // commas present but no spaces
+                if(chunk.split(",").length > 3) {
+                    // too many commas -- commas must be present inside numbers :(
+                    return Arrays.asList(str.toUpperCase().split("US")).stream().map(s->s.replaceAll(",","")).collect(Collectors.toList());
+                } else {
+                    // simple comma split
+                    return Arrays.asList(str.toUpperCase().split(",")).stream().map(s->s.replaceFirst("US","")).collect(Collectors.toList());
+                }
+            }
+        } else {
+            // split on spaces
+            return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
+        }
     }
 
     private static Tag templateWrapper(Response res, Tag form, boolean withAjax, String formId, String url, String message) {
@@ -200,7 +220,6 @@ public class SimilarPatentServer {
 
     private static Tag selectCandidateForm() {
         return form().withId(SELECT_CANDIDATE_FORM_ID).withAction("/select").withMethod("post").with(selectCandidateSetDropdown(),
-                br(),
                 button("Select").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
                 br(),
                 br(),
