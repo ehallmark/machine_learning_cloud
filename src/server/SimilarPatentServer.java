@@ -73,11 +73,15 @@ public class SimilarPatentServer {
                 try {
                     int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
                     req.session().attribute("candidateSet", new SimilarPatentFinder(preProcess(req.queryParams("patents")), new File(Constants.CANDIDATE_SET_FOLDER+id)));
+                    req.session().attribute("message", "Candidate set created.");
+                    res.redirect("/");
+
                 } catch(SQLException sql) {
                     sql.printStackTrace();
+                    req.session().attribute("message", "Database Error");
+                    res.redirect("/new");
+
                 }
-                req.session().attribute("message", "Candidate set created.");
-                res.redirect("/");
             }
             return null;
         });
