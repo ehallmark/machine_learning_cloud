@@ -55,20 +55,22 @@ public class SimilarPatentServer {
 
     public static void server() {
         get("/", (req, res) ->
-            templateWrapper(res, selectCandidateForm(), SELECT_CANDIDATE_FORM_ID)
+            templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, req.session().attribute("message"))
         );
 
         get("/new", (req, res) ->
-            templateWrapper(res, createNewCandidateSetForm(), NEW_CANDIDATE_FORM_ID)
+            templateWrapper(res, createNewCandidateSetForm(), false, null, req.session().attribute("message"))
         );
 
         post("/create", (req, res) -> {
             if(req.queryParams("name")==null || req.queryParams("patents")==null) {
-                res.type("application/json");
-                return new Gson().toJson(new SimpleAjaxMessage("Invalid parameters."));
+                req.session().attribute("message", "Invalid form parameters.");
+                res.redirect("/new");
+            } else {
+                Database.createCandidateSet(req.queryParams("name"), preProcess(req.queryParams("patents")));
+                req.session().attribute("message", "Candidate set created.");
+                res.redirect("/");
             }
-            Database.createCandidateSet(req.queryParams("name"), preProcess(req.queryParams("patents")));
-            res.redirect("/");
             return null;
         });
 
@@ -121,8 +123,11 @@ public class SimilarPatentServer {
         return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
     }
 
-    private static Tag templateWrapper(Response res, Tag form, String formId) {
+    private static Tag templateWrapper(Response res, Tag form, boolean withAjax, String formId, String message) {
         res.type("text/html");
+        if(message==null)message="";
+        Tag script = script();
+        if(withAjax) script = formScript(formId);
         return html().with(
                 head().with(
                         //title(title),
@@ -130,29 +135,13 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().attr("OnKeyPress","return disableKeyPress(event);").with(
-                        script().withText(
-                                "$(document).ready(function() { "
-                                        + "$('#"+formId+"').submit(function(e) {"
-                                        + "$('#"+formId+"-button').attr('disabled',true).text('Searching...');"
-                                        + "var url = '/similar_patents'; "
-                                        + "$.ajax({"
-                                        + "type: 'POST',"
-                                        + "url: url,"
-                                        + "data: $('#"+formId+"').serialize(),"
-                                        + "success: function(data) { "
-                                        + "$('#results').html(data.results); "
-                                        + "$('#"+formId+"-button').attr('disabled',false).text('Search');"
-                                        + "}"
-                                        + "});"
-                                        + "e.preventDefault(); "
-                                        + "});"
-                                        + "});"),
+                        script,
                         div().attr("style", "width:80%; padding: 2% 10%;").with(
                                 a().attr("href", "/").with(
                                         img().attr("src", "/images/brand.png")
                                 ),
                                 //h2(title),
-                                //h3(subtitle),
+                                h3(message),
                                 hr(),
                                 form,
                                 div().withId("results"),
@@ -162,6 +151,26 @@ public class SimilarPatentServer {
                         )
                 )
         );
+    }
+
+    private static Tag formScript(String formId) {
+        return script().withText(
+                "$(document).ready(function() { "
+                        + "$('#"+formId+"').submit(function(e) {"
+                        + "$('#"+formId+"-button').attr('disabled',true).text('Searching...');"
+                        + "var url = '/similar_patents'; "
+                        + "$.ajax({"
+                        + "type: 'POST',"
+                        + "url: url,"
+                        + "data: $('#"+formId+"').serialize(),"
+                        + "success: function(data) { "
+                        + "$('#results').html(data.results); "
+                        + "$('#"+formId+"-button').attr('disabled',false).text('Search');"
+                        + "}"
+                        + "});"
+                        + "e.preventDefault(); "
+                        + "});"
+                        + "});");
     }
 
     private static void importCandidateSetFromDB() throws SQLException {
