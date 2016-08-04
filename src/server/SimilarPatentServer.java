@@ -40,6 +40,7 @@ public class SimilarPatentServer {
     static {
         try {
             Database.setupSeedConn();
+            Database.setupMainConn();
             finder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
@@ -137,7 +138,6 @@ public class SimilarPatentServer {
 
     private static void importCandidateSetFromDB() throws SQLException {
         ResultSet candidates = Database.selectAllCandidateSets();
-        candidateSetMap = new HashMap<>();
         while(candidates.next()) {
             candidateSetMap.put(candidates.getString(1),(String[])candidates.getArray(2).getArray());
         }
@@ -145,7 +145,7 @@ public class SimilarPatentServer {
 
 
     private static Tag selectCandidateSetDropdown() {
-        System.out.println("DEBUGGING!!!! GOT HERE!!!!");
+        candidateSetMap = new HashMap<>();
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {
