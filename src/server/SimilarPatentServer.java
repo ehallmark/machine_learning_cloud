@@ -145,6 +145,7 @@ public class SimilarPatentServer {
 
 
     private static Tag selectCandidateSetDropdown() {
+        System.out.println("DEBUGGING!!!! GOT HERE!!!!");
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {
