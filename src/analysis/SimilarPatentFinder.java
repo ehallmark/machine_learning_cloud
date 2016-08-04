@@ -31,7 +31,7 @@ public class SimilarPatentFinder {
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         System.out.println("--- Started Loading Panasonic Patent Vector List ---");
-        if(!patentListFile.exists()) {
+        if(!patentListFile.exists() && candidateSet!=null) {
             patentList = new LinkedList<>();
             ResultSet rs = Database.selectPatentVectors(candidateSet);
             int count = 0;

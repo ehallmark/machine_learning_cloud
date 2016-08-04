@@ -42,7 +42,7 @@ public class SimilarPatentServer {
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
-    private static Map<String, String[]> candidateSetMap;
+    private static Map<String, Integer> candidateSetMap;
     static {
         try {
             Database.setupSeedConn();
@@ -98,8 +98,8 @@ public class SimilarPatentServer {
 
         post("/select", (req, res) -> {
             res.type("application/json");
-            if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
-            int id = Database.selectCandidateIdByName(req.queryParams("name"));
+            if(req.queryParams("id")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
+            int id = Integer.valueOf(req.queryParams("id"));
             if(id > 0) {
                 // exists
                 req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
@@ -216,7 +216,7 @@ public class SimilarPatentServer {
     private static void importCandidateSetFromDB() throws SQLException {
         ResultSet candidates = Database.selectAllCandidateSets();
         while(candidates.next()) {
-            candidateSetMap.put(candidates.getString(1),(String[])candidates.getArray(2).getArray());
+            candidateSetMap.put(candidates.getString(1),candidates.getInt(2));
         }
     }
 
@@ -233,7 +233,7 @@ public class SimilarPatentServer {
                 label("Select Candidate Set"),
                 br(),
                 select().withName("name").with(
-                        candidateSetMap.keySet().stream().map(key->option().withText(key).withValue(key)).collect(Collectors.toList())
+                        candidateSetMap.entrySet().stream().map(entry->option().withText(entry.getKey()).withValue(entry.getValue().toString())).collect(Collectors.toList())
                 )
         );
     }
