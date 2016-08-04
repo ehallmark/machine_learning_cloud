@@ -56,6 +56,15 @@ public class Database {
 		}
 	}
 
+	public static void createCandidateSet(String name, List<String> patents) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name,patents) VALUES (?,?) ON CONFLICT(name) update patents=? WHERE candidate_sets.name=?");
+		Array pArray = mainConn.createArrayOf("varchar", patents.toArray());
+		ps.setString(1,name);
+		ps.setArray(2, pArray);
+		ps.setArray(3, pArray);
+		ps.setString(4,name);
+	}
+
 	public static void resetValuablePatents() throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable='f' WHERE is_valuable='t'");
 		ps.executeUpdate();
