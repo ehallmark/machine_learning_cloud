@@ -28,7 +28,7 @@ public class Database {
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
 	//private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
-	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE is_valuable='t'";
+	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors pub_doc_number=ANY(?)";
 	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, doc_numbers FROM candidate_sets";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
@@ -56,15 +56,18 @@ public class Database {
 		}
 	}
 
-	public static void createCandidateSet(String name, List<String> patents) throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name,doc_numbers) VALUES (?,?) ON CONFLICT (name) DO UPDATE SET doc_numbers=? WHERE candidate_sets.name=?");
-		Array pArray = mainConn.createArrayOf("varchar", patents.toArray());
+	public static int createCandidateSetAndReturnId(String name) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name) VALUES (?)");
 		ps.setString(1,name);
-		ps.setArray(2, pArray);
-		ps.setArray(3, pArray);
-		ps.setString(4,name);
 		ps.executeUpdate();
 		Database.commit();
+		ps = mainConn.prepareStatement("SELECT max(id) from candidate_sets");
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) {
+			return rs.getInt(1);
+		} else {
+			throw new RuntimeException("No maximum id found");
+		}
 	}
 
 	public static void resetValuablePatents() throws SQLException {
@@ -126,8 +129,9 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	public static ResultSet selectPatentVectors() throws SQLException {
+	public static ResultSet selectPatentVectors(List<String> patents) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);
+		ps.setArray(1, seedConn.createArrayOf("varchar", patents.toArray()));
 		ps.setFetchSize(5);
 		System.out.println(ps);
 		return ps.executeQuery();
@@ -381,6 +385,15 @@ public class Database {
 		PreparedStatement ps = seedConn.prepareStatement(valuablePatentsQuery);
 		ps.setFetchSize(10);
 		return ps.executeQuery();
+	}
+
+	public static List<String> getValuablePatentsToList() throws SQLException {
+		ResultSet rs = getValuablePatents();
+		List<String> patentList = new LinkedList<>();
+		while(rs.next()) {
+			patentList.add(rs.getString(1));
+		}
+		return patentList;
 	}
 
 	/*public static ResultSet getUnValuablePatents() throws SQLException {

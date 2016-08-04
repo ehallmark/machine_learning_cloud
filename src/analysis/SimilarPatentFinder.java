@@ -25,15 +25,15 @@ public class SimilarPatentFinder {
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
-        this(new File(Constants.PATENT_VECTOR_LIST_FILE));
+        this(Database.getValuablePatentsToList(), new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
-    public SimilarPatentFinder(File patentListFile) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         System.out.println("--- Started Loading Panasonic Patent Vector List ---");
         if(!patentListFile.exists()) {
             patentList = new LinkedList<>();
-            ResultSet rs = Database.selectPatentVectors();
+            ResultSet rs = Database.selectPatentVectors(candidateSet);
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
@@ -203,7 +203,7 @@ public class SimilarPatentFinder {
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
-            SimilarPatentFinder finder = new SimilarPatentFinder(new File(Constants.PATENT_VECTOR_LIST_FILE));
+            SimilarPatentFinder finder = new SimilarPatentFinder();
             System.out.println("Searching ALL (STRICT) similar patents for 7056704");
             List<PatentList> list = finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20, true);
             if(list!=null)list.forEach(p->{

@@ -4,6 +4,7 @@ import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
+import seeding.Constants;
 import server.tools.*;
 import spark.Request;
 import seeding.Database;
@@ -70,7 +71,8 @@ public class SimilarPatentServer {
                 res.redirect("/new");
             } else {
                 try {
-                    Database.createCandidateSet(req.queryParams("name"), preProcess(req.queryParams("patents")));
+                    int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
+                    req.session().attribute("candidateSet", new SimilarPatentFinder(preProcess(req.queryParams("patents")), new File(Constants.CANDIDATE_SET_FOLDER+id)));
                 } catch(SQLException sql) {
                     sql.printStackTrace();
                 }
