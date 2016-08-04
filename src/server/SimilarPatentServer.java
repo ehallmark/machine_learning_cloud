@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
-import static spark.Spark.redirect;
 
 /**
  * Created by ehallmark on 7/27/16.
@@ -70,7 +69,11 @@ public class SimilarPatentServer {
                 req.session().attribute("message", "Invalid form parameters.");
                 res.redirect("/new");
             } else {
-                Database.createCandidateSet(req.queryParams("name"), preProcess(req.queryParams("patents")));
+                try {
+                    Database.createCandidateSet(req.queryParams("name"), preProcess(req.queryParams("patents")));
+                } catch(SQLException sql) {
+                    sql.printStackTrace();
+                }
                 req.session().attribute("message", "Candidate set created.");
                 res.redirect("/");
             }
