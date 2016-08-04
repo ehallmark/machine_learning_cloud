@@ -238,7 +238,7 @@ public class SimilarPatentServer {
                 input().withType("text").withName("name"),
                 br(),
                 label("Patents (space separated)"), br(),
-                textarea().withName("patents"),
+                textarea().withName("patents"), br(),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
     }

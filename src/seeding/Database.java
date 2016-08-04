@@ -57,7 +57,7 @@ public class Database {
 	}
 
 	public static void createCandidateSet(String name, List<String> patents) throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name,doc_numbers) VALUES (?,?) ON CONFLICT(name) update doc_numbers=? WHERE candidate_sets.name=?");
+		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name,doc_numbers) VALUES (?,?) ON CONFLICT (name) DO UPDATE SET doc_numbers=? WHERE candidate_sets.name=?");
 		Array pArray = mainConn.createArrayOf("varchar", patents.toArray());
 		ps.setString(1,name);
 		ps.setArray(2, pArray);
@@ -122,7 +122,7 @@ public class Database {
 	}
 
 	public static ResultSet selectAllCandidateSets() throws SQLException {
-		PreparedStatement ps = mainConn.prepareStatement(selectAllCandidateSets);
+		PreparedStatement ps = seedConn.prepareStatement(selectAllCandidateSets);
 		return ps.executeQuery();
 	}
 
