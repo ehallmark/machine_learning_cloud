@@ -82,7 +82,7 @@ public class SimilarPatentServer {
                                     //h2(title),
                                     //h3(subtitle),
                                     hr(),
-                                    selectCandidateForm(),
+                                    candidateForms(),
                                     div().withId("results"),
                                     br(),
                                     br(),
@@ -163,16 +163,33 @@ public class SimilarPatentServer {
     }
 
     private static Tag selectCandidateForm() {
+        return div().with(selectCandidateSetDropdown(),
+                br(),
+                button("Select").withType("submit")
+        );
+    }
+
+    private static Tag createNewCandidateSetForm() {
+        return form().withAction("/new_candidate_set").withMethod("post").with(
+                label("Name"),br(),
+                input().withType("text").withName("name"),
+                br(),
+                label("Patents (comma-delimited)"), br(),
+                textarea().withName("patents"),
+                button("Create").withType("submit")
+        );
+    }
+
+    private static Tag candidateForms() {
         return div().with(
                 form().withId("patent-form").withAction("/similar_patents").withMethod("post").with(
                         table().with(
                                 tbody().with(
                                         tr().with(
                                                 td().with(
-                                                        selectCandidateSetDropdown()
-                                                ),
-                                                td().with(
-                                                        button("Select").withType("submit")
+                                                        selectCandidateForm()
+                                                ),td().with(
+                                                        createNewCandidateSetForm()
                                                 )
                                         )
                                 )
