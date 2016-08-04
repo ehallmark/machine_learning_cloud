@@ -1,4 +1,4 @@
-package server;
+package server.tools;
 
 import tools.PatentList;
 
@@ -11,7 +11,7 @@ public class ServerResponse {
     public List<PatentList> results;
     public String query;
     public String message;
-    ServerResponse(String query, String message, List<PatentList> results) {
+    public ServerResponse(String query, String message, List<PatentList> results) {
         this.results=results;
         this.query=query;
         this.message=message;

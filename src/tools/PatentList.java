@@ -1,6 +1,6 @@
 package tools;
 
-import server.AbstractPatent;
+import server.tools.AbstractPatent;
 
 import java.io.Serializable;
 import java.util.List;

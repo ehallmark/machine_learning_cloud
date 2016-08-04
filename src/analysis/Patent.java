@@ -2,7 +2,7 @@ package analysis;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import server.AbstractPatent;
+import server.tools.AbstractPatent;
 
 import java.io.Serializable;
 

@@ -30,6 +30,7 @@ public class Database {
 	//private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
 	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE is_valuable='t'";
 	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=?";
+	private static final String selectAllCandidateSets = "SELECT name, doc_numbers FROM candidate_sets";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
@@ -107,6 +108,11 @@ public class Database {
 		ResultSet rs = ps.executeQuery();
 		if(rs.next()) return rs.getInt(1);
 		else throw new RuntimeException("Unable to get last date from Database!");
+	}
+
+	public static ResultSet selectAllCandidateSets() throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement(selectAllCandidateSets);
+		return ps.executeQuery();
 	}
 
 	public static ResultSet selectPatentVectors() throws SQLException {

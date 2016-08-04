@@ -14,7 +14,7 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import server.AbstractPatent;
+import server.tools.AbstractPatent;
 
 /**
  * Created by ehallmark on 7/26/16.

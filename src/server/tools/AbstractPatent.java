@@ -1,4 +1,4 @@
-package server;
+package server.tools;
 
 /**
  * Created by ehallmark on 7/27/16.

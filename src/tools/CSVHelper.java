@@ -1,6 +1,6 @@
 package tools;
 
-import server.ServerResponse;
+import server.tools.ServerResponse;
 
 import java.util.List;
 import java.util.StringJoiner;
