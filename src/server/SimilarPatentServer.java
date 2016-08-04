@@ -8,6 +8,7 @@ import server.tools.*;
 import spark.Request;
 import seeding.Database;
 import spark.Response;
+import spark.Session;
 import tools.CSVHelper;
 import tools.PatentList;
 
@@ -53,14 +54,16 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void server() {
-        get("/", (req, res) ->
-            templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, "/select", req.session().attribute("message"))
-        );
+    private static String getAndRemoveMessage(Session session) {
+        String message = session.attribute("message");
+        if(message!=null)session.removeAttribute("message");
+        return message;
+    }
 
-        get("/new", (req, res) ->
-            templateWrapper(res, createNewCandidateSetForm(), false, null, null, req.session().attribute("message"))
-        );
+    public static void server() {
+        get("/", (req, res) -> templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, "/select", getAndRemoveMessage(req.session())));
+
+        get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), false, null, null, getAndRemoveMessage(req.session())));
 
         post("/create", (req, res) -> {
             if(req.queryParams("name")==null || req.queryParams("patents")==null) {
@@ -87,7 +90,6 @@ public class SimilarPatentServer {
             response.status(200);
             return response.body();
         });
-
 
         post("/similar_patents", (req, res) -> {
             ServerResponse response;

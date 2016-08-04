@@ -63,6 +63,7 @@ public class Database {
 		ps.setArray(2, pArray);
 		ps.setArray(3, pArray);
 		ps.setString(4,name);
+		ps.executeUpdate();
 	}
 
 	public static void resetValuablePatents() throws SQLException {
