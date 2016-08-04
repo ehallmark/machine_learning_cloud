@@ -56,6 +56,20 @@ public class Database {
 		}
 	}
 
+	public static int selectCandidateIdByName(String name) {
+		try {
+			PreparedStatement ps = mainConn.prepareStatement("SELECT id FROM candidate_sets WHERE name = ? LIMIT 1");
+			ps.setString(1, name);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch(SQLException sql) {
+			sql.printStackTrace();
+		}
+		return 0;
+	}
+
 	public static int createCandidateSetAndReturnId(String name) throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_sets (name) VALUES (?)");
 		ps.setString(1,name);

@@ -96,6 +96,19 @@ public class SimilarPatentServer {
             return response.body();
         });
 
+        post("/select", (req, res) -> {
+            res.type("application/json");
+            if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
+            int id = Database.selectCandidateIdByName(req.queryParams("name"));
+            if(id > 0) {
+                // exists
+                req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
+                return new Gson().toJson(new SimpleAjaxMessage("Candidate set selected."));
+            } else {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set."));
+            }
+        });
+
         post("/similar_patents", (req, res) -> {
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
@@ -219,7 +232,7 @@ public class SimilarPatentServer {
         return div().with(
                 label("Select Candidate Set"),
                 br(),
-                select().withName("withCandidateSet").with(
+                select().withName("name").with(
                         candidateSetMap.keySet().stream().map(key->option().withText(key).withValue(key)).collect(Collectors.toList())
                 )
         );
@@ -236,6 +249,7 @@ public class SimilarPatentServer {
 
     private static Tag createNewCandidateSetForm() {
         return form().withId(NEW_CANDIDATE_FORM_ID).withAction("/create").withMethod("post").with(
+                p().withText("(May take awhile...)"),
                 label("Name"),br(),
                 input().withType("text").withName("name"),
                 br(),
