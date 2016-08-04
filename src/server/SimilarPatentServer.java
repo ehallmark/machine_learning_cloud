@@ -102,6 +102,7 @@ public class SimilarPatentServer {
             OutputStream out = response.raw().getOutputStream();
             ImageIO.write(bi, "png", out);
             out.close();
+            response.status(200);
             return response.body();
         });
 
