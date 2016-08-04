@@ -55,11 +55,11 @@ public class SimilarPatentServer {
 
     public static void server() {
         get("/", (req, res) ->
-            templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, req.session().attribute("message"))
+            templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, "/select", req.session().attribute("message"))
         );
 
         get("/new", (req, res) ->
-            templateWrapper(res, createNewCandidateSetForm(), false, null, req.session().attribute("message"))
+            templateWrapper(res, createNewCandidateSetForm(), false, null, null, req.session().attribute("message"))
         );
 
         post("/create", (req, res) -> {
@@ -123,11 +123,11 @@ public class SimilarPatentServer {
         return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
     }
 
-    private static Tag templateWrapper(Response res, Tag form, boolean withAjax, String formId, String message) {
+    private static Tag templateWrapper(Response res, Tag form, boolean withAjax, String formId, String url, String message) {
         res.type("text/html");
         if(message==null)message="";
         Tag script = script();
-        if(withAjax) script = formScript(formId);
+        if(withAjax) script = formScript(formId, url);
         return html().with(
                 head().with(
                         //title(title),
@@ -153,12 +153,12 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag formScript(String formId) {
+    private static Tag formScript(String formId, String url) {
         return script().withText(
                 "$(document).ready(function() { "
                         + "$('#"+formId+"').submit(function(e) {"
                         + "$('#"+formId+"-button').attr('disabled',true).text('Searching...');"
-                        + "var url = '/similar_patents'; "
+                        + "var url = '"+url+"'; "
                         + "$.ajax({"
                         + "type: 'POST',"
                         + "url: url,"
