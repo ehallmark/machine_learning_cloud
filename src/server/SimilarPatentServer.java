@@ -74,10 +74,14 @@ public class SimilarPatentServer {
                     int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
                     SimilarPatentFinder patentFinder;
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
-                    if(req.queryParams("patents")==null) {
+                    if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
                         patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file);
-                    } else {
+                    } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
                         patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file);
+                    } else {
+                        req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
+                        res.redirect("/new");
+                        return null;
                     }
                     req.session().attribute("candidateSet", patentFinder);
                     req.session().attribute("message", "Candidate set created.");
