@@ -61,7 +61,7 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        get("/", (req, res) -> templateWrapper(res, selectCandidateForm(), true, SELECT_CANDIDATE_FORM_ID, "/select", getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr(), findSimilarPatentForm()), true, SELECT_CANDIDATE_FORM_ID, "/select", getAndRemoveMessage(req.session())));
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), false, null, null, getAndRemoveMessage(req.session())));
 
@@ -183,7 +183,7 @@ public class SimilarPatentServer {
         res.type("text/html");
         if(message==null)message="";
         Tag script = script();
-        if(withAjax) script = formScript(formId, url);
+        if(withAjax) script = formScript(formId, url, "Select");
         return html().with(
                 head().with(
                         //title(title),
@@ -197,7 +197,8 @@ public class SimilarPatentServer {
                                         img().attr("src", "/images/brand.png")
                                 ),
                                 //h2(title),
-                                h3(message),
+                                hr(),
+                                h4(message),
                                 hr(),
                                 form,
                                 div().withId("results"),
@@ -209,11 +210,11 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag formScript(String formId, String url) {
+    private static Tag formScript(String formId, String url, String buttonText) {
         return script().withText(
                 "$(document).ready(function() { "
                         + "$('#"+formId+"').submit(function(e) {"
-                        + "$('#"+formId+"-button').attr('disabled',true).text('Searching...');"
+                        + "$('#"+formId+"-button').attr('disabled',true).text('"+buttonText+"ing...');"
                         + "var url = '"+url+"'; "
                         + "$.ajax({"
                         + "type: 'POST',"
@@ -221,12 +222,16 @@ public class SimilarPatentServer {
                         + "data: $('#"+formId+"').serialize(),"
                         + "success: function(data) { "
                         + "$('#results').html(data.results); "
-                        + "$('#"+formId+"-button').attr('disabled',false).text('Search');"
+                        + "$('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
                         + "}"
                         + "});"
                         + "e.preventDefault(); "
                         + "});"
                         + "});");
+    }
+
+    private static Tag findSimilarPatentForm() {
+        
     }
 
     private static void importCandidateSetFromDB() throws SQLException {
