@@ -31,6 +31,7 @@ public class Database {
 	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=ANY(?)";
 	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
+	private static final String selectPatentNumbersByAssignee = "select doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%'";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
@@ -142,6 +143,19 @@ public class Database {
 		PreparedStatement ps = seedConn.prepareStatement(selectAllCandidateSets);
 		return ps.executeQuery();
 	}
+
+	public static List<String> selectPatentNumbersFromAssignee(String assignee) throws SQLException{
+		PreparedStatement ps = seedConn.prepareStatement(selectPatentNumbersByAssignee);
+		ps.setString(1, assignee);
+		ps.setString(2, assignee);
+		ResultSet rs = ps.executeQuery();
+		List<String> patents = new LinkedList<>();
+		while(rs.next()) {
+			patents.add(rs.getString(1));
+		}
+		return patents;
+	}
+
 
 	public static ResultSet selectPatentVectors(List<String> patents) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);

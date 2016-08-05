@@ -35,7 +35,7 @@ import static spark.Spark.post;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    public static SimilarPatentFinder finder;
+    public static SimilarPatentFinder globalFinder;
     private static boolean failed = false;
     private static int DEFAULT_LIMIT = 25;
     private static boolean DEFAULT_STRICTNESS = true; // faster
@@ -47,7 +47,7 @@ public class SimilarPatentServer {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            finder = new SimilarPatentFinder();
+            globalFinder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -66,13 +66,20 @@ public class SimilarPatentServer {
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), false, null, null, getAndRemoveMessage(req.session())));
 
         post("/create", (req, res) -> {
-            if(req.queryParams("name")==null || req.queryParams("patents")==null) {
+            if(req.queryParams("name")==null || (req.queryParams("patents")==null && req.queryParams("assignee")==null)) {
                 req.session().attribute("message", "Invalid form parameters.");
                 res.redirect("/new");
             } else {
                 try {
                     int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
-                    req.session().attribute("candidateSet", new SimilarPatentFinder(preProcess(req.queryParams("patents")), new File(Constants.CANDIDATE_SET_FOLDER+id)));
+                    SimilarPatentFinder patentFinder;
+                    File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
+                    if(req.queryParams("patents")==null) {
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file);
+                    } else {
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file);
+                    }
+                    req.session().attribute("candidateSet", patentFinder);
                     req.session().attribute("message", "Candidate set created.");
                     res.redirect("/");
 
@@ -126,7 +133,8 @@ public class SimilarPatentServer {
                 System.out.println("\tType: " + type.toString());
                 boolean strictness = extractStrictness(req);
                 System.out.println("\tStrictness: " + strictness);
-                patents = finder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                if(req.session().attribute("candidateSet")==null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                else patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
@@ -257,7 +265,10 @@ public class SimilarPatentServer {
                 label("Name"),br(),
                 input().withType("text").withName("name"),
                 br(),
-                label("Patents (space separated)"), br(),
+                label("Seed By Assignee"),br(),
+                input().withType("text").withName("assignee"),
+                br(),
+                label("Or By Patent List (space separated)"), br(),
                 textarea().withName("patents"), br(),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
