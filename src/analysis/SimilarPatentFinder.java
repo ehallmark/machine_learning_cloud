@@ -25,15 +25,17 @@ public class SimilarPatentFinder {
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
-        this(Database.getValuablePatentsToList(), new File(Constants.PATENT_VECTOR_LIST_FILE));
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct list
         System.out.println("--- Started Loading Panasonic Patent Vector List ---");
-        if(!patentListFile.exists() && candidateSet!=null) {
+        if(!patentListFile.exists()) {
             patentList = new LinkedList<>();
-            ResultSet rs = Database.selectPatentVectors(candidateSet);
+            ResultSet rs;
+            if(candidateSet==null) rs = Database.selectAllPatentVectors();
+            else rs = Database.selectPatentVectors(candidateSet);
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {

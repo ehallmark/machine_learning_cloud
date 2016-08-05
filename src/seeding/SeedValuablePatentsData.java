@@ -11,11 +11,10 @@ public class SeedValuablePatentsData { // IS VALUABLE IF IT IS A PANASONIC PATEN
     public SeedValuablePatentsData() throws Exception {
         Database.resetValuablePatents();
         Database.commit();
-        ResultSet rs = Database.getValuablePatents();
         AtomicInteger cnt = new AtomicInteger(0);
-        while(rs.next()) {
+        for(String patent : Database.getValuablePatentsToList()) {
             try {
-                Database.updateValuablePatents(rs.getString(1),true);
+                Database.updateValuablePatents(patent,true);
                 System.out.println(cnt.getAndIncrement());
 
             } catch (SQLException sql) {

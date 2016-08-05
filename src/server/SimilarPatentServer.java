@@ -231,7 +231,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag findSimilarPatentForm() {
-        
+        return null;
     }
 
     private static void importCandidateSetFromDB() throws SQLException {
