@@ -47,7 +47,7 @@ public class SimilarPatentServer {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            globalFinder = new SimilarPatentFinder();
+            //globalFinder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -137,8 +137,9 @@ public class SimilarPatentServer {
                 System.out.println("\tType: " + type.toString());
                 boolean strictness = extractStrictness(req);
                 System.out.println("\tStrictness: " + strictness);
-                if(req.session().attribute("candidateSet")==null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
-                else patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                if(req.session().attribute("candidateSet")==null && globalFinder!=null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                else if(req.session().attribute("candidateSet")!=null) patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected."));
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);

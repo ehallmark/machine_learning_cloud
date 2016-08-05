@@ -40,16 +40,32 @@ public class SimilarPatentFinder {
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
                 String patentNumber = rs.getString(1);
-                for(int i = 0; i < Constants.VECTOR_TYPES.size()-1; i++) {
+                for(int i = 0; i < Constants.VECTOR_TYPES.size()-3; i++) {
                     Array data = rs.getArray(i+offset);
                     if(data!=null) {
                         Patent.Type type = Constants.VECTOR_TYPES.get(i);
                         patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim((Double[])data.getArray())), type));
                     }
                 }
+                // handle merging of class / subclass
+                double subclassWeight = 0.75;
+                double classWeight = 1.0-subclassWeight;
+                Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
+                Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
+                INDArray classArray;
+                if(classData!=null&&subClassData!=null) {
+                    classArray = Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray()));
+                    classArray.muli(classWeight).addi(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(subclassWeight));
+                    patentList.add(new Patent(patentNumber+" class", classArray, Patent.Type.CLASS));
+                } else if(classData!=null) {
+                    patentList.add(new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())), Patent.Type.CLASS));
+                } else if(subClassData!=null) {
+                    patentList.add(new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())), Patent.Type.CLASS));
+                }
                 // handle claims index VECTOR_TYPES.size()-1
-                if(rs.getArray(offset+Constants.VECTOR_TYPES.size())!=null) {
-                    Integer[] claimIndices = (Integer[]) rs.getArray(offset + Constants.VECTOR_TYPES.size()).getArray();
+                Array data = rs.getArray(Constants.VECTOR_TYPES.size()+offset);
+                if(data!=null) {
+                    Integer[] claimIndices = (Integer[]) data.getArray();
                     Double[][] claims = (Double[][]) rs.getArray(offset + Constants.VECTOR_TYPES.size() - 1).getArray();
                     assert claimIndices.length == claims.length;
                     for (int i = 0; i < claimIndices.length; i++) {
