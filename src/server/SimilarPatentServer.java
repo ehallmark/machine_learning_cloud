@@ -38,7 +38,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     private static boolean failed = false;
     private static int DEFAULT_LIMIT = 25;
-    private static boolean DEFAULT_STRICTNESS = true; // faster
+    private static boolean DEFAULT_STRICTNESS = false; 
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
