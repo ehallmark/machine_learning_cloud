@@ -192,6 +192,7 @@ public class SimilarPatentFinder {
                 if(!patent.getName().startsWith(otherPatent.getName().split("\\s+")[0])){
                     patent.calculateSimilarityToTarget();
                     patent.setReferringName(otherPatent.getName());
+                    System.out.println(patent.getName()+ " -> "+otherPatent.getName());
                     heap.add(patent);
                 }
             });
