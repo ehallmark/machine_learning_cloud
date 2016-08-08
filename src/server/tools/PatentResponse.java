@@ -29,7 +29,7 @@ public class PatentResponse extends ServerResponse {
                                     )
                             ),
                             tbody().with(
-                                    patentList.getPatents().stream().sorted().map(patent->
+                                    patentList.getPatents().stream().map(patent->
                                             tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US"+patent.getName().split("\\s+")[0])),td(Double.toString(patent.getSimilarity())))
                                     ).collect(Collectors.toList())
                             )
