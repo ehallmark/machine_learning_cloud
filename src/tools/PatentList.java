@@ -16,6 +16,7 @@ public class PatentList implements Serializable {
     public PatentList(List<AbstractPatent> patentList, String type) {
         this.patents=patentList;
         Collections.sort(patents);
+        Collections.reverse(patents);
         bySimilarityTo=type;
     }
 
