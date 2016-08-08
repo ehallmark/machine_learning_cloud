@@ -53,6 +53,10 @@ public class Patent implements Comparable<Patent>, Serializable {
         Patent.sortType=type;
     }
 
+    public INDArray getVector() {
+        return vector;
+    }
+
     public String getName() {
         return name;
     }

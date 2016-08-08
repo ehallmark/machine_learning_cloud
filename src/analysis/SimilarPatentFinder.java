@@ -113,20 +113,11 @@ public class SimilarPatentFinder {
                 patentList.add(new Patent(patentNumber+" "+type.toString().toLowerCase(), Nd4j.create(VectorHelper.toPrim((Double[])data.getArray())), type));
             }
         }
+
         // handle merging of class / subclass
-        Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
-        Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
-        INDArray classArray;
-        if(classData!=null&&subClassData!=null) {
-            double subclassWeight = 0.75;
-            double classWeight = 1.0-subclassWeight;
-            classArray = Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())).mul(classWeight).add(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(subclassWeight));
-            patentList.add(new Patent(patentNumber+" class", classArray, Patent.Type.CLASS));
-        } else if(classData!=null) {
-            patentList.add(new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())), Patent.Type.CLASS));
-        } else if(subClassData!=null) {
-            patentList.add(new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())), Patent.Type.CLASS));
-        }
+        Patent mergedClassVector = mergedClassVector(rs, patentNumber, offset);
+        if(mergedClassVector!=null)patentList.add(mergedClassVector);
+
         // handle claims index VECTOR_TYPES.size()-1
         Array data = rs.getArray(Constants.VECTOR_TYPES.size()+offset);
         if(data!=null) {
@@ -139,6 +130,26 @@ public class SimilarPatentFinder {
                 patentList.add(new Patent(patentNumber + " claim " + index.toString(), Nd4j.create(VectorHelper.toPrim(claims[i])), Patent.Type.CLAIM));
             }
         }
+    }
+
+    private Patent mergedClassVector(ResultSet rs, String patentNumber, int offset) throws SQLException {
+        Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
+        Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
+        INDArray classArray;
+        Patent merged;
+        if(classData!=null&&subClassData!=null) {
+            double subclassWeight = 0.75;
+            double classWeight = 1.0-subclassWeight;
+            classArray = Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())).mul(classWeight).add(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(subclassWeight));
+            merged = new Patent(patentNumber+" class", classArray, Patent.Type.CLASS);
+        } else if(classData!=null) {
+            merged = new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())), Patent.Type.CLASS);
+        } else if(subClassData!=null) {
+            merged = new Patent(patentNumber+" class", Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())), Patent.Type.CLASS);
+        } else {
+            merged = null;
+        }
+        return merged;
     }
 
 
@@ -162,13 +173,15 @@ public class SimilarPatentFinder {
         List<Integer> indices = new ArrayList<>();
         if(colIndex<0) {
             // do all
+            int subclassIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.SUBCLASS);
             for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
-                indices.add(i);
+                if(i!=subclassIndex)indices.add(i);
             }
         } else {
             indices.add(colIndex);
         }
         int claimIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLAIM);
+        int classIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLASS);
 
         int offset = 1;
         List<PatentList> patentLists = new ArrayList<>();
@@ -187,6 +200,13 @@ public class SimilarPatentFinder {
                     patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, "claim "+claimIndices[i], limit));
                     i++;
                 }
+            } else if(index==classIndex) {
+                Patent mergedClassVector = mergedClassVector(rs, patentNumber, offset);
+                Patent.Type cType;
+                if(!strictness) cType=Patent.Type.ALL;
+                else cType=Patent.Type.CLASS;
+                patentLists.add(similarPatentsHelper(mergedClassVector.getVector(), patentNumber, cType, "class", limit));
+
             } else {
                 INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index+offset).getArray()));
                 assert baseVector != null : "Base vector is null!";

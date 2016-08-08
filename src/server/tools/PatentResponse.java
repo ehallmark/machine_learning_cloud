@@ -5,7 +5,6 @@ import tools.PatentList;
 import static j2html.TagCreator.*;
 
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
 /**
