@@ -3,7 +3,7 @@ package server.tools;
 /**
  * Created by ehallmark on 7/27/16.
  */
-public class AbstractPatent {
+public class AbstractPatent implements Comparable<AbstractPatent>{
     protected String name;
     protected double similarity;
     protected String referringName;
@@ -13,11 +13,6 @@ public class AbstractPatent {
         this.similarity=similarity;
         this.referringName=referringName;
     }
-
-    public AbstractPatent(String name, double similarity) {
-        this(name, similarity, null);
-    }
-
 
     public String getName() {
         return name;
@@ -29,5 +24,10 @@ public class AbstractPatent {
 
     public String getReferringName() {
         return referringName;
+    }
+
+    @Override
+    public int compareTo(AbstractPatent o) {
+        return Double.compare(similarity, o.similarity);
     }
 }

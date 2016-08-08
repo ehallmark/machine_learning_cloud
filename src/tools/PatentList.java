@@ -3,6 +3,7 @@ package tools;
 import server.tools.AbstractPatent;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -14,6 +15,7 @@ public class PatentList implements Serializable {
     private List<AbstractPatent> patents;
     public PatentList(List<AbstractPatent> patentList, String type) {
         this.patents=patentList;
+        Collections.sort(patents);
         bySimilarityTo=type;
     }
 
