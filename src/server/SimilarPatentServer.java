@@ -291,24 +291,24 @@ public class SimilarPatentServer {
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search"),
                 table().with(
                         tbody().with(
-                                tr().with(
-                                        td().attr("style","width:50%").with(
+                                tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:50%; vertical-align: top;").with(
                                                 h3("Find Similar Patents By Patent"),
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
-                                                        label("Similar To Patent"),br(),input().withType("text").withName("patent"),
-                                                        label("Type"),br(),input().withType("text").withName("type"),
-                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),
+                                                        label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
+                                                        label("Type"),br(),input().withType("text").withName("type"),br(),
+                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
-                                        ),td().attr("style","width:50%").with(
+                                        ),td().attr("style","width:50%; vertical-align: top;").with(
                                                 h3("Find Similar Patents between Candidate Sets"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
-                                                        label("Type"),br(),input().withType("text").withName("type"),
-                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),
+                                                        label("Type"),br(),input().withType("text").withName("type"),br(),
+                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
-                                                        button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
+                                                        button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
@@ -361,7 +361,7 @@ public class SimilarPatentServer {
 
     private static boolean extractStrictness(Request req) {
         try {
-            return req.queryParams("strict").startsWith("t");
+            return req.queryParams("strict").startsWith("t")||req.queryParams("strict").startsWith("on");
         } catch(Exception e) {
             System.out.println("No strictness parameter specified... using default");
             return DEFAULT_STRICTNESS;
