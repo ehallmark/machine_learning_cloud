@@ -42,6 +42,7 @@ public class SimilarPatentServer {
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
+    private static final String SEARCH_CANDIDATE_FORM_ID = "search-candidate-form";
     private static Map<String, Integer> candidateSetMap;
     static {
         try {
@@ -61,7 +62,7 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr(), findSimilarPatentForm()), true, SELECT_CANDIDATE_FORM_ID, "/select", getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr(), getSimilarPatentsForm(), hr()), true, SELECT_CANDIDATE_FORM_ID, "/select", getAndRemoveMessage(req.session())));
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), false, null, null, getAndRemoveMessage(req.session())));
 
@@ -117,7 +118,7 @@ public class SimilarPatentServer {
             int id = Integer.valueOf(req.queryParams("id"));
             if(id > 0) {
                 // exists
-                req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
+                req.session().attribute("name", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
                 return new Gson().toJson(new SimpleAjaxMessage("Candidate set selected."));
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set."));
@@ -137,8 +138,8 @@ public class SimilarPatentServer {
                 System.out.println("\tType: " + type.toString());
                 boolean strictness = extractStrictness(req);
                 System.out.println("\tStrictness: " + strictness);
-                if(req.session().attribute("candidateSet")==null && globalFinder!=null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
-                else if(req.session().attribute("candidateSet")!=null) patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                if(req.session().attribute("name")==null && globalFinder!=null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
+                else if(req.session().attribute("name")!=null) patents = ((SimilarPatentFinder)req.session().attribute("name")).findSimilarPatentsTo(pubDocNumber, type, limit, strictness);
                 else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected."));
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
@@ -154,6 +155,8 @@ public class SimilarPatentServer {
                 return new Gson().toJson(response);
             }
         });
+
+
     }
 
     private static List<String> preProcess(String str) {
@@ -231,8 +234,12 @@ public class SimilarPatentServer {
                         + "});");
     }
 
-    private static Tag findSimilarPatentForm() {
-        return null;
+    private static Tag getSimilarPatentsForm() {
+        return div().with(formScript(SEARCH_CANDIDATE_FORM_ID, "/similar_patents", "Search"),form().withId(SEARCH_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
+                input().withType("text").withName("patent"),
+                button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
+                br()
+        ));
     }
 
     private static void importCandidateSetFromDB() throws SQLException {
