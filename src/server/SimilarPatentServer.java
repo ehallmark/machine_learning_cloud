@@ -184,7 +184,7 @@ public class SimilarPatentServer {
         res.type("text/html");
         if(message==null)message="";
         Tag script = script();
-        if(withAjax) script = formScript(formId, url, "Select");
+        if(withAjax) script = formScript(formId, url, "Search");
         return html().with(
                 head().with(
                         //title(title),
@@ -260,7 +260,7 @@ public class SimilarPatentServer {
     private static Tag selectCandidateForm() {
         return form().withId(SELECT_CANDIDATE_FORM_ID).withAction("/similar_patents").withMethod("post").with(selectCandidateSetDropdown(),
                 label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),br(),
-                button("Select").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
+                button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
                 br(),
                 br(),
                 a("Or create a new Candidate Set").withHref("/new")
