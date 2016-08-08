@@ -6,15 +6,28 @@ package server.tools;
 public class AbstractPatent {
     protected String name;
     protected double similarity;
-    public AbstractPatent(String name, double similarity) {
+    protected String referringName;
+
+    public AbstractPatent(String name, double similarity, String referringName) {
         this.name = name;
         this.similarity=similarity;
+        this.referringName=referringName;
     }
+
+    public AbstractPatent(String name, double similarity) {
+        this(name, similarity, null);
+    }
+
+
     public String getName() {
         return name;
     }
 
     public double getSimilarity() {
         return similarity;
+    }
+
+    public String getReferringName() {
+        return referringName;
     }
 }

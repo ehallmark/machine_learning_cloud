@@ -18,7 +18,7 @@ public class PatentResponse extends ServerResponse {
     private static Tag to_html_table(List<PatentList> patentLists, String query) {
         // List
         return div().with(
-                h3().with(label("Similar Patents to: "),a(query).withHref("https://www.google.com/patents/US"+query)),br(),br(),
+                h3().with(label("Similar Patents to: "),a(query).withHref("https://www.google.com/patents/US"+query)),br(),
                 div().with(patentLists.stream().map(patentList ->
                     div().with(table().with(
                             thead().with(

@@ -157,6 +157,59 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, Patent.Type type, int limit, boolean strictness) {
+        // Find the highest (pairwise) assets
+        int colIndex = Constants.VECTOR_TYPES.indexOf(type);
+        List<Integer> indices = new ArrayList<>();
+        if(colIndex<0) {
+            // do all
+            int subclassIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.SUBCLASS);
+            for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
+                if(i!=subclassIndex)indices.add(i);
+            }
+        } else {
+            indices.add(colIndex);
+        }
+
+        List<PatentList> patentLists = new ArrayList<>();
+        for(int index : indices) {
+            Patent.Type cType = Constants.VECTOR_TYPES.get(index);
+            setupMinHeap(limit);
+            addToHeap(other, cType, strictness);
+            patentLists.add(extractResultsFromHeap(limit, cType));
+        }
+        return patentLists;
+    }
+
+    private synchronized void addToHeap(SimilarPatentFinder other, Patent.Type type, boolean strictness) {
+        Patent.Type cType;
+        if(!strictness)cType= Patent.Type.ALL;
+        else cType = type;
+        other.patentList.forEach(otherPatent->{
+            Patent.setBaseVector(otherPatent.getVector());
+            Patent.setSortType(cType);
+            patentList.forEach(patent -> {
+                if(!patent.getName().startsWith(otherPatent.getName().split("\\s+")[0])){
+                    patent.calculateSimilarityToTarget();
+                    patent.setReferringName(otherPatent.getName());
+                    heap.add(patent);
+                }
+            });
+
+        });
+    }
+
+    private PatentList extractResultsFromHeap(int limit, Patent.Type type) {
+        List<AbstractPatent> resultList = new ArrayList<>(limit);
+        while (!heap.isEmpty()) {
+            Patent p = heap.remove();
+            resultList.add(0, Patent.abstractClone(p, p.getReferringName()));
+        }
+        PatentList results = new PatentList(resultList, type.toString().toLowerCase());
+        return results;
+    }
+
+
     // returns null if patentNumber not found
     // returns empty if no results found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit, boolean strictness) throws SQLException {
@@ -239,7 +292,7 @@ public class SimilarPatentFinder {
             Patent p = heap.remove();
             //String assignee = assigneeMap.get(p.getName());
             //if(assignee==null)assignee="";
-            resultList.add(0, Patent.abstractClone(p));
+            resultList.add(0, Patent.abstractClone(p, patentNumber));
         }
         PatentList results = new PatentList(resultList, name);
         return results;

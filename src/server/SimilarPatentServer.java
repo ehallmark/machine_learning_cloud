@@ -42,7 +42,8 @@ public class SimilarPatentServer {
     private static Patent.Type DEFAULT_TYPE = Patent.Type.ALL;
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
-    private static Map<String, Integer> candidateSetMap;
+    private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
+    private static Map<Integer, String> candidateSetMap;
     static {
         try {
             Database.setupSeedConn();
@@ -61,9 +62,9 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr()), true, SELECT_CANDIDATE_FORM_ID, "/similar_patents", getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr()), getAndRemoveMessage(req.session())));
 
-        get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), false, null, null, getAndRemoveMessage(req.session())));
+        get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
         post("/create", (req, res) -> {
             if(req.queryParams("name")==null || (req.queryParams("patents")==null && req.queryParams("assignee")==null)) {
@@ -109,6 +110,34 @@ public class SimilarPatentServer {
             out.close();
             response.status(200);
             return response.body();
+        });
+
+        post("/similar_candidate_sets", (req, res) -> {
+            res.type("application/json");
+            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
+            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
+
+            Integer id1 = Integer.valueOf(req.queryParams("name1"));
+            Integer id2 = Integer.valueOf(req.queryParams("name2"));
+            if(id1 < 0) {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
+            } else if(id2 < 0) {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find second candidate set."));
+            } else if(id1==id2) {
+                return new Gson().toJson(new SimpleAjaxMessage("Must choose different candidate sets!"));
+            } else {
+                // both exist
+                int limit = extractLimit(req);
+                System.out.println("\tLimit: " + limit);
+                Patent.Type type = extractType(req);
+                System.out.println("\tType: " + type.toString());
+                boolean strictness = extractStrictness(req);
+                System.out.println("\tStrictness: " + strictness);
+                SimilarPatentFinder first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
+                SimilarPatentFinder second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
+                return new Gson().toJson(new CandidateComparisonResponse(first.similarFromCandidateSet(second, type, limit, strictness), candidateSetMap.get(req.queryParams("name1")), candidateSetMap.get(req.queryParams("name2"))));
+            }
+
         });
 
         post("/similar_patents", (req, res) -> {
@@ -180,11 +209,9 @@ public class SimilarPatentServer {
         }
     }
 
-    private static Tag templateWrapper(Response res, Tag form, boolean withAjax, String formId, String url, String message) {
+    private static Tag templateWrapper(Response res, Tag form, String message) {
         res.type("text/html");
         if(message==null)message="";
-        Tag script = script();
-        if(withAjax) script = formScript(formId, url, "Search");
         return html().with(
                 head().with(
                         //title(title),
@@ -192,7 +219,6 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().attr("OnKeyPress","return disableKeyPress(event);").with(
-                        script,
                         div().attr("style", "width:80%; padding: 2% 10%;").with(
                                 a().attr("href", "/").with(
                                         img().attr("src", "/images/brand.png")
@@ -235,12 +261,15 @@ public class SimilarPatentServer {
     private static void importCandidateSetFromDB() throws SQLException {
         ResultSet candidates = Database.selectAllCandidateSets();
         while(candidates.next()) {
-            candidateSetMap.put(candidates.getString(1),candidates.getInt(2));
+            candidateSetMap.put(candidates.getInt(2),candidates.getString(1));
         }
     }
 
-
     private static Tag selectCandidateSetDropdown() {
+        return selectCandidateSetDropdown("Select Candidate Set", "name");
+    }
+
+    private static Tag selectCandidateSetDropdown(String label, String name) {
         candidateSetMap = new HashMap<>();
         try {
             importCandidateSetFromDB();
@@ -249,23 +278,48 @@ public class SimilarPatentServer {
             return label("ERROR:: Unable to load candidate set.");
         }
         return div().with(
-                label("Select Candidate Set"),
+                label(label),
                 br(),
-                select().withName("name").with(
-                        candidateSetMap.entrySet().stream().map(entry->option().withText(entry.getKey()).withValue(entry.getValue().toString())).collect(Collectors.toList())
+                select().withName(name).with(
+                        candidateSetMap.entrySet().stream().map(entry->option().withText(entry.getValue()).withValue(entry.getKey().toString())).collect(Collectors.toList())
                 )
         );
     }
 
     private static Tag selectCandidateForm() {
-        return form().withId(SELECT_CANDIDATE_FORM_ID).withAction("/similar_patents").withMethod("post").with(selectCandidateSetDropdown(),
-                label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),br(),
-                button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
+        return div().with(formScript(SELECT_CANDIDATE_FORM_ID, "/similar_patents", "Search"),
+                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search"),
+                table().with(
+                        tbody().with(
+                                tr().with(
+                                        td().attr("style","width:50%").with(
+                                                h3("Find Similar Patents By Patent"),
+                                                form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
+                                                        label("Similar To Patent"),br(),input().withType("text").withName("patent"),
+                                                        label("Type"),br(),input().withType("text").withName("type"),
+                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),
+                                                        label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
+                                                        button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),td().attr("style","width:50%").with(
+                                                h3("Find Similar Patents between Candidate Sets"),
+                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
+                                                        selectCandidateSetDropdown("Candidate Set 2", "name2"),
+                                                        label("Type"),br(),input().withType("text").withName("type"),
+                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),
+                                                        label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
+                                                        button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+                                )
+                        )
+                ),
                 br(),
                 br(),
                 a("Or create a new Candidate Set").withHref("/new")
         );
     }
+
 
     private static Tag createNewCandidateSetForm() {
         return form().withId(NEW_CANDIDATE_FORM_ID).withAction("/create").withMethod("post").with(

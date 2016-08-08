@@ -16,6 +16,7 @@ public class Patent implements Comparable<Patent>, Serializable {
     private double similarity;
     private Type type;
     private static INDArray baseVector;
+    private String referringName;
     private static Type sortType;
     public enum Type { ALL, CLAIM, ABSTRACT, DESCRIPTION, TITLE, CLASS, SUBCLASS }
 
@@ -25,8 +26,8 @@ public class Patent implements Comparable<Patent>, Serializable {
         this.type=type;
     }
 
-    public static AbstractPatent abstractClone(Patent old) {
-        AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget());
+    public static AbstractPatent abstractClone(Patent old, String reffered) {
+        AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), reffered);
         return  clone;
     }
 
@@ -35,6 +36,14 @@ public class Patent implements Comparable<Patent>, Serializable {
     public int compareTo(Patent o) {
         if(!sortType.equals(Type.ALL) && !sortType.equals(type)) return -1; // handles the sort type
         return Double.compare(similarity,Transforms.cosineSim(baseVector,o.vector));
+    }
+
+    public String getReferringName() {
+        return referringName;
+    }
+
+    public void setReferringName(String referringName) {
+        this.referringName=referringName;
     }
 
     public double getSimilarityToTarget() {
