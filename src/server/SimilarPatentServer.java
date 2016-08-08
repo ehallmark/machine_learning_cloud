@@ -214,20 +214,20 @@ public class SimilarPatentServer {
     private static Tag formScript(String formId, String url, String buttonText) {
         return script().withText(
                 "$(document).ready(function() { "
-                        + "$('#"+formId+"').submit(function(e) {"
-                        + "$('#"+formId+"-button').attr('disabled',true).text('"+buttonText+"ing...');"
-                        + "var url = '"+url+"'; "
-                        + "$.ajax({"
-                        + "type: 'POST',"
-                        + "url: url,"
-                        + "data: $('#"+formId+"').serialize(),"
-                        + "success: function(data) { "
-                        + "$('#results').html(data.results); "
-                        + "$('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
-                        + "}"
-                        + "});"
-                        + "e.preventDefault(); "
-                        + "});"
+                          + "$('#"+formId+"').submit(function(e) {"
+                            + "$('#"+formId+"-button').attr('disabled',true).text('"+buttonText+"ing...');"
+                            + "var url = '"+url+"'; "
+                            + "$.ajax({"
+                            + "  type: 'POST',"
+                            + "  url: url,"
+                            + "  data: $('#"+formId+"').serialize(),"
+                            + "  success: function(data) { "
+                            + "    $('#results').html(data.message); "
+                            + "    $('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
+                            + "  }"
+                            + "});"
+                            + "e.preventDefault(); "
+                          + "});"
                         + "});");
     }
 
@@ -259,8 +259,7 @@ public class SimilarPatentServer {
 
     private static Tag selectCandidateForm() {
         return form().withId(SELECT_CANDIDATE_FORM_ID).withAction("/similar_patents").withMethod("post").with(selectCandidateSetDropdown(),
-                br(),
-                label("Similar To Patent"),input().withType("text").withName("patent"),br(),
+                label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),br(),
                 button("Select").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit"),
                 br(),
                 br(),

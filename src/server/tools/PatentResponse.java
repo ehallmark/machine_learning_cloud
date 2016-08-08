@@ -1,5 +1,6 @@
 package server.tools;
 
+import tools.CSVHelper;
 import tools.PatentList;
 
 import java.util.List;
@@ -9,6 +10,6 @@ import java.util.List;
  */
 public class PatentResponse extends ServerResponse {
     public PatentResponse(List<PatentList> patents, String query) {
-        super(query,"Success",patents);
+        super(query, CSVHelper.to_csv(new ServerResponse(query,"",patents)),patents);
     }
 }
