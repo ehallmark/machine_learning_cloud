@@ -332,6 +332,17 @@ public class SimilarPatentServer {
                 br(),
                 label("Or By Patent List (space separated)"), br(),
                 textarea().withName("patents"), br(),
+                input().withType("text").withName("claimPercent"),br(),
+                label("Description Percentage"),br(),
+                input().withType("text").withName("descriptionPercent"),br(),
+                label("Abstract Percentage"),br(),
+                input().withType("text").withName("abstractPercent"),br(),
+                label("Title Percentage"),br(),
+                input().withType("text").withName("titlePercent"),br(),
+                label("Class Percentage"),br(),
+                input().withType("text").withName("classPercent"),br(),
+                label("Subclass Percentage"),br(),
+                input().withType("text").withName("subclassPercent"),br(),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
     }

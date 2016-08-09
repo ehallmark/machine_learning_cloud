@@ -2,10 +2,7 @@ package seeding;
 
 import analysis.Patent;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Constants {
 	public static final int DEFAULT_MIN_WORD_FREQUENCY = 5;
@@ -56,4 +53,14 @@ public class Constants {
 	public static final List<Patent.Type> VECTOR_TYPES = Arrays.asList(Patent.Type.TITLE, Patent.Type.ABSTRACT, Patent.Type.DESCRIPTION, Patent.Type.CLASS, Patent.Type.SUBCLASS, Patent.Type.CLAIM);
 	public static final int NUM_2D_VECTORS = DEFAULT_2D_VECTORS.size();
 	public static final int NUM_1D_VECTORS = DEFAULT_1D_VECTORS.size();
+
+	public static final Map<Patent.Type, Double> VECTOR_PERCENTAGES = new HashMap<>();
+	static {
+		VECTOR_PERCENTAGES.put(Patent.Type.ABSTRACT, 0.1);
+		VECTOR_PERCENTAGES.put(Patent.Type.CLAIM, 0.50);
+		VECTOR_PERCENTAGES.put(Patent.Type.DESCRIPTION,0.25);
+		VECTOR_PERCENTAGES.put(Patent.Type.CLAIM, 0.10);
+		VECTOR_PERCENTAGES.put(Patent.Type.SUBCLASS, 0.4);
+		VECTOR_PERCENTAGES.put(Patent.Type.TITLE, 0.05);
+	}
 }
