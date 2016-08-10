@@ -318,8 +318,6 @@ public class SimilarPatentServer {
                                                 h3("Find Similar Patents between Candidate Sets"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
-                                                        label("Type"),br(),input().withType("text").withName("type"),br(),
-                                                        label("Strict?"),br(),input().withType("checkbox").withName("strict"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
