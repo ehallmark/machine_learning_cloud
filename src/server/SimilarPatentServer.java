@@ -74,11 +74,22 @@ public class SimilarPatentServer {
                 try {
                     int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
                     SimilarPatentFinder patentFinder;
+                    // try to get percentages from form
+                    Map<Patent.Type,Double> percentages = new HashMap<>();
+                    Constants.VECTOR_TYPES.forEach(type->{
+                        if(req.queryParams(type.toString())!=null) {
+                            try {
+                                percentages.put(type,Double.valueOf(req.queryParams(type.toString())));
+                            } catch(Exception e) {
+                                percentages.put(type,Constants.VECTOR_PERCENTAGES.get(type));
+                            }
+                        }
+                    });
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file);
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,percentages);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file);
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file,percentages);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -332,17 +343,9 @@ public class SimilarPatentServer {
                 br(),
                 label("Or By Patent List (space separated)"), br(),
                 textarea().withName("patents"), br(),
-                input().withType("text").withName("claimPercent"),br(),
-                label("Description Percentage"),br(),
-                input().withType("text").withName("descriptionPercent"),br(),
-                label("Abstract Percentage"),br(),
-                input().withType("text").withName("abstractPercent"),br(),
-                label("Title Percentage"),br(),
-                input().withType("text").withName("titlePercent"),br(),
-                label("Class Percentage"),br(),
-                input().withType("text").withName("classPercent"),br(),
-                label("Subclass Percentage"),br(),
-                input().withType("text").withName("subclassPercent"),br(),
+                div().with(
+                        Constants.VECTOR_TYPES.stream().map(type->div().with(label(type.toString()+" percentage"),br(),input().withType("text").withName(type.toString()),br())).collect(Collectors.toList())
+                ),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
     }

@@ -168,6 +168,15 @@ public class VectorHelper {
         return vec;
     }
 
+    public static double[][] toPrim(Double[][] array) {
+        if(array==null) return null;
+        double[][] newArray = new double[array.length][];
+        for(int i = 0; i < array.length; i++) {
+            newArray[i] = toPrim(array[i]);
+        }
+        return newArray;
+    }
+
 
     public static PatentVectors getPatentVectors(ResultSet resultSet, WordVectors wordVectors) throws SQLException, InterruptedException, ExecutionException {
         // Pub Doc Number

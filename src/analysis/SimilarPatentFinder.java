@@ -23,13 +23,19 @@ public class SimilarPatentFinder {
     private MinHeap<Patent> heap;
     private List<Patent> patentList;
     //private Map<String, String> assigneeMap;
+    private Map<Patent.Type,Double> percentagesMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException, IOException, ClassNotFoundException{
+        this(candidateSet, patentListFile, Constants.VECTOR_PERCENTAGES);
+    }
+
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, Map<Patent.Type, Double> percentagesMap) throws SQLException,IOException, ClassNotFoundException {
         // construct lis
+        this.percentagesMap=percentagesMap;
         System.out.println("--- Started Loading Panasonic Patent Vector List ---");
         if (!patentListFile.exists()) {
             patentList = new LinkedList<>();
@@ -66,11 +72,11 @@ public class SimilarPatentFinder {
         double total = 0.0;
         String patentNumber = rs.getString(1);
         for (int i = 0; i < Constants.VECTOR_TYPES.size() - 3; i++) {
-            if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
             Array data = rs.getArray(i + offset);
-            if(data!=null) {
-                Patent.Type type = Constants.VECTOR_TYPES.get(i);
-                Double multiple = Constants.VECTOR_PERCENTAGES.get(type);
+            Patent.Type type = Constants.VECTOR_TYPES.get(i);
+            if(data!=null && percentagesMap.get(type)>0.0) {
+                if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
+                Double multiple = percentagesMap.get(type);
                 array.addi(Nd4j.create(VectorHelper.toPrim((Double[]) data.getArray())).mul(multiple));
                 total+=multiple;
             }
@@ -78,25 +84,24 @@ public class SimilarPatentFinder {
 
         // handle merging of class / subclass
         INDArray mergedClassVector = mergedClassVector(rs, patentNumber, offset);
-        if (mergedClassVector != null) {
+        if (mergedClassVector != null && percentagesMap.get(Patent.Type.CLASS)>0.0) {
             if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
-            Double multiple = Constants.VECTOR_PERCENTAGES.get(Patent.Type.CLASS);
+            Double multiple = percentagesMap.get(Patent.Type.CLASS);
             array.addi(mergedClassVector.mul(multiple));
             total+=multiple;
         }
 
         // handle claims index VECTOR_TYPES.size()-1
         Array data = rs.getArray(Constants.VECTOR_TYPES.size() + offset);
-        if (data != null) {
+        if (data != null && percentagesMap.get(Patent.Type.CLAIM)>0.0) {
             Integer[] claimIndices = (Integer[]) data.getArray();
             Double[][] claims = (Double[][]) rs.getArray(offset + Constants.VECTOR_TYPES.size() - 1).getArray();
             assert claimIndices.length == claims.length;
-            Double multiple = Constants.VECTOR_PERCENTAGES.get(Patent.Type.CLAIM)/claims.length;
-            for (int i = 0; i < claimIndices.length; i++) {
-                if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
-                array.addi(mergedClassVector.mul(multiple));
-                total+=multiple;
-            }
+            Double multiple = percentagesMap.get(Patent.Type.CLAIM)/claims.length;
+            INDArray avgClaim = Nd4j.create(VectorHelper.toPrim(claims)).mean(0);
+            if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
+            array.addi(avgClaim.mul(multiple));
+            total+=multiple;
         }
 
         if(array!=null) {
@@ -109,7 +114,7 @@ public class SimilarPatentFinder {
         Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
         Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
         if(classData!=null&&subClassData!=null) {
-            return Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())).mul(Constants.VECTOR_PERCENTAGES.get(Patent.Type.CLASS)).add(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(Constants.VECTOR_PERCENTAGES.get(Patent.Type.SUBCLASS)));
+            return Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())).mul(percentagesMap.get(Patent.Type.CLASS)).add(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(percentagesMap.get(Patent.Type.SUBCLASS)));
         } else if(classData!=null) {
             return Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray()));
         } else if(subClassData!=null) {
