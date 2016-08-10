@@ -23,7 +23,6 @@ public class CandidateComparisonResponse extends ServerResponse {
                 div().with(patentLists.stream().map(patentList ->
                     div().with(table().with(
                             thead().with(
-                                    tr().with(th("By Similarity of "+patentList.getBySimilarityTo()).attr("colspan","3")),
                                     tr().with(
                                             th("Patent # from "+candidate1),
                                             th("Patent # from "+candidate2),
