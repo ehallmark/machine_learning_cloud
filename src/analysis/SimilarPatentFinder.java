@@ -139,57 +139,33 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, Patent.Type type, int limit, boolean strictness) {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) {
         // Find the highest (pairwise) assets
-        int colIndex = Constants.VECTOR_TYPES.indexOf(type);
-        List<Integer> indices = new ArrayList<>();
-        if(colIndex<0) {
-            // do all
-            int subclassIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.SUBCLASS);
-            for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
-                if(i!=subclassIndex)indices.add(i);
-            }
-        } else {
-            indices.add(colIndex);
-        }
-
+        if(this.patentList.size() > other.patentList.size()) return other.similarFromCandidateSet(this, limit); // switch
+        assert this.patentList.size() < other.patentList.size(); // we want to iterate through smaller one first
         List<PatentList> patentLists = new ArrayList<>();
-        for(int index : indices) {
-            Patent.Type cType = Constants.VECTOR_TYPES.get(index);
-            setupMinHeap(limit);
-            addToHeap(other, cType, strictness);
-            patentLists.add(extractResultsFromHeap(limit, cType));
-        }
-        return patentLists;
-    }
-
-    private synchronized void addToHeap(SimilarPatentFinder other, Patent.Type type, boolean strictness) {
-        Patent.Type cType;
-        if(!strictness)cType= Patent.Type.ALL;
-        else cType = type;
-        other.patentList.forEach(otherPatent->{
-            Patent.setBaseVector(otherPatent.getVector());
-            Patent.setSortType(cType);
-            patentList.forEach(patent -> {
-                if(!patent.getName().startsWith(otherPatent.getName().split("\\s+")[0])){
-                    patent.calculateSimilarityToTarget();
-                    patent.setReferringName(otherPatent.getName());
-                    System.out.println(patent.getName()+ " -> "+otherPatent.getName());
+        setupMinHeap(limit);
+        patentList.forEach(patent->{
+            Patent.setBaseVector(patent.getVector());
+            Patent.setSortType(Patent.Type.ALL);
+            String patentName = patent.getName().split("\\s+")[0];
+            other.patentList.forEach(otherPatent->{
+                if(!otherPatent.getName().startsWith(patentName)){
+                    otherPatent.calculateSimilarityToTarget();
+                    otherPatent.setReferringName(patent.getName());
+                    System.out.println(otherPatent.getName()+ " -> "+patent.getName());
                     heap.add(patent);
                 }
             });
-
         });
-    }
-
-    private PatentList extractResultsFromHeap(int limit, Patent.Type type) {
         List<AbstractPatent> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
             resultList.add(0, Patent.abstractClone(p, p.getReferringName()));
         }
         PatentList results = new PatentList(resultList);
-        return results;
+        patentLists.add(results);
+        return patentLists;
     }
 
 
