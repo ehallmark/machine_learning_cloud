@@ -22,7 +22,6 @@ public class PatentResponse extends ServerResponse {
                 div().with(patentLists.stream().map(patentList ->
                     div().with(table().with(
                             thead().with(
-                                    tr().with(th("By Similarity of "+patentList.getBySimilarityTo()).attr("colspan","2")),
                                     tr().with(
                                             th("Patent #"),
                                             th("Cosine Similarity")
