@@ -38,10 +38,14 @@ public class SimilarPatentFinder {
         this.percentagesMap=percentagesMap;
         System.out.println("--- Started Loading Panasonic Patent Vector List ---");
         if (!patentListFile.exists()) {
-            patentList = new LinkedList<>();
             ResultSet rs;
-            if (candidateSet == null) rs = Database.selectAllPatentVectors();
-            else rs = Database.selectPatentVectors(candidateSet);
+            if (candidateSet == null) {
+                candidateSet = Database.getValuablePatentsToList();
+            }
+            int arrayCapacity = candidateSet.size();
+            patentList = new ArrayList<>(arrayCapacity);
+
+            rs = Database.selectPatentVectors(candidateSet);
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
