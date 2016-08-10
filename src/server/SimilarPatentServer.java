@@ -290,7 +290,7 @@ public class SimilarPatentServer {
 
     private static Tag selectCandidateSetDropdown(String label, String name) {
         candidateSetMap = new HashMap<>();
-        candidateSetMap.put(-1, ""); // adds the default candidate set
+        candidateSetMap.put(-1, "**ALL**"); // adds the default candidate set
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {
