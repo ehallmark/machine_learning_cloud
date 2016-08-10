@@ -185,7 +185,7 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, Patent.Type type, int limit, boolean strictness) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
@@ -195,17 +195,13 @@ public class SimilarPatentFinder {
         if(!rs.next()) {
             return null; // nothing found
         }
-        int colIndex = Constants.VECTOR_TYPES.indexOf(type);
+
         List<Integer> indices = new ArrayList<>();
-        if(colIndex<0) {
-            // do all
-            int subclassIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.SUBCLASS);
-            for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
-                if(i!=subclassIndex)indices.add(i);
-            }
-        } else {
-            indices.add(colIndex);
+        int subclassIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.SUBCLASS);
+        for(int i = 0; i < Constants.VECTOR_TYPES.size(); i++) {
+            if(i!=subclassIndex)indices.add(i);
         }
+
         int claimIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLAIM);
         int classIndex = Constants.VECTOR_TYPES.indexOf(Patent.Type.CLASS);
 
@@ -220,26 +216,19 @@ public class SimilarPatentFinder {
                     if(vec==null)continue;
                     INDArray baseVector = Nd4j.create(VectorHelper.toPrim(vec));
                     assert baseVector != null : "Base vector is null!";
-                    Patent.Type cType;
-                    if(!strictness) cType=Patent.Type.ALL;
-                    else cType=Patent.Type.CLAIM;
+                    Patent.Type cType=Patent.Type.CLAIM;
                     patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, "claim "+claimIndices[i], limit));
                     i++;
                 }
             } else if(index==classIndex) {
-                Patent.Type cType;
-                if(!strictness) cType=Patent.Type.ALL;
-                else cType=Patent.Type.CLASS;
+                Patent.Type cType=Patent.Type.CLASS;
                 patentLists.add(similarPatentsHelper(mergedClassVector(rs, patentNumber, offset), patentNumber, cType, "class", limit));
 
             } else {
                 INDArray baseVector = Nd4j.create(VectorHelper.toPrim((Double[]) rs.getArray(index+offset).getArray()));
                 assert baseVector != null : "Base vector is null!";
                 Patent.Type t = Constants.VECTOR_TYPES.get(index);
-                Patent.Type cType;
-                if(!strictness) cType=Patent.Type.ALL;
-                else cType=t;
-                patentLists.add(similarPatentsHelper(baseVector, patentNumber, cType, t.toString().toLowerCase(), limit));
+                patentLists.add(similarPatentsHelper(baseVector, patentNumber, t, t.toString().toLowerCase(), limit));
             }
         }
 
@@ -276,12 +265,12 @@ public class SimilarPatentFinder {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder();
             System.out.println("Searching ALL (STRICT) similar patents for 7056704");
-            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Patent.Type.ALL, 20, true);
+            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Constants.VECTOR_PERCENTAGES, 20);
             if(list!=null)list.forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
             System.out.println("Searching similar patent CLAIMS (NON STRICT) for 7056704");
-            finder.findSimilarPatentsTo("7056704", Patent.Type.CLAIM, 20, false).forEach(p->{
+            finder.findSimilarPatentsTo("7056704", Constants.VECTOR_PERCENTAGES, 20).forEach(p->{
                 System.out.println(new Gson().toJson(p));
             });
         } catch(Exception e) {
