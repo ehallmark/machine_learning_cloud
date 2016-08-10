@@ -154,7 +154,7 @@ public class SimilarPatentServer {
                 // bad format or something
 
             }
-            if(id !=null && id > 0) {
+            if(id !=null && id >= 0) {
                 // exists
                 if(!id.equals(req.session().attribute("candidateSetId"))){
                     req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
@@ -290,6 +290,7 @@ public class SimilarPatentServer {
 
     private static Tag selectCandidateSetDropdown(String label, String name) {
         candidateSetMap = new HashMap<>();
+        candidateSetMap.put(-1, ""); // adds the default candidate set
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {
@@ -300,7 +301,7 @@ public class SimilarPatentServer {
                 label(label),
                 br(),
                 select().withName(name).with(
-                        candidateSetMap.entrySet().stream().map(entry->option().withText(entry.getValue()).withValue(entry.getKey().toString())).collect(Collectors.toList())
+                        candidateSetMap.entrySet().stream().map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
                 )
         );
     }
