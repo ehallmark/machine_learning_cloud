@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by ehallmark on 7/21/16.
  */
-public class SeedValuablePatentsData { // IS VALUABLE IF IT IS A PANASONIC PATENT!!!!
+public class SeedValuablePatentsData {
     public SeedValuablePatentsData() throws Exception {
         Database.resetValuablePatents();
         Database.commit();
