@@ -48,7 +48,7 @@ public class SimilarPatentServer {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            //globalFinder = new SimilarPatentFinder();
+            globalFinder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -147,15 +147,22 @@ public class SimilarPatentServer {
             String pubDocNumber = req.queryParams("patent");
             List<PatentList> patents=null;
             if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
-            Integer id = Integer.valueOf(req.queryParams("name"));
-            if(id > 0) {
+            Integer id = null;
+            try {
+                id = Integer.valueOf(req.queryParams("name"));
+            } catch(Exception e) {
+                // bad format or something
+
+            }
+            if(id !=null && id > 0) {
                 // exists
                 if(!id.equals(req.session().attribute("candidateSetId"))){
                     req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
                     req.session().attribute("candidateSetId", id);
                 }
             } else {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set."));
+                req.session().removeAttribute("candidateSet");
+                req.session().removeAttribute("candidateSetId");
             }
             if(pubDocNumber == null) response=new NoPatentProvided();
             else {
@@ -164,7 +171,7 @@ public class SimilarPatentServer {
                 System.out.println("\tLimit: " + limit);
                 if(req.session().attribute("candidateSet")==null && globalFinder!=null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
                 else if(req.session().attribute("candidateSet")!=null) patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
-                else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected."));
+                else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
@@ -333,7 +340,7 @@ public class SimilarPatentServer {
 
     private static Tag percentageFormElements() {
         return div().with(
-                Constants.VECTOR_TYPES.stream().map(type->div().with(label(type.toString()+" percentage"),br(),input().withType("text").withName(type.toString()),br())).collect(Collectors.toList())
+                Constants.VECTOR_TYPES.stream().map(type->div().with(label(type.toString().toLowerCase()+" percentage"),br(),input().withType("text").withName(type.toString()),br())).collect(Collectors.toList())
         );
     }
 
