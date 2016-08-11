@@ -136,8 +136,8 @@ public class AutoEncoderModel {
             int iterations = 3;
             int numEpochs = 1;
 
-            SimilarPatentFinder finder1 = new SimilarPatentFinder();
-            SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
+            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"));
+            SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/4"));
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
             System.out.println(model.encode(finder2.getPatentList().get(0).getVector()).toString());
         } catch(Exception e) {
