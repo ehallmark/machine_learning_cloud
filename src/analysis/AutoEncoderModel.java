@@ -40,21 +40,20 @@ public class AutoEncoderModel extends AbstractPatentModel{
                 .dropOut(0.2)
                 .momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
+                .lrPolicyDecayRate(0.001)
+                .learningRate(0.05)
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(3, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(4, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(5, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
-                .layer(6, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(7, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(8, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(9, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
+                .layer(4, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(5, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
