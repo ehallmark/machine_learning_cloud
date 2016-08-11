@@ -130,13 +130,13 @@ public class AutoEncoderModel {
             System.out.println("Load data....");
 
             int batchSize = 100;
-            int iterations = 5;
-            int numEpochs = 3;
+            int iterations = 10;
+            int numEpochs = 5;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/6"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
-            new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
-
+            AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
+            System.out.println(model.encode(finder2.getPatentList().get(0).getVector()));
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
