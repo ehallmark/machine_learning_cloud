@@ -131,7 +131,7 @@ public class AutoEncoderModel {
 
             int batchSize = 100;
             int iterations = 5;
-            int numEpochs = 1;
+            int numEpochs = 3;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/6"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
