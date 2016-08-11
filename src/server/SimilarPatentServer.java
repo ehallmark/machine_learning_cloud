@@ -129,9 +129,16 @@ public class SimilarPatentServer {
                 // both exist
                 int limit = extractLimit(req);
                 System.out.println("\tLimit: " + limit);
+                String name1 = candidateSetMap.get(id1);
+                String name2 = candidateSetMap.get(id2);
                 SimilarPatentFinder first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
                 SimilarPatentFinder second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
-                return new Gson().toJson(new CandidateComparisonResponse(first.similarFromCandidateSet(second, limit), candidateSetMap.get(id1), candidateSetMap.get(id2)));
+                System.out.println("FIRST SPOT!!!!");
+                List<PatentList> patentLists = first.similarFromCandidateSet(second, limit);
+                System.out.println("COMPUTED PATENT LISTS!!!!");
+                CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists ,name1,name2);
+                System.out.println("RESPONSE FOUND!!!!!");
+                return new Gson().toJson(response);
             }
 
         });
