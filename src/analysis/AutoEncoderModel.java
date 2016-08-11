@@ -133,7 +133,7 @@ public class AutoEncoderModel {
             System.out.println("Load data....");
 
             int batchSize = 100;
-            int iterations = 10;
+            int iterations = 3;
             int numEpochs = 1;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder();
