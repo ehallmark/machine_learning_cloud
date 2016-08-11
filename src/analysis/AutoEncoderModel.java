@@ -72,8 +72,8 @@ public class AutoEncoderModel {
 
             }
             INDArray array = Nd4j.create(VectorHelper.toPrim(values.toArray(new Double[]{})));
-            System.out.println(" --- AVERAGE: "+array.meanNumber().toString());
-            System.out.println(" --- VARIANCE: "+array.varNumber().toString());
+            System.out.println(" --- AVERAGE SIMILARITY: "+array.meanNumber().toString());
+            System.out.println(" --- VARIANCE OF SIMILARITY: "+array.varNumber().toString());
             test.reset();
         }
     }
@@ -96,23 +96,23 @@ public class AutoEncoderModel {
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .dropOut(0.2)
-                .updater(Updater.NESTEROVS)
+                //.dropOut(0.2)
+                .updater(Updater.ADAGRAD)
                 .momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
-                .learningRate(0.05)
+                .learningRate(0.01)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
+                .layer(1, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
+                .layer(2, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
 
                 //encoding stops
-                .layer(3, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
 
                 //decoding starts
-                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
+                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nIn(250).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
@@ -134,7 +134,7 @@ public class AutoEncoderModel {
             int iterations = 10;
             int numEpochs = 1;
 
-            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/6"));
+            SimilarPatentFinder finder1 = new SimilarPatentFinder();
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
             System.out.println(model.encode(finder2.getPatentList().get(0).getVector()).toString());
