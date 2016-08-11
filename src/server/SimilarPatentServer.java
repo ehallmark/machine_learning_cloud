@@ -131,7 +131,7 @@ public class SimilarPatentServer {
                 System.out.println("\tLimit: " + limit);
                 SimilarPatentFinder first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
                 SimilarPatentFinder second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
-                return new Gson().toJson(new CandidateComparisonResponse(first.similarFromCandidateSet(second, limit), candidateSetMap.get(req.queryParams("name1")), candidateSetMap.get(req.queryParams("name2"))));
+                return new Gson().toJson(new CandidateComparisonResponse(first.similarFromCandidateSet(second, limit), candidateSetMap.get(id1), candidateSetMap.get(id2)));
             }
 
         });
