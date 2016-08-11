@@ -47,15 +47,14 @@ public class AutoEncoderModel extends AbstractPatentModel{
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
                 .layer(3, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
-                .layer(4, new RBM.Builder().nIn(100).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(5, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(6, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
+                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
