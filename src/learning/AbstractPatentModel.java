@@ -1,5 +1,6 @@
 package learning;
 
+import org.deeplearning4j.datasets.iterator.DataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
@@ -21,10 +22,10 @@ public abstract class AbstractPatentModel {
     protected int iterations;
     protected List<String> oneDList;
     protected List<String> twoDList;
-    protected AbstractPatentIterator iter;
-    protected AbstractPatentIterator test;
+    protected DataSetIterator iter;
+    protected DataSetIterator test;
 
-    public AbstractPatentModel(AbstractPatentIterator iter, AbstractPatentIterator test, int batchSize, int iterations, int numEpochs, List<String> oneDList, List<String> twoDList, File toSaveModel) throws Exception {
+    public AbstractPatentModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs, List<String> oneDList, List<String> twoDList, File toSaveModel) throws Exception {
         this.batchSize=batchSize;
         this.iterations=iterations;
         this.oneDList=oneDList;
@@ -37,7 +38,7 @@ public abstract class AbstractPatentModel {
         saveModel(toSaveModel);
     }
 
-    public AbstractPatentModel(AbstractPatentIterator iter, AbstractPatentIterator test, int batchSize, int iterations, int numEpochs, File toSaveModel) throws Exception {
+    public AbstractPatentModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs, File toSaveModel) throws Exception {
         this(iter, test, batchSize, iterations, numEpochs, Constants.DEFAULT_1D_VECTORS, Constants.DEFAULT_2D_VECTORS, toSaveModel);
     }
 

@@ -73,6 +73,10 @@ public class SimilarPatentFinder {
 
     }
 
+    public List<Patent> getPatentList() {
+        return patentList;
+    }
+
     private INDArray handleResultSet(ResultSet rs, int offset) throws SQLException{
         return handleResultSet(rs, offset, percentagesMap);
     }
