@@ -62,7 +62,7 @@ public class AutoEncoderModel {
             List<Double> values = new ArrayList<>();
             while(test.hasNext()){
                 DataSet t = test.next();
-                INDArray predicted = model.activateSelectedLayers(0, 5, t.getFeatureMatrix());
+                INDArray predicted = model.activateSelectedLayers(0, 7, t.getFeatureMatrix());
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
                     System.out.println(t.getFeatureMatrix().getRow(j));
@@ -79,7 +79,7 @@ public class AutoEncoderModel {
     }
 
     public INDArray encode(INDArray toEncode) {
-        return model.activateSelectedLayers(0, 2, toEncode);
+        return model.activateSelectedLayers(0, 3, toEncode);
     }
 
     protected void saveModel(File toSave) throws IOException {
@@ -97,22 +97,24 @@ public class AutoEncoderModel {
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.dropOut(0.2)
-                .updater(Updater.ADAGRAD)
-                .momentum(0.7)
+                .updater(Updater.RMSPROP)
+                //.momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
                 .learningRate(0.01)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
-                .layer(1, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
-                .layer(2, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(3, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
+                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
-                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).build())
-                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nIn(250).nOut(vectorSize).build())
+                .layer(5, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
