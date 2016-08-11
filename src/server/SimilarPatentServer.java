@@ -136,6 +136,7 @@ public class SimilarPatentServer {
                 System.out.println("FIRST SPOT!!!!");
                 List<PatentList> patentLists = first.similarFromCandidateSet(second, limit);
                 System.out.println("COMPUTED PATENT LISTS!!!!");
+                System.out.println("ASSIGNEE NAMES: "+name1+" AND "+name2);
                 CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists ,name1,name2);
                 System.out.println("RESPONSE FOUND!!!!!");
                 return new Gson().toJson(response);
