@@ -197,7 +197,11 @@ public class SimilarPatentServer {
                 } catch(Exception e) {
                     percentages.put(type,Constants.VECTOR_PERCENTAGES.get(type));
                 }
+            } else {
+                percentages.put(type,Constants.VECTOR_PERCENTAGES.get(type));
             }
+            System.out.print(type.toString()+": "+percentages.get(type));
+
         });
         return percentages;
     }

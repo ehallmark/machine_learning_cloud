@@ -1,6 +1,5 @@
 package seeding;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -18,7 +17,7 @@ public class SeedCompanyVectors {
     // HTTP POST request
     private static void sendPost(String candidateSetName, String assignee, List<String> patents) throws Exception {
         assert candidateSetName!=null && !(assignee==null && patents==null);
-        String url = "192.168.1.148:4567/create";
+        String url = "http://192.168.1.148:4567/create";
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
