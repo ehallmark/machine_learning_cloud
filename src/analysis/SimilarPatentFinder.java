@@ -146,7 +146,7 @@ public class SimilarPatentFinder {
         List<PatentList> patentLists = new ArrayList<>();
         setupMinHeap(limit);
         Set<String> usedPatents = new HashSet<>();
-        patentList.forEach(patent->{
+        new HashSet<>(patentList).forEach(patent->{
             synchronized (Patent.class) {
                 Patent.setBaseVector(patent.getVector());
                 Patent.setSortType(Patent.Type.ALL);
