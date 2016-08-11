@@ -65,8 +65,8 @@ public class AutoEncoderModel {
                 INDArray predicted = model.activateSelectedLayers(0, 5, t.getFeatureMatrix());
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
-                    System.out.println(encode(t.getFeatureMatrix().getRow(j)).toString());
-                    System.out.println("SHOULD MATCH : "+encode(predicted.getRow(j)).toString());
+                    System.out.println(t.getFeatureMatrix().getRow(j));
+                    System.out.println("SHOULD MATCH : "+predicted.getRow(j).toString());
                     values.add(similarity);
                 }
 
