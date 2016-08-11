@@ -70,7 +70,7 @@ public class AutoEncoderModel {
                 }
 
             }
-            INDArray array = Nd4j.create(VectorHelper.toPrim((Double[])values.toArray()));
+            INDArray array = Nd4j.create(VectorHelper.toPrim(values.toArray(new Double[]{})));
             System.out.println(" --- AVERAGE: "+array.mean(0).toString());
             System.out.println(" --- VARIANCE: "+array.var(0).toString());
 
