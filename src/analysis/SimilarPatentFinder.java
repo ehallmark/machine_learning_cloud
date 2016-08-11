@@ -139,39 +139,28 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) throws SQLException {
         // Find the highest (pairwise) assets
-        if(this.patentList.size() > other.patentList.size()) return other.similarFromCandidateSet(this, limit); // switch
-        assert this.patentList.size() < other.patentList.size(); // we want to iterate through smaller one first
         List<PatentList> patentLists = new ArrayList<>();
         setupMinHeap(limit);
-        Set<String> usedPatents = new HashSet<>();
-        new HashSet<>(patentList).forEach(patent->{
-            synchronized (Patent.class) {
-                Patent.setBaseVector(patent.getVector());
-                Patent.setSortType(Patent.Type.ALL);
-                String patentName = patent.getName().split("\\s+")[0];
-                usedPatents.clear();
-                other.patentList.forEach(otherPatent -> {
-                    String otherPatentName = otherPatent.getName().split("\\s+")[0];
-                    if (!otherPatent.getName().startsWith(patentName) && ! usedPatents.contains(otherPatentName)) {
-                        usedPatents.add(otherPatentName);
-                        otherPatent.calculateSimilarityToTarget();
-                        otherPatent.setReferringName(patent.getName());
-                        System.out.println(otherPatent.getName() + " -> " + patent.getName());
-                        heap.add(otherPatent);
-                    }
-                });
+        other.patentList.forEach(patent->{
+            try {
+                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], Constants.VECTOR_PERCENTAGES, limit).get(0));
+            } catch(SQLException sql) {
+                sql.printStackTrace();
             }
         });
-        List<AbstractPatent> resultList = new ArrayList<>(limit);
-        while (!heap.isEmpty()) {
-            Patent p = heap.remove();
-            resultList.add(0, Patent.abstractClone(p, p.getReferringName()));
-        }
-        PatentList results = new PatentList(resultList);
-        patentLists.add(results);
+        merge(patentLists, limit);
         return patentLists;
+    }
+
+    private static void merge(List<PatentList> patentLists, int limit) {
+        PriorityQueue<AbstractPatent> queue = new PriorityQueue<>();
+        for(PatentList list: patentLists) {
+            queue.addAll(list.getPatents());
+        }
+        patentLists.clear();
+        patentLists.add(new PatentList(new ArrayList<>(queue).subList(0, Math.min(limit,queue.size())), "ALL"));
     }
 
 
@@ -214,9 +203,9 @@ public class SimilarPatentFinder {
             Patent p = heap.remove();
             //String assignee = assigneeMap.get(p.getName());
             //if(assignee==null)assignee="";
-            resultList.add(0, Patent.abstractClone(p, null));
+            resultList.add(0, Patent.abstractClone(p, patentNumber));
         }
-        PatentList results = new PatentList(resultList);
+        PatentList results = new PatentList(resultList,patentNumber);
         return results;
     }
 

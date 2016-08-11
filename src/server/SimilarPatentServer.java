@@ -133,18 +133,8 @@ public class SimilarPatentServer {
                 String name2 = candidateSetMap.get(id2);
                 SimilarPatentFinder first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
                 SimilarPatentFinder second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
-                System.out.println("FIRST SPOT!!!!");
                 List<PatentList> patentLists = first.similarFromCandidateSet(second, limit);
-                System.out.println("COMPUTED PATENT LISTS!!!!");
-                System.out.println("ASSIGNEE NAMES: "+name1+" AND "+name2);
-                patentLists.forEach(list->{
-                    list.getPatents().forEach(p->{
-                        assert (p.getName()!=null && p.getReferringName()!=null) : "NULLL!!!!!!";
-                        System.out.println(p.getName()+" , "+p.getReferringName()+" , "+p.getSimilarity());
-                    });
-                });
-                CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists ,name1,name2);
-                System.out.println("RESPONSE FOUND!!!!!");
+                CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists,name1,name2);
                 return new Gson().toJson(response);
             }
 
