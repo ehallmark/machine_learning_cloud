@@ -56,11 +56,11 @@ public class Constants {
 
 	public static final Map<Patent.Type, Double> VECTOR_PERCENTAGES = new HashMap<>();
 	static {
-		VECTOR_PERCENTAGES.put(Patent.Type.ABSTRACT, 0.1);
-		VECTOR_PERCENTAGES.put(Patent.Type.CLAIM, 0.50);
-		VECTOR_PERCENTAGES.put(Patent.Type.DESCRIPTION,0.25);
-		VECTOR_PERCENTAGES.put(Patent.Type.CLASS, 0.10);
-		VECTOR_PERCENTAGES.put(Patent.Type.SUBCLASS, 0.4);
+		VECTOR_PERCENTAGES.put(Patent.Type.ABSTRACT, 0.05);
+		VECTOR_PERCENTAGES.put(Patent.Type.CLAIM, 0.60);
+		VECTOR_PERCENTAGES.put(Patent.Type.DESCRIPTION,0.2);
+		VECTOR_PERCENTAGES.put(Patent.Type.CLASS, 0.05);
+		VECTOR_PERCENTAGES.put(Patent.Type.SUBCLASS, 0.05);
 		VECTOR_PERCENTAGES.put(Patent.Type.TITLE, 0.05);
 	}
 }

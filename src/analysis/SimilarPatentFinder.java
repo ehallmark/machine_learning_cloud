@@ -144,7 +144,7 @@ public class SimilarPatentFinder {
         setupMinHeap(limit);
         other.patentList.forEach(patent->{
             try {
-                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], Constants.VECTOR_PERCENTAGES, limit).get(0));
+                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), limit).get(0));
             } catch(SQLException sql) {
                 sql.printStackTrace();
             }
@@ -164,20 +164,13 @@ public class SimilarPatentFinder {
 
 
     // returns null if patentNumber not found
-    // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
-        ResultSet rs = Database.getBaseVectorFor(patentNumber);
-        if(!rs.next()) {
-            return null; // nothing found
-        }
 
-        int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
         List<PatentList> patentLists = new ArrayList<>();
         patentLists.add(similarPatentsHelper(avgVector, patentNumber, Patent.Type.ALL, limit));
 
@@ -186,6 +179,16 @@ public class SimilarPatentFinder {
         System.out.println("Time to find similar patents for "+patentNumber+": "+time+" seconds");
 
         return patentLists;
+    }
+    // returns empty if no results found
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
+        ResultSet rs = Database.getBaseVectorFor(patentNumber);
+        if(!rs.next()) {
+            return null; // nothing found
+        }
+        int offset = 1;
+        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
+        return findSimilarPatentsTo(patentNumber, avgVector, limit);
     }
 
     private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Patent.Type type, int limit) {
