@@ -21,7 +21,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class AutoEncoderIterator implements DataSetIterator {
     protected int batchSize;
-    protected int numVectors;
     protected String query;
     protected SimilarPatentFinder finder;
     protected Iterator<Patent> innerIter;
@@ -40,7 +39,7 @@ public class AutoEncoderIterator implements DataSetIterator {
 
     @Override
     public int inputColumns() {
-        return Constants.VECTOR_LENGTH*numVectors;
+        return Constants.VECTOR_LENGTH;
     }
 
     @Override
