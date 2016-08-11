@@ -65,7 +65,8 @@ public class AutoEncoderModel {
                 INDArray predicted = model.activateSelectedLayers(0, 5, t.getFeatureMatrix());
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
-                    //System.out.println("Cosine of angle between original and predicted: "+similarity);
+                    System.out.println(encode(t.getFeatureMatrix().getRow(j)).toString());
+                    System.out.println("SHOULD MATCH : "+encode(predicted.getRow(j)).toString());
                     values.add(similarity);
                 }
 
@@ -131,12 +132,12 @@ public class AutoEncoderModel {
 
             int batchSize = 100;
             int iterations = 10;
-            int numEpochs = 5;
+            int numEpochs = 1;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/6"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
-            System.out.println(model.encode(finder2.getPatentList().get(0).getVector()));
+            System.out.println(model.encode(finder2.getPatentList().get(0).getVector()).toString());
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
