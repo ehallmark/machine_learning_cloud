@@ -17,13 +17,16 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
+import tools.VectorHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -55,16 +58,23 @@ public class AutoEncoderModel {
             model.fit(iter);
             iter.reset();
 
-
+            // test
+            List<Double> values = new ArrayList<>();
             while(test.hasNext()){
                 DataSet t = test.next();
                 INDArray predicted = model.activateSelectedLayers(0, 5, t.getFeatureMatrix());
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
-                    System.out.println("Cosine of angle between original and predicted: "+similarity);
+                    //System.out.println("Cosine of angle between original and predicted: "+similarity);
+                    values.add(similarity);
                 }
 
             }
+            INDArray array = Nd4j.create(VectorHelper.toPrim((Double[])values.toArray()));
+            System.out.println(" --- AVERAGE: "+array.mean(0).toString());
+            System.out.println(" --- VARIANCE: "+array.var(0).toString());
+
+            array.var(0);
             test.reset();
         }
     }
