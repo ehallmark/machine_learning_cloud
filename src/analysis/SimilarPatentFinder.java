@@ -145,16 +145,17 @@ public class SimilarPatentFinder {
         assert this.patentList.size() < other.patentList.size(); // we want to iterate through smaller one first
         List<PatentList> patentLists = new ArrayList<>();
         setupMinHeap(limit);
-        Set<String> patentNamesUsed = new HashSet<>();
+        Set<String> usedPatents = new HashSet<>();
         patentList.forEach(patent->{
             synchronized (Patent.class) {
                 Patent.setBaseVector(patent.getVector());
                 Patent.setSortType(Patent.Type.ALL);
                 String patentName = patent.getName().split("\\s+")[0];
+                usedPatents.clear();
                 other.patentList.forEach(otherPatent -> {
-                    String combinedString = patent.getName()+otherPatent.getName();
-                    if (!otherPatent.getName().startsWith(patentName) && ! patentNamesUsed.contains(combinedString)) {
-                        patentNamesUsed.add(combinedString);
+                    String otherPatentName = otherPatent.getName().split("\\s+")[0];
+                    if (!otherPatent.getName().startsWith(patentName) && ! usedPatents.contains(otherPatentName)) {
+                        usedPatents.add(otherPatentName);
                         otherPatent.calculateSimilarityToTarget();
                         otherPatent.setReferringName(patent.getName());
                         System.out.println(otherPatent.getName() + " -> " + patent.getName());
