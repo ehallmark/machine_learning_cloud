@@ -7,6 +7,7 @@ import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -38,6 +39,7 @@ public class AutoEncoderModel extends AbstractPatentModel{
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .dropOut(0.2)
+                .updater(Updater.NESTEROVS)
                 .momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
