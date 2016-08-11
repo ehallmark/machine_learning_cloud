@@ -3,6 +3,7 @@ package analysis;
 import learning.AbstractPatentModel;
 import learning.SimilarityAutoEncoderIterator;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
+import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
@@ -12,22 +13,70 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 
 /**
  * Created by ehallmark on 7/21/16.
  */
-public class AutoEncoderModel extends AbstractPatentModel{
-    public AutoEncoderModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs) throws Exception {
-        super(iter, test, batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
+public class AutoEncoderModel {
+    protected MultiLayerNetwork model;
+    protected int batchSize;
+    protected int iterations;
+    protected DataSetIterator iter;
+    protected DataSetIterator test;
+
+    public AutoEncoderModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs, File toSaveModel) throws Exception {
+        this.batchSize=batchSize;
+        this.iterations=iterations;
+        this.iter = iter;
+        this.test = test;
+        model=buildModel();
+        model.setListeners(new ScoreIterationListener(1));
+        fitModel(numEpochs);
+        saveModel(toSaveModel);
     }
 
-    @Override
+    protected void fitModel(int numEpochs) {
+        System.out.println("Train model...");
+        for(int i = 0; i < numEpochs; i++) {
+            System.out.println("Epoch # "+(i+1));
+            model.fit(iter);
+            iter.reset();
+
+
+            while(test.hasNext()){
+                DataSet t = test.next();
+                INDArray predicted = model.activateSelectedLayers(0, 5, t.getFeatureMatrix());
+                for(int j = 0; j < predicted.rows(); j++) {
+                    double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
+                    System.out.println("Cosine of angle between original and predicted: "+similarity);
+                }
+
+            }
+            test.reset();
+        }
+    }
+
+    public INDArray encode(INDArray toEncode) {
+        return model.activateSelectedLayers(0, 2, toEncode);
+    }
+
+    protected void saveModel(File toSave) throws IOException {
+        ModelSerializer.writeModel(model, toSave, true);
+    }
+
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
         System.out.println("Number of vectors in input: "+vectorSize);
@@ -63,6 +112,10 @@ public class AutoEncoderModel extends AbstractPatentModel{
         return model;
     }
 
+    public MultiLayerNetwork getTrainedNetwork() {
+        return model;
+    }
+
     public static void main(String[] args) {
         try {
             Database.setupSeedConn();
@@ -72,9 +125,10 @@ public class AutoEncoderModel extends AbstractPatentModel{
             int iterations = 5;
             int numEpochs = 1;
 
-            SimilarPatentFinder finder1 = new SimilarPatentFinder();
+            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/6"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/1"));
-            new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs);
+            new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
+
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

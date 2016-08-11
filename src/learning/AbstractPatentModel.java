@@ -33,7 +33,7 @@ public abstract class AbstractPatentModel {
         this.iter = iter;
         this.test = test;
         model=buildModel();
-        model.setListeners(new ScoreIterationListener(10));
+        model.setListeners(new ScoreIterationListener(1));
         fitModel(numEpochs);
         saveModel(toSaveModel);
     }
@@ -45,7 +45,7 @@ public abstract class AbstractPatentModel {
     protected void fitModel(int numEpochs) {
         System.out.println("Train model...");
         for(int i = 0; i < numEpochs; i++) {
-            System.out.println("Epoch #: "+(i+1));
+            System.out.println("Epoch # "+(i+1));
             model.fit(iter);
             iter.reset();
 
