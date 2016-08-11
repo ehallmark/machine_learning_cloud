@@ -159,7 +159,7 @@ public class SimilarPatentFinder {
             queue.addAll(list.getPatents());
         }
         patentLists.clear();
-        patentLists.add(new PatentList(new ArrayList<>(queue).subList(queue.size()-1, Math.max(0,queue.size()-limit-1)), "ALL"));
+        patentLists.add(new PatentList(new ArrayList<>(queue).subList(Math.max(0,queue.size()-limit-1), queue.size()-1)));
     }
 
 
@@ -204,7 +204,7 @@ public class SimilarPatentFinder {
             //if(assignee==null)assignee="";
             resultList.add(0, Patent.abstractClone(p, patentNumber));
         }
-        PatentList results = new PatentList(resultList,patentNumber);
+        PatentList results = new PatentList(resultList);
         return results;
     }
 

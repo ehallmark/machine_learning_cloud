@@ -12,10 +12,8 @@ import java.util.List;
 public class PatentList implements Serializable {
     private static final long serialVersionUID = 1L;
     private List<AbstractPatent> patents;
-    private String similarToPatent;
-    public PatentList(List<AbstractPatent> patentList, String similarToPatent) {
+    public PatentList(List<AbstractPatent> patentList) {
         this.patents=patentList;
-        this.similarToPatent=similarToPatent;
         Collections.sort(patents);
         Collections.reverse(patents);
     }
@@ -25,7 +23,4 @@ public class PatentList implements Serializable {
         return patents;
     }
 
-    public String getSimilarToPatent() {
-        return similarToPatent;
-    }
 }
