@@ -44,7 +44,6 @@ public class SimilarPatentFinder {
             }
             int arrayCapacity = candidateSet.size();
             patentList = new ArrayList<>(arrayCapacity);
-
             rs = Database.selectPatentVectors(candidateSet);
             int count = 0;
             int offset = 2; // Due to the pub_doc_number field
@@ -150,17 +149,17 @@ public class SimilarPatentFinder {
                 sql.printStackTrace();
             }
         });
-        merge(patentLists, limit);
+        mergePatentLists(patentLists, limit);
         return patentLists;
     }
 
-    private static void merge(List<PatentList> patentLists, int limit) {
+    private static void mergePatentLists(List<PatentList> patentLists, int limit) {
         PriorityQueue<AbstractPatent> queue = new PriorityQueue<>();
         for(PatentList list: patentLists) {
             queue.addAll(list.getPatents());
         }
         patentLists.clear();
-        patentLists.add(new PatentList(new ArrayList<>(queue).subList(0, Math.min(limit,queue.size())), "ALL"));
+        patentLists.add(new PatentList(new ArrayList<>(queue).subList(queue.size()-1, Math.max(0,queue.size()-limit-1)), "ALL"));
     }
 
 
