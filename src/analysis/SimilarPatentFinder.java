@@ -146,17 +146,19 @@ public class SimilarPatentFinder {
         List<PatentList> patentLists = new ArrayList<>();
         setupMinHeap(limit);
         patentList.forEach(patent->{
-            Patent.setBaseVector(patent.getVector());
-            Patent.setSortType(Patent.Type.ALL);
-            String patentName = patent.getName().split("\\s+")[0];
-            other.patentList.forEach(otherPatent->{
-                if(!otherPatent.getName().startsWith(patentName)){
-                    otherPatent.calculateSimilarityToTarget();
-                    otherPatent.setReferringName(patent.getName());
-                    System.out.println(otherPatent.getName()+ " -> "+patent.getName());
-                    heap.add(patent);
-                }
-            });
+            synchronized (Patent.class) {
+                Patent.setBaseVector(patent.getVector());
+                Patent.setSortType(Patent.Type.ALL);
+                String patentName = patent.getName().split("\\s+")[0];
+                other.patentList.forEach(otherPatent -> {
+                    if (!otherPatent.getName().startsWith(patentName)) {
+                        otherPatent.calculateSimilarityToTarget();
+                        otherPatent.setReferringName(patent.getName());
+                        System.out.println(otherPatent.getName() + " -> " + patent.getName());
+                        heap.add(otherPatent);
+                    }
+                });
+            }
         });
         List<AbstractPatent> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
