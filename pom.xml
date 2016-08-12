@@ -125,6 +125,13 @@
             <artifactId>${nd4j.backend}</artifactId>
             <version>${nd4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>flanagan</groupId>
+            <artifactId>com.flanagan</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/flanagan.jar</systemPath>
+        </dependency>
         <!-- Arbiter: used for hyperparameter optimization examples -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
