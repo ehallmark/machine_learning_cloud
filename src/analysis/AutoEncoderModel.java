@@ -36,14 +36,16 @@ import java.util.List;
 public class AutoEncoderModel {
     protected MultiLayerNetwork model;
     protected int batchSize;
+    protected int encodingSize;
     protected int iterations;
     protected DataSetIterator iter;
     protected DataSetIterator test;
 
-    public AutoEncoderModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs, File toSaveModel) throws Exception {
+    public AutoEncoderModel(DataSetIterator iter, DataSetIterator test, int batchSize, int iterations, int numEpochs, int encodingSize, File toSaveModel) throws Exception {
         this.batchSize=batchSize;
         this.iterations=iterations;
         this.iter = iter;
+        this.encodingSize=encodingSize;
         this.test = test;
         model=buildModel();
         model.setListeners(new ScoreIterationListener(1));
@@ -104,10 +106,10 @@ public class AutoEncoderModel {
                 .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(2, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(3, new RBM.Builder().nIn(250).nOut(30).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(250).nOut(encodingSize).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(4, new RBM.Builder().nIn(30).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(4, new RBM.Builder().nIn(encodingSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
                 .layer(5, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -132,11 +134,12 @@ public class AutoEncoderModel {
 
             int batchSize = 100;
             int iterations = 3;
+            int encodingSize = 10;
             int numEpochs = 1;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/4"));
-            AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
+            AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
