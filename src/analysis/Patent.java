@@ -31,6 +31,10 @@ public class Patent implements Comparable<Patent>, Serializable {
         return  clone;
     }
 
+    public void setSimilarityToTarget(double similarity) {
+        this.similarity=similarity;
+    }
+
 
     @Override
     public int compareTo(Patent o) {
