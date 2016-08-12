@@ -38,7 +38,7 @@ public class SimilarPatentFinder {
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, Map<Patent.Type, Double> percentagesMap) throws SQLException,IOException, ClassNotFoundException {
         // construct lis
         this.percentagesMap=percentagesMap;
-        System.out.println("--- Started Loading Panasonic Patent Vector List ---");
+        System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
             ResultSet rs;
             if (candidateSet == null) {
@@ -71,7 +71,7 @@ public class SimilarPatentFinder {
             patentList = (List<Patent>) ois.readObject();
             ois.close();
         }
-        System.out.println("--- Finished Loading Panasonic Patent Vector List ---");
+        System.out.println("--- Finished Loading Patent Vectors ---");
 
     }
 
@@ -147,7 +147,7 @@ public class SimilarPatentFinder {
     public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) throws SQLException {
         // Find the highest (pairwise) assets
         List<PatentList> patentLists = new ArrayList<>();
-        Set<String> patentNames = patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
+        Set<String> patentNames = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         setupMinHeap(limit);
         other.patentList.forEach(patent->{
             try {
