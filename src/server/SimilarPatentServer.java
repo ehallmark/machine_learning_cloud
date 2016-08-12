@@ -119,9 +119,9 @@ public class SimilarPatentServer {
 
             Integer id1 = Integer.valueOf(req.queryParams("name1"));
             Integer id2 = Integer.valueOf(req.queryParams("name2"));
-            if(id1 < 0) {
+            if(id1 < 0 && globalFinder==null) {
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
-            } else if(id2 < 0) {
+            } else if(id2 < 0 && globalFinder==null) {
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find second candidate set."));
             } else if(id1==id2) {
                 return new Gson().toJson(new SimpleAjaxMessage("Must choose different candidate sets!"));
@@ -131,8 +131,12 @@ public class SimilarPatentServer {
                 System.out.println("\tLimit: " + limit);
                 String name1 = candidateSetMap.get(id1);
                 String name2 = candidateSetMap.get(id2);
-                SimilarPatentFinder first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
-                SimilarPatentFinder second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
+                SimilarPatentFinder first;
+                if(id1 >= 0) first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
+                else first = globalFinder;
+                SimilarPatentFinder second;
+                if(id2 >= 0) second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
+                else second = globalFinder;
                 List<PatentList> patentLists = first.similarFromCandidateSet(second, limit);
                 CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists,name1,name2);
                 return new Gson().toJson(response);
