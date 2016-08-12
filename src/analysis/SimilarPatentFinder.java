@@ -280,7 +280,7 @@ public class SimilarPatentFinder {
             System.out.println("Most orthogonal: ");
             list = finder.findOrthogonalPatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
-                System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
+                System.out.println(abstractPatent.getName()+"\t"+abstractPatent.getSimilarity());
             }
 
         } catch(Exception e) {
