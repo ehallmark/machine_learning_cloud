@@ -64,9 +64,9 @@ public class AutoEncoderModel {
             List<Double> values = new ArrayList<>();
             while(test.hasNext()){
                 DataSet t = test.next();
-                INDArray predicted = model.activateSelectedLayers(0, 7, t.getFeatureMatrix());
-                for(int j = 0; j < predicted.rows(); j++) {
-                    double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
+                for(int j = 0; j <  t.getFeatureMatrix().rows(); j++) {
+                    INDArray row = t.getFeatureMatrix().getRow(j);
+                    double similarity = Transforms.cosineSim(row, decode(encode(row)));
                     values.add(similarity);
                     System.out.println("Encoding: "+encode(t.getFeatureMatrix().getRow(j)));
                     System.out.println("Decoding: "+decode(encode(t.getFeatureMatrix().getRow(j))));
@@ -140,7 +140,7 @@ public class AutoEncoderModel {
 
             int batchSize = 100;
             int iterations = 3;
-            int encodingSize = 1;
+            int encodingSize = 3;
             int numEpochs = 1;
 
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"));
