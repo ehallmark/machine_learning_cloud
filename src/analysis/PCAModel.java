@@ -3,9 +3,12 @@ package analysis;
 import Jama.Matrix;
 //import com.mkobos.pca_transform.PCA;
 import flanagan.analysis.PCA;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +51,14 @@ public class PCAModel {
         pca.enterPersonNames(personNames);
         pca.enterScoresAsRowPerPerson(data);
 
-        System.out.println("NUMBER OF RELEVANT DIMENSIONS (EIGENVALUES): "+pca.nEigenOneOrGreater());
+        int numRelevantEigenVectors = pca.nEigenOneOrGreater();
+        System.out.println("NUMBER OF RELEVANT DIMENSIONS (EIGENVALUES): "+numRelevantEigenVectors);
+        double[] eigenValues = pca.orderedEigenValues();
+        assert eigenValues[0] > eigenValues[1] : "Eigenvalues are sorted incorrectly!!";
+
+        INDArray eigenVectors = Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsColumns(), 0, numRelevantEigenVectors));
+        INDArray transformed = Nd4j.create(data).mul(eigenVectors);
+        System.out.println("Transformation: "+transformed.shapeInfoToString());
+
     }
 }
