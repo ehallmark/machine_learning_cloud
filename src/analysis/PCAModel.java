@@ -48,9 +48,6 @@ public class PCAModel {
         pca.enterPersonNames(personNames);
         pca.enterScoresAsRowPerPerson(data);
 
-        pca.analysis();
-        pca.pca();
-
         System.out.println("NUMBER OF RELEVANT DIMENSIONS (EIGENVALUES): "+pca.nEigenOneOrGreater());
     }
 }
