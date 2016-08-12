@@ -65,8 +65,6 @@ public class AutoEncoderModel {
                 INDArray predicted = model.activateSelectedLayers(0, 7, t.getFeatureMatrix());
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
-                    System.out.println(t.getFeatureMatrix().getRow(j));
-                    System.out.println("SHOULD MATCH : "+predicted.getRow(j).toString());
                     values.add(similarity);
                 }
 
@@ -103,13 +101,13 @@ public class AutoEncoderModel {
                 .lrPolicyDecayRate(0.001)
                 .learningRate(0.01)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).activation("sigmoid").lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(2, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(3, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(250).nOut(30).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(4, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(4, new RBM.Builder().nIn(30).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
                 .layer(5, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -139,7 +137,6 @@ public class AutoEncoderModel {
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/4"));
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, new File(Constants.SIMILARITY_MODEL_FILE));
-            System.out.println(model.encode(finder2.getPatentList().get(0).getVector()).toString());
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
