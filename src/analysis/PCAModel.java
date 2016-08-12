@@ -56,7 +56,7 @@ public class PCAModel {
         double[] eigenValues = pca.orderedEigenValues();
         assert eigenValues[0] > eigenValues[1] : "Eigenvalues are sorted incorrectly!!";
 
-        INDArray eigenVectors = Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsColumns(), 0, numRelevantEigenVectors));
+        INDArray eigenVectors = Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsRows(), 0, numRelevantEigenVectors)).transpose();
         INDArray dataVectors = Nd4j.create(data);
         System.out.println("EigenVector Matrix: "+eigenVectors.shapeInfoToString());
         System.out.println("Data Matrix: "+dataVectors.shapeInfoToString());
