@@ -140,10 +140,10 @@ public class SimilarPatentServer {
                 List<PatentList> patentLists;
                 CandidateComparisonResponse response;
                 if(first.getPatentList().size() <= second.getPatentList().size()) {
-                    patentLists = first.similarFromCandidateSet(second, limit);
+                    patentLists = second.similarFromCandidateSet(first, limit);
                     response = new CandidateComparisonResponse(patentLists,name1,name2);
                 } else {
-                    patentLists = second.similarFromCandidateSet(first, limit);
+                    patentLists = first.similarFromCandidateSet(second, limit);
                     response = new CandidateComparisonResponse(patentLists,name2,name1);
                 }
                 return new Gson().toJson(response);
