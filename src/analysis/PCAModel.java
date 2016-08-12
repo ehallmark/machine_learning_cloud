@@ -13,14 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class PCAModel {
     private static Matrix getData(boolean training) throws Exception {
-        Random rand = new Random(41);
-        SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/2"));
+        SimilarPatentFinder finder;
+        if(training) finder = new SimilarPatentFinder(null, new File("candidateSets/2"));
+        else finder = new SimilarPatentFinder(null, new File("candidateSets/5"));
         double[][] data = new double[finder.getPatentList().size()][Constants.VECTOR_LENGTH];
         AtomicInteger incr = new AtomicInteger(0);
-        if(rand.nextGaussian() > 1.5 && !training)
-        finder.getPatentList().forEach(patent -> {double r = rand.nextGaussian(); if((r > 1.5 && !training) || (r <= 1.5 && training)) {
-            data[incr.getAndIncrement()]=patent.getVector().data().asDouble();
-        }});
+        finder.getPatentList().forEach(patent -> data[incr.getAndIncrement()]=patent.getVector().data().asDouble());
         return new Matrix(data);
     }
 
@@ -37,7 +35,7 @@ public class PCAModel {
         Matrix testData = getData(false);
         /** The transformed test data. */
         Matrix transformedData =
-                pca.transform(testData, PCA.TransformationType.WHITENING);
+                pca.transform(testData, PCA.TransformationType.ROTATION);
         System.out.println("Transformed data (each row corresponding to transformed data point):");
         for(int r = 0; r < transformedData.getRowDimension(); r++){
             for(int c = 0; c < transformedData.getColumnDimension(); c++){
