@@ -5,6 +5,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import tools.VectorHelper;
@@ -70,7 +71,8 @@ public class AutoEncoderIterator implements DataSetIterator {
         }
         INDArray features = Nd4j.create(patents.size(), Constants.VECTOR_LENGTH);
         AtomicInteger incr = new AtomicInteger(0);
-        patents.forEach(p->features.putRow(incr.getAndIncrement(),p.getVector()));
+        patents.forEach(p->features.putRow(incr.getAndIncrement(), Transforms.exp(p.getVector())));
+
         return new DataSet(features,features);
     }
 
