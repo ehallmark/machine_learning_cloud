@@ -14,6 +14,8 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import server.tools.AbstractPatent;
 
 /**
@@ -145,10 +147,11 @@ public class SimilarPatentFinder {
     public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) throws SQLException {
         // Find the highest (pairwise) assets
         List<PatentList> patentLists = new ArrayList<>();
+        Set<String> patentNames = patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         setupMinHeap(limit);
         other.patentList.forEach(patent->{
             try {
-                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), limit).get(0));
+                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), patentNames, limit).get(0));
             } catch(SQLException sql) {
                 sql.printStackTrace();
             }
@@ -168,15 +171,19 @@ public class SimilarPatentFinder {
 
 
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         long startTime = System.currentTimeMillis();
+        if(patentNamesToExclude ==null) {
+            patentNamesToExclude=new HashSet<>();
+            patentNamesToExclude.add(patentNumber);
+        }
         setupMinHeap(limit);
 
         List<PatentList> patentLists = new ArrayList<>();
-        patentLists.add(similarPatentsHelper(avgVector, patentNumber, Patent.Type.ALL, limit));
+        patentLists.add(similarPatentsHelper(avgVector, patentNumber, patentNamesToExclude, Patent.Type.ALL, limit));
 
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
@@ -192,14 +199,14 @@ public class SimilarPatentFinder {
         }
         int offset = 1;
         INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findSimilarPatentsTo(patentNumber, avgVector, limit);
+        return findSimilarPatentsTo(patentNumber, avgVector, null, limit);
     }
 
-    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Patent.Type type, int limit) {
+    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, Patent.Type type, int limit) {
         Patent.setBaseVector(baseVector);
         Patent.setSortType(type);
         patentList.forEach(patent -> {
-            if(!patent.getName().startsWith(patentNumber)){
+            if(!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
                 heap.add(patent);
             }
