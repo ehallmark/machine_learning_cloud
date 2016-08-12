@@ -35,7 +35,7 @@ public class PCAModel {
         Matrix testData = getData(false);
         /** The transformed test data. */
         Matrix transformedData =
-                pca.transform(testData, PCA.TransformationType.ROTATION);
+                pca.transform(testData, PCA.TransformationType.WHITENING);
         System.out.println("Transformed data (each row corresponding to transformed data point):");
         for(int r = 0; r < transformedData.getRowDimension(); r++){
             for(int c = 0; c < transformedData.getColumnDimension(); c++){
