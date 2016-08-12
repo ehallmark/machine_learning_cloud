@@ -227,7 +227,7 @@ public class SimilarPatentFinder {
     public static void main(String[] args) throws Exception {
         try {
             Database.setupSeedConn();
-            ResultSet rs = Database.getBaseVectorFor("9005028");
+            ResultSet rs = Database.getBaseVectorFor("8591341");
             rs.next();
             int offset = 1;
             INDArray avgVector = handleResultSet(rs, offset);
