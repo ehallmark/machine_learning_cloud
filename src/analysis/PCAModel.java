@@ -45,5 +45,7 @@ public class PCAModel {
             }
             System.out.println("");
         }
+
+        System.out.println("NUMBER OF DIMENSIONS: "+transformedData.getColumnDimension());
     }
 }
