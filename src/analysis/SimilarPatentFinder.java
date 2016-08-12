@@ -192,6 +192,24 @@ public class SimilarPatentFinder {
 
         return patentLists;
     }
+
+    // returns null if patentNumber not found
+    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, limit);
+    }
+
+    // returns empty if no results found
+    public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
+        ResultSet rs = Database.getBaseVectorFor(patentNumber);
+        if(!rs.next()) {
+            return null; // nothing found
+        }
+        int offset = 1;
+        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
+        return findOppositePatentsTo(patentNumber, avgVector, null, limit);
+    }
+
+
     // returns empty if no results found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
@@ -236,16 +254,11 @@ public class SimilarPatentFinder {
             INDArray avgVector2 = handleResultSet(rs, offset);
             System.out.println("COSINE SIMILARITY: "+ Transforms.cosineSim(avgVector,avgVector2));
             SimilarPatentFinder finder = new SimilarPatentFinder();
-
-            System.out.println("Searching ALL (STRICT) similar patents for 7056704");
-            List<PatentList> list = finder.findSimilarPatentsTo("7056704",Constants.VECTOR_PERCENTAGES, 20);
-            if(list!=null)list.forEach(p->{
-                System.out.println(new Gson().toJson(p));
-            });
-            System.out.println("Searching similar patent CLAIMS (NON STRICT) for 7056704");
-            finder.findSimilarPatentsTo("7056704", Constants.VECTOR_PERCENTAGES, 20).forEach(p->{
-                System.out.println(new Gson().toJson(p));
-            });
+            PatentList list = finder.findOppositePatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
+            for (AbstractPatent abstractPatent : list.getPatents()) {
+                System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
+            }
+            
         } catch(Exception e) {
             e.printStackTrace();
         }
