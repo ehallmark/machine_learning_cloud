@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 8/12/16.
  */
 public class PCAModel {
-    private static Random rand = new Random(41);
     private static Matrix getData(boolean training) throws Exception {
+        Random rand = new Random(41);
         SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/2"));
         double[][] data = new double[finder.getPatentList().size()][Constants.VECTOR_LENGTH];
         AtomicInteger incr = new AtomicInteger(0);
