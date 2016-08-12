@@ -3,6 +3,7 @@ package analysis;
 import com.google.gson.Gson;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import tools.MinHeap;
@@ -51,7 +52,7 @@ public class SimilarPatentFinder {
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
                 try {
-                    INDArray array = handleResultSet(rs, offset);
+                    INDArray array = handleResultSet(rs, offset, percentagesMap);
                     if(array!=null) {
                         patentList.add(new Patent(rs.getString(1), array, Patent.Type.ALL));
                     }
@@ -79,11 +80,11 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private INDArray handleResultSet(ResultSet rs, int offset) throws SQLException{
-        return handleResultSet(rs, offset, percentagesMap);
+    private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException{
+        return handleResultSet(rs, offset, Constants.VECTOR_PERCENTAGES);
     }
 
-    private INDArray handleResultSet(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
+    private static INDArray handleResultSet(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
         INDArray array = null;
         double total = 0.0;
         for (int i = 0; i < Constants.VECTOR_TYPES.size() - 3; i++) {
@@ -98,7 +99,7 @@ public class SimilarPatentFinder {
         }
 
         // handle merging of class / subclass
-        INDArray mergedClassVector = mergedClassVector(rs, offset);
+        INDArray mergedClassVector = mergedClassVector(rs, offset, percentagesMap);
         if (mergedClassVector != null && percentagesMap.get(Patent.Type.CLASS)>0.0) {
             if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
             Double multiple = percentagesMap.get(Patent.Type.CLASS);
@@ -125,7 +126,7 @@ public class SimilarPatentFinder {
         }
     }
 
-    private INDArray mergedClassVector(ResultSet rs, int offset) throws SQLException {
+    private static INDArray mergedClassVector(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
         Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
         Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
         if(classData!=null&&subClassData!=null) {
@@ -223,10 +224,19 @@ public class SimilarPatentFinder {
     }
 
     // unit test!
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         try {
             Database.setupSeedConn();
+            ResultSet rs = Database.getBaseVectorFor("9005028");
+            rs.next();
+            int offset = 1;
+            INDArray avgVector = handleResultSet(rs, offset);
+            rs = Database.getBaseVectorFor("7455590");
+            rs.next();
+            INDArray avgVector2 = handleResultSet(rs, offset);
+            System.out.println("COSINE SIMILARITY: "+ Transforms.cosineSim(avgVector,avgVector2));
             SimilarPatentFinder finder = new SimilarPatentFinder();
+
             System.out.println("Searching ALL (STRICT) similar patents for 7056704");
             List<PatentList> list = finder.findSimilarPatentsTo("7056704",Constants.VECTOR_PERCENTAGES, 20);
             if(list!=null)list.forEach(p->{
