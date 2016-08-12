@@ -137,8 +137,15 @@ public class SimilarPatentServer {
                 SimilarPatentFinder second;
                 if(id2 >= 0) second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
                 else second = globalFinder;
-                List<PatentList> patentLists = first.similarFromCandidateSet(second, limit);
-                CandidateComparisonResponse response = new CandidateComparisonResponse(patentLists,name1,name2);
+                List<PatentList> patentLists;
+                CandidateComparisonResponse response;
+                if(first.getPatentList().size() <= second.getPatentList().size()) {
+                    patentLists = first.similarFromCandidateSet(second, limit);
+                    response = new CandidateComparisonResponse(patentLists,name1,name2);
+                } else {
+                    patentLists = second.similarFromCandidateSet(first, limit);
+                    response = new CandidateComparisonResponse(patentLists,name2,name1);
+                }
                 return new Gson().toJson(response);
             }
 
