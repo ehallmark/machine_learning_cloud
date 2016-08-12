@@ -68,6 +68,8 @@ public class AutoEncoderModel {
                 for(int j = 0; j < predicted.rows(); j++) {
                     double similarity = Transforms.cosineSim(t.getFeatureMatrix().getRow(j), predicted.getRow(j));
                     values.add(similarity);
+                    System.out.println("Encoding: "+encode(t.getFeatureMatrix().getRow(j)));
+                    System.out.println("Decoding: "+decode(encode(t.getFeatureMatrix().getRow(j))));
                 }
 
             }
@@ -80,6 +82,10 @@ public class AutoEncoderModel {
 
     public INDArray encode(INDArray toEncode) {
         return model.activateSelectedLayers(0, 3, toEncode);
+    }
+
+    public INDArray decode(INDArray toDecode) {
+        return model.activateSelectedLayers(4, 7, toDecode);
     }
 
     protected void saveModel(File toSave) throws IOException {
@@ -140,6 +146,7 @@ public class AutoEncoderModel {
             SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"));
             SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/4"));
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
+
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
