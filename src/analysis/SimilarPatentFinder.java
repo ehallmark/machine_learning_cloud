@@ -247,7 +247,7 @@ public class SimilarPatentFinder {
         patentList.forEach(patent -> {
             if(!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
-                if(findOrthogonal)patent.setSimilarityToTarget(1.0-Math.abs(patent.getSimilarityToTarget()));
+                if(findOrthogonal)patent.setSimilarityToTarget(Math.abs(patent.getSimilarityToTarget())-1.0);
                 heap.add(patent);
             }
         });
