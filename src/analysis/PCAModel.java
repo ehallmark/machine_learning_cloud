@@ -22,13 +22,13 @@ public class PCAModel {
     protected String[] labels;
     protected INDArray eigenVectors;
     protected INDArray transformed;
-    protected double[] eigenValues;
+    protected PCA pca;
     protected SimilarPatentFinder finder;
 
 
     public PCAModel(boolean truncate) throws  Exception {
         setDataAndItemNames();
-        PCA pca = new PCA();
+        pca = new PCA();
         pca.enterItemNames(labels);
         pca.enterPersonNames(personNames);
         pca.enterScoresAsRowPerPerson(data);
@@ -39,7 +39,6 @@ public class PCAModel {
         assert eigenValues[0] > eigenValues[1] : "Eigenvalues are sorted incorrectly!!";
 
         eigenVectors = truncate ? Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsRows(), 0, numRelevantEigenVectors)).transpose() : Nd4j.create(pca.orderedEigenVectorsAsColumns());
-        eigenValues = pca.orderedEigenValues();
         INDArray dataVectors = Nd4j.create(data);
         System.out.println("EigenVector Matrix: "+eigenVectors.shapeInfoToString());
         System.out.println("Data Matrix: "+dataVectors.shapeInfoToString());

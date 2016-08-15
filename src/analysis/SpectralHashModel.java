@@ -33,8 +33,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SpectralHashModel extends PCAModel {
     private int k;
+    private double[] eigenValues;
+
     public SpectralHashModel(int k) throws Exception {
         super(false);
+        eigenValues=pca.orderedEigenValues();
         this.k = k;
         System.out.println("Starting Spectral Hash Model");
         // 1
@@ -52,8 +55,6 @@ public class SpectralHashModel extends PCAModel {
         // take the top k
         AtomicInteger cnt = new AtomicInteger(0);
         functions.removeIf(f->cnt.getAndIncrement()>=k);
-
-
 
     }
 
