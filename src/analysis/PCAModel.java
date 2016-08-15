@@ -56,7 +56,7 @@ public class PCAModel {
     }
 
     private void setDataAndItemNames() throws Exception {
-        finder = new SimilarPatentFinder(null, new File("candidateSets/4"));
+        finder = new SimilarPatentFinder(null, new File("candidateSets/5"));
         int size = finder.getPatentList().size();
         data = new double[size][Constants.VECTOR_LENGTH];
         personNames = new String[size];
