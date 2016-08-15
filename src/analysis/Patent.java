@@ -42,14 +42,6 @@ public class Patent implements Comparable<Patent>, Serializable {
         return Double.compare(similarity,Transforms.cosineSim(baseVector,o.vector));
     }
 
-    public String getReferringName() {
-        return referringName;
-    }
-
-    public void setReferringName(String referringName) {
-        this.referringName=referringName;
-    }
-
     public double getSimilarityToTarget() {
         return similarity;
     }
@@ -68,6 +60,10 @@ public class Patent implements Comparable<Patent>, Serializable {
 
     public INDArray getVector() {
         return vector;
+    }
+
+    public void setVector(INDArray vector) {
+        this.vector=vector;
     }
 
     public String getName() {

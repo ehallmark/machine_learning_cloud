@@ -7,10 +7,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,6 +83,12 @@ public class PCAModel {
         return eigenVectors;
     }
 
+    public static INDArray loadAndReturnEigenVectors() throws Exception {
+        ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(new File(Constants.PCA_MATRIX_FILE))));
+        Object vec = ois.readObject();
+        ois.close();
+        return (INDArray) vec;
+    }
 
     /** An example program using the library */
     public static void main(String[] args) throws Exception {

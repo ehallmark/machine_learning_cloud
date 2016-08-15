@@ -25,6 +25,14 @@ import server.tools.AbstractPatent;
 public class SimilarPatentFinder {
     private MinHeap<Patent> heap;
     private List<Patent> patentList;
+    private static INDArray eigenVectors;
+    static{
+        try {
+            eigenVectors=PCAModel.loadAndReturnEigenVectors();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
@@ -68,6 +76,8 @@ public class SimilarPatentFinder {
             // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
             patentList = (List<Patent>) ois.readObject();
+            // PCA
+            if(eigenVectors!=null) patentList.forEach(p->p.setVector(p.getVector().mmuli(eigenVectors)));
             ois.close();
         }
         System.out.println("--- Finished Loading Patent Vectors ---");
@@ -224,6 +234,7 @@ public class SimilarPatentFinder {
         }
         int offset = 1;
         INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
+        if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
     }
 
