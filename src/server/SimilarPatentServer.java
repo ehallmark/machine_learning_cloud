@@ -178,9 +178,14 @@ public class SimilarPatentServer {
                 System.out.println("Searching for: " + pubDocNumber);
                 int limit = extractLimit(req);
                 System.out.println("\tLimit: " + limit);
-                if(req.session().attribute("candidateSet")==null && globalFinder!=null)patents = globalFinder.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
-                else if(req.session().attribute("candidateSet")!=null) patents = ((SimilarPatentFinder)req.session().attribute("candidateSet")).findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
+                SimilarPatentFinder finderToUse;
+                boolean findDissimilar = extractFindDissimilar(req);
+                if(req.session().attribute("candidateSet")==null && globalFinder!=null)finderToUse = globalFinder;
+                else if(req.session().attribute("candidateSet")!=null) finderToUse = ((SimilarPatentFinder)req.session().attribute("candidateSet"));
                 else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
+
+                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
+                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
@@ -330,6 +335,7 @@ public class SimilarPatentServer {
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
+                                                        label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
                                                         percentageFormElements(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
@@ -383,6 +389,15 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No limit parameter specified... using default");
             return DEFAULT_LIMIT;
+        }
+    }
+
+    private static boolean extractFindDissimilar(Request req) {
+        try {
+            return (req.queryParams("findDissimilar")==null||!req.queryParams("findDissimilar").startsWith("on")) ? false : true;
+        } catch(Exception e) {
+            System.out.println("No findDissimilar parameter specified... using default");
+            return false;
         }
     }
 

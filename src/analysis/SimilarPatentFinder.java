@@ -213,22 +213,6 @@ public class SimilarPatentFinder {
         return findOppositePatentsTo(patentNumber, avgVector, null, limit);
     }
 
-    // returns null if patentNumber not found
-    public List<PatentList> findOrthogonalPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, avgVector, patentNamesToExclude, limit, true);
-    }
-
-    // returns empty if no results found
-    public List<PatentList> findOrthogonalPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
-        ResultSet rs = Database.getBaseVectorFor(patentNumber);
-        if(!rs.next()) {
-            return null; // nothing found
-        }
-        int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findOrthogonalPatentsTo(patentNumber, avgVector, null, limit);
-    }
-
 
     // returns empty if no results found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
@@ -276,11 +260,6 @@ public class SimilarPatentFinder {
             list = finder.findOppositePatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
-            }
-            System.out.println("Most orthogonal: ");
-            list = finder.findOrthogonalPatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
-            for (AbstractPatent abstractPatent : list.getPatents()) {
-                System.out.println(abstractPatent.getName()+"\t"+abstractPatent.getSimilarity());
             }
 
         } catch(Exception e) {
