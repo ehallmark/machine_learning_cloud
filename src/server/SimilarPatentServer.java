@@ -364,7 +364,7 @@ public class SimilarPatentServer {
                                                 h3("Find Similarity between two Patents"),
                                                 form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(
                                                         label("Patent 1"),br(),input().withType("text").withName("name1"),br(),
-                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
+                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),br(),
                                                         button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(

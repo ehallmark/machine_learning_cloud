@@ -28,6 +28,8 @@ public class Constants {
 	public static final String VOCAB_FILE = "vocabulary_for_word_vectors.txt";
 	public static final String CLAIM_VOCAB_FILE = "claim_vocabulary.txt";
 	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
+	public static final String PCA_PATENTS_LIST_FILE = "patent_vector_list_pca.obj";
+	public static final String PCA_MATRIX_FILE = "pca_matrix.obj";
 
 	public static final String TITLE_VECTORS = "invention_title_vectors";
 	public static final String ABSTRACT_VECTORS = "abstract_vectors";
