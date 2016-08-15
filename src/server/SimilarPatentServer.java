@@ -41,6 +41,7 @@ public class SimilarPatentServer {
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
+    private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
     private static Map<Integer, String> candidateSetMap;
     static {
         try {
@@ -150,6 +151,22 @@ public class SimilarPatentServer {
                 return new Gson().toJson(response);
             }
 
+        });
+
+        post("/angle_between_patents", (req,res) ->{
+            res.type("application/json");
+            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
+            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
+
+            String name1 = req.queryParams("name1");
+            String name2 = req.queryParams("name2");
+
+            if(name1==null || name2==null) return new Gson().toJson(new SimpleAjaxMessage("Please include two patents!"));
+
+            Double sim = globalFinder.angleBetweenPatents(name1, name2);
+
+            if(sim==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find both patent vectors"));
+            return new Gson().toJson(new SimpleAjaxMessage("Similarity between "+name1+" and "+name2+" is "+sim.toString()));
         });
 
         post("/similar_patents", (req, res) -> {
@@ -329,10 +346,11 @@ public class SimilarPatentServer {
     private static Tag selectCandidateForm() {
         return div().with(formScript(SELECT_CANDIDATE_FORM_ID, "/similar_patents", "Search"),
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search"),
+                formScript(SELECT_ANGLE_BETWEEN_PATENTS, "/angle_between_patents", "Search"),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:50%; vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents By Patent"),
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
@@ -342,13 +360,19 @@ public class SimilarPatentServer {
                                                         percentageFormElements(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
-                                        ),td().attr("style","width:50%; vertical-align: top;").with(
+                                        ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents between Candidate Sets"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
                                                         label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),br(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Find Similarity between two Patents"),
+                                                form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(selectCandidateSetDropdown("Patent 1","name1"),
+                                                        selectCandidateSetDropdown("Patent 2", "name2"),
+                                                        button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
                                                 )
                                         )
                                 )

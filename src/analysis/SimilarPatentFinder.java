@@ -194,6 +194,15 @@ public class SimilarPatentFinder {
         return patentLists;
     }
 
+    public Double angleBetweenPatents(String name1, String name2) throws SQLException {
+        INDArray first = getVectorFromDB(name1);
+        INDArray second = getVectorFromDB(name2);
+        if(first!=null && second!=null) {
+            //valid
+            return Transforms.cosineSim(first,second);
+        } else return null;
+    }
+
     // returns null if patentNumber not found
     public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
         List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit);
@@ -205,25 +214,23 @@ public class SimilarPatentFinder {
 
     // returns empty if no results found
     public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
-        ResultSet rs = Database.getBaseVectorFor(patentNumber);
-        if(!rs.next()) {
-            return null; // nothing found
-        }
-        int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findOppositePatentsTo(patentNumber, avgVector, null, threshold, limit);
+        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
     }
 
 
     // returns empty if no results found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
+    }
+
+    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
         INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findSimilarPatentsTo(patentNumber, avgVector, null, threshold, limit);
+        return avgVector;
     }
 
     private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, Patent.Type type, double threshold, int limit) {
