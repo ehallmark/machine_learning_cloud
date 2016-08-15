@@ -139,11 +139,12 @@ public class SimilarPatentServer {
                 else second = globalFinder;
                 List<PatentList> patentLists;
                 CandidateComparisonResponse response;
+                double threshold = extractThreshold(req);
                 if(first.getPatentList().size() <= second.getPatentList().size()) {
-                    patentLists = second.similarFromCandidateSet(first, limit);
+                    patentLists = second.similarFromCandidateSet(first, threshold, limit);
                     response = new CandidateComparisonResponse(patentLists,name2,name1);
                 } else {
-                    patentLists = first.similarFromCandidateSet(second, limit);
+                    patentLists = first.similarFromCandidateSet(second, threshold, limit);
                     response = new CandidateComparisonResponse(patentLists,name1,name2);
                 }
                 return new Gson().toJson(response);
@@ -184,8 +185,9 @@ public class SimilarPatentServer {
                 else if(req.session().attribute("candidateSet")!=null) finderToUse = ((SimilarPatentFinder)req.session().attribute("candidateSet"));
                 else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
 
-                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
-                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), limit);
+                double threshold = extractThreshold(req);
+                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, createPercentagesMapFromParams(req), threshold, limit);
+                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), threshold, limit);
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
@@ -336,6 +338,7 @@ public class SimilarPatentServer {
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
                                                         label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
+                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                         percentageFormElements(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
@@ -343,7 +346,8 @@ public class SimilarPatentServer {
                                                 h3("Find Similar Patents between Candidate Sets"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
-                                                        label("Limit"),br(),input().withType("text").withName("limit"),br(),br(),
+                                                        label("Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),br(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
@@ -389,6 +393,15 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No limit parameter specified... using default");
             return DEFAULT_LIMIT;
+        }
+    }
+
+    private static double extractThreshold(Request req) {
+        try {
+            return Double.valueOf(req.queryParams("threshold"));
+        } catch(Exception e) {
+            System.out.println("No threshold parameter specified... using default");
+            return -1D;
         }
     }
 

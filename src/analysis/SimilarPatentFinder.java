@@ -145,14 +145,14 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, int limit) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit) throws SQLException {
         // Find the highest (pairwise) assets
         List<PatentList> patentLists = new ArrayList<>();
         Set<String> patentNames = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         setupMinHeap(limit);
         other.patentList.forEach(patent->{
             try {
-                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), patentNames, limit).get(0));
+                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), patentNames, threshold, limit).get(0));
             } catch(SQLException sql) {
                 sql.printStackTrace();
             }
@@ -170,13 +170,10 @@ public class SimilarPatentFinder {
         patentLists.add(new PatentList(new ArrayList<>(queue).subList(Math.max(0,queue.size()-limit-1), queue.size()-1)));
     }
 
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, avgVector, patentNamesToExclude, limit, false);
-    }
 
 
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit, boolean findOrthogonal) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
@@ -188,7 +185,7 @@ public class SimilarPatentFinder {
         setupMinHeap(limit);
 
         List<PatentList> patentLists = new ArrayList<>();
-        patentLists.add(similarPatentsHelper(avgVector, patentNumber, patentNamesToExclude, Patent.Type.ALL, limit, findOrthogonal));
+        patentLists.add(similarPatentsHelper(avgVector, patentNumber, patentNamesToExclude, Patent.Type.ALL, threshold, limit));
 
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
@@ -198,8 +195,8 @@ public class SimilarPatentFinder {
     }
 
     // returns null if patentNumber not found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
-        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, limit);
+    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
+        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit);
         for(PatentList l : toReturn) {
             l.getPatents().forEach(p->p.flipSimilarity());
         }
@@ -207,36 +204,35 @@ public class SimilarPatentFinder {
     }
 
     // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
+    public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
         INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findOppositePatentsTo(patentNumber, avgVector, null, limit);
+        return findOppositePatentsTo(patentNumber, avgVector, null, threshold, limit);
     }
 
 
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
         INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
-        return findSimilarPatentsTo(patentNumber, avgVector, null, limit);
+        return findSimilarPatentsTo(patentNumber, avgVector, null, threshold, limit);
     }
 
-    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, Patent.Type type, int limit, boolean findOrthogonal) {
+    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, Patent.Type type, double threshold, int limit) {
         Patent.setBaseVector(baseVector);
         Patent.setSortType(type);
         patentList.forEach(patent -> {
             if(!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
-                if(findOrthogonal)patent.setSimilarityToTarget(Math.abs(patent.getSimilarityToTarget())-0.5);
-                heap.add(patent);
+                if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
             }
         });
         List<AbstractPatent> resultList = new ArrayList<>(limit);
@@ -256,12 +252,12 @@ public class SimilarPatentFinder {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder();
             System.out.println("Most similar: ");
-            PatentList list = finder.findSimilarPatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
+            PatentList list = finder.findSimilarPatentsTo("7455590",Constants.VECTOR_PERCENTAGES, -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
             System.out.println("Most opposite: ");
-            list = finder.findOppositePatentsTo("7455590",Constants.VECTOR_PERCENTAGES, 25).get(0);
+            list = finder.findOppositePatentsTo("7455590",Constants.VECTOR_PERCENTAGES, -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
