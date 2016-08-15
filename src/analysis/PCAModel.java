@@ -60,7 +60,7 @@ public class PCAModel {
         INDArray dataVectors = Nd4j.create(data);
         System.out.println("EigenVector Matrix: "+eigenVectors.shapeInfoToString());
         System.out.println("Data Matrix: "+dataVectors.shapeInfoToString());
-        INDArray transformed = dataVectors.mul(eigenVectors);
+        INDArray transformed = dataVectors.mmul(eigenVectors);
         System.out.println("Transformation: "+transformed.shapeInfoToString());
 
     }
