@@ -154,6 +154,7 @@ public class SimilarPatentServer {
         post("/similar_patents", (req, res) -> {
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
+            boolean findDissimilar = extractFindDissimilar(req);
             List<PatentList> patents=null;
             if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             Integer id = null;
@@ -179,7 +180,6 @@ public class SimilarPatentServer {
                 int limit = extractLimit(req);
                 System.out.println("\tLimit: " + limit);
                 SimilarPatentFinder finderToUse;
-                boolean findDissimilar = extractFindDissimilar(req);
                 if(req.session().attribute("candidateSet")==null && globalFinder!=null)finderToUse = globalFinder;
                 else if(req.session().attribute("candidateSet")!=null) finderToUse = ((SimilarPatentFinder)req.session().attribute("candidateSet"));
                 else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
@@ -189,7 +189,7 @@ public class SimilarPatentServer {
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,pubDocNumber);
+            else response=new PatentResponse(patents,pubDocNumber,findDissimilar);
 
             // Handle csv or json
             if(responseWithCSV(req)) {

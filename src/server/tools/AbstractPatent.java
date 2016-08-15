@@ -26,6 +26,8 @@ public class AbstractPatent implements Comparable<AbstractPatent>{
         return referringName;
     }
 
+    public void flipSimilarity() { similarity*=-1.0; }
+
     @Override
     public int compareTo(AbstractPatent o) {
         return Double.compare(similarity, o.similarity);

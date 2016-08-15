@@ -199,7 +199,11 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, limit);
+        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, limit);
+        for(PatentList l : toReturn) {
+            l.getPatents().forEach(p->p.flipSimilarity());
+        }
+        return toReturn;
     }
 
     // returns empty if no results found
