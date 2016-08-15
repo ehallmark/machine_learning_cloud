@@ -17,14 +17,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 8/12/16.
  */
 public class PCAModel {
-    private double[][] data;
-    private String[] personNames;
-    private String[] labels;
-    private INDArray eigenVectors;
-    private INDArray transformed;
-    private SimilarPatentFinder finder;
+    protected double[][] data;
+    protected String[] personNames;
+    protected String[] labels;
+    protected INDArray eigenVectors;
+    protected INDArray transformed;
+    protected double[] eigenValues;
+    protected SimilarPatentFinder finder;
 
-    public PCAModel() throws  Exception {
+
+    public PCAModel(boolean truncate) throws  Exception {
         setDataAndItemNames();
         PCA pca = new PCA();
         pca.enterItemNames(labels);
@@ -36,17 +38,13 @@ public class PCAModel {
         double[] eigenValues = pca.orderedEigenValues();
         assert eigenValues[0] > eigenValues[1] : "Eigenvalues are sorted incorrectly!!";
 
-        eigenVectors = Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsRows(), 0, numRelevantEigenVectors)).transpose();
+        eigenVectors = truncate ? Nd4j.create(Arrays.copyOfRange(pca.orderedEigenVectorsAsRows(), 0, numRelevantEigenVectors)).transpose() : Nd4j.create(pca.orderedEigenVectorsAsColumns());
+        eigenValues = pca.orderedEigenValues();
         INDArray dataVectors = Nd4j.create(data);
         System.out.println("EigenVector Matrix: "+eigenVectors.shapeInfoToString());
         System.out.println("Data Matrix: "+dataVectors.shapeInfoToString());
-        transformed = dataVectors.mmul(eigenVectors);
-        System.out.println("Transformation: "+transformed.shapeInfoToString());
     }
 
-    public INDArray getTransformed() {
-        return transformed;
-    }
 
     public INDArray transform(double[][] data) {
         return transform(Nd4j.create(data));
@@ -58,7 +56,7 @@ public class PCAModel {
     }
 
     private void setDataAndItemNames() throws Exception {
-        finder = new SimilarPatentFinder();
+        finder = new SimilarPatentFinder(null, new File("candidateSets/4"));
         int size = finder.getPatentList().size();
         data = new double[size][Constants.VECTOR_LENGTH];
         personNames = new String[size];
@@ -95,7 +93,7 @@ public class PCAModel {
         System.out.println("Running a demonstration program on some sample data ...");
         /** Training data matrix with each row corresponding to data point and
          * each column corresponding to dimension. */
-        PCAModel model = new PCAModel();
+        PCAModel model = new PCAModel(true);
         // Write eigenvectors to file to save
         ObjectOutputStream o = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(Constants.PCA_MATRIX_FILE))));
         o.writeObject(model.getEigenVectors());
@@ -104,9 +102,8 @@ public class PCAModel {
         // Write patents to list file
         SimilarPatentFinder finder = model.getFinder();
         List<Patent> toWriteToFile = new ArrayList<>(finder.getPatentList().size());
-        INDArray transformed = model.getTransformed();
         AtomicInteger cnt = new AtomicInteger(0);
-        finder.getPatentList().forEach(p->toWriteToFile.add(new PCAPatent(p.getName(), transformed.getRow(cnt.getAndIncrement()), Patent.Type.ALL)));
+        finder.getPatentList().forEach(p->toWriteToFile.add(new PCAPatent(p.getName(), model.transform(p.getVector()), Patent.Type.ALL)));
         ObjectOutputStream ois = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(Constants.PCA_PATENTS_LIST_FILE))));
         ois.writeObject(toWriteToFile);
         ois.flush();
