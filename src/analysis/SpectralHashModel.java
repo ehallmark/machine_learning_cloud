@@ -36,6 +36,7 @@ public class SpectralHashModel extends PCAModel {
     public SpectralHashModel(int k) throws Exception {
         super(false);
         this.k = k;
+        System.out.println("Starting Spectral Hash Model");
         // 1
         PriorityQueue<EigenFunction> functions = new PriorityQueue<>(k * eigenVectors.rows(), new Comparator<EigenFunction>() {
             @Override
@@ -43,9 +44,11 @@ public class SpectralHashModel extends PCAModel {
                 return Double.compare(o1.getVal(),o2.getVal());
             }
         });
+        System.out.println("Starting to compute EigenFunctions");
         for(int i = 0; i < eigenVectors.rows(); i++) {
             functions.add(new EigenFunction(eigenValues[i]));
         }
+        System.out.println("Done computing EigenFunctions");
         // take the top k
         AtomicInteger cnt = new AtomicInteger(0);
         functions.removeIf(f->cnt.getAndIncrement()>=k);
