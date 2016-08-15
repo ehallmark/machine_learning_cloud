@@ -351,6 +351,14 @@ public class SimilarPatentServer {
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Find Similarity between two Patents"),
+                                                form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(
+                                                        label("Patent 1"),br(),input().withType("text").withName("name1"),br(),
+                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
+                                                        percentageFormElements(),br(),
+                                                        button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
+                                                )
+                                        ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents By Patent"),
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
@@ -358,14 +366,6 @@ public class SimilarPatentServer {
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                         label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Find Similarity between two Patents"),
-                                                form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(
-                                                        label("Patent 1"),br(),input().withType("text").withName("name1"),br(),
-                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
-                                                        percentageFormElements(),br(),
-                                                        button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents between Candidate Sets"),
