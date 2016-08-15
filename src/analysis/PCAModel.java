@@ -70,6 +70,7 @@ public class PCAModel {
             int idx = incr.getAndIncrement();
             data[idx]=patent.getVector().data().asDouble();
             personNames[idx] = patent.getName();
+            System.gc();
         });
         labels = new String[Constants.VECTOR_LENGTH];
         for(int i = 0; i < labels.length; i++) {
