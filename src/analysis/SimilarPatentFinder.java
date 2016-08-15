@@ -26,7 +26,6 @@ public class SimilarPatentFinder {
     private MinHeap<Patent> heap;
     private List<Patent> patentList;
     //private Map<String, String> assigneeMap;
-    private Map<Patent.Type,Double> percentagesMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE));
@@ -38,7 +37,6 @@ public class SimilarPatentFinder {
 
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, Map<Patent.Type, Double> percentagesMap) throws SQLException,IOException, ClassNotFoundException {
         // construct lis
-        this.percentagesMap=percentagesMap;
         System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
             ResultSet rs;
@@ -78,10 +76,6 @@ public class SimilarPatentFinder {
 
     public List<Patent> getPatentList() {
         return patentList;
-    }
-
-    private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException{
-        return handleResultSet(rs, offset, Constants.VECTOR_PERCENTAGES);
     }
 
     private static INDArray handleResultSet(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
@@ -194,9 +188,9 @@ public class SimilarPatentFinder {
         return patentLists;
     }
 
-    public Double angleBetweenPatents(String name1, String name2) throws SQLException {
-        INDArray first = getVectorFromDB(name1);
-        INDArray second = getVectorFromDB(name2);
+    public Double angleBetweenPatents(String name1, String name2, Map<Patent.Type,Double> percentagesMap) throws SQLException {
+        INDArray first = getVectorFromDB(name1, percentagesMap);
+        INDArray second = getVectorFromDB(name2, percentagesMap);
         if(first!=null && second!=null) {
             //valid
             return Transforms.cosineSim(first,second);
@@ -214,16 +208,16 @@ public class SimilarPatentFinder {
 
     // returns empty if no results found
     public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
-        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
+        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber, percentagesMap), null, threshold, limit);
     }
 
 
     // returns empty if no results found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
+        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber, percentagesMap), null, threshold, limit);
     }
 
-    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
+    private INDArray getVectorFromDB(String patentNumber, Map<Patent.Type,Double> percentagesMap) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found

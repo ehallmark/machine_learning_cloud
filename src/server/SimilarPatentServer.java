@@ -163,7 +163,7 @@ public class SimilarPatentServer {
 
             if(name1==null || name2==null) return new Gson().toJson(new SimpleAjaxMessage("Please include two patents!"));
 
-            Double sim = globalFinder.angleBetweenPatents(name1, name2);
+            Double sim = globalFinder.angleBetweenPatents(name1, name2, createPercentagesMapFromParams(req));
 
             if(sim==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find both patent vectors"));
             return new Gson().toJson(new SimpleAjaxMessage("Similarity between "+name1+" and "+name2+" is "+sim.toString()));
@@ -355,16 +355,16 @@ public class SimilarPatentServer {
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
-                                                        label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
-                                                        percentageFormElements(),br(),
+                                                        label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similarity between two Patents"),
                                                 form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(
                                                         label("Patent 1"),br(),input().withType("text").withName("name1"),br(),
-                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),br(),
+                                                        label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
+                                                        percentageFormElements(),br(),
                                                         button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
