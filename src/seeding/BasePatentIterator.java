@@ -3,6 +3,7 @@ package seeding;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.text.documentiterator.LabelAwareDocumentIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import tools.VectorHelper;
 
 
 import java.io.ByteArrayInputStream;
@@ -44,7 +45,9 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     private List<Pair<InputStream,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
         List<Pair<InputStream,String>> toReturn = new ArrayList<>();
         while(rs.next()) {
-            toReturn.add(new Pair<>(rs.getAsciiStream(1),rs.getString(1)));
+            String text = rs.getString(1);
+            if(VectorHelper.shouldRemoveSentence(text)) continue;
+            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),rs.getString(1)));
         }
         return toReturn;
     }
@@ -58,9 +61,9 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             List<Pair<InputStream,String>> iter = new ArrayList<>();
             // Check for more results in result set
             String[] nums = patentNumbersGroupedByDate.next();
-            resultSet=Database.getPatentVectorData(nums,true);
+            resultSet=Database.getPatentVectorData(nums,false);
             iter.addAll(processedSentenceIterator(resultSet));
-            claimSet=Database.getPatentVectorData(nums,false);
+            claimSet=Database.getPatentVectorData(nums,true);
             iter.addAll(processedSentenceIterator(claimSet));
 
             currentPatentIterator = iter.iterator();
@@ -76,7 +79,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     @Override
     public InputStream nextDocument() {
         Pair<InputStream,String> current = nextSentence();
-        System.out.println("Current Label: "+current);
+        System.out.println("Current Label: "+current.getSecond());
         currentLabel = current.getSecond();
         return current.getFirst();
     }
