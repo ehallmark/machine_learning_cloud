@@ -58,9 +58,9 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             List<Pair<InputStream,String>> iter = new ArrayList<>();
             // Check for more results in result set
             String[] nums = patentNumbersGroupedByDate.next();
-            claimSet=Database.getPatentVectorData(nums,true);
+            resultSet=Database.getPatentVectorData(nums,true);
             iter.addAll(processedSentenceIterator(resultSet));
-            resultSet=Database.getPatentVectorData(nums,false);
+            claimSet=Database.getPatentVectorData(nums,false);
             iter.addAll(processedSentenceIterator(claimSet));
 
             currentPatentIterator = iter.iterator();
