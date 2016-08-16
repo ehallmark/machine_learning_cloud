@@ -20,7 +20,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     protected final int startDate;
     protected ResultSet resultSet;
     protected ResultSet claimSet;
-    protected Iterator<Pair<String,String>> currentPatentIterator;
+    protected Iterator<Pair<InputStream,String>> currentPatentIterator;
     protected SentencePreProcessor preProcessor;
     protected Iterator<String[]> patentNumbersGroupedByDate;
     protected List<String[]> toIter;
@@ -41,21 +41,21 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         patentNumbersGroupedByDate = toIter.iterator();
     }
 
-    private List<Pair<String,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
-        List<Pair<String,String>> toReturn = new ArrayList<>();
+    private List<Pair<InputStream,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
+        List<Pair<InputStream,String>> toReturn = new ArrayList<>();
         while(rs.next()) {
-            toReturn.add(new Pair<>(preProcessor.preProcess(rs.getString(2)),rs.getString(1)));
+            toReturn.add(new Pair<>(rs.getAsciiStream(1),rs.getString(1)));
         }
         return toReturn;
     }
 
-    public Pair<String,String> nextSentence() {
+    public Pair<InputStream,String> nextSentence() {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
                 return currentPatentIterator.next();
             }
-            List<Pair<String,String>> iter = new ArrayList<>();
+            List<Pair<InputStream,String>> iter = new ArrayList<>();
             // Check for more results in result set
             String[] nums = patentNumbersGroupedByDate.next();
             claimSet=Database.getPatentVectorData(nums,true);
@@ -75,9 +75,10 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
 
     @Override
     public InputStream nextDocument() {
-        Pair<String,String> current = nextSentence();
+        Pair<InputStream,String> current = nextSentence();
+        System.out.println("Current Label: "+current);
         currentLabel = current.getSecond();
-        return new ByteArrayInputStream( current.getFirst().getBytes( Charset.defaultCharset() ) );
+        return current.getFirst();
     }
 
     @Override
