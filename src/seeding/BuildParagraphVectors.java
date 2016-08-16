@@ -24,11 +24,12 @@ public class BuildParagraphVectors {
             System.out.println("Starting paragraph vectors...");
 
             ParagraphVectors vec = new ParagraphVectors.Builder()
-                    .minWordFrequency(1)
-                    .iterations(5)
+                    .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
+                    .iterations(10)
                     .epochs(1)
                     .layerSize(Constants.VECTOR_LENGTH)
                     .learningRate(0.025)
+                    .minLearningRate(0.0001)
                     .windowSize(5)
                     .iterate(iterator)
                     .trainWordVectors(false)
