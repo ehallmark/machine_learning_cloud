@@ -21,6 +21,7 @@ public class Database {
 	private static final String claimsFromPatents = "SELECT pub_doc_number, array_agg(claim_text), array_agg(number) FROM patent_grant_claim WHERE pub_doc_number=ANY(?) AND claim_text IS NOT NULL and parent_claim_id is null group by pub_doc_number";
 	private static final String claimsFromPatent = "SELECT claim_text FROM patent_grant_claim WHERE uid > 55000000 AND claim_text IS NOT NULL and parent_claim_id is null";
 	private static final String allPatentsAfterGivenDate = "SELECT array_agg(pub_doc_number), pub_date FROM patent_grant where pub_date >= ? group by pub_date order by pub_date";
+	private static final String allPatentsArray = "SELECT array_agg(pub_doc_number) FROM patent_grant where pub_date >= ?";
 	private static final String insertPatentVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,invention_title_vectors,abstract_vectors,description_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,invention_title_vectors,abstract_vectors,description_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClassificationVectorsQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,class_softmax,class_vectors,subclass_vectors) VALUES (?,?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,class_softmax,class_vectors,subclass_vectors)=(?,?,?,?) WHERE patent_vectors.pub_doc_number=?";
 	private static final String insertClaimsVectorQuery = "INSERT INTO patent_vectors (pub_doc_number,pub_date,claims_vectors,claims_numbers) VALUES (?,?,?,?) ON CONFLICT(pub_doc_number) DO UPDATE SET (pub_date,claims_vectors,claims_numbers)=(?,?,?) WHERE patent_vectors.pub_doc_number=?";
@@ -293,6 +294,14 @@ public class Database {
 		System.out.println(ps);
 		return ps.executeQuery();
 	}
+
+	public static ResultSet allPatentsArray(int start) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement(allPatentsArray);
+		ps.setInt(1, start);
+		System.out.println(ps);
+		return ps.executeQuery();
+	}
+
 
 	public static ResultSet getClassificationsFromPatents(Array patentArray) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(classificationsFromPatents);

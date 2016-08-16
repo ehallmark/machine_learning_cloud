@@ -23,24 +23,22 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     protected ResultSet claimSet;
     protected Iterator<Pair<InputStream,String>> currentPatentIterator;
     protected SentencePreProcessor preProcessor;
-    protected Iterator<String[]> patentNumbersGroupedByDate;
+    protected String[] patentNumbersGroupedByDate;
     protected List<String[]> toIter;
     protected String currentLabel;
+    protected List<Pair<InputStream,String>> iter;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
-        ResultSet patentNumbers = Database.getPatentsBetween(startDate);
+        ResultSet patentNumbers = Database.allPatentsArray(startDate);
         toIter = new ArrayList<>();
-        while(patentNumbers.next()) {
-            toIter.add((String[])patentNumbers.getArray(1).getArray());
+        if(patentNumbers.next()) {
+            patentNumbersGroupedByDate=(String[])patentNumbers.getArray(1).getArray();
         }
     }
 
-    protected void resetQuery() throws SQLException {
-        patentNumbersGroupedByDate = toIter.iterator();
-    }
 
     private List<Pair<InputStream,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
         List<Pair<InputStream,String>> toReturn = new ArrayList<>();
@@ -58,12 +56,11 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
                 return currentPatentIterator.next();
             }
-            List<Pair<InputStream,String>> iter = new ArrayList<>();
+            iter = new ArrayList<>();
             // Check for more results in result set
-            String[] nums = patentNumbersGroupedByDate.next();
-            resultSet=Database.getPatentVectorData(nums,false);
+            resultSet=Database.getPatentVectorData(patentNumbersGroupedByDate,false);
             iter.addAll(processedSentenceIterator(resultSet));
-            claimSet=Database.getPatentVectorData(nums,true);
+            claimSet=Database.getPatentVectorData(patentNumbersGroupedByDate,true);
             iter.addAll(processedSentenceIterator(claimSet));
 
             currentPatentIterator = iter.iterator();
@@ -86,28 +83,13 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
 
     @Override
     public boolean hasNext() {
-        return (currentPatentIterator==null||currentPatentIterator.hasNext()||patentNumbersGroupedByDate.hasNext());
+        return (currentPatentIterator==null||currentPatentIterator.hasNext());
     }
 
     @Override
     public void reset() {
-        try {
-            if(resultSet!=null && !resultSet.isClosed()) resultSet.close();
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
-        try {
-            if(claimSet!=null && !claimSet.isClosed()) claimSet.close();
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
-        try {
-            resetQuery();
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-            throw new RuntimeException("UNABLE TO RESET QUERY");
-        }
-        currentPatentIterator=null;
+        // check if we already have everything
+        if(currentPatentIterator!=null) currentPatentIterator = iter.iterator();
     }
 
     @Override

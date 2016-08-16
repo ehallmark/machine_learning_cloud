@@ -21,6 +21,8 @@ public class BuildParagraphVectors {
             TokenizerFactory t = new DefaultTokenizerFactory();
             t.setTokenPreProcessor(new MyPreprocessor());
 
+            System.out.println("Starting paragraph vectors...");
+
             ParagraphVectors vec = new ParagraphVectors.Builder()
                     .minWordFrequency(1)
                     .iterations(5)
@@ -36,6 +38,8 @@ public class BuildParagraphVectors {
 
             vec.fit();
 
+            System.out.println("Finished paragraph vectors...");
+
             /*
                 In training corpus we have few lines that contain pretty close words invloved.
                 These sentences should be pretty close to each other in vector space
@@ -49,7 +53,11 @@ public class BuildParagraphVectors {
                 Note that docs are indexed from 0
              */
 
+            System.out.println("Writing to file...");
             WordVectorSerializer.writeWordVectors(vec, new File(Constants.WORD_VECTORS_PATH));
+            System.out.println("Done...");
+
+
 
         } finally {
             Database.close();
