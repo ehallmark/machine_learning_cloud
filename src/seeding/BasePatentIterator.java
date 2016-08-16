@@ -35,9 +35,11 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     private List<Pair<InputStream,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
         List<Pair<InputStream,String>> toReturn = new ArrayList<>();
         while(rs.next()) {
-            String text = rs.getString(1);
+            String text = rs.getString(2);
+            String label = rs.getString(1);
+            System.out.println(label);
             if(VectorHelper.shouldRemoveSentence(text)) continue;
-            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),rs.getString(1)));
+            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),label));
         }
         return toReturn;
     }
