@@ -29,6 +29,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     protected int n = 0;
     protected AtomicInteger cnt;
     protected Iterator<String[]> dateIter;
+    protected long lastTime;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
@@ -60,9 +61,11 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
                 int currentCnt = cnt.getAndIncrement();
-                if(currentCnt%1000==0) {
+                if(currentCnt%1000==999) {
                     long time = System.currentTimeMillis();
-                    System.out.println("Estimated time remaining: "+((new Double(n-currentCnt)/currentCnt)*(time)/(60*60*1000))+" hours");
+                    System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
+                    lastTime = time;
+                    cnt.set(0);
                 }
                 return currentPatentIterator.next();
             }
@@ -105,6 +108,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         dateIter = dateList.iterator();
         currentPatentIterator=null;
         cnt = new AtomicInteger(0);
+        lastTime = System.currentTimeMillis();
     }
 
     @Override
