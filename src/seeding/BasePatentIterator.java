@@ -13,6 +13,7 @@ import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 7/18/16.
@@ -25,6 +26,8 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     protected String currentLabel;
     protected List<Pair<InputStream,String>> iter;
     protected List<String[]> dateList;
+    protected int n = 0;
+    protected AtomicInteger cnt;
     protected Iterator<String[]> dateIter;
     // used to tag each sequence with own Id
 
@@ -35,7 +38,9 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
         while(rs.next()) {
             dateList.add((String[])rs.getArray(1).getArray());
+            n+=dateList.get(dateList.size()-1).length;
         }
+
     }
 
 
@@ -54,6 +59,11 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
+                int currentCnt = cnt.getAndIncrement();
+                if(currentCnt%1000==0) {
+                    long time = System.currentTimeMillis();
+                    System.out.println("Estimated time remaining: "+((new Double(n-currentCnt)/currentCnt)*(time)/(60*60*1000))+" hours");
+                }
                 return currentPatentIterator.next();
             }
             ResultSet resultSet;
@@ -79,7 +89,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     @Override
     public InputStream nextDocument() {
         Pair<InputStream,String> current = nextSentence();
-        System.out.println("Current Label: "+current.getSecond());
+        //System.out.println("Current Label: "+current.getSecond());
         currentLabel = current.getSecond();
         return current.getFirst();
     }
@@ -94,6 +104,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         // check if we already have everything
         dateIter = dateList.iterator();
         currentPatentIterator=null;
+        cnt = new AtomicInteger(0);
     }
 
     @Override
