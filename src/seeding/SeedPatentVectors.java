@@ -2,6 +2,7 @@ package seeding;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import tools.VectorHelper;
 import tools.WordVectorSerializer;
 import java.io.File;
@@ -17,17 +18,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SeedPatentVectors {
     private static final File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
-    private static final File googleVectorsFile = new File(Constants.GOOGLE_WORD_VECTORS_PATH);
-    private WordVectors wordVectors;
+    private ParagraphVectors wordVectors;
     private int timeToCommit;
     private long startTime;
     private final int commitLength;
     private AtomicInteger count;
 
-    public SeedPatentVectors(int startDate, int endDate, boolean useGoogleModel, boolean updateDates) throws Exception {
-        assert startDate < endDate: "Start date must be before end date!";
-        if(!useGoogleModel) wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
-        else wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
+    public SeedPatentVectors(int startDate, boolean updateDates) throws Exception {
+        if(!wordVectorsFile.exists()) throw new RuntimeException("Inconsistent Word Vector File Option");
+        wordVectors = WordVectorSerializer.readParagraphVectorsFromText(wordVectorsFile.getAbsolutePath());
 
         System.out.println("Finished loading Word Vector Model...");
 
@@ -42,7 +41,7 @@ public class SeedPatentVectors {
         //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
-        ResultSet patentNumbers = Database.getPatentsBetween(startDate,endDate);
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate);
         getPubDateAndPatentNumbersFromResultSet(patentNumbers,updateDates);
     }
 
@@ -87,14 +86,11 @@ public class SeedPatentVectors {
             Database.setupSeedConn();
             Database.setupMainConn();
             Database.setupCompDBConn();
-            GenerateVocabulary genVocab = new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
-            VectorHelper.setupVocab(genVocab.getCache());
             boolean useGoogle = true;
-            //int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
-            int startDate = Constants.START_DATE;
-            int endDate = 20050001;
-            boolean updateDates = false;
-            new SeedPatentVectors(startDate,endDate, useGoogle, updateDates);
+            int startDate = Database.selectLastDate(Constants.PATENT_VECTOR_TYPE);
+            //int startDate = Constants.START_DATE;
+            boolean updateDates = true;
+            new SeedPatentVectors(startDate, updateDates);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

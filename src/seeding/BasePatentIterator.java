@@ -1,11 +1,13 @@
 package seeding;
 
-import org.deeplearning4j.text.sentenceiterator.SentenceIterator;
+import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.text.documentiterator.LabelAwareDocumentIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import tools.VectorHelper;
 
 
-import java.sql.PreparedStatement;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -13,52 +15,55 @@ import java.util.*;
 /**
  * Created by ehallmark on 7/18/16.
  */
-public class BasePatentIterator implements SentenceIterator {
+public class BasePatentIterator implements LabelAwareDocumentIterator {
 
     protected final int startDate;
     protected ResultSet resultSet;
-    protected Iterator<String> currentPatentIterator;
+    protected ResultSet claimSet;
+    protected Iterator<Pair<String,String>> currentPatentIterator;
     protected SentencePreProcessor preProcessor;
+    protected Iterator<String[]> patentNumbersGroupedByDate;
+    protected List<String[]> toIter;
+    protected String currentLabel;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate);
+        toIter = new ArrayList<>();
+        while(patentNumbers.next()) {
+            toIter.add((String[])patentNumbers.getArray(1).getArray());
+        }
     }
 
     protected void resetQuery() throws SQLException {
-        resultSet = Database.getPatentVectorData(startDate);
+        patentNumbersGroupedByDate = toIter.iterator();
     }
 
-
-    protected Iterator<String> processedSentenceIterator() throws SQLException {
-        List<String> preIterator = new LinkedList<>();
-
-        // Title
-        String titleText = resultSet.getString(2);
-        if(!VectorHelper.shouldRemoveSentence(titleText)) preIterator.add(titleText);
-
-        // Abstract
-        String abstractText = resultSet.getString(3);
-        if(!VectorHelper.shouldRemoveSentence(abstractText)) preIterator.add(abstractText);
-
-        // Description
-        String descriptionText = resultSet.getString(4);
-        if(!VectorHelper.shouldRemoveSentence(descriptionText)) preIterator.add(descriptionText);
-
-        return preIterator.iterator();
+    private List<Pair<String,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
+        List<Pair<String,String>> toReturn = new ArrayList<>();
+        while(rs.next()) {
+            toReturn.add(new Pair<>(preProcessor.preProcess(rs.getString(2)),rs.getString(1)));
+        }
+        return toReturn;
     }
 
-    @Override
-    public String nextSentence() {
+    public Pair<String,String> nextSentence() {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                return preProcessor.preProcess(currentPatentIterator.next());
+                return currentPatentIterator.next();
             }
+            List<Pair<String,String>> iter = new ArrayList<>();
             // Check for more results in result set
-            resultSet.next();
-            currentPatentIterator = processedSentenceIterator();
+            String[] nums = patentNumbersGroupedByDate.next();
+            claimSet=Database.getPatentVectorData(nums,true);
+            iter.addAll(processedSentenceIterator(resultSet));
+            resultSet=Database.getPatentVectorData(nums,false);
+            iter.addAll(processedSentenceIterator(claimSet));
+
+            currentPatentIterator = iter.iterator();
             //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
             return nextSentence();
 
@@ -69,19 +74,26 @@ public class BasePatentIterator implements SentenceIterator {
     }
 
     @Override
+    public InputStream nextDocument() {
+        Pair<String,String> current = nextSentence();
+        currentLabel = current.getSecond();
+        return new ByteArrayInputStream( current.getFirst().getBytes( Charset.defaultCharset() ) );
+    }
+
+    @Override
     public boolean hasNext() {
-        try {
-            return ((currentPatentIterator == null || currentPatentIterator.hasNext()) || (resultSet == null || !(resultSet.isAfterLast() || resultSet.isLast())));
-        } catch (SQLException sql) {
-            sql.printStackTrace();
-            throw new RuntimeException("SQL ERROR WHILE ITERATING");
-        }
+        return (currentPatentIterator==null||currentPatentIterator.hasNext()||patentNumbersGroupedByDate.hasNext());
     }
 
     @Override
     public void reset() {
         try {
             if(resultSet!=null && !resultSet.isClosed()) resultSet.close();
+        } catch(SQLException sql) {
+            sql.printStackTrace();
+        }
+        try {
+            if(claimSet!=null && !claimSet.isClosed()) claimSet.close();
         } catch(SQLException sql) {
             sql.printStackTrace();
         }
@@ -94,21 +106,8 @@ public class BasePatentIterator implements SentenceIterator {
         currentPatentIterator=null;
     }
 
-
     @Override
-    public void finish() {
-        Database.close();
+    public String currentLabel() {
+        return currentLabel;
     }
-
-    @Override
-    public SentencePreProcessor getPreProcessor() {
-        return preProcessor;
-    }
-
-    @Override
-    public void setPreProcessor(SentencePreProcessor preProcessor) {
-        this.preProcessor=preProcessor;
-    }
-
-
 }

@@ -132,6 +132,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/flanagan.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>jxl</groupId>
+            <artifactId>com.jxl</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/jxl.jar</systemPath>
+        </dependency>
         <!-- Arbiter: used for hyperparameter optimization examples -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>

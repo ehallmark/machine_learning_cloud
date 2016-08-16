@@ -1,6 +1,7 @@
 package seeding;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import tools.VectorBuilderThread;
 import tools.VectorHelper;
 import tools.WordVectorSerializer;
@@ -19,20 +20,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class SeedClassificationVectors {
     private List<String> classifications;
-    private WordVectors wordVectors;
+    private ParagraphVectors wordVectors;
     private static final File wordVectorsFile = new File(Constants.WORD_VECTORS_PATH);
-    private static final File googleVectorsFile = new File(Constants.GOOGLE_WORD_VECTORS_PATH);
     private final int commitLength;
     private int timeToCommit;
     private long startTime;
     private AtomicInteger count;
 
-    public SeedClassificationVectors(int startDate, int endDate, boolean useGoogleModel, boolean updateDates) throws Exception {
-        assert startDate < endDate: "Start date must be before end date!";
-        if((!wordVectorsFile.exists() && !useGoogleModel) || (!googleVectorsFile.exists() && useGoogleModel)) throw new RuntimeException("Inconsistent Word Vector File Option");
-
-        if(useGoogleModel) wordVectors = WordVectorSerializer.loadGoogleModel(googleVectorsFile, true, false);
-        else wordVectors = WordVectorSerializer.loadFullModel(wordVectorsFile.getAbsolutePath());
+    public SeedClassificationVectors(int startDate, boolean updateDates) throws Exception {
+        if(!wordVectorsFile.exists()) throw new RuntimeException("Inconsistent Word Vector File Option");
+        wordVectors = WordVectorSerializer.readParagraphVectorsFromText(wordVectorsFile.getAbsolutePath());
 
         classifications = Database.getDistinctClassifications();
         System.out.println("Number of classifications: "+classifications.size());
@@ -47,7 +44,7 @@ public class SeedClassificationVectors {
         //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
-        ResultSet patentNumbers = Database.getPatentsBetween(startDate, endDate);
+        ResultSet patentNumbers = Database.getPatentsBetween(startDate);
         getPubDateAndPatentNumbersFromResultSet(patentNumbers,updateDates);
 
     }
@@ -148,14 +145,10 @@ public class SeedClassificationVectors {
             Database.setupSeedConn();
             Database.setupMainConn();
             Database.setupCompDBConn();
-            GenerateVocabulary genVocab = new GenerateVocabulary(new BasePatentIterator(Constants.VOCAB_START_DATE));
-            VectorHelper.setupVocab(genVocab.getCache());
-            boolean useGoogle = true;
-            //int startDate = Database.selectLastDate(Constants.CLASSIFICATION_VECTOR_TYPE);
-            int startDate = Constants.START_DATE;
-            int endDate = 20050001;
-            boolean updateDates = false;
-            new SeedClassificationVectors(startDate, endDate, useGoogle, updateDates);
+            int startDate = Database.selectLastDate(Constants.CLASSIFICATION_VECTOR_TYPE);
+            //int startDate = Constants.START_DATE;
+            boolean updateDates = true;
+            new SeedClassificationVectors(startDate, updateDates);
         } catch(Exception e) {
             e.printStackTrace();
         } finally {

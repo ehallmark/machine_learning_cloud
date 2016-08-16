@@ -1,9 +1,6 @@
 package analysis;
 
-import learning.AbstractPatentModel;
-import learning.SimilarityAutoEncoderIterator;
 import org.deeplearning4j.datasets.iterator.DataSetIterator;
-import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.LearningRatePolicy;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;

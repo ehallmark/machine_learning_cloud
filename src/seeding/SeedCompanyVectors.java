@@ -67,5 +67,7 @@ public class SeedCompanyVectors {
         sendPost("Cisco", "cisco", null);
         sendPost("Telia Custom", null, Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+")));
         sendPost("Verizon", "verizon", null);
+        // ETSI PATENTS!
+        sendPost("ETSI", null, Arrays.asList(Constants.ETSI_PATENT_LIST.split("\\s+")));
     }
 }
