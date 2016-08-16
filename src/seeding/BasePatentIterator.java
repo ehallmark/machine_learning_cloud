@@ -24,11 +24,18 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     protected SentencePreProcessor preProcessor;
     protected String currentLabel;
     protected List<Pair<InputStream,String>> iter;
+    protected List<String[]> dateList;
+    protected Iterator<String[]> dateIter;
     // used to tag each sequence with own Id
 
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
+        dateList=new ArrayList<>();
+        ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
+        while(rs.next()) {
+            dateList.add((String[])rs.getArray(1).getArray());
+        }
     }
 
 
@@ -54,14 +61,10 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             ResultSet claimSet;
             iter = new ArrayList<>();
             // Check for more results in result set
-            ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
-            while(rs.next()) {
-                String[] data = (String[])rs.getArray(1).getArray();
-                resultSet=Database.getPatentVectorData(data,false);
-                iter.addAll(processedSentenceIterator(resultSet));
-                claimSet=Database.getPatentVectorData(data,true);
-                iter.addAll(processedSentenceIterator(claimSet));
-            }
+            resultSet=Database.getPatentVectorData(dateIter.next(),false);
+            iter.addAll(processedSentenceIterator(resultSet));
+            claimSet=Database.getPatentVectorData(dateIter.next(),true);
+            iter.addAll(processedSentenceIterator(claimSet));
 
 
             currentPatentIterator = iter.iterator();
@@ -84,13 +87,14 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
 
     @Override
     public boolean hasNext() {
-        return (currentPatentIterator==null||currentPatentIterator.hasNext());
+        return (currentPatentIterator==null||currentPatentIterator.hasNext()||dateIter.hasNext());
     }
 
     @Override
     public void reset() {
         // check if we already have everything
-        if(currentPatentIterator!=null) currentPatentIterator = iter.iterator();
+        dateIter = dateList.iterator();
+        currentPatentIterator=null;
     }
 
     @Override
