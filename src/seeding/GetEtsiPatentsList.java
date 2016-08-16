@@ -28,10 +28,12 @@ public class GetEtsiPatentsList {
             throw new RuntimeException("--- Try converting to Excel 97-2004 (.xls) format ---");
         }
         Sheet sheet = wb.getSheet(0);
-        Set<String> usPatents = Arrays.asList(sheet.getColumn(1)).stream().filter(p->p!=null&&p.getContents().trim().startsWith("US")).map(p->p.getContents().trim().split("\\s+")[0].replaceFirst("US","")).collect(Collectors.toSet());
+        Set<String> usPatents = Arrays.asList(sheet.getColumn(1)).stream().filter(p->p!=null&&p.getContents().trim().startsWith("US")&&p.getContents().contains("B")).map(p->p.getContents().trim().split("\\s+")[0].replaceFirst("US","")).collect(Collectors.toSet());
 
+        StringJoiner sj = new StringJoiner("\",\"","Arrays.asList(\"","\");");
         for(String patent: usPatents) {
-            System.out.println(patent);
+            if(patent!=null&&patent.trim().length()>0)sj.add(patent);
         }
+        System.out.println(sj.toString());
     }
 }
