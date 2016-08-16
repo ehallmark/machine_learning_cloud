@@ -1,15 +1,13 @@
 package seeding;
 
-import opennlp.tools.parser.Cons;
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.text.documentiterator.LabelAwareDocumentIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import tools.VectorHelper;
 
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -18,13 +16,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by ehallmark on 7/18/16.
  */
-public class BasePatentIterator implements LabelAwareDocumentIterator {
+public class BasePatentIterator implements LabelAwareSentenceIterator {
 
     protected final int startDate;
-    protected Iterator<Pair<InputStream,String>> currentPatentIterator;
+    protected Iterator<Pair<String,String>> currentPatentIterator;
     protected SentencePreProcessor preProcessor;
     protected String currentLabel;
-    protected List<Pair<InputStream,String>> iter;
+    protected List<Pair<String,String>> iter;
     protected List<String[]> dateList;
     protected int n = 0;
     protected AtomicInteger cnt;
@@ -45,18 +43,19 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     }
 
 
-    private List<Pair<InputStream,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
-        List<Pair<InputStream,String>> toReturn = new ArrayList<>();
+    private List<Pair<String,String>> processedSentenceIterator(ResultSet rs) throws SQLException {
+        List<Pair<String,String>> toReturn = new ArrayList<>();
         while(rs.next()) {
             String text = rs.getString(2);
             String label = rs.getString(1);
             if(VectorHelper.shouldRemoveSentence(text)||label==null) continue;
-            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),label.replaceAll("\\s+","")));
+            toReturn.add(new Pair<>(text,label.replaceAll("\\s+","")));
         }
         return toReturn;
     }
 
-    public Pair<InputStream,String> nextSentence() {
+    @Override
+    public String nextSentence() {
         try {
             // Check patent iterator
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
@@ -67,7 +66,10 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
                     lastTime = time;
                     cnt.set(0);
                 }
-                return currentPatentIterator.next();
+                Pair<String,String> current = currentPatentIterator.next();
+                //System.out.println("Current Label: "+current.getSecond());
+                currentLabel = current.getSecond();
+                return current.getFirst();
             }
             ResultSet resultSet;
             ResultSet claimSet;
@@ -89,13 +91,6 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
         }
     }
 
-    @Override
-    public InputStream nextDocument() {
-        Pair<InputStream,String> current = nextSentence();
-        //System.out.println("Current Label: "+current.getSecond());
-        currentLabel = current.getSecond();
-        return current.getFirst();
-    }
 
     @Override
     public boolean hasNext() {
@@ -112,7 +107,27 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     }
 
     @Override
+    public void finish() {
+
+    }
+
+    @Override
+    public SentencePreProcessor getPreProcessor() {
+        return null;
+    }
+
+    @Override
+    public void setPreProcessor(SentencePreProcessor preProcessor) {
+
+    }
+
+    @Override
     public String currentLabel() {
         return currentLabel;
+    }
+
+    @Override
+    public List<String> currentLabels() {
+        return null;
     }
 }

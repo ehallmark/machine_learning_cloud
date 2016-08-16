@@ -30,6 +30,7 @@ public class BuildParagraphVectors {
                     .layerSize(Constants.VECTOR_LENGTH)
                     .learningRate(0.025)
                     .minLearningRate(0.0001)
+                    .batchSize(100)
                     .windowSize(5)
                     .iterate(iterator)
                     .trainWordVectors(false)
