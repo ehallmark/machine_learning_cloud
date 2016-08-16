@@ -45,7 +45,7 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             String text = rs.getString(2);
             String label = rs.getString(1);
             if(VectorHelper.shouldRemoveSentence(text)||label==null) continue;
-            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),label));
+            toReturn.add(new Pair<>(new ByteArrayInputStream(text.getBytes()),label.trim()));
         }
         return toReturn;
     }
