@@ -347,7 +347,7 @@ public class Database {
 			ps.setArray(2, mainConn.createArrayOf("varchar", array));
 		}
 		ps.setFetchSize(10);
-		System.out.println(ps);
+		//System.out.println(ps);
 		return ps.executeQuery();
 	}
 

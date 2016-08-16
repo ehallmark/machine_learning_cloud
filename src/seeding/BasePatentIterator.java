@@ -1,5 +1,6 @@
 package seeding;
 
+import opennlp.tools.parser.Cons;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.text.documentiterator.LabelAwareDocumentIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
@@ -19,12 +20,8 @@ import java.util.*;
 public class BasePatentIterator implements LabelAwareDocumentIterator {
 
     protected final int startDate;
-    protected ResultSet resultSet;
-    protected ResultSet claimSet;
     protected Iterator<Pair<InputStream,String>> currentPatentIterator;
     protected SentencePreProcessor preProcessor;
-    protected String[] patentNumbersGroupedByDate;
-    protected List<String[]> toIter;
     protected String currentLabel;
     protected List<Pair<InputStream,String>> iter;
     // used to tag each sequence with own Id
@@ -32,11 +29,6 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
     public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
-        ResultSet patentNumbers = Database.allPatentsArray(startDate);
-        toIter = new ArrayList<>();
-        if(patentNumbers.next()) {
-            patentNumbersGroupedByDate=(String[])patentNumbers.getArray(1).getArray();
-        }
     }
 
 
@@ -56,12 +48,19 @@ public class BasePatentIterator implements LabelAwareDocumentIterator {
             if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
                 return currentPatentIterator.next();
             }
+            ResultSet resultSet;
+            ResultSet claimSet;
             iter = new ArrayList<>();
             // Check for more results in result set
-            resultSet=Database.getPatentVectorData(patentNumbersGroupedByDate,false);
-            iter.addAll(processedSentenceIterator(resultSet));
-            claimSet=Database.getPatentVectorData(patentNumbersGroupedByDate,true);
-            iter.addAll(processedSentenceIterator(claimSet));
+            ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
+            while(rs.next()) {
+                String[] data = (String[])rs.getArray(1).getArray();
+                resultSet=Database.getPatentVectorData(data,false);
+                iter.addAll(processedSentenceIterator(resultSet));
+                claimSet=Database.getPatentVectorData(data,true);
+                iter.addAll(processedSentenceIterator(claimSet));
+            }
+
 
             currentPatentIterator = iter.iterator();
             //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
