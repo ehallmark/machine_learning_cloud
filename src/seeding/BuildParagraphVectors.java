@@ -19,6 +19,7 @@ public class BuildParagraphVectors {
     public static void createDataFolder(File folder, SentencePreProcessor preProcessor) throws Exception {
         folder.mkdirs();
         BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
+        iter.reset();
         while(iter.hasNext()) {
             String nextSentence = iter.nextSentence();
             String label = iter.currentLabel();

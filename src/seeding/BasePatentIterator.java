@@ -48,7 +48,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         while(rs.next()) {
             String text = rs.getString(2);
             String label = rs.getString(1);
-            if(VectorHelper.shouldRemoveSentence(text)||label==null) continue;
+            if(text==null||label==null||VectorHelper.shouldRemoveSentence(text)) continue;
             toReturn.add(new Pair<>(text,label.replaceAll("\\s+","")));
         }
         return toReturn;
