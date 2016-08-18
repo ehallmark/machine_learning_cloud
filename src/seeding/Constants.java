@@ -45,6 +45,7 @@ public class Constants {
 	public static final String SIMILARITY_MODEL_FILE = "similarity_model.txt";
 	public static final String COMPDB_TECHNOLOGY_MODEL_FILE = "compdb_technology_model.txt";
 	public static final String VALUABLE_PATENT_MODEL_FILE = "valuable_patent_model.txt";
+	public static final String RAW_PATENT_DATA_FOLDER = "patent_data_folder/";
 	//public static final String ASSIGNEE_MAP_FILE = "patent_assignee_map.txt";
 
 
