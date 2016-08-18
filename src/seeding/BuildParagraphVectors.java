@@ -25,6 +25,8 @@ public class BuildParagraphVectors {
             File toMake = new File(folder.getAbsolutePath()+"/"+label);
             BufferedWriter bw = new BufferedWriter(new FileWriter(toMake));
             bw.write(preProcessor.preProcess(nextSentence));
+            bw.flush();
+            bw.close();
         }
     }
 
