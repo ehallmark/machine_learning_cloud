@@ -28,21 +28,17 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     protected AtomicInteger cnt;
     protected Iterator<String[]> dateIter;
     protected long lastTime;
-    protected Set<String> exceptPatents;
     // used to tag each sequence with own Id
 
-    public BasePatentIterator(int startDate, Set<String> exceptPatents) throws SQLException {
+    public BasePatentIterator(int startDate) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
         dateList=new ArrayList<>();
-        this.exceptPatents=exceptPatents;
-        if(this.exceptPatents==null) this.exceptPatents=new HashSet<>();
         ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
         while(rs.next()) {
-            List<String> patents = Arrays.asList((String[])rs.getArray(1).getArray());
-            patents.removeIf(p->exceptPatents.contains(p));
-            dateList.add(patents.toArray(new String[patents.size()]));
-            n+=patents.size();
+            String[] patents = (String[])rs.getArray(1).getArray();
+            dateList.add(patents);
+            n+=patents.length;
         }
 
     }

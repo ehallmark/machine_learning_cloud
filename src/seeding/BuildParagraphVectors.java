@@ -10,10 +10,6 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 8/16/16.
@@ -22,10 +18,8 @@ public class BuildParagraphVectors {
 
     public static void createDataFolder(File folder, SentencePreProcessor preProcessor) throws Exception {
         if(!folder.exists())folder.mkdirs();
-        Set<String> patentsAlreadyParsed = new HashSet<>();
-        patentsAlreadyParsed.addAll(Arrays.asList(folder.listFiles()).stream().map(f->f.getName().split("_")[0]).collect(Collectors.toList()));
 
-        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE,patentsAlreadyParsed);
+        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
         iter.reset();
         while(iter.hasNext()) {
             String nextSentence = iter.nextSentence();
