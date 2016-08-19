@@ -217,6 +217,7 @@ public class Database {
 			if(mainConn!=null && !mainConn.isClosed())mainConn.close();
 			if(seedConn!=null && !seedConn.isClosed())seedConn.close();
 			if(compDBConn!=null && !compDBConn.isClosed())compDBConn.close();
+			if(insertConn!=null && !insertConn.isClosed())insertConn.close();
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
