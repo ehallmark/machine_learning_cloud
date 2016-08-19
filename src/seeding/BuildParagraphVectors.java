@@ -6,6 +6,7 @@ import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import tools.Emailer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -79,6 +80,7 @@ public class BuildParagraphVectors {
         vec.fit();
 
         System.out.println("Finished paragraph vectors...");
+        new Emailer("Finished paragraph vectors!");
 
         /*
             In training corpus we have few lines that contain pretty close words invloved.
