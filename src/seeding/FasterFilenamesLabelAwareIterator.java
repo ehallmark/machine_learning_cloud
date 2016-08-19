@@ -48,8 +48,11 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
         labelsSource.storeLabel(label);
         try {
             LabelledDocument document = new LabelledDocument();
-            String content = new String(Files.readAllBytes(fileToRead.toPath()));
-            document.setContent(content);
+            BufferedReader reader = new BufferedReader(new FileReader(fileToRead));
+            StringBuilder builder = new StringBuilder();
+            String line = "";
+            while ((line = reader.readLine()) != null) builder.append(line);
+            document.setContent(builder.toString());
             document.setLabel(label);
             int pos = position.getAndIncrement();
             if(pos%1000==999) {
@@ -57,6 +60,7 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
                 lastTime = System.currentTimeMillis();
                 position.set(0);
             }
+            reader.close();
             return document;
         } catch (Exception e) {
             throw new RuntimeException(e);
