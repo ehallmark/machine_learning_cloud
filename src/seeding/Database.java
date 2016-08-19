@@ -46,6 +46,7 @@ public class Database {
 
 	public static void setupInsertConn() throws SQLException {
 		insertConn = DriverManager.getConnection(patentDBUrl);
+		insertConn.setAutoCommit(false);
 	}
 
 	public static void setupSeedConn() throws SQLException {
@@ -56,6 +57,14 @@ public class Database {
 	public static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
 		compDBConn.setAutoCommit(false);
+	}
+
+	public static void insertCommit() {
+		try {
+			insertConn.commit();
+		}catch(SQLException sql) {
+			sql.printStackTrace();
+		}
 	}
 
 	public static void commit() {

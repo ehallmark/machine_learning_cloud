@@ -9,6 +9,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 8/16/16.
@@ -32,6 +33,7 @@ public class BuildParagraphVectors {
             }*/
             Database.insertRawPatent(label,preProcessor.preProcess(nextSentence));
         }
+
     }
 
 
@@ -44,6 +46,8 @@ public class BuildParagraphVectors {
         try {
 
             createDataFolder(new MyPreprocessor());
+            Database.insertCommit();
+
 
         } finally {
             Database.close();

@@ -66,6 +66,7 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     public String nextSentence() {
         int currentCnt = cnt.getAndIncrement();
         if(currentCnt%1000==999) {
+            Database.insertCommit();
             long time = System.currentTimeMillis();
             System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
             lastTime = time;
