@@ -21,9 +21,7 @@ public class SeparateDataIntoFolders {
         foldersToSearch.add(folder);
         while(!done.get() && !foldersToSearch.isEmpty()) {
             File currentFolder = foldersToSearch.pop();
-            files = Arrays.asList(currentFolder.listFiles());
-            Iterator<File> iter = files.iterator();
-            foldersToSearch.addAll(recursionHelper(maxPerFolder, currentFolder, iter));
+            foldersToSearch.addAll(recursionHelper(maxPerFolder, currentFolder, Arrays.asList(currentFolder.listFiles()).iterator()));
             files = Arrays.asList(folder.listFiles());
             done.set(true);
             files.forEach(f -> {
