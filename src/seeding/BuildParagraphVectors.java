@@ -42,7 +42,7 @@ public class BuildParagraphVectors {
         File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
         try {
 
-            createDataFolder(dataFolder, new MyPreprocessor());
+            if(!dataFolder.exists())createDataFolder(dataFolder, new MyPreprocessor());
 
         } finally {
             Database.close();
