@@ -38,6 +38,7 @@ public class BuildParagraphVectors {
     public static void main(String[] args) throws Exception {
         Database.setupMainConn();
         Database.setupSeedConn();
+        Database.setupCompDBConn();
         File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
         try {
 
