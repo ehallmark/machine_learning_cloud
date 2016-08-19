@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
 
     protected List<File> files;
+    protected Iterator<File> iter;
     protected AtomicInteger position = new AtomicInteger(0);
     protected LabelsSource labelsSource;
     protected boolean absPath = false;
@@ -34,14 +36,14 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
 
     protected FasterFilenamesLabelAwareIterator(@NonNull List<File> files, @NonNull LabelsSource source) {
         this.files = files;
+        this.iter = files.iterator();
         this.labelsSource = source;
         lastTime = System.currentTimeMillis();
     }
 
     @Override
     public LabelledDocument nextDocument() {
-        int pos = position.getAndIncrement();
-        File fileToRead = files.get(pos);
+        File fileToRead = iter.next();
         String label = (absPath) ? fileToRead.getAbsolutePath() : fileToRead.getName();
         labelsSource.storeLabel(label);
         try {
@@ -49,9 +51,11 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
             String content = new String(Files.readAllBytes(fileToRead.toPath()));
             document.setContent(content);
             document.setLabel(label);
+            int pos = position.getAndIncrement();
             if(pos%1000==999) {
-                System.out.println("Time to complete 1000 patents: "+new Double(System.currentTimeMillis()-lastTime)/(1000*60)+" seconds");
+                System.out.println("Time to complete 1000 patents: "+new Double(System.currentTimeMillis()-lastTime)/(1000)+" seconds");
                 lastTime = System.currentTimeMillis();
+                position.set(0);
             }
             return document;
         } catch (Exception e) {
@@ -63,13 +67,13 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
 
     @Override
     public boolean hasNextDocument() {
-        return position.get() < files.size();
+        return iter.hasNext();
     }
 
 
     @Override
     public void reset() {
-        position.set(0);
+        iter=files.iterator();
     }
 
     @Override
