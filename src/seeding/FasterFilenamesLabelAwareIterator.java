@@ -33,7 +33,7 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
     }
 
     protected FasterFilenamesLabelAwareIterator(@NonNull File folder, @NonNull LabelsSource source) throws IOException {
-        iter = Files.newDirectoryStream(folder.toPath()).iterator();
+        iter = Files.walk(folder.toPath()).filter(file->Files.isRegularFile(file)).iterator();
         this.labelsSource = source;
         this.folder=folder;
         lastTime = System.currentTimeMillis();

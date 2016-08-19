@@ -10,6 +10,7 @@ public class Database {
 	private static Connection seedConn;
 	private static Connection mainConn;
 	private static Connection compDBConn;
+	private static Connection insertConn;
 	private static final String addOrUpdateWord = "INSERT INTO patent_words (word,count) VALUES (?,1) ON CONFLICT (word) DO UPDATE SET (count)=(patent_words.count+1) WHERE patent_words.word=?";
 	private static final String valuablePatentsQuery = "SELECT distinct r.pub_doc_number from patent_assignment as p join patent_assignment_property_document as q on (p.assignment_reel_frame=q.assignment_reel_frame) join patent_grant as r on (q.doc_number=r.pub_doc_number) join patent_grant_maintenance as m on (r.pub_doc_number=m.pub_doc_number) where conveyance_text like 'ASSIGNMENT OF ASSIGNOR%' and pub_date > to_char(now()::date, 'YYYYMMDD')::int-100000 AND (doc_kind='B1' or doc_kind='B2') group by r.pub_doc_number having (not array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[]) AND array_length(array_agg(distinct recorded_date),1) >= 1";
 	//private static final String unValuablePatentsQuery = "SELECT p.pub_doc_number  from patent_grant as p join patent_grant_maintenance as q on (p.pub_doc_number=q.pub_doc_number) and pub_date > to_char(now()::date, 'YYYYMMDD')::int-150000 group by p.pub_doc_number having (array_agg(trim(trailing ' ' from maintenance_event_code))&&'{\"EXP.\"}'::text[])";
@@ -42,6 +43,11 @@ public class Database {
 		mainConn.setAutoCommit(false);
 	}
 
+
+	public static void setupInsertConn() throws SQLException {
+		insertConn = DriverManager.getConnection(patentDBUrl);
+	}
+
 	public static void setupSeedConn() throws SQLException {
 		seedConn = DriverManager.getConnection(patentDBUrl);
 		seedConn.setAutoCommit(false);
@@ -72,6 +78,15 @@ public class Database {
 			sql.printStackTrace();
 		}
 		return 0;
+	}
+
+	public static void insertRawPatent(String label, String text) throws SQLException {
+		PreparedStatement ps = insertConn.prepareStatement("insert into raw_patents (name,raw_text) values (?,?) on conflict (name) do update set raw_text=? where raw_patents.name=?");
+		ps.setString(1,label);
+		ps.setString(2,text);
+		ps.setString(3,text);
+		ps.setString(4,label);
+		ps.executeUpdate();
 	}
 
 	public static int createCandidateSetAndReturnId(String name) throws SQLException {

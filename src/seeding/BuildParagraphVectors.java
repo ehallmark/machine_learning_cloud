@@ -2,7 +2,6 @@ package seeding;
 
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.text.documentiterator.FilenamesLabelAwareIterator;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -16,21 +15,22 @@ import java.io.FileWriter;
  */
 public class BuildParagraphVectors {
 
-    public static void createDataFolder(File folder, SentencePreProcessor preProcessor) throws Exception {
-        if(!folder.exists())folder.mkdirs();
+    public static void createDataFolder(SentencePreProcessor preProcessor) throws Exception {
+        //if(!folder.exists())folder.mkdirs();
 
         BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
         iter.reset();
         while(iter.hasNext()) {
             String nextSentence = iter.nextSentence();
             String label = iter.currentLabel();
-            File toMake = new File(folder.getAbsolutePath()+"/"+label);
+            /*File toMake = new File(folder.getAbsolutePath()+"/"+label);
             if(!toMake.exists()) {
                 BufferedWriter bw = new BufferedWriter(new FileWriter(toMake));
                 bw.write(preProcessor.preProcess(nextSentence));
                 bw.flush();
                 bw.close();
-            }
+            }*/
+            Database.insertRawPatent(label,preProcessor.preProcess(nextSentence));
         }
     }
 
@@ -38,11 +38,12 @@ public class BuildParagraphVectors {
     public static void main(String[] args) throws Exception {
         Database.setupMainConn();
         Database.setupSeedConn();
+        Database.setupInsertConn();
         Database.setupCompDBConn();
-        File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
+        //File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
         try {
 
-            if(!dataFolder.exists())createDataFolder(dataFolder, new MyPreprocessor());
+            createDataFolder(new MyPreprocessor());
 
         } finally {
             Database.close();
@@ -52,10 +53,7 @@ public class BuildParagraphVectors {
         t.setTokenPreProcessor((token)->token);
 
 
-        FasterFilenamesLabelAwareIterator iterator = new FasterFilenamesLabelAwareIterator.Builder()
-                .addSourceFolder(dataFolder)
-                .build();
-
+        FasterFilenamesLabelAwareIterator iterator = null;
         System.out.println("Starting paragraph vectors...");
 
         ParagraphVectors vec = new ParagraphVectors.Builder()
