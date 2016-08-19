@@ -3,6 +3,7 @@ package seeding;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
+import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 
@@ -57,7 +58,7 @@ public class BuildParagraphVectors {
         t.setTokenPreProcessor((token)->token);
 
 
-        FasterFilenamesLabelAwareIterator iterator = null;
+        LabelAwareSentenceIterator iterator = new DatabaseLabelledIterator();
         System.out.println("Starting paragraph vectors...");
 
         ParagraphVectors vec = new ParagraphVectors.Builder()

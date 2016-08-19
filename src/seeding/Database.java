@@ -236,6 +236,12 @@ public class Database {
 		ps.executeUpdate();
 	}
 
+	public static ResultSet selectRawPatents() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT name,raw_text FROM raw_patents");
+		ps.setFetchSize(5);
+		return ps.executeQuery();
+	}
+
 	public static void insertClaims(String pubDocNumber, Integer pubDate, Double[][] claimVector, Integer[] claimNumbers) throws SQLException {
 		if(claimVector==null || claimNumbers==null) return;
 		PreparedStatement ps = mainConn.prepareStatement(insertClaimsVectorQuery);
