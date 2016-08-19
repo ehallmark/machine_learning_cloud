@@ -24,7 +24,6 @@ public class FasterFilenamesLabelAwareIterator implements LabelAwareIterator {
     protected LabelsSource labelsSource;
     protected boolean absPath = false;
     protected long lastTime;
-    protected final int SIZE = 8;
 
     /*
         Please keep this method protected, it's used in tests
