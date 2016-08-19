@@ -334,6 +334,13 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	public static ResultSet compdbPatentsGroupedByDate() throws SQLException{
+		// patents loaded
+		PreparedStatement ps2 = seedConn.prepareStatement("SELECT array_agg(pub_doc_number), pub_date FROM patent_grant WHERE pub_doc_number = ANY(?) group by pub_date");
+		ps2.setArray(1, getCompDBPatents());
+		return ps2.executeQuery();
+	}
+
 	// Only for the BasePatentIterator Class
 	public static ResultSet getPatentVectorData(String[] array, boolean claims) throws SQLException {
 		PreparedStatement ps;

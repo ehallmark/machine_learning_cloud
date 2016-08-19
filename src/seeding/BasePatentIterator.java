@@ -34,6 +34,13 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
         dateList=new ArrayList<>();
+        // compdb
+        ResultSet comp = Database.compdbPatentsGroupedByDate();
+        while(comp.next()) {
+            String[] patents = (String[])comp.getArray(1).getArray();
+            dateList.add(patents);
+            n+=patents.length;
+        }
         ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
         while(rs.next()) {
             String[] patents = (String[])rs.getArray(1).getArray();

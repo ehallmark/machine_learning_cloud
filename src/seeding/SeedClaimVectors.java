@@ -33,8 +33,8 @@ public class SeedClaimVectors {
         startTime = System.currentTimeMillis();
 
         // Get compdbPatents
-        //ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
-        //getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
+        ResultSet compdbPatentNumbers = Database.compdbPatentsGroupedByDate();
+        getPubDateAndPatentNumbersFromResultSet(compdbPatentNumbers,false);
 
         // Get pub_doc_numbers grouped by date
         ResultSet patentNumbers = Database.getPatentsBetween(startDate);

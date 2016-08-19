@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class AutoEncoderIterator implements DataSetIterator {
     protected int batchSize;
-    protected String query;
     protected SimilarPatentFinder finder;
     protected Iterator<Patent> innerIter;
 
@@ -71,7 +70,7 @@ public class AutoEncoderIterator implements DataSetIterator {
         }
         INDArray features = Nd4j.create(patents.size(), Constants.VECTOR_LENGTH);
         AtomicInteger incr = new AtomicInteger(0);
-        patents.forEach(p->features.putRow(incr.getAndIncrement(), Transforms.exp(p.getVector())));
+        patents.forEach(p->features.putRow(incr.getAndIncrement(), p.getVector()));
 
         return new DataSet(features,features);
     }

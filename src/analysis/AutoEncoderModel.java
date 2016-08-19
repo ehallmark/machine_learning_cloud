@@ -91,6 +91,7 @@ public class AutoEncoderModel {
 
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
+        int numHidden = 150;
         System.out.println("Number of vectors in input: "+vectorSize);
 
         System.out.println("Build model....");
@@ -106,18 +107,18 @@ public class AutoEncoderModel {
                 .lrPolicyDecayRate(0.001)
                 .learningRate(0.01)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(3, new RBM.Builder().nIn(250).nOut(encodingSize).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(numHidden).nOut(encodingSize).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(4, new RBM.Builder().nIn(encodingSize).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(4, new RBM.Builder().nIn(encodingSize).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
-                .layer(5, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(6, new RBM.Builder().nIn(250).nOut(250).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(250).nOut(vectorSize).build())
+                .layer(5, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
