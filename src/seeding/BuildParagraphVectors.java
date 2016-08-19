@@ -52,7 +52,7 @@ public class BuildParagraphVectors {
         t.setTokenPreProcessor((token)->token);
 
 
-        FilenamesLabelAwareIterator iterator = new FilenamesLabelAwareIterator.Builder()
+        FasterFilenamesLabelAwareIterator iterator = new FasterFilenamesLabelAwareIterator.Builder()
                 .addSourceFolder(dataFolder)
                 .build();
 
