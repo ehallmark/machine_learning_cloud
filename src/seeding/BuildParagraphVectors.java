@@ -10,6 +10,10 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 8/16/16.
@@ -17,17 +21,22 @@ import java.io.FileWriter;
 public class BuildParagraphVectors {
 
     public static void createDataFolder(File folder, SentencePreProcessor preProcessor) throws Exception {
-        folder.mkdirs();
-        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
+        if(!folder.exists())folder.mkdirs();
+        Set<String> patentsAlreadyParsed = new HashSet<>();
+        patentsAlreadyParsed.addAll(Arrays.asList(folder.listFiles()).stream().map(f->f.getName().split("_")[0]).collect(Collectors.toList()));
+
+        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE,patentsAlreadyParsed);
         iter.reset();
         while(iter.hasNext()) {
             String nextSentence = iter.nextSentence();
             String label = iter.currentLabel();
             File toMake = new File(folder.getAbsolutePath()+"/"+label);
-            BufferedWriter bw = new BufferedWriter(new FileWriter(toMake));
-            bw.write(preProcessor.preProcess(nextSentence));
-            bw.flush();
-            bw.close();
+            if(!toMake.exists()) {
+                BufferedWriter bw = new BufferedWriter(new FileWriter(toMake));
+                bw.write(preProcessor.preProcess(nextSentence));
+                bw.flush();
+                bw.close();
+            }
         }
     }
 
@@ -38,7 +47,7 @@ public class BuildParagraphVectors {
         File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
         try {
 
-            if(!dataFolder.exists()) createDataFolder(dataFolder, new MyPreprocessor());
+            createDataFolder(dataFolder, new MyPreprocessor());
 
         } finally {
             Database.close();

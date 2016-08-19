@@ -28,16 +28,21 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
     protected AtomicInteger cnt;
     protected Iterator<String[]> dateIter;
     protected long lastTime;
+    protected Set<String> exceptPatents;
     // used to tag each sequence with own Id
 
-    public BasePatentIterator(int startDate) throws SQLException {
+    public BasePatentIterator(int startDate, Set<String> exceptPatents) throws SQLException {
         this.startDate=startDate;
         preProcessor=new MyPreprocessor();
         dateList=new ArrayList<>();
+        this.exceptPatents=exceptPatents;
+        if(this.exceptPatents==null) this.exceptPatents=new HashSet<>();
         ResultSet rs = Database.getPatentsBetween(Constants.START_DATE);
         while(rs.next()) {
-            dateList.add((String[])rs.getArray(1).getArray());
-            n+=dateList.get(dateList.size()-1).length;
+            List<String> patents = Arrays.asList((String[])rs.getArray(1).getArray());
+            patents.removeIf(p->exceptPatents.contains(p));
+            dateList.add(patents.toArray(new String[patents.size()]));
+            n+=patents.size();
         }
 
     }
@@ -56,45 +61,45 @@ public class BasePatentIterator implements LabelAwareSentenceIterator {
 
     @Override
     public String nextSentence() {
-        try {
-            // Check patent iterator
-            if(currentPatentIterator!=null && currentPatentIterator.hasNext()) {
-                int currentCnt = cnt.getAndIncrement();
-                if(currentCnt%1000==999) {
-                    long time = System.currentTimeMillis();
-                    System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
-                    lastTime = time;
-                    cnt.set(0);
-                }
-                Pair<String,String> current = currentPatentIterator.next();
-                //System.out.println("Current Label: "+current.getSecond());
-                currentLabel = current.getSecond();
-                return current.getFirst();
-            }
-            ResultSet resultSet;
-            ResultSet claimSet;
-            iter = new ArrayList<>();
-            // Check for more results in result set
-            resultSet=Database.getPatentVectorData(dateIter.next(),false);
-            iter.addAll(processedSentenceIterator(resultSet));
-            claimSet=Database.getPatentVectorData(dateIter.next(),true);
-            iter.addAll(processedSentenceIterator(claimSet));
-
-
-            currentPatentIterator = iter.iterator();
-            //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
-            return nextSentence();
-
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-            throw new RuntimeException("SQL ERROR");
+        int currentCnt = cnt.getAndIncrement();
+        if(currentCnt%1000==999) {
+            long time = System.currentTimeMillis();
+            System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
+            lastTime = time;
+            cnt.set(0);
         }
+        Pair<String,String> current = currentPatentIterator.next();
+        //System.out.println("Current Label: "+current.getSecond());
+        currentLabel = current.getSecond();
+        return current.getFirst();
     }
 
 
     @Override
     public boolean hasNext() {
-        return (currentPatentIterator==null||currentPatentIterator.hasNext()||dateIter.hasNext());
+        try {
+            // Check patent iterator
+            if((currentPatentIterator==null || !currentPatentIterator.hasNext()) && dateIter.hasNext()) {
+                ResultSet resultSet;
+                ResultSet claimSet;
+                iter = new ArrayList<>();
+                // Check for more results in result set
+                String[] nextBatch = dateIter.next();
+                resultSet = Database.getPatentVectorData(nextBatch, false);
+                iter.addAll(processedSentenceIterator(resultSet));
+                claimSet = Database.getPatentVectorData(nextBatch, true);
+                iter.addAll(processedSentenceIterator(claimSet));
+
+
+                currentPatentIterator = iter.iterator();
+                //  System.out.println("Number of sentences for "+currentPatent+": "+preIterator.size());
+            }
+
+        } catch(Exception sql) {
+            sql.printStackTrace();
+            return false;
+        }
+        return (currentPatentIterator.hasNext());
     }
 
     @Override
