@@ -52,7 +52,8 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
                 sentenceIter = createSentencesFromLargeText(resultSet.getString(2)).iterator();
-                return sentenceIter.hasNext();
+                if(sentenceIter.hasNext()) return true;
+                return hasNext();// Recursive
             }
 
         } catch(Exception sql) {
@@ -100,13 +101,13 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
 
 
     private List<String> createSentencesFromLargeText(String toBreakUp) {
-        final int maxNumberOfWordsPerSentence = 20;
+        final int maxNumberOfWordsPerSentence = Math.min(20,toBreakUp.length());
         String[] words = toBreakUp.split("\\s+");
         List<String> sentences = new ArrayList<>((words.length+1)/maxNumberOfWordsPerSentence);
         for(int i = 0; i < words.length-maxNumberOfWordsPerSentence; i+= maxNumberOfWordsPerSentence) {
             String sentence = String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence));
             sentences.add(sentence);
-            System.out.println(currentLabel+ " => "+sentence);
+           // System.out.println(currentLabel+ " => "+sentence);
 
         }
         return sentences;
