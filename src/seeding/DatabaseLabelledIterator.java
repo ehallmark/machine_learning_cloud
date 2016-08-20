@@ -104,7 +104,10 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
         String[] words = toBreakUp.split("\\s+");
         List<String> sentences = new ArrayList<>((words.length+1)/maxNumberOfWordsPerSentence);
         for(int i = 0; i < words.length-maxNumberOfWordsPerSentence; i+= maxNumberOfWordsPerSentence) {
-            sentences.add(String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence)));
+            String sentence = String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence));
+            sentences.add(sentence);
+            System.out.println(currentLabel+ " => "+sentence);
+
         }
         return sentences;
     }
