@@ -74,12 +74,11 @@ public class SimilarPatentServer {
                     int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
                     SimilarPatentFinder patentFinder;
                     // try to get percentages from form
-                    Map<Patent.Type,Double> percentages = createPercentagesMapFromParams(req);
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,percentages);
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file,percentages);
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -163,7 +162,7 @@ public class SimilarPatentServer {
 
             if(name1==null || name2==null) return new Gson().toJson(new SimpleAjaxMessage("Please include two patents!"));
 
-            Double sim = globalFinder.angleBetweenPatents(name1, name2, createPercentagesMapFromParams(req));
+            Double sim = globalFinder.angleBetweenPatents(name1, name2);
 
             if(sim==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find both patent vectors"));
             return new Gson().toJson(new SimpleAjaxMessage("Similarity between "+name1+" and "+name2+" is "+sim.toString()));
@@ -203,8 +202,8 @@ public class SimilarPatentServer {
                 else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
 
                 double threshold = extractThreshold(req);
-                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, createPercentagesMapFromParams(req), threshold, limit);
-                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, createPercentagesMapFromParams(req), threshold, limit);
+                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, threshold, limit);
+                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, threshold, limit);
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
@@ -221,24 +220,6 @@ public class SimilarPatentServer {
         });
 
 
-    }
-
-    private static Map<Patent.Type,Double> createPercentagesMapFromParams(Request req) {
-        Map<Patent.Type,Double> percentages = new HashMap<>();
-        Constants.VECTOR_TYPES.forEach(type->{
-            if(req.queryParams(type.toString())!=null) {
-                try {
-                    percentages.put(type,Double.valueOf(req.queryParams(type.toString())));
-                } catch(Exception e) {
-                    percentages.put(type,Constants.VECTOR_PERCENTAGES.get(type));
-                }
-            } else {
-                percentages.put(type,Constants.VECTOR_PERCENTAGES.get(type));
-            }
-            System.out.print(type.toString()+": "+percentages.get(type));
-
-        });
-        return percentages;
     }
 
     private static List<String> preProcess(String str) {
@@ -355,7 +336,7 @@ public class SimilarPatentServer {
                                                 form().withId(SELECT_ANGLE_BETWEEN_PATENTS).with(
                                                         label("Patent 1"),br(),input().withType("text").withName("name1"),br(),
                                                         label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
-                                                        percentageFormElements(),br(),
+                                                        br(),
                                                         button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
@@ -385,11 +366,6 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag percentageFormElements() {
-        return div().with(
-                Constants.VECTOR_TYPES.stream().map(type->div().with(label(type.toString().toLowerCase()+" percentage"),br(),input().withType("text").withName(type.toString()),br())).collect(Collectors.toList())
-        );
-    }
 
     private static Tag createNewCandidateSetForm() {
         return form().withId(NEW_CANDIDATE_FORM_ID).withAction("/create").withMethod("post").with(
@@ -402,7 +378,6 @@ public class SimilarPatentServer {
                 br(),
                 label("Or By Patent List (space separated)"), br(),
                 textarea().withName("patents"), br(),
-                percentageFormElements(),
                 button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
         );
     }

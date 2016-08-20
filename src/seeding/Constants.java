@@ -5,7 +5,7 @@ import analysis.Patent;
 import java.util.*;
 
 public class Constants {
-	public static final int DEFAULT_MIN_WORD_FREQUENCY = 5;
+	public static final int DEFAULT_MIN_WORD_FREQUENCY = 100;
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
 	public static final int VECTOR_LENGTH = 200;
@@ -51,20 +51,8 @@ public class Constants {
 
 	//public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS,Constants.CLAIM_VECTORS);
 	// Claim vectors are not working yet...
-	public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.CLAIM_VECTORS);
-	public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS, Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS, Constants.CLASS_VECTORS, Constants.SUBCLASS_VECTORS);
-	public static final List<Patent.Type> VECTOR_TYPES = Arrays.asList(Patent.Type.TITLE, Patent.Type.ABSTRACT, Patent.Type.DESCRIPTION, Patent.Type.CLASS, Patent.Type.SUBCLASS, Patent.Type.CLAIM);
-
-	public static final Map<Patent.Type, Double> VECTOR_PERCENTAGES = new HashMap<>();
-
-	static {
-		VECTOR_PERCENTAGES.put(Patent.Type.ABSTRACT, 0.05);
-		VECTOR_PERCENTAGES.put(Patent.Type.CLAIM, 0.60);
-		VECTOR_PERCENTAGES.put(Patent.Type.DESCRIPTION, 0.2);
-		VECTOR_PERCENTAGES.put(Patent.Type.CLASS, 0.05);
-		VECTOR_PERCENTAGES.put(Patent.Type.SUBCLASS, 0.05);
-		VECTOR_PERCENTAGES.put(Patent.Type.TITLE, 0.05);
-	}
+	//public static final List<String> DEFAULT_2D_VECTORS = Arrays.asList(Constants.CLAIM_VECTORS);
+	//public static final List<String> DEFAULT_1D_VECTORS = Arrays.asList(Constants.TITLE_VECTORS, Constants.ABSTRACT_VECTORS, Constants.DESCRIPTION_VECTORS, Constants.CLASS_VECTORS, Constants.SUBCLASS_VECTORS);
 
 
 	public static final String CUSTOM_TELIA_PATENT_LIST = "8457598 8396974 8166180 8250091 8385242 8355695 8326955 8929333 8930574 8520509 9049624 9088621 8614988 8774751 8775642 8943567 8923903 9137384 8990960 8983459 9215594 6993666 6934391 6882844 6237093 6711262 6880001 6768895 6925568 7224975 7113800 6990332 7010694 8005068 7221959 7516222 7711378 8332532 7836190 8095685 8331866 6208387 6397933 7065199 6368205 7036141 7212543 7003579 7853979 8184596 7894338";

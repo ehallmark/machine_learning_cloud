@@ -31,9 +31,9 @@ public class Database {
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
 	//private static final String selectAssigneeStatement = "SELECT distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and doc_number = ANY(?) and name is not null order by p.doc_number,q.uid desc";
-	private static final String selectVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=ANY(?)";
-	private static final String selectAllVectorsStatement = "SELECT pub_doc_number,"+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors";
-	private static final String selectSingleVectorStatement = "SELECT "+ String.join(",",Constants.DEFAULT_1D_VECTORS)+","+String.join(",",Constants.DEFAULT_2D_VECTORS)+",claims_numbers FROM patent_vectors WHERE pub_doc_number=?";
+	private static final String selectVectorsStatement = "SELECT pub_doc_number, vector FROM raw_vectors WHERE pub_doc_number=ANY(?)";
+	private static final String selectAllVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents";
+	private static final String selectSingleVectorStatement = "SELECT vector FROM raw_patents WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectPatentNumbersByAssignee = "select distinct doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%')";
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
@@ -75,19 +75,6 @@ public class Database {
 		}
 	}
 
-	public static int selectCandidateIdByName(String name) {
-		try {
-			PreparedStatement ps = mainConn.prepareStatement("SELECT id FROM candidate_sets WHERE name = ? LIMIT 1");
-			ps.setString(1, name);
-			ResultSet rs = ps.executeQuery();
-			if(rs.next()) {
-				return rs.getInt(1);
-			}
-		} catch(SQLException sql) {
-			sql.printStackTrace();
-		}
-		return 0;
-	}
 
 	public static void insertRawPatent(String label, String text) throws SQLException {
 		PreparedStatement ps = insertConn.prepareStatement("insert into raw_patents (name,raw_text) values (?,?) on conflict (name) do update set raw_text=? where raw_patents.name=?");

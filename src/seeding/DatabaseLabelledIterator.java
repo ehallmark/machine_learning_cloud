@@ -8,6 +8,7 @@ import tools.VectorHelper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,9 +20,9 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
 
     protected SentencePreProcessor preProcessor;
     protected String currentLabel;
-    protected String currentSentence;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
+    protected Iterator<String> sentenceIter;
     protected long lastTime;
     // used to tag each sequence with own Id
 
@@ -39,7 +40,7 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
             lastTime = time;
             cnt.set(0);
         }
-        return currentSentence;
+        return sentenceIter.next();
     }
 
 
@@ -47,9 +48,10 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
     public boolean hasNext() {
         try {
             // Check patent iterator
+            if(sentenceIter!=null && sentenceIter.hasNext()) return true;
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
-                currentSentence = resultSet.getString(2);
+                sentenceIter = createSentencesFromLargeText(resultSet.getString(2)).iterator();
                 return true;
             }
 
@@ -94,5 +96,16 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
     @Override
     public List<String> currentLabels() {
         return null;
+    }
+
+
+    private List<String> createSentencesFromLargeText(String toBreakUp) {
+        final int maxNumberOfWordsPerSentence = 20;
+        String[] words = toBreakUp.split("\\s+");
+        List<String> sentences = new ArrayList<>((words.length+1)/maxNumberOfWordsPerSentence);
+        for(int i = 0; i < words.length-maxNumberOfWordsPerSentence; i+= maxNumberOfWordsPerSentence) {
+            sentences.add(String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence)));
+        }
+        return sentences;
     }
 }

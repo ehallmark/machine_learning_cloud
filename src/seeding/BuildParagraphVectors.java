@@ -1,7 +1,11 @@
 package seeding;
 
+import org.deeplearning4j.models.embeddings.learning.SequenceLearningAlgorithm;
+import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
+import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -61,20 +65,22 @@ public class BuildParagraphVectors {
 
         LabelAwareSentenceIterator iterator = new DatabaseLabelledIterator();
         System.out.println("Starting paragraph vectors...");
-
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(10)
+                .iterations(3)
                 .epochs(1)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .learningRate(0.025)
-                .minLearningRate(0.0001)
-                .batchSize(100)
+                .learningRate(0.05)
+                .minLearningRate(0.001)
+                .batchSize(1000)
                 .windowSize(5)
                 .iterate(iterator)
                 .trainWordVectors(false)
+                .trainSequencesRepresentation(true)
                 .tokenizerFactory(t)
-                .sampling(0)
+                .sampling(0.0001)
+                .negativeSample(5)
+                .workers(6)
                 .build();
 
         vec.fit();

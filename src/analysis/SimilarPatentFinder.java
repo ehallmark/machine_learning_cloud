@@ -23,9 +23,9 @@ import server.tools.AbstractPatent;
  * Created by ehallmark on 7/26/16.
  */
 public class SimilarPatentFinder {
-    private MinHeap<Patent> heap;
-    private List<Patent> patentList;
-    private static INDArray eigenVectors;
+    protected MinHeap<Patent> heap;
+    protected List<Patent> patentList;
+    protected static INDArray eigenVectors;
     static{
         try {
             eigenVectors=PCAModel.loadAndReturnEigenVectors();
@@ -39,11 +39,8 @@ public class SimilarPatentFinder {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException, IOException, ClassNotFoundException{
-        this(candidateSet, patentListFile, Constants.VECTOR_PERCENTAGES);
-    }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, Map<Patent.Type, Double> percentagesMap) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
         // construct lis
         System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
@@ -58,9 +55,9 @@ public class SimilarPatentFinder {
             int offset = 2; // Due to the pub_doc_number field
             while (rs.next()) {
                 try {
-                    INDArray array = handleResultSet(rs, offset, percentagesMap);
+                    INDArray array = handleResultSet(rs, offset);
                     if(array!=null) {
-                        patentList.add(new Patent(rs.getString(1), array, Patent.Type.ALL));
+                        patentList.add(new Patent(rs.getString(1), array));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -88,61 +85,13 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private static INDArray handleResultSet(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
+    private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException {
         INDArray array = null;
-        double total = 0.0;
-        for (int i = 0; i < Constants.VECTOR_TYPES.size() - 3; i++) {
-            Array data = rs.getArray(i + offset);
-            Patent.Type type = Constants.VECTOR_TYPES.get(i);
-            if(data!=null && percentagesMap.get(type)>0.0) {
-                if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
-                Double multiple = percentagesMap.get(type);
-                array.addi(Nd4j.create(VectorHelper.toPrim((Double[]) data.getArray())).mul(multiple));
-                total+=multiple;
-            }
-        }
-
-        // handle merging of class / subclass
-        INDArray mergedClassVector = mergedClassVector(rs, offset, percentagesMap);
-        if (mergedClassVector != null && percentagesMap.get(Patent.Type.CLASS)>0.0) {
-            if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
-            Double multiple = percentagesMap.get(Patent.Type.CLASS);
-            array.addi(mergedClassVector.mul(multiple));
-            total+=multiple;
-        }
-
-        // handle claims index VECTOR_TYPES.size()-1
-        Array data = rs.getArray(Constants.VECTOR_TYPES.size() + offset);
-        if (data != null && percentagesMap.get(Patent.Type.CLAIM)>0.0) {
-            Integer[] claimIndices = (Integer[]) data.getArray();
-            Double[][] claims = (Double[][]) rs.getArray(offset + Constants.VECTOR_TYPES.size() - 1).getArray();
-            assert claimIndices.length == claims.length;
-            Double multiple = percentagesMap.get(Patent.Type.CLAIM)/claims.length;
-            INDArray avgClaim = Nd4j.create(VectorHelper.toPrim(claims)).mean(0);
-            if(array==null)array=Nd4j.zeros(Constants.VECTOR_LENGTH);
-            array.addi(avgClaim.mul(multiple));
-            total+=multiple;
-        }
-        if(array==null) return null;
-        else {
-            assert total > 0.0 : "Diving by Zero!!! BAD!!!";
-            return array.div(total);
-        }
+        Array sqlArray = rs.getArray(offset);
+        if(sqlArray!=null) array=Nd4j.create(VectorHelper.toPrim((Double[])sqlArray.getArray()));
+        return array;
     }
 
-    private static INDArray mergedClassVector(ResultSet rs, int offset, Map<Patent.Type, Double> percentagesMap) throws SQLException {
-        Array classData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-3);
-        Array subClassData = rs.getArray(offset+Constants.VECTOR_TYPES.size()-2);
-        if(classData!=null&&subClassData!=null) {
-            return Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray())).mul(percentagesMap.get(Patent.Type.CLASS)).add(Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray())).mul(percentagesMap.get(Patent.Type.SUBCLASS)));
-        } else if(classData!=null) {
-            return Nd4j.create(VectorHelper.toPrim((Double[])classData.getArray()));
-        } else if(subClassData!=null) {
-            return Nd4j.create(VectorHelper.toPrim((Double[])subClassData.getArray()));
-        } else {
-            return null;
-        }
-    }
 
 
     private void setupMinHeap(int capacity) {
@@ -189,7 +138,7 @@ public class SimilarPatentFinder {
         setupMinHeap(limit);
 
         List<PatentList> patentLists = new ArrayList<>();
-        patentLists.add(similarPatentsHelper(avgVector, patentNumber, patentNamesToExclude, Patent.Type.ALL, threshold, limit));
+        patentLists.add(similarPatentsHelper(avgVector, patentNumber, patentNamesToExclude, threshold, limit));
 
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
@@ -198,9 +147,9 @@ public class SimilarPatentFinder {
         return patentLists;
     }
 
-    public Double angleBetweenPatents(String name1, String name2, Map<Patent.Type,Double> percentagesMap) throws SQLException {
-        INDArray first = getVectorFromDB(name1, percentagesMap);
-        INDArray second = getVectorFromDB(name2, percentagesMap);
+    public Double angleBetweenPatents(String name1, String name2) throws SQLException {
+        INDArray first = getVectorFromDB(name1);
+        INDArray second = getVectorFromDB(name2);
         if(first!=null && second!=null) {
             //valid
             return Transforms.cosineSim(first,second);
@@ -217,30 +166,29 @@ public class SimilarPatentFinder {
     }
 
     // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
-        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber, percentagesMap), null, threshold, limit);
+    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit) throws SQLException {
+        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
     }
 
 
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, Map<Patent.Type,Double> percentagesMap, double threshold, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber, percentagesMap), null, threshold, limit);
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
     }
 
-    private INDArray getVectorFromDB(String patentNumber, Map<Patent.Type,Double> percentagesMap) throws SQLException {
+    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, percentagesMap);
+        INDArray avgVector = handleResultSet(rs, offset);
         if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
     }
 
-    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, Patent.Type type, double threshold, int limit) {
+    private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, double threshold, int limit) {
         Patent.setBaseVector(baseVector);
-        Patent.setSortType(type);
         patentList.forEach(patent -> {
             if(!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
@@ -264,12 +212,12 @@ public class SimilarPatentFinder {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder();
             System.out.println("Most similar: ");
-            PatentList list = finder.findSimilarPatentsTo("7455590",Constants.VECTOR_PERCENTAGES, -1.0, 25).get(0);
+            PatentList list = finder.findSimilarPatentsTo("7455590", -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
             System.out.println("Most opposite: ");
-            list = finder.findOppositePatentsTo("7455590",Constants.VECTOR_PERCENTAGES, -1.0, 25).get(0);
+            list = finder.findOppositePatentsTo("7455590", -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }

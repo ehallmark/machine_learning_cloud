@@ -126,7 +126,7 @@ public class SpectralHashModel extends PCAModel {
         SimilarPatentFinder finder = model.getFinder();
         List<Patent> toWriteToFile = new ArrayList<>(finder.getPatentList().size());
         finder.getPatentList().forEach(p->{
-            Patent encodedPatent = new PCAPatent(p.getName(), model.transform(p.getVector()), Patent.Type.ALL);
+            Patent encodedPatent = new PCAPatent(p.getName(), model.transform(p.getVector()));
             System.out.println(encodedPatent.getName()+": "+p.getVector().toString()+" => "+encodedPatent.getVector().toString());
             toWriteToFile.add(encodedPatent);
         });

@@ -102,7 +102,7 @@ public class PCAModel {
         SimilarPatentFinder finder = model.getFinder();
         List<Patent> toWriteToFile = new ArrayList<>(finder.getPatentList().size());
         AtomicInteger cnt = new AtomicInteger(0);
-        finder.getPatentList().forEach(p->toWriteToFile.add(new PCAPatent(p.getName(), model.transform(p.getVector()), Patent.Type.ALL)));
+        finder.getPatentList().forEach(p->toWriteToFile.add(new PCAPatent(p.getName(), model.transform(p.getVector()))));
         ObjectOutputStream ois = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(new File(Constants.PCA_PATENTS_LIST_FILE))));
         ois.writeObject(toWriteToFile);
         ois.flush();
