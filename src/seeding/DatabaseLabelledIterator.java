@@ -52,7 +52,7 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
                 sentenceIter = createSentencesFromLargeText(resultSet.getString(2)).iterator();
-                return true;
+                return sentenceIter.hasNext();
             }
 
         } catch(Exception sql) {
