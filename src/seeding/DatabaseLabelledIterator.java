@@ -51,7 +51,7 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
             if(sentenceIter!=null && sentenceIter.hasNext()) return true;
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
-                sentenceIter = createSentencesFromLargeText(resultSet.getString(2)).iterator();
+                sentenceIter = createSentencesFromLargeText((String[])resultSet.getArray(2).getArray()).iterator();
                 if(sentenceIter.hasNext()) return true;
                 return hasNext();// Recursive
             }
@@ -100,9 +100,8 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
     }
 
 
-    private List<String> createSentencesFromLargeText(String toBreakUp) {
-        final int maxNumberOfWordsPerSentence = Math.min(20,toBreakUp.length());
-        String[] words = toBreakUp.split("\\s+");
+    private List<String> createSentencesFromLargeText(String[] words) {
+        final int maxNumberOfWordsPerSentence = Math.min(20,words.length);
         List<String> sentences = new ArrayList<>((words.length+1)/maxNumberOfWordsPerSentence);
         for(int i = 0; i < words.length-maxNumberOfWordsPerSentence; i+= maxNumberOfWordsPerSentence) {
             String sentence = String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence));

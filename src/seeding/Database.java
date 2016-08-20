@@ -225,7 +225,7 @@ public class Database {
 	}
 
 	public static ResultSet selectRawPatents() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("SELECT name,raw_text FROM raw_patents");
+		PreparedStatement ps = seedConn.prepareStatement("select name, array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') from raw_patents");
 		ps.setFetchSize(5);
 		return ps.executeQuery();
 	}
