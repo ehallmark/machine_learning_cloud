@@ -28,12 +28,15 @@ public class KMeanAlgorithm
     private static void initialize(List<INDArray> list)
     {
         System.out.println("Centroids initialized at:");
+        assert list.size() > 1 : "Not enough data to compare!";
+        Collections.sort(list,(INDArray o1, INDArray o2)->Double.compare(o1.sumNumber().doubleValue(),o2.sumNumber().doubleValue()));
+        for(int i = 0; i < NUM_CLUSTERS; i++) {
+            centroids.add(new Centroid(list.get(((list.size()-1)/NUM_CLUSTERS)*i).data().asDouble()));
+        }
 
-        centroids.add(new Centroid(Collections.max(list,(INDArray o1, INDArray o2)->Double.compare(o1.sumNumber().doubleValue(),o2.sumNumber().doubleValue())).data().asDouble()));
-        centroids.add(new Centroid(Collections.min(list,(INDArray o1, INDArray o2)->Double.compare(o1.sumNumber().doubleValue(),o2.sumNumber().doubleValue())).data().asDouble()));
-
-        System.out.println("     " + Arrays.toString(centroids.get(0).coords()));
-        System.out.println("     " + Arrays.toString(centroids.get(1).coords()));
+        for(Centroid c : centroids) {
+            System.out.println("     " + Arrays.toString(c.coords()));
+        }
         System.out.print("\n");
         return;
     }

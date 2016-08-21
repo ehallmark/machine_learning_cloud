@@ -230,6 +230,10 @@ public class Database {
 		return ps.executeQuery();
 	}
 
+	public static void createWordVectorsInDB() throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') where raw_text is null limit 10000");
+	}
+
 	public static void insertClaims(String pubDocNumber, Integer pubDate, Double[][] claimVector, Integer[] claimNumbers) throws SQLException {
 		if(claimVector==null || claimNumbers==null) return;
 		PreparedStatement ps = mainConn.prepareStatement(insertClaimsVectorQuery);

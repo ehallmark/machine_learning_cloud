@@ -10,3 +10,4 @@ alter table raw_patents add column vector double precision[];
 alter table raw_patents add column words text[];
 update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\s+]'),'');
 
+create index on raw_patents (name, words);
