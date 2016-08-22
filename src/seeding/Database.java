@@ -78,7 +78,7 @@ public class Database {
 
 
 	public static void insertRawPatent(String label, String text) throws SQLException {
-		PreparedStatement ps = insertConn.prepareStatement("insert into raw_patents (name,raw_text,words) values (?,?,array_remove(regexp_split_to_array(?, '[\\s+]'),'')) on conflict (name) do update set (raw_text,words)=(?,array_remove(regexp_split_to_array(?, '[\\s+]'),'')) where raw_patents.name=?");
+		PreparedStatement ps = insertConn.prepareStatement("insert into raw_patents_clone (name,words) values (?,array_remove(regexp_split_to_array(?, '[\\s+]'),'')) on conflict (name) do update set words)=array_remove(regexp_split_to_array(?, '[\\s+]'),'') where raw_patents_clone.name=?");
 		ps.setString(1,label);
 		ps.setString(2,text);
 		ps.setString(3,text);
