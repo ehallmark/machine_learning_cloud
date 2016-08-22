@@ -10,7 +10,7 @@ public class Constants {
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
 	public static final int VECTOR_LENGTH = 500;
 	//public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
-	public static final int START_DATE = 20010000;
+	public static final int START_DATE = 20030000;
 	public static final int VOCAB_START_DATE = 20100000;
 
 	public static final Set<Integer> BAD_TECHNOLOGY_IDS = new HashSet<>(Arrays.asList(new Integer[]{136, 182, 301, 316, 519, 527}));
