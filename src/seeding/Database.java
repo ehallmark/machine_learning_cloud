@@ -78,11 +78,12 @@ public class Database {
 	}
 
 
-	public static synchronized void insertRawPatent(String label, String text) throws SQLException {
-		if(insertStatement==null)insertStatement = insertConn.prepareStatement("insert into raw_patents_clone (name,words) values (?,array_remove(regexp_split_to_array(?, '[\\s+]'),'')) on conflict (name) do update set words=array_remove(regexp_split_to_array(?, '[\\s+]'),'') where raw_patents_clone.name=?");
+	public static synchronized void insertRawPatent(String label, List<String> words) throws SQLException {
+		if(insertStatement==null)insertStatement = insertConn.prepareStatement("insert into raw_patents_clone (name,words) values (?,?) on conflict (name) do update set words=? where raw_patents_clone.name=?");
+		Array patents = insertConn.createArrayOf("text",words.toArray());
 		insertStatement.setString(1,label);
-		insertStatement.setString(2,text);
-		insertStatement.setString(3,text);
+		insertStatement.setArray(2,patents);
+		insertStatement.setArray(3,patents);
 		insertStatement.setString(4,label);
 		insertStatement.executeUpdate();
 	}

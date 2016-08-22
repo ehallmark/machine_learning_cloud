@@ -15,6 +15,7 @@ import tools.Emailer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -37,7 +38,7 @@ public class BuildParagraphVectors {
                 bw.flush();
                 bw.close();
             }*/
-            Database.insertRawPatent(label,preProcessor.preProcess(nextSentence));
+            Database.insertRawPatent(label, Arrays.asList(preProcessor.preProcess(nextSentence).split("\\s+")));
         }
 
     }
