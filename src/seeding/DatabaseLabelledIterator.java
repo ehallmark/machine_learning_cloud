@@ -97,11 +97,10 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         return null;
     }
 
-    private List<List<String>> createSentencesFromLargeText(List<String> words) {
-        if(words==null||words.isEmpty()) return null;
-        final int maxNumberOfWordsPerSentence = Math.min(20,words.size());
-        List<String> wordList = words.stream().filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
-        List<List<String>> sentences = new ArrayList<>((words.size()+1)/maxNumberOfWordsPerSentence);
+    private List<List<String>> createSentencesFromLargeText(List<String> wordList) {
+        if(wordList==null||wordList.isEmpty()) return null;
+        final int maxNumberOfWordsPerSentence = Math.min(20,wordList.size());
+        List<List<String>> sentences = new ArrayList<>((wordList.size()+1)/maxNumberOfWordsPerSentence);
         int start = 0;
         while(start < sentences.size()) {
             sentences.add(wordList.subList(start, Math.min(start+maxNumberOfWordsPerSentence,wordList.size())));

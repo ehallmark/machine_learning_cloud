@@ -19,6 +19,8 @@ import tools.Emailer;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -41,7 +43,8 @@ public class BuildParagraphVectors {
                 bw.flush();
                 bw.close();
             }*/
-            Database.insertRawPatent(label, Arrays.asList(preProcessor.preProcess(nextSentence).split("\\s+")));
+            List<String> toAdd = Arrays.asList(preProcessor.preProcess(nextSentence).split("\\s+")).stream().filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
+            Database.insertRawPatent(label, toAdd);
         }
 
     }
@@ -159,7 +162,7 @@ public class BuildParagraphVectors {
 
         new Emailer("Finished paragraph vectors!");
 
-        
+
 
 
     }
