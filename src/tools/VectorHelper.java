@@ -10,6 +10,7 @@ import seeding.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -17,101 +18,37 @@ import java.util.concurrent.ExecutionException;
  */
 public class VectorHelper {
     private static TokenizerFactory tokenizerFactory;
-    private static VocabCache<VocabWord> vocab;
     static {
         tokenizerFactory=new DefaultTokenizerFactory();
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-    public static Double[] computeAvgWordVectorsFrom(ParagraphVectors vectors, String label) {
-        Double[] data = null;
+    public static Float[] computeAvgWordVectorsFrom(ParagraphVectors vectors, String label) {
         if(label!=null) {
-            data = toObject(vectors.getLookupTable().vector(label).data().asDouble());
-        }
-        return data;
+            return toObject(vectors.getLookupTable().vector(label).data().asFloat());
+        } else return null;
     }
 
-    private static Double[] toObject(double[] primArray) {
+    private static Float[] toObject(float[] primArray) {
         if(primArray==null) return null;
-        Double[] vec = new Double[primArray.length];
+        Float[] vec = new Float[primArray.length];
         int i = 0;
-        for(double d: primArray) {
+        for(float d: primArray) {
             vec[i] = d;
             i++;
         }
         return vec;
     }
 
-    public static double[] toPrim(Double[] objArray) {
+    public static float[] toPrim(Float[] objArray) {
         if(objArray==null) return null;
-        double[] vec = new double[objArray.length];
+        float[] vec = new float[objArray.length];
         int i = 0;
-        for(double d: objArray) {
+        for(float d: objArray) {
             vec[i] = d;
             i++;
         }
         return vec;
-    }
-
-    public static int[] toPrim(Integer[] objArray) {
-        if(objArray==null) return null;
-        int[] vec = new int[objArray.length];
-        int i = 0;
-        for(int d: objArray) {
-            vec[i] = d;
-            i++;
-        }
-        return vec;
-    }
-
-    public static double[][] toPrim(Double[][] array) {
-        if(array==null) return null;
-        double[][] newArray = new double[array.length][];
-        for(int i = 0; i < array.length; i++) {
-            newArray[i] = toPrim(array[i]);
-        }
-        return newArray;
-    }
-
-
-    public static PatentVectors getPatentVectors(ResultSet resultSet, ParagraphVectors wordVectors) throws SQLException, InterruptedException, ExecutionException {
-        // Pub Doc Number
-        String pubDocNumber = resultSet.getString(1);
-
-        // Publication Date
-        Integer pubDate = resultSet.getInt(2);
-
-        PatentVectors p = new PatentVectors(pubDocNumber,pubDate);
-
-        // Invention Title
-        String titleText = resultSet.getString(3);
-        VectorBuilderThread titleThread = null;
-        if(titleText!=null) titleThread = new VectorBuilderThread(wordVectors, titleText);
-        if(titleThread!=null) {
-            titleThread.fork();
-        }
-
-        // Abstract
-        String abstractText = resultSet.getString(4);
-        VectorBuilderThread abstractThread = null;
-        if(!shouldRemoveSentence(abstractText)) abstractThread = new VectorBuilderThread(wordVectors, abstractText);
-        if(abstractThread!=null) {
-            abstractThread.fork();
-        }
-
-        // Description
-        String descriptionText = resultSet.getString(5);
-        VectorBuilderThread descriptionThread = null;
-        if(!shouldRemoveSentence(descriptionText)) descriptionThread = new VectorBuilderThread(wordVectors, descriptionText);
-        if(descriptionThread!=null) {
-            descriptionThread.fork();
-        }
-
-        if(titleThread!=null)p.setTitleWordVectors(titleThread.get());
-        if(abstractThread!=null)p.setAbstractWordVectors(abstractThread.get());
-        if(descriptionThread!=null)p.setDescriptionWordVectors(descriptionThread.get());
-
-        return p;
     }
 
     public static boolean shouldRemoveSentence(String str) {
@@ -128,6 +65,10 @@ public class VectorHelper {
             if(wordCount >= Constants.MIN_WORDS_PER_SENTENCE) return false;
         }
         return true;
+    }
+
+    public static boolean shouldRemoveSentence(List<String> tokens) {
+        return(tokens==null || tokens.size() < Constants.MIN_WORDS_PER_SENTENCE);
     }
 
 }

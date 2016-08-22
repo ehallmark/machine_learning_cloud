@@ -15,8 +15,9 @@ create index on raw_patents (name, words);
 
 CREATE TABLE raw_patents_clone (
     name VARCHAR(50) PRIMARY KEY,
-    vector double precision[],
-    words text[] NOT NULL
+    words text[] NOT NULL,
+    vector real[]
 );
+
 
 create index on raw_patents_clone (name, words);

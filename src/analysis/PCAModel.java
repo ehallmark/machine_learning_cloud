@@ -21,7 +21,6 @@ public class PCAModel {
     protected String[] personNames;
     protected String[] labels;
     protected INDArray eigenVectors;
-    protected INDArray transformed;
     protected PCA pca;
     protected SimilarPatentFinder finder;
 

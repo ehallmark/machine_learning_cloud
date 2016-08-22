@@ -88,7 +88,7 @@ public class SimilarPatentFinder {
     private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException {
         INDArray array = null;
         Array sqlArray = rs.getArray(offset);
-        if(sqlArray!=null) array=Nd4j.create(VectorHelper.toPrim((Double[])sqlArray.getArray()));
+        if(sqlArray!=null) array=Nd4j.create(VectorHelper.toPrim((Float[])sqlArray.getArray()));
         return array;
     }
 
