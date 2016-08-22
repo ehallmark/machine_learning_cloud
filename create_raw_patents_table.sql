@@ -11,3 +11,12 @@ alter table raw_patents add column words text[];
 update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\s+]'),'');
 
 create index on raw_patents (name, words);
+
+
+CREATE TABLE raw_patents_clone (
+    name VARCHAR(50) PRIMARY KEY,
+    vector double precision[],
+    words text[] NOT NULL
+);
+
+create index on raw_patents_clone (name, words);

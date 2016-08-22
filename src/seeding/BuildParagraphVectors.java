@@ -1,22 +1,25 @@
 package seeding;
 
-import org.deeplearning4j.models.embeddings.learning.SequenceLearningAlgorithm;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
+import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.SequenceVectors;
+import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
+import org.deeplearning4j.models.sequencevectors.serialization.VocabWordFactory;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
+import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
+
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import tools.Emailer;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 /**
  * Created by ehallmark on 8/16/16.
@@ -60,13 +63,44 @@ public class BuildParagraphVectors {
             Database.close();
         }
 
-        TokenizerFactory t = new DefaultTokenizerFactory();
-        t.setTokenPreProcessor((token)->token);
+        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+        MySentenceTransformer transformer = new MySentenceTransformer.Builder()
+                .iterator(iterator)
+                .build();
 
+        AbstractSequenceIterator<VocabWord> sequenceIterator = new AbstractSequenceIterator.Builder<>(transformer).build();
 
-        LabelAwareSentenceIterator iterator = new DatabaseLabelledIterator();
+        VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>()
+                .hugeModelExpected(true)
+                .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
+                .build();
+
+        /*
+            Now we should build vocabulary out of sequence iterator.
+            We can skip this phase, and just set AbstractVectors.resetModel(TRUE), and vocabulary will be mastered internally
+        */
+        VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
+                .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
+                .setTargetVocabCache(vocabCache)
+                .build();
+
+        constructor.buildJointVocabulary(false, true);
+
+        WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
+                .seed(41)
+                .vectorLength(Constants.VECTOR_LENGTH)
+                .useAdaGrad(false)
+                .cache(vocabCache)
+                .build();
+
+         /*
+             reset model is viable only if you're setting AbstractVectors.resetModel() to false
+             if set to True - it will be called internally
+        */
+        lookupTable.resetWeights(true);
+
         System.out.println("Starting paragraph vectors...");
-        ParagraphVectors vec = new ParagraphVectors.Builder()
+        SequenceVectors<VocabWord> vec = new SequenceVectors.Builder(new VectorsConfiguration())
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                 .iterations(3)
                 .epochs(1)
@@ -75,10 +109,14 @@ public class BuildParagraphVectors {
                 .minLearningRate(0.001)
                 .batchSize(1000)
                 .windowSize(5)
-                .iterate(iterator)
-                .trainWordVectors(false)
+                .iterate(sequenceIterator)
+                .vocabCache(vocabCache)
+                .lookupTable(lookupTable)
+                .resetModel(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
-                .tokenizerFactory(t)
+                .sequenceLearningAlgorithm(new DBOW<VocabWord>())
+                .elementsLearningAlgorithm(new SkipGram<VocabWord>())
                 .sampling(0.0001)
                 .negativeSample(5)
                 .workers(6)
@@ -87,7 +125,6 @@ public class BuildParagraphVectors {
         vec.fit();
 
         System.out.println("Finished paragraph vectors...");
-        new Emailer("Finished paragraph vectors!");
 
         /*
             In training corpus we have few lines that contain pretty close words invloved.
@@ -103,10 +140,13 @@ public class BuildParagraphVectors {
          */
 
         System.out.println("Writing to file...");
-        WordVectorSerializer.writeWordVectors(vec, new File(Constants.WORD_VECTORS_PATH));
+        WordVectorSerializer.writeSequenceVectors(vec, new VocabWordFactory(), new File(Constants.WORD_VECTORS_PATH));
         System.out.println("Done...");
 
         Database.close();
+
+        new Emailer("Finished paragraph vectors!");
+
 
     }
 }

@@ -1,9 +1,11 @@
 package seeding;
 
-import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
-import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
-import tools.VectorHelper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,48 +14,44 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 7/18/16.
  */
-public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
+public class DatabaseLabelledIterator implements LabelAwareIterator {
 
     protected SentencePreProcessor preProcessor;
     protected String currentLabel;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
-    protected Iterator<String> sentenceIter;
+    protected Iterator<List<String>> sentenceIter;
+    protected VocabCache<VocabWord> vocabCache;
     protected long lastTime;
     // used to tag each sequence with own Id
 
-    public DatabaseLabelledIterator() throws SQLException {
+    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache) throws SQLException {
+        this.vocabCache=vocabCache;
         preProcessor=(t)->t;
         resultSet = Database.selectRawPatents();
     }
 
-    @Override
-    public String nextSentence() {
-        int currentCnt = cnt.getAndIncrement();
-        if(currentCnt%1000==999) {
-            long time = System.currentTimeMillis();
-            System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
-            lastTime = time;
-            cnt.set(0);
-        }
-        return sentenceIter.next();
+    public DatabaseLabelledIterator() throws SQLException {
+        this(null);
     }
 
 
+
     @Override
-    public boolean hasNext() {
+    public boolean hasNextDocument() {
         try {
             // Check patent iterator
             if(sentenceIter!=null && sentenceIter.hasNext()) return true;
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
-                sentenceIter = createSentencesFromLargeText((String[])resultSet.getArray(2).getArray()).iterator();
+                sentenceIter = createSentencesFromLargeText(Arrays.asList((String[])resultSet.getArray(2).getArray())).iterator();
                 if(sentenceIter.hasNext()) return true;
-                return hasNext();// Recursive
+                return hasNextDocument();// Recursive
             }
 
         } catch(Exception sql) {
@@ -61,6 +59,26 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
             return false;
         }
         return false;
+    }
+
+    @Override
+    public LabelledDocument nextDocument() {
+        return nextDocument(vocabCache);
+    }
+
+    public LabelledDocument nextDocument(VocabCache<VocabWord> vocab) {
+        int currentCnt = cnt.getAndIncrement();
+        if(currentCnt%1000==999) {
+            long time = System.currentTimeMillis();
+            System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
+            lastTime = time;
+            cnt.set(0);
+        }
+        List<String> nextTokens = sentenceIter.next();
+        LabelledDocument doc = new LabelledDocument();
+        doc.setReferencedContent(nextTokens.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).collect(Collectors.toList()));
+        doc.setLabel(currentLabel);
+        return doc;
     }
 
     @Override
@@ -75,40 +93,21 @@ public class DatabaseLabelledIterator implements LabelAwareSentenceIterator {
     }
 
     @Override
-    public void finish() {
-
-    }
-
-    @Override
-    public SentencePreProcessor getPreProcessor() {
+    public LabelsSource getLabelsSource() {
         return null;
     }
 
-    @Override
-    public void setPreProcessor(SentencePreProcessor preProcessor) {
-
-    }
-
-    @Override
-    public String currentLabel() {
-        return currentLabel;
-    }
-
-    @Override
-    public List<String> currentLabels() {
-        return null;
-    }
-
-
-    private List<String> createSentencesFromLargeText(String[] words) {
-        final int maxNumberOfWordsPerSentence = Math.min(20,words.length);
-        List<String> sentences = new ArrayList<>((words.length+1)/maxNumberOfWordsPerSentence);
-        for(int i = 0; i < words.length-maxNumberOfWordsPerSentence; i+= maxNumberOfWordsPerSentence) {
-            String sentence = String.join(" ",Arrays.copyOfRange(words,i,i+maxNumberOfWordsPerSentence));
-            sentences.add(sentence);
-           // System.out.println(currentLabel+ " => "+sentence);
-
+    private List<List<String>> createSentencesFromLargeText(List<String> words) {
+        if(words==null||words.isEmpty()) return null;
+        final int maxNumberOfWordsPerSentence = Math.min(20,words.size());
+        List<String> wordList = words.stream().filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
+        List<List<String>> sentences = new ArrayList<>((words.size()+1)/maxNumberOfWordsPerSentence);
+        int start = 0;
+        while(start < sentences.size()) {
+            sentences.add(wordList.subList(start, Math.min(start+maxNumberOfWordsPerSentence,wordList.size())));
+            start+=maxNumberOfWordsPerSentence;
         }
+
         return sentences;
     }
 }
