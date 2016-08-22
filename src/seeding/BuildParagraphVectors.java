@@ -125,6 +125,8 @@ public class BuildParagraphVectors {
         vec.fit();
 
         System.out.println("Finished paragraph vectors...");
+        Database.close();
+
 
         /*
             In training corpus we have few lines that contain pretty close words invloved.
@@ -141,11 +143,23 @@ public class BuildParagraphVectors {
 
         System.out.println("Writing to file...");
         WordVectorSerializer.writeSequenceVectors(vec, new VocabWordFactory(), new File(Constants.WORD_VECTORS_PATH));
+
         System.out.println("Done...");
 
-        Database.close();
+        System.out.println("Reading from file...");
+
+        vec = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), new File(Constants.WORD_VECTORS_PATH));
+
+        double sim = vec.similarity("internet", "network");
+        System.out.println("internet/computer similarity: " + sim);
+
+        double sim2 = vec.similarity("internet", "protein");
+        System.out.println("internet/protein similarity (should be lower): " + sim2);
+
 
         new Emailer("Finished paragraph vectors!");
+
+        
 
 
     }
