@@ -44,12 +44,12 @@ public class BuildParagraphVectors {
 
 
     public static void main(String[] args) throws Exception {
-        //Database.setupMainConn();
+        Database.setupMainConn();
         Database.setupSeedConn();
-        //Database.setupInsertConn();
-        //Database.setupCompDBConn();
+        Database.setupInsertConn();
+        Database.setupCompDBConn();
         //File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
-        /*try {
+        try {
 
             createDataFolder(new MyPreprocessor());
             Database.insertCommit();
@@ -57,7 +57,7 @@ public class BuildParagraphVectors {
 
         } finally {
             Database.close();
-        }*/
+        }
 
         TokenizerFactory t = new DefaultTokenizerFactory();
         t.setTokenPreProcessor((token)->token);
