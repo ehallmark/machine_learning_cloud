@@ -232,14 +232,14 @@ public class Database {
 	}
 
 	public static ResultSet selectRawPatentNumbers() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select name from raw_patents");
+		PreparedStatement ps = seedConn.prepareStatement("select name from raw_patents where words is not null");
 		ps.setFetchSize(50);
 		return ps.executeQuery();
 	}
 
-	public static synchronized void createWordVectorsInDB(List<String> patentNumbers) throws SQLException {
-		if(createTokensStatement==null)createTokensStatement = mainConn.prepareStatement("update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') where name=ANY(?)");
-		createTokensStatement.setArray(1, mainConn.createArrayOf("varchar", patentNumbers.toArray()));
+	public static synchronized void createWordVectorsInDB(String patentNumber) throws SQLException {
+		if(createTokensStatement==null)createTokensStatement = mainConn.prepareStatement("update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') where name=?");
+		createTokensStatement.setString(1, patentNumber);
 		createTokensStatement.executeUpdate();
 	}
 
