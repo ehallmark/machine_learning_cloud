@@ -238,7 +238,7 @@ public class Database {
 	}
 
 	public static synchronized void createWordVectorsInDB(List<String> patentNumbers) throws SQLException {
-		if(createTokensStatement==null)createTokensStatement = mainConn.prepareStatement("update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') where words pub_doc_number=ANY(?)");
+		if(createTokensStatement==null)createTokensStatement = mainConn.prepareStatement("update raw_patents set words=array_remove(regexp_split_to_array(raw_text, '[\\s+]'),'') where name=ANY(?)");
 		createTokensStatement.setArray(1, mainConn.createArrayOf("varchar", patentNumbers.toArray()));
 		createTokensStatement.executeUpdate();
 	}
