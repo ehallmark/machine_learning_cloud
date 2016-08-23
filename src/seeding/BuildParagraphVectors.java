@@ -126,7 +126,7 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW<>())
