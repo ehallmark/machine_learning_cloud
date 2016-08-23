@@ -49,7 +49,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             if(sentenceIter!=null && sentenceIter.hasNext()) return true;
             while(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
-                System.out.println(currentLabel);
                 String[] words = (String[])resultSet.getArray(2).getArray();
                 //System.out.println(Arrays.toString(words));
                 assert words !=null : "Words array from PG is NULL!";
@@ -82,6 +81,8 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         LabelledDocument doc = new LabelledDocument();
         doc.setReferencedContent(nextTokens.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).collect(Collectors.toList()));
         doc.setLabel(currentLabel);
+        System.out.println(currentLabel);
+        System.out.println(Arrays.toString(nextTokens.toArray()));
         return doc;
     }
 
