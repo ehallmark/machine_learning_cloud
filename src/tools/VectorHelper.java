@@ -23,13 +23,7 @@ public class VectorHelper {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-    public static Float[] computeAvgWordVectorsFrom(ParagraphVectors vectors, String label) {
-        if(label!=null) {
-            return toObject(vectors.getLookupTable().vector(label).data().asFloat());
-        } else return null;
-    }
-
-    private static Float[] toObject(float[] primArray) {
+    public static Float[] toObject(float[] primArray) {
         if(primArray==null) return null;
         Float[] vec = new Float[primArray.length];
         int i = 0;

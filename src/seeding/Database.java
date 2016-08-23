@@ -34,6 +34,7 @@ public class Database {
 	private static final String selectSingleVectorStatement = "SELECT vector FROM raw_patents WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectPatentNumbersByAssignee = "select distinct doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%')";
+	private static PreparedStatement updateParagraphVectorStatement;
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
@@ -71,6 +72,13 @@ public class Database {
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
+	}
+
+	public static void updateParagraphVectorFor(String patent, Float[] vector) throws SQLException {
+		if(updateParagraphVectorStatement==null)updateParagraphVectorStatement = insertConn.prepareStatement("update raw_patents_clone set vector=? where name=?");
+		updateParagraphVectorStatement.setArray(1, insertConn.createArrayOf("float4",vector));
+		updateParagraphVectorStatement.setString(2,patent);
+		updateParagraphVectorStatement.executeQuery();
 	}
 
 
