@@ -75,7 +75,7 @@ public class BuildParagraphVectors {
 
         System.out.println("Checking existence of vocab file...");
         if(new File(Constants.VOCAB_FILE_WITH_LABELS).exists()) {
-            vocabCache = WordVectorSerializer.readVocabCache(new File(Constants.VOCAB_FILE_WITH_LABELS));
+            vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE_WITH_LABELS));
         } else {
             if (new File(Constants.VOCAB_FILE).exists()) {
                 vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
@@ -129,6 +129,7 @@ public class BuildParagraphVectors {
                     vocabCache.addWordToIndex(word.getIndex(), patent);
                     System.out.println(i.getAndIncrement());
                 }
+                System.out.println("Writing vocab...");
 
                 WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE_WITH_LABELS));
 
