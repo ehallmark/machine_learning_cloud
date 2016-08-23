@@ -103,7 +103,7 @@ public class BuildParagraphVectors {
         lookupTable.resetWeights(true);
 
         System.out.println("Starting paragraph vectors...");
-        SequenceVectors<VocabWord> vec = new SequenceVectors.Builder(new VectorsConfiguration())
+        SequenceVectors<VocabWord> vec = new SequenceVectors.Builder<VocabWord>(new VectorsConfiguration())
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                 .iterations(3)
                 .epochs(1)
@@ -118,8 +118,8 @@ public class BuildParagraphVectors {
                 .resetModel(false)
                 .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
-                .sequenceLearningAlgorithm(new DBOW<VocabWord>())
-                .elementsLearningAlgorithm(new SkipGram<VocabWord>())
+                .sequenceLearningAlgorithm(new DBOW<>())
+                .elementsLearningAlgorithm(new SkipGram<>())
                 .sampling(0.0001)
                 .negativeSample(5)
                 .workers(6)
