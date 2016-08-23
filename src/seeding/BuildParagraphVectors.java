@@ -144,7 +144,7 @@ public class BuildParagraphVectors {
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
                 //.negativeSample(5)
-                .workers(1)
+                .workers(4)
                 .build();
 
         vec.fit();

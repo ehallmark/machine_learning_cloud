@@ -68,12 +68,12 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
 
         return new Iterator<Sequence<VocabWord>>() {
             @Override
-            public boolean hasNext() {
+            public synchronized boolean hasNext() {
                 return MySentenceTransformer.this.iterator.hasNextDocument();
             }
 
             @Override
-            public Sequence<VocabWord> next() {
+            public synchronized Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument(vocabCache);
                 if  (document.getReferencedContent() == null) return new Sequence<>();
                 assert(document.getLabel()!=null) : "DOCUMENT HAS NO LABEL!!!!";

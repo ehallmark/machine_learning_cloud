@@ -612,16 +612,18 @@ public class WordVectorSerializer {
                     // we have label element here
                     word.setSpecial(true);
                     word.markAsLabel(true);
+                    word.setSequencesCount(1);
                 } else if (split[0].equals("E")) {
                     // we have usual element, aka word here
                     word.setSpecial(false);
                     word.markAsLabel(false);
+                    Long sequenceCount = Long.valueOf(split[2]);
+                    Long elementFrequency = Math.round(Double.valueOf(split[3]));
+                    word.setSequencesCount(sequenceCount);
+                    word.setElementFrequency(elementFrequency);
                 } else throw new IllegalStateException("Source stream doesn't looks like ParagraphVectors serialized model");
 
-                Long sequenceCount = Long.valueOf(split[2]);
-                Long elementFrequency = Math.round(Double.valueOf(split[3]));
-                word.setSequencesCount(sequenceCount);
-                word.setElementFrequency(elementFrequency);
+
                 // this particular line is just for backward compatibility with InMemoryLookupCache
                 word.setIndex(vocabCache.numWords());
 
