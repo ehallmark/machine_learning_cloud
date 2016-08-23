@@ -67,33 +67,42 @@ public class BuildParagraphVectors {
         } finally {
             Database.close();
         }*/
-        System.out.println("Setting up iterator...");
 
-        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+        VocabCache<VocabWord> vocabCache;
 
-        AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
+        System.out.println("Checking existence of vocab file...");
+        if(new File(Constants.VOCAB_FILE).exists()) {
+            vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
+        } else {
+            System.out.println("Setting up iterator...");
 
-        System.out.println("Starting on vocab building...");
+            DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+
+            AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
+
+            System.out.println("Starting on vocab building...");
 
 
-        VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>()
-                .hugeModelExpected(true)
-                .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
-                .build();
+            vocabCache = new AbstractCache.Builder<VocabWord>()
+                    .hugeModelExpected(true)
+                    .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
+                    .build();
 
         /*
             Now we should build vocabulary out of sequence iterator.
             We can skip this phase, and just set AbstractVectors.resetModel(TRUE), and vocabulary will be mastered internally
         */
-        VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
-                .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .setTargetVocabCache(vocabCache)
-                .build();
+            VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
+                    .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
+                    .setTargetVocabCache(vocabCache)
+                    .build();
 
-        constructor.buildJointVocabulary(false, true);
+            constructor.buildJointVocabulary(false, true);
 
-        System.out.println("Vocabulary finished...");
+            WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE));
+            System.out.println("Vocabulary finished...");
 
+        }
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
                 .vectorLength(Constants.VECTOR_LENGTH)
@@ -107,8 +116,8 @@ public class BuildParagraphVectors {
         */
         lookupTable.resetWeights(true);
 
-        iterator = new DatabaseLabelledIterator(vocabCache);
-        sequenceIterator = createSequenceIterator(iterator);
+        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
+        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
         // add word vectors
 

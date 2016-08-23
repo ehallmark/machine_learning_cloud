@@ -569,12 +569,88 @@ public class WordVectorSerializer {
         }
     }
 
+
+
+    public static void writeVocab(VocabCache<VocabWord> vocabCache, File outFile) {
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8"))) {
+    /*
+        This method acts similary to w2v csv serialization, except of additional tag for labels
+     */
+            for (VocabWord word : vocabCache.vocabWords()) {
+                StringBuilder builder = new StringBuilder();
+
+                builder.append(word.isLabel() ? "L" : "E").append(" ");
+                builder.append(word.getLabel().replaceAll(" ", whitespaceReplacement)).append(" ");
+                builder.append(word.getSequencesCount()).append(" ");
+                // handle the case of frequency being relative or absolute with respect to total document count
+                assert word.getElementFrequency() >= 1.0 : "Invalid word frequency: must be greater than 1.0!";
+                builder.append(word.getElementFrequency()).append("\n");
+                writer.write(builder.toString());
+                writer.flush();
+            }
+
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    public static VocabCache<VocabWord> readVocab(@NonNull File inFile) {
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inFile), "UTF-8"));
+            VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>().build();
+            // first line has total document count
+            String line = "";
+            while ((line = reader.readLine()) != null) {
+                String[] split = line.split(" ");
+                split[1] = split[1].replaceAll(whitespaceReplacement, " ");
+                VocabWord word = new VocabWord(1.0, split[1]);
+                if (split[0].equals("L")) {
+                    // we have label element here
+                    word.setSpecial(true);
+                    word.markAsLabel(true);
+                } else if (split[0].equals("E")) {
+                    // we have usual element, aka word here
+                    word.setSpecial(false);
+                    word.markAsLabel(false);
+                } else throw new IllegalStateException("Source stream doesn't looks like ParagraphVectors serialized model");
+
+                Long sequenceCount = Long.valueOf(split[2]);
+                Long elementFrequency = Long.valueOf(split[3]);
+                word.setSequencesCount(sequenceCount);
+                word.setElementFrequency(elementFrequency);
+                // this particular line is just for backward compatibility with InMemoryLookupCache
+                word.setIndex(vocabCache.numWords());
+
+                vocabCache.addToken(word);
+                vocabCache.addWordToIndex(word.getIndex(), word.getLabel());
+
+                // backward compatibility code
+                //vocabCache.putVocabWord(word.getLabel());
+
+            }
+
+            try {
+                reader.close();
+            } catch (Exception e) {
+            }
+
+            return vocabCache;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * This method saves paragraph vectors to the given output stream.
      *
      * @param vectors
      * @param stream
      */
+
     public static void writeWordVectors(ParagraphVectors vectors, OutputStream stream) {
 
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "UTF-8"))) {
@@ -1342,124 +1418,6 @@ public class WordVectorSerializer {
         return result;
     }
 
-    /**
-     * This method saves specified SequenceVectors model to target  file path
-     *
-     * @param vectors SequenceVectors model
-     * @param factory SequenceElementFactory implementation for your objects
-     * @param path Target output file path
-     * @param <T>
-     */
-    public static <T extends  SequenceElement> void writeSequenceVectors(@NonNull SequenceVectors<T> vectors, @NonNull SequenceElementFactory<T> factory, @NonNull String path) throws IOException {
-        writeSequenceVectors(vectors, factory, new FileOutputStream(path));
-    }
-
-    /**
-     * This method saves specified SequenceVectors model to target  file
-     *
-     * @param vectors SequenceVectors model
-     * @param factory SequenceElementFactory implementation for your objects
-     * @param file Target output file
-     * @param <T>
-     */
-    public static <T extends  SequenceElement> void writeSequenceVectors(@NonNull SequenceVectors<T> vectors, @NonNull SequenceElementFactory<T> factory,@NonNull  File file) throws IOException {
-        writeSequenceVectors(vectors, factory, new FileOutputStream(file));
-    }
-
-    /**
-     * This method saves specified SequenceVectors model to target  OutputStream
-     *
-     * @param vectors SequenceVectors model
-     * @param factory SequenceElementFactory implementation for your objects
-     * @param stream Target output stream
-     * @param <T>
-     */
-    public static <T extends  SequenceElement> void writeSequenceVectors(@NonNull SequenceVectors<T> vectors, @NonNull SequenceElementFactory<T> factory, @NonNull OutputStream stream) throws IOException {
-        WeightLookupTable<T> lookupTable = vectors.getLookupTable();
-        VocabCache<T> vocabCache = vectors.getVocab();
-
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(stream, "UTF-8")));
-
-        // at first line we save VectorsConfiguration
-        writer.write(vectors.getConfiguration().toEncodedJson());
-
-        // now we have elements one by one
-        for (int x = 0; x < vocabCache.numWords();  x++) {
-            T element = vocabCache.elementAtIndex(x);
-            String json = factory.serialize(element);
-            double[] vector = lookupTable.vector(element.getLabel()).data().asDouble();
-
-            ElementPair pair = new ElementPair(json, vector);
-            writer.println(pair.toEncodedJson());
-        }
-        writer.flush();
-        writer.close();
-    }
-
-    /**
-     * This method loads previously saved SequenceVectors model from File
-     *
-     * @param factory
-     * @param file
-     * @param <T>
-     * @return
-     */
-    public static <T extends SequenceElement> SequenceVectors<T> readSequenceVectors(@NonNull SequenceElementFactory<T> factory, @NonNull File file) throws IOException {
-        return readSequenceVectors(factory, new FileInputStream(file));
-    }
-
-    /**
-     * This method loads previously saved SequenceVectors model from InputStream
-     *
-     * @param factory
-     * @param stream
-     * @param <T>
-     * @return
-     */
-    public static <T extends SequenceElement> SequenceVectors<T> readSequenceVectors(@NonNull SequenceElementFactory<T> factory, @NonNull InputStream stream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
-
-        // at first we load vectors configuration
-        String line = reader.readLine();
-        VectorsConfiguration configuration = VectorsConfiguration.fromJson(new String(Base64.decodeBase64(line),"UTF-8"));
-
-        AbstractCache<T> vocabCache = new AbstractCache.Builder<T>().build();
-
-
-        List<INDArray> rows = new ArrayList<>();
-        while((line = reader.readLine()) != null) {
-            ElementPair pair = ElementPair.fromEncodedJson(line);
-            T element = factory.deserialize(pair.getObject());
-            rows.add(Nd4j.create(pair.getVector()));
-
-            vocabCache.addToken(element);
-            vocabCache.addWordToIndex(element.getIndex(), element.getLabel());
-        }
-
-        reader.close();
-
-        InMemoryLookupTable<T> lookupTable = (InMemoryLookupTable<T>)new InMemoryLookupTable.Builder<T>()
-                .vectorLength(rows.get(0).columns())
-                .build();
-
-        /*
-        INDArray syn0 = Nd4j.create(rows.size(), rows.get(0).columns());
-        for (int x = 0; x < rows.size(); x++) {
-            syn0.putRow(x, rows.get(x));
-        }
-        */
-        INDArray syn0 = Nd4j.vstack(rows);
-
-        lookupTable.setSyn0(syn0);
-
-        SequenceVectors<T> vectors = new SequenceVectors.Builder<T>(configuration)
-                .vocabCache(vocabCache)
-                .lookupTable(lookupTable)
-                .resetModel(false)
-                .build();
-
-        return vectors;
-    }
 
     /**
      * This method saves vocab cache to provided File.
