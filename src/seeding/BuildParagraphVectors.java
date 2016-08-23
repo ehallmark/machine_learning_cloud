@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -116,6 +117,7 @@ public class BuildParagraphVectors {
                 System.out.println("We dont have patent 6509257 but we should... get labels again");
                 // add special labels of each text
                 ResultSet rs = Database.selectRawPatentNames();
+                AtomicInteger i = new AtomicInteger(0);
                 while (rs.next()) {
                     String patent = rs.getString(1);
                     VocabWord word = new VocabWord(1.0, patent);
@@ -125,6 +127,7 @@ public class BuildParagraphVectors {
                     word.setIndex(vocabCache.numWords());
                     vocabCache.addToken(word);
                     vocabCache.addWordToIndex(word.getIndex(), patent);
+                    System.out.println(i.getAndIncrement());
                 }
 
                 WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE_WITH_LABELS));
