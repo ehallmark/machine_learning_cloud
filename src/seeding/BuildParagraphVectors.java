@@ -135,6 +135,13 @@ public class BuildParagraphVectors {
 
             }
         }
+
+        System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
+
+        System.out.println("Has patent 6509257: + "+vocabCache.containsWord("6509257"));
+        System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
+
+
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
                 .vectorLength(Constants.VECTOR_LENGTH)
@@ -150,12 +157,6 @@ public class BuildParagraphVectors {
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
-
-        System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
-
-        System.out.println("Has patent 6509257: + "+vocabCache.containsWord("6509257"));
-        System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
-
 
         // add word vectors
 

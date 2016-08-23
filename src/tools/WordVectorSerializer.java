@@ -607,6 +607,7 @@ public class WordVectorSerializer {
             while ((line = reader.readLine()) != null) {
                 String[] split = line.split(" ");
                 split[1] = split[1].replaceAll(whitespaceReplacement, " ");
+                if(split[1].contains("_claim")) continue; // SKIP CLAIMS FOR SPACE
                 VocabWord word = new VocabWord(1.0, split[1]);
                 if (split[0].equals("L")) {
                     // we have label element here
