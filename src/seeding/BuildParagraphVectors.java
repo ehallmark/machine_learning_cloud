@@ -122,7 +122,9 @@ public class BuildParagraphVectors {
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
 
         System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
+
         System.out.println("Has patent 7436333_claim_1: + "+vocabCache.containsWord("7436333_claim_1"));
+        System.out.println("Has word method: + "+vocabCache.containsWord("method"));
 
         // add word vectors
 
