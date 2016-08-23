@@ -107,10 +107,11 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         List<List<String>> sentences = new ArrayList<>((wordList.size()+1)/maxNumberOfWordsPerSentence);
         int start = 0;
         while(start < sentences.size()) {
+            if(wordList.size()-start < Constants.MIN_WORDS_PER_SENTENCE) continue;
             sentences.add(wordList.subList(start, Math.min(start+maxNumberOfWordsPerSentence,wordList.size())));
             start+=maxNumberOfWordsPerSentence;
         }
-
+        if(sentences.isEmpty())return null;
         return sentences;
     }
 }
