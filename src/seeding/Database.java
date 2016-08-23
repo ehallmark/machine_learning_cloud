@@ -74,6 +74,12 @@ public class Database {
 		}
 	}
 
+	public static ResultSet selectRawPatentNames() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select name from raw_patents_clone");
+		ps.setFetchSize(10);
+		return ps.executeQuery();
+	}
+
 	public static void updateParagraphVectorFor(String patent, Float[] vector) throws SQLException {
 		if(updateParagraphVectorStatement==null)updateParagraphVectorStatement = insertConn.prepareStatement("update raw_patents_clone set vector=? where name=?");
 		updateParagraphVectorStatement.setArray(1, insertConn.createArrayOf("float4",vector));

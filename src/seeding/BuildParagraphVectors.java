@@ -20,6 +20,7 @@ import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import tools.Emailer;
 
 import java.io.File;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -72,38 +73,63 @@ public class BuildParagraphVectors {
         VocabCache<VocabWord> vocabCache;
 
         System.out.println("Checking existence of vocab file...");
-        if(new File(Constants.VOCAB_FILE).exists()) {
-            vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
+        if(new File(Constants.VOCAB_FILE_WITH_LABELS).exists()) {
+            vocabCache = WordVectorSerializer.readVocabCache(new File(Constants.VOCAB_FILE_WITH_LABELS));
         } else {
-            System.out.println("Setting up iterator...");
+            if (new File(Constants.VOCAB_FILE).exists()) {
+                vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
+            } else {
+                System.out.println("Setting up iterator...");
 
-            DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+                DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
 
-            AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
+                AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
-            System.out.println("Starting on vocab building...");
+                System.out.println("Starting on vocab building...");
 
 
-            vocabCache = new AbstractCache.Builder<VocabWord>()
-                    .hugeModelExpected(true)
-                    .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
-                    .build();
+                vocabCache = new AbstractCache.Builder<VocabWord>()
+                        .hugeModelExpected(true)
+                        .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
+                        .build();
 
         /*
             Now we should build vocabulary out of sequence iterator.
             We can skip this phase, and just set AbstractVectors.resetModel(TRUE), and vocabulary will be mastered internally
         */
-            VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
-                    .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                    .setTargetVocabCache(vocabCache)
-                    .build();
+                VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
+                        .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
+                        .setTargetVocabCache(vocabCache)
+                        .build();
 
-            constructor.buildJointVocabulary(false, true);
+                constructor.buildJointVocabulary(false, true);
 
-            WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE));
-            System.out.println("Vocabulary finished...");
-            new Emailer("Finished vocabulary!");
+                WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE));
+                System.out.println("Vocabulary finished...");
 
+                new Emailer("Finished vocabulary!");
+
+            }
+
+            // test
+            if(!vocabCache.containsWord("6509257")) {
+                System.out.println("We dont have patent 6509257 but we should... get labels again");
+                // add special labels of each text
+                ResultSet rs = Database.selectRawPatentNames();
+                while (rs.next()) {
+                    String patent = rs.getString(1);
+                    VocabWord word = new VocabWord(1.0, patent);
+                    word.setSequencesCount(1);
+                    word.setSpecial(true);
+                    word.markAsLabel(true);
+                    word.setIndex(vocabCache.numWords());
+                    vocabCache.addToken(word);
+                    vocabCache.addWordToIndex(word.getIndex(), patent);
+                }
+
+                WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE_WITH_LABELS));
+
+            }
         }
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
@@ -123,7 +149,7 @@ public class BuildParagraphVectors {
 
         System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
 
-        System.out.println("Has patent 7436333_claim_1: + "+vocabCache.containsWord("7436333_claim_1"));
+        System.out.println("Has patent 6509257: + "+vocabCache.containsWord("6509257"));
         System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
 
 

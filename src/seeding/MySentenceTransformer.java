@@ -5,6 +5,7 @@ package seeding;
  */
 
 import lombok.NonNull;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.sequencevectors.transformers.SequenceTransformer;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -60,8 +61,9 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
         vLabel.setSequencesCount(1);
         vLabel.setSpecial(true);
         vLabel.markAsLabel(true);
+        vLabel.setIndex(vocabCache.numWords());
         vocabCache.addToken(vLabel);
-        vocabCache.addWordToIndex(vocabCache.numWords(),label);
+        vocabCache.addWordToIndex(vLabel.getIndex(),label);
         sequence.setSequenceLabel(vLabel);
         sequence.setSequenceLabels(Arrays.asList(vLabel));
         return sequence;
