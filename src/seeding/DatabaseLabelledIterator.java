@@ -91,7 +91,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         } catch(SQLException sql) {
             sql.printStackTrace();
         }
-        currentSentence=null;
         cnt = new AtomicInteger(0);
         lastTime = System.currentTimeMillis();
     }
