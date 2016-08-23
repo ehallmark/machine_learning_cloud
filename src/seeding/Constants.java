@@ -8,7 +8,7 @@ public class Constants {
 	public static final int DEFAULT_MIN_WORD_FREQUENCY = 100;
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
 	public static final int MIN_WORDS_PER_SENTENCE = 5;
-	public static final int VECTOR_LENGTH = 200;
+	public static final int VECTOR_LENGTH = 100;
 	//public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
 	public static final int START_DATE = 20030000;
 	public static final int VOCAB_START_DATE = 20100000;

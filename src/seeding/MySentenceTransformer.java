@@ -57,13 +57,15 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             sequence.addElement(word);
         }
         sequence.setSequenceId(sentenceCounter.getAndIncrement());
-        VocabWord vLabel = new VocabWord(1.0, label);
-        vLabel.setSequencesCount(1);
-        vLabel.setSpecial(true);
-        vLabel.markAsLabel(true);
-        vLabel.setIndex(vocabCache.numWords());
-        vocabCache.addToken(vLabel);
-        vocabCache.addWordToIndex(vLabel.getIndex(),label);
+        VocabWord vLabel;
+        if(vocabCache==null) {
+            vLabel = new VocabWord(1.0, label);
+            vLabel.markAsLabel(true);
+            vLabel.setSequencesCount(1);
+            vLabel.setSpecial(true);
+        }else {
+            vLabel = vocabCache.tokenFor(label);
+        }
         sequence.setSequenceLabel(vLabel);
         sequence.setSequenceLabels(Arrays.asList(vLabel));
         return sequence;
