@@ -119,7 +119,7 @@ public class BuildParagraphVectors {
         lookupTable.resetWeights(true);
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
-        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
+        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
 
         // add word vectors
 
@@ -189,15 +189,20 @@ public class BuildParagraphVectors {
 
     }
 
-    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
+    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator, VocabCache<VocabWord> vocabCache) {
         System.out.println("Iterator transformation...");
 
         MySentenceTransformer transformer = new MySentenceTransformer.Builder()
                 .iterator(iterator)
+                .vocabCache(vocabCache)
                 .build();
 
         System.out.println("Building sequence iterator from transformer...");
 
         return new AbstractSequenceIterator.Builder<>(transformer).build();
+    }
+
+    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
+        return createSequenceIterator(iterator,null);
     }
 }
