@@ -19,6 +19,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,7 +56,9 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             sequence.addElement(word);
         }
         sequence.setSequenceId(sentenceCounter.getAndIncrement());
-        sequence.setSequenceLabel(new VocabWord(1.0, label));
+        VocabWord vLabel = new VocabWord(1.0, label);
+        sequence.setSequenceLabel(vLabel);
+        sequence.setSequenceLabels(Arrays.asList(vLabel));
         return sequence;
     }
 
@@ -73,7 +76,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             public Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument(vocabCache);
                 if  (document.getReferencedContent() == null) return new Sequence<>();
-                System.out.println(document.getLabel());
                 Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
                 return sequence;
             }
