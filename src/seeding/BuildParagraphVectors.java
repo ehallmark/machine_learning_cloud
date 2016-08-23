@@ -5,6 +5,8 @@ import org.deeplearning4j.models.embeddings.inmemory.InMemoryLookupTable;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
@@ -69,15 +71,7 @@ public class BuildParagraphVectors {
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
 
-        System.out.println("Iterator transformation...");
-
-        MySentenceTransformer transformer = new MySentenceTransformer.Builder()
-                .iterator(iterator)
-                .build();
-
-        System.out.println("Building sequence iterator from transformer...");
-
-        AbstractSequenceIterator<VocabWord> sequenceIterator = new AbstractSequenceIterator.Builder<>(transformer).build();
+        AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
         System.out.println("Starting on vocab building...");
 
@@ -113,8 +107,13 @@ public class BuildParagraphVectors {
         */
         lookupTable.resetWeights(true);
 
+        iterator = new DatabaseLabelledIterator(vocabCache);
+        sequenceIterator = createSequenceIterator(iterator);
+
+        // add word vectors
+
         System.out.println("Starting paragraph vectors...");
-        SequenceVectors<VocabWord> vec = new SequenceVectors.Builder<VocabWord>(new VectorsConfiguration())
+        ParagraphVectors vec = new ParagraphVectors.Builder()
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                 .iterations(3)
                 .epochs(1)
@@ -127,10 +126,10 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .trainElementsRepresentation(true)
+                .trainElementsRepresentation(false)
                 .trainSequencesRepresentation(true)
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .elementsLearningAlgorithm(new SkipGram<>())
+                //.elementsLearningAlgorithm(new SkipGram<>())
+                //.sequenceLearningAlgorithm(new DBOW<>())
                 .sampling(0.0001)
                 .negativeSample(5)
                 .workers(4)
@@ -156,13 +155,13 @@ public class BuildParagraphVectors {
          */
 
         System.out.println("Writing to file...");
-        WordVectorSerializer.writeSequenceVectors(vec, new VocabWordFactory(), new File(Constants.WORD_VECTORS_PATH));
+        WordVectorSerializer.writeWordVectors(vec, new File(Constants.WORD_VECTORS_PATH));
 
         System.out.println("Done...");
 
         System.out.println("Reading from file...");
 
-        vec = WordVectorSerializer.readSequenceVectors(new VocabWordFactory(), new File(Constants.WORD_VECTORS_PATH));
+        vec = WordVectorSerializer.readParagraphVectorsFromText(new File(Constants.WORD_VECTORS_PATH));
 
         double sim = vec.similarity("internet", "network");
         System.out.println("internet/computer similarity: " + sim);
@@ -176,5 +175,17 @@ public class BuildParagraphVectors {
 
 
 
+    }
+
+    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
+        System.out.println("Iterator transformation...");
+
+        MySentenceTransformer transformer = new MySentenceTransformer.Builder()
+                .iterator(iterator)
+                .build();
+
+        System.out.println("Building sequence iterator from transformer...");
+
+        return new AbstractSequenceIterator.Builder<>(transformer).build();
     }
 }

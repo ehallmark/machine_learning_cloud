@@ -1522,7 +1522,6 @@ public class WordVectorSerializer {
         String line = "";
         while((line = reader.readLine()) != null) {
             VocabWord word = factory.deserialize(line);
-
             vocabCache.addToken(word);
             vocabCache.addWordToIndex(word.getIndex(), word.getLabel());
         }
