@@ -121,6 +121,9 @@ public class BuildParagraphVectors {
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
 
+        System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
+        System.out.println("Has patent 7436333_claim_1: + "+vocabCache.containsWord("7436333_claim_1"));
+
         // add word vectors
 
         System.out.println("Starting paragraph vectors...");
