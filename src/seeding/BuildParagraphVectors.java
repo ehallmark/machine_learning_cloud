@@ -144,11 +144,12 @@ public class BuildParagraphVectors {
                 .lookupTable(lookupTable)
                 .resetModel(false)
                 .stopWords(new ArrayList<String>())
-                .trainElementsRepresentation(true)
+                .trainElementsRepresentation(false)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
+                .negativeSample(0)
                 //.negativeSample(5)
                 .workers(4)
                 .build();
