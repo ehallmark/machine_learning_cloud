@@ -73,7 +73,8 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             public Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument(vocabCache);
                 if  (document.getReferencedContent() == null) return new Sequence<>();
-                Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),iterator.currentLabel);
+                System.out.println(document.getLabel());
+                Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
                 return sequence;
             }
 

@@ -68,7 +68,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         return nextDocument(vocabCache);
     }
 
-    public LabelledDocument nextDocument(VocabCache<VocabWord> vocab) {
+    public synchronized LabelledDocument nextDocument(VocabCache<VocabWord> vocab) {
         int currentCnt = cnt.getAndIncrement();
         if(currentCnt%1000==999) {
             long time = System.currentTimeMillis();
