@@ -144,7 +144,7 @@ public class BuildParagraphVectors {
                 .lookupTable(lookupTable)
                 .resetModel(false)
                 .stopWords(new ArrayList<String>())
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
