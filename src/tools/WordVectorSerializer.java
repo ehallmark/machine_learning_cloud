@@ -619,7 +619,7 @@ public class WordVectorSerializer {
                 } else throw new IllegalStateException("Source stream doesn't looks like ParagraphVectors serialized model");
 
                 Long sequenceCount = Long.valueOf(split[2]);
-                Long elementFrequency = Long.valueOf(split[3]);
+                Long elementFrequency = Math.round(Double.valueOf(split[3]));
                 word.setSequencesCount(sequenceCount);
                 word.setElementFrequency(elementFrequency);
                 // this particular line is just for backward compatibility with InMemoryLookupCache
