@@ -613,6 +613,7 @@ public class WordVectorSerializer {
                     word.setSpecial(true);
                     word.markAsLabel(true);
                     word.setSequencesCount(1);
+                    vocabCache.incrementTotalDocCount(1);
                 } else if (split[0].equals("E")) {
                     // we have usual element, aka word here
                     word.setSpecial(false);
