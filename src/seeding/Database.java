@@ -165,7 +165,7 @@ public class Database {
 	}
 
 	public static ResultSet selectRawPatents() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select name, words from raw_patents");
+		PreparedStatement ps = seedConn.prepareStatement("select name, words from raw_patents_clone");
 		ps.setFetchSize(5);
 		return ps.executeQuery();
 	}
