@@ -101,6 +101,7 @@ public class BuildParagraphVectors {
 
             WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE));
             System.out.println("Vocabulary finished...");
+            new Emailer("Finished vocabulary!");
 
         }
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
