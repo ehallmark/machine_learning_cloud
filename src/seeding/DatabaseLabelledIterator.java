@@ -47,14 +47,14 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         try {
             // Check patent iterator
             if(sentenceIter!=null && sentenceIter.hasNext()) return true;
-            if(resultSet.next()) {
+            while(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
                 System.out.println(currentLabel);
                 String[] words = (String[])resultSet.getArray(2).getArray();
                 //System.out.println(Arrays.toString(words));
                 sentenceIter = createSentencesFromLargeText(Arrays.asList(words)).iterator();
                 if(sentenceIter!=null&&sentenceIter.hasNext()) return true;
-                return hasNextDocument();// Recursive
+                System.out.println("RECURSIVE CALL!!!!!");
             }
 
         } catch(Exception sql) {
