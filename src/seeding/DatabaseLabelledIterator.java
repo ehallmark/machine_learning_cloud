@@ -53,7 +53,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 String[] words = (String[])resultSet.getArray(2).getArray();
                 System.out.println(Arrays.toString(words));
                 sentenceIter = createSentencesFromLargeText(Arrays.asList(words)).iterator();
-                if(sentenceIter.hasNext()) return true;
+                if(sentenceIter!=null&&sentenceIter.hasNext()) return true;
                 return hasNextDocument();// Recursive
             }
 
