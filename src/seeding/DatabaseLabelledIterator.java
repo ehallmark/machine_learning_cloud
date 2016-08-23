@@ -52,7 +52,8 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 System.out.println(currentLabel);
                 String[] words = (String[])resultSet.getArray(2).getArray();
                 //System.out.println(Arrays.toString(words));
-                sentenceIter = createSentencesFromLargeText(Arrays.asList(words)).iterator();
+                assert words !=null : "Words array from PG is NULL!";
+                sentenceIter = createSentenceIterFromLargeText(Arrays.asList(words));
                 if(sentenceIter!=null&&sentenceIter.hasNext()) return true;
                 System.out.println("RECURSIVE CALL!!!!!");
             }
@@ -101,7 +102,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         return null;
     }
 
-    private List<List<String>> createSentencesFromLargeText(List<String> wordList) {
+    private Iterator<List<String>> createSentenceIterFromLargeText(List<String> wordList) {
         if(wordList==null||wordList.isEmpty()) return null;
         final int maxNumberOfWordsPerSentence = Math.min(20,wordList.size());
         List<List<String>> sentences = new ArrayList<>((wordList.size()+1)/maxNumberOfWordsPerSentence);
@@ -112,6 +113,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             start+=maxNumberOfWordsPerSentence;
         }
         if(sentences.isEmpty())return null;
-        return sentences;
+        return sentences.iterator();
     }
 }
