@@ -50,7 +50,9 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             if(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
                 System.out.println(currentLabel);
-                sentenceIter = createSentencesFromLargeText(Arrays.asList((String[])resultSet.getArray(2).getArray())).iterator();
+                String[] words = (String[])resultSet.getArray(2).getArray();
+                System.out.println(Arrays.toString(words));
+                sentenceIter = createSentencesFromLargeText(Arrays.asList(words)).iterator();
                 if(sentenceIter.hasNext()) return true;
                 return hasNextDocument();// Recursive
             }
@@ -78,7 +80,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         List<String> nextTokens = sentenceIter.next();
         LabelledDocument doc = new LabelledDocument();
         doc.setReferencedContent(nextTokens.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).collect(Collectors.toList()));
-        for(VocabWord s : doc.getReferencedContent()) { System.out.println("Word: "+s.getWord()); }
         doc.setLabel(currentLabel);
         return doc;
     }
