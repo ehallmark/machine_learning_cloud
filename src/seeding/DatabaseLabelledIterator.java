@@ -25,7 +25,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected String currentLabel;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
-    protected Iterator<List<String>> sentenceIter;
+    protected List<String> currentSentence;
     protected VocabCache<VocabWord> vocabCache;
     protected long lastTime;
     // used to tag each sequence with own Id
@@ -46,14 +46,13 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     public boolean hasNextDocument() {
         try {
             // Check patent iterator
-            if(sentenceIter!=null && sentenceIter.hasNext()) return true;
             while(resultSet.next()) {
                 currentLabel = resultSet.getString(1);
                 String[] words = (String[])resultSet.getArray(2).getArray();
                 //System.out.println(Arrays.toString(words));
                 assert words !=null : "Words array from PG is NULL!";
-                sentenceIter = createSentenceIterFromLargeText(Arrays.asList(words));
-                if(sentenceIter!=null&&sentenceIter.hasNext()) return true;
+                currentSentence = Arrays.asList(words);
+                if(currentSentence!=null && currentSentence.size() >= Constants.MIN_WORDS_PER_SENTENCE) return true;
                 System.out.println("RECURSIVE CALL!!!!!");
             }
 
@@ -77,12 +76,11 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             lastTime = time;
             cnt.set(0);
         }
-        List<String> nextTokens = sentenceIter.next();
         LabelledDocument doc = new LabelledDocument();
-        doc.setReferencedContent(nextTokens.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).collect(Collectors.toList()));
+        doc.setReferencedContent(currentSentence.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).collect(Collectors.toList()));
         doc.setLabel(currentLabel);
         System.out.println(currentLabel);
-        System.out.println(Arrays.toString(nextTokens.toArray()));
+        System.out.println(Arrays.toString(currentSentence.toArray()));
         return doc;
     }
 
@@ -93,7 +91,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         } catch(SQLException sql) {
             sql.printStackTrace();
         }
-        sentenceIter=null;
+        currentSentence=null;
         cnt = new AtomicInteger(0);
         lastTime = System.currentTimeMillis();
     }
@@ -103,10 +101,4 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         return null;
     }
 
-    private Iterator<List<String>> createSentenceIterFromLargeText(List<String> wordList) {
-        if(wordList==null||wordList.isEmpty()||wordList.size()<Constants.MIN_WORDS_PER_SENTENCE) return null;
-        List<List<String>> sentences = new ArrayList<>(1);
-        sentences.add(wordList);
-        return sentences.iterator();
-    }
 }
