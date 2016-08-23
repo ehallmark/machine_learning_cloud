@@ -48,14 +48,14 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
         throw new UnsupportedOperationException("TRYING TO CONVERT STRING INTO SEQUENCE BUT SEQUENCES ARE PREBUILT!");
     }
 
-    public Sequence<VocabWord> transformToSequence(List<VocabWord> words) {
+    public Sequence<VocabWord> transformToSequence(List<VocabWord> words, String label) {
         Sequence<VocabWord> sequence = new Sequence<>();
 
         for(VocabWord word : words) {
             sequence.addElement(word);
         }
-
         sequence.setSequenceId(sentenceCounter.getAndIncrement());
+        sequence.setSequenceLabel(new VocabWord(1.0, label));
         return sequence;
     }
 
@@ -73,10 +73,7 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             public Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument(vocabCache);
                 if  (document.getReferencedContent() == null) return new Sequence<>();
-                Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent());
-                if (document.getLabel() != null && !document.getLabel().isEmpty()) {
-                    sequence.setSequenceLabel(new VocabWord(1.0, document.getLabel()));
-                }
+                Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),iterator.currentLabel);
                 return sequence;
             }
 

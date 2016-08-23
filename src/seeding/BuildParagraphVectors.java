@@ -136,13 +136,13 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
-                //.sequenceLearningAlgorithm(new DBOW<>())
+                .sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
-                .negativeSample(5)
-                .workers(4)
+                //.negativeSample(5)
+                .workers(6)
                 .build();
 
         vec.fit();
