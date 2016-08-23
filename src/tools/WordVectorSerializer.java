@@ -609,11 +609,15 @@ public class WordVectorSerializer {
                 split[1] = split[1].replaceAll(whitespaceReplacement, " ");
                 VocabWord word = new VocabWord(1.0, split[1]);
                 if (split[0].equals("L")) {
+
                     // we have label element here
                     word.setSpecial(true);
                     word.markAsLabel(true);
                     word.setSequencesCount(1);
+                    word.setElementFrequency(1);
                     vocabCache.incrementTotalDocCount(1);
+                    // this particular line is just for backward compatibility with InMemoryLookupCache
+
                 } else if (split[0].equals("E")) {
                     // we have usual element, aka word here
                     word.setSpecial(false);
@@ -622,14 +626,17 @@ public class WordVectorSerializer {
                     Long elementFrequency = Math.round(Double.valueOf(split[3]));
                     word.setSequencesCount(sequenceCount);
                     word.setElementFrequency(elementFrequency);
+                    // this particular line is just for backward compatibility with InMemoryLookupCache
+
+
                 } else throw new IllegalStateException("Source stream doesn't looks like ParagraphVectors serialized model");
 
 
-                // this particular line is just for backward compatibility with InMemoryLookupCache
                 word.setIndex(vocabCache.numWords());
 
                 vocabCache.addToken(word);
                 vocabCache.addWordToIndex(word.getIndex(), word.getLabel());
+                System.out.println(vocabCache.numWords());
 
                 // backward compatibility code
                 //vocabCache.putVocabWord(word.getLabel());
