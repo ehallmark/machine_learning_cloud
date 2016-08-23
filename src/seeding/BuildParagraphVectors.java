@@ -65,13 +65,22 @@ public class BuildParagraphVectors {
         } finally {
             Database.close();
         }*/
+        System.out.println("Setting up iterator...");
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+
+        System.out.println("Iterator transformation...");
+
         MySentenceTransformer transformer = new MySentenceTransformer.Builder()
                 .iterator(iterator)
                 .build();
 
+        System.out.println("Building sequence iterator from transformer...");
+
         AbstractSequenceIterator<VocabWord> sequenceIterator = new AbstractSequenceIterator.Builder<>(transformer).build();
+
+        System.out.println("Starting on vocab building...");
+
 
         VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>()
                 .hugeModelExpected(true)
@@ -88,6 +97,8 @@ public class BuildParagraphVectors {
                 .build();
 
         constructor.buildJointVocabulary(false, true);
+
+        System.out.println("Vocabulary finished...");
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
