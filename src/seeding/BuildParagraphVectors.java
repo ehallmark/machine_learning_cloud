@@ -20,6 +20,7 @@ import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import tools.Emailer;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -136,13 +137,14 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
+                .stopWords(new ArrayList<String>())
                 .trainElementsRepresentation(false)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
                 //.negativeSample(5)
-                .workers(6)
+                .workers(1)
                 .build();
 
         vec.fit();
