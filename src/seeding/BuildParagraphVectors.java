@@ -128,6 +128,7 @@ public class BuildParagraphVectors {
                     word.setIndex(vocabCache.numWords());
                     vocabCache.addToken(word);
                     vocabCache.addWordToIndex(word.getIndex(), patent);
+                    vocabCache.incrementTotalDocCount(1);
                     System.out.println(i.getAndIncrement());
                 }
                 System.out.println("Writing vocab...");

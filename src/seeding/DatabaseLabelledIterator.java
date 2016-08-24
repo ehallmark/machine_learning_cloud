@@ -60,14 +60,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                     String word = current.next();
                     sentence.add(word);
                     if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
-                        if(vocabCache!=null) {
-                            VocabWord vWord = new VocabWord(1.0, currentLabel);
-                            assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;
-                            vWord.setSequencesCount(1);
-                            vWord.setSpecial(true);
-                            vWord.markAsLabel(true);
-                            vocabCache.addToken(vWord);
-                        }
                         for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
                             newBuffer.add(sentence.get(i));
                         }
@@ -87,6 +79,12 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                     }
                     newSentences.add(sentence);
                 }
+                /*if(vocabCache!=null) {
+                    assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;
+                    VocabWord label = vocabCache.tokenFor(currentLabel);
+                    label.setSequencesCount(newSentences.size());
+                    label.setElementFrequency(newSentences.size());
+                }*/
                 currentSentenceIterator = newSentences.iterator();
                 if (currentSentenceIterator.hasNext()) return true;
                 System.out.println("RECURSIVE CALL!!!!!");
