@@ -61,12 +61,12 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                     sentence.add(word);
                     if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
                         if(vocabCache!=null) {
-                            VocabWord word = new VocabWord(1.0, currentLabel);
+                            VocabWord vWord = new VocabWord(1.0, currentLabel);
                             assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;
-                            word.setSequencesCount(1);
-                            word.setSpecial(true);
-                            word.markAsLabel(true);
-                            vocabCache.addToken(word);
+                            vWord.setSequencesCount(1);
+                            vWord.setSpecial(true);
+                            vWord.markAsLabel(true);
+                            vocabCache.addToken(vWord);
                         }
                         for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
                             newBuffer.add(sentence.get(i));
