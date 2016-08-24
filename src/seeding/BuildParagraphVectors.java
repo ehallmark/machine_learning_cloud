@@ -152,7 +152,7 @@ public class BuildParagraphVectors {
 
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
-        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
+        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
@@ -247,18 +247,13 @@ public class BuildParagraphVectors {
 
     }
 
-    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator, VocabCache<VocabWord> vocabCache) {
+    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
         System.out.println("Iterator transformation...");
 
-        MySentenceTransformer.Builder transformerBuilder = new MySentenceTransformer.Builder().iterator(iterator);
-        if(vocabCache!=null)transformerBuilder=transformerBuilder.vocabCache(vocabCache);
+        MySentenceTransformer transformer = new MySentenceTransformer.Builder().iterator(iterator).build();
 
         System.out.println("Building sequence iterator from transformer...");
 
-        return new AbstractSequenceIterator.Builder<>(transformerBuilder.build()).build();
-    }
-
-    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
-        return createSequenceIterator(iterator,null);
+        return new AbstractSequenceIterator.Builder<>(transformer).build();
     }
 }
