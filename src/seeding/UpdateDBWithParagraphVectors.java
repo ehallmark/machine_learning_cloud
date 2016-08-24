@@ -20,7 +20,11 @@ public class UpdateDBWithParagraphVectors {
         Database.setupSeedConn();
         Database.setupInsertConn();
 
+        System.out.println("Starting to read paragraph vectors...");
+        long time1 = System.currentTimeMillis();
         ParagraphVectors vectors = WordVectorSerializer.readParagraphVectorsFromText(new File(Constants.WORD_VECTORS_PATH));
+        long time2 = System.currentTimeMillis();
+        System.out.println("Time to read paragraph vectors: "+new Double(time2-time1)/1000+ " seconds...");
         WeightLookupTable<VocabWord> lookupTable = vectors.lookupTable();
 
         ResultSet rs = Database.selectRawPatents();
@@ -32,6 +36,7 @@ public class UpdateDBWithParagraphVectors {
                 Float[] dbVec = VectorHelper.toObject(vec.data().asFloat());
                 //Database.updateParagraphVectorFor(patentNumber, dbVec);
                 System.out.println(patentNumber+": "+Arrays.toString(dbVec));
+                System.out.println(cnt.getAndIncrement());
             }
         }
         //Database.insertCommit();

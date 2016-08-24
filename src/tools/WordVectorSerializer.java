@@ -467,8 +467,9 @@ public class WordVectorSerializer {
                     labels.add(word.getLabel());
                 } else if (split[0].equals("E")) {
                     // we have usual element, aka word here
-                    word.setSpecial(false);
-                    word.markAsLabel(false);
+                    continue; // HACK TO NOT LOAD BASIC WORDS
+                    //word.setSpecial(false);
+                    //word.markAsLabel(false);
                 } else throw new IllegalStateException("Source stream doesn't looks like ParagraphVectors serialized model");
 
                 // this particular line is just for backward compatibility with InMemoryLookupCache
