@@ -9,10 +9,7 @@ import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -25,7 +22,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected String currentLabel;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
-    protected List<String> currentSentence;
+    protected Iterator<List<String>> currentSentenceIterator;
     protected VocabCache<VocabWord> vocabCache;
     protected long lastTime;
     // used to tag each sequence with own Id
@@ -43,24 +40,49 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
 
 
     @Override
-    public boolean hasNextDocument() {
+    public synchronized boolean hasNextDocument() {
+
         try {
+            if(currentSentenceIterator!=null&&currentSentenceIterator.hasNext()) return true;
             // Check patent iterator
-            while(resultSet.next()) {
-                currentLabel = resultSet.getString(1);
-                String[] words = (String[])resultSet.getArray(2).getArray();
+            while (resultSet.next()) {
+                currentLabel = resultSet.getString(1).split("_")[0];
+                String[] words = (String[]) resultSet.getArray(2).getArray();
                 //System.out.println(Arrays.toString(words));
-                assert words !=null : "Words array from PG is NULL!";
-                currentSentence = Arrays.asList(words);
-                if(currentSentence!=null && currentSentence.size() >= Constants.MIN_WORDS_PER_SENTENCE) return true;
+                if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
+                assert words != null : "Words array from PG is NULL!";
+                Iterator<String> current = Arrays.asList(words).iterator();
+                List<List<String>> newSentences = new ArrayList<>();
+                List<String> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
+                List<String> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
+                List<String> newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
+                while(current.hasNext()) {
+                    String word = current.next();
+                    sentence.add(word);
+                    if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
+                        for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
+                            newBuffer.add(sentence.get(i));
+                        }
+                        if(!oldBuffer.isEmpty()) {
+                            sentence.addAll(0,oldBuffer);
+                        }
+                        newSentences.add(sentence);
+                        oldBuffer = newBuffer;
+                        newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
+                        sentence=new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
+                    }
+                }
+                currentSentenceIterator = newSentences.iterator();
+                if (currentSentenceIterator.hasNext()) return true;
                 System.out.println("RECURSIVE CALL!!!!!");
             }
 
-        } catch(Exception sql) {
+        } catch (Exception sql) {
             sql.printStackTrace();
             return false;
         }
         return false;
+
     }
 
     @Override
@@ -77,7 +99,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             cnt.set(0);
         }
         LabelledDocument doc = new LabelledDocument();
-        doc.setReferencedContent(currentSentence.stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).filter(w->w!=null).collect(Collectors.toList()));
+        doc.setReferencedContent(currentSentenceIterator.next().stream().map(t->vocab==null ? new VocabWord(1.0,t) : vocabCache.tokenFor(t)).filter(w->w!=null).collect(Collectors.toList()));
         doc.setLabel(currentLabel);
         //System.out.println(currentLabel);
         //System.out.println(Arrays.toString(currentSentence.toArray()));

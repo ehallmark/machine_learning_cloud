@@ -54,6 +54,7 @@ public class UpdateDBWithParagraphVectors {
             INDArray vec = lookupTable.vector(patentNumber);
             if(vec!=null) {
                 Float[] dbVec = VectorHelper.toObject(vec.data().asFloat());
+                System.gc();
                 Database.updateParagraphVectorFor(patentNumber, dbVec);
                 System.out.println(cnt.getAndIncrement());
                 if(cnt.get() % 1000 == 0) {

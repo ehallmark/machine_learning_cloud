@@ -119,7 +119,7 @@ public class BuildParagraphVectors {
                 ResultSet rs = Database.selectRawPatentNames();
                 AtomicInteger i = new AtomicInteger(0);
                 while (rs.next()) {
-                    String patent = rs.getString(1);
+                    String patent = rs.getString(1).split("_")[0];
                     VocabWord word = new VocabWord(1.0, patent);
                     word.setSequencesCount(1);
                     word.setSpecial(true);
@@ -163,26 +163,25 @@ public class BuildParagraphVectors {
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(3)
-                .epochs(1)
+                .iterations(5)
+                .epochs(3)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .learningRate(0.05)
-                .minLearningRate(0.001)
+                .learningRate(0.001)
+                .minLearningRate(0.00005)
                 .batchSize(1000)
-                .windowSize(5)
+                .windowSize(10)
                 .iterate(sequenceIterator)
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
                 .stopWords(new ArrayList<String>())
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
-                .negativeSample(0)
-                //.negativeSample(5)
-                .workers(4)
+                .negativeSample(10)
+                .workers(8)
                 .build();
 
         vec.fit();
@@ -230,14 +229,12 @@ public class BuildParagraphVectors {
     private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator, VocabCache<VocabWord> vocabCache) {
         System.out.println("Iterator transformation...");
 
-        MySentenceTransformer transformer = new MySentenceTransformer.Builder()
-                .iterator(iterator)
-                .vocabCache(vocabCache)
-                .build();
+        MySentenceTransformer.Builder transformerBuilder = new MySentenceTransformer.Builder().iterator(iterator);
+        if(vocabCache!=null)transformerBuilder=transformerBuilder.vocabCache(vocabCache);
 
         System.out.println("Building sequence iterator from transformer...");
 
-        return new AbstractSequenceIterator.Builder<>(transformer).build();
+        return new AbstractSequenceIterator.Builder<>(transformerBuilder.build()).build();
     }
 
     private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
