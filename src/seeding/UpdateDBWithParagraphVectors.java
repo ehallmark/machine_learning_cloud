@@ -9,6 +9,7 @@ import tools.WordVectorSerializer;
 
 import java.io.File;
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -29,11 +30,11 @@ public class UpdateDBWithParagraphVectors {
             INDArray vec = lookupTable.vector(patentNumber);
             if(vec!=null) {
                 Float[] dbVec = VectorHelper.toObject(vec.data().asFloat());
-                Database.updateParagraphVectorFor(patentNumber, dbVec);
-                System.out.println(cnt.getAndIncrement());
+                //Database.updateParagraphVectorFor(patentNumber, dbVec);
+                System.out.println(patentNumber+": "+Arrays.toString(dbVec));
             }
         }
-        Database.insertCommit();
+        //Database.insertCommit();
         Database.close();
     }
 }
