@@ -185,7 +185,7 @@ public class BuildParagraphVectors {
         */
 
         // add word vectors
-        int numStopWords = 1000;
+        int numStopWords = 500;
         List<VocabWord> stopWords = vocabCache.vocabWords().stream().sorted((w1,w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).collect(Collectors.toList()).subList(0,numStopWords);
         StringJoiner join = new StringJoiner("\n");
         join.add("Stop words: ");
@@ -197,7 +197,7 @@ public class BuildParagraphVectors {
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(3)
+                .iterations(4)
                 .epochs(5)
                 .layerSize(Constants.VECTOR_LENGTH)
                 .learningRate(0.005)
