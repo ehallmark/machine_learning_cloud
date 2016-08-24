@@ -39,7 +39,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
     protected DatabaseLabelledIterator iterator;
     protected boolean readOnly = false;
     protected AtomicInteger sentenceCounter = new AtomicInteger(0);
-    protected VocabCache<VocabWord> vocabCache;
 
     private MySentenceTransformer(@NonNull DatabaseLabelledIterator iterator) {
         this.iterator = iterator;
@@ -57,16 +56,11 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             sequence.addElement(word);
         }
         sequence.setSequenceId(sentenceCounter.getAndIncrement());
-        VocabWord vLabel;
-        if(vocabCache==null) {
-            vLabel = new VocabWord(1.0, label);
-            vLabel.markAsLabel(true);
-            vLabel.setSequencesCount(1);
-            vLabel.setSpecial(true);
-        }else {
-            assert vocabCache.hasToken(label) : "Vocab cache does not have this token!!!";
-            vLabel = vocabCache.tokenFor(label);
-        }
+        VocabWord vLabel = new VocabWord(1.0, label);
+        vLabel.markAsLabel(true);
+        vLabel.setSequencesCount(1);
+        vLabel.setSpecial(true);
+
         sequence.setSequenceLabel(vLabel);
         sequence.setSequenceLabels(Arrays.asList(vLabel));
         return sequence;
@@ -84,7 +78,7 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
 
             @Override
             public synchronized Sequence<VocabWord> next() {
-                LabelledDocument document = iterator.nextDocument(vocabCache);
+                LabelledDocument document = iterator.nextDocument();
                 if  (document.getReferencedContent() == null) throw new RuntimeException("RETURNING AN EMPTY SEQUENCE: "+document.getLabel());
                 assert(document.getLabel()!=null) : "DOCUMENT HAS NO LABEL!!!!";
                 Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
@@ -101,7 +95,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
     public static class Builder {
         protected TokenizerFactory tokenizerFactory;
         protected DatabaseLabelledIterator iterator;
-        protected VocabCache<VocabWord> vocabCache;
         protected boolean readOnly = false;
 
         public Builder() {
@@ -118,10 +111,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             return this;
         }
 
-        public MySentenceTransformer.Builder vocabCache(@NonNull VocabCache<VocabWord> vocab) {
-            this.vocabCache=vocab;
-            return this;
-        }
 
         public MySentenceTransformer.Builder readOnly(boolean readOnly) {
             this.readOnly = true;
@@ -132,7 +121,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             MySentenceTransformer transformer = new MySentenceTransformer(this.iterator);
             transformer.tokenizerFactory = this.tokenizerFactory;
             transformer.readOnly = this.readOnly;
-            transformer.vocabCache = this.vocabCache;
             return transformer;
         }
     }
