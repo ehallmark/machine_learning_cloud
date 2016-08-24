@@ -214,8 +214,8 @@ public class BuildParagraphVectors {
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
-                .negativeSample(7)
-                .workers(8)
+                //.negativeSample(7)
+                .workers(4)
                 .build();
 
         System.out.println("Starting to train paragraph vectors...");
