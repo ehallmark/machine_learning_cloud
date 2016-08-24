@@ -9,7 +9,7 @@ public class Constants {
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
 	public static final int MIN_WORDS_PER_SENTENCE = 10;
 	public static final int MAX_WORDS_PER_DOCUMENT = 200;
-	public static final int SENTENCE_PADDING = 10;
+	public static final int SENTENCE_PADDING = 7;
 	public static final int VECTOR_LENGTH = 300;
 	//public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
 	public static final int START_DATE = 20030000;

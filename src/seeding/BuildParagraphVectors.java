@@ -189,18 +189,18 @@ public class BuildParagraphVectors {
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(5)
-                .epochs(3)
+                .iterations(3)
+                .epochs(5)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .learningRate(0.001)
-                .minLearningRate(0.00005)
-                .batchSize(100)
-                .windowSize(10)
+                .learningRate(0.005)
+                .minLearningRate(0.0001)
+                .batchSize(1000)
+                .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
                 .iterate(sequenceIterator)
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .stopWords(new ArrayList<String>())
+                .stopWords(vocabCache.vocabWords().stream().sorted((w1,w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).collect(Collectors.toList()).subList(0,1000))
                 .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
@@ -210,6 +210,7 @@ public class BuildParagraphVectors {
                 .workers(8)
                 .build();
 
+        System.out.println("Starting to train paragraph vectors...");
         vec.fit();
 
         System.out.println("Finished paragraph vectors...");
