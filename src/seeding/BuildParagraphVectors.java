@@ -147,7 +147,7 @@ public class BuildParagraphVectors {
         StringJoiner toEmail = new StringJoiner("\n");
         toEmail.add("Total number of documents: "+vocabCache.totalNumberOfDocs())
                 .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
-        new Emailer(toEmail.toString());
+        //new Emailer(toEmail.toString());
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
@@ -175,14 +175,14 @@ public class BuildParagraphVectors {
                 .layerSize(Constants.VECTOR_LENGTH)
                 .learningRate(0.001)
                 .minLearningRate(0.00005)
-                .batchSize(1000)
+                .batchSize(100)
                 .windowSize(10)
                 .iterate(sequenceIterator)
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
                 .stopWords(new ArrayList<String>())
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
