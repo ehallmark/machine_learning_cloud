@@ -84,7 +84,7 @@ public class Database {
 		if(updateParagraphVectorStatement==null)updateParagraphVectorStatement = insertConn.prepareStatement("update raw_patents_clone set vector=? where name=?");
 		updateParagraphVectorStatement.setArray(1, insertConn.createArrayOf("float4",vector));
 		updateParagraphVectorStatement.setString(2,patent);
-		updateParagraphVectorStatement.executeQuery();
+		updateParagraphVectorStatement.executeUpdate();
 	}
 
 
