@@ -185,6 +185,14 @@ public class BuildParagraphVectors {
         */
 
         // add word vectors
+        int numStopWords = 1000;
+        List<VocabWord> stopWords = vocabCache.vocabWords().stream().sorted((w1,w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).collect(Collectors.toList()).subList(0,numStopWords);
+        StringJoiner join = new StringJoiner("\n");
+        join.add("Stop words: ");
+        for(VocabWord w: stopWords) {
+            join.add(w.getLabel()+": "+w.getElementFrequency());
+        }
+        new Emailer(join.toString());
 
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
@@ -200,13 +208,13 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .stopWords(vocabCache.vocabWords().stream().sorted((w1,w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).collect(Collectors.toList()).subList(0,1000))
+                .stopWords(stopWords)
                 .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
-                .negativeSample(0)
+                .negativeSample(7)
                 .workers(8)
                 .build();
 
