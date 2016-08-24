@@ -7,6 +7,7 @@ import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
@@ -167,7 +168,19 @@ public class BuildParagraphVectors {
         */
         lookupTable.resetWeights(true);
 
-        
+
+        while(sequenceIterator.hasMoreSequences()) {
+            Sequence<VocabWord> seq = sequenceIterator.nextSequence();
+            assert(seq!=null) : "Sequence itself is NULL!!!";
+            assert(seq.getSequenceLabel()!=null) : "Sequence label is NULL!!!!";
+            assert seq.getElements()!=null : "Sequence has NULL Elements pointer!";
+            assert seq.getElements().size() > 0 : "Sequence "+seq.getSequenceLabel()+" has no elements!";
+            System.out.println(seq.getSequenceLabel()+": "+seq.getElements().size());
+        }
+
+
+        sequenceIterator.reset();
+        //
         // add word vectors
 
         System.out.println("Starting paragraph vectors...");
