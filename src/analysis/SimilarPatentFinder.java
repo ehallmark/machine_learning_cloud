@@ -25,22 +25,19 @@ import server.tools.AbstractPatent;
 public class SimilarPatentFinder {
     protected MinHeap<Patent> heap;
     protected List<Patent> patentList;
-    protected static INDArray eigenVectors;
-    static{
-        try {
-            eigenVectors=PCAModel.loadAndReturnEigenVectors();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
+
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE));
     }
 
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException,ClassNotFoundException {
+        this(candidateSet,patentListFile,null);
+    }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile) throws SQLException,IOException, ClassNotFoundException {
+
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, INDArray eigenVectors) throws SQLException,IOException, ClassNotFoundException {
         // construct lis
         System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
@@ -176,7 +173,7 @@ public class SimilarPatentFinder {
         return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
     }
 
-    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
+    private INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
@@ -185,6 +182,10 @@ public class SimilarPatentFinder {
         INDArray avgVector = handleResultSet(rs, offset);
         if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
+    }
+
+    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
+        return getVectorFromDB(patentNumber, null);
     }
 
     private synchronized PatentList similarPatentsHelper(INDArray baseVector, String patentNumber, Set<String> patentNamesToExclude, double threshold, int limit) {

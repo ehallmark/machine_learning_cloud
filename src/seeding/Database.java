@@ -29,7 +29,7 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
-	private static final String selectVectorsStatement = "SELECT pub_doc_number, vector FROM raw_vectors WHERE pub_doc_number=ANY(?)";
+	private static final String selectVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents_clone WHERE pub_doc_number=ANY(?)";
 	private static final String selectAllVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents";
 	private static final String selectSingleVectorStatement = "SELECT vector FROM raw_patents WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
