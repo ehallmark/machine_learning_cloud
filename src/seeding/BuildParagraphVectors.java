@@ -126,9 +126,11 @@ public class BuildParagraphVectors {
                     word.setSequencesCount(1);
                     word.setSpecial(true);
                     word.markAsLabel(true);
-                    word.setIndex(vocabCache.numWords());
                     vocabCache.addToken(word);
-                    vocabCache.addWordToIndex(word.getIndex(), patent);
+                    if(!vocabCache.hasToken(patent)) {
+                        word.setIndex(vocabCache.numWords());
+                        vocabCache.addWordToIndex(word.getIndex(), patent);
+                    }
                     vocabCache.incrementTotalDocCount(1);
                     System.out.println(i.getAndIncrement());
                 }
@@ -181,7 +183,7 @@ public class BuildParagraphVectors {
 
         sequenceIterator.reset();
         */
-        
+
         // add word vectors
 
         System.out.println("Starting paragraph vectors...");
@@ -204,7 +206,7 @@ public class BuildParagraphVectors {
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(0.0001)
-                .negativeSample(10)
+                .negativeSample(0)
                 .workers(8)
                 .build();
 
