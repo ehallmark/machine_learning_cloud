@@ -4,6 +4,7 @@ import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import tools.Emailer;
 import tools.VectorHelper;
 import tools.WordVectorSerializer;
 
@@ -25,6 +26,7 @@ public class UpdateDBWithParagraphVectors {
         ParagraphVectors vectors = WordVectorSerializer.readParagraphVectorsFromText(new File(Constants.WORD_VECTORS_PATH));
         long time2 = System.currentTimeMillis();
         System.out.println("Time to read paragraph vectors: "+new Double(time2-time1)/1000+ " seconds...");
+        new Emailer("Time to read paragraph vectors: "+new Double(time2-time1)/1000+ " seconds...");
         WeightLookupTable<VocabWord> lookupTable = vectors.lookupTable();
 
         ResultSet rs = Database.selectRawPatents();
