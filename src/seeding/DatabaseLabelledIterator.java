@@ -112,7 +112,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             cnt.set(0);
         }
         LabelledDocument doc = new LabelledDocument();
-        doc.setReferencedContent(currentSentenceIterator.next().stream().map(t->new VocabWord(1.0,t)).filter(w->w!=null).collect(Collectors.toList()));
+        doc.setReferencedContent(currentSentenceIterator.next().stream().map(t->vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t)).filter(w->w!=null).collect(Collectors.toList()));
         doc.setLabel(currentLabel);
         //System.out.println(currentLabel);
         //System.out.println(Arrays.toString(currentSentence.toArray()));
