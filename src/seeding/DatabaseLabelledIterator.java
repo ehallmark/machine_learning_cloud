@@ -60,6 +60,14 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                     String word = current.next();
                     sentence.add(word);
                     if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
+                        if(vocabCache!=null) {
+                            VocabWord word = new VocabWord(1.0, currentLabel);
+                            assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;
+                            word.setSequencesCount(1);
+                            word.setSpecial(true);
+                            word.markAsLabel(true);
+                            vocabCache.addToken(word);
+                        }
                         for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
                             newBuffer.add(sentence.get(i));
                         }
@@ -71,6 +79,13 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                         newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
                         sentence=new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
                     }
+                }
+                // get remaining
+                if(!sentence.isEmpty()) {
+                    if(!oldBuffer.isEmpty()) {
+                        sentence.addAll(0,oldBuffer);
+                    }
+                    newSentences.add(sentence);
                 }
                 currentSentenceIterator = newSentences.iterator();
                 if (currentSentenceIterator.hasNext()) return true;
