@@ -169,7 +169,7 @@ public class BuildParagraphVectors {
         lookupTable.resetWeights(true);
 
 
-        while(sequenceIterator.hasMoreSequences()) {
+        /*while(sequenceIterator.hasMoreSequences()) {
             Sequence<VocabWord> seq = sequenceIterator.nextSequence();
             assert(seq!=null) : "Sequence itself is NULL!!!";
             assert(seq.getSequenceLabel()!=null) : "Sequence label is NULL!!!!";
@@ -180,7 +180,8 @@ public class BuildParagraphVectors {
 
 
         sequenceIterator.reset();
-        //
+        */
+        
         // add word vectors
 
         System.out.println("Starting paragraph vectors...");
