@@ -64,6 +64,7 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             vLabel.setSequencesCount(1);
             vLabel.setSpecial(true);
         }else {
+            assert vocabCache.hasToken(label) : "Vocab cache does not have this token!!!";
             vLabel = vocabCache.tokenFor(label);
         }
         sequence.setSequenceLabel(vLabel);
@@ -84,7 +85,7 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             @Override
             public synchronized Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument(vocabCache);
-                if  (document.getReferencedContent() == null) return new Sequence<>();
+                if  (document.getReferencedContent() == null) throw new RuntimeException("RETURNING AN EMPTY SEQUENCE: "+document.getLabel());
                 assert(document.getLabel()!=null) : "DOCUMENT HAS NO LABEL!!!!";
                 Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
                 return sequence;

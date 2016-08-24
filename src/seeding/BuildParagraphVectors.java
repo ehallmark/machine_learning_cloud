@@ -149,6 +149,11 @@ public class BuildParagraphVectors {
                 .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
         //new Emailer(toEmail.toString());
 
+
+        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
+        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
+
+
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
                 .vectorLength(Constants.VECTOR_LENGTH)
@@ -162,9 +167,7 @@ public class BuildParagraphVectors {
         */
         lookupTable.resetWeights(true);
 
-        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
-        SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator,vocabCache);
-
+        
         // add word vectors
 
         System.out.println("Starting paragraph vectors...");
