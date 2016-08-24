@@ -637,7 +637,7 @@ public class WordVectorSerializer {
 
                 vocabCache.addToken(word);
                 vocabCache.addWordToIndex(word.getIndex(), word.getLabel());
-                System.out.println(vocabCache.numWords());
+                //System.out.println(vocabCache.numWords());
 
                 // backward compatibility code
                 //vocabCache.putVocabWord(word.getLabel());
