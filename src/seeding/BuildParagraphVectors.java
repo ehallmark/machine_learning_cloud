@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -142,6 +143,11 @@ public class BuildParagraphVectors {
         System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
 
 
+        StringJoiner toEmail = new StringJoiner("\n");
+        toEmail.add("Total number of documents: "+vocabCache.totalNumberOfDocs())
+                .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
+        new Emailer(toEmail.toString());
+
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
                 .vectorLength(Constants.VECTOR_LENGTH)
@@ -219,9 +225,7 @@ public class BuildParagraphVectors {
         System.out.println("internet/protein similarity (should be lower): " + sim2);
 
 
-        new Emailer("Finished paragraph vectors!");
-
-
+        new Test(vec.lookupTable());
 
 
     }
