@@ -157,9 +157,11 @@ public class BuildParagraphVectors {
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
+        double negativeSampling = 10;
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
+                .negative(negativeSampling)
                 .vectorLength(Constants.VECTOR_LENGTH)
                 .useAdaGrad(false)
                 .cache(vocabCache)
@@ -205,6 +207,7 @@ public class BuildParagraphVectors {
                 .batchSize(500)
                 .layerSize(Constants.VECTOR_LENGTH)
                 .epochs(1)
+                .negativeSample(negativeSampling)
                 .iterations(5)
                 .sampling(sampling)
                 .resetModel(false)
@@ -242,7 +245,7 @@ public class BuildParagraphVectors {
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(sampling)
-                //.negativeSample(7)
+                .negativeSample(negativeSampling)
                 .workers(4)
                 .build();
 

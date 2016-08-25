@@ -22,7 +22,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected String currentLabel;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
-    protected Iterator<List<String>> currentSentenceIterator;
+    protected Iterator<List<VocabWord>> currentSentenceIterator;
     protected VocabCache<VocabWord> vocabCache;
     protected long lastTime;
     // used to tag each sequence with own Id
@@ -51,13 +51,13 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 //System.out.println(Arrays.toString(words));
                 if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
                 assert words != null : "Words array from PG is NULL!";
-                Iterator<String> current = Arrays.asList(words).iterator();
-                List<List<String>> newSentences = new ArrayList<>();
-                List<String> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
-                List<String> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
-                List<String> newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
+                Iterator<VocabWord> current = Arrays.asList(words).stream().map(t->t==null?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).iterator();
+                List<List<VocabWord>> newSentences = new ArrayList<>();
+                List<VocabWord> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
+                List<VocabWord> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
+                List<VocabWord> newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
                 while(current.hasNext()) {
-                    String word = current.next();
+                    VocabWord word = current.next();
                     sentence.add(word);
                     if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
                         for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
@@ -112,10 +112,8 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             cnt.set(0);
         }
         LabelledDocument doc = new LabelledDocument();
-        doc.setReferencedContent(currentSentenceIterator.next().stream().filter(w->w!=null).map(t->vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t)).collect(Collectors.toList()));
+        doc.setReferencedContent(currentSentenceIterator.next());
         doc.setLabel(currentLabel);
-        //System.out.println(currentLabel);
-        //System.out.println(Arrays.toString(currentSentence.toArray()));
         return doc;
     }
 
