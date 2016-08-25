@@ -191,6 +191,7 @@ public class BuildParagraphVectors {
         // add word vectors
 
         double sampling = 0;
+        /*
         System.out.println("Starting word vectors...");
         // train words
         Word2Vec wordVectors = new Word2Vec.Builder()
@@ -237,7 +238,7 @@ public class BuildParagraphVectors {
         wordVectors.fit();
 
         new Test(lookupTable, true);
-        sequenceIterator.reset();
+        sequenceIterator.reset();*/
 
 
         System.out.println("Starting paragraph vectors...");
@@ -255,7 +256,7 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
@@ -275,6 +276,17 @@ public class BuildParagraphVectors {
                                 .add(Test.similarityMessage("8142281","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("9005028","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("8142843","7455590",sequenceVectors.getLookupTable()));
+                        System.out.println(sj.toString());
+                        printResults("7455590",sequenceVectors);
+                        printResults("internet",sequenceVectors);
+                        printResults("substrate",sequenceVectors);
+                        sj = new StringJoiner("\n");
+                        sj.add("Similarity Report: ")
+                                .add(Test.similarityMessage("computer","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("wireless","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","nucleus",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","chemistry",sequenceVectors.getLookupTable()));
                         System.out.println(sj.toString());
                         if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable());
                     }
