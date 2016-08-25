@@ -212,7 +212,7 @@ public class BuildParagraphVectors {
                 .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
                     @Override
                     public boolean validateEvent(ListenerEvent event, long argument) {
-                        if(event.equals(ListenerEvent.LINE)&&argument%1000==0) return true;
+                        if(event.equals(ListenerEvent.LINE)&&argument%100000==0) return true;
                         else if(event.equals(ListenerEvent.EPOCH)) return true;
                         else return false;
                     }
