@@ -35,9 +35,7 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
     /*
             So, we must accept any SentenceIterator implementations, and build vocab out of it, and use it for further transforms between text and Sequences
      */
-    protected TokenizerFactory tokenizerFactory;
     protected DatabaseLabelledIterator iterator;
-    protected boolean readOnly = false;
     protected AtomicInteger sentenceCounter = new AtomicInteger(0);
 
     private MySentenceTransformer(@NonNull DatabaseLabelledIterator iterator) {
@@ -79,10 +77,9 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             @Override
             public synchronized Sequence<VocabWord> next() {
                 LabelledDocument document = iterator.nextDocument();
-                if  (document.getReferencedContent() == null) throw new RuntimeException("RETURNING AN EMPTY SEQUENCE: "+document.getLabel());
+                assert(document.getReferencedContent()!=null) : "DOCUMENT HAS NO CONTENT!!!!";
                 assert(document.getLabel()!=null) : "DOCUMENT HAS NO LABEL!!!!";
-                Sequence<VocabWord> sequence = MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
-                return sequence;
+                return MySentenceTransformer.this.transformToSequence(document.getReferencedContent(),document.getLabel());
             }
 
             @Override
@@ -93,17 +90,10 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
     }
 
     public static class Builder {
-        protected TokenizerFactory tokenizerFactory;
         protected DatabaseLabelledIterator iterator;
-        protected boolean readOnly = false;
 
         public Builder() {
 
-        }
-
-        public MySentenceTransformer.Builder tokenizerFactory(@NonNull TokenizerFactory tokenizerFactory) {
-            this.tokenizerFactory = tokenizerFactory;
-            return this;
         }
 
         public MySentenceTransformer.Builder iterator(@NonNull DatabaseLabelledIterator iterator) {
@@ -112,15 +102,8 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
         }
 
 
-        public MySentenceTransformer.Builder readOnly(boolean readOnly) {
-            this.readOnly = true;
-            return this;
-        }
-
         public MySentenceTransformer build() {
             MySentenceTransformer transformer = new MySentenceTransformer(this.iterator);
-            transformer.tokenizerFactory = this.tokenizerFactory;
-            transformer.readOnly = this.readOnly;
             return transformer;
         }
     }

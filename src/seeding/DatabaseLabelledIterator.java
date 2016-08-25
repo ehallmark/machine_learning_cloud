@@ -51,7 +51,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 //System.out.println(Arrays.toString(words));
                 if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
                 assert words != null : "Words array from PG is NULL!";
-                Iterator<String> current = Arrays.asList(words).stream().filter(w->vocabCache==null||vocabCache.hasToken(w)).iterator();
+                Iterator<String> current = Arrays.asList(words).iterator();
                 List<List<String>> newSentences = new ArrayList<>();
                 List<String> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
                 List<String> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);

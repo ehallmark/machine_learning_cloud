@@ -8,6 +8,7 @@ import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
+import org.deeplearning4j.models.word2vec.Word2Vec;
 import tools.WordVectorSerializer;
 import org.deeplearning4j.models.sequencevectors.SequenceVectors;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
@@ -192,28 +193,55 @@ public class BuildParagraphVectors {
         for(VocabWord w: stopWords) {
             join.add(w.getLabel()+": "+w.getElementFrequency());
         }
-        new Emailer(join.toString());
+
+        double sampling = 0.0001;
+
+        System.out.println("Starting word vectors...");
+        // train words
+        Word2Vec wordVectors = new Word2Vec.Builder()
+                .seed(41)
+                .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
+                .iterate(sequenceIterator)
+                .batchSize(500)
+                .layerSize(Constants.VECTOR_LENGTH)
+                .epochs(1)
+                .iterations(5)
+                .sampling(sampling)
+                .resetModel(false)
+                .minLearningRate(0.0001)
+                .learningRate(0.005)
+                .workers(4)
+                .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
+                .vocabCache(vocabCache)
+                .lookupTable(lookupTable)
+                .build();
+        wordVectors.fit();
+
+        new Test(lookupTable, true);
+        sequenceIterator.reset();
+
 
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
+                .seed(41)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(4)
-                .epochs(5)
+                .iterations(5)
+                .epochs(1)
                 .layerSize(Constants.VECTOR_LENGTH)
                 .learningRate(0.005)
                 .minLearningRate(0.0001)
-                .batchSize(1000)
+                .batchSize(500)
                 .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
                 .iterate(sequenceIterator)
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
                 .stopWords(stopWords)
-                .trainElementsRepresentation(true)
+                .trainElementsRepresentation(false)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
-                .sampling(0.0001)
+                .sampling(sampling)
                 //.negativeSample(7)
                 .workers(4)
                 .build();
