@@ -60,6 +60,7 @@ package tools;
         import org.nd4j.linalg.ops.transforms.Transforms;
         import org.slf4j.Logger;
         import org.slf4j.LoggerFactory;
+        import seeding.Constants;
 
         import java.io.*;
         import java.util.ArrayList;
@@ -625,6 +626,7 @@ public class WordVectorSerializer {
                     word.markAsLabel(false);
                     Long sequenceCount = Long.valueOf(split[2]);
                     Long elementFrequency = Math.round(Double.valueOf(split[3]));
+                    if(elementFrequency < Constants.DEFAULT_MIN_WORD_FREQUENCY) continue;
                     word.setSequencesCount(sequenceCount);
                     word.setElementFrequency(elementFrequency);
                     // this particular line is just for backward compatibility with InMemoryLookupCache
