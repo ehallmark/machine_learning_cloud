@@ -21,10 +21,12 @@ public class Test {
             new Emailer(sj.toString());
         } else {
             StringJoiner sj = new StringJoiner("\n");
-            sj.add(similarityMessage("bluetooth","wireless",lookupTable))
-                    .add(similarityMessage("bluetooth","nucleus",lookupTable))
-                    .add(similarityMessage("nucleus","biology",lookupTable))
-                    .add(similarityMessage("wireless","internet",lookupTable));
+            sj.add("Similarity Report: ")
+                    .add(Test.similarityMessage("computer","network",lookupTable))
+                    .add(Test.similarityMessage("wireless","network",lookupTable))
+                    .add(Test.similarityMessage("substrate","network",lookupTable))
+                    .add(Test.similarityMessage("substrate","nucleus",lookupTable))
+                    .add(Test.similarityMessage("substrate","chemistry",lookupTable));
             new Emailer(sj.toString());
         }
     }

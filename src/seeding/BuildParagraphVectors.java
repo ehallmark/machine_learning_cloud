@@ -152,7 +152,7 @@ public class BuildParagraphVectors {
                 .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
         //new Emailer(toEmail.toString());
 
-        int numStopWords = 500;
+        int numStopWords = 75;
         Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
 
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache,stopWords);
@@ -221,10 +221,11 @@ public class BuildParagraphVectors {
                     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
                         StringJoiner sj = new StringJoiner("\n");
                         sj.add("Similarity Report: ")
-                                .add(Test.similarityMessage("internet","network",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("wireless","internet",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("internet","nucleus",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("nucleus","protein",sequenceVectors.getLookupTable()));
+                                .add(Test.similarityMessage("computer","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("wireless","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","nucleus",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("substrate","chemistry",sequenceVectors.getLookupTable()));
                         System.out.println(sj.toString());
                         if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable(),true);
                     }
