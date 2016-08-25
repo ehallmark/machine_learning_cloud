@@ -190,22 +190,22 @@ public class BuildParagraphVectors {
 
         // add word vectors
 
-        double sampling = 0.0001;
+        double sampling = 0.0;
         System.out.println("Starting word vectors...");
         // train words
         Word2Vec wordVectors = new Word2Vec.Builder()
                 .seed(41)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                 .iterate(sequenceIterator)
-                .batchSize(500)
+                .batchSize(100)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .epochs(2)
+                .epochs(1)
                 .negativeSample(negativeSampling)
                 .iterations(3)
                 .sampling(sampling)
                 .resetModel(false)
-                .minLearningRate(0.0001)
-                .learningRate(0.005)
+                .minLearningRate(0.001)
+                .learningRate(0.05)
                 .workers(2)
                 .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
                 .vocabCache(vocabCache)
