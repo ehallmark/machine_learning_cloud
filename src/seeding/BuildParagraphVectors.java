@@ -157,7 +157,7 @@ public class BuildParagraphVectors {
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
-        double negativeSampling = 10;
+        double negativeSampling = 0.0;
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
