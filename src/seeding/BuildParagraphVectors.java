@@ -20,7 +20,6 @@ import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.models.word2vec.wordstore.VocabConstructor;
 import org.deeplearning4j.models.word2vec.wordstore.inmemory.AbstractCache;
 
-import org.deeplearning4j.text.sentenceiterator.SentencePreProcessor;
 import tools.Emailer;
 
 import java.io.File;
@@ -35,20 +34,6 @@ import java.util.stream.Collectors;
  */
 public class BuildParagraphVectors {
     public BuildParagraphVectors(File vocabFile, File vocabFileWithLabels, File vectorFile, DatabaseLabelledIterator iterator, Collection<String> patentCollection) throws Exception {
-        //Database.setupMainConn();
-        Database.setupSeedConn();
-        Database.setupInsertConn();
-        //Database.setupCompDBConn();
-        //File dataFolder = new File(Constants.RAW_PATENT_DATA_FOLDER);
-        /*try {
-
-            createDataFolder(new MyPreprocessor());
-            Database.insertCommit();
-
-
-        } finally {
-            Database.close();
-        }*/
 
         VocabCache<VocabWord> vocabCache;
 
@@ -166,71 +151,9 @@ public class BuildParagraphVectors {
         lookupTable.resetWeights(true);
 
 
-        /*while(sequenceIterator.hasMoreSequences()) {
-            Sequence<VocabWord> seq = sequenceIterator.nextSequence();
-            assert(seq!=null) : "Sequence itself is NULL!!!";
-            assert(seq.getSequenceLabel()!=null) : "Sequence label is NULL!!!!";
-            assert seq.getElements()!=null : "Sequence has NULL Elements pointer!";
-            assert seq.getElements().size() > 0 : "Sequence "+seq.getSequenceLabel()+" has no elements!";
-            System.out.println(seq.getSequenceLabel()+": "+seq.getElements().size());
-        }
-
-
-        sequenceIterator.reset();
-        */
-
         // add word vectors
 
         double sampling = 0;
-        /*
-        System.out.println("Starting word vectors...");
-        // train words
-        Word2Vec wordVectors = new Word2Vec.Builder()
-                .seed(41)
-                .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterate(sequenceIterator)
-                .batchSize(100)
-                .layerSize(Constants.VECTOR_LENGTH)
-                .epochs(1)
-                .negativeSample(negativeSampling)
-                .iterations(3)
-                .sampling(sampling)
-                .resetModel(false)
-                .minLearningRate(0.001)
-                .learningRate(0.05)
-                .workers(2)
-                .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
-                .vocabCache(vocabCache)
-                .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
-                    @Override
-                    public boolean validateEvent(ListenerEvent event, long argument) {
-                        if(event.equals(ListenerEvent.LINE)&&argument%100000==0) return true;
-                        else if(event.equals(ListenerEvent.EPOCH)) return true;
-                        else return false;
-                    }
-
-                    @Override
-                    public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
-                        printResults("internet",sequenceVectors);
-                        printResults("substrate",sequenceVectors);
-                        StringJoiner sj = new StringJoiner("\n");
-                        sj.add("Similarity Report: ")
-                                .add(Test.similarityMessage("computer","network",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("wireless","network",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("substrate","network",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("substrate","nucleus",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("substrate","chemistry",sequenceVectors.getLookupTable()));
-                        System.out.println(sj.toString());
-                        if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable(),true);
-                    }
-                }))
-                .lookupTable(lookupTable)
-                .build();
-        wordVectors.fit();
-
-        new Test(lookupTable, true);
-        sequenceIterator.reset();*/
-
 
         System.out.println("Starting paragraph vectors...");
         ParagraphVectors vec = new ParagraphVectors.Builder()
@@ -287,7 +210,6 @@ public class BuildParagraphVectors {
         vec.fit();
 
         System.out.println("Finished paragraph vectors...");
-        Database.close();
 
 
         /*
@@ -340,8 +262,14 @@ public class BuildParagraphVectors {
     }*/
 
     public static void main(String[] args) throws Exception {
+        Database.setupSeedConn();
+        Database.setupInsertConn();
         //new BuildParagraphVectors(new File(Constants.VOCAB_FILE), new File(Constants.VOCAB_FILE_WITH_LABELS), new File(Constants.WORD_VECTORS_PATH), new DatabaseLabelledIterator(), null);
-        new BuildParagraphVectors(new File("compdb_vocab_file.txt"), new File("compdb_vocab_with_labels.txt"), new File("compdb_paragraph_vectors.txt"), new EtsiLabelledIterator(), Constants.ETSI_PATENT_LIST);
+        try {
+            new BuildParagraphVectors(new File("compdb_vocab_file.txt"), new File("compdb_vocab_with_labels.txt"), new File("compdb_paragraph_vectors.txt"), new EtsiLabelledIterator(), Constants.ETSI_PATENT_LIST);
+        } finally {
+            Database.close();
+        }
 
     }
 
