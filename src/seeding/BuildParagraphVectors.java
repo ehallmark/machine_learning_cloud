@@ -277,7 +277,7 @@ public class BuildParagraphVectors {
         System.out.println("Words nearest to "+word+": "+String.join(", ",sequenceVectors.wordsNearest(word,10).stream().collect(Collectors.toList())));
     }
 
-    private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
+    public static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {
         System.out.println("Iterator transformation...");
 
         MySentenceTransformer transformer = new MySentenceTransformer.Builder().iterator(iterator).build();
