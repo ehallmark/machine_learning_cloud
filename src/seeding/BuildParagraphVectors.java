@@ -219,6 +219,8 @@ public class BuildParagraphVectors {
 
                     @Override
                     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
+                        printResults("internet",sequenceVectors);
+                        printResults("substrate",sequenceVectors);
                         StringJoiner sj = new StringJoiner("\n");
                         sj.add("Similarity Report: ")
                                 .add(Test.similarityMessage("computer","network",sequenceVectors.getLookupTable()))
@@ -320,6 +322,10 @@ public class BuildParagraphVectors {
         new Test(vec.lookupTable());
 
 
+    }
+
+    private static void printResults(String word, SequenceVectors<VocabWord> sequenceVectors) {
+        System.out.println("Words nearest to "+word+": "+String.join(", ",sequenceVectors.wordsNearest(word,10).stream().collect(Collectors.toList())));
     }
 
     private static AbstractSequenceIterator<VocabWord> createSequenceIterator(DatabaseLabelledIterator iterator) {

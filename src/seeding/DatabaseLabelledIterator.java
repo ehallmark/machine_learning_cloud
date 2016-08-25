@@ -66,7 +66,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 List<VocabWord> newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
                 while(current.hasNext()) {
                     VocabWord word = current.next();
-                    if(word.getLabel().equals("network")||word.getLabel().equals("substrate")||word.getLabel().equals("wireless")) System.out.println(word.getLabel());
+                    //if(word.getLabel().equals("network")||word.getLabel().equals("substrate")||word.getLabel().equals("wireless")) System.out.println(word.getLabel());
                     sentence.add(word);
                     if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
                         for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
