@@ -31,6 +31,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache,Set<String> stopWords) throws SQLException {
         this.vocabCache=vocabCache;
         this.stopWords=stopWords;
+        if(this.stopWords==null)this.stopWords=new HashSet<>();
         preProcessor=(t)->t;
         resultSet = Database.selectRawPatents();
     }

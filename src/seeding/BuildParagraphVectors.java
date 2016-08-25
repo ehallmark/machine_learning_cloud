@@ -6,7 +6,9 @@ import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.loader.VectorsConfiguration;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.enums.ListenerEvent;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
+import org.deeplearning4j.models.sequencevectors.interfaces.VectorsListener;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import tools.WordVectorSerializer;
@@ -189,7 +191,7 @@ public class BuildParagraphVectors {
         // add word vectors
 
         double sampling = 0.0001;
-
+        AtomicInteger cnt = new AtomicInteger(0);
         System.out.println("Starting word vectors...");
         // train words
         Word2Vec wordVectors = new Word2Vec.Builder()
@@ -200,14 +202,34 @@ public class BuildParagraphVectors {
                 .layerSize(Constants.VECTOR_LENGTH)
                 .epochs(1)
                 .negativeSample(negativeSampling)
-                .iterations(5)
+                .iterations(2)
                 .sampling(sampling)
                 .resetModel(false)
                 .minLearningRate(0.0001)
                 .learningRate(0.005)
-                .workers(4)
+                .workers(2)
                 .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
                 .vocabCache(vocabCache)
+                .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
+                    @Override
+                    public boolean validateEvent(ListenerEvent event, long argument) {
+                        System.out.println(event.toString()+": "+argument);
+                        if(cnt.getAndIncrement()%1000==0) {
+                            return true;
+                        } else return false;
+                    }
+
+                    @Override
+                    public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
+                        StringJoiner sj = new StringJoiner("\n");
+                        sj.add("Similarity Report: ")
+                                .add(Test.similarityMessage("internet","network",lookupTable))
+                                .add(Test.similarityMessage("internet","nucleus",lookupTable))
+                                .add(Test.similarityMessage("wireless","internet",lookupTable))
+                                .add(Test.similarityMessage("nucleus","protein",lookupTable));
+                        System.out.println(sj.toString());
+                    }
+                }))
                 .lookupTable(lookupTable)
                 .build();
         wordVectors.fit();
@@ -220,7 +242,7 @@ public class BuildParagraphVectors {
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .seed(41)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(5)
+                .iterations(2)
                 .epochs(1)
                 .layerSize(Constants.VECTOR_LENGTH)
                 .learningRate(0.005)
@@ -237,7 +259,7 @@ public class BuildParagraphVectors {
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(sampling)
                 .negativeSample(negativeSampling)
-                .workers(4)
+                .workers(2)
                 .build();
 
         System.out.println("Starting to train paragraph vectors...");
