@@ -23,10 +23,7 @@ import tools.Emailer;
 
 import java.io.File;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.StringJoiner;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -153,8 +150,10 @@ public class BuildParagraphVectors {
                 .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
         //new Emailer(toEmail.toString());
 
+        int numStopWords = 500;
+        Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
 
-        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache);
+        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache,stopWords);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
         double negativeSampling = 0.0;
@@ -188,13 +187,6 @@ public class BuildParagraphVectors {
         */
 
         // add word vectors
-        int numStopWords = 500;
-        List<VocabWord> stopWords = vocabCache.vocabWords().stream().sorted((w1,w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).collect(Collectors.toList()).subList(0,numStopWords);
-        StringJoiner join = new StringJoiner("\n");
-        join.add("Stop words: ");
-        for(VocabWord w: stopWords) {
-            join.add(w.getLabel()+": "+w.getElementFrequency());
-        }
 
         double sampling = 0.0001;
 
@@ -239,7 +231,6 @@ public class BuildParagraphVectors {
                 .vocabCache(vocabCache)
                 .lookupTable(lookupTable)
                 .resetModel(false)
-                .stopWords(stopWords)
                 .trainElementsRepresentation(false)
                 .trainSequencesRepresentation(true)
                 //.elementsLearningAlgorithm(new SkipGram<>())

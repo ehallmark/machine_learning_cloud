@@ -24,14 +24,21 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected ResultSet resultSet;
     protected Iterator<List<VocabWord>> currentSentenceIterator;
     protected VocabCache<VocabWord> vocabCache;
+    protected Set<String> stopWords;
     protected long lastTime;
     // used to tag each sequence with own Id
 
-    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache) throws SQLException {
+    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache,Set<String> stopWords) throws SQLException {
         this.vocabCache=vocabCache;
+        this.stopWords=stopWords;
         preProcessor=(t)->t;
         resultSet = Database.selectRawPatents();
     }
+
+    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache) throws SQLException {
+        this(vocabCache,null);
+    }
+
 
     public DatabaseLabelledIterator() throws SQLException {
         this(null);
@@ -51,7 +58,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 //System.out.println(Arrays.toString(words));
                 if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
                 assert words != null : "Words array from PG is NULL!";
-                Iterator<VocabWord> current = Arrays.asList(words).stream().map(t->t==null?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).iterator();
+                Iterator<VocabWord> current = Arrays.asList(words).stream().map(t->t==null||stopWords.contains(t)?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).iterator();
                 List<List<VocabWord>> newSentences = new ArrayList<>();
                 List<VocabWord> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
                 List<VocabWord> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);

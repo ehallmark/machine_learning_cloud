@@ -7,8 +7,8 @@ import java.util.*;
 public class Constants {
 	public static final int DEFAULT_MIN_WORD_FREQUENCY = 100;
 	public static final int MAX_DESCRIPTION_LENGTH = 20000;
-	public static final int MIN_WORDS_PER_SENTENCE = 10;
-	public static final int MAX_WORDS_PER_DOCUMENT = 200;
+	public static final int MIN_WORDS_PER_SENTENCE = 5;
+	public static final int MAX_WORDS_PER_DOCUMENT = 50;
 	public static final int SENTENCE_PADDING = 7;
 	public static final int VECTOR_LENGTH = 300;
 	//public static final int NUM_ROWS_OF_WORD_VECTORS = 5;
