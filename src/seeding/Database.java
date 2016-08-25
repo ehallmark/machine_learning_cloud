@@ -2,6 +2,7 @@ package seeding;
 
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Database {
@@ -179,9 +180,20 @@ public class Database {
 	}
 
 	public static ResultSet selectRawPatents() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select name, words from raw_patents_clone");
-		ps.setFetchSize(5);
-		return ps.executeQuery();
+		return selectRawPatents(null);
+	}
+
+	public static ResultSet selectRawPatents(Collection<String> patents) throws SQLException {
+		if(patents==null) {
+			PreparedStatement ps = seedConn.prepareStatement("select name, words from raw_patents_clone");
+			ps.setFetchSize(5);
+			return ps.executeQuery();
+		} else {
+			PreparedStatement ps = seedConn.prepareStatement("select name, words from raw_patents_clone where name like ANY(?)");
+			ps.setArray(1, seedConn.createArrayOf("varchar",patents.stream().map(p->p+"%").collect(Collectors.toList()).toArray()));
+			ps.setFetchSize(5);
+			return ps.executeQuery();
+		}
 	}
 
 	public static void insertPatentParagraphVector(String pub_doc_number,Float[] paragraphVector) throws SQLException {

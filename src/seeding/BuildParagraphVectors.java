@@ -34,30 +34,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/16/16.
  */
 public class BuildParagraphVectors {
-
-    public static void createDataFolder(SentencePreProcessor preProcessor) throws Exception {
-        //if(!folder.exists())folder.mkdirs();
-
-        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
-        iter.reset();
-        while(iter.hasNext()) {
-            String nextSentence = iter.nextSentence();
-            String label = iter.currentLabel();
-            /*File toMake = new File(folder.getAbsolutePath()+"/"+label);
-            if(!toMake.exists()) {
-                BufferedWriter bw = new BufferedWriter(new FileWriter(toMake));
-                bw.write(preProcessor.preProcess(nextSentence));
-                bw.flush();
-                bw.close();
-            }*/
-            List<String> toAdd = Arrays.asList(preProcessor.preProcess(nextSentence).split("\\s+")).stream().filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
-            Database.insertRawPatent(label, toAdd);
-        }
-
-    }
-
-
-    public static void main(String[] args) throws Exception {
+    public BuildParagraphVectors(File vocabFile, File vocabFileWithLabels, File vectorFile, DatabaseLabelledIterator iterator, Collection<String> patentCollection) throws Exception {
         //Database.setupMainConn();
         Database.setupSeedConn();
         Database.setupInsertConn();
@@ -76,15 +53,13 @@ public class BuildParagraphVectors {
         VocabCache<VocabWord> vocabCache;
 
         System.out.println("Checking existence of vocab file...");
-        if(new File(Constants.VOCAB_FILE_WITH_LABELS).exists()) {
-            vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE_WITH_LABELS));
+        if(vocabFileWithLabels.exists()) {
+            vocabCache = WordVectorSerializer.readVocab(vocabFileWithLabels);
         } else {
-            if (new File(Constants.VOCAB_FILE).exists()) {
-                vocabCache = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
+            if (vocabFile.exists()) {
+                vocabCache = WordVectorSerializer.readVocab(vocabFile);
             } else {
                 System.out.println("Setting up iterator...");
-
-                DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
 
                 AbstractSequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
@@ -107,7 +82,7 @@ public class BuildParagraphVectors {
 
                 constructor.buildJointVocabulary(false, true);
 
-                WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE));
+                WordVectorSerializer.writeVocab(vocabCache, vocabFile);
                 System.out.println("Vocabulary finished...");
 
                 new Emailer("Finished vocabulary!");
@@ -118,25 +93,41 @@ public class BuildParagraphVectors {
             if(!vocabCache.containsWord("6509257")) {
                 System.out.println("We dont have patent 6509257 but we should... get labels again");
                 // add special labels of each text
-                ResultSet rs = Database.selectRawPatentNames();
                 AtomicInteger i = new AtomicInteger(0);
-                while (rs.next()) {
-                    String patent = rs.getString(1).split("_")[0];
-                    VocabWord word = new VocabWord(1.0, patent);
-                    word.setSequencesCount(1);
-                    word.setSpecial(true);
-                    word.markAsLabel(true);
-                    vocabCache.addToken(word);
-                    if(!vocabCache.hasToken(patent)) {
-                        word.setIndex(vocabCache.numWords());
-                        vocabCache.addWordToIndex(word.getIndex(), patent);
+                if(patentCollection==null) {
+                    ResultSet rs = Database.selectRawPatentNames();
+                    while (rs.next()) {
+                        String patent = rs.getString(1).split("_")[0];
+                        VocabWord word = new VocabWord(1.0, patent);
+                        word.setSequencesCount(1);
+                        word.setSpecial(true);
+                        word.markAsLabel(true);
+                        vocabCache.addToken(word);
+                        if (!vocabCache.hasToken(patent)) {
+                            word.setIndex(vocabCache.numWords());
+                            vocabCache.addWordToIndex(word.getIndex(), patent);
+                        }
+                        vocabCache.incrementTotalDocCount(1);
+                        System.out.println(i.getAndIncrement());
                     }
-                    vocabCache.incrementTotalDocCount(1);
-                    System.out.println(i.getAndIncrement());
+                } else {
+                    patentCollection.forEach(patent->{
+                        VocabWord word = new VocabWord(1.0, patent);
+                        word.setSequencesCount(1);
+                        word.setSpecial(true);
+                        word.markAsLabel(true);
+                        vocabCache.addToken(word);
+                        if (!vocabCache.hasToken(patent)) {
+                            word.setIndex(vocabCache.numWords());
+                            vocabCache.addWordToIndex(word.getIndex(), patent);
+                        }
+                        vocabCache.incrementTotalDocCount(1);
+                        System.out.println(i.getAndIncrement());
+                    });
                 }
                 System.out.println("Writing vocab...");
 
-                WordVectorSerializer.writeVocab(vocabCache, new File(Constants.VOCAB_FILE_WITH_LABELS));
+                WordVectorSerializer.writeVocab(vocabCache, vocabFileWithLabels);
 
             }
         }
@@ -152,10 +143,10 @@ public class BuildParagraphVectors {
                 .add("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
         //new Emailer(toEmail.toString());
 
-        int numStopWords = 75;
+        int numStopWords = 50;
         Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
 
-        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache,stopWords);
+        iterator.setVocabAndStopWords(vocabCache,stopWords);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
         double negativeSampling = 0;
@@ -271,10 +262,11 @@ public class BuildParagraphVectors {
 
                     @Override
                     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
-                        printResults("7455590",sequenceVectors);
+                        printResults("semiconductor",sequenceVectors);
                         printResults("internet",sequenceVectors);
+                        printResults("invention",sequenceVectors);
                         StringJoiner sj = new StringJoiner("\n");
-                        sj.add("Similarity Report: ")
+                       /* sj.add("Similarity Report: ")
                                 .add(Test.similarityMessage("8142281","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("9005028","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("8142843","7455590",sequenceVectors.getLookupTable()))
@@ -284,7 +276,7 @@ public class BuildParagraphVectors {
                                 .add(Test.similarityMessage("substrate","nucleus",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("substrate","chemistry",sequenceVectors.getLookupTable()));
                         System.out.println(sj.toString());
-                        if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable());
+                        if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable());*/
                     }
                 }))
                 .negativeSample(negativeSampling)
@@ -312,13 +304,13 @@ public class BuildParagraphVectors {
          */
 
         System.out.println("Writing to file...");
-        WordVectorSerializer.writeWordVectors(vec, new File(Constants.WORD_VECTORS_PATH));
+        WordVectorSerializer.writeWordVectors(vec, vectorFile);
 
         System.out.println("Done...");
 
         System.out.println("Reading from file...");
 
-        vec = WordVectorSerializer.readParagraphVectorsFromText(new File(Constants.WORD_VECTORS_PATH));
+        vec = WordVectorSerializer.readParagraphVectorsFromText(vectorFile);
 
         double sim = vec.similarity("internet", "network");
         System.out.println("internet/computer similarity: " + sim);
@@ -329,6 +321,27 @@ public class BuildParagraphVectors {
 
         new Test(vec.lookupTable());
 
+
+    }
+
+
+    /*public static void createDataFolder(SentencePreProcessor preProcessor) throws Exception {
+
+        BasePatentIterator iter = new BasePatentIterator(Constants.START_DATE);
+        iter.reset();
+        while(iter.hasNext()) {
+            String nextSentence = iter.nextSentence();
+            String label = iter.currentLabel();
+
+            List<String> toAdd = Arrays.asList(preProcessor.preProcess(nextSentence).split("\\s+")).stream().filter(s->s!=null&&s.length()>0).collect(Collectors.toList());
+            Database.insertRawPatent(label, toAdd);
+        }
+
+    }*/
+
+    public static void main(String[] args) throws Exception {
+        //new BuildParagraphVectors(new File(Constants.VOCAB_FILE), new File(Constants.VOCAB_FILE_WITH_LABELS), new File(Constants.WORD_VECTORS_PATH), new DatabaseLabelledIterator(), null);
+        new BuildParagraphVectors(new File("compdb_vocab_file.txt"), new File("compdb_vocab_with_labels.txt"), new File("compdb_paragraph_vectors.txt"), new EtsiLabelledIterator(), Constants.ETSI_PATENT_LIST);
 
     }
 

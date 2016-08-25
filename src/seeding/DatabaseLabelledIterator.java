@@ -45,6 +45,11 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
         this(null);
     }
 
+    public void setVocabAndStopWords(VocabCache<VocabWord> vocab, Set<String> stopWords) {
+        this.vocabCache=vocab;
+        this.stopWords=stopWords;
+    }
+
 
 
     @Override
