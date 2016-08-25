@@ -158,7 +158,7 @@ public class BuildParagraphVectors {
         DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(vocabCache,stopWords);
         SequenceIterator<VocabWord> sequenceIterator = createSequenceIterator(iterator);
 
-        double negativeSampling = 0.0;
+        double negativeSampling = 0;
 
         WeightLookupTable<VocabWord> lookupTable = new InMemoryLookupTable.Builder<VocabWord>()
                 .seed(41)
@@ -190,7 +190,7 @@ public class BuildParagraphVectors {
 
         // add word vectors
 
-        double sampling = 0.0;
+        double sampling = 0;
         System.out.println("Starting word vectors...");
         // train words
         Word2Vec wordVectors = new Word2Vec.Builder()
