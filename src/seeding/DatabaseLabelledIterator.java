@@ -112,13 +112,13 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     }
 
     private synchronized LabelledDocument nextDocumentHelper() {
-        int currentCnt = cnt.getAndIncrement();
+        /*int currentCnt = cnt.getAndIncrement();
         if(currentCnt%1000==999) {
             long time = System.currentTimeMillis();
             System.out.println("Time to complete 1000 patents: "+new Double(time-lastTime)/(1000)+" seconds");
             lastTime = time;
             cnt.set(0);
-        }
+        }*/
         LabelledDocument doc = new LabelledDocument();
         doc.setReferencedContent(currentSentenceIterator.next());
         doc.setLabel(currentLabel);

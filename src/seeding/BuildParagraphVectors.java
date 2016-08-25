@@ -222,8 +222,8 @@ public class BuildParagraphVectors {
                         StringJoiner sj = new StringJoiner("\n");
                         sj.add("Similarity Report: ")
                                 .add(Test.similarityMessage("internet","network",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("internet","nucleus",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("wireless","internet",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("internet","nucleus",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("nucleus","protein",sequenceVectors.getLookupTable()));
                         System.out.println(sj.toString());
                         if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable(),true);
@@ -260,7 +260,7 @@ public class BuildParagraphVectors {
                 .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
                     @Override
                     public boolean validateEvent(ListenerEvent event, long argument) {
-                        if(event.equals(ListenerEvent.LINE)&&argument%1000==0) return true;
+                        if(event.equals(ListenerEvent.LINE)&&argument%100000==0) return true;
                         else if(event.equals(ListenerEvent.EPOCH)) return true;
                         else return false;
                     }
