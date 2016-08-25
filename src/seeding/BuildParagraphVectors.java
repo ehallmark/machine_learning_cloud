@@ -69,7 +69,7 @@ public class BuildParagraphVectors {
 
                 WordVectorSerializer.writeVocab(vocabCache, vocabFile);
                 System.out.println("Vocabulary finished...");
-
+                sequenceIterator.reset();
                 new Emailer("Finished vocabulary!");
 
             }
