@@ -246,9 +246,9 @@ public class BuildParagraphVectors {
                 .seed(41)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
                 .iterations(3)
-                .epochs(3)
+                .epochs(5)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .learningRate(0.005)
+                .learningRate(0.025)
                 .minLearningRate(0.0001)
                 .batchSize(500)
                 .windowSize(Constants.MIN_WORDS_PER_SENTENCE)
@@ -264,24 +264,20 @@ public class BuildParagraphVectors {
                 .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
                     @Override
                     public boolean validateEvent(ListenerEvent event, long argument) {
-                        if(event.equals(ListenerEvent.LINE)&&argument%100000==0) return true;
+                        if(event.equals(ListenerEvent.LINE)&&argument%200000==0) return true;
                         else if(event.equals(ListenerEvent.EPOCH)) return true;
                         else return false;
                     }
 
                     @Override
                     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
+                        printResults("7455590",sequenceVectors);
+                        printResults("internet",sequenceVectors);
                         StringJoiner sj = new StringJoiner("\n");
                         sj.add("Similarity Report: ")
                                 .add(Test.similarityMessage("8142281","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("9005028","7455590",sequenceVectors.getLookupTable()))
-                                .add(Test.similarityMessage("8142843","7455590",sequenceVectors.getLookupTable()));
-                        System.out.println(sj.toString());
-                        printResults("7455590",sequenceVectors);
-                        printResults("internet",sequenceVectors);
-                        printResults("substrate",sequenceVectors);
-                        sj = new StringJoiner("\n");
-                        sj.add("Similarity Report: ")
+                                .add(Test.similarityMessage("8142843","7455590",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("computer","network",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("wireless","network",sequenceVectors.getLookupTable()))
                                 .add(Test.similarityMessage("substrate","network",sequenceVectors.getLookupTable()))
@@ -292,7 +288,7 @@ public class BuildParagraphVectors {
                     }
                 }))
                 .negativeSample(negativeSampling)
-                .workers(2)
+                .workers(4)
                 .build();
 
         System.out.println("Starting to train paragraph vectors...");
