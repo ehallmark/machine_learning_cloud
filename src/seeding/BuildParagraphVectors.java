@@ -191,7 +191,6 @@ public class BuildParagraphVectors {
         // add word vectors
 
         double sampling = 0.0001;
-        AtomicInteger cnt = new AtomicInteger(0);
         System.out.println("Starting word vectors...");
         // train words
         Word2Vec wordVectors = new Word2Vec.Builder()
@@ -200,9 +199,9 @@ public class BuildParagraphVectors {
                 .iterate(sequenceIterator)
                 .batchSize(500)
                 .layerSize(Constants.VECTOR_LENGTH)
-                .epochs(1)
+                .epochs(2)
                 .negativeSample(negativeSampling)
-                .iterations(2)
+                .iterations(3)
                 .sampling(sampling)
                 .resetModel(false)
                 .minLearningRate(0.0001)
@@ -213,21 +212,21 @@ public class BuildParagraphVectors {
                 .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
                     @Override
                     public boolean validateEvent(ListenerEvent event, long argument) {
-                        System.out.println(event.toString()+": "+argument);
-                        if(cnt.getAndIncrement()%1000==0) {
-                            return true;
-                        } else return false;
+                        if(event.equals(ListenerEvent.LINE)&&argument%1000==0) return true;
+                        else if(event.equals(ListenerEvent.EPOCH)) return true;
+                        else return false;
                     }
 
                     @Override
                     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
                         StringJoiner sj = new StringJoiner("\n");
                         sj.add("Similarity Report: ")
-                                .add(Test.similarityMessage("internet","network",lookupTable))
-                                .add(Test.similarityMessage("internet","nucleus",lookupTable))
-                                .add(Test.similarityMessage("wireless","internet",lookupTable))
-                                .add(Test.similarityMessage("nucleus","protein",lookupTable));
+                                .add(Test.similarityMessage("internet","network",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("internet","nucleus",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("wireless","internet",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("nucleus","protein",sequenceVectors.getLookupTable()));
                         System.out.println(sj.toString());
+                        if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable(),true);
                     }
                 }))
                 .lookupTable(lookupTable)
@@ -242,8 +241,8 @@ public class BuildParagraphVectors {
         ParagraphVectors vec = new ParagraphVectors.Builder()
                 .seed(41)
                 .minWordFrequency(Constants.DEFAULT_MIN_WORD_FREQUENCY)
-                .iterations(2)
-                .epochs(1)
+                .iterations(3)
+                .epochs(3)
                 .layerSize(Constants.VECTOR_LENGTH)
                 .learningRate(0.005)
                 .minLearningRate(0.0001)
@@ -258,6 +257,25 @@ public class BuildParagraphVectors {
                 //.elementsLearningAlgorithm(new SkipGram<>())
                 //.sequenceLearningAlgorithm(new DBOW())
                 .sampling(sampling)
+                .setVectorsListeners(Arrays.asList(new VectorsListener<VocabWord>() {
+                    @Override
+                    public boolean validateEvent(ListenerEvent event, long argument) {
+                        if(event.equals(ListenerEvent.LINE)&&argument%1000==0) return true;
+                        else if(event.equals(ListenerEvent.EPOCH)) return true;
+                        else return false;
+                    }
+
+                    @Override
+                    public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
+                        StringJoiner sj = new StringJoiner("\n");
+                        sj.add("Similarity Report: ")
+                                .add(Test.similarityMessage("8142281","7455590",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("9005028","7455590",sequenceVectors.getLookupTable()))
+                                .add(Test.similarityMessage("8142843","7455590",sequenceVectors.getLookupTable()));
+                        System.out.println(sj.toString());
+                        if(event.equals(ListenerEvent.EPOCH)) new Test(sequenceVectors.getLookupTable());
+                    }
+                }))
                 .negativeSample(negativeSampling)
                 .workers(2)
                 .build();
