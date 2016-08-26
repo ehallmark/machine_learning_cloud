@@ -234,15 +234,15 @@ public class SimilarPatentFinder {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder();
             System.out.println("Most similar: ");
-            PatentList list = finder.findSimilarPatentsTo("7455590", -1.0, 25).get(0);
-            for (AbstractPatent abstractPatent : list.getPatents()) {
+            PatentList list;// = finder.findSimilarPatentsTo("7455590", -1.0, 25).get(0);
+            /*for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
             System.out.println("Most opposite: ");
             list = finder.findOppositePatentsTo("7455590", -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
-            }
+            }*/
             System.out.println("Candidate set comparison: ");
             list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
