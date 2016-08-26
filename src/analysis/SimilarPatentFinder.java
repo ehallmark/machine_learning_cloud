@@ -112,12 +112,15 @@ public class SimilarPatentFinder {
         return thisAvg.mean(0);
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, String otherCandidateSetName) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, String otherCandidateSetName, boolean findDissimilar) throws SQLException {
         // Find the highest (pairwise) assets
         List<PatentList> patentLists = new ArrayList<>(1);
         INDArray otherAvg = computeAvg(other.getPatentList());
+        Set<String> dontMatch = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         try {
-            patentLists.add(findSimilarPatentsTo(otherCandidateSetName, otherAvg, patentList.stream().map(p->p.getName()).collect(Collectors.toSet()), threshold, limit).get(0));
+            if(findDissimilar) patentLists.add(findOppositePatentsTo(otherCandidateSetName, otherAvg, dontMatch, threshold, limit).get(0));
+            else patentLists.add(findSimilarPatentsTo(otherCandidateSetName, otherAvg, dontMatch, threshold, limit).get(0));
+
         } catch(SQLException sql) {
             sql.printStackTrace();
         }
@@ -236,7 +239,7 @@ public class SimilarPatentFinder {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }*/
             System.out.println("Candidate set comparison: ");
-            list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20,"name").get(0);
+            list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20,"name",false).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }

@@ -139,8 +139,9 @@ public class SimilarPatentServer {
                 else second = globalFinder;
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
-                patentLists = first.similarFromCandidateSet(second, threshold, limit,name2);
-                PatentResponse response = new PatentResponse(patentLists,name1,false);
+                boolean findDissimilar = extractFindDissimilar(req);
+                patentLists = first.similarFromCandidateSet(second, threshold, limit,name2, findDissimilar);
+                PatentResponse response = new PatentResponse(patentLists,name1,findDissimilar);
                 return new Gson().toJson(response);
             }
 
@@ -347,7 +348,8 @@ public class SimilarPatentServer {
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
                                                         label("Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),br(),
+                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
+                                                        label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
