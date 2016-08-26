@@ -243,7 +243,11 @@ public class SimilarPatentFinder {
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
-
+            System.out.println("Candidate set comparison: ");
+            list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20).get(0);
+            for (AbstractPatent abstractPatent : list.getPatents()) {
+                System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
+            }
         } catch(Exception e) {
             e.printStackTrace();
         }

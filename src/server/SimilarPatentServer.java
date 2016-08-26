@@ -140,13 +140,8 @@ public class SimilarPatentServer {
                 List<PatentList> patentLists;
                 CandidateComparisonResponse response;
                 double threshold = extractThreshold(req);
-                if(first.getPatentList().size() <= second.getPatentList().size()) {
-                    patentLists = second.similarFromCandidateSet(first, threshold, limit);
-                    response = new CandidateComparisonResponse(patentLists,name2,name1);
-                } else {
-                    patentLists = first.similarFromCandidateSet(second, threshold, limit);
-                    response = new CandidateComparisonResponse(patentLists,name1,name2);
-                }
+                patentLists = first.similarFromCandidateSet(second, threshold, limit);
+                response = new CandidateComparisonResponse(patentLists,name1,name2);
                 return new Gson().toJson(response);
             }
 
