@@ -70,7 +70,7 @@ public class AutoEncoderModel {
                 }
 
             }
-            INDArray array = Nd4j.create(VectorHelper.toPrim(values.toArray(new Float[]{})));
+            INDArray array = Nd4j.create(VectorHelper.toPrim(values.toArray(new Double[]{})));
             System.out.println(" --- AVERAGE SIMILARITY: "+array.meanNumber().toString());
             System.out.println(" --- VARIANCE OF SIMILARITY: "+array.varNumber().toString());
             test.reset();
