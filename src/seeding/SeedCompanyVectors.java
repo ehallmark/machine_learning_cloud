@@ -59,14 +59,14 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        sendPost("Huawei", "huawei", null);
+        /*sendPost("Huawei", "huawei", null);
         sendPost("Panasonic", "panasonic", null);
         sendPost("Sony", "sony", null);
         sendPost("ZTE", "zte", null);
         sendPost("Orange", "orange", null);
         sendPost("Cisco", "cisco", null);
         sendPost("Telia Custom", null, Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+")));
-        sendPost("Verizon", "verizon", null);
+        sendPost("Verizon", "verizon", null);*/
         // ETSI PATENTS!
         sendPost("ETSI", null, Constants.ETSI_PATENT_LIST);
     }

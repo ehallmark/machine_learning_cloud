@@ -34,22 +34,22 @@ public class VectorHelper {
         return vec;
     }
 
-    public static float[] toPrim(Float[] objArray) {
+    public static double[] toPrim(Double[] objArray) {
         if(objArray==null) return null;
-        float[] vec = new float[objArray.length];
+        double[] vec = new double[objArray.length];
         int i = 0;
-        for(float d: objArray) {
+        for(double d: objArray) {
             vec[i] = d;
             i++;
         }
         return vec;
     }
 
-    public static float[][] toPrim(Float[][] objArray) {
+    public static double[][] toPrim(Double[][] objArray) {
         if(objArray==null) return null;
-        float[][] vec = new float[objArray.length][];
+        double[][] vec = new double[objArray.length][];
         int i = 0;
-        for(Float[] d: objArray) {
+        for(Double[] d: objArray) {
             vec[i] = toPrim(d);
             i++;
         }

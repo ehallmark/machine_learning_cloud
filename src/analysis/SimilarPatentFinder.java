@@ -87,13 +87,13 @@ public class SimilarPatentFinder {
         Array descArray = rs.getArray(offset);
         Array claimsArray = rs.getArray(offset+1);
         if(descArray!=null && claimsArray!=null) {
-            array=Nd4j.create(VectorHelper.toPrim((Float[])descArray.getArray()));
-            array.addi(Nd4j.create(VectorHelper.toPrim((Float[][])claimsArray.getArray())).mean(0));
+            array=Nd4j.create(VectorHelper.toPrim((Double[])descArray.getArray()));
+            array.addi(Nd4j.create(VectorHelper.toPrim((Double[][])claimsArray.getArray())).mean(0));
             array.muli(0.5);
         } else if (descArray!=null) {
-            array = Nd4j.create(VectorHelper.toPrim((Float[])descArray.getArray()));
+            array = Nd4j.create(VectorHelper.toPrim((Double[])descArray.getArray()));
         } else if(claimsArray!=null) {
-            array = Nd4j.create(VectorHelper.toPrim((Float[][])claimsArray.getArray())).mean(0);
+            array = Nd4j.create(VectorHelper.toPrim((Double[][])claimsArray.getArray())).mean(0);
         }
         return array;
     }
