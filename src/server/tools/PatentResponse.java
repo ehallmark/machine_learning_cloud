@@ -13,23 +13,20 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
     public PatentResponse(List<PatentList> patents, String query, boolean findDissimilar) {
-        this(patents,query,findDissimilar,true);
+        this(patents,query,findDissimilar,null);
     }
 
-    public PatentResponse(List<PatentList> patents, String query, boolean findDissimilar, boolean includeLink) {
-        super(query, to_html_table(patents,query,findDissimilar, includeLink).render(),patents);
+    public PatentResponse(List<PatentList> patents, String query, boolean findDissimilar, String name2) {
+        super(query, to_html_table(patents,query,findDissimilar, name2).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, String query, boolean findDissimilar, boolean includeLinks) {
+    private static Tag to_html_table(List<PatentList> patentLists, String query, boolean findDissimilar, String name2) {
         // List
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
         Tag titleTag;
-        if(includeLinks) titleTag = h3().with(label(similarName+" patents to: "),a(query).withHref("https://www.google.com/patents/US"+query));
-        else {
-            String name1 = query.split("|")[0];
-            String name2 = query.split("|")[1];
-            titleTag = h3().with(label(similarName+" "+name1+" patents to "+name2+" candidate set"));
-        }
+        if(name2==null) titleTag = h3().with(label(similarName+" patents to: "),a(query).withHref("https://www.google.com/patents/US"+query));
+        else titleTag = h3().with(label(similarName+" "+query+" patents to "+name2+" candidate set"));
+
         return div().with(
                 titleTag,br(),
                 div().with(patentLists.stream().map(patentList ->
