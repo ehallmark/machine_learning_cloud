@@ -24,8 +24,12 @@ public class PatentResponse extends ServerResponse {
         // List
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
         Tag titleTag;
-        if(includeLinks) titleTag = h3().with(label(similarName+" Patents to: "),a(query).withHref("https://www.google.com/patents/US"+query));
-        else titleTag = h3().with(label(similarName+" Patents to: "+query));
+        if(includeLinks) titleTag = h3().with(label(similarName+" patents to: "),a(query).withHref("https://www.google.com/patents/US"+query));
+        else {
+            String name1 = query.split("|")[0];
+            String name2 = query.split("|")[1];
+            titleTag = h3().with(label(similarName+" "+name1+" patents to "+name2+" candidate set"));
+        }
         return div().with(
                 titleTag,br(),
                 div().with(patentLists.stream().map(patentList ->
