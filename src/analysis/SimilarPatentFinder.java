@@ -112,34 +112,26 @@ public class SimilarPatentFinder {
         return thisAvg.mean(0);
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, String otherCandidateSetName) throws SQLException {
         // Find the highest (pairwise) assets
-
-        INDArray thisAvg = computeAvg(patentList);
-        List<PatentList> patentLists = new ArrayList<>();
-        try {
-            patentLists.add(findSimilarPatentsTo("Candidate Set 1", thisAvg, null, threshold, limit).get(0));
-        } catch(SQLException sql) {
-            sql.printStackTrace();
-        }
+        List<PatentList> patentLists = new ArrayList<>(1);
         INDArray otherAvg = computeAvg(other.getPatentList());
         try {
-            patentLists.add(findSimilarPatentsTo("Candidate Set 2", otherAvg, null, threshold, limit).get(0));
+            patentLists.add(findSimilarPatentsTo(otherCandidateSetName, otherAvg, patentList.stream().map(p->p.getName()).collect(Collectors.toSet()), threshold, limit).get(0));
         } catch(SQLException sql) {
             sql.printStackTrace();
         }
-        mergePatentLists(patentLists, limit);
         return patentLists;
     }
 
-    private static void mergePatentLists(List<PatentList> patentLists, int limit) {
+    /*private static void mergePatentLists(List<PatentList> patentLists, int limit) {
         PriorityQueue<AbstractPatent> queue = new PriorityQueue<>();
         for(PatentList list: patentLists) {
             queue.addAll(list.getPatents());
         }
         patentLists.clear();
         patentLists.add(new PatentList(new ArrayList<>(queue).subList(Math.max(0,queue.size()-limit-1), queue.size()-1)));
-    }
+    }*/
 
 
 
@@ -232,7 +224,7 @@ public class SimilarPatentFinder {
     public static void main(String[] args) throws Exception {
         try {
             Database.setupSeedConn();
-            SimilarPatentFinder finder = new SimilarPatentFinder();
+            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/3"));
             System.out.println("Most similar: ");
             PatentList list;// = finder.findSimilarPatentsTo("7455590", -1.0, 25).get(0);
             /*for (AbstractPatent abstractPatent : list.getPatents()) {
@@ -244,7 +236,7 @@ public class SimilarPatentFinder {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }*/
             System.out.println("Candidate set comparison: ");
-            list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20).get(0);
+            list = finder.similarFromCandidateSet(new SimilarPatentFinder(null, new File("candidateSets/2")),0.0,20,"name").get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }

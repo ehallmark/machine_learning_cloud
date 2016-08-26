@@ -138,10 +138,9 @@ public class SimilarPatentServer {
                 if(id2 >= 0) second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
                 else second = globalFinder;
                 List<PatentList> patentLists;
-                CandidateComparisonResponse response;
                 double threshold = extractThreshold(req);
-                patentLists = first.similarFromCandidateSet(second, threshold, limit);
-                response = new CandidateComparisonResponse(patentLists,name1,name2);
+                patentLists = first.similarFromCandidateSet(second, threshold, limit,name2);
+                PatentResponse response = new PatentResponse(patentLists,name1,false);
                 return new Gson().toJson(response);
             }
 
@@ -344,7 +343,7 @@ public class SimilarPatentServer {
                                                         button("Search").withId(SELECT_CANDIDATE_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Find Similar Patents between Candidate Sets"),
+                                                h3("Find Similar Patents to Candidate Set 2"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
                                                         selectCandidateSetDropdown("Candidate Set 2", "name2"),
                                                         label("Limit"),br(),input().withType("text").withName("limit"), br(),
