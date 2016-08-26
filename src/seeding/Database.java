@@ -30,9 +30,9 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
-	private static final String selectVectorsStatement = "SELECT pub_doc_number, description_vectors,claims_vectors FROM raw_patents_clone WHERE pub_doc_number=ANY(?)";
+	private static final String selectVectorsStatement = "SELECT pub_doc_number, description_vectors,claims_vectors FROM patent_vectors WHERE pub_doc_number=ANY(?)";
 	//private static final String selectAllVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents";
-	private static final String selectSingleVectorStatement = "SELECT description_vectors,claims_vectors FROM raw_patents WHERE pub_doc_number=?";
+	private static final String selectSingleVectorStatement = "SELECT description_vectors,claims_vectors FROM patent_vectors WHERE pub_doc_number=?";
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectPatentNumbersByAssignee = "select distinct doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%')";
 	private static PreparedStatement updateParagraphVectorStatement;
