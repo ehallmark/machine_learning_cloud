@@ -141,7 +141,7 @@ public class SimilarPatentServer {
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
                 patentLists = first.similarFromCandidateSet(second, threshold, limit,name2, findDissimilar);
-                PatentResponse response = new PatentResponse(patentLists,name1,findDissimilar);
+                PatentResponse response = new PatentResponse(patentLists,name2,findDissimilar,false);
                 return new Gson().toJson(response);
             }
 

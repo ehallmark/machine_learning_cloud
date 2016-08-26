@@ -13,14 +13,21 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
     public PatentResponse(List<PatentList> patents, String query, boolean findDissimilar) {
-        super(query, to_html_table(patents,query,findDissimilar).render(),patents);
+        this(patents,query,findDissimilar,true);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, String query, boolean findDissimilar) {
+    public PatentResponse(List<PatentList> patents, String query, boolean findDissimilar, boolean includeLink) {
+        super(query, to_html_table(patents,query,findDissimilar, includeLink).render(),patents);
+    }
+
+    private static Tag to_html_table(List<PatentList> patentLists, String query, boolean findDissimilar, boolean includeLinks) {
         // List
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
+        Tag titleTag;
+        if(includeLinks) titleTag = h3().with(label(similarName+" Patents to: "),a(query).withHref("https://www.google.com/patents/US"+query));
+        else titleTag = h3().with(label(similarName+" Patents to: "+query));
         return div().with(
-                h3().with(label(similarName+" Patents to: "),a(query).withHref("https://www.google.com/patents/US"+query)),br(),
+                titleTag,br(),
                 div().with(patentLists.stream().map(patentList ->
                     div().with(table().with(
                             thead().with(
