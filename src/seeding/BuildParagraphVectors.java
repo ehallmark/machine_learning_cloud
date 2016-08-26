@@ -273,7 +273,7 @@ public class BuildParagraphVectors {
 
     }
 
-    private static void printResults(String word, SequenceVectors<VocabWord> sequenceVectors) {
+    public static void printResults(String word, SequenceVectors<VocabWord> sequenceVectors) {
         System.out.println("Words nearest to "+word+": "+String.join(", ",sequenceVectors.wordsNearest(word,10).stream().collect(Collectors.toList())));
     }
 

@@ -45,6 +45,17 @@ public class VectorHelper {
         return vec;
     }
 
+    public static float[][] toPrim(Float[][] objArray) {
+        if(objArray==null) return null;
+        float[][] vec = new float[objArray.length][];
+        int i = 0;
+        for(Float[] d: objArray) {
+            vec[i] = toPrim(d);
+            i++;
+        }
+        return vec;
+    }
+
     public static boolean shouldRemoveSentence(String str) {
         if(str==null)return true;
         boolean wasChar = false;
