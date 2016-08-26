@@ -104,18 +104,30 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
+    public static INDArray computeAvg(List<Patent> patentList) {
+        INDArray thisAvg = Nd4j.create(patentList.size(),Constants.VECTOR_LENGTH);
+        for(int i = 0; i < patentList.size(); i++) {
+            thisAvg.putRow(i, patentList.get(i).getVector());
+        }
+        return thisAvg.mean(0);
+    }
+
     public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit) throws SQLException {
         // Find the highest (pairwise) assets
+
+        INDArray thisAvg = computeAvg(patentList);
         List<PatentList> patentLists = new ArrayList<>();
-        Set<String> patentNames = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
-        setupMinHeap(limit);
-        other.patentList.forEach(patent->{
-            try {
-                patentLists.add(findSimilarPatentsTo(patent.getName().split("\\s+")[0], patent.getVector(), patentNames, threshold, limit).get(0));
-            } catch(SQLException sql) {
-                sql.printStackTrace();
-            }
-        });
+        try {
+            patentLists.add(findSimilarPatentsTo("Candidate Set 1", thisAvg, null, threshold, limit).get(0));
+        } catch(SQLException sql) {
+            sql.printStackTrace();
+        }
+        INDArray otherAvg = computeAvg(other.getPatentList());
+        try {
+            patentLists.add(findSimilarPatentsTo("Candidate Set 2", otherAvg, null, threshold, limit).get(0));
+        } catch(SQLException sql) {
+            sql.printStackTrace();
+        }
         mergePatentLists(patentLists, limit);
         return patentLists;
     }
