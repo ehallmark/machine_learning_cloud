@@ -246,7 +246,7 @@ public class SimilarPatentFinder {
             //if(assignee==null)assignee="";
             resultList.add(0, Patent.abstractClone(p, null));
         }
-        double avgSim = total.get()/cnt.get();
+        double avgSim = cnt.get() > 0 ? total.get()/cnt.get() : 0.0;
         PatentList results = new PatentList(resultList,name1,name2,avgSim);
         return results;
     }
