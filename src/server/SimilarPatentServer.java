@@ -134,7 +134,7 @@ public class SimilarPatentServer {
                 List<SimilarPatentFinder> second = otherIds.stream().map(id -> {
                     if (Integer.valueOf(id) >= 0) {
                         try {
-                            return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id));
+                            return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
