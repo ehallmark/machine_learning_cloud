@@ -40,6 +40,11 @@ public class SimilarPatentFinder {
         this(candidateSet,patentListFile,name,null);
     }
 
+    public SimilarPatentFinder(String name) throws SQLException {
+        this.patentList=new ArrayList<>(1);
+        this.name=name;
+        patentList.add(new Patent(name,getVectorFromDB(name)));
+    }
 
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors) throws SQLException,IOException, ClassNotFoundException {
         // construct lis

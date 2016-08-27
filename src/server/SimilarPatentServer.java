@@ -180,40 +180,33 @@ public class SimilarPatentServer {
         post("/similar_patents", (req, res) -> {
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
+            if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
             boolean findDissimilar = extractFindDissimilar(req);
             List<PatentList> patents=null;
-            if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
-            Integer id = null;
-            try {
-                id = Integer.valueOf(req.queryParams("name"));
-            } catch(Exception e) {
-                // bad format or something
-
-            }
-            if(id !=null && id >= 0) {
-                // exists
-                if(!id.equals(req.session().attribute("candidateSetId"))){
-                    req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id)));
-                    req.session().attribute("candidateSetId", id);
+            if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
+            List<SimilarPatentFinder> finders = Arrays.asList(req.queryParamsValues("name")).stream().map(name->{
+                Integer id = null;
+                try {
+                    id = Integer.valueOf(name);
+                    if(id!=null&&id>=0) {
+                        return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
+                    }
+                } catch(Exception e) {
+                    // bad format or something
+                    return null;
                 }
-            } else {
-                req.session().removeAttribute("candidateSet");
-                req.session().removeAttribute("candidateSetId");
-            }
-            if(pubDocNumber == null) response=new NoPatentProvided();
-            else {
-                System.out.println("Searching for: " + pubDocNumber);
-                int limit = extractLimit(req);
-                System.out.println("\tLimit: " + limit);
-                SimilarPatentFinder finderToUse;
-                if(req.session().attribute("candidateSet")==null && globalFinder!=null)finderToUse = globalFinder;
-                else if(req.session().attribute("candidateSet")!=null) finderToUse = ((SimilarPatentFinder)req.session().attribute("candidateSet"));
-                else return new Gson().toJson(new SimpleAjaxMessage("No candidate set selected and no default set found."));
+                return globalFinder;
+            }).filter(p->p!=null&&p.getPatentList()!=null).collect(Collectors.toList());
 
-                double threshold = extractThreshold(req);
-                if(findDissimilar) patents = finderToUse.findOppositePatentsTo(pubDocNumber, threshold, limit);
-                else patents = finderToUse.findSimilarPatentsTo(pubDocNumber, threshold, limit);
-            }
+            SimilarPatentFinder currentPatentFinder = new SimilarPatentFinder(pubDocNumber);
+            
+            System.out.println("Searching for: " + pubDocNumber);
+            int limit = extractLimit(req);
+            System.out.println("\tLimit: " + limit);
+
+            double threshold = extractThreshold(req);
+            patents = currentPatentFinder.similarFromCandidateSets(finders,threshold,limit,findDissimilar);
+
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
             else response=new PatentResponse(patents,findDissimilar);
@@ -312,7 +305,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag selectCandidateSetDropdown() {
-        return selectCandidateSetDropdown("Select Candidate Set", "name", false);
+        return selectCandidateSetDropdown("Select Candidate Set", "name", true);
     }
 
     private static Tag selectCandidateSetDropdown(String label, String name, boolean multiple) {
