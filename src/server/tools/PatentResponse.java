@@ -25,7 +25,7 @@ public class PatentResponse extends ServerResponse {
                 div().with(patentLists.stream().sorted().map(patentList ->
                     div().with(
                             h3().with(label(similarName+" "+patentList.getName1()+" to "+patentList.getName2())),
-                            h5().with(label("Global Average Similarity: "+patentList.getAvgSimilarity())),
+                            h5().with(label("Global Average "+similarName+"ity: "+patentList.getAvgSimilarity())),
                             table().with(
                             thead().with(
                                     tr().with(

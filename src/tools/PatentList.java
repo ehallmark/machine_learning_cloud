@@ -24,6 +24,10 @@ public class PatentList implements Serializable, Comparable<PatentList> {
         Collections.reverse(patents);
     }
 
+    public void flipAvgSimilarity() {
+        avgSimilarity=avgSimilarity*-1.0;
+    }
+
     public double getAvgSimilarity() {
         return avgSimilarity;
     }

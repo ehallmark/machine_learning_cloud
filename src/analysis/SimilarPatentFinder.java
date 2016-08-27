@@ -195,6 +195,7 @@ public class SimilarPatentFinder {
     public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
         List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit);
         for(PatentList l : toReturn) {
+            l.flipAvgSimilarity();
             l.getPatents().forEach(p->p.flipSimilarity());
         }
         return toReturn;
