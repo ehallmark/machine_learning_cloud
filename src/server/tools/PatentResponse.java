@@ -24,7 +24,7 @@ public class PatentResponse extends ServerResponse {
         return div().with(
                 div().with(patentLists.stream().map(patentList ->
                     div().with(
-                            h3().with(label(similarName+" "+patentList.getName1()+"  to "+patentList.getName1())),br(),
+                            h3().with(label(similarName+" "+patentList.getName1()+"  to "+patentList.getName2())),br(),
                             table().with(
                             thead().with(
                                     tr().with(
