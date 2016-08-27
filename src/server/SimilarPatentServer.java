@@ -118,7 +118,7 @@ public class SimilarPatentServer {
             if(req.queryParamsValues("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
 
             List<String> otherIds = Arrays.asList(req.queryParamsValues("name2"));
-            if(otherIds.isEmpty())) return new Gson().toJson(new SimpleAjaxMessage("Must choose at least one other candidate set"));
+            if(otherIds.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Must choose at least one other candidate set"));
             Integer id1 = Integer.valueOf(req.queryParams("name1"));
             if(id1 < 0 && globalFinder==null)
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
