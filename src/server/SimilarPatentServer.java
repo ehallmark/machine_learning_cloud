@@ -318,7 +318,7 @@ public class SimilarPatentServer {
         return div().with(
                 label(label),
                 br(),
-                (multiple ? (select().attr("selected","true")) : (select())).withName(name).with(
+                (multiple ? (select().attr("multiple","true")) : (select())).withName(name).with(
                         candidateSetMap.entrySet().stream().map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
                 )
         );
