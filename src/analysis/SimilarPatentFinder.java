@@ -136,7 +136,7 @@ public class SimilarPatentFinder {
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> patentLists;
         INDArray otherAvg = computeAvg(other.getPatentList());
-        Set<String> dontMatch = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
+        Set<String> dontMatch = other.name.equals(name) ? null : other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         try {
             if(findDissimilar) patentLists=findOppositePatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit);
             else patentLists = findSimilarPatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit);
