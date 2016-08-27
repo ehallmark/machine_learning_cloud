@@ -318,7 +318,7 @@ public class SimilarPatentServer {
         return div().with(
                 label(label),
                 br(),
-                (multiple ? (select().attr("multiple","true")) : (select())).withName(name).with(
+                (multiple ? (select().attr("multiple                int limit = extractLimit(req);\n","true")) : (select())).withName(name).with(
                         candidateSetMap.entrySet().stream().map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
                 )
         );
@@ -351,7 +351,7 @@ public class SimilarPatentServer {
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents to Candidate Set 2"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1",false),
-                                                        selectCandidateSetDropdown("Candidate Set 2", "name2[]",true),
+                                                        selectCandidateSetDropdown("Candidate Set 2", "name2",true),
                                                         label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                         label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
