@@ -22,9 +22,10 @@ public class PatentResponse extends ServerResponse {
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
 
         return div().with(
-                div().with(patentLists.stream().map(patentList ->
+                div().with(patentLists.stream().sorted().map(patentList ->
                     div().with(
-                            h3().with(label(similarName+" "+patentList.getName1()+"  to "+patentList.getName2())),br(),
+                            h3().with(label(similarName+" "+patentList.getName1()+" to "+patentList.getName2())),br(),
+                            h5().with(label("Global Average Similarity: "+patentList.getAvgSimilarity())),
                             table().with(
                             thead().with(
                                     tr().with(

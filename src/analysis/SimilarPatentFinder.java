@@ -1,5 +1,6 @@
 package analysis;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.google.gson.Gson;
 import org.deeplearning4j.plot.BarnesHutTsne;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -16,6 +17,7 @@ import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import server.tools.AbstractPatent;
@@ -226,9 +228,13 @@ public class SimilarPatentFinder {
 
     private synchronized PatentList similarPatentsHelper(INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit) {
         Patent.setBaseVector(baseVector);
+        AtomicDouble total = new AtomicDouble(0.0);
+        AtomicInteger cnt = new AtomicInteger(0);
         patentList.forEach(patent -> {
             if(!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
+                total.getAndAdd(patent.getSimilarityToTarget());
+                cnt.getAndIncrement();
                 if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
             }
         });
@@ -239,7 +245,8 @@ public class SimilarPatentFinder {
             //if(assignee==null)assignee="";
             resultList.add(0, Patent.abstractClone(p, null));
         }
-        PatentList results = new PatentList(resultList,name1,name2);
+        double avgSim = total.get()/cnt.get();
+        PatentList results = new PatentList(resultList,name1,name2,avgSim);
         return results;
     }
 
