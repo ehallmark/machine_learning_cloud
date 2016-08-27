@@ -134,6 +134,7 @@ public class SimilarPatentServer {
                 List<SimilarPatentFinder> second = otherIds.stream().map(id -> {
                     if (Integer.valueOf(id) >= 0) {
                         try {
+                            System.out.println("CANDIDATE LOADING: "+candidateSetMap.get(Integer.valueOf(id)));
                             return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -146,6 +147,7 @@ public class SimilarPatentServer {
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
                 patentLists = first.similarFromCandidateSets(second, threshold, limit, findDissimilar);
+                System.out.println("SIMILAR PATENTS FOUND!!!");
                 PatentResponse response = new PatentResponse(patentLists,findDissimilar);
                 return new Gson().toJson(response);
             }
