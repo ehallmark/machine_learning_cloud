@@ -1,6 +1,5 @@
 package server;
 
-import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
@@ -71,14 +70,15 @@ public class SimilarPatentServer {
                 res.redirect("/new");
             } else {
                 try {
-                    int id = Database.createCandidateSetAndReturnId(req.queryParams("name"));
+                    String name = req.queryParams("name");
+                    int id = Database.createCandidateSetAndReturnId(name);
                     SimilarPatentFinder patentFinder;
                     // try to get percentages from form
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file);
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file);
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file,name);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -115,33 +115,38 @@ public class SimilarPatentServer {
         post("/similar_candidate_sets", (req, res) -> {
             res.type("application/json");
             if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
-            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
+            if(req.queryParamsValues("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
 
+            List<String> otherIds = Arrays.asList(req.queryParamsValues("name2"));
+            if(otherIds.isEmpty())) return new Gson().toJson(new SimpleAjaxMessage("Must choose at least one other candidate set"));
             Integer id1 = Integer.valueOf(req.queryParams("name1"));
-            Integer id2 = Integer.valueOf(req.queryParams("name2"));
-            if(id1 < 0 && globalFinder==null) {
+            if(id1 < 0 && globalFinder==null)
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
-            } else if(id2 < 0 && globalFinder==null) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find second candidate set."));
-            } else if(id1==id2) {
-                return new Gson().toJson(new SimpleAjaxMessage("Must choose different candidate sets!"));
-            } else {
+            else {
                 // both exist
                 int limit = extractLimit(req);
                 System.out.println("\tLimit: " + limit);
-                String name1 = candidateSetMap.get(id1);
-                String name2 = candidateSetMap.get(id2);
                 SimilarPatentFinder first;
-                if(id1 >= 0) first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id1));
-                else first = globalFinder;
-                SimilarPatentFinder second;
-                if(id2 >= 0) second = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id2));
-                else second = globalFinder;
+                if (id1 >= 0) {
+                    String name1 = candidateSetMap.get(id1);
+                    first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1);
+                } else first = globalFinder;
+                List<SimilarPatentFinder> second = otherIds.stream().map(id -> {
+                    if (Integer.valueOf(id) >= 0) {
+                        try {
+                            return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    return globalFinder;
+
+                }).collect(Collectors.toList());
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
-                patentLists = first.similarFromCandidateSet(second, threshold, limit,name2, findDissimilar);
-                PatentResponse response = new PatentResponse(patentLists,name1,findDissimilar,name2);
+                patentLists = first.similarFromCandidateSets(second, threshold, limit, findDissimilar);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar);
                 return new Gson().toJson(response);
             }
 
@@ -149,8 +154,8 @@ public class SimilarPatentServer {
 
         post("/angle_between_patents", (req,res) ->{
             res.type("application/json");
-            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
-            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
+            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first patent."));
+            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second patent."));
 
             String name1 = req.queryParams("name1");
             String name2 = req.queryParams("name2");
@@ -179,7 +184,7 @@ public class SimilarPatentServer {
             if(id !=null && id >= 0) {
                 // exists
                 if(!id.equals(req.session().attribute("candidateSetId"))){
-                    req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id)));
+                    req.session().attribute("candidateSet", new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id)));
                     req.session().attribute("candidateSetId", id);
                 }
             } else {
@@ -202,7 +207,7 @@ public class SimilarPatentServer {
             }
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,pubDocNumber,findDissimilar);
+            else response=new PatentResponse(patents,findDissimilar);
 
             // Handle csv or json
             if(responseWithCSV(req)) {
@@ -298,10 +303,10 @@ public class SimilarPatentServer {
     }
 
     private static Tag selectCandidateSetDropdown() {
-        return selectCandidateSetDropdown("Select Candidate Set", "name");
+        return selectCandidateSetDropdown("Select Candidate Set", "name", false);
     }
 
-    private static Tag selectCandidateSetDropdown(String label, String name) {
+    private static Tag selectCandidateSetDropdown(String label, String name, boolean multiple) {
         candidateSetMap = new HashMap<>();
         candidateSetMap.put(-1, "**ALL**"); // adds the default candidate set
         try {
@@ -313,7 +318,7 @@ public class SimilarPatentServer {
         return div().with(
                 label(label),
                 br(),
-                select().withName(name).with(
+                (multiple ? (select().attr("selected","true")) : (select())).withName(name).with(
                         candidateSetMap.entrySet().stream().map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
                 )
         );
@@ -345,8 +350,8 @@ public class SimilarPatentServer {
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents to Candidate Set 2"),
-                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1"),
-                                                        selectCandidateSetDropdown("Candidate Set 2", "name2"),
+                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(selectCandidateSetDropdown("Candidate Set 1","name1",false),
+                                                        selectCandidateSetDropdown("Candidate Set 2", "name2[]",true),
                                                         label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                         label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
