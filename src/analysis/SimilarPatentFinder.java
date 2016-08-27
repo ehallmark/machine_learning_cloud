@@ -121,7 +121,7 @@ public class SimilarPatentFinder {
         List<PatentList> patentLists = new ArrayList<>(others.size());
         others.forEach(other->{
             try {
-                patentLists.add(similarFromCandidateSet(other, threshold, limit, findDissimilar).get(0));
+                patentLists.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar));
             } catch(SQLException sql) {
                 sql.printStackTrace();
             }
@@ -131,15 +131,17 @@ public class SimilarPatentFinder {
 
     public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar) throws SQLException {
         // Find the highest (pairwise) assets
-        List<PatentList> patentLists = new ArrayList<>(1);
+        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
+        List<PatentList> patentLists;
         INDArray otherAvg = computeAvg(other.getPatentList());
         Set<String> dontMatch = other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         try {
-            if(findDissimilar) patentLists.add(findOppositePatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit).get(0));
-            else patentLists.add(findSimilarPatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit).get(0));
+            if(findDissimilar) patentLists=findOppositePatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit);
+            else patentLists = findSimilarPatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit);
 
         } catch(SQLException sql) {
             sql.printStackTrace();
+            return new ArrayList<>();
         }
         return patentLists;
     }
@@ -160,6 +162,7 @@ public class SimilarPatentFinder {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
+        if(avgVector==null) return new ArrayList<>();
         long startTime = System.currentTimeMillis();
         if(patentNamesToExclude ==null) {
             patentNamesToExclude=new HashSet<>();
