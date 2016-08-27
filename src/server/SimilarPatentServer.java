@@ -21,10 +21,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static spark.Spark.get;
@@ -182,30 +179,27 @@ public class SimilarPatentServer {
             String pubDocNumber = req.queryParams("patent");
             if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
             boolean findDissimilar = extractFindDissimilar(req);
-            List<PatentList> patents=null;
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
-            List<SimilarPatentFinder> finders = Arrays.asList(req.queryParamsValues("name")).stream().map(name->{
+            List<PatentList> patents=new ArrayList<>();
+            SimilarPatentFinder currentPatentFinder = new SimilarPatentFinder(pubDocNumber);
+            System.out.println("Searching for: " + pubDocNumber);
+            int limit = extractLimit(req);
+            System.out.println("\tLimit: " + limit);
+            double threshold = extractThreshold(req);
+            Arrays.asList(req.queryParamsValues("name")).forEach(name->{
                 Integer id = null;
                 try {
                     id = Integer.valueOf(name);
                     if(id!=null&&id>=0) {
-                        return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
+                        patents.addAll(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id)).similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
+                    } else {
+                        patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     }
                 } catch(Exception e) {
                     // bad format or something
-                    return null;
+                    e.printStackTrace();
                 }
-                return globalFinder;
-            }).filter(p->p!=null&&p.getPatentList()!=null).collect(Collectors.toList());
-
-            SimilarPatentFinder currentPatentFinder = new SimilarPatentFinder(pubDocNumber);
-            
-            System.out.println("Searching for: " + pubDocNumber);
-            int limit = extractLimit(req);
-            System.out.println("\tLimit: " + limit);
-
-            double threshold = extractThreshold(req);
-            patents = currentPatentFinder.similarFromCandidateSets(finders,threshold,limit,findDissimilar);
+            });
 
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
