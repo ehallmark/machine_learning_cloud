@@ -149,6 +149,12 @@ public class SimilarPatentServer {
                 boolean findDissimilar = extractFindDissimilar(req);
                 patentLists = first.similarFromCandidateSets(second, threshold, limit, findDissimilar);
                 System.out.println("SIMILAR PATENTS FOUND!!!");
+                patentLists.forEach(list->{
+                    System.out.println("Sim "+list.getName1()+" "+list.getName2()+": "+list.getAvgSimilarity());
+                    list.getPatents().forEach(p->{
+                        System.out.println(p.getName()+": "+p.getSimilarity());
+                    });
+                });
                 PatentResponse response = new PatentResponse(patentLists,findDissimilar);
                 return new Gson().toJson(response);
             }

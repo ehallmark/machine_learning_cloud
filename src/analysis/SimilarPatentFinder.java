@@ -74,7 +74,7 @@ public class SimilarPatentFinder {
         } else {
             // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
-            patentList = (List<Patent>) ois.readObject();
+            patentList = ((List<Patent>) ois.readObject());
             // PCA
             if(eigenVectors!=null) patentList.forEach(p->p.setVector(p.getVector().mmuli(eigenVectors)));
             ois.close();
@@ -232,7 +232,7 @@ public class SimilarPatentFinder {
         AtomicDouble total = new AtomicDouble(0.0);
         AtomicInteger cnt = new AtomicInteger(0);
         patentList.forEach(patent -> {
-            if(!patentNamesToExclude.contains(patent.getName())) {
+            if(patent!=null&&!patentNamesToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget();
                 total.getAndAdd(patent.getSimilarityToTarget());
                 cnt.getAndIncrement();
