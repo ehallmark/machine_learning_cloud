@@ -138,11 +138,12 @@ public class SimilarPatentServer {
                             return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)));
                         } catch (Exception e) {
                             e.printStackTrace();
+                            return null;
                         }
                     }
                     return globalFinder;
 
-                }).collect(Collectors.toList());
+                }).filter(finder->finder!=null&&finder.getPatentList()!=null).collect(Collectors.toList());
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
