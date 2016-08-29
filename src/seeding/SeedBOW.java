@@ -88,12 +88,13 @@ public class SeedBOW {
         List<String> words = vocabCache.vocabWords().stream().filter(vw->!stopWords.contains(vw.getLabel())||vw.getElementFrequency()>= Constants.DEFAULT_MIN_WORD_FREQUENCY).map(vw->vw.getLabel()).collect(Collectors.toList());
         SequenceIterator<VocabWord> sequenceIterator = BuildParagraphVectors.createSequenceIterator(iterator);
         Integer[] counts = new Integer[words.size()];
-        Float[] tfidfCounts = new Float[words.size()];
+        //Float[] tfidfCounts = new Float[words.size()];
+        AtomicInteger cnt = new AtomicInteger(0);
         while(sequenceIterator.hasMoreSequences()) {
             Sequence<VocabWord> sequence = sequenceIterator.nextSequence();
             String name = sequence.getSequenceLabel().getLabel();
             Arrays.fill(counts, 0);
-            Arrays.fill(tfidfCounts, 0.0f);
+            /*Arrays.fill(tfidfCounts, 0.0f);
             Map<Integer,Integer> indicesToCheck = new HashMap<>();
             for(VocabWord vw : sequence.getElements()) {
                 int idx = words.indexOf(vw.getLabel());
@@ -101,11 +102,15 @@ public class SeedBOW {
                     counts[idx]++;
                     indicesToCheck.put(idx,(int)Math.round(vw.getElementFrequency()));
                 }
-            }
-            indicesToCheck.entrySet().forEach(entry->{
+            }*/
+            /*indicesToCheck.entrySet().forEach(entry->{
                 tfidfCounts[entry.getKey()]=new Float(Math.log(new Double(vocabCache.totalNumberOfDocs())/entry.getValue()));
-            });
+            });*/
+            Database.insertBOW(name, counts);
+            System.out.println(cnt.getAndIncrement());
+            if(cnt.get()%1000==0) Database.commit();
         }
-        // update bag of words
+        Database.commit();
+        Database.close();
     }
 }

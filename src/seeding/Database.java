@@ -73,6 +73,15 @@ public class Database {
 		return 0;
 	}
 
+	public static void insertBOW(String name, Integer[] values) throws SQLException {
+		PreparedStatement ps = insertConn.prepareStatement("insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bow=array_agg(unnest(?)+unnest(bow)) where bag_of_words.name=?");
+		Array array = insertConn.createArrayOf("int4", values);
+		ps.setString(1,name);
+		ps.setArray(2, array);
+		ps.setArray(2, array);
+		ps.setString(4,name);
+	}
+
 	public static ResultSet getTitleFor(String patentNumber) throws SQLException{
 		PreparedStatement ps = seedConn.prepareStatement("SELECT invention_title FROM patent_grant where pub_doc_number=?");
 		ps.setString(1, patentNumber);
