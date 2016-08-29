@@ -76,7 +76,7 @@ public class SeedBOW {
             Sequence<VocabWord> sequence = sequenceIterator.nextSequence();
             String name = sequence.getSequenceLabel().getLabel();
             Arrays.fill(counts, 0);
-            Arrays.fill(tfidfCounts, 0);
+            Arrays.fill(tfidfCounts, 0.0f);
             Map<Integer,Integer> indicesToCheck = new HashMap<>();
             for(VocabWord vw : sequence.getElements()) {
                 int idx = words.indexOf(vw.getLabel());
