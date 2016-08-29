@@ -578,7 +578,8 @@ public class WordVectorSerializer {
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outFile), "UTF-8"))) {
     /*
         This method acts similary to w2v csv serialization, except of additional tag for labels
-     */
+     */     // first line is document count
+            writer.write(String.valueOf(vocabCache.totalNumberOfDocs())+"\n");
             for (VocabWord word : vocabCache.vocabWords()) {
                 StringBuilder builder = new StringBuilder();
 
@@ -606,8 +607,14 @@ public class WordVectorSerializer {
             VocabCache<VocabWord> vocabCache = new AbstractCache.Builder<VocabWord>().build();
             // first line has total document count
             String line = "";
+            boolean firstLine = true;
             while ((line = reader.readLine()) != null) {
                 String[] split = line.split(" ");
+                if(firstLine&&split.length==1) {
+                    vocabCache.incrementTotalDocCount(Integer.valueOf(split[0]));
+                    firstLine=false;
+                    continue;
+                }
                 split[1] = split[1].replaceAll(whitespaceReplacement, " ");
                 VocabWord word = new VocabWord(1.0, split[1]);
                 if (split[0].equals("L")) {

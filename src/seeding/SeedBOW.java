@@ -60,8 +60,19 @@ public class SeedBOW {
 
         }
 
+
         if(vocabCache.totalNumberOfDocs() <= 0) {
-            vocabCache.incrementTotalDocCount(Database.selectRawPatentCount());
+            Set<String> patentSet = new HashSet<>();
+            ResultSet rs = Database.selectRawPatentNames();
+            while(rs.next()) {
+                String patent = rs.getString(1).split("_")[0];
+                if (!patentSet.contains(patent)) {
+                    vocabCache.incrementTotalDocCount(1);
+                    patentSet.add(patent);
+                }
+            }
+            WordVectorSerializer.writeVocab(vocabCache, vocabFile);
+            System.out.println("Vocabulary finished...");
         }
 
         System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
