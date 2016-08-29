@@ -59,6 +59,22 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static ResultSet getTitleFor(String patentNumber) throws SQLException{
+		PreparedStatement ps = seedConn.prepareStatement("SELECT invention_title FROM patent_grant where pub_doc_number=?");
+		ps.setString(1, patentNumber);
+		return ps.executeQuery();
+	}
+
+	public static String getTitleFromDB(String patentNumber) throws SQLException {
+		ResultSet rs = Database.getTitleFor(patentNumber);
+		if(!rs.next()) {
+			return ""; // nothing found
+		}
+		String title = rs.getString(1);
+		rs.close();
+		return title;
+	}
+
 	public static void insertCommit() {
 		try {
 			insertConn.commit();

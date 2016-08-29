@@ -54,4 +54,5 @@ public class Patent implements Comparable<Patent>, Serializable {
     public String getName() {
         return name;
     }
+
 }

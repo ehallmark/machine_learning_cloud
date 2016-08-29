@@ -29,13 +29,14 @@ public class PatentResponse extends ServerResponse {
                                 thead().with(
                                         tr().with(
                                                 th("Patent #"),
-                                                th("Cosine Similarity")
+                                                th("Cosine Similarity"),
+                                                th("Invention Title")
                                         )
                                 ),
                                 tbody().with(
                                         patentList.getPatents().stream().sorted((o1,o2)->findDissimilar ? Double.compare(o1.getSimilarity(),o2.getSimilarity()) : Double.compare(o2.getSimilarity(),o1.getSimilarity())
                                         ).map(patent->
-                                                tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US"+patent.getName().split("\\s+")[0])),td(Double.toString(patent.getSimilarity())))
+                                                tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US"+patent.getName().split("\\s+")[0])),td(Double.toString(patent.getSimilarity())),td(patent.getTitle()))
                                         ).collect(Collectors.toList())
                                 )
                         ),br())
