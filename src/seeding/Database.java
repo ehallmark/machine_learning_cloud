@@ -36,6 +36,8 @@ public class Database {
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectPatentNumbersByAssignee = "select distinct doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%')";
 	private static PreparedStatement updateParagraphVectorStatement;
+	private static PreparedStatement insertBOWStatement;
+	private static PreparedStatement updateTFIDFStatement;
 	private static final Set<Integer> badTech = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	public static void setupMainConn() throws SQLException {
@@ -74,13 +76,26 @@ public class Database {
 	}
 
 	public static void insertBOW(String name, Integer[] values) throws SQLException {
-		PreparedStatement ps = insertConn.prepareStatement("insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bow=vec_add(bag_of_words.bow,?) where bag_of_words.name=?");
+		if(insertBOWStatement==null)insertBOWStatement = insertConn.prepareStatement("insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bow=vec_add(bag_of_words.bow,?) where bag_of_words.name=?");
 		Array array = insertConn.createArrayOf("int4", values);
-		ps.setString(1,name);
-		ps.setArray(2, array);
-		ps.setArray(3, array);
-		ps.setString(4,name);
-		ps.executeUpdate();
+		insertBOWStatement.setString(1,name);
+		insertBOWStatement.setArray(2, array);
+		insertBOWStatement.setArray(3, array);
+		insertBOWStatement.setString(4,name);
+		insertBOWStatement.executeUpdate();
+	}
+
+	public static ResultSet selectBOW() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT name,bow FROM bag_of_words");
+		ps.setFetchSize(10);
+		return ps.executeQuery();
+	}
+
+	public static void updateTFIDF(String name, Float[] vector) throws SQLException {
+		if(updateTFIDFStatement==null) updateTFIDFStatement = insertConn.prepareStatement("UPDATE bag_of_words SET tfidf=? WHERE name=?");
+		updateTFIDFStatement.setArray(1, insertConn.createArrayOf("float4", vector));
+		updateTFIDFStatement.setString(2, name);
+		updateTFIDFStatement.executeUpdate();
 	}
 
 	public static ResultSet getTitleFor(String patentNumber) throws SQLException{

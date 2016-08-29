@@ -81,7 +81,7 @@ public class SeedBOW {
         System.out.println("Total number of words: "+vocabCache.numWords());
         System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
 
-        int numStopWords = 75;
+        int numStopWords = Constants.NUM_STOP_WORDS;
         Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
         // get middle words from vocab
         iterator.setVocabAndStopWords(vocabCache,stopWords);
@@ -110,7 +110,7 @@ public class SeedBOW {
             System.out.println(cnt.getAndIncrement());
             if(cnt.get()%1000==0) Database.insertCommit();
         }
-        Database.commit();
+        Database.insertCommit();
         Database.close();
     }
 }
