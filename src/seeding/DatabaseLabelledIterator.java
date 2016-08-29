@@ -22,7 +22,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected String currentLabel;
     protected AtomicInteger cnt;
     protected ResultSet resultSet;
-    protected Iterator<List<VocabWord>> currentSentenceIterator;
+    protected List<VocabWord> currentSentence;
     protected VocabCache<VocabWord> vocabCache;
     protected Set<String> stopWords;
     protected long lastTime;
@@ -56,7 +56,6 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     public synchronized boolean hasNextDocument() {
 
         try {
-            if(currentSentenceIterator!=null&&currentSentenceIterator.hasNext()) return true;
             // Check patent iterator
             while (resultSet.next()) {
                 currentLabel = resultSet.getString(1).split("_")[0];
@@ -64,43 +63,15 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 //System.out.println(Arrays.toString(words));
                 if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
                 assert words != null : "Words array from PG is NULL!";
-                Iterator<VocabWord> current = Arrays.asList(words).stream().map(t->t==null||stopWords.contains(t)?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).iterator();
-                List<List<VocabWord>> newSentences = new ArrayList<>();
-                List<VocabWord> sentence = new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
-                List<VocabWord> oldBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
-                List<VocabWord> newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
-                while(current.hasNext()) {
-                    VocabWord word = current.next();
-                    //if(word.getLabel().equals("network")||word.getLabel().equals("substrate")||word.getLabel().equals("wireless")) System.out.println(word.getLabel());
-                    sentence.add(word);
-                    if(sentence.size() >= Constants.MAX_WORDS_PER_DOCUMENT) {
-                        for(int i = sentence.size()-Constants.SENTENCE_PADDING; i < sentence.size(); i++) {
-                            newBuffer.add(sentence.get(i));
-                        }
-                        if(!oldBuffer.isEmpty()) {
-                            sentence.addAll(0,oldBuffer);
-                        }
-                        newSentences.add(sentence);
-                        oldBuffer = newBuffer;
-                        newBuffer = new ArrayList<>(Constants.SENTENCE_PADDING);
-                        sentence=new ArrayList<>(Constants.MAX_WORDS_PER_DOCUMENT);
-                    }
-                }
-                // get remaining
-                if(!sentence.isEmpty()) {
-                    if(!oldBuffer.isEmpty()) {
-                        sentence.addAll(0,oldBuffer);
-                    }
-                    newSentences.add(sentence);
-                }
+                currentSentence = Arrays.asList(words).stream().map(t->t==null||stopWords.contains(t)?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).collect(Collectors.toList());
+
                 /*if(vocabCache!=null) {
                     assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;
                     VocabWord label = vocabCache.tokenFor(currentLabel);
                     label.setSequencesCount(newSentences.size());
                     label.setElementFrequency(newSentences.size());
                 }*/
-                currentSentenceIterator = newSentences.iterator();
-                if (currentSentenceIterator.hasNext()) return true;
+                if (currentSentence!=null&&!currentSentence.isEmpty()&&!(currentSentence.size()<Constants.MIN_WORDS_PER_SENTENCE)) return true;
                 System.out.println("RECURSIVE CALL!!!!!");
             }
 
@@ -126,7 +97,7 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
             cnt.set(0);
         }*/
         LabelledDocument doc = new LabelledDocument();
-        doc.setReferencedContent(currentSentenceIterator.next());
+        doc.setReferencedContent(currentSentence);
         doc.setLabel(currentLabel);
         return doc;
     }

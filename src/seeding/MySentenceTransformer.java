@@ -36,7 +36,6 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
             So, we must accept any SentenceIterator implementations, and build vocab out of it, and use it for further transforms between text and Sequences
      */
     protected DatabaseLabelledIterator iterator;
-    protected AtomicInteger sentenceCounter = new AtomicInteger(0);
 
     private MySentenceTransformer(@NonNull DatabaseLabelledIterator iterator) {
         this.iterator = iterator;
@@ -47,13 +46,13 @@ public class MySentenceTransformer implements SequenceTransformer<VocabWord, Str
         throw new UnsupportedOperationException("TRYING TO CONVERT STRING INTO SEQUENCE BUT SEQUENCES ARE PREBUILT!");
     }
 
+
     public Sequence<VocabWord> transformToSequence(List<VocabWord> words, String label) {
         Sequence<VocabWord> sequence = new Sequence<>();
 
         for(VocabWord word : words) {
             sequence.addElement(word);
         }
-        sequence.setSequenceId(sentenceCounter.getAndIncrement());
         VocabWord vLabel = new VocabWord(1.0, label);
         vLabel.markAsLabel(true);
         vLabel.setSequencesCount(1);
