@@ -78,7 +78,7 @@ public class Database {
 		Array array = insertConn.createArrayOf("int4", values);
 		ps.setString(1,name);
 		ps.setArray(2, array);
-		ps.setArray(2, array);
+		ps.setArray(3, array);
 		ps.setString(4,name);
 		ps.executeUpdate();
 	}
