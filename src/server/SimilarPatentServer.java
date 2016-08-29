@@ -2,6 +2,7 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
+import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import seeding.Constants;
 import server.tools.*;
@@ -314,8 +315,13 @@ public class SimilarPatentServer {
         return div().with(
                 label(label),
                 br(),
-                (multiple ? (select().attr("multiple                int limit = extractLimit(req);\n","true")) : (select())).withName(name).with(
-                        candidateSetMap.entrySet().stream().map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
+                (multiple ? (select().attr("multiple","true")) : (select())).withName(name).with(
+                        candidateSetMap.entrySet().stream().sorted(new Comparator<Map.Entry<Integer, String>>() {
+                            @Override
+                            public int compare(Map.Entry<Integer, String> o1, Map.Entry<Integer, String> o2) {
+                                return Integer.compare(o1.getKey(),o2.getKey());
+                            }
+                        }).map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
                 )
         );
     }
