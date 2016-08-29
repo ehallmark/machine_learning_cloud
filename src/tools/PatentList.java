@@ -5,6 +5,7 @@ import server.tools.AbstractPatent;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 8/1/16.
@@ -15,11 +16,11 @@ public class PatentList implements Serializable, Comparable<PatentList> {
     private String name1;
     private String name2;
     private double avgSimilarity;
-    public PatentList(List<AbstractPatent> patentList, String name1, String name2, double avgSimilarity) {
+    public PatentList(List<AbstractPatent> patentList, String name1, String name2) {
         this.patents=patentList;
         this.name1=name1;
         this.name2=name2;
-        this.avgSimilarity=avgSimilarity;
+        this.avgSimilarity=patentList.stream().map(p->p.getSimilarity()).collect(Collectors.averagingDouble(p->p.doubleValue()));
         Collections.sort(patents);
         Collections.reverse(patents);
     }
