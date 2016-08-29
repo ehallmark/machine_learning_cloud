@@ -85,7 +85,7 @@ public class SeedBOW {
         Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
         // get middle words from vocab
         iterator.setVocabAndStopWords(vocabCache,stopWords);
-        List<String> words = vocabCache.vocabWords().stream().filter(vw->(!stopWords.contains(vw.getLabel()))&&vw.getElementFrequency()>= Constants.DEFAULT_MIN_WORD_FREQUENCY).map(vw->vw.getLabel()).collect(Collectors.toList());
+        List<String> words = vocabCache.vocabWords().stream().filter(vw->(!stopWords.contains(vw.getLabel()))&&vw.getElementFrequency()>= Constants.DEFAULT_MIN_WORD_FREQUENCY&&vw.getSequencesCount()<vocabCache.totalNumberOfDocs()).map(vw->vw.getLabel()).collect(Collectors.toList());
         SequenceIterator<VocabWord> sequenceIterator = BuildParagraphVectors.createSequenceIterator(iterator);
         Integer[] counts = new Integer[words.size()];
         //Float[] tfidfCounts = new Float[words.size()];
