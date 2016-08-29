@@ -108,7 +108,7 @@ public class SeedBOW {
             });*/
             Database.insertBOW(name, counts);
             System.out.println(cnt.getAndIncrement());
-            if(cnt.get()%1000==0) Database.commit();
+            if(cnt.get()%1000==0) Database.insertCommit();
         }
         Database.commit();
         Database.close();
