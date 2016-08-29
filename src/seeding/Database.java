@@ -80,6 +80,7 @@ public class Database {
 		ps.setArray(2, array);
 		ps.setArray(2, array);
 		ps.setString(4,name);
+		ps.executeUpdate();
 	}
 
 	public static ResultSet getTitleFor(String patentNumber) throws SQLException{
