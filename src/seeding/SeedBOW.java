@@ -64,12 +64,14 @@ public class SeedBOW {
         if(vocabCache.totalNumberOfDocs() <= 0) {
             Set<String> patentSet = new HashSet<>();
             ResultSet rs = Database.selectRawPatentNames();
+            AtomicInteger cnt = new AtomicInteger(0);
             while(rs.next()) {
                 String patent = rs.getString(1).split("_")[0];
                 if (!patentSet.contains(patent)) {
                     vocabCache.incrementTotalDocCount(1);
                     patentSet.add(patent);
                 }
+                System.out.println(cnt.getAndIncrement());
             }
             WordVectorSerializer.writeVocab(vocabCache, vocabFile);
             System.out.println("Vocabulary finished...");
