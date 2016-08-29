@@ -5,6 +5,8 @@ CREATE TABLE bag_of_words (
     bow integer[] not null
 );
 
+ALTER TABLE bag_of_words ADD COLUMN tfidf real[];
+
 CREATE OR REPLACE FUNCTION vec_add(arr1 numeric[], arr2 numeric[])
 RETURNS numeric[] AS
 $$
