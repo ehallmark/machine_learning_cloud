@@ -74,10 +74,10 @@ public class Database {
 	}
 
 	public static void insertBOW(String name, Integer[] values) throws SQLException {
-		PreparedStatement ps = insertConn.prepareStatement("insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bag_of_words.bow=(select array_agg(unnest(?)+unnest(bag_of_words.bow))) where bag_of_words.name=?");
+		PreparedStatement ps = insertConn.prepareStatement("with case when bag_of_words.bow is null then null else array_agg(unnest(?)+unnest(bag_of_words.bow)) end as a insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bag_of_words.bow=a where bag_of_words.name=?");
 		Array array = insertConn.createArrayOf("int4", values);
-		ps.setString(1,name);
-		ps.setArray(2, array);
+		ps.setArray(1, array);
+		ps.setString(2,name);
 		ps.setArray(3, array);
 		ps.setString(4,name);
 		ps.executeUpdate();
