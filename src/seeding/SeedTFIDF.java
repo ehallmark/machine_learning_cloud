@@ -53,11 +53,11 @@ public class SeedTFIDF {
             Map<Integer,Integer> indicesToCheck = new HashMap<>();
             for(int i = 0; i < array.length; i++) {
                 if(array[i]>0) {
-                    indicesToCheck.put(i,(int)Math.round(words.get(i).getElementFrequency()));
+                    indicesToCheck.put(i,(int)words.get(i).getSequencesCount());
                 }
             }
             indicesToCheck.entrySet().forEach(entry->{
-                tfidfCounts[entry.getKey()]=array[entry.getKey()]*new Float(Math.log(new Double(vocabCache.totalNumberOfDocs())/entry.getValue()));
+                tfidfCounts[entry.getKey()]=new Float(new Double(array[entry.getKey()])*new Double(Math.log(new Double(vocabCache.totalNumberOfDocs())/entry.getValue())));
             });
             Database.updateTFIDF(name, tfidfCounts);
             System.out.println(cnt.getAndIncrement());

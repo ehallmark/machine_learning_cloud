@@ -631,9 +631,9 @@ public class WordVectorSerializer {
                     // we have usual element, aka word here
                     word.setSpecial(false);
                     word.markAsLabel(false);
-                    Long sequenceCount = Long.valueOf(split[2]);
                     Long elementFrequency = Math.round(Double.valueOf(split[3]));
                     if(elementFrequency < Constants.DEFAULT_MIN_WORD_FREQUENCY) continue;
+                    Long sequenceCount = Long.valueOf(split[2]);
                     word.setSequencesCount(sequenceCount);
                     word.setElementFrequency(elementFrequency);
                     // this particular line is just for backward compatibility with InMemoryLookupCache
