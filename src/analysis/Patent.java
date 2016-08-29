@@ -5,6 +5,7 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import server.tools.AbstractPatent;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -21,7 +22,7 @@ public class Patent implements Comparable<Patent>, Serializable {
         this.vector=vector;
     }
 
-    public static AbstractPatent abstractClone(Patent old, String reffered) {
+    public static AbstractPatent abstractClone(Patent old, String reffered) throws SQLException {
         AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), reffered);
         return  clone;
     }

@@ -249,7 +249,11 @@ public class SimilarPatentFinder {
             Patent p = heap.remove();
             //String assignee = assigneeMap.get(p.getName());
             //if(assignee==null)assignee="";
-            resultList.add(0, Patent.abstractClone(p, null));
+            try {
+                resultList.add(0, Patent.abstractClone(p, null));
+            } catch(SQLException sql) {
+                sql.printStackTrace();
+            }
         }
         double avgSim = cnt.get() > 0 ? total.get()/cnt.get() : 0.0;
         PatentList results = new PatentList(resultList,name1,name2,avgSim);
