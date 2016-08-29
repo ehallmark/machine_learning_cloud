@@ -59,6 +59,20 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static int selectRawPatentCount() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT count(temp.*) from (select distinct split_part(name, '_', 1) from raw_patents) as temp");
+		System.out.println(ps);
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) {
+			Integer result = rs.getInt(1);
+			if(result!=null) {
+				System.out.println("Total number of documents: "+result);
+				return result;
+			}
+		}
+		return 0;
+	}
+
 	public static ResultSet getTitleFor(String patentNumber) throws SQLException{
 		PreparedStatement ps = seedConn.prepareStatement("SELECT invention_title FROM patent_grant where pub_doc_number=?");
 		ps.setString(1, patentNumber);

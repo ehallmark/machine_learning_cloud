@@ -60,6 +60,10 @@ public class SeedBOW {
 
         }
 
+        if(vocabCache.totalNumberOfDocs() <= 0) {
+            vocabCache.incrementTotalDocCount(Database.selectRawPatentCount());
+        }
+
         System.out.println("Total number of documents: "+vocabCache.totalNumberOfDocs());
         System.out.println("Total number of words: "+vocabCache.numWords());
         System.out.println("Has word method: + "+vocabCache.containsWord("method")+" count "+vocabCache.wordFrequency("method"));
