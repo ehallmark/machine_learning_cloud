@@ -45,9 +45,9 @@ public class VectorHelper {
         return vec;
     }
 
-    public static int[] toPrim(Integer[] objArray) {
+    public static float[] toPrim(Integer[] objArray) {
         if(objArray==null) return null;
-        int[] vec = new int[objArray.length];
+        float[] vec = new float[objArray.length];
         int i = 0;
         for(int d: objArray) {
             vec[i] = d;

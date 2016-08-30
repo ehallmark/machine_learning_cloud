@@ -139,11 +139,11 @@ public class AutoEncoderModel {
 
             int batchSize = 100;
             int iterations = 3;
-            int encodingSize = 30;
+            int encodingSize = 300;
             int numEpochs = 1;
 
-            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
-            SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/596"),"Telia Custom");
+            //SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
+            //SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/596"),"Telia Custom");
             AutoEncoderModel model = new AutoEncoderModel(new BOWIterator(batchSize), new BOWIterator(batchSize), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
 
         } catch(Exception e) {
