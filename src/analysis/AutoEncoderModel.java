@@ -99,7 +99,7 @@ public class AutoEncoderModel {
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 //.dropOut(0.2)
                 .updater(Updater.ADAGRAD)
-                .miniBatch(true)
+                //.miniBatch(true)
                 .activation("relu")
                 .gradientNormalization(GradientNormalization.ClipL2PerLayer)
                 //.momentum(0.7)
@@ -137,10 +137,10 @@ public class AutoEncoderModel {
             Database.setupSeedConn();
             System.out.println("Load data....");
 
-            int batchSize = 100;
-            int iterations = 3;
-            int encodingSize = 300;
-            int numEpochs = 1;
+            int batchSize = 1000;
+            int iterations = 2;
+            int encodingSize = 100;
+            int numEpochs = 3;
 
             //SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
             //SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/596"),"Telia Custom");

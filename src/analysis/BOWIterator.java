@@ -60,7 +60,7 @@ public class BOWIterator implements DataSetIterator {
     @Override
     public void reset() {
         try {
-            rs = Database.selectBOW(1000);
+            rs = Database.selectBOW(batch());
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Cannot reset result set!");
