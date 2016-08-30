@@ -217,7 +217,7 @@ public class KMeanAlgorithm
     public static void main(String[] args) throws Exception
     {
 
-        SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/2"),"name");
+        SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
         initialize(finder.getPatentList().stream().map(p->p.getVector()).collect(Collectors.toList()));
         kMeanCluster(finder.getPatentList().stream().map(f->f.getVector()).iterator());
 
