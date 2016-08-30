@@ -102,23 +102,24 @@ public class AutoEncoderModel {
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.dropOut(0.2)
                 .updater(Updater.RMSPROP)
+                .activation("sigmoid")
                 //.momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
-                .learningRate(0.01)
+                .learningRate(0.0001)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(numHidden).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(numHidden).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(3, new RBM.Builder().nIn(numHidden).nOut(encodingSize).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
                 .layer(4, new RBM.Builder().nIn(encodingSize).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //decoding starts
-                .layer(5, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(6, new RBM.Builder().nIn(numHidden).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
+                .layer(5, new RBM.Builder().nIn(numHidden).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new RBM.Builder().nIn(numHidden).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).activation("softmax").nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
@@ -141,8 +142,8 @@ public class AutoEncoderModel {
             int encodingSize = 30;
             int numEpochs = 1;
 
-            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/2"),"name1");
-            SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/4"),"name2");
+            SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/398"),"ETSI");
+            SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/396"),"Telia Custom");
             AutoEncoderModel model = new AutoEncoderModel(new AutoEncoderIterator(batchSize, finder1), new AutoEncoderIterator(batchSize, finder2), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
 
         } catch(Exception e) {
