@@ -62,8 +62,7 @@ public class AutoEncoderModel {
                     INDArray row = t.getFeatureMatrix().getRow(j);
                     double similarity = Transforms.cosineSim(row, decode(encode(row)));
                     values.add(similarity);
-                    System.out.println("Encoding: "+encode(t.getFeatureMatrix().getRow(j)));
-                    System.out.println("Decoding: "+decode(encode(t.getFeatureMatrix().getRow(j))));
+                    System.out.println("Similarity: "+similarity);
                 }
 
             }
