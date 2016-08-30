@@ -75,6 +75,16 @@ public class Database {
 		return 0;
 	}
 
+	public static int lengthOfBOW() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select array_length(bow,1) from bag_of_words limit 1");
+		ResultSet rs = ps.executeQuery();
+		if(rs.next()) {
+			return rs.getInt(1);
+		} else {
+			throw new RuntimeException("NO ARRAYS FOUND IN BOW DATABASE MODEL!");
+		}
+	}
+
 	public static void insertBOW(String name, Integer[] values) throws SQLException {
 		if(insertBOWStatement==null)insertBOWStatement = insertConn.prepareStatement("insert into bag_of_words (name,bow) values (?,?) on conflict (name) do update set bow=vec_add(bag_of_words.bow,?) where bag_of_words.name=?");
 		Array array = insertConn.createArrayOf("int4", values);
@@ -85,10 +95,22 @@ public class Database {
 		insertBOWStatement.executeUpdate();
 	}
 
+	public static ResultSet selectBOW(int limit) throws SQLException {
+		if(limit <= 0) {
+			PreparedStatement ps = seedConn.prepareStatement("SELECT name,bow FROM bag_of_words");
+			ps.setFetchSize(10);
+			return ps.executeQuery();
+		} else {
+			PreparedStatement ps = seedConn.prepareStatement("SELECT name,bow FROM bag_of_words limit ?");
+			ps.setFetchSize(10);
+			ps.setInt(1,limit);
+			return ps.executeQuery();
+		}
+
+	}
+
 	public static ResultSet selectBOW() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("SELECT name,bow FROM bag_of_words");
-		ps.setFetchSize(10);
-		return ps.executeQuery();
+		return selectBOW(-1);
 	}
 
 	public static void updateTFIDF(String name, Float[] vector) throws SQLException {
