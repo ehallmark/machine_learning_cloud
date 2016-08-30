@@ -105,7 +105,7 @@ public class AutoEncoderModel {
                 //.momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
-                .l1(0.1).l2(0.001)
+                .l1(0.1).l2(0.001).regularization(true)
                 .learningRate(0.0001)
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -119,7 +119,7 @@ public class AutoEncoderModel {
                 //decoding starts
                 .layer(5, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(6, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).activation("softmax").nIn(numHidden).nOut(vectorSize).build())
+                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
