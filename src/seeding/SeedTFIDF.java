@@ -39,7 +39,7 @@ public class SeedTFIDF {
         Set<String> stopWords = new HashSet<>(vocabCache.vocabWords().stream().sorted((w1, w2)->Double.compare(w2.getElementFrequency(),w1.getElementFrequency())).map(vocabWord->vocabWord.getLabel()).collect(Collectors.toList()).subList(0,numStopWords));
         // get middle words from vocab
         iterator.setVocabAndStopWords(vocabCache,stopWords);
-        List<VocabWord> words = vocabCache.vocabWords().stream().filter(vw->!stopWords.contains(vw.getLabel())||vw.getElementFrequency()>= Constants.DEFAULT_MIN_WORD_FREQUENCY).collect(Collectors.toList());
+        List<VocabWord> words = vocabCache.vocabWords().stream().filter(vw->(!stopWords.contains(vw.getLabel()))&&vw.getElementFrequency()>= Constants.DEFAULT_MIN_WORD_FREQUENCY&&vw.getSequencesCount()<vocabCache.totalNumberOfDocs()).collect(Collectors.toList());
 
         Float[] tfidfCounts = new Float[words.size()];
         AtomicInteger cnt = new AtomicInteger(0);
