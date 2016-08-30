@@ -24,8 +24,8 @@ public class SeedTFIDF {
         Database.setupSeedConn();
         Database.setupInsertConn();
         VocabCache<VocabWord> vocabCache;
-        final File vocabFile = new File(Constants.VOCAB_FILE);
-        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator();
+        final File vocabFile = new File(Constants.STEMMED_VOCAB_FILE);
+        DatabaseLabelledIterator iterator = new DatabaseLabelledIterator(true);
         System.out.println("Checking existence of vocab file...");
 
         if (vocabFile.exists()) {

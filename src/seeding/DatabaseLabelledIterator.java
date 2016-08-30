@@ -26,23 +26,30 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
     protected VocabCache<VocabWord> vocabCache;
     protected Set<String> stopWords;
     protected long lastTime;
+    protected boolean shouldStem;
+    public static Stemmer stem = new Stemmer();
     // used to tag each sequence with own Id
 
-    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache,Set<String> stopWords) throws SQLException {
+    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache,Set<String> stopWords, boolean shouldStem) throws SQLException {
         this.vocabCache=vocabCache;
         this.stopWords=stopWords;
+        this.shouldStem = shouldStem;
         if(this.stopWords==null)this.stopWords=new HashSet<>();
         preProcessor=(t)->t;
         resultSet = Database.selectRawPatents();
     }
 
-    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache) throws SQLException {
-        this(vocabCache,null);
+    public DatabaseLabelledIterator(VocabCache<VocabWord> vocabCache, boolean shouldStem) throws SQLException {
+        this(vocabCache,null,shouldStem);
     }
 
 
+    public DatabaseLabelledIterator(boolean shouldStem) throws SQLException {
+        this(null,shouldStem);
+    }
+
     public DatabaseLabelledIterator() throws SQLException {
-        this(null);
+        this(null,false);
     }
 
     public void setVocabAndStopWords(VocabCache<VocabWord> vocab, Set<String> stopWords) {
@@ -63,7 +70,8 @@ public class DatabaseLabelledIterator implements LabelAwareIterator {
                 //System.out.println(Arrays.toString(words));
                 if(words.length < Constants.MIN_WORDS_PER_SENTENCE) continue;
                 assert words != null : "Words array from PG is NULL!";
-                currentSentence = Arrays.asList(words).stream().map(t->t==null||stopWords.contains(t)?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).collect(Collectors.toList());
+
+                currentSentence = Arrays.asList(words).stream().filter(t->t!=null).map(w->shouldStem ? stem.stem(w) : w).map(t->t==null||t.isEmpty()||stopWords.contains(t)?null:(vocabCache==null?new VocabWord(1.0,t):vocabCache.tokenFor(t))).filter(w->w!=null).collect(Collectors.toList());
 
                 /*if(vocabCache!=null) {
                     assert vocabCache.hasToken(currentLabel) : "Vocab does not have current label: "+currentLabel;

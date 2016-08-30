@@ -29,6 +29,7 @@ public class Constants {
 	public static final String CANDIDATE_SET_FOLDER = "candidateSets/";
 	public static final String WORD_VECTORS_PATH = "word_vector_model.txt";
 	public static final String VOCAB_FILE = "vocabulary_for_paragraph_vectors.txt";
+	public static final String STEMMED_VOCAB_FILE = "stemmed_vocab_file.txt";
 	public static final String VOCAB_FILE_WITH_LABELS = "vocabulary_with_labels.txt";
 	public static final String CLAIM_VOCAB_FILE = "claim_vocabulary.txt";
 	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
