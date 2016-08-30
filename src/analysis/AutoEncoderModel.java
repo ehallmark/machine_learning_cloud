@@ -107,18 +107,18 @@ public class AutoEncoderModel {
                 .l1(0.1).l2(0.001).regularization(true)
                 .learningRate(0.0001)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(3, new RBM.Builder().nIn(numHidden).k(2).nOut(encodingSize).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(3, new RBM.Builder().nIn(numHidden).k(2).nOut(encodingSize).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
                 .layer(4, new RBM.Builder().nIn(encodingSize).k(2).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).build())
 
                 //decoding starts
-                .layer(5, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(6, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
+                .layer(5, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).activation("softmax").nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
