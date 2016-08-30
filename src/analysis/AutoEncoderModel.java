@@ -96,15 +96,16 @@ public class AutoEncoderModel {
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                .biasInit(-0.1)
                 //.dropOut(0.2)
                 .updater(Updater.ADAGRAD)
                 //.miniBatch(true)
-                .activation("relu")
+                .activation("sigmoid")
                 .gradientNormalization(GradientNormalization.ClipL2PerLayer)
                 //.momentum(0.7)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
-                .l1(0.1).l2(0.001).regularization(true)
+                //.l1(0.1).l2(0.001).regularization(true)
                 .learningRate(0.0001)
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -117,7 +118,7 @@ public class AutoEncoderModel {
 
                 //decoding starts
                 .layer(5, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(6, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(6, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(7, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).activation("softmax").nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
