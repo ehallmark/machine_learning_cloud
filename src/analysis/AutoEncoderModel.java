@@ -51,7 +51,9 @@ public class AutoEncoderModel {
         System.out.println("Train model...");
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Epoch # "+(i+1));
-            model.fit(iter);
+            while(iter.hasNext()) {
+                model.fit(iter.next(batchSize));
+            }
             iter.reset();
 
             // test
@@ -62,7 +64,7 @@ public class AutoEncoderModel {
                     INDArray row = t.getFeatureMatrix().getRow(j);
                     double similarity = Transforms.cosineSim(row, decode(encode(row)));
                     values.add(similarity);
-                    System.out.println("Similarity: "+similarity);
+                    System.out.println("Encoding: "+encode(row).toString());
                 }
 
             }
@@ -87,7 +89,7 @@ public class AutoEncoderModel {
 
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
-        int numHidden = 5000;
+        int numHidden = 4000;
         System.out.println("Number of vectors in input: "+vectorSize);
 
         System.out.println("Build model....");
@@ -95,18 +97,18 @@ public class AutoEncoderModel {
                 .seed(41)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.biasInit(-0.1)
                 //.dropOut(0.2)
                 .updater(Updater.ADAGRAD)
                 .miniBatch(true)
                 .activation("sigmoid")
                 .gradientNormalization(GradientNormalization.ClipL2PerLayer)
-                //.momentum(0.7)
+                //.momentum(0.5)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
                 .lrPolicyDecayRate(0.001)
                 //.l1(0.1).l2(0.001).regularization(true)
-                //.learningRate(0.0001)
+                .learningRate(0.0001)
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -117,7 +119,7 @@ public class AutoEncoderModel {
 
                 //decoding starts
                 .layer(4, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).activation("softmax").nIn(numHidden).nOut(vectorSize).build())
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
 
@@ -135,14 +137,14 @@ public class AutoEncoderModel {
             Database.setupSeedConn();
             System.out.println("Load data....");
 
-            int batchSize = 10000;
+            int batchSize = 50;
             int iterations = 2;
-            int encodingSize = 1000;
+            int encodingSize = 20;
             int numEpochs = 5;
 
             //SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
             //SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/596"),"Telia Custom");
-            AutoEncoderModel model = new AutoEncoderModel(new BOWIterator(batchSize), new BOWIterator(50), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
+            AutoEncoderModel model = new AutoEncoderModel(new BOWIterator(10000), new BOWIterator(batchSize), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
 
         } catch(Exception e) {
             e.printStackTrace();
