@@ -368,7 +368,7 @@ public class Database {
 		ResultSet rs = ps.executeQuery();
 		Map<Integer,String> map = new HashMap<>();
 		while(rs.next()) {
-			System.out.println(""+rs.getInt(1) + " => "+rs.getString(1));
+			System.out.println(""+rs.getInt(1) + " => "+rs.getString(2));
 			map.put(rs.getInt(1),rs.getString(2));
 		}
 		ps.close();
