@@ -59,7 +59,7 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        sendPost("Huawei", "huawei", null);
+        /*sendPost("Huawei", "huawei", null);
         sendPost("Panasonic", "panasonic", null);
         sendPost("Sony", "sony", null);
         sendPost("ZTE", "zte", null);
@@ -72,6 +72,14 @@ public class SeedCompanyVectors {
         GetEtsiPatentsList.getETSIPatentMap().entrySet().forEach(entrySet->{
             try {
                 sendPost("ETSI "+entrySet.getKey(), null, entrySet.getValue());
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });*/
+
+        Database.getCompDBMap().entrySet().forEach(entry->{
+            try {
+                sendPost(entry.getKey(), null, entry.getValue());
             } catch(Exception e) {
                 e.printStackTrace();
             }

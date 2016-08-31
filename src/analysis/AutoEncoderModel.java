@@ -110,7 +110,7 @@ public class AutoEncoderModel {
                 .l1(0.1).l2(0.001).regularization(true)
                 .learningRate(0.0025)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(numHidden).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(2, new RBM.Builder().nIn(numHidden).k(1).nOut(encodingSize).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 

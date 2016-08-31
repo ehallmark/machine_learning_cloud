@@ -308,7 +308,6 @@ public class Database {
 		return ps.executeQuery();
 	}
 
-	/*
 
 	private static Array getCompDBPatents() throws SQLException {
 		Set<String> pubDocNums = new HashSet<>();
@@ -364,10 +363,23 @@ public class Database {
 		ps.executeUpdate();
 	}
 
-	public static Map<String, Integer[]> getCompDBTechnologyMap() throws SQLException {
-		Map<String, Integer[]> patentToTechnologyHash = new HashMap<>();
+	private static Map<Integer,String> compdbTechnologyMap() throws SQLException {
+		PreparedStatement ps = compDBConn.prepareStatement("select distinct id,'CompDB - '||name from technologies");
+		ResultSet rs = ps.executeQuery();
+		Map<Integer,String> map = new HashMap<>();
+		while(rs.next()) {
+			map.put(rs.getInt(1),rs.getString(2));
+		}
+		ps.close();
+		return map;
+	}
+
+	public static Map<String, List<String>> getCompDBMap() throws SQLException {
+		Database.setupCompDBConn();
+		Map<String, List<String>> patentToTechnologyHash = new HashMap<>();
 		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
 		ps.setArray(1, compDBConn.createArrayOf("int4",badTech.toArray()));
+		Map<Integer, String> technologyMap = Database.compdbTechnologyMap();
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {
 			List<Integer> technologies = new ArrayList<>();
@@ -379,15 +391,23 @@ public class Database {
 			if(!valid)continue;
 
 			Array reelFrames = rs.getArray(2);
-			PreparedStatement ps2 = seedConn.prepareStatement("SELECT DISTINCT doc_number FROM patent_assignment_property_document WHERE (doc_kind='B1' OR doc_kind='B2') AND doc_number IS NOT NULL AND assignment_reel_frame=ANY(?)");
+			PreparedStatement ps2 = seedConn.prepareStatement("SELECT array_agg(DISTINCT doc_number) FROM patent_assignment_property_document WHERE (doc_kind='B1' OR doc_kind='B2') AND doc_number IS NOT NULL AND assignment_reel_frame=ANY(?)");
 			ps2.setArray(1, reelFrames);
 			ps2.setFetchSize(10);
-			ResultSet rs2 = ps2.executeQuery();
 			// Collect patent numbers
-			while(rs2.next()) {
-				String docNumber = rs2.getString(1);
-				if(docNumber!=null) {
-					patentToTechnologyHash.put(docNumber, technologies.toArray(new Integer[]{}));
+			List<String> currentTechToUpdate = new ArrayList<>();
+			for(Integer tech : technologies) {
+				String name = technologyMap.get(tech);
+				currentTechToUpdate.add(name);
+				if(!patentToTechnologyHash.containsKey(name)) patentToTechnologyHash.put(name, new ArrayList<>());
+			}
+			ResultSet rs2 = ps2.executeQuery();
+			if(rs2.next()) {
+				List<String> toAdd = Arrays.asList((String[])rs2.getArray(1).getArray());
+				if(toAdd!=null && !toAdd.isEmpty()) {
+					currentTechToUpdate.forEach(tech->{
+						patentToTechnologyHash.get(tech).addAll(toAdd);
+					});
 				}
 			}
 			rs2.close();
@@ -395,6 +415,7 @@ public class Database {
 		}
 		rs.close();
 		ps.close();
+		compDBConn.close();
 		return patentToTechnologyHash;
 	}
 
@@ -426,7 +447,7 @@ public class Database {
 		Collections.sort(distinctClassifications);
 		return distinctClassifications;
 	}
-	*/
+
 
 	private static ResultSet getValuablePatents() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(valuablePatentsQuery);
