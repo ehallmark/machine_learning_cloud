@@ -44,7 +44,7 @@ public class SimilarPatentServer {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            globalFinder = new SimilarPatentFinder();
+            //globalFinder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
