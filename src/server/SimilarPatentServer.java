@@ -141,7 +141,7 @@ public class SimilarPatentServer {
                     }
                     return globalFinder;
 
-                }).filter(finder->finder!=null&&finder.getPatentList()!=null).collect(Collectors.toList());
+                }).filter(finder->finder!=null&&finder.getPatentList()!=null&&!finder.getPatentList().isEmpty()).collect(Collectors.toList());
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
@@ -192,7 +192,8 @@ public class SimilarPatentServer {
                 try {
                     id = Integer.valueOf(name);
                     if(id!=null&&id>=0) {
-                        patents.addAll(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id)).similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
+                        SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
+                        if(finder.getPatentList()!=null&&!finder.getPatentList().isEmpty())patents.addAll(finder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     } else {
                         patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     }

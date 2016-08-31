@@ -54,7 +54,7 @@ public class SeedCompanyVectors {
         in.close();
 
         //print result
-        System.out.println(response.toString());
+        //System.out.println(response.toString());
 
     }
 
