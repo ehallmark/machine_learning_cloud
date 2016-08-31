@@ -89,7 +89,7 @@ public class AutoEncoderModel {
 
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
-        int numHidden = 200;
+        int numHidden = 500;
         System.out.println("Number of vectors in input: "+vectorSize);
 
         System.out.println("Build model....");
@@ -97,25 +97,25 @@ public class AutoEncoderModel {
                 .seed(41)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.biasInit(-0.1)
                 //.dropOut(0.2)
                 .updater(Updater.ADAGRAD)
                 .miniBatch(true)
                 .activation("sigmoid")
                 .gradientNormalization(GradientNormalization.ClipL2PerLayer)
-                //.momentum(0.5)
+                .momentum(0.5)
                 .learningRateDecayPolicy(LearningRatePolicy.Score)
-                .lrPolicyDecayRate(0.001)
+                .lrPolicyDecayRate(0.0001)
                 //.l1(0.1).l2(0.001).regularization(true)
-                .learningRate(0.0001)
+                .learningRate(0.001)
                 .list()
                 .layer(0, new RBM.Builder().nIn(vectorSize).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(1, new RBM.Builder().nIn(numHidden).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(2, new RBM.Builder().nIn(numHidden).k(1).nOut(encodingSize).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(3, new RBM.Builder().nIn(encodingSize).k(1).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.GAUSSIAN).build())
+                .layer(3, new RBM.Builder().nIn(encodingSize).k(1).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).build())
 
                 //decoding starts
                 .layer(4, new RBM.Builder().nIn(numHidden).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
@@ -138,8 +138,8 @@ public class AutoEncoderModel {
             System.out.println("Load data....");
 
             int batchSize = 10;
-            int iterations = 2;
-            int encodingSize = 10;
+            int iterations = 3;
+            int encodingSize = 20;
             int numEpochs = 50;
 
             //SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
