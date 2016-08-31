@@ -45,12 +45,12 @@ public class VectorHelper {
         return vec;
     }
 
-    public static float[] toOnes(Integer[] objArray) {
+    public static float[] toPrim(Integer[] objArray) {
         if(objArray==null) return null;
         float[] vec = new float[objArray.length];
         int i = 0;
         for(int d: objArray) {
-            vec[i] = Math.min(1,d);
+            vec[i] = d;
             i++;
         }
         return vec;
