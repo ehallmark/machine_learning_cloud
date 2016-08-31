@@ -89,7 +89,7 @@ public class AutoEncoderModel {
 
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
-        int numHidden = 500;
+        int numHidden = 200;
         System.out.println("Number of vectors in input: "+vectorSize);
 
         System.out.println("Build model....");
@@ -139,12 +139,12 @@ public class AutoEncoderModel {
 
             int batchSize = 10;
             int iterations = 2;
-            int encodingSize = 20;
-            int numEpochs = 5;
+            int encodingSize = 10;
+            int numEpochs = 50;
 
             //SimilarPatentFinder finder1 = new SimilarPatentFinder(null, new File("candidateSets/598"),"ETSI");
             //SimilarPatentFinder finder2 = new SimilarPatentFinder(null, new File("candidateSets/596"),"Telia Custom");
-            AutoEncoderModel model = new AutoEncoderModel(new BOWIterator(10000), new BOWIterator(batchSize), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
+            AutoEncoderModel model = new AutoEncoderModel(new BOWIterator(batchSize), new BOWIterator(batchSize), batchSize, iterations, numEpochs, encodingSize, new File(Constants.SIMILARITY_MODEL_FILE));
 
         } catch(Exception e) {
             e.printStackTrace();
