@@ -368,6 +368,7 @@ public class Database {
 		ResultSet rs = ps.executeQuery();
 		Map<Integer,String> map = new HashMap<>();
 		while(rs.next()) {
+			System.out.println(""+rs.getInt(1) + " => "+rs.getString(1));
 			map.put(rs.getInt(1),rs.getString(2));
 		}
 		ps.close();
@@ -383,11 +384,11 @@ public class Database {
 		Map<Integer, String> technologyMap = Database.compdbTechnologyMap();
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {
-			List<Integer> technologies = new ArrayList<>();
+			List<String> technologies = new ArrayList<>();
 			boolean valid = true;
 			for(Integer tech : (Integer[])rs.getArray(1).getArray()) {
 				if(badTech.contains(tech)) { valid=false; break;}
-				technologies.add(tech);
+				technologies.add(technologyMap.get(tech));
 			}
 			if(!valid)continue;
 
@@ -396,20 +397,22 @@ public class Database {
 			ps2.setArray(1, reelFrames);
 			ps2.setFetchSize(10);
 			// Collect patent numbers
-			List<String> currentTechToUpdate = new ArrayList<>();
-			for(Integer tech : technologies) {
-				String name = technologyMap.get(tech);
-				currentTechToUpdate.add(name);
-				if(!patentToTechnologyHash.containsKey(name)) patentToTechnologyHash.put(name, new ArrayList<>());
-			}
 			ResultSet rs2 = ps2.executeQuery();
 			if(rs2.next()) {
-				List<String> toAdd = Arrays.asList((String[])rs2.getArray(1).getArray());
-				if(toAdd!=null && !toAdd.isEmpty()) {
-					currentTechToUpdate.forEach(tech->{
-						patentToTechnologyHash.get(tech).addAll(toAdd);
-					});
+				Array sqlArray = rs2.getArray(1);
+				if(sqlArray!=null) {
+					List<String> toAdd = Arrays.asList((String[])sqlArray.getArray());
+					if(toAdd!=null && !toAdd.isEmpty()) {
+						technologies.forEach(tech->{
+							if(!patentToTechnologyHash.containsKey(tech)) {
+								patentToTechnologyHash.put(tech, new ArrayList<>());
+							}
+							List<String> list = patentToTechnologyHash.get(tech);
+							list.addAll(toAdd);
+						});
+					}
 				}
+
 			}
 			rs2.close();
 			ps2.close();
