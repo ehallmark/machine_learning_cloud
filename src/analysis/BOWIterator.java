@@ -35,7 +35,7 @@ public class BOWIterator implements DataSetIterator {
                 i++;
             }
             data.divi(data.sumNumber());
-            return new DataSet(data.add(Nd4j.randn(1,inputColumns).div(100.0)),data);// add some noise
+            return new DataSet(data.add(Nd4j.randn(num,inputColumns).div(100.0)),data);// add some noise
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error on next!");
