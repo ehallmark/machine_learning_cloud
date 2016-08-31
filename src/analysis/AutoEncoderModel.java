@@ -89,7 +89,7 @@ public class AutoEncoderModel {
 
     protected MultiLayerNetwork buildModel() {
         int vectorSize = iter.inputColumns();
-        int numHidden = 4000;
+        int numHidden = 500;
         System.out.println("Number of vectors in input: "+vectorSize);
 
         System.out.println("Build model....");
@@ -97,7 +97,7 @@ public class AutoEncoderModel {
                 .seed(41)
                 .iterations(iterations)
                 .weightInit(WeightInit.XAVIER)
-                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .optimizationAlgo(OptimizationAlgorithm.LBFGS)
                 //.biasInit(-0.1)
                 //.dropOut(0.2)
                 .updater(Updater.ADAGRAD)
@@ -110,15 +110,15 @@ public class AutoEncoderModel {
                 //.l1(0.1).l2(0.001).regularization(true)
                 .learningRate(0.0001)
                 .list()
-                .layer(0, new RBM.Builder().nIn(vectorSize).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(1, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
-                .layer(2, new RBM.Builder().nIn(numHidden).k(2).nOut(encodingSize).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(0, new RBM.Builder().nIn(vectorSize).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.GAUSSIAN).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(1, new RBM.Builder().nIn(numHidden).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(2, new RBM.Builder().nIn(numHidden).k(1).nOut(encodingSize).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
 
                 //encoding stops
-                .layer(3, new RBM.Builder().nIn(encodingSize).k(2).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.BINARY).build())
+                .layer(3, new RBM.Builder().nIn(encodingSize).k(1).nOut(numHidden).lossFunction(LossFunctions.LossFunction.RMSE_XENT).hiddenUnit(RBM.HiddenUnit.BINARY).visibleUnit(RBM.VisibleUnit.GAUSSIAN).build())
 
                 //decoding starts
-                .layer(4, new RBM.Builder().nIn(numHidden).k(2).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
+                .layer(4, new RBM.Builder().nIn(numHidden).k(1).nOut(numHidden).hiddenUnit(RBM.HiddenUnit.RECTIFIED).visibleUnit(RBM.VisibleUnit.LINEAR).lossFunction(LossFunctions.LossFunction.RMSE_XENT).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.RMSE_XENT).nIn(numHidden).nOut(vectorSize).build())
                 .pretrain(true).backprop(true)
                 .build();
@@ -137,7 +137,7 @@ public class AutoEncoderModel {
             Database.setupSeedConn();
             System.out.println("Load data....");
 
-            int batchSize = 50;
+            int batchSize = 10;
             int iterations = 2;
             int encodingSize = 20;
             int numEpochs = 5;
