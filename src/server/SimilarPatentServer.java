@@ -6,6 +6,8 @@ import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
@@ -47,6 +49,7 @@ public class SimilarPatentServer {
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     private static WordVectors wordVectors;
+    private static VocabCache<VocabWord> vocab;
     private static TokenizerFactory tokenizer = new DefaultTokenizerFactory();
     static {
         tokenizer.setTokenPreProcessor(new MyPreprocessor());
@@ -55,7 +58,7 @@ public class SimilarPatentServer {
             Database.setupMainConn();
             globalFinder = new SimilarPatentFinder();
             wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
-
+            vocab = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -219,7 +222,7 @@ public class SimilarPatentServer {
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors).getVector(text));
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors.lookupTable(),vocab).getVector(text));
             if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);

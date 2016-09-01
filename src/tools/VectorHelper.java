@@ -1,5 +1,6 @@
 package tools;
 
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -39,17 +40,17 @@ public class VectorHelper {
     }
 
     // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
-    public static INDArray TFIDFcentroidVector(WordVectors wordVectors, List<String> tokens) {
-        assert wordVectors.vocab().totalNumberOfDocs() > 0 : "There are 0 documents in this vocab!!!";
+    public static INDArray TFIDFcentroidVector(WeightLookupTable<VocabWord> lookupTable, VocabCache<VocabWord> vocab, List<String> tokens) {
+        assert vocab.totalNumberOfDocs() > 0 : "There are 0 documents in this vocab!!!";
         INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            int docAppeared = wordVectors.vocab().docAppearedIn(token);
+            int docAppeared = vocab.docAppearedIn(token);
             assert docAppeared > 0 : "Vocab does not have document counts";
-            double invDocFreq = Math.log(new Double(wordVectors.vocab().totalNumberOfDocs())/docAppeared);
+            double invDocFreq = Math.log(new Double(vocab.totalNumberOfDocs())/docAppeared);
             total+=invDocFreq;
-            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
+            allWords.putRow(cnt.getAndIncrement(), lookupTable.vector(token).mul(invDocFreq));
         }
         assert total > 0.0 : "Cannot divide by 0!";
         INDArray mean = allWords.mean(0).div(total/tokens.size());
