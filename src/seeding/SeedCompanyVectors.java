@@ -19,7 +19,7 @@ public class SeedCompanyVectors {
     private static final String USER_AGENT = "Mozilla/5.0";
 
     // HTTP POST request
-    private static void sendPost(String candidateSetName, String assignee, String patents, List<String> innerNames) throws Exception {
+    private static void sendPost(String candidateSetName, String assignee, String patents) throws Exception {
         assert candidateSetName!=null && !(assignee==null && patents==null);
         String url = "http://192.168.1.148:4567/create";
         URL obj = new URL(url);
@@ -34,7 +34,7 @@ public class SeedCompanyVectors {
         if(patents==null || patents.length() == 0) urlParameters = "name="+candidateSetName+"&assignee="+assignee;
         else if(assignee == null || assignee.trim().length() == 0) {
             urlParameters = "name="+candidateSetName+"&patents="+patents;
-            if(innerNames!=null&&innerNames.size()>0) urlParameters+="&names="+String.join(">><<",innerNames);
+            //if(innerNames!=null&&innerNames.size()>0) urlParameters+="&names="+String.join(">><<",innerNames);
         }
         else throw new RuntimeException("Invalid parameters!");
 
@@ -66,35 +66,27 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        sendPost("Huawei", "huawei", null,null);
-        sendPost("Panasonic", "panasonic", null,null);
-        sendPost("Sony", "sony", null,null);
-        sendPost("ZTE", "zte", null,null);
-        sendPost("Orange", "orange", null,null);
-        sendPost("Cisco", "cisco", null,null);
-        sendPost("Telia Custom", null, String.join(" ",Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+"))),null);
-        sendPost("Verizon", "verizon", null,null);
+        /*sendPost("Huawei", "huawei", null);
+        sendPost("Panasonic", "panasonic", null);
+        sendPost("Sony", "sony", null);
+        sendPost("ZTE", "zte", null);
+        sendPost("Orange", "orange", null);
+        sendPost("Cisco", "cisco", null);
+        sendPost("Telia Custom", null, String.join(" ",Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+"))));
+        sendPost("Verizon", "verizon", null);
         // ETSI PATENTS!
-        sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST),null);
-
-        /*
-        Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
-        List<String> patents = new ArrayList<>();
-        List<String> names = new ArrayList<>();
-        for(Map.Entry<String,List<String>> e: ETSIMap.entrySet()) {
-            patents.add(String.join(" ",e.getValue()));
-            names.add(e.getKey());
-        }
-
-        sendPost("ETSI (by standard)",null,String.join(",",patents),names);
-
-        patents = new ArrayList<>();
-        names = new ArrayList<>();
-        for(Map.Entry<String,List<String>> e: Database.getCompDBMap().entrySet()) {
-            patents.add(String.join(" ",e.getValue()));
-            names.add(e.getKey());
-        }
-        sendPost("CompDB (by technology)",null,String.join(",",patents),names);
+        sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST));
         */
+
+        Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
+        for(Map.Entry<String,List<String>> e: ETSIMap.entrySet()) {
+            sendPost("ETSI - "+e.getKey(),null,String.join(" ",e.getValue()));
+        }
+
+        Map<String,List<String>> compDBMap = Database.getCompDBMap();
+        for(Map.Entry<String,List<String>> e: compDBMap.entrySet()) {
+            sendPost("CompDB - "+e.getKey(),null,String.join(" ",e.getValue()));
+        }
+
     }
 }

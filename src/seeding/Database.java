@@ -364,7 +364,7 @@ public class Database {
 	}
 
 	private static Map<Integer,String> compdbTechnologyMap() throws SQLException {
-		PreparedStatement ps = compDBConn.prepareStatement("select distinct id,'CompDB - '||name from technologies");
+		PreparedStatement ps = compDBConn.prepareStatement("select distinct id,name from technologies");
 		ResultSet rs = ps.executeQuery();
 		Map<Integer,String> map = new HashMap<>();
 		while(rs.next()) {

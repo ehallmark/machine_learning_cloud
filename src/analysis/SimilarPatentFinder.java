@@ -34,6 +34,10 @@ public class SimilarPatentFinder {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**");
     }
 
+    public SimilarPatentFinder(boolean doNothing) {
+
+    }
+
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name) throws SQLException,IOException,ClassNotFoundException {
         this(candidateSet,patentListFile,name,null);
     }

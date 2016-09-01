@@ -4,6 +4,7 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import server.tools.*;
 import spark.Request;
@@ -40,7 +41,8 @@ public class SimilarPatentServer {
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
-    private static Map<Integer, String> candidateSetMap;
+    private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
+    private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     static {
         try {
             Database.setupSeedConn();
@@ -126,28 +128,52 @@ public class SimilarPatentServer {
                 // both exist
                 int limit = extractLimit(req);
                 System.out.println("\tLimit: " + limit);
-                SimilarPatentFinder first;
+                List<SimilarPatentFinder> firstFinders = new ArrayList<>();
                 if (id1 >= 0) {
-                    String name1 = candidateSetMap.get(id1);
-                    first = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1);
-                } else first = globalFinder;
-                List<SimilarPatentFinder> second = otherIds.stream().map(id -> {
+                    if(groupedCandidateSetMap.containsKey(id1)) {
+                        for(Integer id : groupedCandidateSetMap.get(id1)) {
+                            String name = candidateSetMap.get(id).getSecond();
+                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name));
+                        }
+                    } else {
+                        String name1 = candidateSetMap.get(id1).getSecond();
+                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1));
+                    }
+                } else firstFinders = Arrays.asList(globalFinder);
+                List<SimilarPatentFinder> secondFinders = new ArrayList<>();
+                for(String id : otherIds) {
+                    SimilarPatentFinder finder = null;
                     if (Integer.valueOf(id) >= 0) {
                         try {
-                            System.out.println("CANDIDATE LOADING: "+candidateSetMap.get(Integer.valueOf(id)));
-                            return new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)));
+                            if(groupedCandidateSetMap.containsKey(Integer.valueOf(id))) {
+                                for(Integer groupedId : groupedCandidateSetMap.get(Integer.valueOf(id))) {
+                                    System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(groupedId).getSecond());
+                                    finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), candidateSetMap.get(groupedId).getSecond());
+                                    if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
+                                        secondFinders.add(finder);
+                                    }
+                                }
+                            } else {
+                                System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(Integer.valueOf(id)).getSecond());
+                                finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)).getSecond());
+                                if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
+                                    secondFinders.add(finder);
+                                }
+                            }
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;
                         }
+                    } else {
+                        secondFinders.add(globalFinder);
                     }
-                    return globalFinder;
-
-                }).filter(finder->finder!=null&&finder.getPatentList()!=null&&!finder.getPatentList().isEmpty()).collect(Collectors.toList());
-                List<PatentList> patentLists;
+                }
+                List<PatentList> patentLists = new ArrayList<>();
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
-                patentLists = first.similarFromCandidateSets(second, threshold, limit, findDissimilar);
+                for(SimilarPatentFinder first : firstFinders) {
+                    patentLists.addAll(first.similarFromCandidateSets(secondFinders, threshold, limit, findDissimilar));
+                }
                 System.out.println("SIMILAR PATENTS FOUND!!!");
                 patentLists.forEach(list->{
                     System.out.println("Sim "+list.getName1()+" "+list.getName2()+": "+list.getAvgSimilarity());
@@ -194,9 +220,19 @@ public class SimilarPatentServer {
                 try {
                     id = Integer.valueOf(name);
                     if(id!=null&&id>=0) {
-                        SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
-                        if(finder.getPatentList()!=null&&!finder.getPatentList().isEmpty())
-                            patents.addAll(finder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
+                        if(groupedCandidateSetMap.containsKey(id)) {
+                            // grouped
+                            for (Integer integer : groupedCandidateSetMap.get(id)) {
+                                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond());
+                                if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
+                                    patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                            }
+
+                        } else {
+                            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond());
+                            if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
+                                patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                        }
                     } else {
                         patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     }
@@ -279,8 +315,29 @@ public class SimilarPatentServer {
 
     private static void importCandidateSetFromDB() throws SQLException {
         ResultSet candidates = Database.selectAllCandidateSets();
+        List<Integer> compdb = new ArrayList<>();
+        List<Integer> etsi = new ArrayList<>();
         while(candidates.next()) {
-            candidateSetMap.put(candidates.getInt(2),candidates.getString(1));
+            boolean hidden = false;
+            if(candidates.getString(1).startsWith("ETSI -")) {
+                hidden = true;
+                etsi.add(candidates.getInt(2));
+            } else if(candidates.getString(1).startsWith("CompDB -")) {
+                hidden = true;
+                compdb.add(candidates.getInt(2));
+
+            }
+            candidateSetMap.put(candidates.getInt(2),new Pair<>(hidden,candidates.getString(1)));
+        }
+        if(compdb.size()>0) {
+            int size = candidateSetMap.size();
+            candidateSetMap.put(size,new Pair<>(false, "CompDB (by technology)"));
+            groupedCandidateSetMap.put(size, compdb);
+        }
+        if(etsi.size()>0) {
+            int size = candidateSetMap.size();
+            candidateSetMap.put(size,new Pair<>(false, "ETSI (by standard)"));
+            groupedCandidateSetMap.put(size, etsi);
         }
     }
 
@@ -290,7 +347,8 @@ public class SimilarPatentServer {
 
     private static Tag selectCandidateSetDropdown(String label, String name, boolean multiple) {
         candidateSetMap = new HashMap<>();
-        candidateSetMap.put(-1, "**ALL**"); // adds the default candidate set
+        groupedCandidateSetMap = new HashMap<>();
+        candidateSetMap.put(-1, new Pair<>(false,"**ALL**")); // adds the default candidate set
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {
@@ -301,12 +359,7 @@ public class SimilarPatentServer {
                 label(label),
                 br(),
                 (multiple ? (select().attr("multiple","true")) : (select())).withName(name).with(
-                        candidateSetMap.entrySet().stream().sorted(new Comparator<Map.Entry<Integer, String>>() {
-                            @Override
-                            public int compare(Map.Entry<Integer, String> o1, Map.Entry<Integer, String> o2) {
-                                return Integer.compare(o1.getKey(),o2.getKey());
-                            }
-                        }).map(entry->{if(entry.getKey()<0) return option().withText(entry.getValue()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue()).withValue(entry.getKey().toString());}).collect(Collectors.toList())
+                        candidateSetMap.entrySet().stream().sorted((o1,o2)->Integer.compare(o1.getKey(),o2.getKey())).map(entry->{if(entry.getValue().getFirst()) {return null; } if(entry.getKey()<0) return option().withText(entry.getValue().getSecond()).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(entry.getValue().getSecond()).withValue(entry.getKey().toString());}).filter(t->t!=null).collect(Collectors.toList())
                 )
         );
     }
