@@ -148,10 +148,10 @@ public class SimilarPatentFinder {
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
         INDArray otherAvg = computeAvg(other.patentList);
-        Set<String> dontMatch = name.equals(this.name) ? null : other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
+        Set<String> dontMatch = other.name.equals(this.name) ? null : other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         try {
-            if(findDissimilar) lists.addAll(findOppositePatentsTo(name, otherAvg, dontMatch, threshold, limit));
-            else lists.addAll(findSimilarPatentsTo(name, otherAvg, dontMatch, threshold, limit));
+            if(findDissimilar) lists.addAll(findOppositePatentsTo(other.name, otherAvg, dontMatch, threshold, limit));
+            else lists.addAll(findSimilarPatentsTo(other.name, otherAvg, dontMatch, threshold, limit));
 
         } catch(SQLException sql) {
         }
@@ -183,7 +183,6 @@ public class SimilarPatentFinder {
         final Set<String> otherSet = Collections.unmodifiableSet(patentNamesToExclude);
 
         setupMinHeap(limit);
-        AtomicInteger i = new AtomicInteger(0);
         List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector, otherSet, name, patentNumber, threshold, limit));
 
         long endTime = System.currentTimeMillis();
