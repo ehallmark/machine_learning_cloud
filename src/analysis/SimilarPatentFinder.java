@@ -25,97 +25,74 @@ import server.tools.AbstractPatent;
  */
 public class SimilarPatentFinder {
     protected MinHeap<Patent> heap;
-    protected List<List<Patent>> patentLists;
-    protected List<String> names;
+    protected List<Patent> patentList;
     protected String name;
 
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE),"**ALL**");
-    }
-
-    public SimilarPatentFinder(List<List<String>> candidateSets, File patentListFile, List<String> names, String name) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSets,patentListFile,names,null,name);
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**");
     }
 
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSet!=null?Arrays.asList(candidateSet):null,patentListFile,Arrays.asList(name),null,name);
+        this(candidateSet,patentListFile,name,null);
     }
 
-    public SimilarPatentFinder(List<String> names, String name) throws SQLException {
-        this.patentLists=new ArrayList<>(1);
-        this.names=names;
+    public SimilarPatentFinder(String name) throws SQLException {
         this.name=name;
-        patentLists.addAll(names.stream().map(n->{try{return Arrays.asList(new Patent(n,getVectorFromDB(n)));}catch(Exception e) {e.printStackTrace(); return null; }}).filter(p->p!=null).collect(Collectors.toList()));
+        patentList = Arrays.asList(new Patent(name, getVectorFromDB(name)));
     }
 
-    public SimilarPatentFinder(String name) throws  SQLException {
-        this(Arrays.asList(name),name);
-    }
-
-    public SimilarPatentFinder(List<List<String>> candidateSets, File patentListFile, List<String> names, INDArray eigenVectors, String name) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
-        this.names=names;
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
-            assert(candidateSets==null||candidateSets.size()==names.size()) : "INVALID CANDIDATE SETS AND NAMES DIMENSIONS !!";
-            this.patentLists=new ArrayList<>();
-            if(candidateSets==null) candidateSets=Arrays.asList(null);
-            candidateSets.forEach(candidateSet-> {
-                try {
-                    ResultSet rs;
-                    if (candidateSet == null) {
-                        candidateSet = Database.getValuablePatentsToList();
-                    }
-                    int arrayCapacity = candidateSet.size();
-                    List<Patent> patentList = new ArrayList<>(arrayCapacity);
-                    rs = Database.selectPatentVectors(candidateSet);
-                    int count = 0;
-                    int offset = 2; // Due to the pub_doc_number field
-                    while (rs.next()) {
-                        try {
-                            INDArray array = handleResultSet(rs, offset);
-                            if (array != null) {
-                                patentList.add(new Patent(rs.getString(1), array));
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        System.out.println(++count);
-                    }
-                    patentLists.add(patentList);
-                } catch(Exception e) {
-                    e.printStackTrace();
+            try {
+                ResultSet rs;
+                if (candidateSet == null) {
+                    candidateSet = Database.getValuablePatentsToList();
                 }
-            });
+                int arrayCapacity = candidateSet.size();
+                patentList = new ArrayList<>(arrayCapacity);
+                rs = Database.selectPatentVectors(candidateSet);
+                int count = 0;
+                int offset = 2; // Due to the pub_doc_number field
+                while (rs.next()) {
+                    try {
+                        INDArray array = handleResultSet(rs, offset);
+                        if (array != null) {
+                            patentList.add(new Patent(rs.getString(1), array));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println(++count);
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+
             // Serialize List
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
-            oos.writeObject(patentLists);
+            oos.writeObject(patentList);
             oos.flush();
             oos.close();
         } else {
             // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
             Object obj = ois.readObject();
-            try {
-                patentLists = ((List<List<Patent>>) obj);
-            } catch(Exception e) {
-                e.printStackTrace();
-                patentLists = new ArrayList<>(1);
-                patentLists.add((List<Patent>)obj);
-            }
+            patentList = ((List<Patent>) obj);
             // PCA
-            if(eigenVectors!=null) patentLists.forEach(patentList->patentList.forEach(p->p.getVector().mmuli(eigenVectors)));
+            if(eigenVectors!=null) patentList.forEach(p->p.getVector().mmuli(eigenVectors));
             ois.close();
         }
         System.out.println("--- Finished Loading Patent Vectors ---");
 
     }
 
-    public List<List<Patent>> getPatentLists() {
-        return patentLists;
+    public List<Patent> getPatentList() {
+        return patentList;
     }
 
     private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException {
@@ -137,7 +114,6 @@ public class SimilarPatentFinder {
     public String getName() {
         return name;
     }
-    public List<String> getNames() {return names;}
 
     private void setupMinHeap(int capacity) {
         heap = MinHeap.setupPatentHeap(capacity);
@@ -152,34 +128,29 @@ public class SimilarPatentFinder {
     }
 
     public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar) throws SQLException {
-        List<PatentList> patentLists = new ArrayList<>(others.size());
+        List<PatentList> list = new ArrayList<>(others.size());
         others.forEach(other->{
             try {
-                patentLists.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar));
+                list.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar));
             } catch(SQLException sql) {
                 sql.printStackTrace();
             }
         });
-        return patentLists;
+        return list;
     }
 
     public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar) throws SQLException {
         // Find the highest (pairwise) assets
-        if(other.getPatentLists()==null||other.getPatentLists().isEmpty()) return new ArrayList<>();
+        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
-        AtomicInteger i = new AtomicInteger(0);
-        other.names.forEach(name->{
-            int idx = i.getAndIncrement();
-            INDArray otherAvg = computeAvg(other.getPatentLists().get(idx));
-            List<Patent> patentList = other.patentLists.get(idx);
-            Set<String> dontMatch = name.equals(this.name) ? null : patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
-            try {
-                if(findDissimilar) lists.addAll(findOppositePatentsTo(name, otherAvg, dontMatch, threshold, limit));
-                else lists.addAll(findSimilarPatentsTo(name, otherAvg, dontMatch, threshold, limit));
+        INDArray otherAvg = computeAvg(other.patentList);
+        Set<String> dontMatch = name.equals(this.name) ? null : other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
+        try {
+            if(findDissimilar) lists.addAll(findOppositePatentsTo(name, otherAvg, dontMatch, threshold, limit));
+            else lists.addAll(findSimilarPatentsTo(name, otherAvg, dontMatch, threshold, limit));
 
-            } catch(SQLException sql) {
-            }
-        });
+        } catch(SQLException sql) {
+        }
         return lists;
     }
 
@@ -198,7 +169,7 @@ public class SimilarPatentFinder {
     public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
         assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
-        assert patentLists!=null : "Patent list is null!";
+        assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new ArrayList<>();
         long startTime = System.currentTimeMillis();
         if(patentNamesToExclude ==null) {
@@ -209,10 +180,7 @@ public class SimilarPatentFinder {
 
         setupMinHeap(limit);
         AtomicInteger i = new AtomicInteger(0);
-        List<PatentList> lists = new ArrayList<>();
-        names.forEach(name->{
-            lists.add(similarPatentsHelper(patentLists.get(i.getAndIncrement()),avgVector, otherSet, name, patentNumber, threshold, limit));
-        });
+        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector, otherSet, name, patentNumber, threshold, limit));
 
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;

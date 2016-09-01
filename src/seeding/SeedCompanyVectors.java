@@ -66,7 +66,7 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-       /* sendPost("Huawei", "huawei", null,null);
+        sendPost("Huawei", "huawei", null,null);
         sendPost("Panasonic", "panasonic", null,null);
         sendPost("Sony", "sony", null,null);
         sendPost("ZTE", "zte", null,null);
@@ -76,7 +76,8 @@ public class SeedCompanyVectors {
         sendPost("Verizon", "verizon", null,null);
         // ETSI PATENTS!
         sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST),null);
-        */
+
+        /*
         Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
         List<String> patents = new ArrayList<>();
         List<String> names = new ArrayList<>();
@@ -84,6 +85,7 @@ public class SeedCompanyVectors {
             patents.add(String.join(" ",e.getValue()));
             names.add(e.getKey());
         }
+
         sendPost("ETSI (by standard)",null,String.join(",",patents),names);
 
         patents = new ArrayList<>();
@@ -93,5 +95,6 @@ public class SeedCompanyVectors {
             names.add(e.getKey());
         }
         sendPost("CompDB (by technology)",null,String.join(",",patents),names);
+        */
     }
 }

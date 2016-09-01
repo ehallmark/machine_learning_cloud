@@ -77,13 +77,7 @@ public class SimilarPatentServer {
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
                         patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        if(req.queryParams("names")==null||req.queryParams("names").trim().length()==0) {
-                            patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")).get(0), file, name);
-                        } else {
-                            new Emailer("IN THE RIGHT PLACE!");
-                            patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, Arrays.asList(req.queryParams("names").split(">><<")), name);
-                            new Emailer("Finished FINDER");
-                        }
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -149,7 +143,7 @@ public class SimilarPatentServer {
                     }
                     return globalFinder;
 
-                }).filter(finder->finder!=null&&finder.getPatentLists()!=null&&!finder.getPatentLists().isEmpty()&&finder.getPatentLists().get(0)!=null&&!finder.getPatentLists().get(0).isEmpty()).collect(Collectors.toList());
+                }).filter(finder->finder!=null&&finder.getPatentList()!=null&&!finder.getPatentList().isEmpty()).collect(Collectors.toList());
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
@@ -201,7 +195,7 @@ public class SimilarPatentServer {
                     id = Integer.valueOf(name);
                     if(id!=null&&id>=0) {
                         SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
-                        if(finder.getPatentLists()!=null&&!finder.getPatentLists().isEmpty()&&finder.getPatentLists().get(0)!=null&&!finder.getPatentLists().get(0).isEmpty())
+                        if(finder.getPatentList()!=null&&!finder.getPatentList().isEmpty())
                             patents.addAll(finder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     } else {
                         patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
@@ -230,8 +224,8 @@ public class SimilarPatentServer {
 
     }
 
-    private static List<List<String>> preProcess(String str) {
-        return Arrays.asList(str.split(",")).stream().map(l->Arrays.asList(l.split("\\s+"))).collect(Collectors.toList());
+    private static List<String> preProcess(String str) {
+        return Arrays.asList(str.split("\\s+"));
     }
 
     private static Tag templateWrapper(Response res, Tag form, String message) {
