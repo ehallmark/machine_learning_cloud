@@ -80,14 +80,16 @@ public class SimilarPatentServer {
                         if(req.queryParams("names")==null||req.queryParams("names").trim().length()==0) {
                             patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")).get(0), file, name);
                         } else {
+                            new Emailer("IN THE RIGHT PLACE!");
                             patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, Arrays.asList(req.queryParams("names").split(">><<")), name);
+                            new Emailer("Finished FINDER");
                         }
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
                         return null;
                     }
-                    new Emailer("Sucessfully created "+name);
+                    //new Emailer("Sucessfully created "+name);
                     req.session().attribute("candidateSet", patentFinder);
                     req.session().attribute("message", "Candidate set created.");
                     res.redirect("/");
