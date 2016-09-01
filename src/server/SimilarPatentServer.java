@@ -10,6 +10,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.MyPreprocessor;
+import seeding.WordVectorizer;
 import server.tools.*;
 import spark.Request;
 import seeding.Database;
@@ -218,7 +219,7 @@ public class SimilarPatentServer {
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", VectorHelper.TFIDFcentroidVector(wordVectors,tokenizer.create(text).getTokens()));
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors).getVector(text));
             if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);
