@@ -172,10 +172,10 @@ public class SimilarPatentFinder {
             int idx = i.getAndIncrement();
             INDArray otherAvg = computeAvg(other.getPatentLists().get(idx));
             List<Patent> patentList = other.patentLists.get(idx);
-            Set<String> dontMatch = name.equals(name) ? null : patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
+            Set<String> dontMatch = name.equals(this.name) ? null : patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
             try {
-                if(findDissimilar) lists.addAll(findOppositePatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit));
-                else lists.addAll(findSimilarPatentsTo(other.getName(), otherAvg, dontMatch, threshold, limit));
+                if(findDissimilar) lists.addAll(findOppositePatentsTo(name, otherAvg, dontMatch, threshold, limit));
+                else lists.addAll(findSimilarPatentsTo(name, otherAvg, dontMatch, threshold, limit));
 
             } catch(SQLException sql) {
             }
