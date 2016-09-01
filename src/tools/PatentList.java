@@ -1,5 +1,6 @@
 package tools;
 
+import analysis.Patent;
 import server.tools.AbstractPatent;
 
 import java.io.Serializable;
@@ -20,9 +21,23 @@ public class PatentList implements Serializable, Comparable<PatentList> {
         this.patents=patentList;
         this.name1=name1;
         this.name2=name2;
-        this.avgSimilarity=patentList.stream().map(p->p.getSimilarity()).collect(Collectors.averagingDouble(p->p.doubleValue()));
+        // similarity is weighted more heavily for more similar matches
+        //this.avgSimilarity=patentList.stream().map(p->p.getSimilarity()).collect(Collectors.averagingDouble(p->p.doubleValue()));
         Collections.sort(patents);
         Collections.reverse(patents);
+
+        avgSimilarity = 0;
+        if(patentList.size()>0) {
+            double total = 0.0;
+            int i = 1;
+            for(AbstractPatent patent : patents) {
+                double multiplier = Math.log(1.0+(new Double(patents.size())/i));
+                total+=multiplier;
+                avgSimilarity+=(patent.getSimilarity()*multiplier);
+                i++;
+            }
+            avgSimilarity/=total;
+        }
     }
 
     public void flipAvgSimilarity() {
