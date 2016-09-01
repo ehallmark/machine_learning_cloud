@@ -59,7 +59,7 @@ public class AutoEncoderIterator implements DataSetIterator {
 
     @Override
     public void reset() {
-        innerIter = finder.getPatentList().iterator();
+        innerIter = finder.getPatentLists().get(0).iterator();
     }
 
     protected DataSet nextDataSet(int num) throws Exception {

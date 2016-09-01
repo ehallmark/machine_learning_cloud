@@ -76,7 +76,11 @@ public class SimilarPatentServer {
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
                         patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")),file,name);
+                        if(req.queryParams("names")==null||req.queryParams("names").trim().length()==0) {
+                            patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")).get(0), file, name);
+                        } else {
+                            patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, Arrays.asList(req.queryParams("names").split("\\|")), name);
+                        }
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -141,7 +145,7 @@ public class SimilarPatentServer {
                     }
                     return globalFinder;
 
-                }).filter(finder->finder!=null&&finder.getPatentList()!=null&&!finder.getPatentList().isEmpty()).collect(Collectors.toList());
+                }).filter(finder->finder!=null&&finder.getPatentLists()!=null&&!finder.getPatentLists().isEmpty()&&finder.getPatentLists().get(0)!=null&&!finder.getPatentLists().get(0).isEmpty()).collect(Collectors.toList());
                 List<PatentList> patentLists;
                 double threshold = extractThreshold(req);
                 boolean findDissimilar = extractFindDissimilar(req);
@@ -193,7 +197,8 @@ public class SimilarPatentServer {
                     id = Integer.valueOf(name);
                     if(id!=null&&id>=0) {
                         SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER+id),candidateSetMap.get(id));
-                        if(finder.getPatentList()!=null&&!finder.getPatentList().isEmpty())patents.addAll(finder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
+                        if(finder.getPatentLists()!=null&&!finder.getPatentLists().isEmpty()&&finder.getPatentLists().get(0)!=null&&!finder.getPatentLists().get(0).isEmpty())
+                            patents.addAll(finder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     } else {
                         patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
                     }
@@ -220,28 +225,8 @@ public class SimilarPatentServer {
 
     }
 
-    private static List<String> preProcess(String str) {
-        // try to break on spaces
-        String chunk = str.substring(0,Math.min(20,str.length()));
-        if(chunk.split("\\s+").length==0) {
-            // try commas
-            if(chunk.split(",").length==0) {
-                // try US -- last fail safe
-                return Arrays.asList(str.toUpperCase().split("US"));
-            } else {
-                // commas present but no spaces
-                if(chunk.split(",").length > 3) {
-                    // too many commas -- commas must be present inside numbers :(
-                    return Arrays.asList(str.toUpperCase().split("US")).stream().map(s->s.replaceAll(",","")).collect(Collectors.toList());
-                } else {
-                    // simple comma split
-                    return Arrays.asList(str.toUpperCase().split(",")).stream().map(s->s.replaceFirst("US","")).collect(Collectors.toList());
-                }
-            }
-        } else {
-            // split on spaces
-            return Arrays.asList(str.split("\\s+")).stream().map(s->s.toUpperCase().replaceAll(",","").replaceFirst("US","").trim()).collect(Collectors.toList());
-        }
+    private static List<List<String>> preProcess(String str) {
+        return Arrays.asList(str.split(",")).stream().map(l->Arrays.asList(l.split("\\s+"))).collect(Collectors.toList());
     }
 
     private static Tag templateWrapper(Response res, Tag form, String message) {

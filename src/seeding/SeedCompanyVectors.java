@@ -5,8 +5,12 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 8/11/16.
@@ -15,7 +19,7 @@ public class SeedCompanyVectors {
     private static final String USER_AGENT = "Mozilla/5.0";
 
     // HTTP POST request
-    private static void sendPost(String candidateSetName, String assignee, List<String> patents) throws Exception {
+    private static void sendPost(String candidateSetName, String assignee, String patents, List<String> innerNames) throws Exception {
         assert candidateSetName!=null && !(assignee==null && patents==null);
         String url = "http://192.168.1.148:4567/create";
         URL obj = new URL(url);
@@ -27,8 +31,11 @@ public class SeedCompanyVectors {
         con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
         String urlParameters = null;
-        if(patents==null || patents.size() == 0) urlParameters = "name="+candidateSetName+"&assignee="+assignee;
-        else if(assignee == null || assignee.trim().length() == 0) urlParameters = "name="+candidateSetName+"&patents="+String.join(" ",patents);
+        if(patents==null || patents.length() == 0) urlParameters = "name="+candidateSetName+"&assignee="+assignee;
+        else if(assignee == null || assignee.trim().length() == 0) {
+            urlParameters = "name="+candidateSetName+"&patents="+patents;
+            if(innerNames!=null&&innerNames.size()>0) urlParameters+="&names="+String.join("|",innerNames);
+        }
         else throw new RuntimeException("Invalid parameters!");
 
         // Send post request
@@ -59,30 +66,32 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        /*sendPost("Huawei", "huawei", null);
-        sendPost("Panasonic", "panasonic", null);
-        sendPost("Sony", "sony", null);
-        sendPost("ZTE", "zte", null);
-        sendPost("Orange", "orange", null);
-        sendPost("Cisco", "cisco", null);
-        sendPost("Telia Custom", null, Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+")));
-        sendPost("Verizon", "verizon", null);
+        sendPost("Huawei", "huawei", null,null);
+        sendPost("Panasonic", "panasonic", null,null);
+        sendPost("Sony", "sony", null,null);
+        sendPost("ZTE", "zte", null,null);
+        sendPost("Orange", "orange", null,null);
+        sendPost("Cisco", "cisco", null,null);
+        sendPost("Telia Custom", null, String.join(" ",Arrays.asList(Constants.CUSTOM_TELIA_PATENT_LIST.split("\\s+"))),null);
+        sendPost("Verizon", "verizon", null,null);
         // ETSI PATENTS!
-        sendPost("ETSI", null, Constants.ETSI_PATENT_LIST);
-        GetEtsiPatentsList.getETSIPatentMap().entrySet().forEach(entrySet->{
-            try {
-                sendPost("ETSI "+entrySet.getKey(), null, entrySet.getValue());
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        });*/
+        sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST),null);
 
-        Database.getCompDBMap().entrySet().forEach(entry->{
-            try {
-                sendPost(entry.getKey(), null, entry.getValue());
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        });
+        Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
+        List<String> patents = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for(Map.Entry<String,List<String>> e: ETSIMap.entrySet()) {
+            patents.add(String.join(" ",e.getValue()));
+            names.add(e.getKey());
+        }
+        sendPost("ETSI (by standard)",String.join(",",patents),null,names);
+
+        patents = new ArrayList<>();
+        names = new ArrayList<>();
+        for(Map.Entry<String,List<String>> e: Database.getCompDBMap().entrySet()) {
+            patents.add(String.join(" ",e.getValue()));
+            names.add(e.getKey());
+        }
+        sendPost("CompDB (by technology)",String.join(",",patents),null,names);
     }
 }
