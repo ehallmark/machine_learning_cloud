@@ -44,7 +44,6 @@ public class SimilarPatentFinder {
     }
 
     public SimilarPatentFinder(String name, INDArray data) throws SQLException {
-        new Emailer("Finished: "+name);
         this.name=name;
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }

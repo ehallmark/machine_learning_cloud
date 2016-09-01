@@ -47,7 +47,7 @@ public class VectorHelper {
         for (String token : tokens) {
             int docAppeared = wordVectors.vocab().docAppearedIn(token);
             assert docAppeared > 0 : "Vocab does not have document counts";
-            double invDocFreq = Math.log(new Double(wordVectors.vocab().totalNumberOfDocs())/docAppeared);
+            double invDocFreq = 1.0;//Math.log(new Double(wordVectors.vocab().totalNumberOfDocs())/docAppeared);
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
