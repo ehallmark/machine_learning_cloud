@@ -95,7 +95,14 @@ public class SimilarPatentFinder {
         } else {
             // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
-            patentLists = ((List<List<Patent>>) ois.readObject());
+            Object obj = ois.readObject();
+            try {
+                patentLists = ((List<List<Patent>>) obj);
+            } catch(Exception e) {
+                e.printStackTrace();
+                patentLists = new ArrayList<>(1);
+                patentLists.add((List<Patent>)obj);
+            }
             // PCA
             if(eigenVectors!=null) patentLists.forEach(patentList->patentList.forEach(p->p.getVector().mmuli(eigenVectors)));
             ois.close();
