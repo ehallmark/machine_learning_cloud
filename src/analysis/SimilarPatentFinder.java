@@ -45,7 +45,6 @@ public class SimilarPatentFinder {
 
     public SimilarPatentFinder(List<String> names, String name) throws SQLException {
         this.patentLists=new ArrayList<>(1);
-        this.patentLists.add(new ArrayList<>(1));
         this.names=names;
         this.name=name;
         patentLists.addAll(names.stream().map(n->{try{return Arrays.asList(new Patent(n,getVectorFromDB(n)));}catch(Exception e) {e.printStackTrace(); return null; }}).filter(p->p!=null).collect(Collectors.toList()));

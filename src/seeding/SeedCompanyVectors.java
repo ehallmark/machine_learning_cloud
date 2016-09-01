@@ -34,7 +34,7 @@ public class SeedCompanyVectors {
         if(patents==null || patents.length() == 0) urlParameters = "name="+candidateSetName+"&assignee="+assignee;
         else if(assignee == null || assignee.trim().length() == 0) {
             urlParameters = "name="+candidateSetName+"&patents="+patents;
-            if(innerNames!=null&&innerNames.size()>0) urlParameters+="&names="+String.join("|",innerNames);
+            if(innerNames!=null&&innerNames.size()>0) urlParameters+="&names="+String.join(">><<",innerNames);
         }
         else throw new RuntimeException("Invalid parameters!");
 
@@ -66,7 +66,7 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        sendPost("Huawei", "huawei", null,null);
+       /* sendPost("Huawei", "huawei", null,null);
         sendPost("Panasonic", "panasonic", null,null);
         sendPost("Sony", "sony", null,null);
         sendPost("ZTE", "zte", null,null);
@@ -76,7 +76,7 @@ public class SeedCompanyVectors {
         sendPost("Verizon", "verizon", null,null);
         // ETSI PATENTS!
         sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST),null);
-
+        */
         Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
         List<String> patents = new ArrayList<>();
         List<String> names = new ArrayList<>();
