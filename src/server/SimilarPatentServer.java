@@ -45,7 +45,7 @@ public class SimilarPatentServer {
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
-            //globalFinder = new SimilarPatentFinder();
+            globalFinder = new SimilarPatentFinder();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -209,6 +209,7 @@ public class SimilarPatentServer {
                     e.printStackTrace();
                 }
             });
+
 
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
