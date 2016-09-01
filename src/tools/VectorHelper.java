@@ -40,7 +40,7 @@ public class VectorHelper {
     }
 
     // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
-    public static INDArray TFIDFcentroidVector(WeightLookupTable<VocabWord> lookupTable, VocabCache<VocabWord> vocab, List<String> tokens) {
+    public static INDArray TFIDFcentroidVector(WordVectors wordVectors, VocabCache<VocabWord> vocab, List<String> tokens) {
         assert vocab.totalNumberOfDocs() > 0 : "There are 0 documents in this vocab!!!";
         INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
         double total = 0.0;
@@ -50,7 +50,7 @@ public class VectorHelper {
             assert docAppeared > 0 : "Vocab does not have document counts";
             double invDocFreq = Math.log(new Double(vocab.totalNumberOfDocs())/docAppeared);
             total+=invDocFreq;
-            allWords.putRow(cnt.getAndIncrement(), lookupTable.vector(token).mul(invDocFreq));
+            allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
         assert total > 0.0 : "Cannot divide by 0!";
         INDArray mean = allWords.mean(0).div(total/tokens.size());
