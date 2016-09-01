@@ -84,7 +84,7 @@ public class SeedCompanyVectors {
             patents.add(String.join(" ",e.getValue()));
             names.add(e.getKey());
         }
-        sendPost("ETSI (by standard)",String.join(",",patents),null,names);
+        sendPost("ETSI (by standard)",null,String.join(",",patents),names);
 
         patents = new ArrayList<>();
         names = new ArrayList<>();
@@ -92,6 +92,6 @@ public class SeedCompanyVectors {
             patents.add(String.join(" ",e.getValue()));
             names.add(e.getKey());
         }
-        sendPost("CompDB (by technology)",String.join(",",patents),null,names);
+        sendPost("CompDB (by technology)",null,String.join(",",patents),names);
     }
 }
