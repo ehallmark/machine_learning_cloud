@@ -215,11 +215,11 @@ public class SimilarPatentServer {
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
             String text = req.queryParams("text");
-            if(pubDocNumber == null && text==null) return new Gson().toJson(new NoPatentProvided());
+            if((pubDocNumber == null || pubDocNumber.trim().length()==0) && (text==null||text.trim().length()==0)) return new Gson().toJson(new NoPatentProvided());
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors).getVector(text));
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors).getVector(text));
             if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);

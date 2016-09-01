@@ -6,6 +6,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
+import tools.Emailer;
 import tools.MinHeap;
 import tools.PatentList;
 import tools.VectorHelper;
@@ -43,6 +44,7 @@ public class SimilarPatentFinder {
     }
 
     public SimilarPatentFinder(String name, INDArray data) throws SQLException {
+        new Emailer("Finished: "+name);
         this.name=name;
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
