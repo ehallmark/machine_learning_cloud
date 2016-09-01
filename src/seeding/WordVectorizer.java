@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/1/16.
  */
 public class WordVectorizer {
-    public WordVectors wordVectors;
-    public WordVectorizer() throws Exception {
-        wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
+    private WordVectors wordVectors;
+    public WordVectorizer(WordVectors wordVectors) {
+        this.wordVectors=wordVectors;
     }
 
     public INDArray getVector(String txt) {
@@ -33,6 +33,6 @@ public class WordVectorizer {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println(new WordVectorizer().getVector("this is a test to see how well this can vectorize words ok cool").toString());
+        System.out.println(new WordVectorizer(WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH),true)).getVector("this is a test to see how well this can vectorize words ok cool").toString());
     }
 }

@@ -34,17 +34,17 @@ public class SimilarPatentFinder {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**");
     }
 
-    public SimilarPatentFinder(boolean doNothing) {
-
-    }
-
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name) throws SQLException,IOException,ClassNotFoundException {
         this(candidateSet,patentListFile,name,null);
     }
 
     public SimilarPatentFinder(String name) throws SQLException {
+        this(name, getVectorFromDB(name));
+    }
+
+    public SimilarPatentFinder(String name, INDArray data) throws SQLException {
         this.name=name;
-        patentList = Arrays.asList(new Patent(name, getVectorFromDB(name)));
+        patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors) throws SQLException,IOException, ClassNotFoundException {
@@ -222,7 +222,7 @@ public class SimilarPatentFinder {
         return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
     }
 
-    private INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
@@ -233,7 +233,7 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    private INDArray getVectorFromDB(String patentNumber) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber) throws SQLException {
         return getVectorFromDB(patentNumber, null);
     }
 

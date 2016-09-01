@@ -5,15 +5,17 @@ import com.google.gson.Gson;
 import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
+import seeding.MyPreprocessor;
 import server.tools.*;
 import spark.Request;
 import seeding.Database;
 import spark.Response;
 import spark.Session;
-import tools.CSVHelper;
-import tools.Emailer;
-import tools.PatentList;
+import tools.*;
 
 import javax.imageio.ImageIO;
 
@@ -43,11 +45,16 @@ public class SimilarPatentServer {
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
+    private static WordVectors wordVectors;
+    private static TokenizerFactory tokenizer = new DefaultTokenizerFactory();
     static {
+        tokenizer.setTokenPreProcessor(new MyPreprocessor());
         try {
             Database.setupSeedConn();
             Database.setupMainConn();
             globalFinder = new SimilarPatentFinder();
+            wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
+
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
@@ -206,11 +213,13 @@ public class SimilarPatentServer {
         post("/similar_patents", (req, res) -> {
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
-            if(pubDocNumber == null) return new Gson().toJson(new NoPatentProvided());
+            String text = req.queryParams("text");
+            if(pubDocNumber == null && text==null) return new Gson().toJson(new NoPatentProvided());
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = new SimilarPatentFinder(pubDocNumber);
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", VectorHelper.TFIDFcentroidVector(wordVectors,tokenizer.create(text).getTokens()));
+            if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);
             boolean averageCandidates = extractAverageCandidates(req);
@@ -392,6 +401,7 @@ public class SimilarPatentServer {
                                                 h3("Find Similar Patents By Patent"),
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
+                                                        label("Similar To Custom Text"),br(),textarea().withName("text"),br(),
                                                         label("Average candidates"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
