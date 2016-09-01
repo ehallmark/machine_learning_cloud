@@ -213,6 +213,7 @@ public class SimilarPatentServer {
             SimilarPatentFinder currentPatentFinder = new SimilarPatentFinder(pubDocNumber);
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);
+            boolean averageCandidates = extractAverageCandidates(req);
             System.out.println("\tLimit: " + limit);
             double threshold = extractThreshold(req);
             Arrays.asList(req.queryParamsValues("name")).forEach(name->{
@@ -225,13 +226,21 @@ public class SimilarPatentServer {
                             for (Integer integer : groupedCandidateSetMap.get(id)) {
                                 SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond());
                                 if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
-                                    patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                                    if(averageCandidates) {
+                                        patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));
+                                    } else {
+                                        patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                                    }
                             }
 
                         } else {
                             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond());
                             if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
-                                patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                                if(averageCandidates) {
+                                    patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));
+                                } else {
+                                    patents.addAll(finder.similarFromCandidateSet(currentPatentFinder, threshold, limit, findDissimilar));
+                                }
                         }
                     } else {
                         patents.addAll(globalFinder.similarFromCandidateSet(currentPatentFinder,threshold,limit,findDissimilar));
@@ -330,12 +339,12 @@ public class SimilarPatentServer {
             candidateSetMap.put(candidates.getInt(2),new Pair<>(hidden,candidates.getString(1)));
         }
         if(compdb.size()>0) {
-            int size = candidateSetMap.size();
+            int size = Collections.max(candidateSetMap.keySet())+1;
             candidateSetMap.put(size,new Pair<>(false, "CompDB (by technology)"));
             groupedCandidateSetMap.put(size, compdb);
         }
         if(etsi.size()>0) {
-            int size = candidateSetMap.size();
+            int size = Collections.max(candidateSetMap.keySet())+1;
             candidateSetMap.put(size,new Pair<>(false, "ETSI (by standard)"));
             groupedCandidateSetMap.put(size, etsi);
         }
@@ -383,6 +392,7 @@ public class SimilarPatentServer {
                                                 h3("Find Similar Patents By Patent"),
                                                 form().withId(SELECT_CANDIDATE_FORM_ID).with(selectCandidateSetDropdown(),
                                                         label("Similar To Patent"),br(),input().withType("text").withName("patent"),br(),
+                                                        label("Average candidates"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
                                                         label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                         label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),br(),
@@ -434,6 +444,15 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No limit parameter specified... using default");
             return DEFAULT_LIMIT;
+        }
+    }
+
+    private static boolean extractAverageCandidates(Request req) {
+        try {
+            return (req.queryParams("averageCandidates")==null||!req.queryParams("averageCandidates").startsWith("on")) ? false : true;
+        } catch(Exception e) {
+            System.out.println("No averageCandidates parameter specified... using default");
+            return false;
         }
     }
 
