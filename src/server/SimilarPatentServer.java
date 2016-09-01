@@ -11,6 +11,7 @@ import seeding.Database;
 import spark.Response;
 import spark.Session;
 import tools.CSVHelper;
+import tools.Emailer;
 import tools.PatentList;
 
 import javax.imageio.ImageIO;
@@ -86,6 +87,7 @@ public class SimilarPatentServer {
                         res.redirect("/new");
                         return null;
                     }
+                    new Emailer("Sucessfully created "+name);
                     req.session().attribute("candidateSet", patentFinder);
                     req.session().attribute("message", "Candidate set created.");
                     res.redirect("/");

@@ -60,33 +60,37 @@ public class SimilarPatentFinder {
         this.names=names;
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
-        AtomicInteger i = new AtomicInteger(0);
         if (!patentListFile.exists()) {
             assert(candidateSets==null||candidateSets.size()==names.size()) : "INVALID CANDIDATE SETS AND NAMES DIMENSIONS !!";
             this.patentLists=new ArrayList<>();
-            ResultSet rs;
-            int idx = i.getAndIncrement();
-            List<String> candidateSet = candidateSets==null?null:candidateSets.get(idx);
-            if (candidateSet == null) {
-                candidateSet = Database.getValuablePatentsToList();
-            }
-            int arrayCapacity = candidateSet.size();
-            List<Patent> patentList = new ArrayList<>(arrayCapacity);
-            rs = Database.selectPatentVectors(candidateSet);
-            int count = 0;
-            int offset = 2; // Due to the pub_doc_number field
-            while (rs.next()) {
+            if(candidateSets==null) candidateSets=Arrays.asList(null);
+            candidateSets.forEach(candidateSet-> {
                 try {
-                    INDArray array = handleResultSet(rs, offset);
-                    if(array!=null) {
-                        patentList.add(new Patent(rs.getString(1), array));
+                    ResultSet rs;
+                    if (candidateSet == null) {
+                        candidateSet = Database.getValuablePatentsToList();
                     }
-                } catch (Exception e) {
+                    int arrayCapacity = candidateSet.size();
+                    List<Patent> patentList = new ArrayList<>(arrayCapacity);
+                    rs = Database.selectPatentVectors(candidateSet);
+                    int count = 0;
+                    int offset = 2; // Due to the pub_doc_number field
+                    while (rs.next()) {
+                        try {
+                            INDArray array = handleResultSet(rs, offset);
+                            if (array != null) {
+                                patentList.add(new Patent(rs.getString(1), array));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println(++count);
+                    }
+                    patentLists.add(patentList);
+                } catch(Exception e) {
                     e.printStackTrace();
                 }
-                System.out.println(++count);
-            }
-            patentLists.add(patentList);
+            });
             // Serialize List
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
             oos.writeObject(patentLists);
