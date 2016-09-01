@@ -222,7 +222,7 @@ public class SimilarPatentServer {
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors.lookupTable(),vocab).getVector(text));
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors,vocab).getVector(text));
             if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);
