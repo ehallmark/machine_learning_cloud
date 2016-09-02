@@ -1,11 +1,15 @@
 package analysis;
 
+import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.plot.BarnesHutTsne;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
+import seeding.WordVectorizer;
 import tools.Emailer;
 import tools.MinHeap;
 import tools.PatentList;
@@ -31,16 +35,16 @@ public class SimilarPatentFinder {
 
     //private Map<String, String> assigneeMap;
 
-    public SimilarPatentFinder() throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**");
+    public SimilarPatentFinder(WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException, IOException, ClassNotFoundException {
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", wordVectors, vocab);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSet,patentListFile,name,null);
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException,IOException,ClassNotFoundException {
+        this(candidateSet,patentListFile,name,null, wordVectors, vocab);
     }
 
-    public SimilarPatentFinder(String name) throws SQLException {
-        this(name, getVectorFromDB(name));
+    public SimilarPatentFinder(String name, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        this(name, getVectorFromDB(name, wordVectors, vocab));
     }
 
     public SimilarPatentFinder(String name, INDArray data) throws SQLException {
@@ -48,7 +52,7 @@ public class SimilarPatentFinder {
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
@@ -65,7 +69,7 @@ public class SimilarPatentFinder {
                 int offset = 2; // Due to the pub_doc_number field
                 while (rs.next()) {
                     try {
-                        INDArray array = handleResultSet(rs, offset);
+                        INDArray array = handleResultSet(rs, offset, wordVectors, vocab);
                         if (array != null) {
                             patentList.add(new Patent(rs.getString(1), array));
                         }
@@ -100,20 +104,11 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private static INDArray handleResultSet(ResultSet rs, int offset) throws SQLException {
-        INDArray array = null;
-        Array descArray = rs.getArray(offset);
-        Array claimsArray = rs.getArray(offset+1);
-        if(descArray!=null && claimsArray!=null) {
-            array=Nd4j.create(VectorHelper.toPrim((Double[])descArray.getArray()));
-            array.addi(Nd4j.create(VectorHelper.toPrim((Double[][])claimsArray.getArray())).mean(0));
-            array.muli(0.5);
-        } else if (descArray!=null) {
-            array = Nd4j.create(VectorHelper.toPrim((Double[])descArray.getArray()));
-        } else if(claimsArray!=null) {
-            array = Nd4j.create(VectorHelper.toPrim((Double[][])claimsArray.getArray())).mean(0);
-        }
-        return array;
+    private static INDArray handleResultSet(ResultSet rs, int offset, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        String description = rs.getString(offset);
+        String abstractText = rs.getString(offset+1);
+        String claims = rs.getString(offset+2);
+        return new WordVectorizer(wordVectors,vocab).getVector(description+abstractText+claims);
     }
 
     public String getName() {
@@ -193,9 +188,9 @@ public class SimilarPatentFinder {
         return lists;
     }
 
-    public Double angleBetweenPatents(String name1, String name2) throws SQLException {
-        INDArray first = getVectorFromDB(name1);
-        INDArray second = getVectorFromDB(name2);
+    public Double angleBetweenPatents(String name1, String name2, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        INDArray first = getVectorFromDB(name1,wordVectors,vocab);
+        INDArray second = getVectorFromDB(name2,wordVectors,vocab);
         if(first!=null && second!=null) {
             //valid
             return Transforms.cosineSim(first,second);
@@ -213,29 +208,29 @@ public class SimilarPatentFinder {
     }
 
     // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit) throws SQLException {
-        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
+    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
     }
 
 
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber), null, threshold, limit);
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset);
+        INDArray avgVector = handleResultSet(rs, offset, wordVectors, vocab);
         if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
     }
 
-    private static INDArray getVectorFromDB(String patentNumber) throws SQLException {
-        return getVectorFromDB(patentNumber, null);
+    private static INDArray getVectorFromDB(String patentNumber,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+        return getVectorFromDB(patentNumber, null, wordVectors, vocab);
     }
 
     private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit) {
@@ -268,27 +263,20 @@ public class SimilarPatentFinder {
 
     // unit test!
     public static void main(String[] args) throws Exception {
-        try {
+        /*try {
             Database.setupSeedConn();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File("candidateSets/3"), "othername");
             System.out.println("Most similar: ");
             PatentList list;// = finder.findSimilarPatentsTo("7455590", -1.0, 25).get(0);
-            /*for (AbstractPatent abstractPatent : list.getPatents()) {
+            for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
             }
             System.out.println("Most opposite: ");
             list = finder.findOppositePatentsTo("7455590", -1.0, 25).get(0);
             for (AbstractPatent abstractPatent : list.getPatents()) {
                 System.out.println(abstractPatent.getName()+": "+abstractPatent.getSimilarity());
-            }*/
-            BarnesHutTsne bht = new BarnesHutTsne.Builder()
-                    .invertDistanceMetric(false)
-                    .learningRate(0.001)
-                    .setInitialMomentum(0.5)
-                    .setFinalMomentum(0.9)
-                    .useAdaGrad(false)
-                    .usePca(true)
-                    .build();
+            }
+
 
 
             System.out.println("Candidate set comparison: ");
@@ -298,6 +286,6 @@ public class SimilarPatentFinder {
             }
         } catch(Exception e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

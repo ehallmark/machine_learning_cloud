@@ -30,9 +30,10 @@ public class Database {
 	private static final String updateTrainingData = "UPDATE patent_vectors SET is_testing='f' WHERE is_testing!='f'";
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
-	private static final String selectVectorsStatement = "SELECT pub_doc_number, description_vectors,claims_vectors FROM patent_vectors WHERE pub_doc_number=ANY(?)";
+	private static final String selectVectorsStatement = "SELECT p.pub_doc_number, coalesce(abstract, ''), coalesce(description, ''), array_to_string(array_agg(claim_text), ' ') FROM patent_grant as p join patent_grant_claim as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) and q.pub_doc_number=ANY(?) group by p.pub_doc_number";
 	//private static final String selectAllVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents";
-	private static final String selectSingleVectorStatement = "SELECT description_vectors,claims_vectors FROM patent_vectors WHERE pub_doc_number=?";
+	private static final String selectSingleVectorStatement = "SELECT coalesce(abstract, ''), coalesce(description, ''), array_to_string(array_agg(coalesce(claim_text, '')), ' '), p.pub_doc_number FROM patent_grant as p join patent_grant_claim as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=? and q.pub_doc_number=? group by p.pub_doc_number";
+
 	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectPatentNumbersByAssignee = "select distinct doc_number from (select distinct on (p.doc_number) p.doc_number,name,q.uid from patent_assignment_property_document as p join patent_assignment_assignee as q on (p.assignment_reel_frame=q.assignment_reel_frame) where (p.doc_kind='B1' or p.doc_kind='B2') and upper(name) like upper(?)||'%' order by p.doc_number,q.uid desc) as temp join patent_assignment_assignee as a on (temp.uid=a.uid and upper(a.name) like upper(?)||'%')";
 	private static PreparedStatement updateParagraphVectorStatement;
@@ -218,6 +219,7 @@ public class Database {
 	public static ResultSet selectPatentVectors(List<String> patents) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);
 		ps.setArray(1, seedConn.createArrayOf("varchar", patents.toArray()));
+		ps.setArray(2, seedConn.createArrayOf("varchar", patents.toArray()));
 		ps.setFetchSize(5);
 		System.out.println(ps);
 		return ps.executeQuery();
@@ -227,6 +229,7 @@ public class Database {
 	public static ResultSet getBaseVectorFor(String patent)throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectSingleVectorStatement);
 		ps.setString(1, patent);
+		ps.setString(2, patent);
 		return ps.executeQuery();
 	}
 

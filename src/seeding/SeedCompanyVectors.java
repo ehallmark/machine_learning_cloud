@@ -66,7 +66,7 @@ public class SeedCompanyVectors {
     }
 
     public static void main(String[] args) throws Exception {
-        /*sendPost("Huawei", "huawei", null);
+        sendPost("Huawei", "huawei", null);
         sendPost("Panasonic", "panasonic", null);
         sendPost("Sony", "sony", null);
         sendPost("ZTE", "zte", null);
@@ -76,8 +76,7 @@ public class SeedCompanyVectors {
         sendPost("Verizon", "verizon", null);
         // ETSI PATENTS!
         sendPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST));
-        */
-
+        
         Map<String,List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
         for(Map.Entry<String,List<String>> e: ETSIMap.entrySet()) {
             sendPost("ETSI - "+e.getKey(),null,String.join(" ",e.getValue()));
