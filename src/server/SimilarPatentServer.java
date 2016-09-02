@@ -2,20 +2,14 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
-import j2html.tags.ContainerTag;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import seeding.Constants;
-import seeding.MyPreprocessor;
-import seeding.WordVectorizer;
+import seeding.*;
 import server.tools.*;
 import spark.Request;
-import seeding.Database;
 import spark.Response;
 import spark.Session;
 import tools.*;
@@ -49,7 +43,7 @@ public class SimilarPatentServer {
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     private static WordVectors wordVectors;
-    private static VocabCache<VocabWord> vocab;
+    private static Map<String,Float> vocab;
     private static TokenizerFactory tokenizer = new DefaultTokenizerFactory();
     static {
         tokenizer.setTokenPreProcessor(new MyPreprocessor());
@@ -57,7 +51,7 @@ public class SimilarPatentServer {
             Database.setupSeedConn();
             Database.setupMainConn();
             wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
-            vocab = WordVectorSerializer.readVocab(new File(Constants.VOCAB_FILE));
+            vocab = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
             globalFinder = new SimilarPatentFinder(wordVectors,vocab);
         } catch(Exception e) {
             e.printStackTrace();

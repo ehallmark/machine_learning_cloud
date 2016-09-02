@@ -1,26 +1,19 @@
 package analysis;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
-import org.deeplearning4j.plot.BarnesHutTsne;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import seeding.WordVectorizer;
-import tools.Emailer;
 import tools.MinHeap;
 import tools.PatentList;
-import tools.VectorHelper;
 
 import java.io.*;
-import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import server.tools.AbstractPatent;
@@ -35,15 +28,15 @@ public class SimilarPatentFinder {
 
     //private Map<String, String> assigneeMap;
 
-    public SimilarPatentFinder(WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException, IOException, ClassNotFoundException {
+    public SimilarPatentFinder(WordVectors wordVectors, Map<String,Float> vocab) throws SQLException, IOException, ClassNotFoundException {
         this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", wordVectors, vocab);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException,IOException,ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException,IOException,ClassNotFoundException {
         this(candidateSet,patentListFile,name,null, wordVectors, vocab);
     }
 
-    public SimilarPatentFinder(String name, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    public SimilarPatentFinder(String name, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         this(name, getVectorFromDB(name, wordVectors, vocab));
     }
 
@@ -52,7 +45,7 @@ public class SimilarPatentFinder {
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
@@ -104,11 +97,11 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private static INDArray handleResultSet(ResultSet rs, int offset, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    private static INDArray handleResultSet(ResultSet rs, int offset, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         String description = rs.getString(offset);
         String abstractText = rs.getString(offset+1);
         String claims = rs.getString(offset+2);
-        return new WordVectorizer(wordVectors,vocab).getVector(description+abstractText+claims);
+        return new WordVectorizer(wordVectors,vocab).getVector(description+" "+abstractText+" "+claims);
     }
 
     public String getName() {
@@ -188,7 +181,7 @@ public class SimilarPatentFinder {
         return lists;
     }
 
-    public Double angleBetweenPatents(String name1, String name2, WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    public Double angleBetweenPatents(String name1, String name2, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         INDArray first = getVectorFromDB(name1,wordVectors,vocab);
         INDArray second = getVectorFromDB(name2,wordVectors,vocab);
         if(first!=null && second!=null) {
@@ -208,17 +201,17 @@ public class SimilarPatentFinder {
     }
 
     // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
     }
 
 
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
@@ -229,7 +222,7 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,WordVectors wordVectors, VocabCache<VocabWord> vocab) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
         return getVectorFromDB(patentNumber, null, wordVectors, vocab);
     }
 

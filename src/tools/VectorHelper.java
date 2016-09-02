@@ -15,6 +15,7 @@ import seeding.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,15 +41,14 @@ public class VectorHelper {
     }
 
     // MAKE SURE ALL TOKENS EXIST IN THE VOCABULARY!!!
-    public static INDArray TFIDFcentroidVector(WordVectors wordVectors, VocabCache<VocabWord> vocab, List<String> tokens) {
-        assert vocab.totalNumberOfDocs() > 0 : "There are 0 documents in this vocab!!!";
+    public static INDArray TFIDFcentroidVector(WordVectors wordVectors, Map<String,Float> vocabFrequencyMap, List<String> tokens) {
+        assert vocabFrequencyMap.size() > 0 : "There are 0 documents in this vocab!!!";
         INDArray allWords = Nd4j.create(tokens.size(), Constants.VECTOR_LENGTH);
         double total = 0.0;
         AtomicInteger cnt = new AtomicInteger(0);
         for (String token : tokens) {
-            int docAppeared = vocab.docAppearedIn(token);
-            assert docAppeared > 0 : "Vocab does not have document counts";
-            double invDocFreq = Math.log(new Double(vocab.totalNumberOfDocs())/docAppeared);
+            double invDocFreq = vocabFrequencyMap.get(token);
+            assert invDocFreq > 0 : "Vocab does not have document counts";
             total+=invDocFreq;
             allWords.putRow(cnt.getAndIncrement(), wordVectors.getWordVectorMatrix(token).mul(invDocFreq));
         }
