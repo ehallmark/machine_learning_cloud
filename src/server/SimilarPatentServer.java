@@ -42,20 +42,29 @@ public class SimilarPatentServer {
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
-    private static WordVectors wordVectors;
-    private static Map<String,Float> vocab;
+    private static final WordVectors wordVectors;
+    private static final Map<String,Float> vocab;
     private static TokenizerFactory tokenizer = new DefaultTokenizerFactory();
     static {
         tokenizer.setTokenPreProcessor(new MyPreprocessor());
+        WordVectors wvCopy = null;
+        Map<String,Float> vocabCopy = null;
         try {
+            wvCopy = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
+            vocabCopy = Collections.unmodifiableMap(BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE)));
             Database.setupSeedConn();
             Database.setupMainConn();
-            wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
-            vocab = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
-            globalFinder = new SimilarPatentFinder(wordVectors,vocab);
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
+        }
+        wordVectors = wvCopy;
+        vocab = vocabCopy;
+        try {
+            globalFinder = new SimilarPatentFinder(wordVectors,vocab);
+        } catch(Exception e) {
+            e.printStackTrace();
+            failed=true;
         }
     }
 
