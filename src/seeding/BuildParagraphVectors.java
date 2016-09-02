@@ -56,10 +56,10 @@ public class BuildParagraphVectors {
                         .minElementFrequency(Constants.MIN_WORDS_PER_SENTENCE)
                         .build();
 
-        /*
-            Now we should build vocabulary out of sequence iterator.
-            We can skip this phase, and just set AbstractVectors.resetModel(TRUE), and vocabulary will be mastered internally
-        */
+                /*
+                    Now we should build vocabulary out of sequence iterator.
+                    We can skip this phase, and just set AbstractVectors.resetModel(TRUE), and vocabulary will be mastered internally
+                */
                 VocabConstructor<VocabWord> constructor = new VocabConstructor.Builder<VocabWord>()
                         .addSource(sequenceIterator, Constants.DEFAULT_MIN_WORD_FREQUENCY)
                         .setTargetVocabCache(vocabCache)
@@ -264,12 +264,12 @@ public class BuildParagraphVectors {
     public static void main(String[] args) throws Exception {
         Database.setupSeedConn();
         Database.setupInsertConn();
-        //new BuildParagraphVectors(new File(Constants.VOCAB_FILE), new File(Constants.VOCAB_FILE_WITH_LABELS), new File(Constants.WORD_VECTORS_PATH), new DatabaseLabelledIterator(), null);
-        try {
+        new BuildParagraphVectors(new File(Constants.VOCAB_FILE), new File(Constants.VOCAB_FILE_WITH_LABELS), new File(Constants.WORD_VECTORS_PATH), new DatabaseLabelledIterator(), null);
+        /*try {
             new BuildParagraphVectors(new File("compdb_vocab_file.txt"), new File("compdb_vocab_with_labels.txt"), new File("compdb_paragraph_vectors.txt"), new EtsiLabelledIterator(), Constants.ETSI_PATENT_LIST);
         } finally {
             Database.close();
-        }
+        }*/
 
     }
 
