@@ -35,6 +35,7 @@ public class BuildVocabulary {
         AtomicLong totalDocumentCount = new AtomicLong(0);
         while(rs.next()) {
             totalDocumentCount.getAndIncrement();
+            System.out.println(totalDocumentCount.get());
             int offset = 2;
             Set<String> updatedThisDocument = new HashSet<>();
             // each row is a "Document"
