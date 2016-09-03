@@ -20,9 +20,11 @@ public class BuildVocabVectorMap {
         Map<String,Pair<Float,INDArray>> outputMap = new HashMap<>();
         vocabMap.entrySet().forEach(e->{
            if(wordVectors.hasWord(e.getKey())) {
+               System.out.println(e.getKey());
                outputMap.put(e.getKey(),new Pair<>(e.getValue(),wordVectors.lookupTable().vector(e.getKey())));
            }
         });
+        System.out.println("Writing to file...");
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(toWriteTo)));
         oos.writeObject(outputMap);
         oos.flush();
