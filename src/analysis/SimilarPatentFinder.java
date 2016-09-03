@@ -51,7 +51,6 @@ public class SimilarPatentFinder {
         System.out.println("--- Started Loading Patent Vectors ---");
         if (!patentListFile.exists()) {
             try {
-                ResultSet rs;
                 if (candidateSet == null) {
                     candidateSet = Database.getValuablePatentsToList();
                 }
@@ -61,19 +60,22 @@ public class SimilarPatentFinder {
                 if(global!=null) {
                     candidateSet=candidateSet.stream().filter(p->{int idx = global.getPatentList().indexOf(p); if(idx>=0) {patentList.add(global.getPatentList().get(idx)); return false; } else return true;}).collect(Collectors.toList());
                 }
-                rs = Database.selectPatentVectors(candidateSet);
-                int count = 0;
-                int offset = 2; // Due to the pub_doc_number field
-                while (rs.next()) {
-                    try {
-                        INDArray array = handleResultSet(rs, offset, wordVectors, vocab);
-                        if (array != null) {
-                            patentList.add(new Patent(rs.getString(1), array));
+                if(!candidateSet.isEmpty()) {
+                    ResultSet rs;
+                    rs = Database.selectPatentVectors(candidateSet);
+                    int count = 0;
+                    int offset = 2; // Due to the pub_doc_number field
+                    while (rs.next()) {
+                        try {
+                            INDArray array = handleResultSet(rs, offset, wordVectors, vocab);
+                            if (array != null) {
+                                patentList.add(new Patent(rs.getString(1), array));
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        System.out.println(++count);
                     }
-                    System.out.println(++count);
                 }
             } catch(Exception e) {
                 e.printStackTrace();
