@@ -43,6 +43,7 @@ public class Constants {
 	public static final String CLAIM_VECTORS = "claims_vectors";
 	public static final String CLASS_VECTORS = "class_vectors";
 	public static final String SUBCLASS_VECTORS = "subclass_vectors";
+	public static final String GOOD_VOCAB_MAP_FILE = "good_vocab_map.txt";
 
 	public static final String PATENT_VECTOR_TYPE = "patent_vectors";
 	public static final String CLAIM_VECTOR_TYPE = "claim_vectors";

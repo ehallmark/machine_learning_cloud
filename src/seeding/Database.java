@@ -62,6 +62,18 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static ResultSet selectMainClassWords() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT title FROM us_class_titles");
+		ps.setFetchSize(5);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet selectSubClassWords() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("SELECT title FROM us_subclass_titles");
+		ps.setFetchSize(5);
+		return ps.executeQuery();
+	}
+
 	public static int selectRawPatentCount() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement("SELECT count(temp.*) from (select distinct split_part(name, '_', 1) from raw_patents) as temp");
 		System.out.println(ps);
