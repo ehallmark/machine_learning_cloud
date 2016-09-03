@@ -1,12 +1,16 @@
 package analysis;
 
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
+import seeding.MyPreprocessor;
 import seeding.WordVectorizer;
+import tools.GetTokensThread;
 import tools.MinHeap;
 import tools.PatentList;
 
@@ -14,9 +18,11 @@ import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.stream.Collectors;
 
 import server.tools.AbstractPatent;
+import tools.VectorHelper;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -25,6 +31,10 @@ public class SimilarPatentFinder {
     protected MinHeap<Patent> heap;
     protected List<Patent> patentList;
     protected String name;
+    private static TokenizerFactory tf = new DefaultTokenizerFactory();
+    static {
+        tf.setTokenPreProcessor(new MyPreprocessor());
+    }
 
     //private Map<String, String> assigneeMap;
 
@@ -111,10 +121,20 @@ public class SimilarPatentFinder {
     }
 
     private static INDArray handleResultSet(ResultSet rs, int offset, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
+        List<String> tokens = new ArrayList<>();
         String description = rs.getString(offset);
+        RecursiveTask<List<String>> descTask = new GetTokensThread(tf,description);
+        descTask.fork();
         String abstractText = rs.getString(offset+1);
+        RecursiveTask<List<String>> absTask = new GetTokensThread(tf,abstractText);
+        absTask.fork();
         String claims = rs.getString(offset+2);
-        return new WordVectorizer(wordVectors,vocab).getVector(description+" "+abstractText+" "+claims);
+        RecursiveTask<List<String>> claimTask = new GetTokensThread(tf,claims);
+        claimTask.fork();
+        tokens.addAll(descTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
+        tokens.addAll(absTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
+        tokens.addAll(claimTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
+        return VectorHelper.TFIDFcentroidVector(wordVectors,vocab,tokens);
     }
 
     public String getName() {

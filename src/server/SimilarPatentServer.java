@@ -51,7 +51,7 @@ public class SimilarPatentServer {
         Map<String,Float> vocabCopy = null;
         try {
             wvCopy = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
-            vocabCopy = Collections.unmodifiableMap(BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE)));
+            vocabCopy = Collections.unmodifiableMap(BuildVocabulary.readVocabMap(new File(Constants.GOOD_VOCAB_MAP_FILE)));
             Database.setupSeedConn();
             Database.setupMainConn();
         } catch(Exception e) {
