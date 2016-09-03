@@ -10,7 +10,7 @@ import java.util.Map;
  */
 public class VocabTest {
     public static void main(String[] args) throws Exception {
-        Map<String,Float> vocab = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
+        Map<String,Float> vocab = BuildVocabulary.readVocabMap(new File(Constants.GOOD_VOCAB_MAP_FILE));
         List<String> testWords = Arrays.asList("nuclear","internet","claims","network","semiconductor","gambling","repudiate");
         testWords.forEach(word->{
             Float freq = vocab.containsKey(word) ? vocab.get(word) : 0.0f;
