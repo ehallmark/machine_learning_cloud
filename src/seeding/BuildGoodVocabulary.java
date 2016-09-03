@@ -49,18 +49,22 @@ public class BuildGoodVocabulary {
 
         ResultSet rs2 = Database.selectSubClassWords();
         totalDocumentCount.set(0);
-        while(rs.next()) {
+        while(rs2.next()) {
             System.out.println(totalDocumentCount.getAndIncrement());
             int offset = 1;
             Set<String> updatedThisDocument = new HashSet<>();
             // each row is a "Document"
-            String words = rs.getString(offset);
+            String words = rs2.getString(offset);
             helper(updatedThisDocument,words,subClassVocab);
 
         }
         rs2.close();
 
+        System.out.println("Reading old map...");
         Map<String,Float> oldMap = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
+
+
+        System.out.println("Updating old map...");
 
         for(Map.Entry<String,AtomicInteger> e : vocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())) {
@@ -73,6 +77,8 @@ public class BuildGoodVocabulary {
                 oldMap.put(e.getKey(), (float) (oldMap.get(e.getKey())*Math.log(e.getValue().get())));
             }
         }
+
+        System.out.println("Writing new map...");
 
         try {
             writeVocabMap(oldMap, vocabFile);
