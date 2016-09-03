@@ -33,6 +33,7 @@ public class Constants {
 	public static final String STEMMED_VOCAB_FILE = "stemmed_vocab_file.txt";
 	public static final String VOCAB_FILE_WITH_LABELS = "vocabulary_with_labels.txt";
 	public static final String CLAIM_VOCAB_FILE = "claim_vocabulary.txt";
+	public static final String VOCAB_VECTOR_FILE = "vocab_vector_file.txt";
 	public static final String PATENT_VECTOR_LIST_FILE = "patent_vector_list.obj";
 	public static final String PCA_PATENTS_LIST_FILE = "patent_vector_list_pca.obj";
 	public static final String PCA_MATRIX_FILE = "pca_matrix.obj";

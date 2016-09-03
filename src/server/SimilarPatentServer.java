@@ -7,6 +7,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.*;
 import server.tools.*;
 import spark.Request;
@@ -42,26 +43,22 @@ public class SimilarPatentServer {
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
-    private static final WordVectors wordVectors;
-    private static final Map<String,Float> vocab;
+    private static final Map<String,Pair<Float,INDArray>> vocab;
     private static TokenizerFactory tokenizer = new DefaultTokenizerFactory();
     static {
         tokenizer.setTokenPreProcessor(new MyPreprocessor());
-        WordVectors wvCopy = null;
-        Map<String,Float> vocabCopy = null;
+        Map<String,Pair<Float,INDArray>> vocabCopy = null;
         try {
-            wvCopy = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH), true);
-            vocabCopy = Collections.unmodifiableMap(BuildVocabulary.readVocabMap(new File(Constants.GOOD_VOCAB_MAP_FILE)));
+            vocabCopy = Collections.unmodifiableMap(BuildVocabVectorMap.readVocabMap(new File(Constants.VOCAB_VECTOR_FILE)));
             Database.setupSeedConn();
             Database.setupMainConn();
         } catch(Exception e) {
             e.printStackTrace();
             failed = true;
         }
-        wordVectors = wvCopy;
         vocab = vocabCopy;
         try {
-            globalFinder = new SimilarPatentFinder(wordVectors,vocab);
+            globalFinder = new SimilarPatentFinder(vocab);
         } catch(Exception e) {
             e.printStackTrace();
             failed=true;
@@ -91,9 +88,9 @@ public class SimilarPatentServer {
                     // try to get percentages from form
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,wordVectors,vocab,globalFinder);
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,vocab,globalFinder);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,wordVectors,vocab,globalFinder);
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,vocab,globalFinder);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -147,11 +144,11 @@ public class SimilarPatentServer {
                     if(groupedCandidateSetMap.containsKey(id1)) {
                         for(Integer id : groupedCandidateSetMap.get(id1)) {
                             String name = candidateSetMap.get(id).getSecond();
-                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,wordVectors,vocab,globalFinder));
+                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab,globalFinder));
                         }
                     } else {
                         String name1 = candidateSetMap.get(id1).getSecond();
-                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,wordVectors,vocab,globalFinder));
+                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,vocab,globalFinder));
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
                 List<SimilarPatentFinder> secondFinders = new ArrayList<>();
@@ -162,14 +159,14 @@ public class SimilarPatentServer {
                             if(groupedCandidateSetMap.containsKey(Integer.valueOf(id))) {
                                 for(Integer groupedId : groupedCandidateSetMap.get(Integer.valueOf(id))) {
                                     System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(groupedId).getSecond());
-                                    finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), candidateSetMap.get(groupedId).getSecond(),wordVectors,vocab,globalFinder);
+                                    finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), candidateSetMap.get(groupedId).getSecond(),vocab,globalFinder);
                                     if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
                                         secondFinders.add(finder);
                                     }
                                 }
                             } else {
                                 System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(Integer.valueOf(id)).getSecond());
-                                finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)).getSecond(),wordVectors,vocab,globalFinder);
+                                finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)).getSecond(),vocab,globalFinder);
                                 if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
                                     secondFinders.add(finder);
                                 }
@@ -211,7 +208,7 @@ public class SimilarPatentServer {
 
             if(name1==null || name2==null) return new Gson().toJson(new SimpleAjaxMessage("Please include two patents!"));
 
-            Double sim = globalFinder.angleBetweenPatents(name1, name2,wordVectors,vocab);
+            Double sim = globalFinder.angleBetweenPatents(name1, name2,vocab);
 
             if(sim==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find both patent vectors"));
             return new Gson().toJson(new SimpleAjaxMessage("Similarity between "+name1+" and "+name2+" is "+sim.toString()));
@@ -225,7 +222,7 @@ public class SimilarPatentServer {
             boolean findDissimilar = extractFindDissimilar(req);
             if(req.queryParamsValues("name")==null || req.queryParamsValues("name").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a candidate set."));
             List<PatentList> patents=new ArrayList<>();
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber,wordVectors,vocab) : new SimilarPatentFinder("Custom Text", new WordVectorizer(wordVectors,vocab).getVector(text));
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber,vocab) : new SimilarPatentFinder("Custom Text", new WordVectorizer(vocab).getVector(text));
             if(currentPatentFinder.getPatentList()==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to calculate vectors"));
             System.out.println("Searching for: " + pubDocNumber);
             int limit = extractLimit(req);
@@ -240,7 +237,7 @@ public class SimilarPatentServer {
                         if(groupedCandidateSetMap.containsKey(id)) {
                             // grouped
                             for (Integer integer : groupedCandidateSetMap.get(id)) {
-                                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond(),wordVectors,vocab,globalFinder);
+                                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond(),vocab,globalFinder);
                                 if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
                                     if(averageCandidates) {
                                         patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));
@@ -250,7 +247,7 @@ public class SimilarPatentServer {
                             }
 
                         } else {
-                            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond(),wordVectors,vocab,globalFinder);
+                            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond(),vocab,globalFinder);
                             if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
                                 if(averageCandidates) {
                                     patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));

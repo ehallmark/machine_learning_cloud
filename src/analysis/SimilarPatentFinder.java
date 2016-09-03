@@ -1,5 +1,6 @@
 package analysis;
 
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -38,16 +39,16 @@ public class SimilarPatentFinder {
 
     //private Map<String, String> assigneeMap;
 
-    public SimilarPatentFinder(WordVectors wordVectors, Map<String,Float> vocab) throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", wordVectors, vocab,null);
+    public SimilarPatentFinder(Map<String,Pair<Float,INDArray>> vocab) throws SQLException, IOException, ClassNotFoundException {
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", vocab,null);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, Map<String,Float> vocab, SimilarPatentFinder global) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSet,patentListFile,name,null, wordVectors, vocab, global);
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, Map<String,Pair<Float,INDArray>> vocab, SimilarPatentFinder global) throws SQLException,IOException,ClassNotFoundException {
+        this(candidateSet,patentListFile,name,null, vocab, global);
     }
 
-    public SimilarPatentFinder(String name, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
-        this(name, getVectorFromDB(name, wordVectors, vocab));
+    public SimilarPatentFinder(String name,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        this(name, getVectorFromDB(name, vocab));
     }
 
     public SimilarPatentFinder(String name, INDArray data) throws SQLException {
@@ -55,7 +56,7 @@ public class SimilarPatentFinder {
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, Map<String,Float> vocab, SimilarPatentFinder global) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, Map<String,Pair<Float,INDArray>> vocab, SimilarPatentFinder global) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
@@ -77,7 +78,7 @@ public class SimilarPatentFinder {
                     int offset = 2; // Due to the pub_doc_number field
                     while (rs.next()) {
                         try {
-                            INDArray array = handleResultSet(rs, offset, wordVectors, vocab);
+                            INDArray array = handleResultSet(rs, offset, vocab);
                             if (array != null) {
                                 patentList.add(new Patent(rs.getString(1), array));
                             }
@@ -120,7 +121,7 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private static INDArray handleResultSet(ResultSet rs, int offset, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
+    private static INDArray handleResultSet(ResultSet rs, int offset, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
         List<String> tokens = new ArrayList<>();
         String description = rs.getString(offset);
         RecursiveTask<List<String>> descTask = new GetTokensThread(tf,description);
@@ -131,10 +132,10 @@ public class SimilarPatentFinder {
         String claims = rs.getString(offset+2);
         RecursiveTask<List<String>> claimTask = new GetTokensThread(tf,claims);
         claimTask.fork();
-        tokens.addAll(descTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
-        tokens.addAll(absTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
-        tokens.addAll(claimTask.join().stream().filter(word->vocab.containsKey(word)&&wordVectors.hasWord(word)).collect(Collectors.toList()));
-        return VectorHelper.TFIDFcentroidVector(wordVectors,vocab,tokens);
+        tokens.addAll(descTask.join().stream().filter(word->vocab.containsKey(word)).collect(Collectors.toList()));
+        tokens.addAll(absTask.join().stream().filter(word->vocab.containsKey(word)).collect(Collectors.toList()));
+        tokens.addAll(claimTask.join().stream().filter(word->vocab.containsKey(word)).collect(Collectors.toList()));
+        return VectorHelper.TFIDFcentroidVector(vocab,tokens);
     }
 
     public String getName() {
@@ -214,9 +215,9 @@ public class SimilarPatentFinder {
         return lists;
     }
 
-    public Double angleBetweenPatents(String name1, String name2, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
-        INDArray first = getVectorFromDB(name1,wordVectors,vocab);
-        INDArray second = getVectorFromDB(name2,wordVectors,vocab);
+    public Double angleBetweenPatents(String name1, String name2, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        INDArray first = getVectorFromDB(name1,vocab);
+        INDArray second = getVectorFromDB(name2,vocab);
         if(first!=null && second!=null) {
             //valid
             return Transforms.cosineSim(first,second);
@@ -234,29 +235,29 @@ public class SimilarPatentFinder {
     }
 
     // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
-        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
+    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber,vocab), null, threshold, limit);
     }
 
 
     // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber,wordVectors,vocab), null, threshold, limit);
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber,vocab), null, threshold, limit);
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
+    private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
         ResultSet rs = Database.getBaseVectorFor(patentNumber);
         if(!rs.next()) {
             return null; // nothing found
         }
         int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, wordVectors, vocab);
+        INDArray avgVector = handleResultSet(rs, offset, vocab);
         if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
-        return getVectorFromDB(patentNumber, null, wordVectors, vocab);
+    private static INDArray getVectorFromDB(String patentNumber,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        return getVectorFromDB(patentNumber, null, vocab);
     }
 
     private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit) {
