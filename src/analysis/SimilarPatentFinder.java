@@ -29,11 +29,11 @@ public class SimilarPatentFinder {
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder(WordVectors wordVectors, Map<String,Float> vocab) throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", wordVectors, vocab);
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", wordVectors, vocab,null);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSet,patentListFile,name,null, wordVectors, vocab);
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WordVectors wordVectors, Map<String,Float> vocab, SimilarPatentFinder global) throws SQLException,IOException,ClassNotFoundException {
+        this(candidateSet,patentListFile,name,null, wordVectors, vocab, global);
     }
 
     public SimilarPatentFinder(String name, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException {
@@ -45,7 +45,7 @@ public class SimilarPatentFinder {
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, Map<String,Float> vocab) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, WordVectors wordVectors, Map<String,Float> vocab, SimilarPatentFinder global) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
@@ -57,6 +57,10 @@ public class SimilarPatentFinder {
                 }
                 int arrayCapacity = candidateSet.size();
                 patentList = new ArrayList<>(arrayCapacity);
+                // go thru candidate set and remove all that we can find
+                if(global!=null) {
+                    candidateSet=candidateSet.stream().filter(p->{int idx = global.getPatentList().indexOf(p); if(idx>=0) {patentList.add(global.getPatentList().get(idx)); return false; } else return true;}).collect(Collectors.toList());
+                }
                 rs = Database.selectPatentVectors(candidateSet);
                 int count = 0;
                 int offset = 2; // Due to the pub_doc_number field
