@@ -135,6 +135,8 @@ public class SimilarPatentFinder {
     private static void processNGrams(List<String> tokens, Map<String,AtomicInteger> nGramCounts, int n) {
         for(int i = 0; i <tokens.size()-n; i+=n) {
             List<String> chunk = tokens.subList(i,i+n);
+            // don't allow chunk to have duplicate elements
+            if(((int)chunk.stream().distinct().count())!=chunk.size()) continue;
             String singleLine = String.join(" ",chunk);
             if(nGramCounts.containsKey(singleLine)) {
                 nGramCounts.get(singleLine).getAndIncrement();
