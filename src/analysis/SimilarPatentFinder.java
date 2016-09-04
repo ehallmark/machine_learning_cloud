@@ -132,11 +132,9 @@ public class SimilarPatentFinder {
         }
     }
 
-    public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        Map<String,AtomicInteger> nGramCounts = new HashMap<>();
-        List<String> tokens = tf.create(text).getTokens();
-        for(int i = 0; i <tokens.size()-2; i+=2) {
-            List<String> chunk = tokens.subList(i,i+2);
+    private static void processNGrams(List<String> tokens, Map<String,AtomicInteger> nGramCounts, int n) {
+        for(int i = 0; i <tokens.size()-n; i+=n) {
+            List<String> chunk = tokens.subList(i,i+n);
             String singleLine = String.join(" ",chunk);
             if(nGramCounts.containsKey(singleLine)) {
                 nGramCounts.get(singleLine).getAndIncrement();
@@ -144,9 +142,18 @@ public class SimilarPatentFinder {
                 nGramCounts.put(singleLine, new AtomicInteger(1));
             }
         }
-        List<Pair<String,Float>> list = nGramCounts.entrySet().stream().filter(e->Arrays.asList(e.getKey().split(" ")).stream().allMatch(s->vocab.containsKey(s))).map(e->{
-            double avgFreq = Arrays.asList(e.getKey().split(" ")).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
-            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)avgFreq*e.getValue().get());
+    }
+
+    public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+        Map<String,AtomicInteger> nGramCounts = new HashMap<>();
+        List<String> tokens = tf.create(text).getTokens().stream().filter(s->s!=null&&s.trim().length()>0&&vocab.containsKey(s)).collect(Collectors.toList());
+        for(int i = 1; i <= 3; i++) {
+            processNGrams(tokens,nGramCounts,i);
+        }
+        List<Pair<String,Float>> list = nGramCounts.entrySet().stream().map(e->{
+            String[] words = e.getKey().split(" ");
+            double avgFreq = Arrays.asList(words).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
+            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*words.length*e.getValue().get()));
             return newPair;
         }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
         list = list.subList(0,Math.min(limit,list.size()));
