@@ -153,7 +153,7 @@ public class SimilarPatentFinder {
         List<Pair<String,Float>> list = nGramCounts.entrySet().stream().map(e->{
             String[] words = e.getKey().split(" ");
             double avgFreq = Arrays.asList(words).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
-            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*Math.pow(words.length,2)*e.getValue().get()));
+            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*Math.pow(words.length,2)*Math.log(e.getValue().get())));
             return newPair;
         }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
         list = list.subList(0,Math.min(limit,list.size()));
