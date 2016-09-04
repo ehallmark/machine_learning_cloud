@@ -5,10 +5,7 @@ import org.deeplearning4j.berkeley.Pair;
 import tools.PatentList;
 import static j2html.TagCreator.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -22,7 +19,14 @@ public class PatentResponse extends ServerResponse {
 
     private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
         // List
-        List<Tag> keywords = keyWordList==null?null:keyWordList.stream().map(k->div().with(label(k.getFirst()+": "+k.getSecond()),br())).collect(Collectors.toList());
+        List<Tag> headers = Arrays.asList(tr().with(th("Predicted Keywords").attr("colspan","2")), tr().with(th("Word"),th("Score")));
+        Tag keywords = null;
+        if(keyWordList!=null) {
+            headers.addAll(keyWordList.stream().map(k->tr().with(td(k.getFirst()),td(k.getSecond().toString()))).collect(Collectors.toList()));
+            keywords = table().with(
+                headers
+            );
+        }
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
         List<Tag> patents = patentLists.stream().sorted().map(patentList ->
                 div().with(
@@ -50,7 +54,7 @@ public class PatentResponse extends ServerResponse {
         ).collect(Collectors.toList());
         if(findDissimilar) Collections.reverse(patents);
         return div().with(
-                div().with(keywords==null?new ArrayList<Tag>():keywords),
+                keywords==null?div():keywords,br(),
                 div().with(patents)
         );
 
