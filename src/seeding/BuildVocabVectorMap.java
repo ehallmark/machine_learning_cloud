@@ -14,8 +14,8 @@ import java.util.Map;
  */
 public class BuildVocabVectorMap {
     public static void main(String[] args) throws Exception {
-        File toWriteTo = new File(Constants.VOCAB_VECTOR_FILE);
-        Map<String,Float> vocabMap = BuildVocabulary.readVocabMap(new File(Constants.GOOD_VOCAB_MAP_FILE));
+        File toWriteTo = new File(Constants.BETTER_VOCAB_VECTOR_FILE);
+        Map<String,Float> vocabMap = BuildVocabulary.readVocabMap(new File(Constants.BETTER_VOCAB_MAP_FILE));
         WordVectors wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH),true);
         Map<String,Pair<Float,INDArray>> outputMap = new HashMap<>();
         vocabMap.entrySet().forEach(e->{

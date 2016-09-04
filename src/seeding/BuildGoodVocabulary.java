@@ -27,7 +27,7 @@ public class BuildGoodVocabulary {
     public static void main(String[] args) throws Exception {
         Database.setupSeedConn();
 
-        File vocabFile = new File(Constants.GOOD_VOCAB_MAP_FILE);
+        File vocabFile = new File(Constants.BETTER_VOCAB_MAP_FILE);
         Map<String,AtomicInteger> vocab = new HashMap<>();
         Map<String,AtomicInteger> subClassVocab = new HashMap<>();
         System.out.println("Starting on vocab building...");
@@ -35,9 +35,9 @@ public class BuildGoodVocabulary {
         // Multiply by word count in main class * log of word count in sub class
 
         ResultSet rs = Database.selectMainClassWords();
-        AtomicLong totalDocumentCount = new AtomicLong(0);
+        AtomicLong totalClassCount = new AtomicLong(0);
         while(rs.next()) {
-            System.out.println(totalDocumentCount.getAndIncrement());
+            System.out.println(totalClassCount.getAndIncrement());
             int offset = 1;
             Set<String> updatedThisDocument = new HashSet<>();
             // each row is a "Document"
@@ -46,11 +46,10 @@ public class BuildGoodVocabulary {
 
         }
         rs.close();
-
+        AtomicLong totalSubClassCount = new AtomicLong(0);
         ResultSet rs2 = Database.selectSubClassWords();
-        totalDocumentCount.set(0);
         while(rs2.next()) {
-            System.out.println(totalDocumentCount.getAndIncrement());
+            System.out.println(totalSubClassCount.getAndIncrement());
             int offset = 1;
             Set<String> updatedThisDocument = new HashSet<>();
             // each row is a "Document"
@@ -62,19 +61,21 @@ public class BuildGoodVocabulary {
 
         System.out.println("Reading old map...");
         Map<String,Float> oldMap = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
-
+        Constants.STOP_WORD_SET.forEach(stopWord->{
+            oldMap.remove(stopWord);
+        });
 
         System.out.println("Updating old map...");
 
         for(Map.Entry<String,AtomicInteger> e : vocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())) {
-                oldMap.put(e.getKey(), oldMap.get(e.getKey())*e.getValue().get());
+                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalClassCount.get())/e.getValue().get())));
             }
         }
 
         for(Map.Entry<String,AtomicInteger> e : subClassVocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())) {
-                oldMap.put(e.getKey(), (float) (oldMap.get(e.getKey())*Math.log(e.getValue().get())));
+                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalSubClassCount.get())/e.getValue().get())));
             }
         }
 
