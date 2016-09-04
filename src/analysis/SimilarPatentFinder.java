@@ -69,7 +69,17 @@ public class SimilarPatentFinder {
                 patentList = new ArrayList<>(arrayCapacity);
                 // go thru candidate set and remove all that we can find
                 if(global!=null) {
-                    candidateSet=candidateSet.stream().filter(p->{int idx = global.indexOf(p); if(idx>=0) {patentList.add(global.getPatentList().get(idx)); return false; } else return true;}).collect(Collectors.toList());
+                    List<String> toRemove = new ArrayList<>();
+                    for(int i = 0; i < global.getPatentList().size(); i++) {
+                        Patent p = global.getPatentList().get(i);
+                        if(candidateSet.contains(p.getName())) {
+                            // exists
+                            System.out.println("Found: "+p.getName());
+                            patentList.add(p);
+                            toRemove.add(p.getName());
+                        }
+                    }
+                    candidateSet.removeAll(toRemove);
                 }
                 if(!candidateSet.isEmpty()) {
                     ResultSet rs;
@@ -110,12 +120,6 @@ public class SimilarPatentFinder {
 
     }
 
-    public int indexOf(String patentName) {
-        for(int i = 0; i < patentList.size(); i++) {
-            if(patentList.get(i).getName().equals(patentName)) return i;
-        }
-        return -1;
-    }
 
     public List<Patent> getPatentList() {
         return patentList;
