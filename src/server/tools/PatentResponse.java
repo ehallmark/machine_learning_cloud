@@ -20,41 +20,44 @@ public class PatentResponse extends ServerResponse {
     private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
         // List
         Tag keywords = null;
-        if(keyWordList!=null) {
-            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan","2").attr("style","text-align: left;").with(h3("Predicted Key Phrases"))), tr().with(th("Word"),th("Score")));
+        if (keyWordList != null) {
+            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3("Predicted Key Phrases"))), tr().with(th("Word"), th("Score")));
             keywords = table().with(headers).with(
-                    keyWordList.stream().map(k->tr().with(td(k.getFirst()),td(k.getSecond().toString()))).collect(Collectors.toList())
+                    keyWordList.stream().map(k -> tr().with(td(k.getFirst()), td(k.getSecond().toString()))).collect(Collectors.toList())
             );
         }
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
-        List<Tag> patents = patentLists.stream().sorted().map(patentList ->
-                div().with(
-                        table().with(
-                                thead().with(
-                                        tr().with(th().attr("colspan","3").attr("style","text-align: left;").with(
-                                                h3().with(label(similarName+" "+patentList.getName1()+" to "+patentList.getName2()))
-                                        )),
-                                        tr().with(th().attr("colspan","3").attr("style","text-align: left;").with(
-                                                label("Distributed Average Similarity: "+patentList.getAvgSimilarity())
-                                        )),
-                                        tr().with(
-                                                th("Patent #"),
-                                                th("Cosine Similarity"),
-                                                th("Invention Title")
-                                        )
-                                ),
-                                tbody().with(
-                                        patentList.getPatents().stream().sorted((o1,o2)->findDissimilar ? Double.compare(o1.getSimilarity(),o2.getSimilarity()) : Double.compare(o2.getSimilarity(),o1.getSimilarity())
-                                        ).map(patent->
-                                                tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US"+patent.getName().split("\\s+")[0])),td(Double.toString(patent.getSimilarity())),td(patent.getTitle()))
-                                        ).collect(Collectors.toList())
-                                )
-                        ),br())
-        ).collect(Collectors.toList());
-        if(findDissimilar) Collections.reverse(patents);
+        List<Tag> patents = null;
+        if (patentLists != null) {
+            patentLists.stream().sorted().map(patentList ->
+                    div().with(
+                            table().with(
+                                    thead().with(
+                                            tr().with(th().attr("colspan", "3").attr("style", "text-align: left;").with(
+                                                    h3().with(label(similarName + " " + patentList.getName1() + " to " + patentList.getName2()))
+                                            )),
+                                            tr().with(th().attr("colspan", "3").attr("style", "text-align: left;").with(
+                                                    label("Distributed Average Similarity: " + patentList.getAvgSimilarity())
+                                            )),
+                                            tr().with(
+                                                    th("Patent #"),
+                                                    th("Cosine Similarity"),
+                                                    th("Invention Title")
+                                            )
+                                    ),
+                                    tbody().with(
+                                            patentList.getPatents().stream().sorted((o1, o2) -> findDissimilar ? Double.compare(o1.getSimilarity(), o2.getSimilarity()) : Double.compare(o2.getSimilarity(), o1.getSimilarity())
+                                            ).map(patent ->
+                                                    tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US" + patent.getName().split("\\s+")[0])), td(Double.toString(patent.getSimilarity())), td(patent.getTitle()))
+                                            ).collect(Collectors.toList())
+                                    )
+                            ), br())
+            ).collect(Collectors.toList());
+            if (findDissimilar) Collections.reverse(patents);
+        }
         return div().with(
                 keywords==null?br():keywords,br(),
-                div().with(patents)
+                patents==null?br():div().with(patents)
         );
 
     }

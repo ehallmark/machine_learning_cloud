@@ -40,6 +40,7 @@ public class SimilarPatentServer {
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
+    private static final String SELECT_KEYWORDS = "select-keywords-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     private static final Map<String,Pair<Float,INDArray>> vocab;
@@ -265,8 +266,30 @@ public class SimilarPatentServer {
             int defaultVocabLimit = 10;
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,defaultVocabLimit,vocab):SimilarPatentFinder.predictKeywords(defaultVocabLimit,vocab,pubDocNumber));
+            else response=new PatentResponse(patents,findDissimilar,null);
+            
+            // Handle csv or json
+            if(responseWithCSV(req)) {
+                res.type("text/csv");
+                return CSVHelper.to_csv(response);
+            } else {
+                res.type("application/json");
+                return new Gson().toJson(response);
+            }
+        });
 
+
+        post("/keywords", (req, res) -> {
+            ServerResponse response;
+            String pubDocNumber = req.queryParams("patent");
+            String text = req.queryParams("text");
+            if((pubDocNumber == null || pubDocNumber.trim().length()==0) && (text==null||text.trim().length()==0)) return new Gson().toJson(new NoPatentProvided());
+            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber,vocab) : new SimilarPatentFinder("Custom Text", new WordVectorizer(vocab).getVector(text));
+            int limit = extractLimit(req);
+            List<Pair<String,Float>> patents = pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,limit,vocab):SimilarPatentFinder.predictKeywords(limit,vocab,pubDocNumber);
+            if(patents==null) response=new PatentNotFound(pubDocNumber);
+            else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
+            else response=new PatentResponse(null,false,patents);
             // Handle csv or json
             if(responseWithCSV(req)) {
                 res.type("text/csv");
@@ -388,6 +411,7 @@ public class SimilarPatentServer {
         return div().with(formScript(SELECT_CANDIDATE_FORM_ID, "/similar_patents", "Search"),
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search"),
                 formScript(SELECT_ANGLE_BETWEEN_PATENTS, "/angle_between_patents", "Search"),
+                formScript(SELECT_KEYWORDS, "/keywords", "Search"),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -398,6 +422,14 @@ public class SimilarPatentServer {
                                                         label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
                                                         br(),
                                                         button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
+                                                ),br(),
+                                                h3("Predict Keywords and Key Phrases"),
+                                                form().withId(SELECT_KEYWORDS).with(
+                                                        label("Patent"),br(),input().withType("text").withName("patent"),br(),
+                                                        label("Text"),br(),textarea().withName("text"),br(),
+                                                        label("Limit"),br(),input().withType("text").withName("limit"),br(),
+                                                        br(),
+                                                        button("Search").withId(SELECT_KEYWORDS+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents By Patent"),
