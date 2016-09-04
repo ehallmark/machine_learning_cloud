@@ -19,7 +19,7 @@ public class BuildVocabVectorMap {
         WordVectors wordVectors = WordVectorSerializer.loadGoogleModel(new File(Constants.GOOGLE_WORD_VECTORS_PATH),true);
         Map<String,Pair<Float,INDArray>> outputMap = new HashMap<>();
         vocabMap.entrySet().forEach(e->{
-           if(wordVectors.hasWord(e.getKey())) {
+           if(e.getKey()!=null&&e.getKey().length()>0&&wordVectors.hasWord(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
                System.out.println(e.getKey());
                outputMap.put(e.getKey(),new Pair<>(e.getValue(),wordVectors.lookupTable().vector(e.getKey())));
            }

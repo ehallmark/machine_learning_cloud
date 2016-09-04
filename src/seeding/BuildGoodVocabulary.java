@@ -61,28 +61,26 @@ public class BuildGoodVocabulary {
 
         System.out.println("Reading old map...");
         Map<String,Float> oldMap = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
-        Constants.STOP_WORD_SET.forEach(stopWord->{
-            oldMap.remove(stopWord);
-        });
+        Map<String,Float> newMap = new HashMap<>();
 
         System.out.println("Updating old map...");
 
         for(Map.Entry<String,AtomicInteger> e : vocab.entrySet()) {
-            if(oldMap.containsKey(e.getKey())) {
-                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalClassCount.get())/e.getValue().get())));
+            if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
+                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalClassCount.get())/e.getValue().get())));
             }
         }
 
         for(Map.Entry<String,AtomicInteger> e : subClassVocab.entrySet()) {
-            if(oldMap.containsKey(e.getKey())) {
-                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalSubClassCount.get())/e.getValue().get())));
+            if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
+                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalSubClassCount.get())/e.getValue().get())));
             }
         }
 
         System.out.println("Writing new map...");
 
         try {
-            writeVocabMap(oldMap, vocabFile);
+            writeVocabMap(newMap, vocabFile);
             System.out.println("Vocabulary written to file...");
         } catch(Exception e) {
             e.printStackTrace();
