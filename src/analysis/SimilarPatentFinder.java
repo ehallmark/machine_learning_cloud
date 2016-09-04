@@ -20,6 +20,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import server.tools.AbstractPatent;
@@ -122,10 +123,24 @@ public class SimilarPatentFinder {
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
+    public List<Pair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+        ResultSet rs = Database.getBaseVectorFor(patentList.get(0).getName());
+        if(rs.next()) {
+            return predictKeywords(rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3),limit,vocab);
+        } else {
+            return null;
+        }
+    }
+
     public List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        List<Pair<String,Float>> list = tf.create(text).getTokens().stream().filter(word->vocab.containsKey(word)).map(p->{
-            Pair<Float,INDArray> pair = vocab.get(p);
-            Pair<String,Float> newPair = new Pair<>(p,pair.getFirst());
+        Map<String,AtomicInteger> wordCounts = new HashMap<>();
+        for (String s : tf.create(text).getTokens()) {
+            if(wordCounts.containsKey(s)) wordCounts.get(s).getAndIncrement();
+            else wordCounts.put(s,new AtomicInteger(1));
+        }
+        List<Pair<String,Float>> list = wordCounts.entrySet().stream().filter(e->vocab.containsKey(e.getKey())).map(e->{
+            Pair<Float,INDArray> pair = vocab.get(e.getKey());
+            Pair<String,Float> newPair = new Pair<>(e.getKey(),pair.getFirst()*e.getValue().get());
             return newPair;
         }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
         list = list.subList(0,Math.min(limit,list.size()));

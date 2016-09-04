@@ -191,7 +191,7 @@ public class SimilarPatentServer {
                         System.out.println(p.getName()+": "+p.getSimilarity());
                     });
                 });
-                PatentResponse response = new PatentResponse(patentLists,findDissimilar);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null);
                 return new Gson().toJson(response);
             }
 
@@ -263,10 +263,9 @@ public class SimilarPatentServer {
                 }
             });
 
-
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar);
+            else response=new PatentResponse(patents,findDissimilar,currentPatentFinder.predictKeywords(10,vocab));
 
             // Handle csv or json
             if(responseWithCSV(req)) {

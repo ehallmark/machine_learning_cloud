@@ -1,9 +1,11 @@
 package server.tools;
 
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import tools.PatentList;
 import static j2html.TagCreator.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -14,19 +16,24 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar) {
-        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar).render(),patents);
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
+        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordList).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
         // List
+        List<Tag> keywords = keyWordList==null?null:keyWordList.stream().map(k->div().with(label(k.getFirst()+": "+k.getSecond()),br())).collect(Collectors.toList());
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
         List<Tag> patents = patentLists.stream().sorted().map(patentList ->
                 div().with(
-                        h3().with(label(similarName+" "+patentList.getName1()+" to "+patentList.getName2())),
-                        h5().with(label("Global Average Similarity: "+patentList.getAvgSimilarity())),
                         table().with(
                                 thead().with(
+                                        tr().with(th().attr("colspan","3").with(
+                                                h3().with(label(similarName+" "+patentList.getName1()+" to "+patentList.getName2()))
+                                        )),
+                                        tr().with(th().attr("colspan","3").with(
+                                                label("Distributed Average Similarity: "+patentList.getAvgSimilarity())
+                                        )),
                                         tr().with(
                                                 th("Patent #"),
                                                 th("Cosine Similarity"),
@@ -43,6 +50,7 @@ public class PatentResponse extends ServerResponse {
         ).collect(Collectors.toList());
         if(findDissimilar) Collections.reverse(patents);
         return div().with(
+                div().with(keywords==null?new ArrayList<Tag>():keywords),
                 div().with(patents)
         );
 
