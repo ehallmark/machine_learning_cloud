@@ -265,7 +265,7 @@ public class SimilarPatentServer {
             int defaultVocabLimit = 10;
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,pubDocNumber==null||pubDocNumber.trim().length()==0?currentPatentFinder.predictKeywords(text,defaultVocabLimit,vocab):currentPatentFinder.predictKeywords(defaultVocabLimit,vocab));
+            else response=new PatentResponse(patents,findDissimilar,pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,defaultVocabLimit,vocab):SimilarPatentFinder.predictKeywords(defaultVocabLimit,vocab,pubDocNumber));
 
             // Handle csv or json
             if(responseWithCSV(req)) {

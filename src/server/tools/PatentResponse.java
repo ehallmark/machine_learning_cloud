@@ -19,12 +19,11 @@ public class PatentResponse extends ServerResponse {
 
     private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
         // List
-        List<Tag> headers = Arrays.asList(tr().with(th("Predicted Keywords").attr("colspan","2")), tr().with(th("Word"),th("Score")));
         Tag keywords = null;
         if(keyWordList!=null) {
-            headers.addAll(keyWordList.stream().map(k->tr().with(td(k.getFirst()),td(k.getSecond().toString()))).collect(Collectors.toList()));
-            keywords = table().with(
-                headers
+            List<Tag> headers = Arrays.asList(tr().with(th("Predicted Keywords").attr("colspan","2")), tr().with(th("Word"),th("Score")));
+            keywords = table().with(headers).with(
+                    keyWordList.stream().map(k->tr().with(td(k.getFirst()),td(k.getSecond().toString()))).collect(Collectors.toList())
             );
         }
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
@@ -54,7 +53,7 @@ public class PatentResponse extends ServerResponse {
         ).collect(Collectors.toList());
         if(findDissimilar) Collections.reverse(patents);
         return div().with(
-                keywords==null?div():keywords,br(),
+                keywords==null?br():keywords,br(),
                 div().with(patents)
         );
 

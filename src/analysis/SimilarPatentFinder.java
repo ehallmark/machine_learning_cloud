@@ -123,8 +123,8 @@ public class SimilarPatentFinder {
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
-    public List<Pair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
-        ResultSet rs = Database.getBaseVectorFor(patentList.get(0).getName());
+    public static List<Pair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent) throws SQLException {
+        ResultSet rs = Database.getBaseVectorFor(patent);
         if(rs.next()) {
             return predictKeywords(rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3),limit,vocab);
         } else {
@@ -132,7 +132,7 @@ public class SimilarPatentFinder {
         }
     }
 
-    public List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+    public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
         Map<String,AtomicInteger> wordCounts = new HashMap<>();
         for (String s : tf.create(text).getTokens()) {
             if(wordCounts.containsKey(s)) wordCounts.get(s).getAndIncrement();
