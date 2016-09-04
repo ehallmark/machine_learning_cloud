@@ -148,14 +148,14 @@ public class SimilarPatentFinder {
 
     public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
         Map<String,AtomicInteger> nGramCounts = new HashMap<>();
-        List<String> tokens = tf.create(text).getTokens().stream().filter(s->s!=null&&s.trim().length()>0&&vocab.containsKey(s)).collect(Collectors.toList());
+        List<String> tokens = tf.create(text).getTokens().stream().filter(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)).collect(Collectors.toList());
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,nGramCounts,i);
         }
         List<Pair<String,Float>> list = nGramCounts.entrySet().stream().map(e->{
             String[] words = e.getKey().split(" ");
             double avgFreq = Arrays.asList(words).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
-            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*Math.pow(words.length,2)*Math.log(e.getValue().get())));
+            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*words.length*Math.log(e.getValue().get())));
             return newPair;
         }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
         list = list.subList(0,Math.min(limit,list.size()));
