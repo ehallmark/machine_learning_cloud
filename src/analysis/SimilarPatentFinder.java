@@ -122,6 +122,15 @@ public class SimilarPatentFinder {
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
+    public List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+        List<Pair<String,Float>> list = tf.create(text).getTokens().stream().filter(word->vocab.containsKey(word)).map(p->{
+            Pair<Float,INDArray> pair = vocab.get(p);
+            Pair<String,Float> newPair = new Pair<>(p,pair.getFirst());
+            return newPair;
+        }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
+        list = list.subList(0,Math.min(limit,list.size()));
+        return list;
+    }
 
     public List<Patent> getPatentList() {
         return patentList;
