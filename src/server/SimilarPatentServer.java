@@ -4,7 +4,6 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -88,9 +87,9 @@ public class SimilarPatentServer {
                     // try to get percentages from form
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,vocab,globalFinder);
+                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,vocab);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,vocab,globalFinder);
+                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,vocab);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -144,11 +143,11 @@ public class SimilarPatentServer {
                     if(groupedCandidateSetMap.containsKey(id1)) {
                         for(Integer id : groupedCandidateSetMap.get(id1)) {
                             String name = candidateSetMap.get(id).getSecond();
-                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab,globalFinder));
+                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab));
                         }
                     } else {
                         String name1 = candidateSetMap.get(id1).getSecond();
-                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,vocab,globalFinder));
+                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,vocab));
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
                 List<SimilarPatentFinder> secondFinders = new ArrayList<>();
@@ -159,14 +158,14 @@ public class SimilarPatentServer {
                             if(groupedCandidateSetMap.containsKey(Integer.valueOf(id))) {
                                 for(Integer groupedId : groupedCandidateSetMap.get(Integer.valueOf(id))) {
                                     System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(groupedId).getSecond());
-                                    finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), candidateSetMap.get(groupedId).getSecond(),vocab,globalFinder);
+                                    finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), candidateSetMap.get(groupedId).getSecond(),vocab);
                                     if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
                                         secondFinders.add(finder);
                                     }
                                 }
                             } else {
                                 System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(Integer.valueOf(id)).getSecond());
-                                finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)).getSecond(),vocab,globalFinder);
+                                finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(Integer.valueOf(id)).getSecond(),vocab);
                                 if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
                                     secondFinders.add(finder);
                                 }
@@ -237,7 +236,7 @@ public class SimilarPatentServer {
                         if(groupedCandidateSetMap.containsKey(id)) {
                             // grouped
                             for (Integer integer : groupedCandidateSetMap.get(id)) {
-                                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond(),vocab,globalFinder);
+                                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + integer), candidateSetMap.get(integer).getSecond(),vocab);
                                 if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
                                     if(averageCandidates) {
                                         patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));
@@ -247,7 +246,7 @@ public class SimilarPatentServer {
                             }
 
                         } else {
-                            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond(),vocab,globalFinder);
+                            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), candidateSetMap.get(id).getSecond(),vocab);
                             if (finder.getPatentList() != null && !finder.getPatentList().isEmpty())
                                 if(averageCandidates) {
                                     patents.addAll(currentPatentFinder.similarFromCandidateSet(finder, threshold, limit, findDissimilar));

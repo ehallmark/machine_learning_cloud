@@ -33,6 +33,7 @@ public class SimilarPatentFinder {
     protected List<Patent> patentList;
     protected String name;
     private static TokenizerFactory tf = new DefaultTokenizerFactory();
+    private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
     static {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -40,11 +41,11 @@ public class SimilarPatentFinder {
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder(Map<String,Pair<Float,INDArray>> vocab) throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", vocab,null);
+        this(null, new File(Constants.PATENT_VECTOR_LIST_FILE), "**ALL**", vocab);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, Map<String,Pair<Float,INDArray>> vocab, SimilarPatentFinder global) throws SQLException,IOException,ClassNotFoundException {
-        this(candidateSet,patentListFile,name,null, vocab, global);
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, Map<String,Pair<Float,INDArray>> vocab) throws SQLException,IOException,ClassNotFoundException {
+        this(candidateSet,patentListFile,name,null, vocab);
     }
 
     public SimilarPatentFinder(String name,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
@@ -56,7 +57,7 @@ public class SimilarPatentFinder {
         patentList = data==null?null:Arrays.asList(new Patent(name, data));
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, Map<String,Pair<Float,INDArray>> vocab, SimilarPatentFinder global) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, INDArray eigenVectors, Map<String,Pair<Float,INDArray>> vocab) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
@@ -68,19 +69,15 @@ public class SimilarPatentFinder {
                 int arrayCapacity = candidateSet.size();
                 patentList = new ArrayList<>(arrayCapacity);
                 // go thru candidate set and remove all that we can find
-                if(global!=null) {
-                    List<String> toRemove = new ArrayList<>();
-                    for(int i = 0; i < global.getPatentList().size(); i++) {
-                        Patent p = global.getPatentList().get(i);
-                        if(candidateSet.contains(p.getName())) {
-                            // exists
-                            System.out.println("Found: "+p.getName());
-                            patentList.add(p);
-                            toRemove.add(p.getName());
-                        }
+                List<String> toRemove = new ArrayList<>();
+                for(String patent : candidateSet) {
+                    if(globalCache.containsKey(patent)) {
+                        patentList.add(new Patent(patent,globalCache.get(patent)));
+                        toRemove.add(patent);
+                        System.out.println("Found: "+patent);
                     }
-                    candidateSet.removeAll(toRemove);
                 }
+                candidateSet.removeAll(toRemove);
                 if(!candidateSet.isEmpty()) {
                     ResultSet rs;
                     rs = Database.selectPatentVectors(candidateSet);
@@ -116,8 +113,13 @@ public class SimilarPatentFinder {
             if(eigenVectors!=null) patentList.forEach(p->p.getVector().mmuli(eigenVectors));
             ois.close();
         }
-        System.out.println("--- Finished Loading Patent Vectors ---");
 
+        // Now add stuff to the map
+        patentList.forEach(p->{
+            globalCache.put(p.getName(),p.getVector());
+        });
+
+        System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
 
@@ -250,13 +252,20 @@ public class SimilarPatentFinder {
     }
 
     private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
-        ResultSet rs = Database.getBaseVectorFor(patentNumber);
-        if(!rs.next()) {
-            return null; // nothing found
+        INDArray avgVector = null;
+        // first look in own patent list
+        if(globalCache.containsKey(patentNumber)) avgVector=globalCache.get(patentNumber);
+
+        if(avgVector==null) {
+            ResultSet rs = Database.getBaseVectorFor(patentNumber);
+            if (!rs.next()) {
+                return null; // nothing found
+            }
+            int offset = 1;
+            avgVector = handleResultSet(rs, offset, vocab);
+            if(avgVector!=null) globalCache.put(patentNumber,avgVector);
         }
-        int offset = 1;
-        INDArray avgVector = handleResultSet(rs, offset, vocab);
-        if(eigenVectors!=null) avgVector.mmuli(eigenVectors);
+        if(eigenVectors!=null&&avgVector!=null) avgVector.mmuli(eigenVectors);
         return avgVector;
     }
 
