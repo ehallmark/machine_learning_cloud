@@ -48,7 +48,7 @@ public class SimilarPatentServer {
         tokenizer.setTokenPreProcessor(new MyPreprocessor());
         Map<String,Pair<Float,INDArray>> vocabCopy = null;
         try {
-            vocabCopy = Collections.unmodifiableMap(BuildVocabVectorMap.readVocabMap(new File(Constants.VOCAB_VECTOR_FILE)));
+            vocabCopy = Collections.unmodifiableMap(BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE)));
             Database.setupSeedConn();
             Database.setupMainConn();
         } catch(Exception e) {
