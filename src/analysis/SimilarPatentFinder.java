@@ -133,14 +133,20 @@ public class SimilarPatentFinder {
     }
 
     public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        Map<String,AtomicInteger> wordCounts = new HashMap<>();
-        for (String s : tf.create(text).getTokens()) {
-            if(wordCounts.containsKey(s)) wordCounts.get(s).getAndIncrement();
-            else wordCounts.put(s,new AtomicInteger(1));
+        Map<String,AtomicInteger> nGramCounts = new HashMap<>();
+        List<String> tokens = tf.create(text).getTokens();
+        for(int i = 0; i <tokens.size()-2; i+=2) {
+            List<String> chunk = tokens.subList(i,i+2);
+            String singleLine = String.join(" ",chunk);
+            if(nGramCounts.containsKey(singleLine)) {
+                nGramCounts.get(singleLine).getAndIncrement();
+            } else {
+                nGramCounts.put(singleLine, new AtomicInteger(1));
+            }
         }
-        List<Pair<String,Float>> list = wordCounts.entrySet().stream().filter(e->vocab.containsKey(e.getKey())).map(e->{
-            Pair<Float,INDArray> pair = vocab.get(e.getKey());
-            Pair<String,Float> newPair = new Pair<>(e.getKey(),pair.getFirst()*e.getValue().get());
+        List<Pair<String,Float>> list = nGramCounts.entrySet().stream().filter(e->Arrays.asList(e.getKey().split(" ")).stream().allMatch(s->vocab.containsKey(s))).map(e->{
+            double avgFreq = Arrays.asList(e.getKey().split(" ")).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
+            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)avgFreq*e.getValue().get());
             return newPair;
         }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
         list = list.subList(0,Math.min(limit,list.size()));
