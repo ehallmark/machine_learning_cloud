@@ -262,10 +262,10 @@ public class SimilarPatentServer {
                     e.printStackTrace();
                 }
             });
-
+            int defaultVocabLimit = 10;
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,currentPatentFinder.predictKeywords(10,vocab));
+            else response=new PatentResponse(patents,findDissimilar,pubDocNumber==null||pubDocNumber.trim().length()==0?currentPatentFinder.predictKeywords(text,defaultVocabLimit,vocab):currentPatentFinder.predictKeywords(defaultVocabLimit,vocab));
 
             // Handle csv or json
             if(responseWithCSV(req)) {
