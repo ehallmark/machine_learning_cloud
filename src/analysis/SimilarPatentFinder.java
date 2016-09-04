@@ -7,10 +7,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Constants;
-import seeding.Database;
-import seeding.MyPreprocessor;
-import seeding.WordVectorizer;
+import seeding.*;
 import tools.GetTokensThread;
 import tools.MinHeap;
 import tools.PatentList;
@@ -133,10 +130,11 @@ public class SimilarPatentFinder {
     }
 
     private static void processNGrams(List<String> tokens, Map<String,AtomicInteger> nGramCounts, int n) {
+        Stemmer stemMe = new Stemmer();
         for(int i = 0; i <tokens.size()-n; i+=n) {
             List<String> chunk = tokens.subList(i,i+n);
             // don't allow chunk to have duplicate elements
-            if(((int)chunk.stream().distinct().count())!=chunk.size()) continue;
+            if(((int)chunk.stream().map(s->stemMe.stem(s)).distinct().count())!=chunk.size()) continue;
             String singleLine = String.join(" ",chunk);
             if(nGramCounts.containsKey(singleLine)) {
                 nGramCounts.get(singleLine).getAndIncrement();
