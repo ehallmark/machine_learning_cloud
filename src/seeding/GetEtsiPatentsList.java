@@ -36,7 +36,7 @@ public class GetEtsiPatentsList {
             Cell t = row[10];
             if (t != null && t.getContents() != null) {
                 for(String key : t.getContents().split("\\|")) {
-                    key=key.trim();
+                    key=key.replaceAll("\\."," ").trim().replaceAll("\\s+"," ").replaceAll("\\s+"," ");
                     int idxSpace = key.indexOf("(");
                     if(idxSpace >= 0) key = key.substring(0,idxSpace).trim();
                     if(key.length()==0)continue;

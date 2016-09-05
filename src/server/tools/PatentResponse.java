@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
-        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordList).render(),patents);
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<Pair<String,Float>> keyWordList, double timeToComplete) {
+        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordList, timeToComplete).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList, double time) {
         // List
         Tag keywords = null;
         if (keyWordList != null) {
@@ -56,6 +56,7 @@ public class PatentResponse extends ServerResponse {
             if (findDissimilar) Collections.reverse(patents);
         }
         return div().with(
+                div().with(label(Double.toString(time)+" seconds to complete.")),br(),
                 keywords==null?br():keywords,br(),
                 patents==null?br():div().with(patents)
         );

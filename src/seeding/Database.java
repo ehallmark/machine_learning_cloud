@@ -203,6 +203,14 @@ public class Database {
 		}
 	}
 
+	public static void createCandidateGroup(String groupPrefix) throws SQLException {
+		PreparedStatement ps = mainConn.prepareStatement("INSERT INTO candidate_set_groups (group_prefix) VALUES (?)");
+		ps.setString(1, groupPrefix);
+		ps.executeUpdate();
+		ps.close();
+		Database.commit();
+	}
+
 	public static void resetValuablePatents() throws SQLException {
 		PreparedStatement ps = mainConn.prepareStatement("UPDATE patent_vectors SET is_valuable='f' WHERE is_valuable='t'");
 		ps.executeUpdate();
@@ -211,6 +219,11 @@ public class Database {
 
 	public static ResultSet selectAllCandidateSets() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectAllCandidateSets);
+		return ps.executeQuery();
+	}
+
+	public static ResultSet selectGroupedCandidateSets() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select group_prefix from candidate_set_groups");
 		return ps.executeQuery();
 	}
 

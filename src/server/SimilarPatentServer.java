@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static spark.Spark.get;
@@ -57,6 +58,8 @@ public class SimilarPatentServer {
             failed = true;
         }
         vocab = vocabCopy;
+
+        if(!failed)
         try {
             globalFinder = new SimilarPatentFinder(vocab);
         } catch(Exception e) {
@@ -75,6 +78,28 @@ public class SimilarPatentServer {
         get("/", (req, res) -> templateWrapper(res, div().with(selectCandidateForm(), hr()), getAndRemoveMessage(req.session())));
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
+
+        post("/create_group", (req, res) ->{
+            if(req.queryParams("group_prefix")==null || req.queryParams("group_prefix").trim().length()==0) {
+                req.session().attribute("message", "Invalid form parameters.");
+                res.redirect("/new");
+            } else {
+                try {
+                    String name = req.queryParams("group_prefix");
+                    Database.createCandidateGroup(name);
+                    req.session().attribute("message", "Candidate group created.");
+                    res.redirect("/");
+
+                } catch(SQLException sql) {
+                    sql.printStackTrace();
+                    req.session().attribute("message", "Database Error");
+                    res.redirect("/new");
+
+                }
+            }
+            return null;
+        });
+
 
         post("/create", (req, res) -> {
             if(req.queryParams("name")==null || (req.queryParams("patents")==null && req.queryParams("assignee")==null)) {
@@ -97,7 +122,6 @@ public class SimilarPatentServer {
                         return null;
                     }
                     //new Emailer("Sucessfully created "+name);
-                    req.session().attribute("candidateSet", patentFinder);
                     req.session().attribute("message", "Candidate set created.");
                     res.redirect("/");
 
@@ -126,6 +150,8 @@ public class SimilarPatentServer {
         });
 
         post("/similar_candidate_sets", (req, res) -> {
+            long startTime = System.currentTimeMillis();
+
             res.type("application/json");
             if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
             if(req.queryParamsValues("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
@@ -192,7 +218,7 @@ public class SimilarPatentServer {
                         System.out.println(p.getName()+": "+p.getSimilarity());
                     });
                 });
-                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(startTime-System.currentTimeMillis())/1000);
                 return new Gson().toJson(response);
             }
 
@@ -215,6 +241,7 @@ public class SimilarPatentServer {
         });
 
         post("/similar_patents", (req, res) -> {
+            long startTime = System.currentTimeMillis();
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
             String text = req.queryParams("text");
@@ -266,8 +293,8 @@ public class SimilarPatentServer {
             int defaultVocabLimit = 10;
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,null);
-            
+            else response=new PatentResponse(patents,findDissimilar,null,new Double(startTime-System.currentTimeMillis())/1000);
+
             // Handle csv or json
             if(responseWithCSV(req)) {
                 res.type("text/csv");
@@ -280,6 +307,7 @@ public class SimilarPatentServer {
 
 
         post("/keywords", (req, res) -> {
+            long startTime = System.currentTimeMillis();
             ServerResponse response;
             String pubDocNumber = req.queryParams("patent");
             String text = req.queryParams("text");
@@ -289,7 +317,7 @@ public class SimilarPatentServer {
             List<Pair<String,Float>> patents = pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,limit,vocab):SimilarPatentFinder.predictKeywords(limit,vocab,pubDocNumber);
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(null,false,patents);
+            else response=new PatentResponse(null,false,patents,new Double(startTime-System.currentTimeMillis())/1000);
             // Handle csv or json
             if(responseWithCSV(req)) {
                 res.type("text/csv");
@@ -357,30 +385,33 @@ public class SimilarPatentServer {
 
 
     private static void importCandidateSetFromDB() throws SQLException {
+        Map<String,List<Integer>> groupedSetNameMap = new HashMap<>();
+        ResultSet rs = Database.selectGroupedCandidateSets();
+        while(rs.next()) {
+            groupedSetNameMap.put(rs.getString(1),new ArrayList<>());
+        }
+        rs.close();
         ResultSet candidates = Database.selectAllCandidateSets();
-        List<Integer> compdb = new ArrayList<>();
-        List<Integer> etsi = new ArrayList<>();
         while(candidates.next()) {
-            boolean hidden = false;
-            if(candidates.getString(1).startsWith("ETSI -")) {
-                hidden = true;
-                etsi.add(candidates.getInt(2));
-            } else if(candidates.getString(1).startsWith("CompDB -")) {
-                hidden = true;
-                compdb.add(candidates.getInt(2));
-
+            String name = candidates.getString(1);
+            AtomicBoolean hidden = new AtomicBoolean(false);
+            for(Map.Entry<String,List<Integer>> e : groupedSetNameMap.entrySet()) {
+                if(name.startsWith(e.getKey())) {
+                    hidden.set(true);
+                    e.getValue().add(candidates.getInt(2));
+                    break;
+                }
             }
-            candidateSetMap.put(candidates.getInt(2),new Pair<>(hidden,candidates.getString(1)));
+            candidateSetMap.put(candidates.getInt(2),new Pair<>(hidden.get(),name));
         }
-        if(compdb.size()>0) {
-            int size = Collections.max(candidateSetMap.keySet())+1;
-            candidateSetMap.put(size,new Pair<>(false, "CompDB (by technology)"));
-            groupedCandidateSetMap.put(size, compdb);
-        }
-        if(etsi.size()>0) {
-            int size = Collections.max(candidateSetMap.keySet())+1;
-            candidateSetMap.put(size,new Pair<>(false, "ETSI (by standard)"));
-            groupedCandidateSetMap.put(size, etsi);
+        candidates.close();
+        int size = Collections.max(candidateSetMap.keySet())+1;
+        for(Map.Entry<String,List<Integer>> e : groupedSetNameMap.entrySet()) {
+            if(e.getValue().size()>0) {
+                candidateSetMap.put(size,new Pair<>(false, e.getKey()));
+                groupedCandidateSetMap.put(size, e.getValue());
+                size++;
+            }
         }
     }
 
