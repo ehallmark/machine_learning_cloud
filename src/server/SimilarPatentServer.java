@@ -219,7 +219,7 @@ public class SimilarPatentServer {
                         System.out.println(p.getName()+": "+p.getSimilarity());
                     });
                 });
-                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(startTime-System.currentTimeMillis())/1000);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000);
                 return new Gson().toJson(response);
             }
 
@@ -293,7 +293,7 @@ public class SimilarPatentServer {
             });
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,null,new Double(startTime-System.currentTimeMillis())/1000);
+            else response=new PatentResponse(patents,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000);
 
             // Handle csv or json
             if(responseWithCSV(req)) {
@@ -307,23 +307,30 @@ public class SimilarPatentServer {
 
 
         post("/keywords", (req, res) -> {
-            long startTime = System.currentTimeMillis();
-            ServerResponse response;
-            String pubDocNumber = req.queryParams("patent");
-            String text = req.queryParams("text");
-            if((pubDocNumber == null || pubDocNumber.trim().length()==0) && (text==null||text.trim().length()==0)) return new Gson().toJson(new NoPatentProvided());
-            int limit = extractLimit(req);
-            List<WordFrequencyPair<String,Float>> patents = pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,limit,vocab):SimilarPatentFinder.predictKeywords(limit,vocab,pubDocNumber);
-            if(patents==null) response=new PatentNotFound(pubDocNumber);
-            else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(null,false,patents,new Double(startTime-System.currentTimeMillis())/1000);
-            // Handle csv or json
-            if(responseWithCSV(req)) {
-                res.type("text/csv");
-                return CSVHelper.to_csv(response);
-            } else {
-                res.type("application/json");
-                return new Gson().toJson(response);
+            try {
+                long startTime = System.currentTimeMillis();
+                ServerResponse response;
+                String pubDocNumber = req.queryParams("patent");
+                String text = req.queryParams("text");
+                if ((pubDocNumber == null || pubDocNumber.trim().length() == 0) && (text == null || text.trim().length() == 0))
+                    return new Gson().toJson(new NoPatentProvided());
+                int limit = extractLimit(req);
+                List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber);
+                if (patents == null) response = new PatentNotFound(pubDocNumber);
+                else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
+                else
+                    response = new PatentResponse(null, false, patents, new Double(System.currentTimeMillis() - startTime) / 1000);
+                // Handle csv or json
+                if (responseWithCSV(req)) {
+                    res.type("text/csv");
+                    return CSVHelper.to_csv(response);
+                } else {
+                    res.type("application/json");
+                    return new Gson().toJson(response);
+                }
+            } catch(Exception e) {
+                new Emailer(e.getMessage());
+                return null;
             }
         });
 
