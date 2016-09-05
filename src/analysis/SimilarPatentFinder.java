@@ -146,12 +146,11 @@ public class SimilarPatentFinder {
         int tIdx = 0;
         int nullCount = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
-            List<String> sub = tokens.subList(i,i+n);
+            List<String> sub = cleanToks.subList(i,i+n);
             for(int j = tIdx; j < tIdx+n; j++) {
-                if(cleanToks.get(tIdx)==null) {
+                if(tokens.get(tIdx)==null) {
                     nullCount++;
                 }
-
             }
             int currentNullCount = nullCount;
             tIdx+=1+nullCount;
@@ -190,7 +189,6 @@ public class SimilarPatentFinder {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        new Emailer("Processing n grams");
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
         }
