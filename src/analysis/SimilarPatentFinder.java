@@ -145,46 +145,38 @@ public class SimilarPatentFinder {
     private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
-        Iterator<String> tokenIter = tokens.iterator();
-        Queue<String> queue = new ArrayQueue<>(n);
-        int nullDistance = 0;
-        while(tokenIter.hasNext()) {
-            String tok = tokenIter.next();
-            if(tok==null) {
-                // handle nulls
-                nullDistance++;
+        List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
+        int tIdx = 0;
+        int nullCount = 0;
+        for(int i = 0; i < cleanToks.size()-n; i++) {
+            List<String> sub = tokens.subList(i,i+n);
+            for(int j = tIdx; j < tIdx+n; j++) {
+                if(cleanToks.get(tIdx)==null) {
+                    nullCount++;
+                }
+
+            }
+            int currentNullCount = nullCount;
+            tIdx+=1+nullCount;
+            nullCount=0;
+            if(((int)sub.stream().map(s->stemMe.stem(s)).distinct().count())!=sub.size()) {
                 continue;
             }
-            if(nullDistance>n) {
-                queue.clear();
-                nullDistance=0;
-            }
-            // not null
-            queue.add(tok);
-            if(queue.size()==n) {
-                if(((int)queue.stream().map(s->stemMe.stem(s)).distinct().count())!=queue.size()) {
-                    queue.remove();
-                    if(nullDistance>0)nullDistance--;
-                    continue;
-                }
-                String next = queue.poll();
-                assert queue.size()==n-1 : "QUEUE HAS THE WRONG SIZE!";
-                INDArray toAvg = Nd4j.create(queue.size(), Constants.VECTOR_LENGTH);
-                AtomicInteger i = new AtomicInteger(0);
-                double freq = 0.0;
-                while(!queue.isEmpty()) {
-                    Pair<Float,INDArray> word = vocab.get(queue.peek());
-                    freq+=word.getFirst();
-                    toAvg.putRow(i.getAndIncrement(),word.getSecond());
-                    next=queue.poll()+" "+next;
-                }
-                double weight = Math.log(1.0d+(new Double(n)/(nullDistance+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq);
-                if(nGramCounts.containsKey(next)) {
-                    nGramCounts.get(next).getAndAdd(weight);
-                } else {
-                    nGramCounts.put(next, new AtomicDouble(weight));
-                }
-                if(nullDistance>0)nullDistance--;
+
+            INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
+            AtomicInteger cnt = new AtomicInteger(0);
+            AtomicDouble freq = new AtomicDouble(0.0);
+            sub.forEach(s->{
+                Pair<Float,INDArray> word = vocab.get(s);
+                freq.getAndAdd(word.getFirst());
+                toAvg.putRow(cnt.getAndIncrement(),word.getSecond());
+            });
+            String next = String.join(" ",sub);
+            double weight = Math.log(1.0d+(new Double(n)/(currentNullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
+            if(nGramCounts.containsKey(next)) {
+                nGramCounts.get(next).getAndAdd(weight);
+            } else {
+                nGramCounts.put(next, new AtomicDouble(weight));
             }
         }
     }
