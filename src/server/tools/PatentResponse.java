@@ -21,7 +21,7 @@ public class PatentResponse extends ServerResponse {
         // List
         Tag keywords = null;
         if (keyWordList != null) {
-            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3("Predicted Key Phrases"))), tr().with(th("Word"), th("Score")));
+            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3("Predicted Key Phrases"))), tr().with(th("Word").attr("style", "text-align: left;"), th("Score").attr("style", "text-align: left;")));
             keywords = table().with(headers).with(
                     keyWordList.stream().map(k -> tr().with(td(k.getFirst()), td(k.getSecond().toString()))).collect(Collectors.toList())
             );
@@ -40,9 +40,9 @@ public class PatentResponse extends ServerResponse {
                                                     label("Distributed Average Similarity: " + patentList.getAvgSimilarity())
                                             )),
                                             tr().with(
-                                                    th("Patent #"),
-                                                    th("Cosine Similarity"),
-                                                    th("Invention Title")
+                                                    th("Patent #").attr("style", "text-align: left;"),
+                                                    th("Cosine Similarity").attr("style", "text-align: left;"),
+                                                    th("Invention Title").attr("style", "text-align: left;")
                                             )
                                     ),
                                     tbody().with(
