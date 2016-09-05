@@ -124,6 +124,7 @@ public class SimilarPatentFinder {
     public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent) throws SQLException {
         if(patentWordsCache.containsKey(patent)) return predictKeywords(patentWordsCache.get(patent),limit,vocab);
         // otherwise, if not cached
+        new Emailer("Getting base vector...");
         ResultSet rs = Database.getBaseVectorFor(patent);
         if(rs.next()) {
             List<String> tokens = new ArrayList<>();
@@ -131,6 +132,7 @@ public class SimilarPatentFinder {
             tokens.addAll(tf.create(rs.getString(1)).getTokens());
             tokens.addAll(tf.create(rs.getString(1)).getTokens());
             patentWordsCache.put(patent, tokens);
+            new Emailer("Returning base vector!");
             return predictKeywords(tokens,limit,vocab);
         } else {
             return null;
@@ -188,8 +190,8 @@ public class SimilarPatentFinder {
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
+        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         new Emailer("Processing n grams");
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
