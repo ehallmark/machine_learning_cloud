@@ -189,8 +189,7 @@ public class SimilarPatentFinder {
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
-        new Emailer("Starting n grams");
-        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
+        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
         new Emailer("Processing n grams");
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
