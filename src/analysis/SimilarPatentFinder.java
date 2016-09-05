@@ -144,7 +144,7 @@ public class SimilarPatentFinder {
                 nullDistance++;
                 continue;
             }
-            if(nullDistance>3) {
+            if(nullDistance>n) {
                 queue.clear();
                 nullDistance=0;
             }
@@ -153,6 +153,7 @@ public class SimilarPatentFinder {
             if(queue.size()==n) {
                 if(((int)queue.stream().map(s->stemMe.stem(s)).distinct().count())!=queue.size()) {
                     queue.remove();
+                    if(nullDistance>0)nullDistance--;
                     continue;
                 }
                 String next = queue.poll();
@@ -165,6 +166,7 @@ public class SimilarPatentFinder {
                 } else {
                     nGramCounts.put(next, new AtomicDouble(Math.log(1.0d+(new Double(n)/(nullDistance+1)))));
                 }
+                if(nullDistance>0)nullDistance--;
             }
         }
     }
