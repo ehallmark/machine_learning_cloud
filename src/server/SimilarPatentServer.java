@@ -452,7 +452,7 @@ public class SimilarPatentServer {
                                                         label("Patent 2"),br(),input().withType("text").withName("name2"),br(),
                                                         br(),
                                                         button("Search").withId(SELECT_ANGLE_BETWEEN_PATENTS+"-button").withType("submit")
-                                                ),br(),
+                                                ),
                                                 h3("Predict Keywords and Key Phrases"),
                                                 form().withId(SELECT_KEYWORDS).with(
                                                         label("Patent"),br(),input().withType("text").withName("patent"),br(),

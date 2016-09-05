@@ -29,7 +29,7 @@ public class PatentResponse extends ServerResponse {
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
         List<Tag> patents = null;
         if (patentLists != null) {
-            patentLists.stream().sorted().map(patentList ->
+            patents = patentLists.stream().sorted().map(patentList ->
                     div().with(
                             table().with(
                                     thead().with(
@@ -57,8 +57,8 @@ public class PatentResponse extends ServerResponse {
         }
         return div().with(
                 div().with(label(Double.toString(time)+" seconds to complete.")),br(),
-                keywords==null?br():keywords,br(),
-                patents==null?br():div().with(patents)
+                (keywords==null?br():keywords),br(),
+                (patents==null?br():div().with(patents))
         );
 
     }
