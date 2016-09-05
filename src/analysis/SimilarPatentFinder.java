@@ -1,5 +1,6 @@
 package analysis;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -130,7 +131,7 @@ public class SimilarPatentFinder {
         }
     }
 
-    private static void processNGrams(List<String> tokens, Map<String,AtomicInteger> nGramCounts, int n) {
+    private static void processNGrams(List<String> tokens, Map<String,AtomicDouble> nGramCounts, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Iterator<String> tokenIter = tokens.iterator();
@@ -160,16 +161,16 @@ public class SimilarPatentFinder {
                     next=queue.poll()+" "+next;
                 }
                 if(nGramCounts.containsKey(next)) {
-                    nGramCounts.get(next).getAndIncrement();
+                    nGramCounts.get(next).getAndAdd(Math.log(1.0d+(new Double(n)/(nullDistance+1))));
                 } else {
-                    nGramCounts.put(next, new AtomicInteger(1));
+                    nGramCounts.put(next, new AtomicDouble(Math.log(1.0d+(new Double(n)/(nullDistance+1)))));
                 }
             }
         }
     }
 
     public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        Map<String,AtomicInteger> nGramCounts = new HashMap<>();
+        Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         List<String> tokens = tf.create(text).getTokens().stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,nGramCounts,i);
