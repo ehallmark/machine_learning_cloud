@@ -25,6 +25,22 @@ public class BuildGoodVocabulary {
     }
 
     public static void main(String[] args) throws Exception {
+        Map<String,AtomicInteger> legalTerms = new HashMap<>();
+        BufferedReader br = new BufferedReader(new FileReader(new File(Constants.LEGA_TERMS_FILE)));
+        String line;
+        AtomicLong legalTermsCount = new AtomicLong(0);
+        while((line=br.readLine())!=null) {
+            tokenizerFactory.create(line).getTokens().forEach(token->{
+                legalTermsCount.getAndIncrement();
+                if(legalTerms.containsKey(token)) {
+                    legalTerms.get(token).getAndIncrement();
+                } else {
+                    legalTerms.put(token,new AtomicInteger(1));
+                }
+            });
+        }
+        br.close();
+
         Database.setupSeedConn();
 
         File vocabFile = new File(Constants.BETTER_VOCAB_MAP_FILE);
@@ -61,26 +77,33 @@ public class BuildGoodVocabulary {
 
         System.out.println("Reading old map...");
         Map<String,Float> oldMap = BuildVocabulary.readVocabMap(new File(Constants.VOCAB_MAP_FILE));
-        Map<String,Float> newMap = new HashMap<>();
-
+        Constants.STOP_WORD_SET.forEach(stopWord->{
+            oldMap.remove(stopWord);
+        });
         System.out.println("Updating old map...");
 
         for(Map.Entry<String,AtomicInteger> e : vocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
-                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(new Double(totalClassCount.get())/e.getValue().get())));
+                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(new Double(totalClassCount.get())/e.getValue().get())));
             }
         }
 
         for(Map.Entry<String,AtomicInteger> e : subClassVocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
-                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(1+Math.log(new Double(totalSubClassCount.get())/e.getValue().get()))));
+                oldMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(new Double(totalSubClassCount.get())/e.getValue().get())));
+            }
+        }
+
+        for(Map.Entry<String,AtomicInteger> e : legalTerms.entrySet()) {
+            if(oldMap.containsKey(e.getKey())) {
+                oldMap.put(e.getKey(),(float)(oldMap.get(e.getKey())/Math.log(Math.E+e.getValue().get())));
             }
         }
 
         System.out.println("Writing new map...");
 
         try {
-            writeVocabMap(newMap, vocabFile);
+            writeVocabMap(oldMap, vocabFile);
             System.out.println("Vocabulary written to file...");
         } catch(Exception e) {
             e.printStackTrace();
