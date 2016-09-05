@@ -6,6 +6,7 @@ package tools;
  * This is a binary min-heap implementation of the priority queue ADT.
  */
 import analysis.Patent;
+import analysis.WordFrequencyPair;
 
 import java.util.Arrays;
 
@@ -16,6 +17,7 @@ public class MinHeap<T extends Comparable<T>>  {
     public static MinHeap<Patent> setupPatentHeap(int capacity) {
         return new MinHeap<>(capacity);
     }
+    public static MinHeap<WordFrequencyPair<String,Float>> setupWordFrequencyHeap(int capacity) { return new MinHeap<>(capacity); }
     /**
      * Constructs a new BinaryHeap.
      */

@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import server.tools.AbstractPatent;
 import tools.VectorHelper;
@@ -34,6 +35,7 @@ public class SimilarPatentFinder {
     protected String name;
     private static TokenizerFactory tf = new DefaultTokenizerFactory();
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
     static {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -122,10 +124,17 @@ public class SimilarPatentFinder {
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
-    public static List<Pair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent) throws SQLException {
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent) throws SQLException {
+        if(patentWordsCache.containsKey(patent)) return predictKeywords(patentWordsCache.get(patent),limit,vocab);
+        // otherwise, if not cached
         ResultSet rs = Database.getBaseVectorFor(patent);
         if(rs.next()) {
-            return predictKeywords(rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3),limit,vocab);
+            List<String> tokens = new ArrayList<>();
+            tokens.addAll(tf.create(rs.getString(1)).getTokens());
+            tokens.addAll(tf.create(rs.getString(1)).getTokens());
+            tokens.addAll(tf.create(rs.getString(1)).getTokens());
+            patentWordsCache.put(patent, tokens);
+            return predictKeywords(tokens,limit,vocab);
         } else {
             return null;
         }
@@ -171,20 +180,34 @@ public class SimilarPatentFinder {
         }
     }
 
-    public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+        return predictKeywords(tf.create(text).getTokens(),limit,vocab);
+    }
+
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        List<String> tokens = tf.create(text).getTokens().stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
+        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,nGramCounts,i);
         }
-        List<Pair<String,Float>> list = nGramCounts.entrySet().stream().map(e->{
+        MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
+        Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
             String[] words = e.getKey().split(" ");
-            double avgFreq = Arrays.asList(words).stream().collect(Collectors.averagingDouble(s->vocab.get(s).getFirst()));
-            Pair<String,Float> newPair = new Pair<>(e.getKey(),(float)(avgFreq*words.length*Math.log(e.getValue().get())));
+            double sumFreq = Arrays.asList(words).stream().collect(Collectors.summingDouble(s->vocab.get(s).getFirst()));
+            WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)(sumFreq*Math.log(e.getValue().get())));
             return newPair;
-        }).sorted((o1,o2)->o2.getSecond().compareTo(o1.getSecond())).collect(Collectors.toList());
-        list = list.subList(0,Math.min(limit,list.size()));
-        return list;
+        });
+
+        stream.forEach(s->{
+            heap.add(s);
+        });
+
+        List<WordFrequencyPair<String,Float>> results = new ArrayList<>(limit);
+        while(!heap.isEmpty()) {
+            WordFrequencyPair<String,Float> pair = heap.remove();
+            results.add(0, pair);
+        }
+        return results;
     }
 
     public List<Patent> getPatentList() {
@@ -302,17 +325,6 @@ public class SimilarPatentFinder {
             l.getPatents().forEach(p->p.flipSimilarity());
         }
         return toReturn;
-    }
-
-    // returns empty if no results found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, double threshold, int limit,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
-        return findOppositePatentsTo(patentNumber, getVectorFromDB(patentNumber,vocab), null, threshold, limit);
-    }
-
-
-    // returns empty if no results found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, double threshold, int limit,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, getVectorFromDB(patentNumber,vocab), null, threshold, limit);
     }
 
     private static INDArray getVectorFromDB(String patentNumber,INDArray eigenVectors,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {

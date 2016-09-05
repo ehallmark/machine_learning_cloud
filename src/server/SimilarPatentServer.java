@@ -1,6 +1,7 @@
 package server;
 
 import analysis.SimilarPatentFinder;
+import analysis.WordFrequencyPair;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
@@ -290,7 +291,6 @@ public class SimilarPatentServer {
                     e.printStackTrace();
                 }
             });
-            int defaultVocabLimit = 10;
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
             else response=new PatentResponse(patents,findDissimilar,null,new Double(startTime-System.currentTimeMillis())/1000);
@@ -312,9 +312,8 @@ public class SimilarPatentServer {
             String pubDocNumber = req.queryParams("patent");
             String text = req.queryParams("text");
             if((pubDocNumber == null || pubDocNumber.trim().length()==0) && (text==null||text.trim().length()==0)) return new Gson().toJson(new NoPatentProvided());
-            SimilarPatentFinder currentPatentFinder = pubDocNumber!=null&&pubDocNumber.trim().length()>0 ? new SimilarPatentFinder(pubDocNumber,vocab) : new SimilarPatentFinder("Custom Text", new WordVectorizer(vocab).getVector(text));
             int limit = extractLimit(req);
-            List<Pair<String,Float>> patents = pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,limit,vocab):SimilarPatentFinder.predictKeywords(limit,vocab,pubDocNumber);
+            List<WordFrequencyPair<String,Float>> patents = pubDocNumber==null||pubDocNumber.trim().length()==0?SimilarPatentFinder.predictKeywords(text,limit,vocab):SimilarPatentFinder.predictKeywords(limit,vocab,pubDocNumber);
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
             else response=new PatentResponse(null,false,patents,new Double(startTime-System.currentTimeMillis())/1000);

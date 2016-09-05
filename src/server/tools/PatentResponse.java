@@ -1,7 +1,7 @@
 package server.tools;
 
+import analysis.WordFrequencyPair;
 import j2html.tags.Tag;
-import org.deeplearning4j.berkeley.Pair;
 import tools.PatentList;
 import static j2html.TagCreator.*;
 
@@ -13,11 +13,11 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<Pair<String,Float>> keyWordList, double timeToComplete) {
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<WordFrequencyPair<String,Float>> keyWordList, double timeToComplete) {
         super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordList, timeToComplete).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<Pair<String,Float>> keyWordList, double time) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<WordFrequencyPair<String,Float>> keyWordList, double time) {
         // List
         Tag keywords = null;
         if (keyWordList != null) {
