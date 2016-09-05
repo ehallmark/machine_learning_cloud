@@ -171,11 +171,14 @@ public class SimilarPatentFinder {
                 assert queue.size()==n-1 : "QUEUE HAS THE WRONG SIZE!";
                 INDArray toAvg = Nd4j.create(queue.size(), Constants.VECTOR_LENGTH);
                 AtomicInteger i = new AtomicInteger(0);
+                double freq = 0.0;
                 while(!queue.isEmpty()) {
-                    toAvg.putRow(i.getAndIncrement(),vocab.get(queue.peek()).getSecond());
+                    Pair<Float,INDArray> word = vocab.get(queue.peek());
+                    freq+=word.getFirst();
+                    toAvg.putRow(i.getAndIncrement(),word.getSecond());
                     next=queue.poll()+" "+next;
                 }
-                double weight = Math.log(1.0d+(new Double(n)/(nullDistance+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)));
+                double weight = Math.log(1.0d+(new Double(n)/(nullDistance+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq);
                 if(nGramCounts.containsKey(next)) {
                     nGramCounts.get(next).getAndAdd(weight);
                 } else {
@@ -203,16 +206,12 @@ public class SimilarPatentFinder {
         }
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
-            String[] words = e.getKey().split(" ");
-            double sumFreq = Arrays.asList(words).stream().collect(Collectors.summingDouble(s->vocab.get(s).getFirst()));
-            WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)(sumFreq*Math.log(e.getValue().get())));
+            WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)e.getValue().get());
             return newPair;
         });
-
         stream.forEach(s->{
             heap.add(s);
         });
-
         List<WordFrequencyPair<String,Float>> results = new ArrayList<>(limit);
         while(!heap.isEmpty()) {
             WordFrequencyPair<String,Float> pair = heap.remove();
