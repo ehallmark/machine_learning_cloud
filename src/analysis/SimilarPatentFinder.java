@@ -10,9 +10,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.*;
-import tools.GetTokensThread;
-import tools.MinHeap;
-import tools.PatentList;
+import tools.*;
 
 import java.io.*;
 import java.sql.ResultSet;
@@ -24,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import server.tools.AbstractPatent;
-import tools.VectorHelper;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -193,9 +190,12 @@ public class SimilarPatentFinder {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
+        new Emailer("Processing n grams");
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
         }
+        new Emailer("Processed n grams!");
+
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
             WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)e.getValue().get());
@@ -204,11 +204,15 @@ public class SimilarPatentFinder {
         stream.forEach(s->{
             heap.add(s);
         });
+        new Emailer("Added n grams to heap!");
+
         List<WordFrequencyPair<String,Float>> results = new ArrayList<>(limit);
         while(!heap.isEmpty()) {
             WordFrequencyPair<String,Float> pair = heap.remove();
             results.add(0, pair);
         }
+        new Emailer("Returning n grams!");
+
         return results;
     }
 

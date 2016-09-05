@@ -315,7 +315,6 @@ public class SimilarPatentServer {
                 if ((pubDocNumber == null || pubDocNumber.trim().length() == 0) && (text == null || text.trim().length() == 0))
                     return new Gson().toJson(new NoPatentProvided());
                 int limit = extractLimit(req);
-                new Emailer("Predicting keywords now!");
                 List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber);
                 if (patents == null) response = new PatentNotFound(pubDocNumber);
                 else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
