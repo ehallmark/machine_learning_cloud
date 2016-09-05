@@ -1,10 +1,6 @@
 \connect patentdb
 
-DROP TABLE IF EXISTS candidate_sets;
-CREATE TABLE candidate_sets (
-    name varchar(255) not null,
-    hidden boolean not null default(false),
-    id serial
+DROP TABLE IF EXISTS candidate_set_groups;
+CREATE TABLE candidate_set_groups (
+    group_prefix varchar(255) primary key
 );
-
-CREATE UNIQUE INDEX candidate_sets_name_idx ON candidate_sets (name);
