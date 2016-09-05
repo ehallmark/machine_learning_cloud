@@ -190,7 +190,6 @@ public class SimilarPatentFinder {
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
         }
-        new Emailer("Processed n grams!");
 
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
@@ -200,14 +199,12 @@ public class SimilarPatentFinder {
         stream.forEach(s->{
             heap.add(s);
         });
-        new Emailer("Added n grams to heap!");
 
         List<WordFrequencyPair<String,Float>> results = new ArrayList<>(limit);
         while(!heap.isEmpty()) {
             WordFrequencyPair<String,Float> pair = heap.remove();
             results.add(0, pair);
         }
-        new Emailer("Returning n grams!");
 
         return results;
     }
