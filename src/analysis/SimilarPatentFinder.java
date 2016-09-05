@@ -140,7 +140,9 @@ public class SimilarPatentFinder {
         }
     }
 
-    private static void processNGrams(List<String> tokens, Map<String,AtomicDouble> nGramCounts, int n) {
+
+
+    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Iterator<String> tokenIter = tokens.iterator();
@@ -167,13 +169,17 @@ public class SimilarPatentFinder {
                 }
                 String next = queue.poll();
                 assert queue.size()==n-1 : "QUEUE HAS THE WRONG SIZE!";
+                INDArray toAvg = Nd4j.create(queue.size(), Constants.VECTOR_LENGTH);
+                AtomicInteger i = new AtomicInteger(0);
                 while(!queue.isEmpty()) {
+                    toAvg.putRow(i.getAndIncrement(),vocab.get(queue.peek()).getSecond());
                     next=queue.poll()+" "+next;
                 }
+                double weight = Math.log(1.0d+(new Double(n)/(nullDistance+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)));
                 if(nGramCounts.containsKey(next)) {
-                    nGramCounts.get(next).getAndAdd(Math.log(1.0d+(new Double(n)/(nullDistance+1))));
+                    nGramCounts.get(next).getAndAdd(weight);
                 } else {
-                    nGramCounts.put(next, new AtomicDouble(Math.log(1.0d+(new Double(n)/(nullDistance+1)))));
+                    nGramCounts.put(next, new AtomicDouble(weight));
                 }
                 if(nullDistance>0)nullDistance--;
             }
@@ -185,10 +191,15 @@ public class SimilarPatentFinder {
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab) {
+        return predictKeywords(tokens,limit,vocab,VectorHelper.TFIDFcentroidVector(vocab,tokens));
+    }
+
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
+        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         for(int i = 1; i <= 3; i++) {
-            processNGrams(tokens,nGramCounts,i);
+            processNGrams(tokens,docVector,nGramCounts,vocab,i);
         }
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
