@@ -67,13 +67,13 @@ public class BuildGoodVocabulary {
 
         for(Map.Entry<String,AtomicInteger> e : vocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
-                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalClassCount.get())/e.getValue().get())));
+                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(new Double(totalClassCount.get())/e.getValue().get())));
             }
         }
 
         for(Map.Entry<String,AtomicInteger> e : subClassVocab.entrySet()) {
             if(oldMap.containsKey(e.getKey())&&!Constants.STOP_WORD_SET.contains(e.getKey())) {
-                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())*Math.log(new Double(totalSubClassCount.get())/e.getValue().get())));
+                newMap.put(e.getKey(), new Float(oldMap.get(e.getKey())+Math.log(1+Math.log(new Double(totalSubClassCount.get())/e.getValue().get()))));
             }
         }
 
