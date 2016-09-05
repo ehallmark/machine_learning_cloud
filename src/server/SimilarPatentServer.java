@@ -422,7 +422,7 @@ public class SimilarPatentServer {
     private static Tag selectCandidateSetDropdown(String label, String name, boolean multiple) {
         candidateSetMap = new HashMap<>();
         groupedCandidateSetMap = new HashMap<>();
-        candidateSetMap.put(-1, new Pair<>(false,"**ALL**")); // adds the default candidate set
+        candidateSetMap.put(-1, new Pair<>(false,"**ALMOST EVERY PATENT**")); // adds the default candidate set
         try {
             importCandidateSetFromDB();
         } catch(SQLException sql ) {

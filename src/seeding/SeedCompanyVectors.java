@@ -118,10 +118,8 @@ public class SeedCompanyVectors {
         // ETSI PATENTS!
         createCandidateSetPost("ETSI (all)", null, String.join(" ",Constants.ETSI_PATENT_LIST));
 
-
-        String ETSI_PREFIX = "ETSI -";
-        String COMPDB_PREFIX = "CompDB -";
         {
+            String ETSI_PREFIX = "ETSI -";
             createCandidateGroupPost(ETSI_PREFIX);
             Map<String, List<String>> ETSIMap = GetEtsiPatentsList.getETSIPatentMap();
             for (Map.Entry<String, List<String>> e : ETSIMap.entrySet()) {
@@ -130,6 +128,7 @@ public class SeedCompanyVectors {
         }
 
         {
+            String COMPDB_PREFIX = "CompDB -";
             createCandidateGroupPost(COMPDB_PREFIX);
             Map<String, List<String>> compDBMap = Database.getCompDBMap();
             for (Map.Entry<String, List<String>> e : compDBMap.entrySet()) {
