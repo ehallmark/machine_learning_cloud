@@ -4,6 +4,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.eclipse.jetty.util.ArrayQueue;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -130,23 +131,46 @@ public class SimilarPatentFinder {
     }
 
     private static void processNGrams(List<String> tokens, Map<String,AtomicInteger> nGramCounts, int n) {
+        assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
-        for(int i = 0; i <tokens.size()-n; i+=n) {
-            List<String> chunk = tokens.subList(i,i+n);
-            // don't allow chunk to have duplicate elements
-            if(((int)chunk.stream().map(s->stemMe.stem(s)).distinct().count())!=chunk.size()) continue;
-            String singleLine = String.join(" ",chunk);
-            if(nGramCounts.containsKey(singleLine)) {
-                nGramCounts.get(singleLine).getAndIncrement();
-            } else {
-                nGramCounts.put(singleLine, new AtomicInteger(1));
+        Iterator<String> tokenIter = tokens.iterator();
+        Queue<String> queue = new ArrayQueue<>(n);
+        int nullDistance = 0;
+        while(tokenIter.hasNext()) {
+            String tok = tokenIter.next();
+            if(tok==null) {
+                // handle nulls
+                nullDistance++;
+                continue;
+            }
+            if(nullDistance>3) {
+                queue.clear();
+                nullDistance=0;
+            }
+            // not null
+            queue.add(tok);
+            if(queue.size()==n) {
+                if(((int)queue.stream().map(s->stemMe.stem(s)).distinct().count())!=queue.size()) {
+                    queue.remove();
+                    continue;
+                }
+                String next = queue.poll();
+                assert queue.size()==n-1 : "QUEUE HAS THE WRONG SIZE!";
+                while(!queue.isEmpty()) {
+                    next=queue.poll()+" "+next;
+                }
+                if(nGramCounts.containsKey(next)) {
+                    nGramCounts.get(next).getAndIncrement();
+                } else {
+                    nGramCounts.put(next, new AtomicInteger(1));
+                }
             }
         }
     }
 
     public static List<Pair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
         Map<String,AtomicInteger> nGramCounts = new HashMap<>();
-        List<String> tokens = tf.create(text).getTokens().stream().filter(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)).collect(Collectors.toList());
+        List<String> tokens = tf.create(text).getTokens().stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         for(int i = 1; i <= 3; i++) {
             processNGrams(tokens,nGramCounts,i);
         }
