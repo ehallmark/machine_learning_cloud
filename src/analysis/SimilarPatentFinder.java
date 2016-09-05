@@ -144,17 +144,15 @@ public class SimilarPatentFinder {
         Stemmer stemMe = new Stemmer();
         List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         int tIdx = 0;
-        int nullCount = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
             List<String> sub = cleanToks.subList(i,i+n);
+            int nullCount = 0;
             for(int j = tIdx; j < tIdx+n; j++) {
-                if(tokens.get(tIdx)==null) {
+                if(tokens.get(j)==null) {
                     nullCount++;
                 }
             }
-            int currentNullCount = nullCount;
-            tIdx+=1+nullCount;
-            nullCount=0;
+            tIdx+=1+(tokens.get(tIdx)==null?1:0);
             if(((int)sub.stream().map(s->stemMe.stem(s)).distinct().count())!=sub.size()) {
                 continue;
             }
@@ -168,7 +166,7 @@ public class SimilarPatentFinder {
                 toAvg.putRow(cnt.getAndIncrement(),word.getSecond());
             });
             String next = String.join(" ",sub);
-            double weight = Math.log(1.0d+(new Double(n)/(currentNullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
+            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
