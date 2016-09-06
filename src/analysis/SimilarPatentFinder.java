@@ -146,6 +146,7 @@ public class SimilarPatentFinder {
     private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
+        Set<String> newToks = new HashSet<>();
         List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         int tIdx = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
@@ -160,7 +161,6 @@ public class SimilarPatentFinder {
             if(((int)sub.stream().map(s->stemMe.stem(s)).distinct().count())!=sub.size()) {
                 continue;
             }
-
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
             AtomicInteger cnt = new AtomicInteger(0);
             AtomicDouble freq = new AtomicDouble(0.0);
@@ -170,11 +170,19 @@ public class SimilarPatentFinder {
                 toAvg.putRow(cnt.getAndIncrement(),word.getSecond());
             });
             String next = String.join(" ",sub);
+            newToks.add(next);
             double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*freq.get();
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
                 nGramCounts.put(next, new AtomicDouble(weight));
+            }
+        }
+        for(String newTok : newToks) {
+            for(Map.Entry<String,AtomicDouble> e : nGramCounts.entrySet()) {
+                if(e.getKey().startsWith(newTok)&&e.getValue().get()>=nGramCounts.get(newTok).get()) {
+                    nGramCounts.get(newTok).set(0.0);
+                }
             }
         }
     }
@@ -191,7 +199,7 @@ public class SimilarPatentFinder {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        for(int i = 1; i <= 5; i++) {
+        for(int i = 5; i >= 1; i--) {
             processNGrams(tokens,docVector,nGramCounts,vocab,i);
         }
 
