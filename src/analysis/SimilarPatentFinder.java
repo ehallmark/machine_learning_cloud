@@ -33,6 +33,7 @@ public class SimilarPatentFinder {
     private static TokenizerFactory tf = new DefaultTokenizerFactory();
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,INDArray> globalCandidateAvgCache = Collections.synchronizedMap(new HashMap<>());
     static {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -250,12 +251,19 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public static INDArray computeAvg(List<Patent> patentList) {
+    public static INDArray computeAvg(List<Patent> patentList, String candidateSetName) {
+        if(candidateSetName!=null&&globalCandidateAvgCache.containsKey(candidateSetName)) {
+            return globalCandidateAvgCache.get(candidateSetName);
+        }
         INDArray thisAvg = Nd4j.create(patentList.size(),Constants.VECTOR_LENGTH);
         for(int i = 0; i < patentList.size(); i++) {
             thisAvg.putRow(i, patentList.get(i).getVector());
         }
-        return thisAvg.mean(0);
+        INDArray avg = thisAvg.mean(0);
+        if(candidateSetName!=null) {
+            globalCandidateAvgCache.put(candidateSetName,avg);
+        }
+        return avg;
     }
 
     public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar) throws SQLException {
@@ -274,7 +282,7 @@ public class SimilarPatentFinder {
         // Find the highest (pairwise) assets
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
-        INDArray otherAvg = computeAvg(other.patentList);
+        INDArray otherAvg = computeAvg(other.patentList,other.getName());
         Set<String> dontMatch = other.name.equals(this.name) ? null : other.patentList.stream().map(p->p.getName()).collect(Collectors.toSet());
         try {
             if(findDissimilar) lists.addAll(findOppositePatentsTo(other.name, otherAvg, dontMatch, threshold, limit));
@@ -384,7 +392,7 @@ public class SimilarPatentFinder {
             }
         }
         //double avgSim = cnt.get() > 0 ? total.get()/cnt.get() : 0.0;
-        PatentList results = new PatentList(resultList,name1,name2,Transforms.cosineSim(computeAvg(patentList),baseVector));
+        PatentList results = new PatentList(resultList,name1,name2,Transforms.cosineSim(computeAvg(patentList,name1),baseVector));
         return results;
     }
 
