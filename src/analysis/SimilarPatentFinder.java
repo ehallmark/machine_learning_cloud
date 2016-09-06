@@ -176,7 +176,9 @@ public class SimilarPatentFinder {
             if(newToks.containsKey(stemmedNext)) {
                 newToks.get(stemmedNext).add(next);
             } else {
-                newToks.put(stemmedNext, Sets.newHashSet(next));
+                Set<String> hash = new HashSet<>();
+                hash.add(next);
+                newToks.put(stemmedNext, hash);
             }
             double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
             if(nGramCounts.containsKey(next)) {
@@ -199,7 +201,7 @@ public class SimilarPatentFinder {
                     }
                 } else {
                     // remove all but the best ones and set equal to total stemmed count
-                    List<String> data = newTok.getValue().stream().map(s->new WordFrequencyPair<>(s,nGramCounts.get(s).get())).sorted().map(p->p.getFirst()).collect(Collectors.toList());
+                    List<String> data = newTok.getValue().stream().filter(s->nGramCounts.containsKey(s)).map(s->new WordFrequencyPair<>(s,nGramCounts.get(s).get())).sorted().map(p->p.getFirst()).collect(Collectors.toList());
                     for(int i = 0; i < data.size()-1; i++) {
                         String toRemove = data.get(i);
                         if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
