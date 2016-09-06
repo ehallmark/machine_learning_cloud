@@ -37,7 +37,7 @@ import static spark.Spark.post;
 public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     private static boolean failed = false;
-    private static int DEFAULT_LIMIT = 25;
+    private static int DEFAULT_LIMIT = 10;
     private static final String SELECT_CANDIDATE_FORM_ID = "select-candidate-form";
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
