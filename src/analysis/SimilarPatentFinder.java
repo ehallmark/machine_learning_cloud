@@ -1,5 +1,6 @@
 package analysis;
 
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
@@ -147,7 +148,7 @@ public class SimilarPatentFinder {
     private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,AtomicDouble> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
-        Map<String,String> newToks = new HashMap<>();
+        Map<String,Set<String>> newToks = new HashMap<>();
         List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         int tIdx = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
@@ -172,20 +173,29 @@ public class SimilarPatentFinder {
             });
             String next = String.join(" ",sub);
             String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
-            newToks.put(next,stemmedNext);
-            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),2);
+            if(newToks.containsKey(stemmedNext)) {
+                newToks.get(stemmedNext).add(next);
+            } else {
+                newToks.put(stemmedNext, Sets.newHashSet(next));
+            }
+            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),1.5);
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
-                stemmedCounts.get(stemmedNext).getAndAdd(weight);
             } else {
                 nGramCounts.put(next, new AtomicDouble(weight));
+            }
+            if(stemmedCounts.containsKey(stemmedNext)) {
+                stemmedCounts.get(stemmedNext).getAndAdd(weight);
+            } else {
                 stemmedCounts.put(stemmedNext, new AtomicDouble(weight));
             }
         }
         for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
-            for(Map.Entry<String,String> newTok : newToks.entrySet()) {
-                if((e.getKey().startsWith(newTok.getValue())||e.getKey().endsWith(newTok.getValue()))&&e.getKey().length()>newTok.getValue().length()&&e.getValue().get()>=stemmedCounts.get(newTok.getValue()).get()) {
-                    nGramCounts.get(newTok.getKey()).set(0.0);
+            for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
+                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemmedCounts.get(newTok.getValue()).get()) {
+                    for(String toRemove : newTok.getValue()) {
+                        nGramCounts.get(toRemove).set(0.0);
+                    }
                 }
             }
         }
