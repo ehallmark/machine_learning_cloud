@@ -195,13 +195,15 @@ public class SimilarPatentFinder {
                 double stemValue = stemmedCounts.get(newTok.getKey()).get();
                 if(e.getKey().contains(newTok.getKey())&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemValue) {
                     for(String toRemove : newTok.getValue()) {
-                        nGramCounts.remove(toRemove);
+                        if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
                     }
                 } else {
                     // remove all but the best ones and set equal to total stemmed count
                     List<String> data = newTok.getValue().stream().map(s->new WordFrequencyPair<>(s,nGramCounts.get(s).get())).sorted().map(p->p.getFirst()).collect(Collectors.toList());
                     for(int i = 0; i < data.size()-1; i++) {
-                        nGramCounts.remove(data.get(i));
+                        String toRemove = data.get(i);
+                        if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
+                        nGramCounts.remove(toRemove);
                     }
                     nGramCounts.get(data.get(data.size()-1)).set(stemValue);
                 }
