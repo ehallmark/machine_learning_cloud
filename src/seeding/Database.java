@@ -15,7 +15,7 @@ public class Database {
 	private static PreparedStatement insertStatement;
 	private static PreparedStatement createTokensStatement;
 	private static final String addOrUpdateWord = "INSERT INTO patent_words (word,count) VALUES (?,1) ON CONFLICT (word) DO UPDATE SET (count)=(patent_words.count+1) WHERE patent_words.word=?";
-	private static final String valuablePatentsQuery = "SELECT pub_doc_number from patent_grant where pub_date > to_char(now()::date, 'YYYYMMDD')::int-200000";
+	private static final String valuablePatentsQuery = "SELECT pub_doc_number from patent_grant where pub_date > to_char(now()::date, 'YYYYMMDD')::int-150000";
 	private static final String patentVectorStatement = "SELECT pub_doc_number, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number=any(?) AND description IS NOT NULL";
 	private static final String claimVectorStatement = "SELECT pub_doc_number||'_claim_'||number::text, claim_text FROM patent_grant_claim WHERE pub_doc_number=any(?) AND claim_text IS NOT NULL and parent_claim_id is NULL";
 	private static final String patentVectorDataByPubDocNumbers = "SELECT pub_doc_number, pub_date, invention_title, abstract, substring(description FROM 1 FOR ?) FROM patent_grant WHERE pub_doc_number = ANY(?) AND (abstract is NOT NULL OR description IS NOT NULL OR invention_title IS NOT NULL)";
