@@ -481,7 +481,7 @@ public class Database {
 	}
 
 
-	private static ResultSet getValuablePatents() throws SQLException {
+	public static ResultSet getValuablePatents() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(valuablePatentsQuery);
 		ps.setFetchSize(10);
 		return ps.executeQuery();
@@ -489,7 +489,7 @@ public class Database {
 
 	public static List<String> getValuablePatentsToList() throws SQLException {
 		ResultSet rs = getValuablePatents();
-		List<String> patentList = new LinkedList<>();
+		List<String> patentList = new ArrayList<>();
 		while(rs.next()) {
 			patentList.add(rs.getString(1));
 		}

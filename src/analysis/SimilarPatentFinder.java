@@ -37,6 +37,10 @@ public class SimilarPatentFinder {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
 
+    public static Map<String,INDArray> getGlobalCache() {
+        return globalCache;
+    }
+
     //private Map<String, String> assigneeMap;
 
     public SimilarPatentFinder(Map<String,Pair<Float,INDArray>> vocab) throws SQLException, IOException, ClassNotFoundException {
@@ -213,7 +217,7 @@ public class SimilarPatentFinder {
         return patentList;
     }
 
-    private static INDArray handleResultSet(ResultSet rs, int offset, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+    public static INDArray handleResultSet(ResultSet rs, int offset, Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
         List<String> tokens = new ArrayList<>();
         String description = rs.getString(offset);
         RecursiveTask<List<String>> descTask = new GetTokensThread(tf,description);
