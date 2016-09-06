@@ -17,7 +17,7 @@ public class PatentList implements Serializable, Comparable<PatentList> {
     private String name1;
     private String name2;
     private double avgSimilarity;
-    public PatentList(List<AbstractPatent> patentList, String name1, String name2) {
+    public PatentList(List<AbstractPatent> patentList, String name1, String name2, double avgSim) {
         this.patents=patentList;
         this.name1=name1;
         this.name2=name2;
@@ -26,18 +26,7 @@ public class PatentList implements Serializable, Comparable<PatentList> {
         Collections.sort(patents);
         Collections.reverse(patents);
 
-        avgSimilarity = 0;
-        if(patentList.size()>0) {
-            double total = 0.0;
-            int i = 1;
-            for(AbstractPatent patent : patents) {
-                double multiplier = Math.log(1.0+(new Double(patents.size())/i));
-                total+=multiplier;
-                avgSimilarity+=(patent.getSimilarity()*multiplier);
-                i++;
-            }
-            avgSimilarity/=total;
-        }
+        this.avgSimilarity=avgSim;
     }
 
     public void flipAvgSimilarity() {
