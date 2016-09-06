@@ -193,7 +193,7 @@ public class SimilarPatentFinder {
         for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
             for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
                 double stemValue = stemmedCounts.get(newTok.getKey()).get();
-                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemValue) {
+                if(e.getKey().contains(newTok.getKey())&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemValue) {
                     for(String toRemove : newTok.getValue()) {
                         nGramCounts.remove(toRemove);
                     }
