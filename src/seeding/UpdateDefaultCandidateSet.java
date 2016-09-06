@@ -28,7 +28,7 @@ public class UpdateDefaultCandidateSet {
         Map<String,INDArray> cache = SimilarPatentFinder.getGlobalCache();
         ResultSet rs = Database.getValuablePatents();
         AtomicInteger cntr = new AtomicInteger(0);
-        final int chunkSize = 1000;
+        final int chunkSize = 10000;
         List<String> current = new ArrayList<>(chunkSize);
         while(rs.next()) {
             String name = rs.getString(1);
@@ -38,6 +38,7 @@ public class UpdateDefaultCandidateSet {
                     ResultSet inner = Database.selectPatentVectors(current);
                     int offset = 2; // Due to the pub_doc_number field
                     while (inner.next()) {
+                        System.out.println(cntr.getAndIncrement());
                         try {
                             INDArray array = SimilarPatentFinder.handleResultSet(inner, offset, vocab);
                             if (array != null) {
@@ -49,8 +50,9 @@ public class UpdateDefaultCandidateSet {
                     }
                     current.clear();
                 }
+            } else {
+                System.out.println(cntr.getAndIncrement());
             }
-            System.out.println(cntr.getAndIncrement());
         }
         if(current.size()>0) {
             ResultSet inner = Database.selectPatentVectors(current);
