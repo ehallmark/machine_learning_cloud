@@ -26,7 +26,7 @@ public class BuildGoodVocabulary {
 
     public static void main(String[] args) throws Exception {
         Map<String,AtomicInteger> legalTerms = new HashMap<>();
-        BufferedReader br = new BufferedReader(new FileReader(new File(Constants.LEGA_TERMS_FILE)));
+        BufferedReader br = new BufferedReader(new FileReader(new File(Constants.LEGAL_TERMS_FILE)));
         String line;
         AtomicLong legalTermsCount = new AtomicLong(0);
         while((line=br.readLine())!=null) {
