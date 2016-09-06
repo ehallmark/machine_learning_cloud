@@ -178,9 +178,9 @@ public class SimilarPatentFinder {
                 nGramCounts.put(next, new AtomicDouble(weight));
             }
         }
-        for(String newTok : newToks) {
-            for(Map.Entry<String,AtomicDouble> e : nGramCounts.entrySet()) {
-                if(e.getKey().startsWith(newTok)&&e.getKey().length()>newTok.length()&&e.getValue().get()>=nGramCounts.get(newTok).get()) {
+        for(Map.Entry<String,AtomicDouble> e : nGramCounts.entrySet()) {
+            for(String newTok : newToks) {
+                if((e.getKey().startsWith(newTok)||e.getKey().endsWith(newTok))&&e.getKey().length()>newTok.length()&&e.getValue().get()>=nGramCounts.get(newTok).get()) {
                     nGramCounts.get(newTok).set(0.0);
                 }
             }
