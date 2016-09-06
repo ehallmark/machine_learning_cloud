@@ -173,7 +173,7 @@ public class SimilarPatentFinder {
             String next = String.join(" ",sub);
             String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
             newToks.put(next,stemmedNext);
-            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*freq.get();
+            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),2);
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
                 stemmedCounts.get(stemmedNext).getAndAdd(weight);
