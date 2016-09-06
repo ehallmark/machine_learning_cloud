@@ -178,7 +178,7 @@ public class SimilarPatentFinder {
             } else {
                 newToks.put(stemmedNext, Sets.newHashSet(next));
             }
-            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),1.5);
+            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
@@ -192,10 +192,18 @@ public class SimilarPatentFinder {
         }
         for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
             for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
-                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemmedCounts.get(newTok.getKey()).get()) {
+                double stemValue = stemmedCounts.get(newTok.getKey()).get();
+                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemValue) {
                     for(String toRemove : newTok.getValue()) {
-                        nGramCounts.get(toRemove).set(0.0);
+                        nGramCounts.remove(toRemove);
                     }
+                } else {
+                    // remove all but the best ones and set equal to total stemmed count
+                    List<String> data = newTok.getValue().stream().map(s->new WordFrequencyPair<>(s,nGramCounts.get(s).get())).sorted().map(p->p.getFirst()).collect(Collectors.toList());
+                    for(int i = 0; i < data.size()-1; i++) {
+                        nGramCounts.remove(data.get(i));
+                    }
+                    nGramCounts.get(data.get(data.size()-1)).set(stemValue);
                 }
             }
         }
@@ -214,7 +222,7 @@ public class SimilarPatentFinder {
         Map<String,AtomicDouble> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        for(int i = 5; i >= 1; i--) {
+        for(int i = 6; i >= 1; i--) {
             processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
         }
 
