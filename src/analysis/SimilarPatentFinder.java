@@ -203,7 +203,6 @@ public class SimilarPatentFinder {
                     for(int i = 0; i < data.size()-1; i++) {
                         String toRemove = data.get(i);
                         if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
-                        nGramCounts.remove(toRemove);
                     }
                     nGramCounts.get(data.get(data.size()-1)).set(stemValue);
                 }
