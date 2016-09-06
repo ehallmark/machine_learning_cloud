@@ -192,7 +192,7 @@ public class SimilarPatentFinder {
         }
         for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
             for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
-                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemmedCounts.get(newTok.getValue()).get()) {
+                if((e.getKey().startsWith(newTok.getKey())||e.getKey().endsWith(newTok.getKey()))&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemmedCounts.get(newTok.getKey()).get()) {
                     for(String toRemove : newTok.getValue()) {
                         nGramCounts.get(toRemove).set(0.0);
                     }
