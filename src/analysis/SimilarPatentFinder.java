@@ -180,7 +180,7 @@ public class SimilarPatentFinder {
                 hash.add(next);
                 newToks.put(stemmedNext, hash);
             }
-            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.log(freq.get());
+            double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*freq.get();
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
@@ -193,22 +193,20 @@ public class SimilarPatentFinder {
             }
         }
         for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
-            for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
+            for (Map.Entry<String, Set<String>> newTok : newToks.entrySet()) {
                 double stemValue = stemmedCounts.get(newTok.getKey()).get();
-                if(e.getKey().contains(newTok.getKey())&&e.getKey().length()>newTok.getKey().length()&&e.getValue().get()>=stemValue) {
-                    for(String toRemove : newTok.getValue()) {
-                        if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
+                if (e.getKey().contains(newTok.getKey()) && e.getKey().length() > newTok.getKey().length()) {
+                    if (e.getValue().get() >= stemValue) {
+                        for (String toRemove : newTok.getValue()) {
+                            if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+                        }
                     }
-                } else {
-                    // remove all but the best ones and set equal to total stemmed count
-                    List<String> data = newTok.getValue().stream().filter(s->nGramCounts.containsKey(s)).map(s->new WordFrequencyPair<>(s,nGramCounts.get(s).get())).sorted().map(p->p.getFirst()).collect(Collectors.toList());
-                    for(int i = 0; i < data.size()-1; i++) {
-                        String toRemove = data.get(i);
-                        if(nGramCounts.containsKey(toRemove))nGramCounts.remove(toRemove);
-                    }
-                    nGramCounts.get(data.get(data.size()-1)).set(stemValue);
+
                 }
             }
+        }
+        for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
+            // only get the best ones
         }
     }
 
