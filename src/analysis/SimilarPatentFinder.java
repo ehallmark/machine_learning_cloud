@@ -228,6 +228,7 @@ public class SimilarPatentFinder {
             if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(stemValue);
         }
 
+        /*
         for(String tok : permutationsSet) {
             List<WordFrequencyPair<String,Double>> data = new ArrayList<>();
             for(String permStem : Arrays.asList(tok.split(","))) {
@@ -245,7 +246,7 @@ public class SimilarPatentFinder {
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
             if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(data.stream().collect(Collectors.summingDouble(d->d.getSecond())));
-        }
+        }*/
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
