@@ -151,6 +151,7 @@ public class SimilarPatentFinder {
         Map<String,Set<String>> newToks = new HashMap<>();
         List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         Set<String> permutationsSet = new HashSet<>();
+        Map<String,Set<String>> shiftedStems = new HashMap<>();
         int tIdx = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
             List<String> sub = cleanToks.subList(i,i+n);
@@ -178,7 +179,16 @@ public class SimilarPatentFinder {
             String stemmedNext = String.join(" ", stemSub);
             List<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toList());
             // add next sequence if possible
-            if(i < cleanToks.size()-n-1 && n > 1) permutedStems.add(String.join(" ",stemSub.subList(1,n))+" "+cleanToks.get(i+n));
+            if(i < cleanToks.size()-n-1 && n > 1) {
+                String link = String.join(" ",stemSub.subList(1,n))+" "+cleanToks.get(i+n);
+                if(shiftedStems.containsKey(stemmedNext)) {
+                    shiftedStems.get(stemmedNext).add(link);
+                } else {
+                    Set<String> hash = new HashSet<>();
+                    hash.add(link);
+                    shiftedStems.put(stemmedNext,hash);
+                }
+            }
             if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
             if(newToks.containsKey(stemmedNext)) {
                 newToks.get(stemmedNext).add(next);
@@ -187,7 +197,7 @@ public class SimilarPatentFinder {
                 hash.add(next);
                 newToks.put(stemmedNext, hash);
             }
-            double weight = (Math.pow(n,2.0)/(nullCount+1))*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
+            double weight = (Math.pow(n,1.5)/(nullCount+1))*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
@@ -242,13 +252,34 @@ public class SimilarPatentFinder {
                     }
                 }
             }
-            data = data.stream().distinct().sorted().filter(k->nGramCounts.containsKey(k)).collect(Collectors.toList());
+            data = data.stream().distinct().filter(k->nGramCounts.containsKey(k.getFirst())).sorted().collect(Collectors.toList());
             for (int i = 0; i < data.size() - 1; i++) {
                 String toRemove = data.get(i).getFirst();
                 nGramCounts.remove(toRemove);
             }
             if (!data.isEmpty())
                 nGramCounts.get(data.get(data.size() - 1).getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
+        }
+
+        for(Map.Entry<String,Set<String>> shift : shiftedStems.entrySet()) {
+            if(!newToks.containsKey(shift.getKey())) continue;
+            List<WordFrequencyPair<String,Double>> data = new ArrayList<>();
+            for(String stem : shift.getValue().stream().filter(s -> newToks.containsKey(s)).collect(Collectors.toList())) {
+                for(String actual : newToks.get(stem)) {
+                    if (nGramCounts.containsKey(actual)) {
+                        data.add(new WordFrequencyPair<>(actual,nGramCounts.get(actual).get()));
+                    }
+                }
+            }
+            data = data.stream().distinct().sorted().collect(Collectors.toList());
+            for (int i = 0; i < data.size() - 1; i++) {
+                String toRemove = data.get(i).getFirst();
+                if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+            }
+            if(!data.isEmpty()){
+                WordFrequencyPair<String,Double> lastPair = data.get(data.size()-1);
+                nGramCounts.get(lastPair.getFirst()).set(lastPair.getSecond());
+            }
         }
 
     }
