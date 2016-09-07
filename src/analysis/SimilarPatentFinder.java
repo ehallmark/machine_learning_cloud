@@ -234,7 +234,7 @@ public class SimilarPatentFinder {
                 for (String permStem : Arrays.asList(tok.split(","))) {
                     if (permStem == null || permStem.length() == 0) continue;
                     if (newToks.containsKey(permStem)) {
-                        assert(newToks.get(permStem)!=null: "Mapping is nulL!";
+                        assert newToks.get(permStem)!=null: "Mapping is nulL!";
                         for (String ngram : newToks.get(permStem)) {
                             if (ngram == null) continue;
                             if (nGramCounts.containsKey(ngram)) {
