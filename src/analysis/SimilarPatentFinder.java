@@ -145,7 +145,7 @@ public class SimilarPatentFinder {
 
 
 
-    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n, int maxLength) {
+    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Map<String,Set<String>> newToks = new HashMap<>();
@@ -304,7 +304,7 @@ public class SimilarPatentFinder {
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
         final int maxLength = 3;
         for(int i = maxLength; i >= 1; i--) {
-            processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i,maxLength);
+            processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
         }
 
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
