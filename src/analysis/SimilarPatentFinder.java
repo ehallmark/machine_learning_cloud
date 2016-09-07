@@ -226,35 +226,29 @@ public class SimilarPatentFinder {
             if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(stemValue);
         }
 
-        try {
-            assert permutationsSet!=null : "Permutation set is null!";
-            for (String tok : permutationsSet) {
-                List<WordFrequencyPair<String, Double>> data = new ArrayList<>();
-                if (tok == null || tok.split(",") == null || tok.split(",").length == 0) continue;
-                for (String permStem : Arrays.asList(tok.split(","))) {
-                    if (permStem == null || permStem.length() == 0) continue;
-                    if (newToks.containsKey(permStem)) {
-                        assert newToks.get(permStem)!=null: "Mapping is nulL!";
-                        for (String ngram : newToks.get(permStem)) {
-                            if (ngram == null) continue;
-                            if (nGramCounts.containsKey(ngram)) {
-                                assert nGramCounts.get(ngram)!=null : "Ngram mapping is null!";
-                                data.add(new WordFrequencyPair<>(ngram, nGramCounts.get(ngram).get()));
-                            }
+        for (String tok : permutationsSet) {
+            List<WordFrequencyPair<String, Double>> data = new ArrayList<>();
+            if (tok == null || tok.split(",") == null || tok.split(",").length == 0) continue;
+            for (String permStem : Arrays.asList(tok.split(","))) {
+                if (permStem == null || permStem.length() == 0) continue;
+                if (newToks.containsKey(permStem)) {
+                    for (String ngram : newToks.get(permStem)) {
+                        if (ngram == null) continue;
+                        if (nGramCounts.containsKey(ngram)) {
+                            data.add(new WordFrequencyPair<>(ngram, nGramCounts.get(ngram).get()));
                         }
                     }
                 }
-                Collections.sort(data);
-                for (int i = 0; i < data.size() - 1; i++) {
-                    String toRemove = data.get(i).getFirst();
-                    if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-                }
-                if (!data.isEmpty())
-                    nGramCounts.get(data.get(data.size() - 1)).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
             }
-        } catch(Exception e) {
-            new Emailer(e.getMessage() + "\n" + e.toString());
+            data = data.stream().distinct().sorted().collect(Collectors.toList());
+            for (int i = 0; i < data.size() - 1; i++) {
+                String toRemove = data.get(i).getFirst();
+                if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+            }
+            if (!data.isEmpty())
+                nGramCounts.get(data.get(data.size() - 1).getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
         }
+
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
