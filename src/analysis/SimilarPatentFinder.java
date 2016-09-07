@@ -145,7 +145,7 @@ public class SimilarPatentFinder {
 
 
 
-    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,AtomicDouble> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
+    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Map<String,Set<String>> newToks = new HashMap<>();
@@ -187,25 +187,31 @@ public class SimilarPatentFinder {
                 nGramCounts.put(next, new AtomicDouble(weight));
             }
             if(stemmedCounts.containsKey(stemmedNext)) {
-                stemmedCounts.get(stemmedNext).getAndAdd(weight);
+                Pair<Set<String>,AtomicDouble> p = stemmedCounts.get(stemmedNext);
+                p.getSecond().getAndAdd(weight);
+                p.getFirst().add(next);
             } else {
-                stemmedCounts.put(stemmedNext, new AtomicDouble(weight));
+                stemmedCounts.put(stemmedNext, new Pair<>(newToks.get(stemmedNext),new AtomicDouble(weight)));
             }
         }
-        for(Map.Entry<String,AtomicDouble> e : stemmedCounts.entrySet()) {
+        for(Map.Entry<String,Pair<Set<String>,AtomicDouble>> e : stemmedCounts.entrySet()) {
             for (Map.Entry<String, Set<String>> newTok : newToks.entrySet()) {
-                double stemValue = stemmedCounts.get(newTok.getKey()).get();
+                double stemValue = stemmedCounts.get(newTok.getKey()).getSecond().get();
                 if (e.getKey().contains(newTok.getKey()) && e.getKey().length() > newTok.getKey().length()) {
-                    if (e.getValue().get() >= stemValue) {
+                    if (e.getValue().getSecond().get() >= stemValue) {
                         for (String toRemove : newTok.getValue()) {
                             if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+                        }
+                    } else {
+                        for(String toRemove : e.getValue().getFirst()) {
+                            if(nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
                         }
                     }
                 }
             }
         }
         for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
-            double stemValue = stemmedCounts.get(newTok.getKey()).get();
+            double stemValue = stemmedCounts.get(newTok.getKey()).getSecond().get();
             List<String> data = newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).sorted().map(p -> p.getFirst()).collect(Collectors.toList());
             for (int i = 0; i < data.size() - 1; i++) {
                 String toRemove = data.get(i);
@@ -225,7 +231,7 @@ public class SimilarPatentFinder {
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        Map<String,AtomicDouble> stemmedCounts = new HashMap<>();
+        Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
         for(int i = 4; i >= 1; i--) {
