@@ -163,6 +163,7 @@ public class SimilarPatentFinder {
             if(((int)sub.stream().map(s->stemMe.stem(s)).distinct().count())!=sub.size()) {
                 continue;
             }
+
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
             AtomicInteger cnt = new AtomicInteger(0);
             AtomicDouble freq = new AtomicDouble(0.0);
@@ -173,11 +174,12 @@ public class SimilarPatentFinder {
             });
             String next = String.join(" ",sub);
             String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
+            List<String> permutations = new ArrayList(new Permutations<String>().permute(next.split(" ")));
             if(newToks.containsKey(stemmedNext)) {
-                newToks.get(stemmedNext).add(next);
+                newToks.get(stemmedNext).addAll(permutations);
             } else {
                 Set<String> hash = new HashSet<>();
-                hash.add(next);
+                hash.addAll(permutations);
                 newToks.put(stemmedNext, hash);
             }
             double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),1.5);
