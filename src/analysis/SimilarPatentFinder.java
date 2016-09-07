@@ -240,10 +240,10 @@ public class SimilarPatentFinder {
                     }
                 }
             }
-            data = data.stream().distinct().sorted().collect(Collectors.toList());
+            data = data.stream().distinct().sorted().filter(k->nGramCounts.containsKey(k)).collect(Collectors.toList());
             for (int i = 0; i < data.size() - 1; i++) {
                 String toRemove = data.get(i).getFirst();
-                if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+                nGramCounts.remove(toRemove);
             }
             if (!data.isEmpty())
                 nGramCounts.get(data.get(data.size() - 1).getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
