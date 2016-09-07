@@ -145,7 +145,7 @@ public class SimilarPatentFinder {
 
 
 
-    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
+    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n, int maxLength) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Map<String,Set<String>> newToks = new HashMap<>();
@@ -264,6 +264,11 @@ public class SimilarPatentFinder {
         for(Map.Entry<String,Set<String>> shift : shiftedStems.entrySet()) {
             if(!newToks.containsKey(shift.getKey())) continue;
             List<WordFrequencyPair<String,Double>> data = new ArrayList<>();
+            for(String actual : newToks.get(shift.getKey())) {
+                if (nGramCounts.containsKey(actual)) {
+                    data.add(new WordFrequencyPair<>(actual,nGramCounts.get(actual).get()));
+                }
+            }
             for(String stem : shift.getValue().stream().filter(s -> newToks.containsKey(s)).collect(Collectors.toList())) {
                 for(String actual : newToks.get(stem)) {
                     if (nGramCounts.containsKey(actual)) {
@@ -297,8 +302,9 @@ public class SimilarPatentFinder {
         Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        for(int i = 3; i >= 1; i--) {
-            processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
+        final int maxLength = 3;
+        for(int i = maxLength; i >= 1; i--) {
+            processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i,maxLength);
         }
 
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
