@@ -180,7 +180,7 @@ public class SimilarPatentFinder {
             List<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toList());
             // add next sequence if possible
             if(i < cleanToks.size()-n-1 && n > 1) {
-                String link = String.join(" ",stemSub.subList(1,n))+" "+cleanToks.get(i+n);
+                String link = String.join(" ",stemSub.subList(1,n))+" "+stemMe.stem(cleanToks.get(i+n));
                 if(shiftedStems.containsKey(stemmedNext)) {
                     shiftedStems.get(stemmedNext).add(link);
                 } else {
