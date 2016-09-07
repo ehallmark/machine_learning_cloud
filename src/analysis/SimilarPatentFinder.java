@@ -185,7 +185,7 @@ public class SimilarPatentFinder {
                 hash.add(next);
                 newToks.put(stemmedNext, hash);
             }
-            double weight = (new Double(n)/(nullCount+1))*Transforms.cosineSim(docVector,toAvg.mean(0))*Math.pow(freq.get(),2.0);
+            double weight = (Math.pow(n,2.0)/(nullCount+1))*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
             if(nGramCounts.containsKey(next)) {
                 nGramCounts.get(next).getAndAdd(weight);
             } else {
