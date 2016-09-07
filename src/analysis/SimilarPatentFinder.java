@@ -234,7 +234,7 @@ public class SimilarPatentFinder {
         Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        for(int i = 4; i >= 1; i--) {
+        for(int i = 3; i >= 1; i--) {
             processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
         }
 
