@@ -174,12 +174,13 @@ public class SimilarPatentFinder {
             });
             String next = String.join(" ",sub);
             String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
-            List<String> permutations = new ArrayList(new Permutations<String>().permute(next.split(" ")));
+            List<String[]> permutations = new Permutations<String>().permute(next.split(" "));
+            List<String> permutedStrings = permutations.stream().map(perm->String.join(" ",perm)).collect(Collectors.toList());
             if(newToks.containsKey(stemmedNext)) {
-                newToks.get(stemmedNext).addAll(permutations);
+                newToks.get(stemmedNext).addAll(permutedStrings);
             } else {
                 Set<String> hash = new HashSet<>();
-                hash.addAll(permutations);
+                hash.addAll(permutedStrings);
                 newToks.put(stemmedNext, hash);
             }
             double weight = Math.log(1.0d+(new Double(n)/(nullCount+1)))*Math.pow(Math.E,Transforms.cosineSim(docVector,toAvg.mean(0)))*Math.pow(freq.get(),1.5);

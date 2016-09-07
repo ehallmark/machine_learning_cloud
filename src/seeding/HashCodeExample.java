@@ -22,6 +22,8 @@ public class HashCodeExample {
         assert(Arrays.deepHashCode(s)!=Arrays.deepHashCode(sdiff));
 
 
+        //for()
+
         System.out.println("ALL PASSED!");
     }
 }
