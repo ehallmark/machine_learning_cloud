@@ -174,9 +174,11 @@ public class SimilarPatentFinder {
                 toAvg.putRow(cnt.getAndIncrement(),word.getSecond());
             });
             String next = String.join(" ",sub);
-            String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
-
+            List<String> stemSub = sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList());
+            String stemmedNext = String.join(" ", stemSub);
             List<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toList());
+            // add next sequence if possible
+            if(i < cleanToks.size()-n-1 && n > 1) permutedStems.add(String.join(" ",stemSub.subList(1,n))+" "+cleanToks.get(i+n));
             if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
             if(newToks.containsKey(stemmedNext)) {
                 newToks.get(stemmedNext).add(next);
@@ -264,7 +266,7 @@ public class SimilarPatentFinder {
         Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        for(int i = 4; i >= 1; i--) {
+        for(int i = 3; i >= 1; i--) {
             processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
         }
 
