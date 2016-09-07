@@ -151,7 +151,6 @@ public class SimilarPatentFinder {
         Map<String,Set<String>> newToks = new HashMap<>();
         List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         Set<String> permutationsSet = new HashSet<>();
-        AtomicInteger permCnt = new AtomicInteger(0);
         int tIdx = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
             List<String> sub = cleanToks.subList(i,i+n);
@@ -177,9 +176,8 @@ public class SimilarPatentFinder {
             String next = String.join(" ",sub);
             String stemmedNext = String.join(" ", sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList()));
 
-            Set<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toSet());
+            List<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toList());
             if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
-
             if(newToks.containsKey(stemmedNext)) {
                 newToks.get(stemmedNext).add(next);
             } else {
@@ -228,10 +226,10 @@ public class SimilarPatentFinder {
             if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(stemValue);
         }
 
-        /*
+
         for(String tok : permutationsSet) {
             List<WordFrequencyPair<String,Double>> data = new ArrayList<>();
-            for(String permStem : Arrays.asList(tok.split(","))) {
+            /*for(String permStem : Arrays.asList(tok.split(","))) {
                 if(newToks.containsKey(permStem)) {
                     for(String ngram : newToks.get(permStem)) {
                         if(nGramCounts.containsKey(ngram)) {
@@ -239,14 +237,14 @@ public class SimilarPatentFinder {
                         }
                     }
                 }
-            }
+            }*/
             Collections.sort(data);
             for (int i = 0; i < data.size() - 1; i++) {
                 String toRemove = data.get(i).getFirst();
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
             if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(data.stream().collect(Collectors.summingDouble(d->d.getSecond())));
-        }*/
+        }
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
