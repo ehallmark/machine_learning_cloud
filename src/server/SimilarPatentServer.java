@@ -317,7 +317,7 @@ public class SimilarPatentServer {
             List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber);
             if (patents == null) response = new PatentNotFound(pubDocNumber);
             else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
-            else response = new PatentResponse(null, false, patents, new Double(System.currentTimeMillis() - startTime) / 1000);
+            else response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber,patents), new Double(System.currentTimeMillis() - startTime) / 1000);
             // Handle csv or json
             if (responseWithCSV(req)) {
                 res.type("text/csv");

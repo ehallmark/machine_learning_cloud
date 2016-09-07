@@ -2,6 +2,7 @@ package server.tools;
 
 import analysis.WordFrequencyPair;
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import tools.PatentList;
 import static j2html.TagCreator.*;
 
@@ -13,17 +14,17 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, List<WordFrequencyPair<String,Float>> keyWordList, double timeToComplete) {
-        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordList, timeToComplete).render(),patents);
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete) {
+        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, List<WordFrequencyPair<String,Float>> keyWordList, double time) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time) {
         // List
         Tag keywords = null;
-        if (keyWordList != null) {
-            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3("Predicted Key Phrases"))), tr().with(th("Word").attr("style", "text-align: left;"), th("Score").attr("style", "text-align: left;")));
+        if (keyWordListWithName != null) {
+            List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3().with(label("Predicted Key Phrases for "+keyWordListWithName.getFirst())))), tr().with(th("Phrase").attr("style", "text-align: left;"), th("Score").attr("style", "text-align: left;")));
             keywords = table().with(headers).with(
-                    keyWordList.stream().map(k -> tr().with(td(k.getFirst()), td(k.getSecond().toString()))).collect(Collectors.toList())
+                    keyWordListWithName.getSecond().stream().map(k -> tr().with(td(k.getFirst()), td(k.getSecond().toString()))).collect(Collectors.toList())
             );
         }
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
