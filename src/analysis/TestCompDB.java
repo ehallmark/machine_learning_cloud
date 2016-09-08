@@ -30,7 +30,6 @@ public class TestCompDB {
         SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
         compDBMap=Database.getCompDBMap();
         Database.setupSeedConn();
-        Database.setupCompDBConn();
         randomBaseMap=new HashMap<>();
         randomTestMap=new HashMap<>();
         randomBaseNamesMap=new HashMap<>();
@@ -58,7 +57,7 @@ public class TestCompDB {
         });
 
         System.out.println("Starting to run tests...");
-        for(int i = 0; i < 10; i++) {
+        for(int i = 1; i < 10; i++) {
             System.out.println("Starting test when n="+(i+1));
             test(i);
         }
