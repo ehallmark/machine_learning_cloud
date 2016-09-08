@@ -41,10 +41,19 @@ public class TestCompDB {
         compDBMap.entrySet().stream().forEach(e->{
             if(e.getValue().size()<= 2) return;
             try {
-                Set<Patent> test = Sets.newHashSet(new Patent(e.getValue().get(0), SimilarPatentFinder.getVectorFromDB(e.getValue().get(0), vocab)));
-                List<Patent> base = Lists.newArrayList(new Patent(e.getValue().get(1), SimilarPatentFinder.getVectorFromDB(e.getValue().get(1), vocab)));
-                for (int i = 2; i < e.getValue().size(); i++) {
-                    Patent p = new Patent(e.getValue().get(i), SimilarPatentFinder.getVectorFromDB(e.getValue().get(i), vocab));
+                List<String> validSet = e.getValue().stream().filter(v->{
+                    try{
+                        return SimilarPatentFinder.getVectorFromDB(v,vocab)!=null;
+                    } catch(Exception ex) {
+                        ex.printStackTrace();
+                        return false;
+                    }
+                }).distinct().collect(Collectors.toList());
+                if(validSet.size()<=2) return;
+                Set<Patent> test = Sets.newHashSet(new Patent(validSet.get(0), SimilarPatentFinder.getVectorFromDB(validSet.get(0), vocab)));
+                List<Patent> base = Lists.newArrayList(new Patent(validSet.get(1), SimilarPatentFinder.getVectorFromDB(validSet.get(1), vocab)));
+                for (int i = 2; i < validSet.size(); i++) {
+                    Patent p = new Patent(validSet.get(i), SimilarPatentFinder.getVectorFromDB(validSet.get(i), vocab));
                     if (rand.nextInt(invTestRatio) == 0) test.add(p);
                     else base.add(p);
                     System.out.println(p.getName());
@@ -59,7 +68,7 @@ public class TestCompDB {
 
         System.out.println("Starting to run tests...");
         for(int i = 1; i < 10; i++) {
-            System.out.println("Starting test when n="+(i+1));
+            System.out.println("Starting test when n="+i);
             test(i);
         }
     }
@@ -91,7 +100,7 @@ public class TestCompDB {
         });
 
         StringJoiner toEmail = new StringJoiner("\n");
-        toEmail.add(" -- CompDB Technology Prediction Test (number of guesses="+(n+1)+") --");
+        toEmail.add(" -- CompDB Technology Prediction Test (number of guesses="+n+") --");
         toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/overallTotal.get())*100.0));
         for(Prediction p : techPercentages) {
             toEmail.add(p.name+" => %"+(p.percentCorrect)*100.0);
