@@ -22,8 +22,9 @@ import java.util.stream.Collectors;
 public class TestCompDB {
     private static Map<String,List<String>> compDBMap;
     private static Map<String,INDArray> randomBaseMap;
-    private static Map<String,Set<String>> randomBaseNamesMap;
-    private static Map<String,Set<Patent>> randomTestMap;
+    private static Map<String,Set<String>> technologyToTestPatentsMap;
+    private static Set<Patent> testPatents;
+    private static Set<String> testPatentNames;
 
     public static void main(String[] args) throws Exception{
         final int seed = 41;
@@ -32,8 +33,9 @@ public class TestCompDB {
         compDBMap=Database.getCompDBMap();
         Database.setupSeedConn();
         randomBaseMap=new HashMap<>();
-        randomTestMap=new HashMap<>();
-        randomBaseNamesMap=new HashMap<>();
+        testPatents = new HashSet<>();
+        technologyToTestPatentsMap=new HashMap<>();
+        testPatentNames=new HashSet<>();
         Random rand = new Random(seed);
         final int invTestRatio = 4;
         System.out.println("Starting to split testing and base data...");
@@ -42,6 +44,7 @@ public class TestCompDB {
             if(e.getValue().size()<= 2) return;
             try {
                 List<String> validSet = e.getValue().stream().filter(v->{
+                    if(testPatentNames.contains(v))return false;
                     try{
                         return SimilarPatentFinder.getVectorFromDB(v,vocab)!=null;
                     } catch(Exception ex) {
@@ -58,9 +61,11 @@ public class TestCompDB {
                     else base.add(p);
                     System.out.println(p.getName());
                 }
-                randomTestMap.put(e.getKey(), test);
+                Set<String> testPatentNames = test.stream().map(b->b.getName()).collect(Collectors.toSet());
+                testPatents.addAll(test);
+                testPatentNames.addAll(testPatentNames);
                 randomBaseMap.put(e.getKey(), SimilarPatentFinder.computeAvg(base,null));
-                randomBaseNamesMap.put(e.getKey(), base.stream().map(b->b.getName()).collect(Collectors.toSet()));
+                technologyToTestPatentsMap.put(e.getKey(), testPatentNames);
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
@@ -77,28 +82,23 @@ public class TestCompDB {
         Set<String> alreadyLooked = new HashSet<>();
         AtomicInteger overallCorrect = new AtomicInteger(0);
         AtomicInteger overallTotal = new AtomicInteger(0);
-        randomTestMap.entrySet().forEach(e->{
-            AtomicInteger correctCount = new AtomicInteger(0);
-            AtomicInteger total = new AtomicInteger(0);
-            for(Patent p : e.getValue()) {
-                if(!alreadyLooked.contains(p.getName())) {
-                    alreadyLooked.add(p.getName());
-                    List<String> predictions = predictTech(p.getVector(), n);
-                    for (String prediction : predictions) {
-                        if (randomBaseNamesMap.get(prediction).contains(p.getName())) {
-                            correctCount.getAndIncrement();
-                            break;
-                        }
+        testPatents.forEach(p->{
+            if(!alreadyLooked.contains(p.getName())) {
+                alreadyLooked.add(p.getName());
+                List<String> predictions = predictTech(p.getVector(), n);
+                for (String prediction : predictions) {
+                    if (technologyToTestPatentsMap.get(prediction).contains(p.getName())) {
+                        overallCorrect.getAndIncrement();
+                        break;
                     }
-                    total.getAndIncrement();
                 }
+                overallTotal.getAndIncrement();
             }
-            overallCorrect.getAndAdd(correctCount.get());
-            overallTotal.getAndAdd(total.get());
         });
 
         StringJoiner toEmail = new StringJoiner("\n");
         toEmail.add(" -- CompDB Technology Prediction Test (number of guesses="+n+") --");
+        toEmail.add("Number of technologies considered: "+technologyToTestPatentsMap.size());
         toEmail.add("Overall number of patents correct: "+overallCorrect.get());
         toEmail.add("Overall number of patents considered: "+overallTotal.get());
         toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/overallTotal.get())*100.0));
