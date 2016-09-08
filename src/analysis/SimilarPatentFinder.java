@@ -188,7 +188,7 @@ public class SimilarPatentFinder {
             for(int i = 0; i < maxNumPerIteration; i++) {
                 if(set.isEmpty()) break;
                 int sizeBefore = set.size();
-                Patent p = set.pollFirst();
+                Patent p = set.first();
                 int sizeAfter = set.size();
                 assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
                 patents.add(p);
