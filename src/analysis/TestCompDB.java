@@ -1,5 +1,6 @@
 package analysis;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -41,7 +42,7 @@ public class TestCompDB {
             if(e.getValue().size()<= 2) return;
             try {
                 Set<Patent> test = Sets.newHashSet(new Patent(e.getValue().get(0), SimilarPatentFinder.getVectorFromDB(e.getValue().get(0), vocab)));
-                List<Patent> base = Arrays.asList(new Patent(e.getValue().get(1), SimilarPatentFinder.getVectorFromDB(e.getValue().get(1), vocab)));
+                List<Patent> base = Lists.newArrayList(new Patent(e.getValue().get(1), SimilarPatentFinder.getVectorFromDB(e.getValue().get(1), vocab)));
                 for (int i = 2; i < e.getValue().size(); i++) {
                     Patent p = new Patent(e.getValue().get(i), SimilarPatentFinder.getVectorFromDB(e.getValue().get(i), vocab));
                     if (rand.nextInt(invTestRatio) == 0) test.add(p);
