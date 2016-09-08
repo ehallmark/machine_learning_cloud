@@ -8,6 +8,7 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.BuildVocabVectorMap;
 import seeding.Constants;
 import seeding.Database;
+import seeding.GetEtsiPatentsList;
 import tools.Emailer;
 import tools.MinHeap;
 
@@ -20,17 +21,15 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/8/16.
  */
 public class TestCompDB {
-    private static Map<String,List<String>> compDBMap;
     private static Map<String,INDArray> randomBaseMap;
     private static Map<String,Set<String>> technologyToTestPatentsMap;
     private static Set<Patent> testPatents;
     private static Set<String> testPatentNames;
 
-    public static void main(String[] args) throws Exception{
+    public static void RunTest(Map<String,List<String>> compDBMap) throws Exception {
         final int seed = 41;
         Map<String,Pair<Float,INDArray>> vocab = BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE));
         SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
-        compDBMap=Database.getCompDBMap();
         Database.setupSeedConn();
         randomBaseMap=new HashMap<>();
         testPatents = new HashSet<>();
@@ -76,6 +75,11 @@ public class TestCompDB {
             System.out.println("Starting test when n="+i);
             test(i);
         }
+    }
+
+    public static void main(String[] args) throws Exception{
+        //RunTest(Database.getCompDBMap());
+        RunTest(GetEtsiPatentsList.getETSIPatentMap());
     }
 
     private static void test(int n) {
