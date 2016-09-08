@@ -147,6 +147,7 @@ public class SimilarPatentFinder {
         List<String> tokens = new ArrayList<>();
         for(Patent p : patents) {
             String patent = p.getName();
+            System.out.println("    Predicting "+patent);
             if(patentWordsCache.containsKey(patent)) {
                 tokens.addAll(patentWordsCache.get(patent));
             } else {
@@ -167,7 +168,10 @@ public class SimilarPatentFinder {
         // to do
         TreeSet<Patent> set = new TreeSet<>((p1,p2)->p1.getName().compareTo(p2.getName()));
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int consideredPerElement = 50;
+        final int consideredPerElement = 25;
+        final int maxNumPerIteration = 6;
+        final int maxNumberOfIterations = 10;
+
         patentList.forEach(p->{
             set.add(new Patent(p.getName(),p.getVector()));
             System.out.println(p.getName());
@@ -178,9 +182,7 @@ public class SimilarPatentFinder {
             }
         });
         AtomicInteger cnt = new AtomicInteger(0);
-        final int maxNumPerIteration = 10;
         Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
-        int maxNumberOfIterations = 10;
         while(!set.isEmpty()) {
             List<Patent> patents = new ArrayList<>();
             for(int i = 0; i < maxNumPerIteration; i++) {
@@ -213,14 +215,16 @@ public class SimilarPatentFinder {
                 set.removeAll(toRemove);
             }
             if(cnt.getAndIncrement()>=maxNumberOfIterations) {
-                Set<String> toAdd = new HashSet<>();
-                for(Patent p: set) {
-                    toAdd.add(p.getName());
-                }
-                classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size()+1,toAdd));
                 break;
             }
 
+        }
+        if(!set.isEmpty()) {
+            Set<String> toAdd = new HashSet<>();
+            for (Patent p : set) {
+                toAdd.add(p.getName());
+            }
+            classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size()+1,toAdd));
         }
         return classMap.entrySet().stream().sorted((e1,e2)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
