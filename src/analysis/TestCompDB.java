@@ -67,14 +67,13 @@ public class TestCompDB {
         });
 
         System.out.println("Starting to run tests...");
-        for(int i = 1; i < 10; i++) {
+        for(int i = 1; i <= 10; i++) {
             System.out.println("Starting test when n="+i);
             test(i);
         }
     }
 
     private static void test(int n) {
-        SortedSet<Prediction> techPercentages = new TreeSet<>();
         Set<String> alreadyLooked = new HashSet<>();
         AtomicInteger overallCorrect = new AtomicInteger(0);
         AtomicInteger overallTotal = new AtomicInteger(0);
@@ -82,8 +81,8 @@ public class TestCompDB {
             AtomicInteger correctCount = new AtomicInteger(0);
             AtomicInteger total = new AtomicInteger(0);
             for(Patent p : e.getValue()) {
-                if(!alreadyLooked.contains(e.getKey())) {
-                    alreadyLooked.add(e.getKey());
+                if(!alreadyLooked.contains(p.getName())) {
+                    alreadyLooked.add(p.getName());
                     List<String> predictions = predictTech(p.getVector(), n);
                     for (String prediction : predictions) {
                         if (randomBaseNamesMap.get(prediction).contains(p.getName())) {
@@ -96,15 +95,13 @@ public class TestCompDB {
             }
             overallCorrect.getAndAdd(correctCount.get());
             overallTotal.getAndAdd(total.get());
-            techPercentages.add(new Prediction(e.getKey(), new Double(correctCount.get())/total.get()));
         });
 
         StringJoiner toEmail = new StringJoiner("\n");
         toEmail.add(" -- CompDB Technology Prediction Test (number of guesses="+n+") --");
+        toEmail.add("Overall number of patents correct: "+overallCorrect.get());
+        toEmail.add("Overall number of patents considered: "+overallTotal.get());
         toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/overallTotal.get())*100.0));
-        for(Prediction p : techPercentages) {
-            toEmail.add(p.name+" => %"+(p.percentCorrect)*100.0);
-        }
         new Emailer(toEmail.toString());
     }
 
