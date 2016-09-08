@@ -25,6 +25,8 @@ public class TestCompDB {
     private static Map<String,Set<Patent>> randomTestMap;
 
     public static void main(String[] args) throws Exception{
+        Database.setupSeedConn();
+        Database.setupCompDBConn();
         final int seed = 41;
         Map<String,Pair<Float,INDArray>> vocab = BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE));
         SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
