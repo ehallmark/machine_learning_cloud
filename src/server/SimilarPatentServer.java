@@ -84,29 +84,6 @@ public class SimilarPatentServer {
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
-        get("/download", (req, res) -> {
-            HttpServletResponse raw = res.raw();
-            res.header("Content-Disposition", "attachment; filename=download.xls");
-            res.type("application/force-download");
-
-            try {
-                File file = new File("tmpfile.xls");
-                WritableWorkbook workbook = Workbook.createWorkbook(file);
-                workbook.createSheet("Sheet1", 0);
-                workbook.createSheet("Sheet2", 1);
-                workbook.createSheet("Sheet3", 2);
-                workbook.write();
-                workbook.close();
-                raw.getOutputStream().write(Files.readAllBytes(file.toPath()));
-                raw.getOutputStream().flush();
-                raw.getOutputStream().close();
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-            return raw;
-        });
-
         post("/create_group", (req, res) ->{
             if(req.queryParams("group_prefix")==null || req.queryParams("group_prefix").trim().length()==0) {
                 req.session().attribute("message", "Invalid form parameters.");

@@ -54,7 +54,7 @@ public class PatentResponse extends ServerResponse {
                                     )
                             ), br())
             ).collect(Collectors.toList());
-            if (findDissimilar) Collections.reverse(patents);
+            //if (findDissimilar) Collections.reverse(patents);
         }
         return div().with(
                 div().with(label(Double.toString(time)+" seconds to complete.")),br(),
