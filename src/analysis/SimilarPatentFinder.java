@@ -191,6 +191,7 @@ public class SimilarPatentFinder {
                 assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
                 patents.add(p);
             }
+            System.out.println("Starting to get results on iteration: "+cnt.get());
             List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
             System.out.println("Checking results on iteration: "+cnt.get());
             for(int i = 0; i < results.size(); i++) {

@@ -32,7 +32,7 @@ public class PatentResponse extends ServerResponse {
                     ),
                     tbody().with(
                         autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("|",c.getValue().getSecond())))).collect(Collectors.toList())
-                    )
+                    ),br(),br()
             );
         }
         Tag keywords = null;
@@ -40,13 +40,12 @@ public class PatentResponse extends ServerResponse {
             List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3().with(label("Predicted Key Phrases for "+keyWordListWithName.getFirst())))), tr().with(th("Phrase").attr("style", "text-align: left;"), th("Score").attr("style", "text-align: left;")));
             keywords = table().with(headers).with(
                     keyWordListWithName.getSecond().stream().map(k -> tr().with(td(k.getFirst()), td(k.getSecond().toString()))).collect(Collectors.toList())
-            );
+            ).with(br(),br());
         }
         String similarName = findDissimilar ? "Dissimilar" : "Similar";
-        List<Tag> patents = null;
+        Tag patents = null;
         if (patentLists != null) {
-            patents = patentLists.stream().sorted().map(patentList ->
-                    div().with(
+            patents = div().with(patentLists.stream().sorted().map(patentList ->
                             table().with(
                                     thead().with(
                                             tr().with(th().attr("colspan", "3").attr("style", "text-align: left;").with(
@@ -66,16 +65,14 @@ public class PatentResponse extends ServerResponse {
                                             ).map(patent ->
                                                     tr().with(td().with(a(patent.getName()).withHref("https://www.google.com/patents/US" + patent.getName().split("\\s+")[0])), td(Double.toString(patent.getSimilarity())), td(patent.getTitle()))
                                             ).collect(Collectors.toList())
-                                    )
-                            ), br())
-            ).collect(Collectors.toList());
+
+                            ), br(),br())
+            ).collect(Collectors.toList()));
             //if (findDissimilar) Collections.reverse(patents);
         }
         return div().with(
                 div().with(label(Double.toString(time)+" seconds to complete.")),br(),
-                (keywords==null?div():keywords),
-                (patents==null?div():div().with(patents)),
-                classTags==null?div():div().with(classTags)
+                div().with(Arrays.asList(keywords,patents,classTags).stream().filter(t->t!=null).collect(Collectors.toList()))
         );
 
     }

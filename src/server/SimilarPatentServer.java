@@ -99,8 +99,8 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-
-            return new Gson().toJson(new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, finder.autoClassify(vocab)));
+            List<Map.Entry<String,Pair<Integer,Set<String>>>> classifications = finder.autoClassify(vocab);
+            return new Gson().toJson(new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications));
         });
 
 
