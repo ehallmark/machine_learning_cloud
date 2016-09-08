@@ -488,7 +488,7 @@ public class SimilarPatentServer {
                                                 ),
                                                 h3("Auto Classify Candidate Set"),
                                                 form().withId(AUTO_CLASSIFY).with(
-                                                        selectCandidateSetDropdown(),
+                                                        selectCandidateSetDropdown("Select Candidate Set","name",false),
                                                         br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )

@@ -178,9 +178,9 @@ public class SimilarPatentFinder {
             }
         });
         AtomicInteger cnt = new AtomicInteger(0);
-        final int maxNumPerIteration = 200;
+        final int maxNumPerIteration = 10;
         Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
-        int maxNumberOfIterations = 40;
+        int maxNumberOfIterations = 10;
         while(!set.isEmpty()) {
             List<Patent> patents = new ArrayList<>();
             for(int i = 0; i < maxNumPerIteration; i++) {
@@ -192,9 +192,11 @@ public class SimilarPatentFinder {
                 patents.add(p);
             }
             List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
+            System.out.println("Checking results on iteration: "+cnt.get());
             for(int i = 0; i < results.size(); i++) {
                 List<Patent> toRemove = new ArrayList<>();
                 for(Patent p : set) {
+                    System.out.println("    Checking "+p.getName());
                     for(WordFrequencyPair<String,Float> check : cache.get(p.getName())) {
                         if(results.get(i).getFirst().equals(check.getFirst())) {
                             if(classMap.containsKey(check.getFirst())) {
