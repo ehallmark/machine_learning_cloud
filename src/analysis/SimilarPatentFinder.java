@@ -188,7 +188,7 @@ public class SimilarPatentFinder {
             for(int i = 0; i < maxNumPerIteration; i++) {
                 if(set.isEmpty()) break;
                 int sizeBefore = set.size();
-                Patent p = set.first();
+                Patent p = set.pollFirst();
                 int sizeAfter = set.size();
                 assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
                 patents.add(p);
@@ -197,6 +197,19 @@ public class SimilarPatentFinder {
             List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
             System.out.println("Checking results on iteration: "+cnt.get());
             for(int i = 0; i < results.size(); i++) {
+                for(Patent p : patents) {
+                    System.out.println("    Checking "+p.getName());
+                    for(WordFrequencyPair<String,Float> check : cache.get(p.getName())) {
+                        if(results.get(i).getFirst().equals(check.getFirst())) {
+                            if(classMap.containsKey(check.getFirst())) {
+                                classMap.get(check.getFirst()).getSecond().add(p.getName());
+                            } else {
+                                classMap.put(check.getFirst(),new Pair<>(classMap.size()+1,Sets.newHashSet(p.getName())));
+                            }
+                            break;
+                        }
+                    }
+                }
                 List<Patent> toRemove = new ArrayList<>();
                 for(Patent p : set) {
                     System.out.println("    Checking "+p.getName());
