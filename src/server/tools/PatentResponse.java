@@ -22,7 +22,7 @@ public class PatentResponse extends ServerResponse {
         // List
         Tag classTags = null;
         if(autoClassifications!=null) {
-            classTags = table().with(
+            classTags = div().with(table().with(
                     thead().with(
                             tr().with(
                                     th("Rank"),
@@ -32,8 +32,8 @@ public class PatentResponse extends ServerResponse {
                     ),
                     tbody().with(
                         autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("; ",c.getValue().getSecond())))).collect(Collectors.toList())
-                    ),br(),br()
-            );
+                    )
+            ),br(),br());
         }
         Tag keywords = null;
         if (keyWordListWithName != null) {

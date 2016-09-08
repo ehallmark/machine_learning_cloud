@@ -203,7 +203,7 @@ public class SimilarPatentFinder {
                             if(classMap.containsKey(check.getFirst())) {
                                 classMap.get(check.getFirst()).getSecond().add(p.getName());
                             } else {
-                                classMap.put(check.getFirst(),new Pair<>(classMap.size(),Sets.newHashSet(p.getName())));
+                                classMap.put(check.getFirst(),new Pair<>(classMap.size()+1,Sets.newHashSet(p.getName())));
                             }
                             toRemove.add(p);
                             break;
@@ -217,7 +217,7 @@ public class SimilarPatentFinder {
                 for(Patent p: set) {
                     toAdd.add(p.getName());
                 }
-                classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size(),toAdd));
+                classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size()+1,toAdd));
                 break;
             }
 
