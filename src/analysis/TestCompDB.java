@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 public class TestCompDB {
     private static Map<String,List<INDArray>> randomBaseMap;
     private static Map<String,Set<String>> technologyToTestPatentsMap;
-    private static Set<Patent> testPatents;
+    private static List<Patent> testPatents;
     private static Set<String> testPatentNames;
 
     public static void RunTest(Map<String,List<String>> compDBMap, Map<String,Pair<Float,INDArray>> vocab, String name) throws Exception {
         final int seed = 41;
         randomBaseMap=new HashMap<>();
-        testPatents = new HashSet<>();
+        testPatents = new ArrayList<>();
         technologyToTestPatentsMap=new HashMap<>();
         testPatentNames=new HashSet<>();
         Random rand = new Random(seed);
@@ -91,10 +91,9 @@ public class TestCompDB {
 
     private static void test(int n,StringJoiner toEmail) {
         AtomicInteger overallCorrect = new AtomicInteger(0);
-        testPatents.forEach(p->{
-            List<String> predictions = predictTech(p.getVector(), n);
-            for (String prediction : predictions) {
-                if (technologyToTestPatentsMap.get(prediction).contains(p.getName())) {
+        getTestPredictions(n).forEach(p->{
+            for (String prediction : p.getFirst()) {
+                if (technologyToTestPatentsMap.get(prediction).contains(p.getSecond())) {
                     overallCorrect.getAndIncrement();
                     break;
                 }
@@ -106,16 +105,29 @@ public class TestCompDB {
         toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/testPatents.size())*100.0));
     }
 
-    private static List<String> predictTech(INDArray vec, int n) {
-        MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
+    private static List<Pair<List<String>,String>> getTestPredictions(int n) {
+        List<MinHeap<WordFrequencyPair<String,Double>>> heaps = new ArrayList<>(testPatents.size());
+        for(int i = 0; i < testPatents.size(); i++) {
+            heaps.add(new MinHeap<>(n));
+        }
         randomBaseMap.entrySet().forEach(e->{
-            double avgSim = e.getValue().stream().collect(Collectors.averagingDouble(d->Transforms.cosineSim(vec,d)));
-            heap.add(new WordFrequencyPair<>(e.getKey(), avgSim));
+            System.out.println(e.getKey());
+            for(int i = 0; i < heaps.size(); i++) {
+                INDArray vec = testPatents.get(i).getVector();
+                double avgSim = e.getValue().stream().collect(Collectors.averagingDouble(d->Transforms.cosineSim(vec,d)));
+                heaps.get(i).add(new WordFrequencyPair<>(e.getKey(), avgSim));
+            }
         });
-        List<String> toReturn = new ArrayList<>();
-        while(!heap.isEmpty()) {
-            toReturn.add(0, heap.remove().getFirst());
+        List<Pair<List<String>,String>> toReturn = new ArrayList<>();
+        for(int i = 0; i < heaps.size(); i++) {
+            MinHeap<WordFrequencyPair<String,Double>> heap = heaps.get(i);
+            List<String> predictions = new ArrayList<>();
+            while (!heap.isEmpty()) {
+                predictions.add(0, heap.remove().getFirst());
+            }
+            toReturn.add(new Pair<>(predictions,testPatents.get(i).getName()));
         }
         return toReturn;
     }
+
 }
