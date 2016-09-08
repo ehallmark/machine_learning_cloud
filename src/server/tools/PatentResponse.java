@@ -31,7 +31,7 @@ public class PatentResponse extends ServerResponse {
                             )
                     ),
                     tbody().with(
-                        autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("|",c.getValue().getSecond())))).collect(Collectors.toList())
+                        autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("; ",c.getValue().getSecond())))).collect(Collectors.toList())
                     ),br(),br()
             );
         }
