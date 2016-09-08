@@ -26,11 +26,8 @@ public class TestCompDB {
     private static Set<Patent> testPatents;
     private static Set<String> testPatentNames;
 
-    public static void RunTest(Map<String,List<String>> compDBMap, String name) throws Exception {
+    public static void RunTest(Map<String,List<String>> compDBMap, Map<String,Pair<Float,INDArray>> vocab, String name) throws Exception {
         final int seed = 41;
-        Map<String,Pair<Float,INDArray>> vocab = BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE));
-        SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
-        Database.setupSeedConn();
         randomBaseMap=new HashMap<>();
         testPatents = new HashSet<>();
         technologyToTestPatentsMap=new HashMap<>();
@@ -84,8 +81,12 @@ public class TestCompDB {
     }
 
     public static void main(String[] args) throws Exception{
-        RunTest(Database.getCompDBMap(), "CompDB Technologies");
-        RunTest(GetEtsiPatentsList.getETSIPatentMap(), "ETSI Standards");
+        Map<String,Pair<Float,INDArray>> vocab = BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE));
+        SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
+        Map<String,List<String>> compdbMap = Database.getCompDBMap();
+        Database.setupSeedConn();
+        RunTest(compdbMap,vocab, "CompDB Technologies");
+        RunTest(GetEtsiPatentsList.getETSIPatentMap(),vocab, "ETSI Standards");
     }
 
     private static void test(int n,StringJoiner toEmail) {
