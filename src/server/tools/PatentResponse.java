@@ -14,23 +14,24 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Pair<String,List<String>>> autoClassifications) {
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassifications) {
         super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete,autoClassifications).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Pair<String,List<String>>> autoClassifications) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassifications) {
         // List
         Tag classTags = null;
         if(autoClassifications!=null) {
             classTags = table().with(
                     thead().with(
                             tr().with(
+                                    th("Rank"),
                                     th("Classification"),
                                     th("Patents")
                             )
                     ),
                     tbody().with(
-                        autoClassifications.stream().map(c->tr().with(td(c.getFirst()),td(String.join("|",c.getSecond())))).collect(Collectors.toList())
+                        autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("|",c.getValue().getSecond())))).collect(Collectors.toList())
                     )
             );
         }
