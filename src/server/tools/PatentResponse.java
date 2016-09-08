@@ -14,12 +14,26 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete) {
-        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete).render(),patents);
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Pair<String,List<String>>> autoClassifications) {
+        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete,autoClassifications).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Pair<String,List<String>>> autoClassifications) {
         // List
+        Tag classTags = null;
+        if(autoClassifications!=null) {
+            classTags = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Classification"),
+                                    th("Patents")
+                            )
+                    ),
+                    tbody().with(
+                        autoClassifications.stream().map(c->tr().with(td(c.getFirst()),td(String.join("|",c.getSecond())))).collect(Collectors.toList())
+                    )
+            );
+        }
         Tag keywords = null;
         if (keyWordListWithName != null) {
             List<Tag> headers = Arrays.asList(tr().with(th().attr("colspan", "2").attr("style", "text-align: left;").with(h3().with(label("Predicted Key Phrases for "+keyWordListWithName.getFirst())))), tr().with(th("Phrase").attr("style", "text-align: left;"), th("Score").attr("style", "text-align: left;")));
@@ -58,8 +72,9 @@ public class PatentResponse extends ServerResponse {
         }
         return div().with(
                 div().with(label(Double.toString(time)+" seconds to complete.")),br(),
-                (keywords==null?br():keywords),br(),
-                (patents==null?br():div().with(patents))
+                (keywords==null?div():keywords),
+                (patents==null?div():div().with(patents)),
+                classTags==null?div():div().with(classTags)
         );
 
     }

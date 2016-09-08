@@ -47,6 +47,7 @@ public class SimilarPatentServer {
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String SELECT_ANGLE_BETWEEN_PATENTS = "select-angle-between-patents-form";
     private static final String SELECT_KEYWORDS = "select-keywords-form";
+    private static final String AUTO_CLASSIFY = "auto-classify-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     private static final Map<String,Pair<Float,INDArray>> vocab;
@@ -84,6 +85,25 @@ public class SimilarPatentServer {
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
+        post("/auto_classify", (req, res) -> {
+            long startTime = System.currentTimeMillis();
+            String idstr = req.queryParams("name");
+            if(idstr==null||idstr.trim().length()<=0) return new Gson().toJson(new SimpleAjaxMessage("Please include candidate set selection!"));
+
+            Integer id = Integer.valueOf(idstr);
+
+            if(id==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set"));
+            if(id < 0) return new Gson().toJson(new SimpleAjaxMessage("Cannot choose default candidate set!"));
+            if(groupedCandidateSetMap.containsKey(id)) return new Gson().toJson(new SimpleAjaxMessage("Cannot choose a pre-grouped candidate set"));
+
+            // otherwise we are good to go
+            String name = candidateSetMap.get(id).getSecond();
+            SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
+
+            return new Gson().toJson(new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, finder.autoClassify(vocab)));
+        });
+
+
         post("/create_group", (req, res) ->{
             if(req.queryParams("group_prefix")==null || req.queryParams("group_prefix").trim().length()==0) {
                 req.session().attribute("message", "Invalid form parameters.");
@@ -114,13 +134,12 @@ public class SimilarPatentServer {
                 try {
                     String name = req.queryParams("name");
                     int id = Database.createCandidateSetAndReturnId(name);
-                    SimilarPatentFinder patentFinder;
                     // try to get percentages from form
                     File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,vocab);
+                        new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,vocab);
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        patentFinder = new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,vocab);
+                        new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name,vocab);
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -223,7 +242,7 @@ public class SimilarPatentServer {
                         System.out.println(p.getName()+": "+p.getSimilarity());
                     });
                 });
-                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null);
                 return new Gson().toJson(response);
             }
 
@@ -297,7 +316,7 @@ public class SimilarPatentServer {
             });
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000);
+            else response=new PatentResponse(patents,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null);
 
             // Handle csv or json
             if(responseWithCSV(req)) {
@@ -321,7 +340,7 @@ public class SimilarPatentServer {
             List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber);
             if (patents == null) response = new PatentNotFound(pubDocNumber);
             else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
-            else response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber,patents), new Double(System.currentTimeMillis() - startTime) / 1000);
+            else response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber,patents), new Double(System.currentTimeMillis() - startTime) / 1000,null);
             // Handle csv or json
             if (responseWithCSV(req)) {
                 res.type("text/csv");
@@ -447,6 +466,7 @@ public class SimilarPatentServer {
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search"),
                 formScript(SELECT_ANGLE_BETWEEN_PATENTS, "/angle_between_patents", "Search"),
                 formScript(SELECT_KEYWORDS, "/keywords", "Search"),
+                formScript(AUTO_CLASSIFY, "/auto_classify", "Classify"),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -465,6 +485,12 @@ public class SimilarPatentServer {
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
                                                         br(),
                                                         button("Search").withId(SELECT_KEYWORDS+"-button").withType("submit")
+                                                ),
+                                                h3("Auto Classify Candidate Set"),
+                                                form().withId(AUTO_CLASSIFY).with(
+                                                        selectCandidateSetDropdown(),
+                                                        br(),
+                                                        button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(
                                                 h3("Find Similar Patents By Patent"),

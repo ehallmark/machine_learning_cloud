@@ -143,7 +143,83 @@ public class SimilarPatentFinder {
         }
     }
 
+    private static List<WordFrequencyPair<String,Float>> predictKeywordsForMultiple(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patents) throws SQLException {
+        List<String> tokens = new ArrayList<>();
+        for(Patent p : patents) {
+            String patent = p.getName();
+            if(patentWordsCache.containsKey(patent)) {
+                tokens.addAll(patentWordsCache.get(patent));
+            } else {
+                // otherwise, if not cached
+                ResultSet rs = Database.getBaseVectorFor(patent);
+                if (rs.next()) {
+                    tokens.addAll(tf.create(rs.getString(1)).getTokens());
+                    tokens.addAll(tf.create(rs.getString(2)).getTokens());
+                    tokens.addAll(tf.create(rs.getString(3)).getTokens());
+                    patentWordsCache.put(patent, tokens);
+                }
+            }
+        }
+        return predictKeywords(tokens,limit,vocab,computeAvg(patents,null));
+    }
 
+    public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
+        // to do
+        TreeSet<Patent> set = new TreeSet<>((p1,p2)->p1.getName().compareTo(p2.getName()));
+        Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
+        final int consideredPerElement = 50;
+        patentList.forEach(p->{
+            set.add(new Patent(p.getName(),p.getVector()));
+            try {
+                cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName()));
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
+        AtomicInteger cnt = new AtomicInteger(0);
+        final int maxNumPerIteration = 200;
+        Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
+        int maxNumberOfIterations = 40;
+        while(!set.isEmpty()) {
+            List<Patent> patents = new ArrayList<>();
+            for(int i = 0; i < maxNumPerIteration; i++) {
+                if(set.isEmpty()) break;
+                int sizeBefore = set.size();
+                Patent p = set.pollFirst();
+                int sizeAfter = set.size();
+                assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
+                patents.add(p);
+            }
+            List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
+            for(int i = 0; i < results.size(); i++) {
+                List<Patent> toRemove = new ArrayList<>();
+                for(Patent p : set) {
+                    for(WordFrequencyPair<String,Float> check : cache.get(p.getName())) {
+                        if(results.get(i).getFirst().equals(check.getFirst())) {
+                            if(classMap.containsKey(check.getFirst())) {
+                                classMap.get(check.getFirst()).getSecond().add(p.getName());
+                            } else {
+                                classMap.put(check.getFirst(),new Pair<>(classMap.size(),Sets.newHashSet(p.getName())));
+                            }
+                            toRemove.add(p);
+                            break;
+                        }
+                    }
+                }
+                set.removeAll(toRemove);
+            }
+            if(cnt.getAndIncrement()>=maxNumberOfIterations) {
+                Set<String> toAdd = new HashSet<>();
+                for(Patent p: set) {
+                    toAdd.add(p.getName());
+                }
+                classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size(),toAdd));
+                break;
+            }
+
+        }
+        return classMap.entrySet().stream().sorted((e1,e2)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
+    }
 
     private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
