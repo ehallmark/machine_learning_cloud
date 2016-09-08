@@ -100,7 +100,15 @@ public class SimilarPatentServer {
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
             List<Map.Entry<String,Pair<Integer,Set<String>>>> classifications = finder.autoClassify(vocab);
-            return new Gson().toJson(new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications));
+            // Handle csv or json
+            PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
+            if (responseWithCSV(req)) {
+                res.type("text/csv");
+                return CSVHelper.to_csv(response);
+            } else {
+                res.type("application/json");
+                return new Gson().toJson(response);
+            }
         });
 
 
@@ -398,7 +406,7 @@ public class SimilarPatentServer {
                             + "  data: $('#"+formId+"').serialize(),"
                             + "  success: function(data) { "
                             + "    $('#results').html(data.message); "
-                            + "    alert(data.message);"
+                            //+ "    alert(data.message);"
                             + "    $('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
                             + "  }"
                             + "});"
