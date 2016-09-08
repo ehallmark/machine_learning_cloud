@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/8/16.
  */
 public class TestCompDB {
-    private static Map<String,List<INDArray>> randomBaseMap;
+    private static Map<String,INDArray> randomBaseMap;
     private static Map<String,Set<String>> technologyToTestPatentsMap;
     private static List<Patent> testPatents;
     private static Set<String> testPatentNames;
@@ -50,17 +50,17 @@ public class TestCompDB {
                 }).distinct().collect(Collectors.toList());
                 if(validSet.size()<=2) return;
                 Set<Patent> test = Sets.newHashSet(new Patent(validSet.get(0), SimilarPatentFinder.getVectorFromDB(validSet.get(0), vocab)));
-                List<INDArray> base = Lists.newArrayList(SimilarPatentFinder.getVectorFromDB(validSet.get(1), vocab));
+                List<Patent> base = Lists.newArrayList(new Patent(validSet.get(1), SimilarPatentFinder.getVectorFromDB(validSet.get(1), vocab)));
                 for (int i = 2; i < validSet.size(); i++) {
                     Patent p = new Patent(validSet.get(i), SimilarPatentFinder.getVectorFromDB(validSet.get(i), vocab));
                     if (rand.nextInt(invTestRatio) == 0) test.add(p);
-                    else base.add(p.getVector());
+                    else base.add(p);
                     System.out.println(p.getName());
                 }
                 Set<String> testPatentNames = test.stream().map(b->b.getName()).collect(Collectors.toSet());
                 testPatents.addAll(test);
                 testPatentNames.addAll(testPatentNames);
-                randomBaseMap.put(e.getKey(), base);
+                randomBaseMap.put(e.getKey(), SimilarPatentFinder.computeAvg(base,null));
                 technologyToTestPatentsMap.put(e.getKey(), testPatentNames);
             } catch(Exception ex) {
                 ex.printStackTrace();
@@ -114,8 +114,7 @@ public class TestCompDB {
             System.out.println(e.getKey());
             for(int i = 0; i < heaps.size(); i++) {
                 INDArray vec = testPatents.get(i).getVector();
-                double avgSim = e.getValue().stream().collect(Collectors.averagingDouble(d->Transforms.cosineSim(vec,d)));
-                heaps.get(i).add(new WordFrequencyPair<>(e.getKey(), avgSim));
+                heaps.get(i).add(new WordFrequencyPair<>(e.getKey(), Transforms.cosineSim(vec,e.getValue())));
             }
         });
         List<Pair<List<String>,String>> toReturn = new ArrayList<>();
