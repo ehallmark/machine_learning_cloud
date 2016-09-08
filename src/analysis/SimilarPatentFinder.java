@@ -170,6 +170,7 @@ public class SimilarPatentFinder {
         final int consideredPerElement = 50;
         patentList.forEach(p->{
             set.add(new Patent(p.getName(),p.getVector()));
+            System.out.println(p.getName());
             try {
                 cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName()));
             } catch(Exception e) {
