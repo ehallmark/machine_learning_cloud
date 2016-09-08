@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/8/16.
  */
 public class TestCompDB {
-    private static Map<String,INDArray> randomBaseMap;
+    private static Map<String,List<INDArray>> randomBaseMap;
     private static Map<String,Set<String>> technologyToTestPatentsMap;
     private static Set<Patent> testPatents;
     private static Set<String> testPatentNames;
 
-    public static void RunTest(Map<String,List<String>> compDBMap) throws Exception {
+    public static void RunTest(Map<String,List<String>> compDBMap, String name) throws Exception {
         final int seed = 41;
         Map<String,Pair<Float,INDArray>> vocab = BuildVocabVectorMap.readVocabMap(new File(Constants.BETTER_VOCAB_VECTOR_FILE));
         SimilarPatentFinder finder = new SimilarPatentFinder(vocab);
@@ -53,85 +53,68 @@ public class TestCompDB {
                 }).distinct().collect(Collectors.toList());
                 if(validSet.size()<=2) return;
                 Set<Patent> test = Sets.newHashSet(new Patent(validSet.get(0), SimilarPatentFinder.getVectorFromDB(validSet.get(0), vocab)));
-                List<Patent> base = Lists.newArrayList(new Patent(validSet.get(1), SimilarPatentFinder.getVectorFromDB(validSet.get(1), vocab)));
+                List<INDArray> base = Lists.newArrayList(SimilarPatentFinder.getVectorFromDB(validSet.get(1), vocab));
                 for (int i = 2; i < validSet.size(); i++) {
                     Patent p = new Patent(validSet.get(i), SimilarPatentFinder.getVectorFromDB(validSet.get(i), vocab));
                     if (rand.nextInt(invTestRatio) == 0) test.add(p);
-                    else base.add(p);
+                    else base.add(p.getVector());
                     System.out.println(p.getName());
                 }
                 Set<String> testPatentNames = test.stream().map(b->b.getName()).collect(Collectors.toSet());
                 testPatents.addAll(test);
                 testPatentNames.addAll(testPatentNames);
-                randomBaseMap.put(e.getKey(), SimilarPatentFinder.computeAvg(base,null));
+                randomBaseMap.put(e.getKey(), base);
                 technologyToTestPatentsMap.put(e.getKey(), testPatentNames);
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
         });
 
+        StringJoiner toEmail = new StringJoiner("\n");
+        toEmail.add("-- Comparison Test for "+name+" --");
+        toEmail.add("Number of classifications considered: "+technologyToTestPatentsMap.size());
+        toEmail.add("Overall number of test examples: "+testPatents.size());
+        toEmail.add("--");
         System.out.println("Starting to run tests...");
-        for(int i = 1; i <= 10; i++) {
+        for(int i : new int[]{1,3,5,10}) {
             System.out.println("Starting test when n="+i);
-            test(i);
+            test(i,toEmail);
         }
+        new Emailer(toEmail.toString());
     }
 
     public static void main(String[] args) throws Exception{
-        //RunTest(Database.getCompDBMap());
-        RunTest(GetEtsiPatentsList.getETSIPatentMap());
+        RunTest(Database.getCompDBMap(), "CompDB Technologies");
+        RunTest(GetEtsiPatentsList.getETSIPatentMap(), "ETSI Standards");
     }
 
-    private static void test(int n) {
-        Set<String> alreadyLooked = new HashSet<>();
+    private static void test(int n,StringJoiner toEmail) {
         AtomicInteger overallCorrect = new AtomicInteger(0);
-        AtomicInteger overallTotal = new AtomicInteger(0);
         testPatents.forEach(p->{
-            if(!alreadyLooked.contains(p.getName())) {
-                alreadyLooked.add(p.getName());
-                List<String> predictions = predictTech(p.getVector(), n);
-                for (String prediction : predictions) {
-                    if (technologyToTestPatentsMap.get(prediction).contains(p.getName())) {
-                        overallCorrect.getAndIncrement();
-                        break;
-                    }
+            List<String> predictions = predictTech(p.getVector(), n);
+            for (String prediction : predictions) {
+                if (technologyToTestPatentsMap.get(prediction).contains(p.getName())) {
+                    overallCorrect.getAndIncrement();
+                    break;
                 }
-                overallTotal.getAndIncrement();
             }
         });
-
-        StringJoiner toEmail = new StringJoiner("\n");
-        toEmail.add(" -- CompDB Technology Prediction Test (number of guesses="+n+") --");
-        toEmail.add("Number of technologies considered: "+technologyToTestPatentsMap.size());
-        toEmail.add("Overall number of patents correct: "+overallCorrect.get());
-        toEmail.add("Overall number of patents considered: "+overallTotal.get());
-        toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/overallTotal.get())*100.0));
-        new Emailer(toEmail.toString());
+        toEmail.add("--");
+        toEmail.add("Number of allowed guesses: "+n);
+        toEmail.add("Overall number of examples correct: "+overallCorrect.get());
+        toEmail.add("Overall Correct: %"+((new Double(overallCorrect.get())/testPatents.size())*100.0));
     }
 
     private static List<String> predictTech(INDArray vec, int n) {
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
         randomBaseMap.entrySet().forEach(e->{
-            heap.add(new WordFrequencyPair<>(e.getKey(), Transforms.cosineSim(vec,e.getValue())));
+            double avgSim = e.getValue().stream().collect(Collectors.averagingDouble(d->Transforms.cosineSim(vec,d)));
+            heap.add(new WordFrequencyPair<>(e.getKey(), avgSim));
         });
         List<String> toReturn = new ArrayList<>();
         while(!heap.isEmpty()) {
             toReturn.add(0, heap.remove().getFirst());
         }
         return toReturn;
-    }
-}
-
-class Prediction implements Comparable<Prediction>{
-    String name;
-    double percentCorrect;
-    Prediction(String n, double d) {
-        this.name=n;
-        this.percentCorrect=d;
-    }
-
-    @Override
-    public int compareTo(Prediction o) {
-        return Double.compare(percentCorrect,o.percentCorrect);
     }
 }
