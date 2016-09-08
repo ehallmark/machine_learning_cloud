@@ -398,6 +398,7 @@ public class SimilarPatentServer {
                             + "  data: $('#"+formId+"').serialize(),"
                             + "  success: function(data) { "
                             + "    $('#results').html(data.message); "
+                            + "    alert(data.message);"
                             + "    $('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
                             + "  }"
                             + "});"
