@@ -467,7 +467,7 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    private static INDArray getVectorFromDB(String patentNumber,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
+    public static INDArray getVectorFromDB(String patentNumber,Map<String,Pair<Float,INDArray>> vocab) throws SQLException {
         return getVectorFromDB(patentNumber, null, vocab);
     }
 
