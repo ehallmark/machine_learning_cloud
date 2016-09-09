@@ -185,14 +185,13 @@ public class SimilarPatentFinder {
             EKmeans eKmeans = null;
             try {
                  eKmeans = new EKmeans(centroids, points);
+                //eKmeans.setEqual(true);
+                eKmeans.setDistanceFunction((d1,d2)->Math.pow(Math.E,-1.0d*Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2))));
+                eKmeans.run();
 
             } catch(Exception e) {
                 throw new RuntimeException("K means is null :(");
             }
-
-            //eKmeans.setEqual(true);
-            eKmeans.setDistanceFunction((d1,d2)->1.0-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
-            eKmeans.run();
 
             int[] assignments = eKmeans.getAssignments();
             assert assignments.length==numData : "K means has wrong number of data points!";
