@@ -9,7 +9,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.eclipse.jetty.util.ArrayQueue;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.DefaultRandom;
+import org.nd4j.linalg.api.rng.*;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.*;
@@ -176,9 +176,10 @@ public class SimilarPatentFinder {
             for (int i = 0; i < numData; i++) {
                 points[i] = patentList.get(i).getVector().data().asDouble();
             }
-            double[][] centroids = new double[numData][];
-            for (int i = 0; i < numData; i++) {
-                centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, new DefaultRandom(41)).data().asDouble();
+            double[][] centroids = new double[numClusters][];
+            org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
+            for (int i = 0; i < numClusters; i++) {
+                centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
             }
 
             EKmeans eKmeans = new EKmeans(centroids, points);
