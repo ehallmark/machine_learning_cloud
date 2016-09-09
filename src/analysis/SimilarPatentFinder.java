@@ -251,40 +251,44 @@ public class SimilarPatentFinder {
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
             AtomicDouble freq = new AtomicDouble(0.0);
             for(int j = 1; j <= n; j++) {
+                try {
+                    Pair<Float, INDArray> word = vocab.get(sub.get(j - 1));
+                    freq.getAndAdd(word.getFirst());
+                    toAvg.putRow(j - 1, word.getSecond());
+                    INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
+                    for (int m = 0; m < j; m++) {
+                        mean.putRow(m, toAvg.getRow(m));
+                    }
+                    double weight = Math.pow(j, 1.5) * Transforms.cosineSim(docVector, mean.mean(0)) * freq.get();
 
-                Pair<Float,INDArray> word = vocab.get(sub.get(j-1));
-                freq.getAndAdd(word.getFirst());
-                toAvg.putRow(j-1,word.getSecond());
-                INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
-                for(int m = 0; m < j; m++) {
-                    mean.putRow(m, toAvg.getRow(m));
-                }
-                double weight = Math.pow(j,1.5)*Transforms.cosineSim(docVector,mean.mean(0))*freq.get();
+                    String next = String.join(" ", sub.subList(0, j));
+                    String stemmedNext = String.join(" ", stemSub.subList(0, j));
+                    SortedSet<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm -> String.join(" ", perm)).collect(Collectors.toCollection(() -> new TreeSet<>()));
 
-                String next = String.join(" ",sub.subList(0,j));
-                String stemmedNext = String.join(" ", stemSub.subList(0,j));
-                SortedSet<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).collect(Collectors.toCollection(()->new TreeSet<>()));
+                    if (permutedStems.size() > 0) permutationsSet.add(String.join(",", permutedStems));
+                    if (newToks.containsKey(stemmedNext)) {
+                        newToks.get(stemmedNext).add(next);
+                    } else {
+                        Set<String> hash = new HashSet<>();
+                        hash.add(next);
+                        newToks.put(stemmedNext, hash);
+                    }
+                    if (stemmedCounts.containsKey(stemmedNext)) {
+                        Pair<Set<String>, AtomicDouble> p = stemmedCounts.get(stemmedNext);
+                        p.getSecond().getAndAdd(weight);
+                        p.getFirst().add(next);
+                    } else {
+                        stemmedCounts.put(stemmedNext, new Pair<>(newToks.get(stemmedNext), new AtomicDouble(weight)));
+                    }
 
-                if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
-                if(newToks.containsKey(stemmedNext)) {
-                    newToks.get(stemmedNext).add(next);
-                } else {
-                    Set<String> hash = new HashSet<>();
-                    hash.add(next);
-                    newToks.put(stemmedNext, hash);
-                }
-                if(stemmedCounts.containsKey(stemmedNext)) {
-                    Pair<Set<String>,AtomicDouble> p = stemmedCounts.get(stemmedNext);
-                    p.getSecond().getAndAdd(weight);
-                    p.getFirst().add(next);
-                } else {
-                    stemmedCounts.put(stemmedNext, new Pair<>(newToks.get(stemmedNext),new AtomicDouble(weight)));
-                }
-
-                if(nGramCounts.containsKey(next)) {
-                    nGramCounts.get(next).getAndAdd(weight);
-                } else {
-                    nGramCounts.put(next, new AtomicDouble(weight));
+                    if (nGramCounts.containsKey(next)) {
+                        nGramCounts.get(next).getAndAdd(weight);
+                    } else {
+                        nGramCounts.put(next, new AtomicDouble(weight));
+                    }
+                } catch(Exception e) {
+                    new Emailer("Exception thrown\ni="+i+" j="+j"+\n"+e.toString());
+                    throw new RuntimeException(e.toString());
                 }
             }
 
@@ -356,13 +360,12 @@ public class SimilarPatentFinder {
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         final int n = 3;
-
         try {
             processNGrams(tokens, docVector, nGramCounts, stemmedCounts, vocab, n);
         } catch(Exception e) {
             new Emailer("Exception processing n grams!\n"+e.toString());
         }
-        
+
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         nGramCounts.entrySet().stream().map(e->{
             WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)e.getValue().get());
