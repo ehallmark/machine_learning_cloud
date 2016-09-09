@@ -1,5 +1,6 @@
 package analysis;
 
+import ca.pjer.ekmeans.EKmeans;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.deeplearning4j.berkeley.Pair;
@@ -8,6 +9,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.eclipse.jetty.util.ArrayQueue;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.rng.DefaultRandom;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.*;
@@ -16,6 +18,7 @@ import tools.*;
 import java.io.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -166,6 +169,28 @@ public class SimilarPatentFinder {
 
     public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
         // to do
+        // k-means
+        int numData = patentList.size();
+        final int numClusters = 5;
+        double[][] points = new double[numData][Constants.VECTOR_LENGTH];
+        for (int i = 0; i < numData; i++) {
+            points[i] = patentList.get(i).getVector().data().asDouble();
+        }
+        double[][] centroids = (double[][])(Nd4j.rand(numClusters,Constants.VECTOR_LENGTH,-1.0d,1.0d, new DefaultRandom(41)).data().array());
+
+        EKmeans eKmeans = new EKmeans(centroids, points);
+        eKmeans.run();
+
+        int[] assignments = eKmeans.getAssignments();
+        // here we just print the assignement to the console.
+        StringJoiner email = new StringJoiner("\n");
+        for (int i = 0; i < numData; i++) {
+            System.out.println(MessageFormat.format("point {0} is assigned to cluster {1}", i, assignments[i]));
+            email.add(patentList.get(i).getName()+" is in assigmnent "+assignments[i]);
+        }
+        new Emailer(email.toString());
+
+
         List<Patent> set = new LinkedList<>();
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
         final int consideredPerElement = 100;
