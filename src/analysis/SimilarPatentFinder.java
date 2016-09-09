@@ -309,7 +309,7 @@ public class SimilarPatentFinder {
             double stemValue = stemmedCounts.get(newTok.getKey()).getSecond().get();
             SortedSet<WordFrequencyPair<String,Double>> data = newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).collect(Collectors.toCollection(()->new TreeSet<>()));
             for(WordFrequencyPair<String,Double> pair : data) {
-                if(pair==data.last())break;
+                if(pair.equals(data.last()))continue;
                 String toRemove = pair.getFirst();
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
@@ -331,7 +331,7 @@ public class SimilarPatentFinder {
                 }
             }
             for(WordFrequencyPair<String,Double> pair : data) {
-                if(pair==data.last())break;
+                if(pair.equals(data.last()))continue;
                 String toRemove = pair.getFirst();
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
@@ -358,11 +358,10 @@ public class SimilarPatentFinder {
         processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,n);
 
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
-        Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
+        nGramCounts.entrySet().stream().map(e->{
             WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)e.getValue().get());
             return newPair;
-        });
-        stream.forEach(s->{
+        }).forEach(s->{
             heap.add(s);
         });
 
