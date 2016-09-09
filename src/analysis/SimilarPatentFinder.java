@@ -183,6 +183,8 @@ public class SimilarPatentFinder {
             }
 
             EKmeans eKmeans = new EKmeans(centroids, points);
+            eKmeans.setEqual(true);
+            eKmeans.setDistanceFunction((d1,d2)->Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
             eKmeans.run();
 
             int[] assignments = eKmeans.getAssignments();
