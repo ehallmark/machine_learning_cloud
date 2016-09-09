@@ -168,7 +168,7 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal) throws Exception {
+    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations) throws Exception {
         // k-means
         int numData = patentList.size();
         final int numClusters = k;
@@ -187,7 +187,7 @@ public class SimilarPatentFinder {
         try {
             eKmeans = new EKmeans(centroids, points);
             eKmeans.setEqual(equal);
-            eKmeans.setIteration(256);
+            eKmeans.setIteration(iterations);
             //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
             eKmeans.run();
 

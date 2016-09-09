@@ -100,6 +100,11 @@ public class SimilarPatentServer {
             if(nstr==null||nstr.trim().length()==0)  n=1;
             else n = Integer.valueOf(nstr);
 
+            String istr = req.queryParams("iterations");
+            Integer i = null;
+            if(istr==null||istr.trim().length()==0)  i=128;
+            else i = Integer.valueOf(istr);
+
             String equal = req.queryParams("equal");
             boolean isEqual = false;
             if(equal!=null&&equal.trim().length()>0&&equal.contains("on"))  isEqual=true;
@@ -113,7 +118,7 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual);
+            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i);
             // Handle csv or json
             PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
             if (responseWithCSV(req)) {
@@ -514,6 +519,7 @@ public class SimilarPatentServer {
                                                         selectCandidateSetDropdown("Select Candidate Set","name",false),
                                                         label("Number of Clusters"),br(),input().withType("text").withName("k"),br(),
                                                         label("Number of Tags per Cluster"),br(),input().withType("text").withName("numPredictions"),br(),
+                                                        label("Number of Iterations"),br(),input().withType("text").withName("iterations"),br(),
                                                         label("Force equal subset size"),br(),input().withType("checkbox").withName("equal"),br(),br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )
