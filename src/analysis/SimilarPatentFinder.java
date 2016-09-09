@@ -208,6 +208,7 @@ public class SimilarPatentFinder {
         // compute centroids
         Map<Integer,INDArray> centroidMap = new HashMap<>();
         kMeansMap.entrySet().forEach(e->{
+            if(e.getValue().isEmpty())return;
             centroidMap.put(e.getKey(),computeAvg(e.getValue(),null));
         });
 
