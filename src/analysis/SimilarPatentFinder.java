@@ -176,7 +176,7 @@ public class SimilarPatentFinder {
             for (int i = 0; i < numData; i++) {
                 points[i] = patentList.get(i).getVector().data().asDouble();
             }
-            double[][] centroids = new double[numClusters][];
+            double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
             org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
             for (int i = 0; i < numClusters; i++) {
                 centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
@@ -184,10 +184,11 @@ public class SimilarPatentFinder {
 
             EKmeans eKmeans = new EKmeans(centroids, points);
             //eKmeans.setEqual(true);
-            eKmeans.setDistanceFunction((d1,d2)->Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
+            eKmeans.setDistanceFunction((d1,d2)->1.0-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
             eKmeans.run();
 
             int[] assignments = eKmeans.getAssignments();
+            assert assignments.length==numData : "K means has wrong number of data points!";
             // here we just print the assignement to the console.
             StringJoiner email = new StringJoiner("\n");
             for (int i = 0; i < numData; i++) {
@@ -224,7 +225,7 @@ public class SimilarPatentFinder {
             for(int i = 0; i < maxNumPerIteration; i++) {
                 if(set.isEmpty()) break;
                 //int sizeBefore = set.size();
-                Patent p = set.get(0);
+                Patent p = set.get(i);
                 //int sizeAfter = set.size();
                 //assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
                 patents.add(p);
