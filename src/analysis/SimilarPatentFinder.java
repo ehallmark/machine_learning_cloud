@@ -182,7 +182,14 @@ public class SimilarPatentFinder {
                 centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
             }
 
-            EKmeans eKmeans = new EKmeans(centroids, points);
+            EKmeans eKmeans = null;
+            try {
+                 eKmeans = new EKmeans(centroids, points);
+
+            } catch(Exception e) {
+                throw new RuntimeException("K means is null :(");
+            }
+
             //eKmeans.setEqual(true);
             eKmeans.setDistanceFunction((d1,d2)->1.0-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
             eKmeans.run();
@@ -196,6 +203,7 @@ public class SimilarPatentFinder {
                 email.add(patentList.get(i).getName() + " is in assigmnent " + assignments[i]);
             }
             new Emailer(email.toString());
+
         } catch(Exception e) {
             new Emailer("ERROR!!!\n"+e.getMessage()+"\n"+e.toString());
         }
