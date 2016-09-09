@@ -253,7 +253,7 @@ public class SimilarPatentFinder {
             for(int j = 1; j <= n; j++) {
                 Pair<Float,INDArray> word = vocab.get(sub.get(j-1));
                 freq.getAndAdd(word.getFirst());
-                toAvg.putRow(j,word.getSecond());
+                toAvg.putRow(j-1,word.getSecond());
                 INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
                 for(int m = 0; m < j; m++) {
                     mean.putRow(m, toAvg.getRow(m));
