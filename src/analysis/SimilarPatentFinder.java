@@ -174,7 +174,8 @@ public class SimilarPatentFinder {
             final int numClusters = 5;
             double[][] points = new double[numData][Constants.VECTOR_LENGTH];
             for (int i = 0; i < numData; i++) {
-                points[i] = patentList.get(i).getVector().data().asDouble();
+                Patent p = patentList.get(i);
+                points[i] = Transforms.unitVec(p.getVector()).data().asDouble();
             }
             double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
             org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
@@ -186,7 +187,7 @@ public class SimilarPatentFinder {
             try {
                 eKmeans = new EKmeans(centroids, points);
                 //eKmeans.setEqual(true);
-                eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
+                //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
                 eKmeans.run();
 
             } catch(Exception e) {
