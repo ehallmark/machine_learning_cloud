@@ -250,12 +250,15 @@ public class SimilarPatentFinder {
 
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
             AtomicDouble freq = new AtomicDouble(0.0);
-            for(int j = 0; j < n; j++) {
-                Pair<Float,INDArray> word = vocab.get(sub.get(j));
+            for(int j = 1; j <= n; j++) {
+                Pair<Float,INDArray> word = vocab.get(sub.get(j-1));
                 freq.getAndAdd(word.getFirst());
                 toAvg.putRow(j,word.getSecond());
-
-                double weight = Math.pow(n,1.5)*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
+                INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
+                for(int m = 0; m < j; m++) {
+                    mean.putRow(m, toAvg.getRow(m));
+                }
+                double weight = Math.pow(j,1.5)*Transforms.cosineSim(docVector,mean.mean(0))*freq.get();
 
                 String next = String.join(" ",sub.subList(0,j));
                 String stemmedNext = String.join(" ", stemSub.subList(0,j));
