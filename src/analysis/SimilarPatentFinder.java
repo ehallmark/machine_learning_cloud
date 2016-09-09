@@ -178,7 +178,7 @@ public class SimilarPatentFinder {
             }
             double[][] centroids = new double[numData][];
             for (int i = 0; i < numData; i++) {
-                centroids[i] = Nd4j.rand(numClusters, Constants.VECTOR_LENGTH, -1.0d, 1.0d, new DefaultRandom(41)).data().asDouble();
+                centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, new DefaultRandom(41)).data().asDouble();
             }
 
             EKmeans eKmeans = new EKmeans(centroids, points);
