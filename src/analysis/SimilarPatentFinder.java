@@ -146,78 +146,62 @@ public class SimilarPatentFinder {
         }
     }
 
-    private static List<WordFrequencyPair<String,Float>> predictKeywordsForMultiple(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patents) throws SQLException {
-        List<String> tokens = new ArrayList<>();
-        for(Patent p : patents) {
-            String patent = p.getName();
+    private static List<WordFrequencyPair<String,Float>> mergeKeywordPredictions(int limit, Map<String,List<WordFrequencyPair<String,Float>>> cache, Collection<String> patents) throws SQLException {
+        Map<String,Float> wordFreqMap = new HashMap<>();
+        for(String patent : patents) {
             System.out.println("    Predicting "+patent);
-            if(patentWordsCache.containsKey(patent)) {
-                tokens.addAll(patentWordsCache.get(patent));
-            } else {
-                // otherwise, if not cached
-                ResultSet rs = Database.getBaseVectorFor(patent);
-                if (rs.next()) {
-                    tokens.addAll(tf.create(rs.getString(1)).getTokens());
-                    tokens.addAll(tf.create(rs.getString(2)).getTokens());
-                    tokens.addAll(tf.create(rs.getString(3)).getTokens());
-                    patentWordsCache.put(patent, tokens);
+            cache.get(patent).forEach(prediction->{
+                if(wordFreqMap.containsKey(prediction.getFirst())) {
+                    wordFreqMap.put(prediction.getFirst(), wordFreqMap.get(prediction.getFirst())+prediction.getSecond());
+                } else {
+                    wordFreqMap.put(prediction.getFirst(), prediction.getSecond());
                 }
-            }
+            });
         }
-        return predictKeywords(tokens,limit,vocab,computeAvg(patents,null));
+        return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
     public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
-        try {// to do
-            // k-means
-            int numData = patentList.size();
-            final int numClusters = 5;
-            double[][] points = new double[numData][Constants.VECTOR_LENGTH];
-            for (int i = 0; i < numData; i++) {
-                Patent p = patentList.get(i);
-                points[i] = Transforms.unitVec(p.getVector()).data().asDouble();
-            }
-            double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
-            org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
-            for (int i = 0; i < numClusters; i++) {
-                centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
-            }
-
-            EKmeans eKmeans;
-            try {
-                eKmeans = new EKmeans(centroids, points);
-                //eKmeans.setEqual(true);
-                //eKmeans.setIteration(1000);
-                //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
-                eKmeans.run();
-
-            } catch(Exception e) {
-                throw new RuntimeException("K means is null :(");
-            }
-
-            int[] assignments = eKmeans.getAssignments();
-            assert assignments.length==numData : "K means has wrong number of data points!";
-            // here we just print the assignement to the console.
-            StringJoiner email = new StringJoiner("\n");
-            for (int i = 0; i < numData; i++) {
-                System.out.println(MessageFormat.format("point {0} is assigned to cluster {1}", i, assignments[i]));
-                email.add(patentList.get(i).getName() + " is in assigmnent " + assignments[i]);
-            }
-            new Emailer(email.toString());
-
-        } catch(Exception e) {
-            new Emailer("ERROR!!!\n"+e.getMessage()+"\n"+e.toString());
+        // k-means
+        int numData = patentList.size();
+        final int numClusters = 5;
+        double[][] points = new double[numData][Constants.VECTOR_LENGTH];
+        for (int i = 0; i < numData; i++) {
+            Patent p = patentList.get(i);
+            points[i] = Transforms.unitVec(p.getVector()).data().asDouble();
+        }
+        double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
+        org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
+        for (int i = 0; i < numClusters; i++) {
+            centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
         }
 
+        EKmeans eKmeans;
+        try {
+            eKmeans = new EKmeans(centroids, points);
+            //eKmeans.setEqual(true);
+            //eKmeans.setIteration(1000);
+            //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
+            eKmeans.run();
 
-        List<Patent> set = new LinkedList<>();
+        } catch(Exception e) {
+            throw new RuntimeException("K means is null :(");
+        }
+
+        int[] assignments = eKmeans.getAssignments();
+        assert assignments.length==numData : "K means has wrong number of data points!";
+
+        Map<Integer,Set<String>> kMeansMap = new HashMap<>();
+        for(int i = 0; i < numClusters; i++) {
+            kMeansMap.put(i, new HashSet<>());
+        }
+        for(int i = 0; i < numData; i++) {
+            kMeansMap.get(i).add(patentList.get(i).getName());
+        }
+
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
         final int consideredPerElement = 100;
-        final int maxNumPerIteration = 10;
-        final int maxNumberOfIterations = 10;
-
         patentList.forEach(p->{
-            set.add(new Patent(p.getName(),p.getVector()));
             System.out.println(p.getName());
             try {
                 cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName()));
@@ -226,52 +210,17 @@ public class SimilarPatentFinder {
             }
         });
 
-        AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
-        while(!set.isEmpty()) {
-            Collections.shuffle(set);
-            List<Patent> patents = new ArrayList<>();
-            for(int i = 0; i < maxNumPerIteration; i++) {
-                if(set.isEmpty()) break;
-                //int sizeBefore = set.size();
-                Patent p = set.get(i);
-                //int sizeAfter = set.size();
-                //assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
-                patents.add(p);
-            }
-            System.out.println("Starting to get results on iteration: "+cnt.get());
-            List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
-            System.out.println("Checking results on iteration: "+cnt.get());
-            for(int i = 0; i < results.size(); i++) {
-                List<Patent> toRemove = new ArrayList<>();
-                for(Patent p : set) {
-                    System.out.println("    Checking "+p.getName());
-                    for(WordFrequencyPair<String,Float> check : cache.get(p.getName())) {
-                        if(results.get(i).getFirst().equals(check.getFirst())) {
-                            if(classMap.containsKey(check.getFirst())) {
-                                classMap.get(check.getFirst()).getSecond().add(p.getName());
-                            } else {
-                                classMap.put(check.getFirst(),new Pair<>(classMap.size()+1,Sets.newHashSet(p.getName())));
-                            }
-                            toRemove.add(p);
-                            break;
-                        }
-                    }
-                }
-                set.removeAll(toRemove);
-            }
-            if(cnt.getAndIncrement()>=maxNumberOfIterations) {
-                break;
-            }
 
-        }
-        if(!set.isEmpty()) {
-            Set<String> toAdd = new HashSet<>();
-            for (Patent p : set) {
-                toAdd.add(p.getName());
+        kMeansMap.entrySet().stream().forEach(e->{
+            try {
+                List<WordFrequencyPair<String,Float>> predictions = mergeKeywordPredictions(1,cache,e.getValue());
+                classMap.put(predictions.get(0).getFirst(),new Pair<>(classMap.size()+1,e.getValue()));
+            } catch(Exception ex) {
+                ex.printStackTrace();
             }
-            classMap.put("**UNABLE TO CLASSIFY**",new Pair<>(classMap.size()+1,toAdd));
-        }
+        });
+
         return classMap.entrySet().stream().sorted((e1,e2)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
 
