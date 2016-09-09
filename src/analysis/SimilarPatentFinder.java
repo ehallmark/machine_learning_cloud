@@ -168,8 +168,8 @@ public class SimilarPatentFinder {
         // to do
         List<Patent> set = new LinkedList<>();
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int consideredPerElement = 25;
-        final int maxNumPerIteration = 6;
+        final int consideredPerElement = 100;
+        final int maxNumPerIteration = 10;
         final int maxNumberOfIterations = 10;
 
         patentList.forEach(p->{
