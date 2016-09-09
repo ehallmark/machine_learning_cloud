@@ -287,7 +287,7 @@ public class SimilarPatentFinder {
                         nGramCounts.put(next, new AtomicDouble(weight));
                     }
                 } catch(Exception e) {
-                    new Emailer("Exception thrown\ni="+i+" j="+j"+\n"+e.toString());
+                    new Emailer("Exception thrown\ni="+i+" j="+j+"+\n"+e.toString());
                     throw new RuntimeException(e.toString());
                 }
             }
