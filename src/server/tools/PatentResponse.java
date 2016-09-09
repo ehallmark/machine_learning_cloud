@@ -14,18 +14,18 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassifications) {
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassifications) {
         super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete,autoClassifications).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassifications) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassifications) {
         // List
         Tag classTags = null;
         if(autoClassifications!=null) {
             classTags = div().with(table().with(
                     thead().with(
                             tr().with(
-                                    th("Rank"),
+                                    th("Score"),
                                     th("Classification"),
                                     th("Patents")
                             )

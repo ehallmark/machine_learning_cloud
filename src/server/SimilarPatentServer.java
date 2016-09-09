@@ -95,6 +95,15 @@ public class SimilarPatentServer {
             if(kstr==null||kstr.trim().length()==0)  k = 5;
             else k = Integer.valueOf(kstr);
 
+            String nstr = req.queryParams("numPredictions");
+            Integer n = null;
+            if(nstr==null||nstr.trim().length()==0)  n=1;
+            else n = Integer.valueOf(nstr);
+
+            String equal = req.queryParams("equal");
+            boolean isEqual = false;
+            if(equal!=null&&equal.trim().length()>0&&equal.contains("on"))  isEqual=true;
+
             Integer id = Integer.valueOf(idstr);
 
             if(id==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set"));
@@ -104,7 +113,7 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-            List<Map.Entry<String,Pair<Integer,Set<String>>>> classifications = finder.autoClassify(vocab,k);
+            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual);
             // Handle csv or json
             PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
             if (responseWithCSV(req)) {
@@ -503,8 +512,9 @@ public class SimilarPatentServer {
                                                 h3("Auto Classify Candidate Set"),
                                                 form().withId(AUTO_CLASSIFY).with(
                                                         selectCandidateSetDropdown("Select Candidate Set","name",false),
-                                                        label("Clusters"),br(),input().withType("text").withName("k"),br(),
-                                                        br(),
+                                                        label("Number of Clusters"),br(),input().withType("text").withName("k"),br(),
+                                                        label("Number of Tags per Cluster"),br(),input().withType("text").withName("numPredictions"),br(),
+                                                        label("Force equal subset size"),br(),input().withType("checkbox").withName("equal"),br(),br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )
                                         ),td().attr("style","width:33%; vertical-align: top;").with(

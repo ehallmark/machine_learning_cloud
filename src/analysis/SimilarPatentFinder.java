@@ -1,8 +1,10 @@
 package analysis;
 
 import ca.pjer.ekmeans.EKmeans;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.apache.xpath.operations.Number;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
@@ -161,7 +163,7 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k) throws Exception {
+    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal) throws Exception {
         // k-means
         int numData = patentList.size();
         final int numClusters = k;
@@ -179,7 +181,7 @@ public class SimilarPatentFinder {
         EKmeans eKmeans;
         try {
             eKmeans = new EKmeans(centroids, points);
-            //eKmeans.setEqual(true);
+            eKmeans.setEqual(equal);
             eKmeans.setIteration(256);
             //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
             eKmeans.run();
@@ -209,21 +211,17 @@ public class SimilarPatentFinder {
                 e.printStackTrace();
             }
         });
-
-        Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
-
-        kMeansMap.entrySet().stream().forEach(e->{
+        return kMeansMap.entrySet().stream().map(e->{
             try {
-                if(e.getValue().isEmpty())return;
-                List<WordFrequencyPair<String,Float>> predictions = mergeKeywordPredictions(1,cache,e.getValue());
-                if(predictions==null||predictions.isEmpty()) return;
-                classMap.put(predictions.get(0).getFirst(),new Pair<>(classMap.size()+1,e.getValue()));
+                if(e.getValue().isEmpty())return null;
+                List<WordFrequencyPair<String,Float>> predictions = mergeKeywordPredictions(numPredictions,cache,e.getValue());
+                if(predictions==null||predictions.isEmpty()) return null;
+                return Maps.immutableEntry(String.join("; ",predictions.stream().map(p->p.getFirst()).collect(Collectors.toList())),new Pair<>(predictions.stream().collect(Collectors.averagingDouble(p->p.getSecond())),e.getValue()));
             } catch(Exception ex) {
                 ex.printStackTrace();
+                return null;
             }
-        });
-
-        return classMap.entrySet().stream().sorted((e1,e2)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
+        }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
 
     private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
