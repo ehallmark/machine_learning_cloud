@@ -168,27 +168,33 @@ public class SimilarPatentFinder {
     }
 
     public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
-        // to do
-        // k-means
-        int numData = patentList.size();
-        final int numClusters = 5;
-        double[][] points = new double[numData][Constants.VECTOR_LENGTH];
-        for (int i = 0; i < numData; i++) {
-            points[i] = patentList.get(i).getVector().data().asDouble();
-        }
-        double[][] centroids = (double[][])(Nd4j.rand(numClusters,Constants.VECTOR_LENGTH,-1.0d,1.0d, new DefaultRandom(41)).data().array());
+        try {// to do
+            // k-means
+            int numData = patentList.size();
+            final int numClusters = 5;
+            double[][] points = new double[numData][Constants.VECTOR_LENGTH];
+            for (int i = 0; i < numData; i++) {
+                points[i] = patentList.get(i).getVector().data().asDouble();
+            }
+            double[][] centroids = new double[numData][];
+            for (int i = 0; i < numData; i++) {
+                centroids[i] = Nd4j.rand(numClusters, Constants.VECTOR_LENGTH, -1.0d, 1.0d, new DefaultRandom(41)).data().asDouble();
+            }
 
-        EKmeans eKmeans = new EKmeans(centroids, points);
-        eKmeans.run();
+            EKmeans eKmeans = new EKmeans(centroids, points);
+            eKmeans.run();
 
-        int[] assignments = eKmeans.getAssignments();
-        // here we just print the assignement to the console.
-        StringJoiner email = new StringJoiner("\n");
-        for (int i = 0; i < numData; i++) {
-            System.out.println(MessageFormat.format("point {0} is assigned to cluster {1}", i, assignments[i]));
-            email.add(patentList.get(i).getName()+" is in assigmnent "+assignments[i]);
+            int[] assignments = eKmeans.getAssignments();
+            // here we just print the assignement to the console.
+            StringJoiner email = new StringJoiner("\n");
+            for (int i = 0; i < numData; i++) {
+                System.out.println(MessageFormat.format("point {0} is assigned to cluster {1}", i, assignments[i]));
+                email.add(patentList.get(i).getName() + " is in assigmnent " + assignments[i]);
+            }
+            new Emailer(email.toString());
+        } catch(Exception e) {
+            new Emailer("ERROR!!!\n"+e.getMessage()+"\n"+e.toString());
         }
-        new Emailer(email.toString());
 
 
         List<Patent> set = new LinkedList<>();
