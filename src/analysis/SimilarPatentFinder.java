@@ -186,7 +186,7 @@ public class SimilarPatentFinder {
             try {
                  eKmeans = new EKmeans(centroids, points);
                 //eKmeans.setEqual(true);
-                eKmeans.setDistanceFunction((d1,d2)->Math.pow(Math.E,-1.0d*Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2))));
+                //eKmeans.setDistanceFunction((d1,d2)->Math.pow(Math.E,-1.0d*Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2))));
                 eKmeans.run();
 
             } catch(Exception e) {
