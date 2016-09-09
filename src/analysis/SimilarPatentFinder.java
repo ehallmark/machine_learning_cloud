@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -235,71 +236,54 @@ public class SimilarPatentFinder {
         }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
 
-    private static void processNGrams(List<String> tokens, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
+    private static void processNGrams(List<String> cleanToks, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         Map<String,Set<String>> newToks = new HashMap<>();
-        List<String> cleanToks = tokens.stream().filter(s->s!=null).collect(Collectors.toList());
         Set<String> permutationsSet = new HashSet<>();
-        Map<String,Set<String>> shiftedStems = new HashMap<>();
-        int tIdx = 0;
         for(int i = 0; i < cleanToks.size()-n; i++) {
             List<String> sub = cleanToks.subList(i,i+n);
-            int nullCount = 0;
-            for(int j = tIdx; j < tIdx+n; j++) {
-                if(tokens.get(j)==null) {
-                    nullCount++;
-                }
-            }
-            tIdx+=1+(tokens.get(tIdx)==null?1:0);
-            if(((int)sub.stream().map(s->stemMe.stem(s)).distinct().count())!=sub.size()) {
+            List<String> stemSub = sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList());
+            if(stemSub.size()!=sub.size()) {
                 continue;
             }
 
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
-            AtomicInteger cnt = new AtomicInteger(0);
             AtomicDouble freq = new AtomicDouble(0.0);
-            sub.forEach(s->{
-                Pair<Float,INDArray> word = vocab.get(s);
+            for(int j = 0; j < n; j++) {
+                Pair<Float,INDArray> word = vocab.get(sub.get(j));
                 freq.getAndAdd(word.getFirst());
-                toAvg.putRow(cnt.getAndIncrement(),word.getSecond());
-            });
-            String next = String.join(" ",sub);
-            List<String> stemSub = sub.stream().map(s->stemMe.stem(s)).collect(Collectors.toList());
-            String stemmedNext = String.join(" ", stemSub);
-            List<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).sorted().collect(Collectors.toList());
-            // add next sequence if possible
-            if(i < cleanToks.size()-n-1 && n > 1) {
-                String link = String.join(" ",stemSub.subList(1,n))+" "+stemMe.stem(cleanToks.get(i+n));
-                if(shiftedStems.containsKey(stemmedNext)) {
-                    shiftedStems.get(stemmedNext).add(link);
+                toAvg.putRow(j,word.getSecond());
+
+                double weight = Math.pow(n,1.5)*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
+
+                String next = String.join(" ",sub.subList(0,j));
+                String stemmedNext = String.join(" ", stemSub.subList(0,j));
+                SortedSet<String> permutedStems = new Permutations<String>().permute(stemmedNext.split(" ")).stream().map(perm->String.join(" ",perm)).collect(Collectors.toCollection(()->new TreeSet<>()));
+
+                if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
+                if(newToks.containsKey(stemmedNext)) {
+                    newToks.get(stemmedNext).add(next);
                 } else {
                     Set<String> hash = new HashSet<>();
-                    hash.add(link);
-                    shiftedStems.put(stemmedNext,hash);
+                    hash.add(next);
+                    newToks.put(stemmedNext, hash);
+                }
+                if(stemmedCounts.containsKey(stemmedNext)) {
+                    Pair<Set<String>,AtomicDouble> p = stemmedCounts.get(stemmedNext);
+                    p.getSecond().getAndAdd(weight);
+                    p.getFirst().add(next);
+                } else {
+                    stemmedCounts.put(stemmedNext, new Pair<>(newToks.get(stemmedNext),new AtomicDouble(weight)));
+                }
+
+                if(nGramCounts.containsKey(next)) {
+                    nGramCounts.get(next).getAndAdd(weight);
+                } else {
+                    nGramCounts.put(next, new AtomicDouble(weight));
                 }
             }
-            if(permutedStems.size()>0)permutationsSet.add(String.join(",",permutedStems));
-            if(newToks.containsKey(stemmedNext)) {
-                newToks.get(stemmedNext).add(next);
-            } else {
-                Set<String> hash = new HashSet<>();
-                hash.add(next);
-                newToks.put(stemmedNext, hash);
-            }
-            double weight = (Math.pow(n,1.5)/(nullCount+1))*Transforms.cosineSim(docVector,toAvg.mean(0))*freq.get();
-            if(nGramCounts.containsKey(next)) {
-                nGramCounts.get(next).getAndAdd(weight);
-            } else {
-                nGramCounts.put(next, new AtomicDouble(weight));
-            }
-            if(stemmedCounts.containsKey(stemmedNext)) {
-                Pair<Set<String>,AtomicDouble> p = stemmedCounts.get(stemmedNext);
-                p.getSecond().getAndAdd(weight);
-                p.getFirst().add(next);
-            } else {
-                stemmedCounts.put(stemmedNext, new Pair<>(newToks.get(stemmedNext),new AtomicDouble(weight)));
-            }
+
         }
         for(Map.Entry<String,Pair<Set<String>,AtomicDouble>> e : stemmedCounts.entrySet()) {
             for (Map.Entry<String, Set<String>> newTok : newToks.entrySet()) {
@@ -320,8 +304,7 @@ public class SimilarPatentFinder {
 
         for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
             double stemValue = stemmedCounts.get(newTok.getKey()).getSecond().get();
-            SortedSet<WordFrequencyPair<String,Double>> data = new TreeSet<>();
-            newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).forEach(pair->data.add(pair));
+            SortedSet<WordFrequencyPair<String,Double>> data = newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).collect(Collectors.toCollection(()->new TreeSet<>()));
             for(WordFrequencyPair<String,Double> pair : data) {
                 if(pair==data.last())break;
                 String toRemove = pair.getFirst();
@@ -331,8 +314,8 @@ public class SimilarPatentFinder {
         }
 
         for (String tok : permutationsSet) {
-            SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
             if (tok == null || tok.split(",") == null || tok.split(",").length == 0) continue;
+            SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
             for (String permStem : Arrays.asList(tok.split(","))) {
                 if (permStem == null || permStem.length() == 0) continue;
                 if (newToks.containsKey(permStem)) {
@@ -353,32 +336,6 @@ public class SimilarPatentFinder {
                 nGramCounts.get(data.last().getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
         }
 
-        for(Map.Entry<String,Set<String>> shift : shiftedStems.entrySet()) {
-            if(!newToks.containsKey(shift.getKey())) continue;
-            SortedSet<WordFrequencyPair<String,Double>> data = new TreeSet<>();
-            for(String actual : newToks.get(shift.getKey())) {
-                if (nGramCounts.containsKey(actual)) {
-                    data.add(new WordFrequencyPair<>(actual,nGramCounts.get(actual).get()));
-                }
-            }
-            for(String stem : shift.getValue().stream().filter(s -> newToks.containsKey(s)).collect(Collectors.toList())) {
-                for(String actual : newToks.get(stem)) {
-                    if (nGramCounts.containsKey(actual)) {
-                        data.add(new WordFrequencyPair<>(actual,nGramCounts.get(actual).get()));
-                    }
-                }
-            }
-            for(WordFrequencyPair<String,Double> pair : data) {
-                if(pair==data.last())break;
-                String toRemove = pair.getFirst();
-                if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-            }
-            if(!data.isEmpty()){
-                WordFrequencyPair<String,Double> lastPair = data.last();
-                nGramCounts.get(lastPair.getFirst()).set(lastPair.getSecond());
-            }
-        }
-
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
@@ -392,12 +349,10 @@ public class SimilarPatentFinder {
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
-        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).collect(Collectors.toList());
-        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens.stream().filter(t->t!=null).collect(Collectors.toList()));
-        final int maxLength = 3;
-        for(int i = maxLength; i >= 1; i--) {
-            processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,i);
-        }
+        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
+        if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
+        final int n = 3;
+        processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,n);
 
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         Stream<WordFrequencyPair<String,Float>> stream = nGramCounts.entrySet().stream().map(e->{
