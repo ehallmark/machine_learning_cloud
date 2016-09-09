@@ -166,7 +166,7 @@ public class SimilarPatentFinder {
 
     public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
         // to do
-        TreeSet<Patent> set = new TreeSet<>((p1,p2)->p1.getName().compareTo(p2.getName()));
+        List<Patent> set = new LinkedList<>();
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
         final int consideredPerElement = 25;
         final int maxNumPerIteration = 6;
@@ -181,35 +181,24 @@ public class SimilarPatentFinder {
                 e.printStackTrace();
             }
         });
+
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Pair<Integer,Set<String>>> classMap = new HashMap<>();
         while(!set.isEmpty()) {
+            Collections.shuffle(set);
             List<Patent> patents = new ArrayList<>();
             for(int i = 0; i < maxNumPerIteration; i++) {
                 if(set.isEmpty()) break;
-                int sizeBefore = set.size();
-                Patent p = set.pollFirst();
-                int sizeAfter = set.size();
-                assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
+                //int sizeBefore = set.size();
+                Patent p = set.get(0);
+                //int sizeAfter = set.size();
+                //assert (sizeAfter < sizeBefore) : "Poll first is not removing element!";
                 patents.add(p);
             }
             System.out.println("Starting to get results on iteration: "+cnt.get());
             List<WordFrequencyPair<String,Float>> results = predictKeywordsForMultiple(1,vocab,patents);
             System.out.println("Checking results on iteration: "+cnt.get());
             for(int i = 0; i < results.size(); i++) {
-                for(Patent p : patents) {
-                    System.out.println("    Checking "+p.getName());
-                    for(WordFrequencyPair<String,Float> check : cache.get(p.getName())) {
-                        if(results.get(i).getFirst().equals(check.getFirst())) {
-                            if(classMap.containsKey(check.getFirst())) {
-                                classMap.get(check.getFirst()).getSecond().add(p.getName());
-                            } else {
-                                classMap.put(check.getFirst(),new Pair<>(classMap.size()+1,Sets.newHashSet(p.getName())));
-                            }
-                            break;
-                        }
-                    }
-                }
                 List<Patent> toRemove = new ArrayList<>();
                 for(Patent p : set) {
                     System.out.println("    Checking "+p.getName());
