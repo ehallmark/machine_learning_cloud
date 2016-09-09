@@ -90,6 +90,11 @@ public class SimilarPatentServer {
             String idstr = req.queryParams("name");
             if(idstr==null||idstr.trim().length()<=0) return new Gson().toJson(new SimpleAjaxMessage("Please include candidate set selection!"));
 
+            String kstr = req.queryParams("k");
+            Integer k = null;
+            if(kstr==null||kstr.trim().length()==0)  k = 5;
+            else k = Integer.valueOf(kstr);
+
             Integer id = Integer.valueOf(idstr);
 
             if(id==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find candidate set"));
@@ -99,7 +104,7 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-            List<Map.Entry<String,Pair<Integer,Set<String>>>> classifications = finder.autoClassify(vocab);
+            List<Map.Entry<String,Pair<Integer,Set<String>>>> classifications = finder.autoClassify(vocab,k);
             // Handle csv or json
             PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
             if (responseWithCSV(req)) {
@@ -498,6 +503,7 @@ public class SimilarPatentServer {
                                                 h3("Auto Classify Candidate Set"),
                                                 form().withId(AUTO_CLASSIFY).with(
                                                         selectCandidateSetDropdown("Select Candidate Set","name",false),
+                                                        label("Clusters"),br(),input().withType("text").withName("k"),br(),
                                                         br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )

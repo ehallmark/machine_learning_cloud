@@ -161,10 +161,10 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab) throws Exception {
+    public List<Map.Entry<String,Pair<Integer,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k) throws Exception {
         // k-means
         int numData = patentList.size();
-        final int numClusters = 5;
+        final int numClusters = k;
         double[][] points = new double[numData][Constants.VECTOR_LENGTH];
         for (int i = 0; i < numData; i++) {
             Patent p = patentList.get(i);
@@ -196,11 +196,11 @@ public class SimilarPatentFinder {
             kMeansMap.put(i, new HashSet<>());
         }
         for(int i = 0; i < numData; i++) {
-            kMeansMap.get(i).add(patentList.get(i).getName());
+            kMeansMap.get(assignments[i]).add(patentList.get(i).getName());
         }
 
         Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int consideredPerElement = 100;
+        final int consideredPerElement = 50;
         patentList.forEach(p->{
             System.out.println(p.getName());
             try {
@@ -214,7 +214,9 @@ public class SimilarPatentFinder {
 
         kMeansMap.entrySet().stream().forEach(e->{
             try {
+                if(e.getValue().isEmpty())return;
                 List<WordFrequencyPair<String,Float>> predictions = mergeKeywordPredictions(1,cache,e.getValue());
+                if(predictions==null||predictions.isEmpty()) return;
                 classMap.put(predictions.get(0).getFirst(),new Pair<>(classMap.size()+1,e.getValue()));
             } catch(Exception ex) {
                 ex.printStackTrace();
