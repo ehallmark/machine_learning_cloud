@@ -251,6 +251,7 @@ public class SimilarPatentFinder {
             INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
             AtomicDouble freq = new AtomicDouble(0.0);
             for(int j = 1; j <= n; j++) {
+
                 Pair<Float,INDArray> word = vocab.get(sub.get(j-1));
                 freq.getAndAdd(word.getFirst());
                 toAvg.putRow(j-1,word.getSecond());
@@ -355,8 +356,13 @@ public class SimilarPatentFinder {
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         final int n = 3;
-        processNGrams(tokens,docVector,nGramCounts,stemmedCounts,vocab,n);
 
+        try {
+            processNGrams(tokens, docVector, nGramCounts, stemmedCounts, vocab, n);
+        } catch(Exception e) {
+            new Emailer("Exception processing n grams!\n"+e.toString());
+        }
+        
         MinHeap<WordFrequencyPair<String,Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
         nGramCounts.entrySet().stream().map(e->{
             WordFrequencyPair<String,Float> newPair = new WordFrequencyPair<>(e.getKey(),(float)e.getValue().get());
