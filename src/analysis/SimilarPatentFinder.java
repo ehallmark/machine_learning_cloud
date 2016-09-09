@@ -320,16 +320,18 @@ public class SimilarPatentFinder {
 
         for(Map.Entry<String,Set<String>> newTok : newToks.entrySet()) {
             double stemValue = stemmedCounts.get(newTok.getKey()).getSecond().get();
-            List<String> data = newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).sorted().map(p -> p.getFirst()).collect(Collectors.toList());
-            for (int i = 0; i < data.size() - 1; i++) {
-                String toRemove = data.get(i);
+            SortedSet<WordFrequencyPair<String,Double>> data = new TreeSet<>();
+            newTok.getValue().stream().filter(s -> nGramCounts.containsKey(s)).map(s -> new WordFrequencyPair<>(s, nGramCounts.get(s).get())).forEach(pair->data.add(pair));
+            for(WordFrequencyPair<String,Double> pair : data) {
+                if(pair==data.last())break;
+                String toRemove = pair.getFirst();
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
-            if(!data.isEmpty())nGramCounts.get(data.get(data.size() - 1)).set(stemValue);
+            if(!data.isEmpty())nGramCounts.get(data.last()).set(stemValue);
         }
 
         for (String tok : permutationsSet) {
-            List<WordFrequencyPair<String, Double>> data = new ArrayList<>();
+            SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
             if (tok == null || tok.split(",") == null || tok.split(",").length == 0) continue;
             for (String permStem : Arrays.asList(tok.split(","))) {
                 if (permStem == null || permStem.length() == 0) continue;
@@ -342,18 +344,18 @@ public class SimilarPatentFinder {
                     }
                 }
             }
-            data = data.stream().distinct().filter(k->nGramCounts.containsKey(k.getFirst())).sorted().collect(Collectors.toList());
-            for (int i = 0; i < data.size() - 1; i++) {
-                String toRemove = data.get(i).getFirst();
-                nGramCounts.remove(toRemove);
+            for(WordFrequencyPair<String,Double> pair : data) {
+                if(pair==data.last())break;
+                String toRemove = pair.getFirst();
+                if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
             if (!data.isEmpty())
-                nGramCounts.get(data.get(data.size() - 1).getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
+                nGramCounts.get(data.last().getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
         }
 
         for(Map.Entry<String,Set<String>> shift : shiftedStems.entrySet()) {
             if(!newToks.containsKey(shift.getKey())) continue;
-            List<WordFrequencyPair<String,Double>> data = new ArrayList<>();
+            SortedSet<WordFrequencyPair<String,Double>> data = new TreeSet<>();
             for(String actual : newToks.get(shift.getKey())) {
                 if (nGramCounts.containsKey(actual)) {
                     data.add(new WordFrequencyPair<>(actual,nGramCounts.get(actual).get()));
@@ -366,13 +368,13 @@ public class SimilarPatentFinder {
                     }
                 }
             }
-            data = data.stream().distinct().sorted().collect(Collectors.toList());
-            for (int i = 0; i < data.size() - 1; i++) {
-                String toRemove = data.get(i).getFirst();
+            for(WordFrequencyPair<String,Double> pair : data) {
+                if(pair==data.last())break;
+                String toRemove = pair.getFirst();
                 if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
             }
             if(!data.isEmpty()){
-                WordFrequencyPair<String,Double> lastPair = data.get(data.size()-1);
+                WordFrequencyPair<String,Double> lastPair = data.last();
                 nGramCounts.get(lastPair.getFirst()).set(lastPair.getSecond());
             }
         }
