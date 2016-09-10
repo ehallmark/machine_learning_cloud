@@ -180,6 +180,7 @@ public class SimilarPatentFinder {
 
     public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n) throws Exception {
         // k-means
+        final int sampleSize = 30;
         assert k >= 1 : "Must have at least 1 cluster!";
         int numData = patentList.size();
         assert numData > k : "There are more classifications than data points!";
@@ -195,22 +196,20 @@ public class SimilarPatentFinder {
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
         int firstIdx = rand.nextInt(points.length);
         centroids[0] = points[firstIdx];
-        List<INDArray> prevClusters = new ArrayList<>();
+        List<double[]> prevClusters = new ArrayList<>();
         Set<Integer> prevClusterIndices = new HashSet<>();
         prevClusterIndices.add(firstIdx);
-        prevClusters.add(Nd4j.create(centroids[0]));
+        prevClusters.add(centroids[0]);
         System.out.println("Calculating initial centroids...");
-        final int centroidSampleSize = 100;
         try {
-            int maxLength = Math.min(centroidSampleSize*numClusters,numData);
+            int maxLength = Math.min(sampleSize*numClusters,numData);
             for (int i = 1; i < numClusters; i++) {
                 AtomicInteger idxToAdd = new AtomicInteger(-1);
                 AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
                 for (int j = 0; j < maxLength; j++) {
                     if(prevClusterIndices.contains(j))continue;
                     double[] d = points[j];
-                    INDArray vec = Nd4j.create(d);
-                    double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->v.distance2(vec)));
+                    double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->distance(v,d)));
                     if(overallDistance>maxDistanceSoFar.get()) {
                         maxDistanceSoFar.set(overallDistance);
                         idxToAdd.set(j);
@@ -219,7 +218,7 @@ public class SimilarPatentFinder {
                 if(idxToAdd.get() >= 0) {
                     prevClusterIndices.add(idxToAdd.get());
                     centroids[i] = points[idxToAdd.get()];
-                    prevClusters.add(Nd4j.create(centroids[i]));
+                    prevClusters.add(centroids[i]);
                 }
             }
         } catch(Exception e) {
@@ -253,7 +252,6 @@ public class SimilarPatentFinder {
 
         // compute best phrases for each cluster
         Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int sampleSize = 30;
         kMeansMap.entrySet().forEach(e->{
             System.out.println("Calculating class: "+e.getKey().toString());
             if(e.getValue().isEmpty())return;
@@ -277,6 +275,15 @@ public class SimilarPatentFinder {
                 return null;
             }
         }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
+    }
+
+    private static double distance(double[] v1, double[] v2) {
+        assert v1.length==v2.length : "VECTORS HAVE INCONSISTENT LENGTHS!";
+        double result = 0.0;
+        for(int i = 0; i < v1.length; i++) {
+            result+=Math.pow(v1[i]-v2[i],2);
+        }
+        return result;
     }
 
     private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
