@@ -139,12 +139,12 @@ public class SimilarPatentFinder {
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent) throws SQLException {
-        return predictKeywords(limit, vocab, patent, null);
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent, int n) throws SQLException {
+        return predictKeywords(limit, vocab, patent, null, n);
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent, INDArray docVector) throws SQLException {
-        if(patentWordsCache.containsKey(patent)) return predictKeywords(patentWordsCache.get(patent),limit,vocab,docVector);
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent, INDArray docVector, int n) throws SQLException {
+        if(patentWordsCache.containsKey(patent)) return predictKeywords(patentWordsCache.get(patent),limit,vocab,docVector,n);
         // otherwise, if not cached
         ResultSet rs = Database.getBaseVectorFor(patent);
         if(rs.next()) {
@@ -153,7 +153,7 @@ public class SimilarPatentFinder {
             tokens.addAll(tf.create(rs.getString(2)).getTokens());
             tokens.addAll(tf.create(rs.getString(3)).getTokens());
             patentWordsCache.put(patent, tokens);
-            return predictKeywords(tokens,limit,vocab, docVector);
+            return predictKeywords(tokens,limit,vocab, docVector, n);
         } else {
             return null;
         }
@@ -174,7 +174,7 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations) throws Exception {
+    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n) throws Exception {
         // k-means
         int numData = patentList.size();
         final int numClusters = k;
@@ -224,7 +224,7 @@ public class SimilarPatentFinder {
         patentList.forEach(p->{
             System.out.println(p.getName());
             try {
-                cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName(),centroidMap.get(assignments[patentList.indexOf(p)])));
+                cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName(),centroidMap.get(assignments[patentList.indexOf(p)]),n));
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -251,7 +251,7 @@ public class SimilarPatentFinder {
         for(int i = 0; i < cleanToks.size()-n; i++) {
             List<String> sub = cleanToks.subList(i, i + n);
             List<String> stemSub = sub.stream().map(s -> stemMe.stem(s)).collect(Collectors.toList());
-            if (stemSub.size() != sub.size()) {
+            if (stemSub.stream().distinct().count() != (long)sub.size()) {
                 continue;
             }
 
@@ -271,7 +271,7 @@ public class SimilarPatentFinder {
                 }
 
                 // calculate the weight function
-                double weight = Math.pow(j, 1.5) * Transforms.cosineSim(docVector, mean.mean(0)) * freq.get();
+                double weight = Math.pow(j, 1.2) * Transforms.cosineSim(docVector, mean.mean(0)) * freq.get();
 
                 // create string of the phrase
                 String next = String.join(" ", sub.subList(0, j));
@@ -334,54 +334,39 @@ public class SimilarPatentFinder {
 
 
         }
-        try {
-            for (String stem : setOfUniqueSingleWordStems) {
-                SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
-                // suffix stuff
-                try {
-                    Iterable<SortedSet<WordFrequencyPair<String, Double>>> suffixIter = suffixTree.getValuesForKeysEndingWith(" " + stem);
-                    if (suffixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixIter) {
-                        if (pair == null || pair.isEmpty()) continue;
-                        data.add(pair.last());
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException("First section\n"+e.toString());
-                }
-                try {
-                    Iterable<SortedSet<WordFrequencyPair<String, Double>>> prefixIter = prefixTree.getValuesForKeysStartingWith(stem + " ");
-                    if (prefixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixIter) {
-                        if (pair == null || pair.isEmpty()) continue;
-                        data.add(pair.last());
-                    }
-                } catch(Exception e) {
-                    throw new RuntimeException("2nd Section\n"+e.toString());
-                }
-                try {
-                    if (!data.isEmpty()) {
-                        nGramCounts.get(data.last().getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
-                    }
-                } catch(Exception e) {
-                    throw new RuntimeException("Last section \n"+e.toString());
-                }
+        for (String stem : setOfUniqueSingleWordStems) {
+            SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
+            // suffix stuff
+            Iterable<SortedSet<WordFrequencyPair<String, Double>>> suffixIter = suffixTree.getValuesForKeysEndingWith(" " + stem);
+            if (suffixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixIter) {
+                if (pair == null || pair.isEmpty()) continue;
+                data.add(pair.last());
             }
-        } catch (Exception e) {
-            new Emailer("While computing the trie stuff...\n"+e.toString());
+
+            Iterable<SortedSet<WordFrequencyPair<String, Double>>> prefixIter = prefixTree.getValuesForKeysStartingWith(stem + " ");
+            if (prefixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixIter) {
+                if (pair == null || pair.isEmpty()) continue;
+                data.add(pair.last());
+            }
+
+            if (!data.isEmpty()) {
+                nGramCounts.get(data.last().getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
+            }
         }
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        return predictKeywords(tf.create(text).getTokens(),limit,vocab);
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(String text, int limit, Map<String,Pair<Float,INDArray>> vocab, int n) {
+        return predictKeywords(tf.create(text).getTokens(),limit,vocab, n);
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab) {
-        return predictKeywords(tokens,limit,vocab,null);
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, int n) {
+        return predictKeywords(tokens,limit,vocab,null,n);
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
-        final int n = 3;
         try {
             processNGrams(tokens, docVector, nGramCounts, vocab, n);
         } catch(Exception e) {

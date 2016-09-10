@@ -105,6 +105,12 @@ public class SimilarPatentServer {
             if(istr==null||istr.trim().length()==0)  i=128;
             else i = Integer.valueOf(istr);
 
+            String ngramStr = req.queryParams("ngram");
+            Integer ngram = null;
+            if(ngramStr==null||ngramStr.trim().length()==0)  ngram=3;
+            else ngram = Integer.valueOf(ngramStr);
+
+
             String equal = req.queryParams("equal");
             boolean isEqual = false;
             if(equal!=null&&equal.trim().length()>0&&equal.contains("on"))  isEqual=true;
@@ -118,7 +124,7 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i);
+            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram);
             // Handle csv or json
             PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
             if (responseWithCSV(req)) {
@@ -364,7 +370,12 @@ public class SimilarPatentServer {
             if ((pubDocNumber == null || pubDocNumber.trim().length() == 0) && (text == null || text.trim().length() == 0))
                 return new Gson().toJson(new NoPatentProvided());
             int limit = extractLimit(req);
-            List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber);
+            String ngramStr = req.queryParams("ngram");
+            Integer ngram = null;
+            if(ngramStr==null||ngramStr.trim().length()==0)  ngram=3;
+            else ngram = Integer.valueOf(ngramStr);
+
+            List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab, ngram) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber, ngram);
             if (patents == null) response = new PatentNotFound(pubDocNumber);
             else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
             else response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber,patents), new Double(System.currentTimeMillis() - startTime) / 1000,null);
@@ -510,6 +521,7 @@ public class SimilarPatentServer {
                                                 form().withId(SELECT_KEYWORDS).with(
                                                         label("Patent"),br(),input().withType("text").withName("patent"),br(),
                                                         label("Text"),br(),textarea().withName("text"),br(),
+                                                        label("Max length of n grams"),br(),input().withType("text").withName("ngram"),br(),
                                                         label("Limit"),br(),input().withType("text").withName("limit"),br(),
                                                         br(),
                                                         button("Search").withId(SELECT_KEYWORDS+"-button").withType("submit")
@@ -520,6 +532,7 @@ public class SimilarPatentServer {
                                                         label("Number of Clusters"),br(),input().withType("text").withName("k"),br(),
                                                         label("Number of Tags per Cluster"),br(),input().withType("text").withName("numPredictions"),br(),
                                                         label("Number of Iterations"),br(),input().withType("text").withName("iterations"),br(),
+                                                        label("Max length of n grams"),br(),input().withType("text").withName("ngram"),br(),
                                                         label("Force equal subset size"),br(),input().withType("checkbox").withName("equal"),br(),br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")
                                                 )
