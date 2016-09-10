@@ -163,18 +163,19 @@ public class SimilarPatentFinder {
         }
     }
 
-    private static List<WordFrequencyPair<String,Float>> mergeKeywordPredictions(int limit, Map<String,List<WordFrequencyPair<String,Float>>> cache, Collection<String> patents) throws SQLException {
+    private static List<WordFrequencyPair<String,Float>> mergeKeywordPredictions(int limit, Map<String,List<WordFrequencyPair<String,Float>>> predictions) throws SQLException {
         Map<String,Float> wordFreqMap = new HashMap<>();
-        for(String patent : patents) {
+        predictions.entrySet().forEach(e->{
+            String patent = e.getKey();
             System.out.println("    Predicting "+patent);
-            cache.get(patent).forEach(prediction->{
+            e.getValue().forEach(prediction->{
                 if(wordFreqMap.containsKey(prediction.getFirst())) {
                     wordFreqMap.put(prediction.getFirst(), wordFreqMap.get(prediction.getFirst())+prediction.getSecond());
                 } else {
                     wordFreqMap.put(prediction.getFirst(), prediction.getSecond());
                 }
             });
-        }
+        });
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
@@ -190,7 +191,7 @@ public class SimilarPatentFinder {
         double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
         for (int i = 0; i < numData; i++) {
             Patent p = patentList.get(i);
-            points[i] = Transforms.unitVec(p.getVector()).data().asDouble();
+            points[i] = p.getVector().data().asDouble();
         }
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
@@ -287,15 +288,17 @@ public class SimilarPatentFinder {
     }
 
     private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
-        return predictKeywords(getTokensForMultiple(patentList,sampleSize),limit,vocab,avgVector,n);
-    }
-
-    private static List<String> getTokensForMultiple(List<Patent> patentList, int sampleSize) throws SQLException {
-        List<String> tokens = new ArrayList<>();
+        Map<String,List<WordFrequencyPair<String,Float>>> freqMap = new HashMap<>();
         Collections.shuffle(patentList);
         List<String> toQuery = patentList.stream().limit(sampleSize).filter(p->{
             if(patentWordsCache.containsKey(p.getName())) {
-                tokens.addAll(patentWordsCache.get(p.getName()));
+                List<String> currentTokens = patentWordsCache.get(p.getName());
+                List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, avgVector, n);
+                freqMap.put(p.getName(),frequencies);
+                frequencies.forEach(frequency->{
+                    // standardize scores by length of document
+                    frequency.setSecond(frequency.getSecond()/currentTokens.size());
+                });
                 return false;
             } else return true;
         }).map(p->p.getName()).collect(Collectors.toList());
@@ -307,11 +310,18 @@ public class SimilarPatentFinder {
             currentTokens.addAll(tf.create(rs.getString(3)).getTokens());
             currentTokens.addAll(tf.create(rs.getString(4)).getTokens());
             patentWordsCache.put(rs.getString(1), currentTokens);
-            tokens.addAll(currentTokens);
+            List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, avgVector, n);
+            frequencies.forEach(frequency->{
+                // standardize scores by length of document
+                frequency.setSecond(frequency.getSecond()/currentTokens.size());
+            });
+            freqMap.put(rs.getString(1),frequencies);
         }
         rs.close();
-        return tokens;
+        return mergeKeywordPredictions(limit,freqMap);
     }
+
+
 
 
     private static void processNGrams(List<String> cleanToks, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
