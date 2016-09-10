@@ -124,16 +124,22 @@ public class SimilarPatentServer {
             // otherwise we are good to go
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
-            List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram);
-            // Handle csv or json
-            PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
-            if (responseWithCSV(req)) {
-                res.type("text/csv");
-                return CSVHelper.to_csv(response);
-            } else {
+            try {
+                List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram);
+                // Handle csv or json
+                PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
+                if (responseWithCSV(req)) {
+                    res.type("text/csv");
+                    return CSVHelper.to_csv(response);
+                } else {
+                    res.type("application/json");
+                    return new Gson().toJson(response);
+                }
+            } catch (Exception e) {
                 res.type("application/json");
-                return new Gson().toJson(response);
+                return new Gson().toJson(new SimpleAjaxMessage(e.toString()));
             }
+
         });
 
 
@@ -376,16 +382,22 @@ public class SimilarPatentServer {
             else ngram = Integer.valueOf(ngramStr);
 
             List<WordFrequencyPair<String, Float>> patents = pubDocNumber == null || pubDocNumber.trim().length() == 0 ? SimilarPatentFinder.predictKeywords(text, limit, vocab, ngram) : SimilarPatentFinder.predictKeywords(limit, vocab, pubDocNumber, ngram);
-            if (patents == null) response = new PatentNotFound(pubDocNumber);
-            else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
-            else response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber,patents), new Double(System.currentTimeMillis() - startTime) / 1000,null);
-            // Handle csv or json
-            if (responseWithCSV(req)) {
-                res.type("text/csv");
-                return CSVHelper.to_csv(response);
-            } else {
+            try {
+                if (patents == null) response = new PatentNotFound(pubDocNumber);
+                else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
+                else
+                    response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber, patents), new Double(System.currentTimeMillis() - startTime) / 1000, null);
+                // Handle csv or json
+                if (responseWithCSV(req)) {
+                    res.type("text/csv");
+                    return CSVHelper.to_csv(response);
+                } else {
+                    res.type("application/json");
+                    return new Gson().toJson(response);
+                }
+            } catch(Exception e) {
                 res.type("application/json");
-                return new Gson().toJson(response);
+                return new Gson().toJson(new SimpleAjaxMessage(e.toString()));
             }
         });
 

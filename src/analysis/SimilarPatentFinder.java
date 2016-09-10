@@ -17,6 +17,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.eclipse.jetty.util.ArrayQueue;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.accum.distances.EuclideanDistance;
 import org.nd4j.linalg.api.rng.*;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -28,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.Random;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
@@ -176,17 +178,46 @@ public class SimilarPatentFinder {
 
     public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n) throws Exception {
         // k-means
+        assert k >= 1 : "Must have at least 1 cluster!";
         int numData = patentList.size();
+        assert numData > k : "There are more classifications than data points!";
         final int numClusters = k;
         double[][] points = new double[numData][Constants.VECTOR_LENGTH];
+        double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
         for (int i = 0; i < numData; i++) {
             Patent p = patentList.get(i);
             points[i] = Transforms.unitVec(p.getVector()).data().asDouble();
         }
-        double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
+
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
-        for (int i = 0; i < numClusters; i++) {
-            centroids[i] = Nd4j.rand(1,Constants.VECTOR_LENGTH, -1.0d, 1.0d, rand).data().asDouble();
+        int firstIdx = rand.nextInt(points.length);
+        centroids[0] = points[firstIdx];
+        List<INDArray> prevClusters = new ArrayList<>();
+        Set<Integer> prevClusterIndices = new HashSet<>();
+        prevClusterIndices.add(firstIdx);
+        prevClusters.add(Nd4j.create(centroids[0]));
+        try {
+            for (int i = 1; i < numClusters; i++) {
+                AtomicInteger idxToAdd = new AtomicInteger(-1);
+                AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
+                for (int j = 0; j < points.length; j++) {
+                    if(prevClusterIndices.contains(j)) continue;
+                    double[] d = points[j];
+                    INDArray vec = Nd4j.create(d);
+                    double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->v.distance2(vec)));
+                    if(overallDistance>maxDistanceSoFar.get()) {
+                        maxDistanceSoFar.set(overallDistance);
+                        idxToAdd.set(j);
+                    }
+                }
+                if(idxToAdd.get() >= 0) {
+                    prevClusterIndices.add(idxToAdd.get());
+                    centroids[i] = points[idxToAdd.get()];
+                    prevClusters.add(Nd4j.create(centroids[i]));
+                }
+            }
+        } catch(Exception e) {
+            throw new RuntimeException("Error while calculating initial centroids: \n"+e.toString());
         }
 
         EKmeans eKmeans;
@@ -198,7 +229,7 @@ public class SimilarPatentFinder {
             eKmeans.run();
 
         } catch(Exception e) {
-            throw new RuntimeException("K means is null :(");
+            throw new RuntimeException("Error running k means algorithm: \n"+e.toString());
         }
 
         int[] assignments = eKmeans.getAssignments();
