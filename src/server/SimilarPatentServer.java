@@ -64,14 +64,16 @@ public class SimilarPatentServer {
             failed = true;
         }
         vocab = vocabCopy;
+    }
 
+    private static void loadBaseFinder() {
         if(!failed)
-        try {
-            globalFinder = new SimilarPatentFinder(vocab);
-        } catch(Exception e) {
-            e.printStackTrace();
-            failed=true;
-        }
+            try {
+                globalFinder = new SimilarPatentFinder(vocab);
+            } catch(Exception e) {
+                e.printStackTrace();
+                failed=true;
+            }
     }
 
     private static String getAndRemoveMessage(Session session) {
@@ -636,7 +638,10 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) {
-        assert !failed : "Failed to load similar patent finder!";
+        if(!Arrays.asList(args).contains("dontLoadBaseFinder")) {
+            loadBaseFinder();
+            assert !failed : "Failed to load similar patent finder!";
+        }
         server();
     }
 }
