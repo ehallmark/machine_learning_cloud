@@ -183,6 +183,7 @@ public class SimilarPatentFinder {
         assert k >= 1 : "Must have at least 1 cluster!";
         int numData = patentList.size();
         assert numData > k : "There are more classifications than data points!";
+        Collections.shuffle(patentList); // randomize data
         final int numClusters = k;
         double[][] points = new double[numData][Constants.VECTOR_LENGTH];
         double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
@@ -199,18 +200,23 @@ public class SimilarPatentFinder {
         prevClusterIndices.add(firstIdx);
         prevClusters.add(Nd4j.create(centroids[0]));
         System.out.println("Calculating initial centroids...");
+        final int centroidSampleSize = 500;
         try {
+            int maxLength = Math.min(centroidSampleSize,points.length);
             for (int i = 1; i < numClusters; i++) {
                 AtomicInteger idxToAdd = new AtomicInteger(-1);
                 AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
-                for (int j = 0; j < Math.min(200,points.length); j++) {
-                    if(prevClusterIndices.contains(j)) continue;
-                    double[] d = points[j];
+                for (int j = 0; j < maxLength; j++) {
+                    Integer idx;
+                    if(maxLength==numData) idx = j;
+                    else idx = rand.nextInt(numData);
+                    if(prevClusterIndices.contains(idx)) continue;
+                    double[] d = points[idx];
                     INDArray vec = Nd4j.create(d);
                     double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->v.distance2(vec)));
                     if(overallDistance>maxDistanceSoFar.get()) {
                         maxDistanceSoFar.set(overallDistance);
-                        idxToAdd.set(j);
+                        idxToAdd.set(idx);
                     }
                 }
                 if(idxToAdd.get() >= 0) {

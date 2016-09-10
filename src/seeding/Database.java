@@ -31,7 +31,7 @@ public class Database {
 	private static final String updateDateStatement = "UPDATE last_vectors_ingest SET pub_date=? WHERE program_name=?";
 	private static final String selectDateStatement = "SELECT pub_date FROM last_vectors_ingest WHERE program_name=?";
 	private static final String selectVectorsStatement = "SELECT p.pub_doc_number, coalesce(abstract, ''), coalesce(description, ''), array_to_string(array_agg(claim_text), ' ') FROM patent_grant as p join patent_grant_claim as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=ANY(?) and q.pub_doc_number=ANY(?) group by p.pub_doc_number";
-	private static final String selectVectorsWithoutClaimsStatement = "SELECT pub_doc_number, coalesce(title, ''), coalesce(abstract, ''), coalesce(description, '') FROM patent_grant WHERE pub_doc_number=ANY(?)";
+	private static final String selectVectorsWithoutClaimsStatement = "SELECT pub_doc_number, coalesce(invention_title, ''), coalesce(abstract, ''), coalesce(description, '') FROM patent_grant WHERE pub_doc_number=ANY(?)";
 	//private static final String selectAllVectorsStatement = "SELECT pub_doc_number, vector FROM raw_patents";
 	private static final String selectSingleVectorStatement = "SELECT coalesce(abstract, ''), coalesce(description, ''), array_to_string(array_agg(coalesce(claim_text, '')), ' '), p.pub_doc_number FROM patent_grant as p join patent_grant_claim as q on (p.pub_doc_number=q.pub_doc_number) WHERE p.pub_doc_number=? and q.pub_doc_number=? group by p.pub_doc_number";
 
