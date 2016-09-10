@@ -242,7 +242,7 @@ public class SimilarPatentFinder {
         }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
 
-    private static void processNGrams(List<String> cleanToks, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
+    private static void processNGrams(List<String> cleanToks, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
         Stemmer stemMe = new Stemmer();
         SuffixTree<SortedSet<WordFrequencyPair<String,Double>>> suffixTree = new ConcurrentSuffixTree<>(new DefaultByteArrayNodeFactory());
@@ -343,12 +343,6 @@ public class SimilarPatentFinder {
                     if (suffixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixIter) {
                         if (pair == null || pair.isEmpty()) continue;
                         data.add(pair.last());
-                        pair.remove(pair.last());
-                        for (WordFrequencyPair<String, Double> remaining : pair) {
-                            if (remaining == null) continue;
-                            String toRemove = remaining.getFirst();
-                            if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-                        }
                     }
                 } catch (Exception e) {
                     throw new RuntimeException("First section\n"+e.toString());
@@ -358,26 +352,9 @@ public class SimilarPatentFinder {
                     if (prefixIter != null) for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixIter) {
                         if (pair == null || pair.isEmpty()) continue;
                         data.add(pair.last());
-                        pair.remove(pair.last());
-                        for (WordFrequencyPair<String, Double> remaining : pair) {
-                            if (remaining == null) continue;
-                            String toRemove = remaining.getFirst();
-                            if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-                        }
                     }
                 } catch(Exception e) {
                     throw new RuntimeException("2nd Section\n"+e.toString());
-                }
-                try {
-                    if (!data.isEmpty())
-                        for (WordFrequencyPair<String, Double> pair : data) {
-                            if (pair == null) continue;
-                            if (pair.equals(data.last())) continue;
-                            String toRemove = pair.getFirst();
-                            if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-                        }
-                } catch(Exception e) {
-                    throw new RuntimeException("3rd section \n"+e.toString());
                 }
                 try {
                     if (!data.isEmpty()) {
@@ -402,12 +379,11 @@ public class SimilarPatentFinder {
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        Map<String,Pair<Set<String>,AtomicDouble>> stemmedCounts = new HashMap<>();
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         final int n = 3;
         try {
-            processNGrams(tokens, docVector, nGramCounts, stemmedCounts, vocab, n);
+            processNGrams(tokens, docVector, nGramCounts, vocab, n);
         } catch(Exception e) {
             new Emailer("Exception processing n grams!\n"+e.toString());
         }
