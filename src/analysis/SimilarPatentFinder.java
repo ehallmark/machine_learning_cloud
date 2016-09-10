@@ -338,32 +338,35 @@ public class SimilarPatentFinder {
             for (String stem : setOfUniqueSingleWordStems) {
                 SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
                 // suffix stuff
-                for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixTree.getValuesForKeysEndingWith(" " + stem)) {
-                    if(pair==null||pair.isEmpty())continue;
+                Iterable<SortedSet<WordFrequencyPair<String,Double>>> suffixIter = suffixTree.getValuesForKeysEndingWith(" " + stem);
+                if(suffixIter!=null) for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixIter) {
+                    if (pair == null || pair.isEmpty()) continue;
                     data.add(pair.last());
                     pair.remove(pair.last());
                     for (WordFrequencyPair<String, Double> remaining : pair) {
-                        if(remaining==null)continue;
+                        if (remaining == null) continue;
                         String toRemove = remaining.getFirst();
                         if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
                     }
                 }
-                for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixTree.getValuesForKeysStartingWith(stem + " ")) {
-                    if(pair==null||pair.isEmpty())continue;
-                    data.add(pair.last());
-                    pair.remove(pair.last());
-                    for (WordFrequencyPair<String, Double> remaining : pair) {
-                        if(remaining==null)continue;
-                        String toRemove = remaining.getFirst();
+                Iterable<SortedSet<WordFrequencyPair<String,Double>>> prefixIter = prefixTree.getValuesForKeysStartingWith(stem + " ");
+                if(prefixIter!=null)for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixIter) {
+                        if (pair == null || pair.isEmpty()) continue;
+                        data.add(pair.last());
+                        pair.remove(pair.last());
+                        for (WordFrequencyPair<String, Double> remaining : pair) {
+                            if (remaining == null) continue;
+                            String toRemove = remaining.getFirst();
+                            if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
+                        }
+                }
+                if(!data.isEmpty())
+                    for (WordFrequencyPair<String, Double> pair : data) {
+                        if(pair==null)continue;
+                        if (pair.equals(data.last())) continue;
+                        String toRemove = pair.getFirst();
                         if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
                     }
-                }
-                for (WordFrequencyPair<String, Double> pair : data) {
-                    if(pair==null)continue;
-                    if (pair.equals(data.last())) continue;
-                    String toRemove = pair.getFirst();
-                    if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
-                }
                 if (!data.isEmpty()) {
                     nGramCounts.get(data.last().getFirst()).set(data.stream().collect(Collectors.summingDouble(d -> d.getSecond())));
                 }
