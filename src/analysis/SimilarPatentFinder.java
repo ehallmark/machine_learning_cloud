@@ -155,8 +155,10 @@ public class SimilarPatentFinder {
             tokens.addAll(tf.create(rs.getString(2)).getTokens());
             tokens.addAll(tf.create(rs.getString(3)).getTokens());
             patentWordsCache.put(patent, tokens);
+            rs.close();
             return predictKeywords(tokens,limit,vocab, docVector, n);
         } else {
+            rs.close();
             return null;
         }
     }
@@ -200,7 +202,7 @@ public class SimilarPatentFinder {
             for (int i = 1; i < numClusters; i++) {
                 AtomicInteger idxToAdd = new AtomicInteger(-1);
                 AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
-                for (int j = 0; j < points.length; j++) {
+                for (int j = 0; j < Math.min(200,points.length); j++) {
                     if(prevClusterIndices.contains(j)) continue;
                     double[] d = points[j];
                     INDArray vec = Nd4j.create(d);
@@ -243,35 +245,57 @@ public class SimilarPatentFinder {
             kMeansMap.get(assignments[i]).add(patentList.get(i));
         }
 
-        // compute centroids
-        Map<Integer,INDArray> centroidMap = new HashMap<>();
+        // compute best phrases for each cluster
+        Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
+        final int consideredPerElement = 50;
         kMeansMap.entrySet().forEach(e->{
             if(e.getValue().isEmpty())return;
-            centroidMap.put(e.getKey(),computeAvg(e.getValue(),null));
-        });
-
-        Map<String,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int consideredPerElement = 50;
-        patentList.forEach(p->{
-            System.out.println(p.getName());
             try {
-                cache.put(p.getName(),predictKeywords(consideredPerElement,vocab,p.getName(),centroidMap.get(assignments[patentList.indexOf(p)]),n));
-            } catch(Exception e) {
-                e.printStackTrace();
+                cache.put(e.getKey(), predictMultipleKeywords(consideredPerElement, vocab, e.getValue(), computeAvg(e.getValue(), null), n));
+            } catch(Exception ex) {
+                throw new RuntimeException("Error predicting keywords for classification "+e.getKey()+"\n"+ex.toString());
             }
         });
+
         return kMeansMap.entrySet().stream().map(e->{
             try {
                 if(e.getValue().isEmpty())return null;
-                List<WordFrequencyPair<String,Float>> predictions = mergeKeywordPredictions(numPredictions,cache,e.getValue().stream().map(p->p.getName()).collect(Collectors.toList()));
+                List<WordFrequencyPair<String,Float>> predictions = cache.get(e.getKey());
                 if(predictions==null||predictions.isEmpty()) return null;
-                return Maps.immutableEntry(String.join("; ",predictions.stream().map(p->p.getFirst()).collect(Collectors.toSet())),new Pair<>(predictions.stream().collect(Collectors.averagingDouble(p->p.getSecond())),e.getValue().stream().map(p->p.getName()).collect(Collectors.toSet())));
+                return Maps.immutableEntry(String.join("|",predictions.stream().map(p->p.getFirst()).collect(Collectors.toSet())),new Pair<>(predictions.stream().collect(Collectors.averagingDouble(p->p.getSecond())),e.getValue().stream().map(p->p.getName()).collect(Collectors.toSet())));
             } catch(Exception ex) {
                 ex.printStackTrace();
                 return null;
             }
         }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
+
+    private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n) throws SQLException{
+        return predictKeywords(getTokensForMultiple(patentList),limit,vocab,avgVector,n);
+    }
+
+    private static List<String> getTokensForMultiple(List<Patent> patentList) throws SQLException {
+        List<String> tokens = new ArrayList<>();
+        List<String> toQuery = patentList.stream().filter(p->{
+            if(patentWordsCache.containsKey(p.getName())) {
+                tokens.addAll(patentWordsCache.get(p.getName()));
+                return false;
+            } else return true;
+        }).map(p->p.getName()).collect(Collectors.toList());
+        // otherwise, if not cached
+        ResultSet rs = Database.selectPatentVectors(toQuery);
+        while(rs.next()) {
+            List<String> currentTokens = new ArrayList<>();
+            currentTokens.addAll(tf.create(rs.getString(2)).getTokens());
+            currentTokens.addAll(tf.create(rs.getString(3)).getTokens());
+            currentTokens.addAll(tf.create(rs.getString(4)).getTokens());
+            patentWordsCache.put(rs.getString(1), currentTokens);
+            tokens.addAll(currentTokens);
+        }
+        rs.close();
+        return tokens;
+    }
+
 
     private static void processNGrams(List<String> cleanToks, INDArray docVector, Map<String,AtomicDouble> nGramCounts, Map<String,Pair<Float,INDArray>> vocab, int n) {
         assert n >= 1 : "Cannot process n grams if n < 1!";
