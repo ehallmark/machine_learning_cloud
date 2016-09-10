@@ -200,17 +200,19 @@ public class SimilarPatentFinder {
         prevClusterIndices.add(firstIdx);
         prevClusters.add(Nd4j.create(centroids[0]));
         System.out.println("Calculating initial centroids...");
-        final int centroidSampleSize = 500;
+        final int centroidSampleSize = 200;
         try {
-            int maxLength = Math.min(centroidSampleSize,points.length);
+            int maxLength = Math.min(centroidSampleSize,numData);
             for (int i = 1; i < numClusters; i++) {
                 AtomicInteger idxToAdd = new AtomicInteger(-1);
                 AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
                 for (int j = 0; j < maxLength; j++) {
-                    Integer idx;
-                    if(maxLength==numData) idx = j;
+                    Integer idx = null;
+                    if(maxLength==numData) {
+                        if(prevClusterIndices.contains(j))continue;
+                        idx = j;
+                    }
                     else idx = rand.nextInt(numData);
-                    if(prevClusterIndices.contains(idx)) continue;
                     double[] d = points[idx];
                     INDArray vec = Nd4j.create(d);
                     double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->v.distance2(vec)));
