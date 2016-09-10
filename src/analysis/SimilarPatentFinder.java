@@ -249,96 +249,89 @@ public class SimilarPatentFinder {
         RadixTree<SortedSet<WordFrequencyPair<String,Double>>> prefixTree = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
         Set<String> setOfUniqueSingleWordStems = new HashSet<>();
         for(int i = 0; i < cleanToks.size()-n; i++) {
-            try {
-                List<String> sub = cleanToks.subList(i, i + n);
-                List<String> stemSub = sub.stream().map(s -> stemMe.stem(s)).collect(Collectors.toList());
-                if (stemSub.size() != sub.size()) {
-                    continue;
-                }
-
-                setOfUniqueSingleWordStems.add(stemSub.get(0));
-
-                // For each sub list of length 1 to n
-                INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
-                AtomicDouble freq = new AtomicDouble(0.0);
-                for (int j = 1; j <= n; j++) {
-                    try {
-                        // get the new word
-                        Pair<Float, INDArray> word = vocab.get(sub.get(j - 1));
-                        freq.getAndAdd(word.getFirst());
-                        toAvg.putRow(j - 1, word.getSecond());
-                        INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
-                        for (int m = 0; m < j; m++) {
-                            mean.putRow(m, toAvg.getRow(m));
-                        }
-
-                        // calculate the weight function
-                        double weight = Math.pow(j, 1.5) * Transforms.cosineSim(docVector, mean.mean(0)) * freq.get();
-
-                        // create string of the phrase
-                        String next = String.join(" ", sub.subList(0, j));
-                        String stemmedNext = String.join(" ", stemSub.subList(0, j));
-                        // add all permutations of the stemmed words to tries
-                        new Permutations<String>().permute(stemmedNext.split(" ")).stream()
-                                .map(perm -> String.join(" ", perm))
-                                .collect(Collectors.toCollection(() -> new TreeSet<>()))
-                                .forEach(permutation -> {
-                                    WordFrequencyPair<String, Double> wordFrequencyPair = new WordFrequencyPair<>(next, weight);
-                                    // suffix stuff
-                                    String suffixString = " " + permutation;
-                                    SortedSet<WordFrequencyPair<String, Double>> suffixSet = suffixTree.getValueForExactKey(suffixString);
-                                    if (suffixSet == null) {
-                                        suffixSet = new TreeSet<>();
-                                        suffixSet.add(wordFrequencyPair);
-                                        suffixTree.put(suffixString, suffixSet);
-                                    } else {
-                                        boolean skip = false;
-                                        for (WordFrequencyPair<String, Double> wfp : suffixSet) {
-                                            if (wfp.getFirst().equals(wordFrequencyPair.getFirst())) {
-                                                wfp.setSecond(wfp.getSecond() + wordFrequencyPair.getSecond());
-                                                skip = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!skip) {
-                                            suffixSet.add(wordFrequencyPair);
-                                        }
-                                    }
-                                    // prefix stuff
-                                    String prefixString = permutation + " ";
-                                    SortedSet<WordFrequencyPair<String, Double>> prefixSet = prefixTree.getValueForExactKey(prefixString);
-                                    if (prefixSet == null) {
-                                        prefixSet = new TreeSet<>();
-                                        prefixSet.add(wordFrequencyPair);
-                                        prefixTree.put(prefixString, prefixSet);
-                                    } else {
-                                        boolean skip = false;
-                                        for (WordFrequencyPair<String, Double> wfp : prefixSet) {
-                                            if (wfp.getFirst().equals(wordFrequencyPair.getFirst())) {
-                                                wfp.setSecond(wfp.getSecond() + wordFrequencyPair.getSecond());
-                                                skip = true;
-                                                break;
-                                            }
-                                        }
-                                        if (!skip) {
-                                            prefixSet.add(wordFrequencyPair);
-                                        }
-                                    }
-                                });
-
-                        if (nGramCounts.containsKey(next)) {
-                            nGramCounts.get(next).getAndAdd(weight);
-                        } else {
-                            nGramCounts.put(next, new AtomicDouble(weight));
-                        }
-
-                    } catch (Exception e) {
-                        throw new RuntimeException("Exception thrown\ni=" + i + " j=" + j + "+\n" + e.toString());
-                    }
-                }
-            } catch(Exception e) {
-                new Emailer("IN the outside loop: \n"+e.toString());
+            List<String> sub = cleanToks.subList(i, i + n);
+            List<String> stemSub = sub.stream().map(s -> stemMe.stem(s)).collect(Collectors.toList());
+            if (stemSub.size() != sub.size()) {
+                continue;
             }
+
+            setOfUniqueSingleWordStems.add(stemSub.get(0));
+
+            // For each sub list of length 1 to n
+            INDArray toAvg = Nd4j.create(sub.size(), Constants.VECTOR_LENGTH);
+            AtomicDouble freq = new AtomicDouble(0.0);
+            for (int j = 1; j <= n; j++) {
+                // get the new word
+                Pair<Float, INDArray> word = vocab.get(sub.get(j - 1));
+                freq.getAndAdd(word.getFirst());
+                toAvg.putRow(j - 1, word.getSecond());
+                INDArray mean = Nd4j.create(j, Constants.VECTOR_LENGTH);
+                for (int m = 0; m < j; m++) {
+                    mean.putRow(m, toAvg.getRow(m));
+                }
+
+                // calculate the weight function
+                double weight = Math.pow(j, 1.5) * Transforms.cosineSim(docVector, mean.mean(0)) * freq.get();
+
+                // create string of the phrase
+                String next = String.join(" ", sub.subList(0, j));
+                String stemmedNext = String.join(" ", stemSub.subList(0, j));
+                // add all permutations of the stemmed words to tries
+                new Permutations<String>().permute(stemmedNext.split(" ")).stream()
+                        .map(perm -> String.join(" ", perm))
+                        .collect(Collectors.toCollection(() -> new TreeSet<>()))
+                        .forEach(permutation -> {
+                            WordFrequencyPair<String, Double> wordFrequencyPair = new WordFrequencyPair<>(next, weight);
+                            // suffix stuff
+                            String suffixString = " " + permutation;
+                            SortedSet<WordFrequencyPair<String, Double>> suffixSet = suffixTree.getValueForExactKey(suffixString);
+                            if (suffixSet == null) {
+                                suffixSet = new TreeSet<>();
+                                suffixSet.add(wordFrequencyPair);
+                                suffixTree.put(suffixString, suffixSet);
+                            } else {
+                                boolean skip = false;
+                                for (WordFrequencyPair<String, Double> wfp : suffixSet) {
+                                    if (wfp.getFirst().equals(wordFrequencyPair.getFirst())) {
+                                        wfp.setSecond(wfp.getSecond() + wordFrequencyPair.getSecond());
+                                        skip = true;
+                                        break;
+                                    }
+                                }
+                                if (!skip) {
+                                    suffixSet.add(wordFrequencyPair);
+                                }
+                            }
+                            // prefix stuff
+                            String prefixString = permutation + " ";
+                            SortedSet<WordFrequencyPair<String, Double>> prefixSet = prefixTree.getValueForExactKey(prefixString);
+                            if (prefixSet == null) {
+                                prefixSet = new TreeSet<>();
+                                prefixSet.add(wordFrequencyPair);
+                                prefixTree.put(prefixString, prefixSet);
+                            } else {
+                                boolean skip = false;
+                                for (WordFrequencyPair<String, Double> wfp : prefixSet) {
+                                    if (wfp.getFirst().equals(wordFrequencyPair.getFirst())) {
+                                        wfp.setSecond(wfp.getSecond() + wordFrequencyPair.getSecond());
+                                        skip = true;
+                                        break;
+                                    }
+                                }
+                                if (!skip) {
+                                    prefixSet.add(wordFrequencyPair);
+                                }
+                            }
+                        });
+
+                if (nGramCounts.containsKey(next)) {
+                    nGramCounts.get(next).getAndAdd(weight);
+                } else {
+                    nGramCounts.put(next, new AtomicDouble(weight));
+                }
+
+            }
+
 
         }
         try {
@@ -346,22 +339,27 @@ public class SimilarPatentFinder {
                 SortedSet<WordFrequencyPair<String, Double>> data = new TreeSet<>();
                 // suffix stuff
                 for (SortedSet<WordFrequencyPair<String, Double>> pair : suffixTree.getValuesForKeysEndingWith(" " + stem)) {
+                    if(pair==null||pair.isEmpty())continue;
                     data.add(pair.last());
                     pair.remove(pair.last());
                     for (WordFrequencyPair<String, Double> remaining : pair) {
+                        if(remaining==null)continue;
                         String toRemove = remaining.getFirst();
                         if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
                     }
                 }
                 for (SortedSet<WordFrequencyPair<String, Double>> pair : prefixTree.getValuesForKeysStartingWith(stem + " ")) {
+                    if(pair==null||pair.isEmpty())continue;
                     data.add(pair.last());
                     pair.remove(pair.last());
                     for (WordFrequencyPair<String, Double> remaining : pair) {
+                        if(remaining==null)continue;
                         String toRemove = remaining.getFirst();
                         if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
                     }
                 }
                 for (WordFrequencyPair<String, Double> pair : data) {
+                    if(pair==null)continue;
                     if (pair.equals(data.last())) continue;
                     String toRemove = pair.getFirst();
                     if (nGramCounts.containsKey(toRemove)) nGramCounts.remove(toRemove);
@@ -394,26 +392,22 @@ public class SimilarPatentFinder {
         } catch(Exception e) {
             new Emailer("Exception processing n grams!\n"+e.toString());
         }
-        try {
-            MinHeap<WordFrequencyPair<String, Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
-            nGramCounts.entrySet().stream().map(e -> {
-                WordFrequencyPair<String, Float> newPair = new WordFrequencyPair<>(e.getKey(), (float) e.getValue().get());
-                return newPair;
-            }).forEach(s -> {
-                heap.add(s);
-            });
 
-            List<WordFrequencyPair<String, Float>> results = new ArrayList<>(limit);
-            while (!heap.isEmpty()) {
-                WordFrequencyPair<String, Float> pair = heap.remove();
-                results.add(0, pair);
-            }
+        MinHeap<WordFrequencyPair<String, Float>> heap = MinHeap.setupWordFrequencyHeap(limit);
+        nGramCounts.entrySet().stream().map(e -> {
+            WordFrequencyPair<String, Float> newPair = new WordFrequencyPair<>(e.getKey(), (float) e.getValue().get());
+            return newPair;
+        }).forEach(s -> {
+            heap.add(s);
+        });
 
-            return results;
-        } catch (Exception e) {
-            new Emailer("After computing the n grams...\n"+e.toString());
-            return null;
+        List<WordFrequencyPair<String, Float>> results = new ArrayList<>(limit);
+        while (!heap.isEmpty()) {
+            WordFrequencyPair<String, Float> pair = heap.remove();
+            results.add(0, pair);
         }
+
+        return results;
     }
 
     public List<Patent> getPatentList() {
