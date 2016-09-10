@@ -247,10 +247,11 @@ public class SimilarPatentFinder {
 
         // compute best phrases for each cluster
         Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
+        final int sampleSize = 30;
         kMeansMap.entrySet().forEach(e->{
             if(e.getValue().isEmpty())return;
             try {
-                cache.put(e.getKey(), predictMultipleKeywords(numPredictions, vocab, e.getValue(), computeAvg(e.getValue(), null), n));
+                cache.put(e.getKey(), predictMultipleKeywords(numPredictions, vocab, e.getValue(), computeAvg(e.getValue(), null), n, sampleSize));
             } catch(Exception ex) {
                 throw new RuntimeException("Error predicting keywords for classification "+e.getKey()+"\n"+ex.toString());
             }
@@ -269,20 +270,21 @@ public class SimilarPatentFinder {
         }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
     }
 
-    private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n) throws SQLException{
-        return predictKeywords(getTokensForMultiple(patentList),limit,vocab,avgVector,n);
+    private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
+        return predictKeywords(getTokensForMultiple(patentList,sampleSize),limit,vocab,avgVector,n);
     }
 
-    private static List<String> getTokensForMultiple(List<Patent> patentList) throws SQLException {
+    private static List<String> getTokensForMultiple(List<Patent> patentList, int sampleSize) throws SQLException {
         List<String> tokens = new ArrayList<>();
-        List<String> toQuery = patentList.stream().filter(p->{
+        Collections.shuffle(patentList);
+        List<String> toQuery = patentList.stream().limit(sampleSize).filter(p->{
             if(patentWordsCache.containsKey(p.getName())) {
                 tokens.addAll(patentWordsCache.get(p.getName()));
                 return false;
             } else return true;
         }).map(p->p.getName()).collect(Collectors.toList());
         // otherwise, if not cached
-        ResultSet rs = Database.selectPatentVectors(toQuery);
+        ResultSet rs = Database.selectPatentVectorsWithoutClaims(toQuery);
         while(rs.next()) {
             List<String> currentTokens = new ArrayList<>();
             currentTokens.addAll(tf.create(rs.getString(2)).getTokens());
