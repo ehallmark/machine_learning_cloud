@@ -247,11 +247,10 @@ public class SimilarPatentFinder {
 
         // compute best phrases for each cluster
         Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        final int consideredPerElement = 50;
         kMeansMap.entrySet().forEach(e->{
             if(e.getValue().isEmpty())return;
             try {
-                cache.put(e.getKey(), predictMultipleKeywords(consideredPerElement, vocab, e.getValue(), computeAvg(e.getValue(), null), n));
+                cache.put(e.getKey(), predictMultipleKeywords(numPredictions, vocab, e.getValue(), computeAvg(e.getValue(), null), n));
             } catch(Exception ex) {
                 throw new RuntimeException("Error predicting keywords for classification "+e.getKey()+"\n"+ex.toString());
             }
