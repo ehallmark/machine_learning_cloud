@@ -244,8 +244,9 @@ public class Database {
 
 	public static ResultSet selectPatentVectors(List<String> patents) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsStatement);
-		ps.setArray(1, seedConn.createArrayOf("varchar", patents.toArray()));
-		ps.setArray(2, seedConn.createArrayOf("varchar", patents.toArray()));
+		Array pArray = seedConn.createArrayOf("varchar", patents.toArray());
+		ps.setArray(1, pArray);
+		ps.setArray(2, pArray);
 		ps.setFetchSize(5);
 		System.out.println(ps);
 		return ps.executeQuery();
@@ -254,7 +255,6 @@ public class Database {
 	public static ResultSet selectPatentVectorsWithoutClaims(List<String> patents) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement(selectVectorsWithoutClaimsStatement);
 		ps.setArray(1, seedConn.createArrayOf("varchar", patents.toArray()));
-		ps.setArray(2, seedConn.createArrayOf("varchar", patents.toArray()));
 		ps.setFetchSize(5);
 		System.out.println(ps);
 		return ps.executeQuery();

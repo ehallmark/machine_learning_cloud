@@ -198,6 +198,7 @@ public class SimilarPatentFinder {
         Set<Integer> prevClusterIndices = new HashSet<>();
         prevClusterIndices.add(firstIdx);
         prevClusters.add(Nd4j.create(centroids[0]));
+        System.out.println("Calculating initial centroids...");
         try {
             for (int i = 1; i < numClusters; i++) {
                 AtomicInteger idxToAdd = new AtomicInteger(-1);
@@ -222,6 +223,7 @@ public class SimilarPatentFinder {
             throw new RuntimeException("Error while calculating initial centroids: \n"+e.toString());
         }
 
+        System.out.println("Starting k means...");
         EKmeans eKmeans;
         try {
             eKmeans = new EKmeans(centroids, points);
@@ -233,6 +235,7 @@ public class SimilarPatentFinder {
         } catch(Exception e) {
             throw new RuntimeException("Error running k means algorithm: \n"+e.toString());
         }
+        System.out.println("Finished k means...");
 
         int[] assignments = eKmeans.getAssignments();
         assert assignments.length==numData : "K means has wrong number of data points!";
@@ -249,6 +252,7 @@ public class SimilarPatentFinder {
         Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
         final int sampleSize = 30;
         kMeansMap.entrySet().forEach(e->{
+            System.out.println("Calculating class: "+e.getKey().toString());
             if(e.getValue().isEmpty())return;
             try {
                 cache.put(e.getKey(), predictMultipleKeywords(numPredictions, vocab, e.getValue(), computeAvg(e.getValue(), null), n, sampleSize));
@@ -256,6 +260,8 @@ public class SimilarPatentFinder {
                 throw new RuntimeException("Error predicting keywords for classification "+e.getKey()+"\n"+ex.toString());
             }
         });
+
+        System.out.println("Returning results...");
 
         return kMeansMap.entrySet().stream().map(e->{
             try {
