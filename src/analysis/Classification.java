@@ -23,7 +23,7 @@ public class Classification implements Comparable<Classification> {
         this.patent= Patent.abstractClone(patent,"");
         this.scores=scores;
         this.classHierarchy=classHierarchy;
-        myScores = Arrays.asList(scores).stream().map(str->Arrays.stream(str.split("\\|")).collect(Collectors.summingDouble(s->Float.valueOf(s)))).collect(Collectors.toList());
+        myScores = Arrays.asList(scores).stream().map(str->str==null||str.trim().length()==0?0.0:Arrays.stream(str.split("\\|")).collect(Collectors.summingDouble(s->Float.valueOf(s)))).collect(Collectors.toList());
 
     }
 
