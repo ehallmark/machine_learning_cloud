@@ -211,7 +211,7 @@ public class SimilarPatentFinder {
         TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand,true));
         {
             AtomicInteger i = new AtomicInteger(0);
-            Stack<TreeNode<KMeansCalculator>> children = new Stack<>();
+            Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
             children.add(root);
             while (i.getAndIncrement() < depth) {
                 System.out.println("Starting DEPTH = " + i.get());
@@ -219,7 +219,7 @@ public class SimilarPatentFinder {
                 boolean calculate = true;
                 if(i.get()==depth-1) calculate = false;
                 while (!children.isEmpty()) {
-                    TreeNode<KMeansCalculator> node = children.pop();
+                    TreeNode<KMeansCalculator> node = children.poll();
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) continue;
@@ -233,12 +233,14 @@ public class SimilarPatentFinder {
 
         List<Classification> classifications = new ArrayList<>(numData);
         {
-            Queue<TreeNode<KMeansCalculator>> queue = new ArrayQueue<>();
-            queue.add(root);
+            Stack<TreeNode<KMeansCalculator>> stack = new Stack<>();
+            stack.add(root);
             Stack<Pair<String,String>> currentLabels = new Stack<>();
             System.out.println("Extracting hierarchichal results...");
-            while(!queue.isEmpty()) {
-                TreeNode<KMeansCalculator> node = queue.poll();
+            Set<TreeNode<KMeansCalculator>> visited = new HashSet<>();
+            while(!stack.isEmpty()) {
+                TreeNode<KMeansCalculator> node = stack.pop();
+                visited.add(node);
                 // add label if not root
                 String label = node.getData().getClassification();
                 if(label!=null) {
@@ -248,7 +250,7 @@ public class SimilarPatentFinder {
                 }
 
                 // check if leaf
-                if(node.getChildren()==null||node.getChildren().isEmpty()) {
+                if(node.getChildren().isEmpty()) {
                     String[] scores = new String[depth];
                     String[] labels = new String[depth];
                     Arrays.fill(scores,"");
@@ -264,13 +266,13 @@ public class SimilarPatentFinder {
                 }
 
                 // check if backtracking
-                if(node.getChildren()==null || node.getChildren().isEmpty() || !node.getChildren().contains(queue.peek())) {
+                if(node.getChildren().isEmpty() || !node.getChildren().contains(stack.peek())) {
                     // pop
                     if(!currentLabels.isEmpty()) currentLabels.pop();
                 }
 
                 // add children
-                if(node.getChildren()!=null&&!node.getChildren().isEmpty())queue.addAll(node.getChildren());
+                stack.addAll(node.getChildren().stream().filter(child->!visited.contains(node)).collect(Collectors.toList()));
 
             }
 

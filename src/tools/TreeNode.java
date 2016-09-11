@@ -10,7 +10,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 9/11/16.
  */
-public class TreeNode<T> implements Iterable<TreeNode<T>> {
+public class TreeNode<T> {
 
     T data;
     TreeNode<T> parent;
@@ -28,35 +28,12 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
         return childNode;
     }
 
-    private Iterator<TreeNode<T>> _iterator() {
-        Stack<TreeNode<T>> stack = new Stack<>();
-        stack.add(this);
-        return new Iterator<TreeNode<T>>() {
-            @Override
-            public boolean hasNext() {
-                return !stack.isEmpty();
-            }
-
-            @Override
-            public TreeNode<T> next() {
-                TreeNode<T> lastNode = stack.pop();
-                if(lastNode.children!=null)stack.addAll(lastNode.children);
-                return lastNode;
-            }
-        };
-    }
-
     public List<TreeNode<T>> getChildren() {
         return children;
     }
 
     public T getData() {
         return data;
-    }
-
-    @Override
-    public Iterator<TreeNode<T>> iterator() {
-        return _iterator();
     }
 
 
