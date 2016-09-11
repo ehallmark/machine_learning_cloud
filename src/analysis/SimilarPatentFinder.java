@@ -245,9 +245,9 @@ public class SimilarPatentFinder {
             Queue<Pair<String,String>> currentLabels = new ArrayQueue<>();
             System.out.println("Extracting hierarchichal results...");
             Set<TreeNode<KMeansCalculator>> visited = new HashSet<>();
+            visited.add(root);
             while(!stack.isEmpty()) {
                 TreeNode<KMeansCalculator> node = stack.pop();
-                visited.add(node);
                 // add label if not root
                 String label = node.getData().getClassification();
                 if(label!=null) {
@@ -281,7 +281,8 @@ public class SimilarPatentFinder {
                 }
 
                 // add children
-                stack.addAll(node.getChildren().stream().filter(child->!visited.contains(node)).collect(Collectors.toList()));
+                stack.addAll(node.getChildren());
+                visited.addAll(node.getChildren());
 
             }
 
