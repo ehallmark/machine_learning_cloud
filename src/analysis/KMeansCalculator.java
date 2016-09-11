@@ -96,9 +96,9 @@ public class KMeansCalculator {
 
         // compute best phrases for each cluster
         cache = new HashMap<>();
-        AtomicInteger tech = new AtomicInteger(0);
+        //AtomicInteger tech = new AtomicInteger(0);
         kMeansMap.forEach(subList->{
-            System.out.println("Calculating class: "+tech.get());
+            //System.out.println("Calculating class: "+tech.get());
             if(subList.isEmpty())return;
             try {
                 List<WordFrequencyPair<String,Float>> pair = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, SimilarPatentFinder.computeAvg(subList, null), n, sampleSize);
@@ -106,7 +106,7 @@ public class KMeansCalculator {
                     patentClass.put(patent.getName(),pair);
                 });
             } catch(Exception ex) {
-                throw new RuntimeException("Error predicting keywords for classification "+tech.get()+"\n"+ex.toString());
+                throw new RuntimeException("Error predicting keywords for classification "+"\n"+ex.toString());
             }
         });
 

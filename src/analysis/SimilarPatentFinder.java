@@ -237,7 +237,9 @@ public class SimilarPatentFinder {
             Arrays.fill(classes,"");
             TreeNode<KMeansCalculator> nextNode = root;
             while(nextNode!=null) {
+                boolean found = false;
                 for (TreeNode<KMeansCalculator> child : nextNode.getChildren()) {
+                    System.out.println("Checking node");
                     if (child.getData().getResults().containsKey(patent.getName())) {
                         List<WordFrequencyPair<String, Float>> keywords = child.getData().getResults().get(patent.getName());
                         StringJoiner classJoiner = new StringJoiner("|");
@@ -251,8 +253,11 @@ public class SimilarPatentFinder {
                         scores[currentDepth] = scoreJoiner.toString();
                         nextNode = child;
                         currentDepth++;
+                        found = true;
+                        break;
                     }
                 }
+                if(!found) nextNode=null;
             }
             Classification klass = new Classification(patent,scores,classes);
             classifications.add(klass);
