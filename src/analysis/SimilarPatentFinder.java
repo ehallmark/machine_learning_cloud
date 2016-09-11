@@ -11,6 +11,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
 import com.googlecode.concurrenttrees.suffix.SuffixTree;
+import edu.stanford.nlp.util.Quadruple;
 import j2html.tags.Tag;
 import org.apache.xpath.operations.Number;
 import org.deeplearning4j.berkeley.Pair;
@@ -207,77 +208,72 @@ public class SimilarPatentFinder {
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
 
-        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(points,patentList,vocab,numData,numClusters,sampleSize,iterations,n,numPredictions,equal,rand));
-        AtomicInteger i = new AtomicInteger(1);
-        Stack<TreeNode<KMeansCalculator>> children = new Stack<>();
-        children.add(root);
-        while(i.getAndIncrement() < depth) {
-            System.out.println("Starting DEPTH = "+i.get());
-            List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
-            while(!children.isEmpty()) {
-                TreeNode<KMeansCalculator> node = children.pop();
-                // expand
-                for(Pair<double[][],List<Patent>> result : node.getData().getExpansions()) {
-                    if(result.getSecond().size()<=1) continue;
-                    node.addChild(new KMeansCalculator(result.getFirst(),result.getSecond(), vocab, result.getSecond().size(),numClusters,sampleSize,iterations,n,numPredictions,equal,rand));
-
+        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand,true));
+        {
+            AtomicInteger i = new AtomicInteger(0);
+            Stack<TreeNode<KMeansCalculator>> children = new Stack<>();
+            children.add(root);
+            while (i.getAndIncrement() < depth) {
+                System.out.println("Starting DEPTH = " + i.get());
+                List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
+                boolean calculate = true;
+                if(i.get()==depth-1) calculate = false;
+                while (!children.isEmpty()) {
+                    TreeNode<KMeansCalculator> node = children.pop();
+                    // expand
+                    for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
+                        if (result.second().size() <= 1) continue;
+                        node.addChild(new KMeansCalculator(result.third(),result.fourth(),result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand,calculate));
+                    }
+                    if (node.getChildren() != null) toAdd.addAll(node.getChildren());
                 }
-                if(node.getChildren()!=null)toAdd.addAll(node.getChildren());
+                children.addAll(toAdd);
             }
-            children.addAll(toAdd);
         }
 
-        System.out.println("Extracting hierarchichal results...");
-        children = new Stack<>();
-        children.add(root);
         List<Classification> classifications = new ArrayList<>(numData);
-
-
-        // BRUTE FORCE FOR NOW
-        // FIND A BETTER WAY TO DO THIS WITHOUT REITERATING THROUGH FOR EACH PATENT
-        for(int j = 0; j < numData; j++) {
-            int currentDepth = 0;
-            Patent patent = patentList.get(j);
-            System.out.println("Patent: "+patent.getName());
-            // walk through and find the classifications for this patent
-            String[] classes = new String[depth];
-            String[] scores = new String[depth];
-            Arrays.fill(classes,"");
-            children = new Stack<>();
-            children.add(root);
-            while(!children.isEmpty()) {
-                TreeNode<KMeansCalculator> nextNode = children.pop();
-                List<WordFrequencyPair<String, Float>> keywords = nextNode.getData().getResults().get(patent.getName());
-                StringJoiner classJoiner = new StringJoiner("|");
-                StringJoiner scoreJoiner = new StringJoiner("|");
-                for (int m = 0; m < keywords.size(); m++) {
-                    classJoiner.add(keywords.get(m).getFirst());
-                    scoreJoiner.add(keywords.get(m).getSecond().toString());
+        {
+            Queue<TreeNode<KMeansCalculator>> queue = new ArrayQueue<>();
+            queue.add(root);
+            Stack<Pair<String,String>> currentLabels = new Stack<>();
+            System.out.println("Extracting hierarchichal results...");
+            while(!queue.isEmpty()) {
+                TreeNode<KMeansCalculator> node = queue.poll();
+                // add label if not root
+                String label = node.getData().getClassification();
+                if(label!=null) {
+                    if(!currentLabels.peek().getFirst().equals(label)) currentLabels.add(new Pair<>(label,node.getData().getScores()));
+                } else {
+                    currentLabels.clear();
                 }
 
-                String classString = classJoiner.toString();
-                System.out.println("   has classes: "+classString);
-                boolean mustBreak = false;
-                for(int start = 0; start<currentDepth; start++) {
-                    if(classes[start].equals(classString)) {
-                        mustBreak=true;
-                        break;
+                // check if leaf
+                if(node.getChildren()==null||node.getChildren().isEmpty()) {
+                    String[] scores = new String[depth];
+                    String[] labels = new String[depth];
+                    Arrays.fill(scores,"");
+                    Arrays.fill(labels,"");
+                    for(int i = 0; i < depth; i++) {
+                        labels[i] = currentLabels.get(i).getFirst();
+                        scores[i] = currentLabels.get(i).getSecond();
+                    }
+                    for(Patent patent : node.getData().getPatentList()) {
+                        Classification klass = new Classification(patent, scores, labels);
+                        classifications.add(klass);
                     }
                 }
-                if(mustBreak)break;
-                classes[currentDepth] = classString;
-                scores[currentDepth] = scoreJoiner.toString();
-                for (TreeNode<KMeansCalculator> child : nextNode.getChildren()) {
-                    System.out.println("Checking children");
-                    if (child.getData().getResults().containsKey(patent.getName())) {
-                        children.add(child);
-                        currentDepth++;
-                        break;
-                    }
+
+                // check if backtracking
+                if(node.getChildren()==null || node.getChildren().isEmpty() || !node.getChildren().contains(queue.peek())) {
+                    // pop
+                    if(!currentLabels.isEmpty()) currentLabels.pop();
                 }
+
+                // add children
+                if(node.getChildren()!=null&&!node.getChildren().isEmpty())queue.addAll(node.getChildren());
+
             }
-            Classification klass = new Classification(patent,scores,classes);
-            classifications.add(klass);
+
         }
         return classifications;
     }

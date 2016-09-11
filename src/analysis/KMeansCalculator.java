@@ -3,6 +3,7 @@ package analysis;
 import ca.pjer.ekmeans.EKmeans;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
+import edu.stanford.nlp.util.Quadruple;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.*;
@@ -17,12 +18,16 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/11/16.
  */
 public class KMeansCalculator {
-    private Map<Integer,List<WordFrequencyPair<String,Float>>> cache;
-    private Map<String,List<WordFrequencyPair<String,Float>>> patentClass;
-    private List<Pair<double[][],List<Patent>>> expansions;
+    private Map<Set<String>,List<WordFrequencyPair<String,Float>>> patentClass;
+    private List<Quadruple<double[][],List<Patent>,String,String>> expansions;
     private List<Patent> patentList;
+    private String classString;
+    private String scores;
 
-    public KMeansCalculator(double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand) {
+    public KMeansCalculator(String classString, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand, boolean calculate) {
+        this.classString=classString;
+        this.scores=scores;
+        if(!calculate)return;
         int firstIdx = rand.nextInt(points.length);
         patentClass = new HashMap<>();
         this.patentList=patentList;
@@ -85,73 +90,44 @@ public class KMeansCalculator {
         }
 
 
-        // compute best phrases for each cluster
-        cache = new HashMap<>();
         //AtomicInteger tech = new AtomicInteger(0);
         kMeansMap.forEach(subList->{
             //System.out.println("Calculating class: "+tech.get());
             if(subList.isEmpty())return;
             try {
-                List<WordFrequencyPair<String,Float>> pair = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, n, sampleSize);
-                subList.forEach(patent->{
-                    patentClass.put(patent.getName(),pair);
-                });
+                List<WordFrequencyPair<String,Float>> keywords = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, n, sampleSize);
+                patentClass.put(subList.stream().map(p->p.getName()).collect(Collectors.toSet()),keywords);
+                double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
+                for(int i = 0; i < subList.size(); i++) {
+                    subData[i] = points[i];
+                }
+                StringJoiner classJoiner = new StringJoiner("|");
+                StringJoiner scoreJoiner = new StringJoiner("|");
+                for (int m = 0; m < keywords.size(); m++) {
+                    classJoiner.add(keywords.get(m).getFirst());
+                    scoreJoiner.add(keywords.get(m).getSecond().toString());
+                }
+                expansions.add(new Quadruple<>(subData,subList,classJoiner.toString(),scoreJoiner.toString()));
             } catch(Exception ex) {
                 throw new RuntimeException("Error predicting keywords for classification "+"\n"+ex.toString());
             }
         });
 
-        for(List<Patent> subList : kMeansMap)
-        {
-            if(subList==null||subList.isEmpty()) continue;
-            double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
-            // update subset of data to help spread out results
-            /*for(int i = 0; i < Math.min(subList.size(),sampleSize); i++) {
-                Patent p = subList.get(i);
-                try {
-                    List<WordFrequencyPair<String, Float>> frequencyPairs = SimilarPatentFinder.predictKeywords(numClusters, vocab, p.getName(), n);
-                    INDArray vec = Nd4j.create(frequencyPairs.size(),Constants.VECTOR_LENGTH);
-                    AtomicInteger row = new AtomicInteger(0);
-                    for(WordFrequencyPair<String,Float> pair : frequencyPairs) {
-                        vec.putRow(row.getAndIncrement(),vocab.get(pair.getFirst()).getSecond());
-                    }
-                    subData[i] = vec.mean(0).data().asDouble();
-
-                } catch(Exception e) { e.printStackTrace(); }
-
-            }*/
-            for(int i = 0; i < subList.size(); i++) {
-                subData[i] = points[i];
-            }
-            expansions.add(new Pair<>(subData,subList));
-        }
-
-        /*tech.set(0);
-        results = kMeansMap.stream().map(subList->{
-            int idx = tech.getAndIncrement();
-            try {
-                if(subList.isEmpty())return null;
-                List<WordFrequencyPair<String,Float>> predictions = cache.get(idx);
-                if(predictions==null||predictions.isEmpty()) return null;
-                return Maps.immutableEntry(String.join("|",predictions.stream().map(p->p.getFirst()).collect(Collectors.toSet())),new Pair<>(predictions.stream().collect(Collectors.averagingDouble(p->p.getSecond())),subList.stream().map(p->p.getName()).collect(Collectors.toSet())));
-            } catch(Exception ex) {
-                ex.printStackTrace();
-                return null;
-            }
-        }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
-        */
-
     }
 
-    public List<Pair<double[][],List<Patent>>> getExpansions() {
+    public List<Quadruple<double[][],List<Patent>,String,String>> getExpansions() {
         return expansions;
     }
 
-    public Map<Integer,List<WordFrequencyPair<String,Float>>> getCache() {
-        return cache;
+    public String getClassification() {
+        return classString;
     }
 
-    public Map<String,List<WordFrequencyPair<String,Float>>> getResults() {
+    public String getScores() {
+        return scores;
+    }
+
+    public Map<Set<String>,List<WordFrequencyPair<String,Float>>> getResults() {
         return patentClass;
     }
 
