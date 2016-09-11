@@ -255,7 +255,8 @@ public class SimilarPatentFinder {
                 // add label if not root
                 String label = node.getData().getClassification();
                 if(label!=null) {
-                    if(currentLabels.isEmpty()||!currentLabels.peek().getFirst().equals(label)) currentLabels.add(new Pair<>(label,node.getData().getScores()));
+                    //if(currentLabels.isEmpty()||!currentLabels.peek().getFirst().equals(label))
+                    currentLabels.add(new Pair<>(label,node.getData().getScores()));
                 } else {
                     if(!currentLabels.isEmpty())currentLabels.clear();
                 }
@@ -278,15 +279,17 @@ public class SimilarPatentFinder {
                     }
                 }
 
+                // add children
+                stack.addAll(node.getChildren());
+                visited.addAll(node.getChildren());
+
+
                 // check if backtracking
                 if(node.getChildren().isEmpty() || (!stack.isEmpty()&&!node.getChildren().contains(stack.peek()))) {
                     // pop
                     if(!currentLabels.isEmpty()) currentLabels.remove();
                 }
 
-                // add children
-                stack.addAll(node.getChildren());
-                visited.addAll(node.getChildren());
 
             }
 
