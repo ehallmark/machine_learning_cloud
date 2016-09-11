@@ -151,7 +151,12 @@ public class SimilarPatentFinder {
     }
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, String patent, INDArray docVector, int n) throws SQLException {
-        if(patentWordsCache.containsKey(patent)) return predictKeywords(patentWordsCache.get(patent),limit,vocab,docVector,n);
+        if(patentKeywordsCache.containsKey(patent)) return patentKeywordsCache.get(patent);
+        if(patentWordsCache.containsKey(patent)){
+            List<WordFrequencyPair<String,Float>> list = predictKeywords(patentWordsCache.get(patent),limit,vocab,docVector,n);
+            patentKeywordsCache.put(patent, list);
+            return list;
+        }
         // otherwise, if not cached
         ResultSet rs = Database.getBaseVectorFor(patent);
         if(rs.next()) {
@@ -161,7 +166,9 @@ public class SimilarPatentFinder {
             tokens.addAll(tf.create(rs.getString(3)).getTokens());
             patentWordsCache.put(patent, tokens);
             rs.close();
-            return predictKeywords(tokens,limit,vocab, docVector, n);
+            List<WordFrequencyPair<String,Float>> list = predictKeywords(tokens,limit,vocab, docVector, n);
+            patentKeywordsCache.put(patent,list);
+            return list;
         } else {
             rs.close();
             return null;

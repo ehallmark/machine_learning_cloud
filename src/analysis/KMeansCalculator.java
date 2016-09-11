@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.api.rng.*;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
 import java.util.*;
@@ -83,16 +84,6 @@ public class KMeansCalculator {
             kMeansMap.get(assignments[i]).add(patentList.get(i));
         }
 
-        for(List<Patent> subList : kMeansMap)
-        {
-            if(subList==null||subList.isEmpty()) continue;
-            double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
-            for(int i = 0; i < subList.size(); i++) {
-                subData[i] = points[i];
-            }
-            expansions.add(new Pair<>(subData,subList));
-        }
-
 
         // compute best phrases for each cluster
         cache = new HashMap<>();
@@ -109,6 +100,32 @@ public class KMeansCalculator {
                 throw new RuntimeException("Error predicting keywords for classification "+"\n"+ex.toString());
             }
         });
+
+        for(List<Patent> subList : kMeansMap)
+        {
+            if(subList==null||subList.isEmpty()) continue;
+            double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
+            // update subset of data to help spread out results
+            for(int i = 0; i < Math.min(subList.size(),sampleSize); i++) {
+                Patent p = subList.get(i);
+                try {
+                    List<WordFrequencyPair<String, Float>> frequencyPairs = SimilarPatentFinder.predictKeywords(numClusters, vocab, p.getName(), n);
+                    INDArray vec = Nd4j.create(frequencyPairs.size(),Constants.VECTOR_LENGTH);
+                    AtomicInteger row = new AtomicInteger(0);
+                    for(WordFrequencyPair<String,Float> pair : frequencyPairs) {
+                        vec.putRow(row.getAndIncrement(),vocab.get(pair.getFirst()).getSecond());
+                    }
+                    subData[i] = vec.mean(0).data().asDouble();
+
+                } catch(Exception e) { e.printStackTrace(); }
+
+            }
+            // just add remaining
+            for(int i = sampleSize; i < subList.size(); i++) {
+                subData[i] = points[i];
+            }
+            expansions.add(new Pair<>(subData,subList));
+        }
 
         /*tech.set(0);
         results = kMeansMap.stream().map(subList->{
