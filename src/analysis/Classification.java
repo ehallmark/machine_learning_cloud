@@ -67,7 +67,7 @@ public class Classification implements Comparable<Classification> {
     @Override
     public int compareTo(Classification o) {
         for(int i = 0; i < myScores.size(); i++){
-            int toReturn = Double.compare(myScores.get(i),o.myScores.get(i));
+            int toReturn = Double.compare(o.myScores.get(i),myScores.get(i));
             if(toReturn!=0) return toReturn;
         }
         return 0;

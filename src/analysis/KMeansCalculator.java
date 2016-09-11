@@ -106,7 +106,7 @@ public class KMeansCalculator {
             if(subList==null||subList.isEmpty()) continue;
             double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
             // update subset of data to help spread out results
-            for(int i = 0; i < Math.min(subList.size(),sampleSize); i++) {
+            /*for(int i = 0; i < Math.min(subList.size(),sampleSize); i++) {
                 Patent p = subList.get(i);
                 try {
                     List<WordFrequencyPair<String, Float>> frequencyPairs = SimilarPatentFinder.predictKeywords(numClusters, vocab, p.getName(), n);
@@ -119,9 +119,8 @@ public class KMeansCalculator {
 
                 } catch(Exception e) { e.printStackTrace(); }
 
-            }
-            // just add remaining
-            for(int i = sampleSize; i < subList.size(); i++) {
+            }*/
+            for(int i = 0; i < subList.size(); i++) {
                 subData[i] = points[i];
             }
             expansions.add(new Pair<>(subData,subList));
