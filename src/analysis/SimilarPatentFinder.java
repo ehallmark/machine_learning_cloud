@@ -246,7 +246,7 @@ public class SimilarPatentFinder {
                 if(label!=null) {
                     if(currentLabels.isEmpty()||!currentLabels.peek().getFirst().equals(label)) currentLabels.add(new Pair<>(label,node.getData().getScores()));
                 } else {
-                    currentLabels.clear();
+                    if(!currentLabels.isEmpty())currentLabels.clear();
                 }
 
                 // check if leaf
@@ -268,7 +268,7 @@ public class SimilarPatentFinder {
                 }
 
                 // check if backtracking
-                if(node.getChildren().isEmpty() || !node.getChildren().contains(stack.peek())) {
+                if(node.getChildren().isEmpty() || (!stack.isEmpty()&&!node.getChildren().contains(stack.peek()))) {
                     // pop
                     if(!currentLabels.isEmpty()) currentLabels.remove();
                 }
