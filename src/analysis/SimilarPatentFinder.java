@@ -219,7 +219,7 @@ public class SimilarPatentFinder {
                 boolean calculate = true;
                 if(i.get()==depth-1) calculate = false;
                 while (!children.isEmpty()) {
-                    TreeNode<KMeansCalculator> node = children.poll();
+                    TreeNode<KMeansCalculator> node = children.remove();
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) continue;
@@ -235,7 +235,7 @@ public class SimilarPatentFinder {
         {
             Stack<TreeNode<KMeansCalculator>> stack = new Stack<>();
             stack.add(root);
-            Stack<Pair<String,String>> currentLabels = new Stack<>();
+            Queue<Pair<String,String>> currentLabels = new ArrayQueue<>();
             System.out.println("Extracting hierarchichal results...");
             Set<TreeNode<KMeansCalculator>> visited = new HashSet<>();
             while(!stack.isEmpty()) {
@@ -244,7 +244,7 @@ public class SimilarPatentFinder {
                 // add label if not root
                 String label = node.getData().getClassification();
                 if(label!=null) {
-                    if(!currentLabels.peek().getFirst().equals(label)) currentLabels.add(new Pair<>(label,node.getData().getScores()));
+                    if(currentLabels.isEmpty()||!currentLabels.peek().getFirst().equals(label)) currentLabels.add(new Pair<>(label,node.getData().getScores()));
                 } else {
                     currentLabels.clear();
                 }
@@ -255,9 +255,11 @@ public class SimilarPatentFinder {
                     String[] labels = new String[depth];
                     Arrays.fill(scores,"");
                     Arrays.fill(labels,"");
-                    for(int i = 0; i < depth; i++) {
-                        labels[i] = currentLabels.get(i).getFirst();
-                        scores[i] = currentLabels.get(i).getSecond();
+                    int idx = 0;
+                    for(Pair<String,String> pair : currentLabels) {
+                        labels[idx] = pair.getFirst();
+                        scores[idx] = pair.getSecond();
+                        idx++;
                     }
                     for(Patent patent : node.getData().getPatentList()) {
                         Classification klass = new Classification(patent, scores, labels);
@@ -268,7 +270,7 @@ public class SimilarPatentFinder {
                 // check if backtracking
                 if(node.getChildren().isEmpty() || !node.getChildren().contains(stack.peek())) {
                     // pop
-                    if(!currentLabels.isEmpty()) currentLabels.pop();
+                    if(!currentLabels.isEmpty()) currentLabels.remove();
                 }
 
                 // add children
