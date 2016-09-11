@@ -219,20 +219,24 @@ public class SimilarPatentFinder {
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
                 while (!children.isEmpty()) {
                     TreeNode<KMeansCalculator> node = children.remove();
+                    if(node.getData()==null)continue;;
                     if(i.get()==depth-1) finalLeaves.add(node);
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
-                        if (result.second().size() <= 1) continue;
-                        node.addChild(new KMeansCalculator(result.third(),result.fourth(),result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
+                        if (result.second().size() <= 1) {
+                            TreeNode<KMeansCalculator> endNode = node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second()));
+                            finalLeaves.add(endNode);
+                        } else {
+                            node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
+                        }
                     }
-                    if (node.getChildren() != null) toAdd.addAll(node.getChildren());
+                    toAdd.addAll(node.getChildren());
                 }
                 children.addAll(toAdd);
             }
             // last expansion
             finalLeaves.forEach(finalLeaf->{
                 for (Quadruple<double[][], List<Patent>, String, String> result : finalLeaf.getData().getExpansions()) {
-                    if (result.second().size() <= 1) continue;
                     finalLeaf.addChild(new KMeansCalculator(result.third(),result.fourth(),result.second()));
                 }
             });
