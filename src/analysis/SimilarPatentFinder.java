@@ -247,8 +247,13 @@ public class SimilarPatentFinder {
                     classJoiner.add(keywords.get(m).getFirst());
                     scoreJoiner.add(keywords.get(m).getSecond().toString());
                 }
-                System.out.println("   has classes: "+classJoiner.toString());
-                classes[currentDepth] = classJoiner.toString();
+
+                String classString = classJoiner.toString();
+                System.out.println("   has classes: "+classString);
+                for(int start = 0; start<currentDepth; start++) {
+                    if(classes[start].equals(classString)) break;
+                }
+                classes[currentDepth] = classString;
                 scores[currentDepth] = scoreJoiner.toString();
                 for (TreeNode<KMeansCalculator> child : nextNode.getChildren()) {
                     System.out.println("Checking children");
