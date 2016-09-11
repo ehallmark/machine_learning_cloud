@@ -233,7 +233,7 @@ public class SimilarPatentFinder {
             finalLeaves.forEach(finalLeaf->{
                 for (Quadruple<double[][], List<Patent>, String, String> result : finalLeaf.getData().getExpansions()) {
                     if (result.second().size() <= 1) continue;
-                    finalLeaf.addChild(new KMeansCalculator(result.third(),result.fourth()));
+                    finalLeaf.addChild(new KMeansCalculator(result.third(),result.fourth(),result.second()));
                 }
             });
         }

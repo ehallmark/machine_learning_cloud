@@ -24,9 +24,10 @@ public class KMeansCalculator {
     private String classString;
     private String scores;
 
-    public KMeansCalculator(String classString, String scores) {
+    public KMeansCalculator(String classString, String scores, List<Patent> patentList) {
         this.classString=classString;
         this.scores=scores;
+        this.patentList=patentList;
     }
 
     public KMeansCalculator(String classString, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand) {
