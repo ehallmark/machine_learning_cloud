@@ -1,5 +1,6 @@
 package server.tools;
 
+import analysis.Classification;
 import analysis.WordFrequencyPair;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
@@ -14,26 +15,16 @@ import java.util.stream.Collectors;
  */
 public class PatentResponse extends ServerResponse {
 
-    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassifications) {
-        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete,autoClassifications).render(),patents);
+    public PatentResponse(List<PatentList> patents, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double timeToComplete, List<Classification> autoClassifications, int depth) {
+        super("PATENT_RESPONSE", to_html_table(patents, findDissimilar, keyWordListWithName, timeToComplete,autoClassifications,depth).render(),patents);
     }
 
-    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassifications) {
+    private static Tag to_html_table(List<PatentList> patentLists, boolean findDissimilar, Pair<String,List<WordFrequencyPair<String,Float>>> keyWordListWithName, double time, List<Classification> autoClassifications, int depth) {
         // List
         Tag classTags = null;
         if(autoClassifications!=null) {
-            classTags = div().with(table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Score"),
-                                    th("Classification"),
-                                    th("Patents")
-                            )
-                    ),
-                    tbody().with(
-                        autoClassifications.stream().map(c->tr().with(td(c.getValue().getFirst().toString()),td(c.getKey()),td(String.join("; ",c.getValue().getSecond())))).collect(Collectors.toList())
-                    )
-            ),br(),br());
+            assert depth >= 1 : "Must have some depth";
+            classTags = div().with(Classification.getTable(depth,autoClassifications.stream().map(c->c.toTableRow()).collect(Collectors.toList())),br(),br());
         }
         Tag keywords = null;
         if (keyWordListWithName != null) {

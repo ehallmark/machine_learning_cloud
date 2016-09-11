@@ -1,5 +1,6 @@
 package server;
 
+import analysis.Classification;
 import analysis.SimilarPatentFinder;
 import analysis.WordFrequencyPair;
 import com.google.gson.Gson;
@@ -107,6 +108,11 @@ public class SimilarPatentServer {
             if(istr==null||istr.trim().length()==0)  i=128;
             else i = Integer.valueOf(istr);
 
+            String depthStr = req.queryParams("depth");
+            Integer depth = null;
+            if(depthStr==null||depthStr.trim().length()==0)  depth=1;
+            else depth = Integer.valueOf(depthStr);
+
             String ngramStr = req.queryParams("ngram");
             Integer ngram = null;
             if(ngramStr==null||ngramStr.trim().length()==0)  ngram=3;
@@ -127,9 +133,9 @@ public class SimilarPatentServer {
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
             try {
-                List<Map.Entry<String,Pair<Double,Set<String>>>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram);
+                List<Classification> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram,depth);
                 // Handle csv or json
-                PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications);
+                PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications,depth);
                 if (responseWithCSV(req)) {
                     res.type("text/csv");
                     return CSVHelper.to_csv(response);
@@ -283,7 +289,7 @@ public class SimilarPatentServer {
                         System.out.println(p.getName()+": "+p.getSimilarity());
                     });
                 });
-                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null);
+                PatentResponse response = new PatentResponse(patentLists,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null,-1);
                 return new Gson().toJson(response);
             }
 
@@ -357,7 +363,7 @@ public class SimilarPatentServer {
             });
             if(patents==null) response=new PatentNotFound(pubDocNumber);
             else if(patents.isEmpty()) response=new EmptyResults(pubDocNumber);
-            else response=new PatentResponse(patents,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null);
+            else response=new PatentResponse(patents,findDissimilar,null,new Double(System.currentTimeMillis()-startTime)/1000,null,-1);
 
             // Handle csv or json
             if(responseWithCSV(req)) {
@@ -388,7 +394,7 @@ public class SimilarPatentServer {
                 if (patents == null) response = new PatentNotFound(pubDocNumber);
                 else if (patents.isEmpty()) response = new EmptyResults(pubDocNumber);
                 else
-                    response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber, patents), new Double(System.currentTimeMillis() - startTime) / 1000, null);
+                    response = new PatentResponse(null, false, new Pair<>(pubDocNumber == null || pubDocNumber.trim().length() == 0 ? "Custom Text" : pubDocNumber, patents), new Double(System.currentTimeMillis() - startTime) / 1000, null,-1);
                 // Handle csv or json
                 if (responseWithCSV(req)) {
                     res.type("text/csv");
@@ -546,6 +552,7 @@ public class SimilarPatentServer {
                                                         label("Number of Clusters"),br(),input().withType("text").withName("k"),br(),
                                                         label("Number of Tags per Cluster"),br(),input().withType("text").withName("numPredictions"),br(),
                                                         label("Number of Iterations"),br(),input().withType("text").withName("iterations"),br(),
+                                                        label("Maximum depth"),br(),input().withType("text").withName("depth"),br(),
                                                         label("Max length of n grams"),br(),input().withType("text").withName("ngram"),br(),
                                                         label("Force equal subset size"),br(),input().withType("checkbox").withName("equal"),br(),br(),
                                                         button("Classify").withId(AUTO_CLASSIFY+"-button").withType("submit")

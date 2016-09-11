@@ -4,14 +4,17 @@ import ca.pjer.ekmeans.EKmeans;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.AtomicDouble;
+import com.google.gson.Gson;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharSequenceNodeFactory;
 import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
 import com.googlecode.concurrenttrees.suffix.SuffixTree;
+import j2html.tags.Tag;
 import org.apache.xpath.operations.Number;
 import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.berkeley.Triple;
 import org.deeplearning4j.models.embeddings.wordvectors.WordVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -37,6 +40,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import server.tools.AbstractPatent;
+import static j2html.TagCreator.*;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -179,7 +183,7 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Map.Entry<String,Pair<Double,Set<String>>>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n) throws Exception {
+    public List<Classification> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n, int depth) throws Exception {
         // k-means
         final int sampleSize = 30;
         assert k >= 1 : "Must have at least 1 cluster!";
@@ -187,98 +191,76 @@ public class SimilarPatentFinder {
         assert numData > k : "There are more classifications than data points!";
         Collections.shuffle(patentList); // randomize data
         final int numClusters = k;
-        double[][] points = new double[numData][Constants.VECTOR_LENGTH];
-        double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
+        final double[][] points = new double[numData][Constants.VECTOR_LENGTH];
         for (int i = 0; i < numData; i++) {
             Patent p = patentList.get(i);
             points[i] = p.getVector().data().asDouble();
         }
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
-        int firstIdx = rand.nextInt(points.length);
-        centroids[0] = points[firstIdx];
-        List<double[]> prevClusters = new ArrayList<>();
-        Set<Integer> prevClusterIndices = new HashSet<>();
-        prevClusterIndices.add(firstIdx);
-        prevClusters.add(centroids[0]);
-        System.out.println("Calculating initial centroids...");
-        try {
-            int maxLength = Math.min(sampleSize*numClusters,numData);
-            for (int i = 1; i < numClusters; i++) {
-                AtomicInteger idxToAdd = new AtomicInteger(-1);
-                AtomicDouble maxDistanceSoFar = new AtomicDouble(-1.0);
-                for (int j = 0; j < maxLength; j++) {
-                    if(prevClusterIndices.contains(j))continue;
-                    double[] d = points[j];
-                    double overallDistance = prevClusters.stream().collect(Collectors.summingDouble(v->distance(v,d)));
-                    if(overallDistance>maxDistanceSoFar.get()) {
-                        maxDistanceSoFar.set(overallDistance);
-                        idxToAdd.set(j);
+
+        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(points,patentList,vocab,numData,numClusters,sampleSize,iterations,n,numPredictions,equal,rand));
+        AtomicInteger i = new AtomicInteger(1);
+        Stack<TreeNode<KMeansCalculator>> children = new Stack<>();
+        children.add(root);
+        while(i.getAndIncrement() < depth) {
+            System.out.println("Starting DEPTH = "+i.get());
+            List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
+            while(!children.isEmpty()) {
+                TreeNode<KMeansCalculator> node = children.pop();
+                // expand
+                for(Pair<double[][],List<Patent>> result : node.getData().getExpansions()) {
+                    if(result.getSecond().size()<=1) continue;
+                    node.addChild(new KMeansCalculator(result.getFirst(),result.getSecond(), vocab, result.getSecond().size(),numClusters,sampleSize,iterations,n,numPredictions,equal,rand));
+
+                }
+                if(node.getChildren()!=null)toAdd.addAll(node.getChildren());
+            }
+            children.addAll(toAdd);
+        }
+
+        System.out.println("Extracting hierarchichal results...");
+        children = new Stack<>();
+        children.add(root);
+        List<Classification> classifications = new ArrayList<>(numData);
+
+
+        // BRUTE FORCE FOR NOW
+        // FIND A BETTER WAY TO DO THIS WITHOUT REITERATING THROUGH FOR EACH PATENT
+        for(int j = 0; j < numData; j++) {
+            int currentDepth = 0;
+            Patent patent = patentList.get(j);
+            System.out.println("Patent: "+patent.getName());
+            // walk through and find the classifications for this patent
+            String[] classes = new String[depth];
+            String[] scores = new String[depth];
+            Arrays.fill(classes,"");
+            TreeNode<KMeansCalculator> nextNode = root;
+            while(nextNode!=null) {
+                for (TreeNode<KMeansCalculator> child : nextNode.getChildren()) {
+                    if (child.getData().getResults().containsKey(patent.getName())) {
+                        List<WordFrequencyPair<String, Float>> keywords = child.getData().getResults().get(patent.getName());
+                        StringJoiner classJoiner = new StringJoiner("|");
+                        StringJoiner scoreJoiner = new StringJoiner("|");
+                        for (int m = 0; m < keywords.size(); m++) {
+                            classJoiner.add(keywords.get(m).getFirst());
+                            scoreJoiner.add(keywords.get(m).getSecond().toString());
+                        }
+                        System.out.println("   has classes: "+classJoiner.toString());
+                        classes[currentDepth] = classJoiner.toString();
+                        scores[currentDepth] = scoreJoiner.toString();
+                        nextNode = child;
+                        currentDepth++;
                     }
                 }
-                if(idxToAdd.get() >= 0) {
-                    prevClusterIndices.add(idxToAdd.get());
-                    centroids[i] = points[idxToAdd.get()];
-                    prevClusters.add(centroids[i]);
-                }
             }
-        } catch(Exception e) {
-            throw new RuntimeException("Error while calculating initial centroids: \n"+e.toString());
+            Classification klass = new Classification(patent,scores,classes);
+            classifications.add(klass);
         }
-
-        System.out.println("Starting k means...");
-        EKmeans eKmeans;
-        try {
-            eKmeans = new EKmeans(centroids, points);
-            eKmeans.setEqual(equal);
-            eKmeans.setIteration(iterations);
-            //eKmeans.setDistanceFunction((d1,d2)->1.0d-Transforms.cosineSim(Nd4j.create(d1),Nd4j.create(d2)));
-            eKmeans.run();
-
-        } catch(Exception e) {
-            throw new RuntimeException("Error running k means algorithm: \n"+e.toString());
-        }
-        System.out.println("Finished k means...");
-
-        int[] assignments = eKmeans.getAssignments();
-        assert assignments.length==numData : "K means has wrong number of data points!";
-
-        Map<Integer,List<Patent>> kMeansMap = new HashMap<>();
-        for(int i = 0; i < numClusters; i++) {
-            kMeansMap.put(i, new ArrayList<>());
-        }
-        for(int i = 0; i < numData; i++) {
-            kMeansMap.get(assignments[i]).add(patentList.get(i));
-        }
-
-        // compute best phrases for each cluster
-        Map<Integer,List<WordFrequencyPair<String,Float>>> cache = new HashMap<>();
-        kMeansMap.entrySet().forEach(e->{
-            System.out.println("Calculating class: "+e.getKey().toString());
-            if(e.getValue().isEmpty())return;
-            try {
-                cache.put(e.getKey(), predictMultipleKeywords(numPredictions, vocab, e.getValue(), computeAvg(e.getValue(), null), n, sampleSize));
-            } catch(Exception ex) {
-                throw new RuntimeException("Error predicting keywords for classification "+e.getKey()+"\n"+ex.toString());
-            }
-        });
-
-        System.out.println("Returning results...");
-
-        return kMeansMap.entrySet().stream().map(e->{
-            try {
-                if(e.getValue().isEmpty())return null;
-                List<WordFrequencyPair<String,Float>> predictions = cache.get(e.getKey());
-                if(predictions==null||predictions.isEmpty()) return null;
-                return Maps.immutableEntry(String.join("|",predictions.stream().map(p->p.getFirst()).collect(Collectors.toSet())),new Pair<>(predictions.stream().collect(Collectors.averagingDouble(p->p.getSecond())),e.getValue().stream().map(p->p.getName()).collect(Collectors.toSet())));
-            } catch(Exception ex) {
-                ex.printStackTrace();
-                return null;
-            }
-        }).filter(p->p!=null).sorted((e2,e1)->e1.getValue().getFirst().compareTo(e2.getValue().getFirst())).collect(Collectors.toList());
+        return classifications;
     }
 
-    private static double distance(double[] v1, double[] v2) {
+    public static double distance(double[] v1, double[] v2) {
         assert v1.length==v2.length : "VECTORS HAVE INCONSISTENT LENGTHS!";
         double result = 0.0;
         for(int i = 0; i < v1.length; i++) {
@@ -287,7 +269,7 @@ public class SimilarPatentFinder {
         return result;
     }
 
-    private static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
+    public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
         Map<String,List<WordFrequencyPair<String,Float>>> freqMap = new HashMap<>();
         Collections.shuffle(patentList);
         List<String> toQuery = patentList.stream().limit(sampleSize).filter(p->{
@@ -645,6 +627,7 @@ public class SimilarPatentFinder {
         PatentList results = new PatentList(resultList,name1,name2,Transforms.cosineSim(baseVector,computeAvg(patentList,name1)));
         return results;
     }
+
 
     // unit test!
     public static void main(String[] args) throws Exception {
