@@ -32,7 +32,7 @@ public class Classification {
         List<Tag> headers = new ArrayList<>(depth*2+2);
         headers.add(th("Patent #"));
         headers.add(th("Title"));
-        Arrays.asList(classNums).forEach(i-> {
+        Arrays.stream(classNums).forEach(i-> {
             headers.add(th("Score "+i));
             headers.add(th("Class " + i));
         });
