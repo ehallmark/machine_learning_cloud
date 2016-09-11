@@ -101,7 +101,7 @@ public class KMeansCalculator {
             //System.out.println("Calculating class: "+tech.get());
             if(subList.isEmpty())return;
             try {
-                List<WordFrequencyPair<String,Float>> pair = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, SimilarPatentFinder.computeAvg(subList, null), n, sampleSize);
+                List<WordFrequencyPair<String,Float>> pair = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, n, sampleSize);
                 subList.forEach(patent->{
                     patentClass.put(patent.getName(),pair);
                 });

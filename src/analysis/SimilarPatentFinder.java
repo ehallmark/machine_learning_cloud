@@ -53,6 +53,7 @@ public class SimilarPatentFinder {
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,INDArray> globalCandidateAvgCache = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,List<WordFrequencyPair<String,Float>>> patentKeywordsCache = Collections.synchronizedMap(new HashMap<>());
     static {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -273,18 +274,23 @@ public class SimilarPatentFinder {
         return result;
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList,INDArray avgVector, int n, int sampleSize) throws SQLException{
+    public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList, int n, int sampleSize) throws SQLException{
         Map<String,List<WordFrequencyPair<String,Float>>> freqMap = new HashMap<>();
         Collections.shuffle(patentList);
         List<String> toQuery = patentList.stream().limit(sampleSize).filter(p->{
-            if(patentWordsCache.containsKey(p.getName())) {
+            if(patentKeywordsCache.containsKey(p.getName())) {
+                freqMap.put(p.getName(),patentKeywordsCache.get(p.getName()));
+                return false;
+            }
+            else if(patentWordsCache.containsKey(p.getName())) {
                 List<String> currentTokens = patentWordsCache.get(p.getName());
-                List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, avgVector, n);
+                List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, p.getVector(), n);
                 freqMap.put(p.getName(),frequencies);
                 frequencies.forEach(frequency->{
                     // standardize scores by length of document
                     frequency.setSecond(frequency.getSecond()/currentTokens.size());
                 });
+                patentKeywordsCache.put(p.getName(),frequencies);
                 return false;
             } else return true;
         }).map(p->p.getName()).collect(Collectors.toList());
@@ -296,11 +302,12 @@ public class SimilarPatentFinder {
             currentTokens.addAll(tf.create(rs.getString(3)).getTokens());
             currentTokens.addAll(tf.create(rs.getString(4)).getTokens());
             patentWordsCache.put(rs.getString(1), currentTokens);
-            List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, avgVector, n);
+            List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,limit,vocab, globalCache.get(rs.getString(1)), n);
             frequencies.forEach(frequency->{
                 // standardize scores by length of document
                 frequency.setSecond(frequency.getSecond()/currentTokens.size());
             });
+            patentKeywordsCache.put(rs.getString(1),frequencies);
             freqMap.put(rs.getString(1),frequencies);
         }
         rs.close();
