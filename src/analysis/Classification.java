@@ -14,14 +14,17 @@ import static j2html.TagCreator.*;
 /**
  * Created by ehallmark on 9/11/16.
  */
-public class Classification {
+public class Classification implements Comparable<Classification> {
     private AbstractPatent patent;
     private String[] scores;
     private String[] classHierarchy;
+    private List<Double> myScores;
     Classification(Patent patent, String[] scores, String[] classHierarchy) throws SQLException {
         this.patent= Patent.abstractClone(patent,"");
         this.scores=scores;
         this.classHierarchy=classHierarchy;
+        myScores = Arrays.asList(scores).stream().map(str->Arrays.stream(str.split("\\|")).collect(Collectors.summingDouble(s->Float.valueOf(s)))).collect(Collectors.toList());
+
     }
 
     public static Tag getTable(int depth, List<Tag> tableRows) {
@@ -59,5 +62,14 @@ public class Classification {
         return tr().with(
             data
         );
+    }
+
+    @Override
+    public int compareTo(Classification o) {
+        for(int i = 0; i < myScores.size(); i++){
+            int toReturn = Double.compare(myScores.get(i),o.myScores.get(i));
+            if(toReturn!=0) return toReturn;
+        }
+        return 0;
     }
 }
