@@ -225,8 +225,7 @@ public class SimilarPatentFinder {
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) {
-                            TreeNode<KMeansCalculator> endNode = node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second()));
-                            finalLeaves.add(endNode);
+                            node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second()));
                         } else {
                             node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
                         }
@@ -242,7 +241,7 @@ public class SimilarPatentFinder {
                 }
             });
         }
-        
+
         List<Classification> classifications = new ArrayList<>(numData);
         {
             Stack<TreeNode<KMeansCalculator>> stack = new Stack<>();
