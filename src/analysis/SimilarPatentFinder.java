@@ -208,27 +208,34 @@ public class SimilarPatentFinder {
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
 
-        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand,true));
+        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
         {
             AtomicInteger i = new AtomicInteger(0);
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
             children.add(root);
+            List<TreeNode<KMeansCalculator>> finalLeaves = new ArrayList<>();
             while (i.getAndIncrement() < depth) {
                 System.out.println("Starting DEPTH = " + i.get());
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
-                boolean calculate = true;
-                if(i.get()==depth-1) calculate = false;
                 while (!children.isEmpty()) {
                     TreeNode<KMeansCalculator> node = children.remove();
+                    if(i.get()==depth-1) finalLeaves.add(node);
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) continue;
-                        node.addChild(new KMeansCalculator(result.third(),result.fourth(),result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand,calculate));
+                        node.addChild(new KMeansCalculator(result.third(),result.fourth(),result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
                     }
                     if (node.getChildren() != null) toAdd.addAll(node.getChildren());
                 }
                 children.addAll(toAdd);
             }
+            // last expansion
+            finalLeaves.forEach(finalLeaf->{
+                for (Quadruple<double[][], List<Patent>, String, String> result : finalLeaf.getData().getExpansions()) {
+                    if (result.second().size() <= 1) continue;
+                    finalLeaf.addChild(new KMeansCalculator(result.third(),result.fourth()));
+                }
+            });
         }
 
         List<Classification> classifications = new ArrayList<>(numData);
