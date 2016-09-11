@@ -239,19 +239,19 @@ public class SimilarPatentFinder {
             children.add(root);
             while(!children.isEmpty()) {
                 TreeNode<KMeansCalculator> nextNode = children.pop();
+                List<WordFrequencyPair<String, Float>> keywords = nextNode.getData().getResults().get(patent.getName());
+                StringJoiner classJoiner = new StringJoiner("|");
+                StringJoiner scoreJoiner = new StringJoiner("|");
+                for (int m = 0; m < keywords.size(); m++) {
+                    classJoiner.add(keywords.get(m).getFirst());
+                    scoreJoiner.add(keywords.get(m).getSecond().toString());
+                }
+                System.out.println("   has classes: "+classJoiner.toString());
+                classes[currentDepth] = classJoiner.toString();
+                scores[currentDepth] = scoreJoiner.toString();
                 for (TreeNode<KMeansCalculator> child : nextNode.getChildren()) {
-                    System.out.println("Checking node");
+                    System.out.println("Checking children");
                     if (child.getData().getResults().containsKey(patent.getName())) {
-                        List<WordFrequencyPair<String, Float>> keywords = child.getData().getResults().get(patent.getName());
-                        StringJoiner classJoiner = new StringJoiner("|");
-                        StringJoiner scoreJoiner = new StringJoiner("|");
-                        for (int m = 0; m < keywords.size(); m++) {
-                            classJoiner.add(keywords.get(m).getFirst());
-                            scoreJoiner.add(keywords.get(m).getSecond().toString());
-                        }
-                        System.out.println("   has classes: "+classJoiner.toString());
-                        classes[currentDepth] = classJoiner.toString();
-                        scores[currentDepth] = scoreJoiner.toString();
                         children.add(child);
                         currentDepth++;
                         break;
