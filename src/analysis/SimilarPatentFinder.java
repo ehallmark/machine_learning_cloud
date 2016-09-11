@@ -220,7 +220,7 @@ public class SimilarPatentFinder {
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
                 while (!children.isEmpty()) {
                     TreeNode<KMeansCalculator> node = children.remove();
-                    if(node.getData()==null)continue;
+                    if(node.getData().getExpansions()==null)continue;
                     if(i.get()==depth-1) finalLeaves.add(node);
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
@@ -242,14 +242,7 @@ public class SimilarPatentFinder {
                 }
             });
         }
-
-        for(int j = 0; j < 50; j++) {
-            System.out.print("GOT PAST LEAVES!!!");
-            try {
-                TimeUnit.MILLISECONDS.sleep(200);
-            } catch(Exception e) {
-            }
-        }
+        
         List<Classification> classifications = new ArrayList<>(numData);
         {
             Stack<TreeNode<KMeansCalculator>> stack = new Stack<>();
