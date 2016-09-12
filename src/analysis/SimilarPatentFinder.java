@@ -268,7 +268,6 @@ public class SimilarPatentFinder {
         String label = node.getData().getClassification();
         if(label!=null) currentLabels.add(new Pair<>(label,node.getData().getScores()));
 
-
         // check if leaf
         if(node.getChildren().isEmpty()) {
             String[] scores = new String[depth];
@@ -286,16 +285,16 @@ public class SimilarPatentFinder {
                 classifications.add(klass);
             }
             if(!currentLabels.isEmpty()) currentLabels.remove();
+        } else if (node.getChildren().stream().allMatch(c->visited.contains(c))) {
+            if(!currentLabels.isEmpty()) currentLabels.remove();
+
         } else {
             // not done
-            boolean updated = false;
             for(TreeNode<KMeansCalculator> child : node.getChildren()) {
                 if(!visited.contains(child)){
-                    updated=true;
                     depthFirstHelper(child,currentLabels,visited,classifications,depth);
                 }
             }
-            if(!updated && !currentLabels.isEmpty()) currentLabels.remove();
         }
 
     }
