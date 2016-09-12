@@ -105,7 +105,7 @@ public class KMeansCalculator {
                 StringJoiner classJoiner = new StringJoiner("|");
                 StringJoiner scoreJoiner = new StringJoiner("|");
                 for (int m = 0; m < keywords.size(); m++) {
-                    alreadyTaken.add(keywords.get(m).getFirst());
+                    alreadyTaken.addAll(Arrays.asList(keywords.get(m).getFirst().split(" ")));
                     classJoiner.add(keywords.get(m).getFirst());
                     scoreJoiner.add(keywords.get(m).getSecond().toString());
                 }
