@@ -244,54 +244,10 @@ public class SimilarPatentFinder {
 
         List<Classification> classifications = new ArrayList<>(numData);
         {
-            Stack<TreeNode<KMeansCalculator>> stack = new Stack<>();
-            stack.add(root);
             Queue<Pair<String,String>> currentLabels = new ArrayQueue<>();
             System.out.println("Extracting hierarchichal results...");
             Set<TreeNode<KMeansCalculator>> visited = new HashSet<>();
-            visited.add(root);
-            while(!stack.isEmpty()) {
-                TreeNode<KMeansCalculator> node = stack.pop();
-                // add label if not root
-                String label = node.getData().getClassification();
-                if(label!=null) {
-                    //if(currentLabels.isEmpty()||!currentLabels.peek().getFirst().equals(label))
-                    currentLabels.add(new Pair<>(label,node.getData().getScores()));
-                } else {
-                    if(!currentLabels.isEmpty())currentLabels.clear();
-                }
-
-                // check if leaf
-                if(node.getChildren().isEmpty()) {
-                    String[] scores = new String[depth];
-                    String[] labels = new String[depth];
-                    Arrays.fill(scores,"");
-                    Arrays.fill(labels,"");
-                    int idx = 0;
-                    for(Pair<String,String> pair : currentLabels) {
-                        labels[idx] = pair.getFirst();
-                        scores[idx] = pair.getSecond();
-                        idx++;
-                    }
-                    for(Patent patent : node.getData().getPatentList()) {
-                        Classification klass = new Classification(patent, scores, labels);
-                        classifications.add(klass);
-                    }
-                }
-
-                // add children
-                stack.addAll(node.getChildren());
-                visited.addAll(node.getChildren());
-
-
-                // check if backtracking
-                if(node.getChildren().isEmpty() || (!stack.isEmpty()&&!node.getChildren().contains(stack.peek()))) {
-                    // pop
-                    if(!currentLabels.isEmpty()) currentLabels.remove();
-                }
-
-
-            }
+            depthFirstHelper(root,currentLabels,visited,classifications,depth);
 
         }
         return classifications;
@@ -304,6 +260,44 @@ public class SimilarPatentFinder {
             result+=Math.pow(v1[i]-v2[i],2);
         }
         return result;
+    }
+
+    private static void depthFirstHelper(TreeNode<KMeansCalculator> node, Queue<Pair<String,String>> currentLabels, Set<TreeNode<KMeansCalculator>> visited, List<Classification> classifications, final int depth) throws SQLException {
+        visited.add(node);
+
+        String label = node.getData().getClassification();
+        if(label!=null) currentLabels.add(new Pair<>(label,node.getData().getScores()));
+
+
+        // check if leaf
+        if(node.getChildren().isEmpty()) {
+            String[] scores = new String[depth];
+            String[] labels = new String[depth];
+            Arrays.fill(scores,"");
+            Arrays.fill(labels,"");
+            int idx = 0;
+            for(Pair<String,String> pair : currentLabels) {
+                labels[idx] = pair.getFirst();
+                scores[idx] = pair.getSecond();
+                idx++;
+            }
+            for(Patent patent : node.getData().getPatentList()) {
+                Classification klass = new Classification(patent, scores, labels);
+                classifications.add(klass);
+            }
+            if(!currentLabels.isEmpty()) currentLabels.remove();
+        } else {
+            // not done
+            boolean updated = false;
+            for(TreeNode<KMeansCalculator> child : node.getChildren()) {
+                if(!visited.contains(child)){
+                    updated=true;
+                    depthFirstHelper(child,currentLabels,visited,classifications,depth);
+                }
+            }
+            if(!updated && !currentLabels.isEmpty()) currentLabels.remove();
+        }
+
     }
 
     public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList, int n, int sampleSize) throws SQLException{
