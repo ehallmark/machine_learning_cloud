@@ -1,13 +1,10 @@
 package analysis;
 
 import ca.pjer.ekmeans.EKmeans;
-import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
 import edu.stanford.nlp.util.Quadruple;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.*;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 
 import java.util.*;
@@ -18,11 +15,11 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 9/11/16.
  */
 public class KMeansCalculator {
-    private Map<Set<String>,List<WordFrequencyPair<String,Float>>> patentClass;
     private List<Quadruple<double[][],List<Patent>,String,String>> expansions;
     private List<Patent> patentList;
     private String classString;
     private String scores;
+    private static Set<String> alreadyTaken;
 
     public KMeansCalculator(String classString, String scores, List<Patent> patentList) {
         this.classString=classString;
@@ -30,11 +27,11 @@ public class KMeansCalculator {
         this.patentList=patentList;
     }
 
-    public KMeansCalculator(String classString, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand) {
+    public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand) {
         this.classString=classString;
+        this.alreadyTaken = previous == null ? new HashSet<>() : previous;
         this.scores=scores;
         int firstIdx = rand.nextInt(points.length);
-        patentClass = new HashMap<>();
         this.patentList=patentList;
         double[][] centroids = new double[numClusters][Constants.VECTOR_LENGTH];
         centroids[0] = points[firstIdx];
@@ -100,8 +97,7 @@ public class KMeansCalculator {
             //System.out.println("Calculating class: "+tech.get());
             if(subList.isEmpty())return;
             try {
-                List<WordFrequencyPair<String,Float>> keywords = SimilarPatentFinder.predictMultipleKeywords(numPredictions, vocab, subList, n, sampleSize);
-                patentClass.put(subList.stream().map(p->p.getName()).collect(Collectors.toSet()),keywords);
+                List<WordFrequencyPair<String,Float>> keywords = SimilarPatentFinder.predictMultipleKeywords(numPredictions,alreadyTaken, vocab, subList, n, sampleSize);
                 double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
                 for(int i = 0; i < subList.size(); i++) {
                     subData[i] = points[i];
@@ -109,6 +105,7 @@ public class KMeansCalculator {
                 StringJoiner classJoiner = new StringJoiner("|");
                 StringJoiner scoreJoiner = new StringJoiner("|");
                 for (int m = 0; m < keywords.size(); m++) {
+                    alreadyTaken.add(keywords.get(m).getFirst());
                     classJoiner.add(keywords.get(m).getFirst());
                     scoreJoiner.add(keywords.get(m).getSecond().toString());
                 }
@@ -118,6 +115,10 @@ public class KMeansCalculator {
             }
         });
 
+    }
+
+    public Set<String> getPreviousTags() {
+        return alreadyTaken;
     }
 
     public List<Quadruple<double[][],List<Patent>,String,String>> getExpansions() {
@@ -130,10 +131,6 @@ public class KMeansCalculator {
 
     public String getScores() {
         return scores;
-    }
-
-    public Map<Set<String>,List<WordFrequencyPair<String,Float>>> getResults() {
-        return patentClass;
     }
 
     public List<Patent> getPatentList() {
