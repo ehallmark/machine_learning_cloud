@@ -3,6 +3,7 @@ package scratch;
 import tools.TreeGui;
 import tools.TreeNode;
 
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -10,7 +11,7 @@ import java.awt.*;
  */
 public class TreeDrawing {
 
-    public static Component getSampleTree() {
+    public static JFrame getSampleTree() {
         TreeNode<String> root = new TreeNode<>("root");
         TreeNode<String> n1 = root.addChild("n1");
         TreeNode<String> n2 = root.addChild("n2");

@@ -48,28 +48,36 @@ public class RespondWithJXL {
             return raw;
         });
 
-        get("/graph", (req, res)->{
-            Component c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
-            JFrame frame = new JFrame();
-            frame.setBackground(Color.WHITE);
-            frame.setUndecorated(true);
-            frame.getContentPane().add(c);
-            frame.pack();
-            BufferedImage bi = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            Graphics2D graphics = bi.createGraphics();
-            c.print(graphics);
-            graphics.dispose();
-            frame.dispose();
-            res.type("image/png");
+        get("/graph.jpg", (req, res)->{
+            JFrame c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
+            BufferedImage bi = getImage(c);
 
+            res.type("image/jpg");
             OutputStream out = res.raw().getOutputStream();
-            ImageIO.write(bi, "png", out);
+            ImageIO.write(bi, "jpg", out);
             out.close();
             res.status(200);
+
             return res.body();
         });
     }
 
+    public static BufferedImage getImage(JFrame c) {
+        BufferedImage bi;
+        try {
+            bi = new BufferedImage(c.getWidth(),c.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g2d =bi.createGraphics();
+            c.print(g2d);
+            g2d.dispose();
+            c.setVisible(false);
+            c.dispose();
+            c.setVisible(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return bi;
+    }
     public static void main(String[] args) {
         server();
     }
