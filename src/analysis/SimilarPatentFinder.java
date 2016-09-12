@@ -196,6 +196,7 @@ public class SimilarPatentFinder {
     public List<Classification> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n, int depth) throws Exception {
         // k-means
         final int sampleSize = 30;
+        assert depth > 0 : "Must have a positive depth!";
         assert k >= 1 : "Must have at least 1 cluster!";
         int numData = patentList.size();
         assert numData > k : "There are more classifications than data points!";
@@ -211,11 +212,12 @@ public class SimilarPatentFinder {
         List<TreeNode<KMeansCalculator>> leaves = new ArrayList<>();
         TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
         {
-            AtomicInteger i = new AtomicInteger(0);
+            AtomicInteger i = new AtomicInteger(1);
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
             children.add(root);
             List<TreeNode<KMeansCalculator>> preLeaves = new ArrayList<>();
-            while (i.get() < depth) {
+            if(i.get()== depth) preLeaves.add(root);
+            else while (i.get() < depth) {
                 System.out.println("Starting DEPTH = " + i.get());
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
                 while (!children.isEmpty()) {
