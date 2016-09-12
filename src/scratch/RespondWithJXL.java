@@ -10,6 +10,7 @@ import javax.swing.*;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.print.PrinterJob;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -49,7 +50,7 @@ public class RespondWithJXL {
         });
 
         get("/graph.jpg", (req, res)->{
-            JFrame c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
+            Panel c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
             BufferedImage bi = getImage(c);
 
             res.type("image/jpg");
@@ -62,16 +63,17 @@ public class RespondWithJXL {
         });
     }
 
-    public static BufferedImage getImage(JFrame c) {
+    public static BufferedImage getImage(Panel c) {
         BufferedImage bi;
         try {
             bi = new BufferedImage(c.getWidth(),c.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g2d =bi.createGraphics();
-            c.print(g2d);
-            g2d.dispose();
-            c.setVisible(false);
-            c.dispose();
-            c.setVisible(false);
+            Graphics2D g =GraphicsEnvironment.getLocalGraphicsEnvironment().createGraphics(bi);
+            //c.update(g2d);
+            g.setColor(c.getForeground());
+            g.setFont(c.getFont());
+            g.setBackground(c.getBackground());
+            c.print(g);
+            g.dispose();
         } catch (Exception e) {
             e.printStackTrace();
             return null;

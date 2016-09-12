@@ -11,7 +11,7 @@ import java.awt.*;
  */
 public class TreeDrawing {
 
-    public static JFrame getSampleTree() {
+    public static Panel getSampleTree() {
         TreeNode<String> root = new TreeNode<>("root");
         TreeNode<String> n1 = root.addChild("n1");
         TreeNode<String> n2 = root.addChild("n2");
@@ -20,6 +20,7 @@ public class TreeDrawing {
         n1.addChild("n1_3");
         n2.addChild("n2_1");
         TreeGui<String> gui = new TreeGui<>(root,3);
+        gui.setVisible(true);
         return gui;
     }
 

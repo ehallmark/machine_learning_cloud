@@ -1,18 +1,11 @@
 package tools;
 
 
-import java.awt.BorderLayout;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.*;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 
-public class TreeGui<T> extends JFrame {
+public class TreeGui<T> extends Panel {
 
-    private JPanel contentPane;
     public TreeNode<T> tree;
     public DrawTree<T> drawer;
 
@@ -20,22 +13,17 @@ public class TreeGui<T> extends JFrame {
      * Create the frame.
      */
     public TreeGui(TreeNode<T> tree, int depth) {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 500, 500);
-        contentPane = new JPanel();
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(new BorderLayout(0, 0));
+        setLayout(new BorderLayout(0, 0));
         drawer = new DrawTree<>(tree,depth);
-
-        contentPane.add(drawer);
-        setContentPane(contentPane);
+        add(drawer);
         this.tree = tree;
         setVisible(true);
     }
 
 }
 
-class DrawTree<T> extends JPanel{
+class DrawTree<T> extends Component {
 
     private TreeNode<T> tree;
     private int depth;
@@ -43,10 +31,12 @@ class DrawTree<T> extends JPanel{
     public DrawTree(TreeNode<T> tree, int depth){
         this.tree = tree;
         this.depth=depth;
+        setVisible(true);
     }
 
-    @Override
+    //@Override
     protected void paintComponent(Graphics g) {
+        super.paint(g);
         g.setFont(new Font("Tahoma", Font.BOLD, 20));
         RenderTree(g, 0, getWidth(), 0, getHeight() / depth, tree);
 
