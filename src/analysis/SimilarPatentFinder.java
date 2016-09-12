@@ -200,7 +200,7 @@ public class SimilarPatentFinder {
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
         List<TreeNode<KMeansCalculator>> leaves = new ArrayList<>();
-        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,new HashSet<>(),null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
+        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,new HashSet<>(),null,points, patentList, vocab, numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
         {
             AtomicInteger i = new AtomicInteger(1);
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
@@ -218,7 +218,7 @@ public class SimilarPatentFinder {
                         if (result.second().size() <= 1) {
                             leaves.add(node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second())));
                         } else {
-                            TreeNode<KMeansCalculator> child = node.addChild(new KMeansCalculator(result.third(),new HashSet<>(node.getData().getPreviousTags()), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
+                            TreeNode<KMeansCalculator> child = node.addChild(new KMeansCalculator(result.third(),new HashSet<>(node.getData().getPreviousTags()), result.fourth(), result.first(), result.second(), vocab, numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
                             if(i.get()==depth-1) preLeaves.add(child);
                         }
                     }
@@ -448,7 +448,7 @@ public class SimilarPatentFinder {
 
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).limit(20000).collect(Collectors.toList());
+        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).limit(100000).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         try {
             processNGrams(tokens, docVector, nGramCounts, vocab, n);

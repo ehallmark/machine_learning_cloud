@@ -27,7 +27,8 @@ public class KMeansCalculator {
         this.patentList=patentList;
     }
 
-    public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand, int depth) {
+    public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab,  int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand, int depth) {
+        numClusters = Math.min(numClusters,patentList.size());
         this.classString=classString;
         this.alreadyTaken = previous == null ? new HashSet<>() : previous;
         this.scores=scores;
@@ -39,6 +40,7 @@ public class KMeansCalculator {
         Set<Integer> prevClusterIndices = new HashSet<>();
         prevClusterIndices.add(firstIdx);
         prevClusters.add(centroids[0]);
+        int numData = patentList.size();
         System.out.println("Calculating initial centroids...");
         try {
             int maxLength = Math.min(sampleSize*numClusters,numData);
