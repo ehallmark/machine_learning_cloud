@@ -146,6 +146,8 @@ public class SimilarPatentServer {
             } catch (Exception e) {
                 res.type("application/json");
                 return new Gson().toJson(new SimpleAjaxMessage(e.toString()));
+            } finally {
+                SimilarPatentFinder.clearKeywordCache();
             }
 
         });

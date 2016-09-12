@@ -44,12 +44,17 @@ public class SimilarPatentFinder {
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,INDArray> globalCandidateAvgCache = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,List<WordFrequencyPair<String,Float>>> patentKeywordCache = Collections.synchronizedMap(new HashMap<>());
     static {
         tf.setTokenPreProcessor(new MyPreprocessor());
     }
 
     public static Map<String,INDArray> getGlobalCache() {
         return globalCache;
+    }
+
+    public static void clearKeywordCache() {
+        patentKeywordCache.clear();
     }
 
     //private Map<String, String> assigneeMap;
@@ -180,7 +185,7 @@ public class SimilarPatentFinder {
 
     public List<Classification> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n, int depth) throws Exception {
         // k-means
-        final int sampleSize = 50;
+        final int sampleSize = 69;
         assert depth > 0 : "Must have a positive depth!";
         assert k >= 1 : "Must have at least 1 cluster!";
         int numData = patentList.size();
@@ -195,7 +200,7 @@ public class SimilarPatentFinder {
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
         List<TreeNode<KMeansCalculator>> leaves = new ArrayList<>();
-        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,new HashSet<>(),null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
+        TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,new HashSet<>(),null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
         {
             AtomicInteger i = new AtomicInteger(1);
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
@@ -213,7 +218,7 @@ public class SimilarPatentFinder {
                         if (result.second().size() <= 1) {
                             leaves.add(node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second())));
                         } else {
-                            TreeNode<KMeansCalculator> child = node.addChild(new KMeansCalculator(result.third(),new HashSet<>(node.getData().getPreviousTags()), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
+                            TreeNode<KMeansCalculator> child = node.addChild(new KMeansCalculator(result.third(),new HashSet<>(node.getData().getPreviousTags()), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand, depth));
                             if(i.get()==depth-1) preLeaves.add(child);
                         }
                     }
@@ -276,18 +281,24 @@ public class SimilarPatentFinder {
 
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Set<String> dontAccept, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList, int n, int sampleSize) throws SQLException{
+    public static List<WordFrequencyPair<String,Float>> predictMultipleKeywords(int limit, Map<String,Pair<Float,INDArray>> vocab, List<Patent> patentList, int n, int depth, int sampleSize) throws SQLException{
         Map<String,List<WordFrequencyPair<String,Float>>> freqMap = new HashMap<>();
-        Collections.shuffle(patentList);
-        List<String> toQuery = patentList.stream().limit(sampleSize).filter(p->{
+        final int numPredictions = sampleSize*n*depth;
+        List<String> toQuery = patentList.stream().sorted((s1,s2)->Integer.compare(s1.hashCode(),s2.hashCode())).filter(p-> {
+            if (patentKeywordCache.containsKey(p.getName())) {
+                freqMap.put(p.getName(), patentKeywordCache.get(p.getName()));
+                return false;
+            } else return true;
+        }).limit(sampleSize).filter(p->{
             if(patentWordsCache.containsKey(p.getName())) {
                 List<String> currentTokens = patentWordsCache.get(p.getName());
-                List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,dontAccept,limit,vocab, p.getVector(), n);
+                List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,numPredictions,vocab, p.getVector(), n);
                 freqMap.put(p.getName(),frequencies);
                 frequencies.forEach(frequency->{
                     // standardize scores by length of document
                     frequency.setSecond(frequency.getSecond()/currentTokens.size());
                 });
+                patentKeywordCache.put(p.getName(),frequencies);
                 return false;
             } else return true;
         }).map(p->p.getName()).collect(Collectors.toList());
@@ -299,12 +310,13 @@ public class SimilarPatentFinder {
             currentTokens.addAll(tf.create(rs.getString(3)).getTokens());
             currentTokens.addAll(tf.create(rs.getString(4)).getTokens());
             patentWordsCache.put(rs.getString(1), currentTokens);
-            List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,dontAccept,limit,vocab, globalCache.get(rs.getString(1)), n);
+            List<WordFrequencyPair<String,Float>> frequencies = predictKeywords(currentTokens,numPredictions,vocab, globalCache.get(rs.getString(1)), n);
             frequencies.forEach(frequency->{
                 // standardize scores by length of document
                 frequency.setSecond(frequency.getSecond()/currentTokens.size());
             });
             freqMap.put(rs.getString(1),frequencies);
+            patentKeywordCache.put(rs.getString(1),frequencies);
         }
         rs.close();
         return mergeKeywordPredictions(limit,freqMap);
@@ -430,19 +442,13 @@ public class SimilarPatentFinder {
         return predictKeywords(tf.create(text).getTokens(),limit,vocab, n);
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
-        return predictKeywords(tokens,null,limit,vocab,docVector,n);
-    }
-
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, int n) {
         return predictKeywords(tokens,limit,vocab,null,n);
     }
 
-    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, Set<String> dontAccept, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
+    public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
-        Stemmer stemmer = new Stemmer();
-        Set<String> stemsToReject = dontAccept==null?new HashSet<>():dontAccept.stream().map(s->stemmer.stem(s)).collect(Collectors.toSet());
-        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!stemsToReject.contains(stemmer.stem(s))&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).limit(20000).collect(Collectors.toList());
+        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).limit(20000).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         try {
             processNGrams(tokens, docVector, nGramCounts, vocab, n);
@@ -464,7 +470,7 @@ public class SimilarPatentFinder {
             results.add(0, pair);
         }
 
-        return results;
+        return results.stream().limit(limit).collect(Collectors.toList());
     }
 
     public List<Patent> getPatentList() {

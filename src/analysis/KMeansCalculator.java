@@ -27,7 +27,7 @@ public class KMeansCalculator {
         this.patentList=patentList;
     }
 
-    public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand) {
+    public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab, int numData, int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand, int depth) {
         this.classString=classString;
         this.alreadyTaken = previous == null ? new HashSet<>() : previous;
         this.scores=scores;
@@ -97,17 +97,21 @@ public class KMeansCalculator {
             //System.out.println("Calculating class: "+tech.get());
             if(subList.isEmpty())return;
             try {
-                List<WordFrequencyPair<String,Float>> keywords = SimilarPatentFinder.predictMultipleKeywords(numPredictions,alreadyTaken, vocab, subList, n, sampleSize);
+                List<WordFrequencyPair<String,Float>> keywords = SimilarPatentFinder.predictMultipleKeywords(numPredictions+alreadyTaken.size(), vocab, subList, n, depth, sampleSize);
                 double[][] subData = new double[subList.size()][Constants.VECTOR_LENGTH];
                 for(int i = 0; i < subList.size(); i++) {
                     subData[i] = points[i];
                 }
                 StringJoiner classJoiner = new StringJoiner("|");
                 StringJoiner scoreJoiner = new StringJoiner("|");
+                int cnt = 0;
                 for (int m = 0; m < keywords.size(); m++) {
-                    alreadyTaken.addAll(Arrays.asList(keywords.get(m).getFirst().split(" ")));
+                    if(alreadyTaken.contains(keywords.get(m).getFirst())) continue;
+                    alreadyTaken.add(keywords.get(m).getFirst());
                     classJoiner.add(keywords.get(m).getFirst());
                     scoreJoiner.add(keywords.get(m).getSecond().toString());
+                    cnt++;
+                    if(cnt>= numPredictions) break;
                 }
                 expansions.add(new Quadruple<>(subData,subList,classJoiner.toString(),scoreJoiner.toString()));
             } catch(Exception ex) {
