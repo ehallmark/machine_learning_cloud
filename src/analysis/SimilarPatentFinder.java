@@ -442,7 +442,7 @@ public class SimilarPatentFinder {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         Stemmer stemmer = new Stemmer();
         Set<String> stemsToReject = dontAccept==null?new HashSet<>():dontAccept.stream().map(s->stemmer.stem(s)).collect(Collectors.toSet());
-        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!stemsToReject.contains(s)&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
+        tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!stemsToReject.contains(stemmer.stem(s))&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).limit(20000).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         try {
             processNGrams(tokens, docVector, nGramCounts, vocab, n);
