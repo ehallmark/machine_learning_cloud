@@ -270,7 +270,7 @@ public class SimilarPatentFinder {
         TreeNode<KMeansCalculator> iterNode = node;
         Stack<String> classStack = new Stack<>();
         Stack<String> scoreStack = new Stack<>();
-        while(iterNode.getParent()!=root) {
+        while(iterNode!=root) {
             classStack.push(iterNode.getData().getClassification());
             scoreStack.push(iterNode.getData().getScores());
             iterNode = iterNode.getParent();
