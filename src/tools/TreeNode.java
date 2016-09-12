@@ -1,10 +1,5 @@
 package tools;
 
-import analysis.Classification;
-import analysis.KMeansCalculator;
-import analysis.Patent;
-import org.deeplearning4j.berkeley.Pair;
-
 import java.util.*;
 
 /**
