@@ -441,7 +441,7 @@ public class SimilarPatentFinder {
     public static List<WordFrequencyPair<String,Float>> predictKeywords(List<String> tokens, Set<String> dontAccept, int limit, Map<String,Pair<Float,INDArray>> vocab, INDArray docVector, int n) {
         Map<String,AtomicDouble> nGramCounts = new HashMap<>();
         Stemmer stemmer = new Stemmer();
-        Set<String> stemsToReject = dontAccept==null?new HashSet<>():dontAccept.stream()map(s->stemmer.stem(s)).collect(Collectors.toSet());
+        Set<String> stemsToReject = dontAccept==null?new HashSet<>():dontAccept.stream().map(s->stemmer.stem(s)).collect(Collectors.toSet());
         tokens = tokens.stream().map(s->s!=null&&s.trim().length()>0&&!stemsToReject.contains(s)&&!Constants.STOP_WORD_SET.contains(s)&&vocab.containsKey(s)?s:null).filter(s->s!=null).collect(Collectors.toList());
         if(docVector==null) docVector= VectorHelper.TFIDFcentroidVector(vocab,tokens);
         try {
