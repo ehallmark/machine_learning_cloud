@@ -4,9 +4,14 @@ import jxl.Workbook;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.*;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -41,6 +46,27 @@ public class RespondWithJXL {
                 e.printStackTrace();
             }
             return raw;
+        });
+
+        get("/graph", (req, res)->{
+            Component c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
+            JFrame frame = new JFrame();
+            frame.setBackground(Color.WHITE);
+            frame.setUndecorated(true);
+            frame.getContentPane().add(c);
+            frame.pack();
+            BufferedImage bi = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics = bi.createGraphics();
+            c.print(graphics);
+            graphics.dispose();
+            frame.dispose();
+            res.type("image/png");
+
+            OutputStream out = res.raw().getOutputStream();
+            ImageIO.write(bi, "png", out);
+            out.close();
+            res.status(200);
+            return res.body();
         });
     }
 
