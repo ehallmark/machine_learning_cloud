@@ -36,5 +36,9 @@ public class TreeNode<T> {
         return data;
     }
 
+    public TreeNode<T> getParent() {
+        return parent;
+    }
+
 
 }

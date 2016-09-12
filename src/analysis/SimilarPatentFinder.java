@@ -208,24 +208,25 @@ public class SimilarPatentFinder {
         }
 
         org.nd4j.linalg.api.rng.Random rand = new DefaultRandom(41);
-
+        List<TreeNode<KMeansCalculator>> leaves = new ArrayList<>();
         TreeNode<KMeansCalculator> root = new TreeNode<>(new KMeansCalculator(null,null,points, patentList, vocab, numData, numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
         {
             AtomicInteger i = new AtomicInteger(0);
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
             children.add(root);
-            List<TreeNode<KMeansCalculator>> finalLeaves = new ArrayList<>();
+            List<TreeNode<KMeansCalculator>> preLeaves = new ArrayList<>();
             while (i.getAndIncrement() < depth) {
                 System.out.println("Starting DEPTH = " + i.get());
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
                 while (!children.isEmpty()) {
                     TreeNode<KMeansCalculator> node = children.remove();
                     if(node.getData().getExpansions()==null)continue;
-                    if(i.get()==depth-1) finalLeaves.add(node);
+                    if(i.get()==depth-1) preLeaves.add(node);
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) {
                             node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second()));
+                            leaves.add(node);
                         } else {
                             node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
                         }
@@ -235,19 +236,19 @@ public class SimilarPatentFinder {
                 children.addAll(toAdd);
             }
             // last expansion
-            finalLeaves.forEach(finalLeaf->{
-                for (Quadruple<double[][], List<Patent>, String, String> result : finalLeaf.getData().getExpansions()) {
-                    finalLeaf.addChild(new KMeansCalculator(result.third(),result.fourth(),result.second()));
+            preLeaves.forEach(preLeaf->{
+                for (Quadruple<double[][], List<Patent>, String, String> result : preLeaf.getData().getExpansions()) {
+                    leaves.add(preLeaf.addChild(new KMeansCalculator(result.third(),result.fourth(),result.second())));
                 }
             });
         }
 
         List<Classification> classifications = new ArrayList<>(numData);
         {
-            Queue<Pair<String,String>> currentLabels = new ArrayQueue<>();
             System.out.println("Extracting hierarchichal results...");
-            Set<TreeNode<KMeansCalculator>> visited = new HashSet<>();
-            depthFirstHelper(root,currentLabels,visited,classifications,depth);
+            for(TreeNode<KMeansCalculator> leaf : leaves) {
+                bubbleUpHelper(leaf,root,classifications,depth);
+            }
 
         }
         return classifications;
@@ -262,39 +263,28 @@ public class SimilarPatentFinder {
         return result;
     }
 
-    private static void depthFirstHelper(TreeNode<KMeansCalculator> node, Queue<Pair<String,String>> currentLabels, Set<TreeNode<KMeansCalculator>> visited, List<Classification> classifications, final int depth) throws SQLException {
-        visited.add(node);
-
-        String label = node.getData().getClassification();
-        if(label!=null) currentLabels.add(new Pair<>(label,node.getData().getScores()));
-
-        // check if leaf
-        if(node.getChildren().isEmpty()) {
-            String[] scores = new String[depth];
-            String[] labels = new String[depth];
-            Arrays.fill(scores,"");
-            Arrays.fill(labels,"");
-            int idx = 0;
-            for(Pair<String,String> pair : currentLabels) {
-                labels[idx] = pair.getFirst();
-                scores[idx] = pair.getSecond();
-                idx++;
-            }
-            for(Patent patent : node.getData().getPatentList()) {
-                Classification klass = new Classification(patent, scores, labels);
-                classifications.add(klass);
-            }
-            if(!currentLabels.isEmpty()) currentLabels.remove();
-        } else if (node.getChildren().stream().allMatch(c->visited.contains(c))) {
-            if(!currentLabels.isEmpty()) currentLabels.remove();
-
-        } else {
-            // not done
-            for(TreeNode<KMeansCalculator> child : node.getChildren()) {
-                if(!visited.contains(child)){
-                    depthFirstHelper(child,currentLabels,visited,classifications,depth);
-                }
-            }
+    private static void bubbleUpHelper(TreeNode<KMeansCalculator> node, TreeNode<KMeansCalculator> root, List<Classification> classifications, final int depth) throws SQLException {
+        String[] scores = new String[depth];
+        String[] labels = new String[depth];
+        Arrays.fill(scores,"");
+        Arrays.fill(labels,"");
+        TreeNode<KMeansCalculator> iterNode = node;
+        Stack<String> classStack = new Stack<>();
+        Stack<String> scoreStack = new Stack<>();
+        while(iterNode.getParent()!=root) {
+            classStack.push(iterNode.getData().getClassification());
+            scoreStack.push(iterNode.getData().getScores());
+            iterNode = iterNode.getParent();
+        }
+        int i = 0;
+        while(!classStack.isEmpty()) {
+            labels[i]=classStack.pop();
+            scores[i]=scoreStack.pop();
+            i++;
+        }
+        for(Patent patent : node.getData().getPatentList()) {
+            Classification klass = new Classification(patent, scores, labels);
+            classifications.add(klass);
         }
 
     }
