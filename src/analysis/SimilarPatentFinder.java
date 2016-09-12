@@ -215,7 +215,7 @@ public class SimilarPatentFinder {
             Queue<TreeNode<KMeansCalculator>> children = new ArrayQueue<>();
             children.add(root);
             List<TreeNode<KMeansCalculator>> preLeaves = new ArrayList<>();
-            while (i.incrementAndGet() < depth) {
+            while (i.get() < depth) {
                 System.out.println("Starting DEPTH = " + i.get());
                 List<TreeNode<KMeansCalculator>> toAdd = new ArrayList<>(numClusters);
                 while (!children.isEmpty()) {
@@ -233,6 +233,7 @@ public class SimilarPatentFinder {
                     toAdd.addAll(node.getChildren());
                 }
                 children.addAll(toAdd);
+                i.getAndIncrement();
             }
             // last expansion
             preLeaves.forEach(preLeaf->{
