@@ -224,7 +224,7 @@ public class SimilarPatentFinder {
                     // expand
                     for (Quadruple<double[][], List<Patent>, String, String> result : node.getData().getExpansions()) {
                         if (result.second().size() <= 1) {
-                            leaves.add(node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second()));
+                            leaves.add(node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.second())));
                         } else {
                             TreeNode<KMeansCalculator> child = node.addChild(new KMeansCalculator(result.third(), result.fourth(), result.first(), result.second(), vocab, result.second().size(), numClusters, sampleSize, iterations, n, numPredictions, equal, rand));
                             if(i.get()==depth-1) preLeaves.add(child);
