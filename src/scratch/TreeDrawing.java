@@ -19,7 +19,7 @@ public class TreeDrawing {
         n1.addChild("n1_2");
         n1.addChild("n1_3");
         n2.addChild("n2_1");
-        TreeGui<String> gui = new TreeGui<>(root,400,400,3);
+        TreeGui<String> gui = new TreeGui<>(root,3,2);
         return gui;
     }
 

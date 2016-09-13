@@ -1,6 +1,9 @@
 package tools;
 
 
+import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.berkeley.Triple;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -20,9 +23,9 @@ public class TreeGui<T> extends Panel {
     /**
      * Create the frame.
      */
-    public TreeGui(TreeNode<T> tree, int width, int height, int depth) {
-        this.width=width;
-        this.height=height;
+    public TreeGui(TreeNode<T> tree, int depth, int k) {
+        this.height=depth*300;
+        this.width=depth*k*300;
         this.depth=depth;
         this.tree = tree;
     }
@@ -30,13 +33,14 @@ public class TreeGui<T> extends Panel {
 
     public void draw() {
         setBounds(0,0,width,height);
+        int fontSize = 18;
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = image.getGraphics();
         graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, width, height);
         graphics.setColor(Color.BLACK);
-        graphics.setFont(new Font("Tahoma", Font.BOLD, 20));
-        RenderTree(graphics, 0, getWidth(), 0, getHeight() / depth, tree);
+        graphics.setFont(new Font("Tahoma", Font.BOLD, fontSize));
+        RenderTree(graphics, fontSize, 0, width, 0, height / depth, tree);
         //paint(graphics);
     }
 
@@ -54,23 +58,35 @@ public class TreeGui<T> extends Panel {
         return success;
     }
 
-
-    public void RenderTree(Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
+    // x coord, y coord, data width
+    public Triple<Integer,Integer,Integer> RenderTree(Graphics g, int fontSize, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
         String data = String.valueOf(node.data);
-        g.setFont(new Font("Tahoma", Font.BOLD, 20));
+        g.setFont(new Font("Tahoma", Font.BOLD, fontSize));
         FontMetrics fm = g.getFontMetrics();
         int dataWidth = fm.stringWidth(data);
-        g.drawString(data, (StartWidth + EndWidth) / 2 - dataWidth / 2, StartHeight + Level / 2);
+        Triple<Integer,Integer,Integer> coords = new Triple<>((StartWidth + EndWidth) / 2 - dataWidth / 2,StartHeight + Level / 2, dataWidth);
+        g.setColor(Color.CYAN);
+        g.fillOval(coords.getFirst()-dataWidth/2-dataWidth,coords.getSecond()-2*fontSize,4*dataWidth,4*fontSize);
+        g.setColor(Color.BLACK);
+        g.drawOval(coords.getFirst()-dataWidth/2-dataWidth,coords.getSecond()-2*fontSize,4*dataWidth,4*fontSize);
+        g.drawString(data, coords.getFirst(), coords.getSecond());
 
-        if(node.getChildren().isEmpty()) return;
+        if(!node.getChildren().isEmpty()) {
 
-        int interval = (EndWidth-StartWidth)/node.getChildren().size();
-        int idx = 0;
-        for(TreeNode<T> child : node.getChildren()) {
-            RenderTree(g, StartWidth+(idx*interval), StartWidth+((idx+1)*interval), StartHeight + Level, Level, child);
-            idx++;
+            int interval = (EndWidth - StartWidth) / node.getChildren().size();
+            int idx = 0;
+            for (TreeNode<T> child : node.getChildren()) {
+                // draw child
+                Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
+                if (childCoords != null) {
+                    // draw lines
+                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-(2*fontSize), coords.getFirst()+(dataWidth/2), coords.getSecond()+2*fontSize);
+                }
+                idx++;
+            }
         }
 
+        return coords;
     }
 
 }
