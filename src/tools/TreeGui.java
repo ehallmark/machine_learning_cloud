@@ -64,9 +64,10 @@ public class TreeGui<T> extends Panel {
         String[] lines = data.split("\\n");
         int maxDataWidth = 0;
         for(int i = 0; i < lines.length; i++) {
+            String line = lines[i];
             g.setFont(new Font("Tahoma", Font.BOLD, fontSize-(2*i)));
             FontMetrics fm = g.getFontMetrics();
-            int dataWidth = fm.stringWidth(data);
+            int dataWidth = fm.stringWidth(line);
             maxDataWidth=Math.max(dataWidth,maxDataWidth);
         }
 
@@ -80,7 +81,7 @@ public class TreeGui<T> extends Panel {
             String line = lines[i];
             g.setFont(new Font("Tahoma", Font.BOLD, fontSize-(2*i)));
             FontMetrics fm = g.getFontMetrics();
-            int dataWidth = fm.stringWidth(data);
+            int dataWidth = fm.stringWidth(line);
             g.drawString(line, (StartWidth + EndWidth) / 2 - dataWidth / 2, (StartHeight + Level / 2) + i*fontSize);
         }
 
@@ -93,7 +94,7 @@ public class TreeGui<T> extends Panel {
                 Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize-1, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
-                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond(), coords.getFirst()+(maxDataWidth/2), coords.getSecond()+2*lines.length*fontSize);
+                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()+fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+lines.length*fontSize);
                 }
                 idx++;
             }
