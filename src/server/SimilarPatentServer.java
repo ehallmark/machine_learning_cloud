@@ -1,6 +1,7 @@
 package server;
 
 import analysis.Classification;
+import analysis.KMeansCalculator;
 import analysis.SimilarPatentFinder;
 import analysis.WordFrequencyPair;
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import scratch.TreeDrawing;
 import seeding.*;
 import server.tools.*;
 import spark.Request;
@@ -25,6 +27,8 @@ import static j2html.TagCreator.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.sql.ResultSet;
@@ -133,9 +137,10 @@ public class SimilarPatentServer {
             String name = candidateSetMap.get(id).getSecond();
             SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), name,vocab);
             try {
-                List<Classification> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram,depth);
+                Pair<TreeNode<KMeansCalculator>,List<Classification>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram,depth);
                 // Handle csv or json
-                PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications,depth);
+                PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications.getSecond(),depth);
+                writeTreeToOutputStream(new FileOutputStream(new File("images/most_recent_tree.gif")),classifications.getFirst(),depth,k);
                 if (responseWithCSV(req)) {
                     res.type("text/csv");
                     return CSVHelper.to_csv(response);
@@ -217,6 +222,20 @@ public class SimilarPatentServer {
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();
             ImageIO.write(bi, "png", out);
+            out.close();
+            response.status(200);
+            return response.body();
+        });
+
+        // Host my own image asset!
+        get("/images/most_recent_tree.gif", (request, response) -> {
+            response.type("image/gif");
+
+            String pathToImage = "images/most_recent_tree.gif";
+            File f = new File(pathToImage);
+            BufferedImage bi = ImageIO.read(f);
+            OutputStream out = response.raw().getOutputStream();
+            ImageIO.write(bi, "gif", out);
             out.close();
             response.status(200);
             return response.body();
@@ -412,6 +431,15 @@ public class SimilarPatentServer {
         });
 
 
+    }
+
+    private static void writeTreeToOutputStream(OutputStream stream, TreeNode<KMeansCalculator> tree, int depth, int k) throws IOException{
+        // Drawing Examples
+        TreeGui<KMeansCalculator> c = new TreeGui<>(tree,depth,k);
+        c.draw();
+        boolean success = c.writeToOutputStream(stream);
+        System.out.println("Created " + tree.getClass().getSimpleName() + " : " + success);
+        stream.close();
     }
 
     private static List<String> preProcess(String str) {

@@ -60,7 +60,7 @@ public class TreeGui<T> extends Panel {
 
     // x coord, y coord, data width
     public Triple<Integer,Integer,Integer> RenderTree(Graphics g, int fontSize, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
-        String data = String.valueOf(node.data);
+        String data = node.getData().toString();
         g.setFont(new Font("Tahoma", Font.BOLD, fontSize));
         FontMetrics fm = g.getFontMetrics();
         int dataWidth = fm.stringWidth(data);

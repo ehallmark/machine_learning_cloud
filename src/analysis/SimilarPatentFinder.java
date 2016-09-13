@@ -183,7 +183,7 @@ public class SimilarPatentFinder {
         return wordFreqMap.entrySet().stream().map(e->new WordFrequencyPair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
-    public List<Classification> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n, int depth) throws Exception {
+    public Pair<TreeNode<KMeansCalculator>,List<Classification>> autoClassify(Map<String,Pair<Float,INDArray>> vocab, int k, int numPredictions, boolean equal, int iterations, int n, int depth) throws Exception {
         // k-means
         final int sampleSize = 69;
         assert depth > 0 : "Must have a positive depth!";
@@ -243,7 +243,7 @@ public class SimilarPatentFinder {
             }
 
         }
-        return classifications;
+        return new Pair<>(root,classifications);
     }
 
     public static double distance(double[] v1, double[] v2) {

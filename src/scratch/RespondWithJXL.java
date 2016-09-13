@@ -54,7 +54,6 @@ public class RespondWithJXL {
             ///Panel c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
             //BufferedImage bi = getImage(c);
 
-
             // Drawing Examples
             TreeGui<String> c = TreeDrawing.getSampleTree();
             c.draw();
@@ -68,6 +67,7 @@ public class RespondWithJXL {
             res.status(200);
 
             return res.body();
+
         });
     }
 
