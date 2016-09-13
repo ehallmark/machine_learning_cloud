@@ -24,7 +24,8 @@ public class PatentResponse extends ServerResponse {
         Tag classTags = null;
         if(autoClassifications!=null) {
             assert depth >= 1 : "Must have some depth";
-            classTags = div().with(Classification.getTable(depth,autoClassifications.stream().sorted().map(c->c.toTableRow()).collect(Collectors.toList())),br(),br());
+            classTags = div().with(img().attr("src", "/images/most_recent_tree.gif"),br(),br(),
+                    Classification.getTable(depth,autoClassifications.stream().sorted().map(c->c.toTableRow()).collect(Collectors.toList())),br(),br());
         }
         Tag keywords = null;
         if (keyWordListWithName != null) {
