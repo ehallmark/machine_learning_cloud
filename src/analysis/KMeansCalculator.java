@@ -27,6 +27,15 @@ public class KMeansCalculator {
         this.patentList=patentList;
     }
 
+    @Override
+    public String toString() {
+        return classString==null? "": classString + (scores==null? "":("\n"+"Score: "+scores));
+    }
+
+    public void setClassString(String classString) {
+        this.classString=classString;
+    }
+
     public KMeansCalculator(String classString, Set<String> previous, String scores, double[][] points, List<Patent> patentList, Map<String,Pair<Float,INDArray>> vocab,  int numClusters, int sampleSize, int iterations, int n, int numPredictions, boolean equal, org.nd4j.linalg.api.rng.Random rand, int depth) {
         numClusters = Math.min(numClusters,patentList.size());
         this.classString=classString;
