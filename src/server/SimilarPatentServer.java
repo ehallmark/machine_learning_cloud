@@ -140,8 +140,10 @@ public class SimilarPatentServer {
                 Pair<TreeNode<KMeansCalculator>,List<Classification>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram,depth);
                 // Handle csv or json
                 classifications.getFirst().getData().setClassString(name);
+                File imgFile = new File("images/most_recent_tree.gif");
+                if(imgFile.exists())imgFile.delete();
                 PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications.getSecond(),depth);
-                writeTreeToOutputStream(new FileOutputStream(new File("images/most_recent_tree.gif")),classifications.getFirst(),depth+1,k);
+                writeTreeToOutputStream(new FileOutputStream(imgFile),classifications.getFirst(),depth+1,k);
                 if (responseWithCSV(req)) {
                     res.type("text/csv");
                     return CSVHelper.to_csv(response);
