@@ -33,7 +33,7 @@ package scratch;
  */
 public class Headless {
 
-    private static BufferedImage generateRectangle(Component component, int width, int height) {
+    public static BufferedImage generateRectangle(Component component, int width, int height) {
         BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = bufferedImage.getGraphics();
         graphics.setColor(Color.WHITE);
@@ -44,11 +44,11 @@ public class Headless {
         return bufferedImage;
     }
 
-    private static BufferedImage generateRectangle(Component component) {
+    public static BufferedImage generateRectangle(Component component) {
         return generateRectangle(component, 400, 400);
     }
 
-    private static BufferedImage generateCylinder(int width, int height) {
+    public static BufferedImage generateCylinder(int width, int height) {
         Panel panel = new Panel();
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = image.getGraphics();
@@ -63,10 +63,10 @@ public class Headless {
         return image;
     }
 
-    private static boolean save(BufferedImage image, Component component) {
+    public static boolean save(BufferedImage image, Component component, OutputStream os) {
         boolean success = false;
         try {
-            ImageIO.write(image, "gif", new FileOutputStream(component.getClass().getSimpleName() + ".gif"));
+            ImageIO.write(image, "gif", os);
             success = true;
         } catch (FileNotFoundException fnfe) {
             fnfe.printStackTrace(System.err);
@@ -94,25 +94,21 @@ public class Headless {
 
             private static final long serialVersionUID = 3109256773218160485L;
         };
-        Component c = TreeDrawing.getSampleTree();
         Canvas canvas = new Canvas();
         Panel panel = new Panel();
         // ---------------------------------------------------------------------------------------------- //
 
         // Drawing Examples
         bufferedImage = Headless.generateRectangle(component);
-        success = Headless.save(bufferedImage, component);
+        //success = Headless.save(bufferedImage, component);
         System.out.println("Created " + component.getClass().getSimpleName() + " : " + success);
         success = false;
 
-        // Drawing Examples
-        bufferedImage = Headless.generateRectangle(c);
-        success = Headless.save(bufferedImage, c);
-        System.out.println("Created " + c.getClass().getSimpleName() + " : " + success);
+
         success = false;
 
         bufferedImage = Headless.generateRectangle(canvas);
-        success = Headless.save(bufferedImage, canvas);
+        //success = Headless.save(bufferedImage, canvas);
         System.out.println("Created " + canvas.getClass().getSimpleName() + " : " + success);
         success = false;
 
@@ -122,7 +118,7 @@ public class Headless {
 //        success = false;
 
         bufferedImage = Headless.generateCylinder(400, 400);
-        success = Headless.save(bufferedImage, panel);
+        //success = Headless.save(bufferedImage, panel);
         System.out.println("Created " + panel.getClass().getSimpleName() + " : " + success);
         success = false;
         // ---------------------------------------------------------------------------------------------- //

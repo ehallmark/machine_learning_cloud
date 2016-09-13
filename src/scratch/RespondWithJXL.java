@@ -3,6 +3,7 @@ package scratch;
 import jxl.Workbook;
 import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
+import tools.TreeGui;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -49,13 +50,20 @@ public class RespondWithJXL {
             return raw;
         });
 
-        get("/graph.jpg", (req, res)->{
-            Panel c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
-            BufferedImage bi = getImage(c);
+        get("/graph.gif", (req, res)->{
+            ///Panel c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
+            //BufferedImage bi = getImage(c);
 
-            res.type("image/jpg");
+
+            // Drawing Examples
+            TreeGui<String> c = TreeDrawing.getSampleTree();
+            c.draw();
+            boolean success = c.writeToOutputStream(res.raw().getOutputStream());
+            System.out.println("Created " + c.getClass().getSimpleName() + " : " + success);
+
+            res.type("image/gif");
             OutputStream out = res.raw().getOutputStream();
-            ImageIO.write(bi, "jpg", out);
+            //ImageIO.write(bufferedImage, "png", out);
             out.close();
             res.status(200);
 
