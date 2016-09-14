@@ -139,7 +139,7 @@ public class SimilarPatentServer {
             try {
                 Pair<TreeNode<KMeansCalculator>,List<Classification>> classifications = finder.autoClassify(vocab,k,n,isEqual,i,ngram,depth);
                 // Handle csv or json
-                classifications.getFirst().getData().setClassString(name);
+                classifications.getFirst().getData().setClassString(name+"\n ");
                 File imgFile = new File("images/most_recent_tree.gif");
                 if(imgFile.exists())imgFile.delete();
                 PatentResponse response = new PatentResponse(null, false, null, new Double(System.currentTimeMillis()-startTime)/1000, classifications.getSecond(),depth);
