@@ -27,8 +27,8 @@ public class TreeGui<T> extends Panel {
      * Create the frame.
      */
     public TreeGui(TreeNode<T> tree, int depth, int k) {
-        this.height=depth*200;
-        this.width=200*(int)Math.round(Math.pow(k,depth));
+        this.height=depth*50;
+        this.width=50*(int)Math.round(Math.pow(k,depth));
         this.depth=depth;
         this.tree = tree;
     }
@@ -36,14 +36,14 @@ public class TreeGui<T> extends Panel {
 
     public void draw() {
         setBounds(0,0,width,height);
-        int fontSize = 18;
+        int FontSize = 24;
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = image.getGraphics();
         graphics.setColor(Color.WHITE);
         graphics.fillRect(0, 0, width, height);
         graphics.setColor(Color.BLACK);
-        graphics.setFont(new Font("Tahoma", Font.BOLD, fontSize));
-        RenderTree(graphics, fontSize, 0, width, 0, height / depth, tree);
+        graphics.setFont(new Font("Tahoma", Font.BOLD, FontSize));
+        RenderTree(graphics, FontSize, 0, width, 0, height / depth, tree);
         //paint(graphics);
     }
 
