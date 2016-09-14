@@ -2,7 +2,6 @@ package tools;
 
 
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.berkeley.Triple;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -19,16 +18,13 @@ public class TreeGui<T> extends Panel {
     private int width;
     private int height;
     private int depth;
-    private static final int VERTICAL_PADDING = 7;
+    private static final int VERTICAL_PADDING = 8;
     private static final int MIN_FONT_SIZE = 12;
     private static final int HORIZONTAL_PADDING = 10;
 
-    /**
-     * Create the frame.
-     */
     public TreeGui(TreeNode<T> tree, int depth, int k) {
-        this.height=depth*50;
-        this.width=50*(int)Math.round(Math.pow(k,depth));
+        this.height=depth*100;
+        this.width=100*(int)Math.round(Math.pow(k,depth));
         this.depth=depth;
         this.tree = tree;
     }
@@ -36,7 +32,7 @@ public class TreeGui<T> extends Panel {
 
     public void draw() {
         setBounds(0,0,width,height);
-        int FontSize = 24;
+        int FontSize = 22;
         image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics graphics = image.getGraphics();
         graphics.setColor(Color.WHITE);
@@ -74,6 +70,7 @@ public class TreeGui<T> extends Panel {
         }
         Point topConnection = new Point((StartWidth+EndWidth)/2,StartHeight + Level/2 - (FontSize*lines.length)/2 - VERTICAL_PADDING);
         Point bottomConnection = new Point(topConnection.x,StartHeight + Level/2 + (FontSize*lines.length)/2 + VERTICAL_PADDING);
+
         g.setColor(Color.CYAN);
         g.fillRect(topConnection.x-maxDataWidth/2-HORIZONTAL_PADDING,topConnection.y,maxDataWidth+2*HORIZONTAL_PADDING,bottomConnection.y-topConnection.y);
         g.setColor(Color.BLACK);
