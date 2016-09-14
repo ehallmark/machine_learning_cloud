@@ -18,12 +18,12 @@ public class TreeGui<T> extends Panel {
     private int width;
     private int height;
     private int depth;
-    private static final int VERTICAL_PADDING = 8;
+    private static final int VERTICAL_PADDING = 15;
     private static final int MIN_FONT_SIZE = 12;
-    private static final int HORIZONTAL_PADDING = 10;
+    private static final int HORIZONTAL_PADDING = 15;
 
     public TreeGui(TreeNode<T> tree, int depth, int k) {
-        this.height=depth*100;
+        this.height=depth*300;
         this.width=100*(int)Math.round(Math.pow(k,depth));
         this.depth=depth;
         this.tree = tree;
