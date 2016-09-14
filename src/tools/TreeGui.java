@@ -24,8 +24,8 @@ public class TreeGui<T> extends Panel {
      * Create the frame.
      */
     public TreeGui(TreeNode<T> tree, int depth, int k) {
-        this.height=depth*300;
-        this.width=depth*k*300;
+        this.height=depth*200;
+        this.width=depth*k*400;
         this.depth=depth;
         this.tree = tree;
     }
@@ -94,7 +94,7 @@ public class TreeGui<T> extends Panel {
                 Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize-1, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
-                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+lines.length*fontSize);
+                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+4*lines.length*fontSize);
                 }
                 idx++;
             }
