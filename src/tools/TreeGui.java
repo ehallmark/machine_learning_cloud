@@ -73,9 +73,9 @@ public class TreeGui<T> extends Panel {
 
         Triple<Integer,Integer,Integer> coords = new Triple<>((StartWidth + EndWidth) / 2 - maxDataWidth / 2,StartHeight + Level / 2, maxDataWidth);
         g.setColor(Color.CYAN);
-        g.fillOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,4*fontSize*lines.length);
+        g.fillOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,2*fontSize*lines.length);
         g.setColor(Color.BLACK);
-        g.drawOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,4*fontSize*lines.length);
+        g.drawOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,2*fontSize*lines.length);
 
         for(int i = 0; i < lines.length; i++) {
             String line = lines[i];
