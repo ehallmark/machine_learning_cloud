@@ -73,9 +73,9 @@ public class TreeGui<T> extends Panel {
 
         Triple<Integer,Integer,Integer> coords = new Triple<>((StartWidth + EndWidth) / 2 - maxDataWidth / 2,StartHeight + Level / 2, maxDataWidth);
         g.setColor(Color.CYAN);
-        g.fillOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,2*fontSize*lines.length);
+        g.fillOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,3*fontSize*lines.length);
         g.setColor(Color.BLACK);
-        g.drawOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,2*fontSize*lines.length);
+        g.drawOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,3*fontSize*lines.length);
 
         for(int i = 0; i < lines.length; i++) {
             String line = lines[i];
@@ -94,7 +94,7 @@ public class TreeGui<T> extends Panel {
                 Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize-1, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
-                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+2*lines.length*fontSize);
+                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+lines.length*fontSize);
                 }
                 idx++;
             }
