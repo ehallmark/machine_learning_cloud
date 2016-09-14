@@ -19,13 +19,16 @@ public class TreeGui<T> extends Panel {
     private int width;
     private int height;
     private int depth;
+    private static final int VERTICAL_PADDING = 7;
+    private static final int MIN_FONT_SIZE = 12;
+    private static final int HORIZONTAL_PADDING = 10;
 
     /**
      * Create the frame.
      */
     public TreeGui(TreeNode<T> tree, int depth, int k) {
         this.height=depth*200;
-        this.width=depth*k*400;
+        this.width=200*(int)Math.round(Math.pow(k,depth));
         this.depth=depth;
         this.tree = tree;
     }
@@ -58,32 +61,39 @@ public class TreeGui<T> extends Panel {
         return success;
     }
 
-    // x coord, y coord, data width
-    public Triple<Integer,Integer,Integer> RenderTree(Graphics g, int fontSize, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
+    public Pair<Point,Point> DrawHelper(TreeNode<T> node, Graphics g, int StartWidth, int EndWidth, int StartHeight, int Level, int FontSize) {
         String data = node.getData().toString();
         String[] lines = data.split("\\n");
         int maxDataWidth = 0;
         for(int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            g.setFont(new Font("Tahoma", Font.BOLD, fontSize-(2*i)));
+            g.setFont(new Font("Tahoma", Font.BOLD, Math.max(MIN_FONT_SIZE,FontSize-(i))));
             FontMetrics fm = g.getFontMetrics();
             int dataWidth = fm.stringWidth(line);
             maxDataWidth=Math.max(dataWidth,maxDataWidth);
         }
-
-        Triple<Integer,Integer,Integer> coords = new Triple<>((StartWidth + EndWidth) / 2 - maxDataWidth / 2,StartHeight + Level / 2, maxDataWidth);
+        Point topConnection = new Point((StartWidth+EndWidth)/2,StartHeight + Level/2 - (FontSize*lines.length)/2 - VERTICAL_PADDING);
+        Point bottomConnection = new Point(topConnection.x,StartHeight + Level/2 + (FontSize*lines.length)/2 + VERTICAL_PADDING);
         g.setColor(Color.CYAN);
-        g.fillOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,3*fontSize*lines.length);
+        g.fillRect(topConnection.x-maxDataWidth/2-HORIZONTAL_PADDING,topConnection.y,maxDataWidth+2*HORIZONTAL_PADDING,bottomConnection.y-topConnection.y);
         g.setColor(Color.BLACK);
-        g.drawOval(coords.getFirst()-maxDataWidth/2,coords.getSecond()-2*fontSize,2*maxDataWidth,3*fontSize*lines.length);
+        g.drawRect(topConnection.x-maxDataWidth/2-HORIZONTAL_PADDING,topConnection.y,maxDataWidth+2*HORIZONTAL_PADDING,bottomConnection.y-topConnection.y);
 
         for(int i = 0; i < lines.length; i++) {
             String line = lines[i];
-            g.setFont(new Font("Tahoma", Font.BOLD, fontSize-(2*i)));
+            g.setFont(new Font("Tahoma", Font.BOLD, FontSize-(2*i)));
             FontMetrics fm = g.getFontMetrics();
             int dataWidth = fm.stringWidth(line);
-            g.drawString(line, (StartWidth + EndWidth) / 2 - dataWidth / 2, (StartHeight + Level / 2) + i*fontSize);
+            g.drawString(line, (StartWidth + EndWidth) / 2 - dataWidth / 2, (StartHeight + Level / 2) + i*FontSize);
         }
+
+        return new Pair<>(topConnection,bottomConnection);
+    }
+
+    // x coord, y coord, data width
+    public Pair<Point,Point> RenderTree(Graphics g, int FontSize, int StartWidth, int EndWidth, int StartHeight, int Level, TreeNode<T> node) {
+
+        Pair<Point,Point> coordinates = DrawHelper(node,g,StartWidth,EndWidth,StartHeight,Level,FontSize);
 
         if(!node.getChildren().isEmpty()) {
 
@@ -91,16 +101,16 @@ public class TreeGui<T> extends Panel {
             int idx = 0;
             for (TreeNode<T> child : node.getChildren()) {
                 // draw child
-                Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize-1, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
+                Pair<Point, Point> childCoords = RenderTree(g, Math.max(MIN_FONT_SIZE,FontSize-1), StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
-                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()-2*fontSize+3*lines.length*fontSize);
+                    g.drawLine(coordinates.getSecond().x,coordinates.getSecond().y,childCoords.getFirst().x,childCoords.getFirst().y);
                 }
                 idx++;
             }
         }
 
-        return coords;
+        return coordinates;
     }
 
 }
