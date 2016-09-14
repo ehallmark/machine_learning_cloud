@@ -94,7 +94,7 @@ public class TreeGui<T> extends Panel {
                 Triple<Integer, Integer, Integer> childCoords = RenderTree(g, fontSize-1, StartWidth + (idx * interval), StartWidth + ((idx + 1) * interval), StartHeight + Level, Level, child);
                 if (childCoords != null) {
                     // draw lines
-                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()+2*lines.length*fontSize);
+                    g.drawLine(childCoords.getFirst()+(childCoords.getThird()/2), childCoords.getSecond()-child.getData().toString().split("\\n").length*fontSize, coords.getFirst()+(maxDataWidth/2), coords.getSecond()-4*fontSize+4*lines.length*fontSize);
                 }
                 idx++;
             }
