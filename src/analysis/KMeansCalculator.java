@@ -30,7 +30,7 @@ public class KMeansCalculator {
     @Override
     public String toString() {
         AtomicInteger i = new AtomicInteger(0);
-        return classString==null? "": classString + (scores==null? "":("\n"+"Score: "+scores)+"\n"+String.join("|",patentList.stream().map(p->p.getName()+(i.getAndIncrement()%10==9?"\n":"")).collect(Collectors.toList())));
+        return classString==null? "": classString + (scores==null? "":("\n"+"Score: "+scores));
     }
 
     public void setClassString(String classString) {
