@@ -158,7 +158,7 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(100)
-                .workers(10)
+                .workers(4)
                 .iterations(3)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
