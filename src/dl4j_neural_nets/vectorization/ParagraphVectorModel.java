@@ -1,9 +1,9 @@
 package dl4j_neural_nets.vectorization;
 
+import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import dl4j_neural_nets.listeners.CustomWordVectorListener;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.tools.MyTokenizerFactory;
-import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
@@ -148,7 +148,7 @@ public class ParagraphVectorModel {
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
         net = new ParagraphVectors.Builder()
                 .seed(41)
-                .batchSize(50)
+                .batchSize(1000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(6)
                 .layerSize(500)
@@ -158,7 +158,7 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(100)
-                .workers(6)
+                .workers(10)
                 .iterations(3)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
@@ -168,7 +168,7 @@ public class ParagraphVectorModel {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allSentencesModelFile,"Paragraph Vectors All Paragraphs",5000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",5000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
