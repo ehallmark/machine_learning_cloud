@@ -536,26 +536,7 @@ public class RespondWithJXL {
             }
             return raw;
         });
-
-        get("/graph.gif", (req, res)->{
-            ///Panel c = TreeDrawing.getSampleTree(); // the component you would like to print to a BufferedImage
-            //BufferedImage bi = getImage(c);
-
-            // Drawing Examples
-            TreeGui<String> c = TreeDrawing.getSampleTree();
-            c.draw();
-            boolean success = c.writeToOutputStream(res.raw().getOutputStream());
-            System.out.println("Created " + c.getClass().getSimpleName() + " : " + success);
-
-            res.type("image/gif");
-            OutputStream out = res.raw().getOutputStream();
-            //ImageIO.write(bufferedImage, "png", out);
-            out.close();
-            res.status(200);
-
-            return res.body();
-
-        });
+        
     }
 
     public static BufferedImage getImage(Panel c) {
