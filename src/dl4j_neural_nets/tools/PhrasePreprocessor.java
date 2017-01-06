@@ -22,6 +22,8 @@ public class PhrasePreprocessor implements SentencePreProcessor {
 
     @Override
     public String preProcess(String sentence) {
+        if(phrases==null) return sentence; // no preprocessing
+
         if(sentence==null)return "";
         String[] tokens = sentence.toLowerCase().replaceAll("[^a-z ]","").split("\\s+");
         int idx;

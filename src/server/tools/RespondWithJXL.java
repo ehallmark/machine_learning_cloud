@@ -536,7 +536,7 @@ public class RespondWithJXL {
             }
             return raw;
         });
-        
+
     }
 
     public static BufferedImage getImage(Panel c) {

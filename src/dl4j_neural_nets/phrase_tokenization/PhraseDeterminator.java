@@ -102,6 +102,7 @@ public class PhraseDeterminator {
     }
 
     public static Set<String> load() throws IOException,ClassNotFoundException {
+        if(!file.exists()) return null;
         ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
         Set<String> toReturn = (Set<String>)ois.readObject();
         ois.close();
