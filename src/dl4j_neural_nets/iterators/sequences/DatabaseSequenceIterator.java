@@ -21,7 +21,6 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected Connection databaseConn;
     protected PreparedStatement statement;
     protected String query;
-    protected List<String> currentLabels;
     protected List<Integer> labelIndices;
     protected List<Integer> textIndices;
     protected boolean firstRunThrough = true;
