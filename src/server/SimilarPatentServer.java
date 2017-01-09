@@ -280,7 +280,7 @@ public class SimilarPatentServer {
             if(title==null)title="";
             boolean FilterAssigneesByPatentCount = req.queryParams("filterAssigneesByPatents")!=null&&req.queryParams("filterAssigneesByPatents").startsWith("on");
             boolean switchCandidateSets = req.queryParams("switchCandidateSets")!=null&&req.queryParams("switchCandidateSets").startsWith("on");
-
+            boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
 
             if(id1 < 0 && globalFinder==null)
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
@@ -301,7 +301,7 @@ public class SimilarPatentServer {
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
                 Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets,merge);
-                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees);
+                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
 
                 final int assigneePatentLimit = 100;
                 if(FilterAssigneesByPatentCount) {
@@ -321,7 +321,7 @@ public class SimilarPatentServer {
                 if(additionalModel1) {
                     int tagIdx = 1;
                     Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> additionalModel1Finders = getFirstAndSecondFinders(Arrays.asList(new SimilarPatentFinder(patentList.getPatentStrings(),null,patentList.getName1(),paragraphVectors.lookupTable())),additionalModel1Ids,switchCandidateSets,merge);
-                    PatentList additionalModel1List = runPatentFinderModel(title, additionalModel1Finders.getFirst(), additionalModel1Finders.getSecond(), tagIdx, limitAdditionalModel1, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees);
+                    PatentList additionalModel1List = runPatentFinderModel(title, additionalModel1Finders.getFirst(), additionalModel1Finders.getSecond(), tagIdx, limitAdditionalModel1, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
                     Map<String,Map<String,Double>> orderedTags = new HashMap<>();
                     additionalModel1List.getPatents().forEach(patent->{
                         orderedTags.put(patent.getName(),patent.getTags());
@@ -339,7 +339,7 @@ public class SimilarPatentServer {
                 if(additionalModel2) {
                     int tagIdx = 2;
                     Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> additionalModel2Finders = getFirstAndSecondFinders(Arrays.asList(new SimilarPatentFinder(patentList.getPatentStrings(),null,patentList.getName1(),paragraphVectors.lookupTable())),additionalModel2Ids,switchCandidateSets,merge);
-                    PatentList additionalModel2List = runPatentFinderModel(title, additionalModel2Finders.getFirst(), additionalModel2Finders.getSecond(),tagIdx, limitAdditionalModel2, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees);
+                    PatentList additionalModel2List = runPatentFinderModel(title, additionalModel2Finders.getFirst(), additionalModel2Finders.getSecond(),tagIdx, limitAdditionalModel2, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
                     Map<String,Map<String,Double>> orderedTags = new HashMap<>();
                     additionalModel2List.getPatents().forEach(patent->{
                         orderedTags.put(patent.getName(),patent.getTags());
@@ -494,12 +494,12 @@ public class SimilarPatentServer {
         return new Pair<>(firstFinders, secondFinders);
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int tagIdx, int limit, double threshold, boolean findDissimilar, Integer minPatentNum, boolean limitGroups, int groupLimit, Set<String> badAssets, List<String> badAssignees) {
+    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int tagIdx, int limit, double threshold, boolean findDissimilar, Integer minPatentNum, boolean limitGroups, int groupLimit, Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
         List<PatentList> patentLists = new ArrayList<>();
         try {
             for(SimilarPatentFinder first : firstFinders) {
                 try {
-                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, findDissimilar, minPatentNum, badAssets);
+                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, findDissimilar, minPatentNum, badAssets,allowResultsFromOtherCandidateSet);
                     if(limitGroups) {
                         similar=similar.stream().sorted().limit(groupLimit).collect(Collectors.toList());
                     }
@@ -728,6 +728,7 @@ public class SimilarPatentServer {
                                                         label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
                                                         hr(),
                                                         h3("Advanced Options"),
+                                                        label("Allow results from other comparison set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
                                                         label("Limit groups?"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
                                                         label("Group Limit"),br(),input().withType("text").withName("group_limit"), br(),
                                                         label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),

@@ -221,11 +221,11 @@ public class SimilarPatentFinder {
         return avg;
     }
 
-    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets) throws SQLException {
+    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
         List<PatentList> list = new ArrayList<>(others.size());
         others.forEach(other->{
             try {
-                list.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar,minPatentNum, badAssets));
+                list.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar,minPatentNum, badAssets,allowResultsFromOtherCandidateSet));
             } catch(Exception sql) {
                 sql.printStackTrace();
             }
@@ -304,17 +304,13 @@ public class SimilarPatentFinder {
         return Arrays.asList(new PatentList(resultList,name,"Gather Ranking"));
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar, Integer minPatentNum) throws SQLException {
-        return similarFromCandidateSet(other,threshold,limit,findDissimilar,minPatentNum,null);
-    }
-
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
         // Find the highest (pairwise) assets
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
         INDArray otherAvg = computeAvg(other.patentList,other.getName());
         Set<String> dontMatch = badAssets;
-        if(!other.name.equals(this.name)) other.patentList.stream().forEach(p->dontMatch.add(p.getName()));
+        if(!(other.name.equals(this.name) || allowResultsFromOtherCandidateSet)) other.patentList.forEach(p->dontMatch.add(p.getName()));
         try {
             if(findDissimilar) lists.addAll(findOppositePatentsTo(other.name, otherAvg, dontMatch, threshold, limit,minPatentNum));
             else lists.addAll(findSimilarPatentsTo(other.name, otherAvg, dontMatch, threshold, limit,minPatentNum));
