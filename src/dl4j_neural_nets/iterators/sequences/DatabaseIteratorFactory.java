@@ -18,7 +18,7 @@ public class DatabaseIteratorFactory {
     private static final String ClaimTextQueryWithLimitAndOffsetWithOrder = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 order by pub_doc_number desc offset ? limit ?";
     private static final String ClaimTextQueryWithLimitAndOffset = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 offset ? limit ?";
     private static final String ClaimTextQuery = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 order by random()";
-    private static final String ParagraphTokensQuery = "select pub_doc_number, classifications, tokens from paragraph_tokens";
+    private static final String ParagraphTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens";
     private static final String ParentClaimTextQuery = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and parent_claim_id is null and char_length(claim_text) > 100";
     private static final String PatentTextQueryWithLimitAndOffset = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]','','g'),regexp_replace(lower(substring(description from 1 for least(char_length(description),10000))),'[^a-z ]','','g') from patent_grant_recent where description is not null order by pub_doc_number desc offset ? limit ?";
     private static final String PatentTextQuery = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]','','g'),regexp_replace(lower(substring(description from 1 for 10000)),'[^a-z ]','','g') from patent_grant_recent";
@@ -55,7 +55,8 @@ public class DatabaseIteratorFactory {
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addLabelIndex(1)
                 .addLabelArrayIndex(2) // classification vectors
-                .addTextIndex(3)
+                .addLabelArrayIndex(3) // inventors
+                .addTextIndex(4)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)
                 .build();
