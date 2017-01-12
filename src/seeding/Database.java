@@ -89,6 +89,30 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static Set<String> classificationsFor(String patent) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select classifications from paragraph_tokens where pub_doc_number=? limit 1");
+		ps.setString(1,patent);
+		ResultSet rs = ps.executeQuery();
+		Set<String> classifications = new HashSet<>();
+		if(rs.next()) {
+			classifications.addAll(Arrays.asList((String[])rs.getArray(1).getArray()));
+		}
+		ps.close();
+		return classifications;
+	}
+
+	public static Set<String> inventorsFor(String patent) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select inventors from paragraph_tokens where pub_doc_number=? limit 1");
+		ps.setString(1,patent);
+		ResultSet rs = ps.executeQuery();
+		Set<String> inventors = new HashSet<>();
+		if(rs.next()) {
+			inventors.addAll(Arrays.asList((String[])rs.getArray(1).getArray()));
+		}
+		ps.close();
+		return inventors;
+	}
+
 	public static ResultSet selectMainClassWords() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement("SELECT title FROM us_class_titles");
 		ps.setFetchSize(5);

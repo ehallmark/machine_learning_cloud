@@ -11,10 +11,6 @@ import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.nd4j.linalg.api.buffer.DataBuffer;
-import org.nd4j.linalg.api.buffer.util.DataTypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import seeding.Constants;
 
 import java.io.File;
@@ -29,10 +25,8 @@ import java.util.Arrays;
 public class ParagraphVectorModel {
     public static File claimsParagraphVectorFile = new File("claims_skipgram.paragraphvectors");
     public static File allParagraphsModelFile = new File("all_paragraphs.paragraphvectors");
-    public static File descriptionsParagraphVectorFile = new File("descriptions_skipgram.paragraphvectors");
     public static File allSentencesModelFile = new File("all_sentences_skipgram.paragraphvectors");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
-    private static Logger log = LoggerFactory.getLogger(ParagraphVectorModel.class);
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -144,7 +138,7 @@ public class ParagraphVectorModel {
     }*/
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        int numEpochs = 5;
+        int numEpochs = 1;
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
         net = new ParagraphVectors.Builder()
                 .seed(41)
@@ -158,8 +152,8 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(30)
-                .workers(8)
-                .iterations(3)
+                .workers(4)
+                .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
                 .trainSequencesRepresentation(true)
@@ -173,17 +167,7 @@ public class ParagraphVectorModel {
                 .iterate(sentenceIterator)
                 .build();
         net.fit();
-        WordVectorSerializer.writeWordVectors(net, allParagraphsModelFile.getAbsolutePath());
-    }
-
-    public static ParagraphVectors loadClaimModel() throws IOException {
-        // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(claimsParagraphVectorFile.getAbsolutePath()+"10");
-    }
-
-    public static ParagraphVectors loadDescriptionModel() throws IOException {
-        // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(descriptionsParagraphVectorFile.getAbsolutePath());
+        WordVectorSerializer.writeParagraphVectors(net, allParagraphsModelFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadAllSentencesModel() throws IOException {
@@ -192,17 +176,18 @@ public class ParagraphVectorModel {
     }
 
     public static ParagraphVectors loadParagraphsModel() throws IOException {
-        return WordVectorSerializer.readParagraphVectorsFromText(allParagraphsModelFile.getAbsolutePath());
+        return loadModel(allParagraphsModelFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadModel(String path) throws IOException {
         // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(path);
+        ParagraphVectors vectors = WordVectorSerializer.readParagraphVectors(path);
+        vectors.getConfiguration().setIterations(30);
+        return vectors;
     }
 
     public static void main(String[] args) {
         try {
-            DataTypeUtil.setDTypeForContext(DataBuffer.Type.FLOAT);
             ParagraphVectorModel model = new ParagraphVectorModel();
             model.trainAndSaveParagraphVectorModel();
         } catch(Exception e) {
