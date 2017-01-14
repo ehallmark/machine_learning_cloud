@@ -38,7 +38,7 @@ public class TestParagraphVectors {
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
 
-       /* ParagraphVectors net = new ParagraphVectors.Builder()
+       ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
@@ -68,16 +68,7 @@ public class TestParagraphVectors {
         net.fit();
 
         WordVectorSerializer.writeParagraphVectors(net, testFile.getAbsolutePath());
-        */
-        GloDV<VocabWord> model = new GloDV.Builder<VocabWord>()
-                .alpha(0.75)
-                .symmetric(true)
-                .shuffle(false)
-                .batchSize(1000)
-                .build();
-        while(sentenceIterator.hasMoreSequences()) {
-            model.learnSequence(sentenceIterator.nextSequence(),new AtomicLong(new Random(System.currentTimeMillis()).nextLong()), 0.05);
-        }
+
 
         ParagraphVectors vectors = ParagraphVectorModel.loadModel(testFile.getAbsolutePath());
 
