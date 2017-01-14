@@ -66,7 +66,7 @@ public class ModelEvaluator {
         boolean fallBackToWordVectors = false;
         AtomicDouble scoreCounter = new AtomicDouble(0d);
 
-        join.add("Transaction Probability ("+modelName+")");
+        /*join.add("Transaction Probability ("+modelName+")");
         join.add(evaluateModel(transactionMap,fallBackToWordVectors,lookupTable));
         join.add("----------------------------");
 
