@@ -85,8 +85,9 @@ public class TestParagraphVectors {
                 .trainWordVectors(true)
                 .trainSequencesRepresentation(true)
                 .trainElementsRepresentation(false)
-                .elementsLearningAlgorithm(new SkipGram<>())
+                //.elementsLearningAlgorithm(new SkipGram<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
+                .useHierarchicSoftmax(true)
                 .tokenizerFactory(new MyTokenizerFactory())
                 .setVectorsListeners(Arrays.asList(
                         new CustomWordVectorListener(null, "Paragraph Vectors Test", 50, null, "7455590", "claim", "alkali_metal", "device", "femto", "finance", "touchscreen", "smartphone", "internet", "semiconductor", "artificial", "intelligence")

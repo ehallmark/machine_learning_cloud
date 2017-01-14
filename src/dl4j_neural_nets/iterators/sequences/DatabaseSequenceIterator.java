@@ -61,14 +61,14 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     labels.add(resultSet.getString(i));
                 }
                 for (int i : textIndices) {
-                    String[] text = (String[])resultSet.getArray(i).getArray();
+                    String[] text = (String[]) resultSet.getArray(i).getArray();
                     if (text == null) continue;
                     List<VocabWord> words = Arrays.stream(text)
-                            .map(word->new VocabWord(1.0,word))
+                            .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
                     Sequence<VocabWord> seq = new Sequence<>(words);
-                    labels.forEach(label->{
-                        VocabWord labelledWord = new VocabWord(1.0,label);
+                    labels.forEach(label -> {
+                        VocabWord labelledWord = new VocabWord(1.0, label);
                         labelledWord.setSpecial(true);
                         seq.addSequenceLabel(labelledWord);
                     });
@@ -76,6 +76,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                 }
                 counter++;
             }
+
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +84,8 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        return documentQueue.removeLast();
+        System.out.println("Labels: "+documentQueue.peekFirst().getSequenceLabels());
+        return documentQueue.removeFirst();
     }
 
     @Override
