@@ -24,7 +24,7 @@ public class TestParagraphVectors {
     public static void main(String[] args) throws Exception {
         int numEpochs = 3;
         File testFile = new File("testFile.pvectors");
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs,0.01);
+        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs,5000);
         ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
