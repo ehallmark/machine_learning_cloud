@@ -84,7 +84,7 @@ public class TestParagraphVectors {
                 //.stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
                 .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
+                .trainElementsRepresentation(false)
                 .elementsLearningAlgorithm(new SkipGram<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(new MyTokenizerFactory())
