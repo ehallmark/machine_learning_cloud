@@ -10,6 +10,8 @@ import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
+import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 
@@ -182,6 +184,9 @@ public class ParagraphVectorModel {
     public static ParagraphVectors loadModel(String path) throws IOException {
         // Write word vectors to file
         ParagraphVectors vectors = WordVectorSerializer.readParagraphVectors(path);
+        TokenizerFactory tf = new DefaultTokenizerFactory();
+        tf.setTokenPreProcessor(new CommonPreprocessor());
+        vectors.setTokenizerFactory(tf);
         vectors.getConfiguration().setIterations(30);
         return vectors;
     }
