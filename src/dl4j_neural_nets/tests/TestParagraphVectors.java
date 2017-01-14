@@ -94,6 +94,9 @@ public class TestParagraphVectors {
                 .iterate(sentenceIterator)
                 .build();
         net.fit();
+        // EXTRACT LABELS
+        net.extractLabels();
+
         WordVectorSerializer.writeParagraphVectors(net, testFile.getAbsolutePath());
 
 
@@ -109,7 +112,6 @@ public class TestParagraphVectors {
 
         // equality expected here, since inference is happening for the same sentences
         System.out.println("Cosine similarity A/A2: " + Transforms.cosineSim(inferredVectorA, inferredVectorA2));
-
         patents.forEach(patent->{
             INDArray vec = vectors.getLookupTable().vector(patent);
             System.out.println("Vector for "+patent+": "+vec);
