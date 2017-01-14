@@ -27,7 +27,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected List<Integer> labelArrayIndices;
     protected LinkedList<Sequence<VocabWord>> documentQueue;
     protected ResultSet resultSet;
-    protected final int seekDistance = 1000;
+    protected final int seekDistance = 5000;
     protected int numEpochs = 1;
     protected AtomicInteger epochCounter = new AtomicInteger(0);
 
@@ -66,8 +66,8 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     List<VocabWord> words = Arrays.stream(text)
                             .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
-                    Sequence<VocabWord> seq = new Sequence<>(words);
                     labels.forEach(label -> {
+                        Sequence<VocabWord> seq = new Sequence<>(words);
                         VocabWord labelledWord = new VocabWord(1.0, label);
                         labelledWord.setSpecial(true);
                         seq.setSequenceLabel(labelledWord);
