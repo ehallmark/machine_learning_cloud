@@ -33,8 +33,8 @@ public class TestParagraphVectors {
         int numEpochs = 1;
         File testFile = new File("testFile.pvectors");
         List<String> patents = new ArrayList<>();
-        GetEtsiPatentsList.getETSIPatentMap().values().forEach(list->{
-            patents.addAll(list.stream().limit(2).collect(Collectors.toList()));
+        GetEtsiPatentsList.getETSIPatentMap().values().stream().limit(10).forEach(list->{
+            patents.addAll(list.stream().limit(5).collect(Collectors.toList()));
         });
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
