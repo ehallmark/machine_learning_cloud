@@ -110,19 +110,13 @@ public class TestParagraphVectors {
         // equality expected here, since inference is happening for the same sentences
         System.out.println("Cosine similarity A/A2: " + Transforms.cosineSim(inferredVectorA, inferredVectorA2));
 
-        Arrays.asList(
-                "9049722",
-                "8989084",
-                "9369943",
-                "9338767",
-                "9318428",
-                "9071279"
-        ).forEach(patent->{
+        patents.forEach(patent->{
             INDArray vec = vectors.getLookupTable().vector(patent);
             System.out.println("Vector for "+patent+": "+vec);
-            Collection<String> similar = vectors.nearestLabels(vec, 10);
-
-            System.out.println("Similar lables to "+patent+": " + String.join(", ", similar));
+            if(vec!=null) {
+                Collection<String> similar = vectors.nearestLabels(vec, 10);
+                System.out.println("Similar lables to " + patent + ": " + String.join(", ", similar));
+            }
         });
     }
 
