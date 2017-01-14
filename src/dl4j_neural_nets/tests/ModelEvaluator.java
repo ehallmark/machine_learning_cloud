@@ -61,7 +61,7 @@ public class ModelEvaluator {
        /* Map<String,List<String>> gatherTechMap = Database.getGatherTechMap();
         Database.setupSeedConn();
         Map<String,List<String>> gatherValueMap = Database.getGatherRatingsMap();*/
-        Database.setupSeedConn();
+        //Database.setupSeedConn();
 
         boolean fallBackToWordVectors = false;
         AtomicDouble scoreCounter = new AtomicDouble(0d);

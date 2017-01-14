@@ -32,6 +32,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected final int seekDistance = 100;
     protected int numEpochs = 1;
     protected AtomicInteger epochCounter = new AtomicInteger(0);
+    protected AtomicInteger sequenceCounter;
 
     // used to tag each sequence with own Id
     private DatabaseSequenceIterator(String query, String databaseURL) throws SQLException {
@@ -42,10 +43,12 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         textIndices = new ArrayList<>();
         labelArrayIndices = new ArrayList<>();
         documentQueue = new LinkedList<>();
+        sequenceCounter = new AtomicInteger(0);
     }
 
     public void init() throws SQLException {
         resultSet = statement.executeQuery();
+        sequenceCounter.set(0);
         System.out.println(statement.toString());
     }
 
@@ -88,6 +91,10 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
+        if(sequenceCounter.get()%10000==0) {
+            System.out.println("Line number: "+sequenceCounter.get());
+        }
+        sequenceCounter.getAndIncrement();
         return documentQueue.removeFirst();
     }
 
