@@ -81,11 +81,6 @@
             <version>${dl4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-ui</artifactId>
-            <version>${dl4j.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.opencsv</groupId>
             <artifactId>opencsv</artifactId>
             <version>3.3</version>
