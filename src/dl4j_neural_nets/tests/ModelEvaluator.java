@@ -151,7 +151,9 @@ public class ModelEvaluator {
                 INDArray classificationFeatures = classificationsFeatureMap.get(label);
                 for (int i = 0; i < heaps.size(); i++) {
                     INDArray features = featuresMatrix.getRow(i);
-                    heaps.get(i).add(new WordFrequencyPair<>(label, Transforms.cosineSim(features, classificationFeatures)));
+                    if(features!=null && classificationFeatures!=null) {
+                        heaps.get(i).add(new WordFrequencyPair<>(label, Transforms.cosineSim(features, classificationFeatures)));
+                    }
                 }
             }
         }
