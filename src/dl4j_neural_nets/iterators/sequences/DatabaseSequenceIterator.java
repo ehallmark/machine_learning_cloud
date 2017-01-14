@@ -1,5 +1,6 @@
 package dl4j_neural_nets.iterators.sequences;
 
+import dl4j_neural_nets.tools.DuplicatableSequence;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -66,15 +67,14 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     List<VocabWord> words = Arrays.stream(text)
                             .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
-                    Sequence<VocabWord> seq = new Sequence<>(words);
-                    seq.setSequenceLabels(labels.stream().map(label -> {
-                            VocabWord labelledWord = new VocabWord(1.0, label);
-                            labelledWord.setSpecial(true);
-                            return labelledWord;
-                        }
-                    ).collect(Collectors.toList()));
-                    documentQueue.add(seq);
-
+                    DuplicatableSequence<VocabWord> seq = new DuplicatableSequence<>(words);
+                    labels.forEach(label -> {
+                        VocabWord labelledWord = new VocabWord(1.0, label);
+                        labelledWord.setSpecial(true);
+                        Sequence<VocabWord> dupSeq = seq.dup();
+                        dupSeq.setSequenceLabel(labelledWord);
+                        documentQueue.add(dupSeq);
+                    });
                 }
                 counter++;
             }
