@@ -73,30 +73,19 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                             .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
                     DuplicatableSequence<VocabWord> seq = new DuplicatableSequence<>(words);
-                    if(firstRunThrough) {
-                        for (int s = 0; s < labels.size(); s++) {
-                            String label = labels.get(s);
-                            VocabWord labelledWord = new VocabWord(1.0, label);
-                            labelledWord.setSpecial(true);
-                            Sequence<VocabWord> dupSeq;
-                            if (s > 0 && firstRunThrough) {
-                                dupSeq = new Sequence<>();
-                            } else {
-                                dupSeq = seq;//seq.dup();
-                            }
-
-                            dupSeq.setSequenceLabel(labelledWord);
-                            documentQueue.add(dupSeq);
+                    for (int s = 0; s < labels.size(); s++) {
+                        String label = labels.get(s);
+                        VocabWord labelledWord = new VocabWord(1.0, label);
+                        labelledWord.setSpecial(true);
+                        Sequence<VocabWord> dupSeq;
+                        if (s > 0 && firstRunThrough) {
+                            dupSeq = new Sequence<>();
+                        } else {
+                            dupSeq = seq.dup();
                         }
-                    } else {
-                        seq.setSequenceLabels(labels.stream().map(label->{
-                            VocabWord labelledWord = new VocabWord(1.0, label);
-                            labelledWord.setSpecial(true);
-                            return labelledWord;
-                        }).collect(Collectors.toList()));
 
-                        documentQueue.add(seq);
-
+                        dupSeq.setSequenceLabel(labelledWord);
+                        documentQueue.add(dupSeq);
                     }
                 }
                 counter++;
