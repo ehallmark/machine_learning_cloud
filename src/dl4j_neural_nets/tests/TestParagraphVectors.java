@@ -16,6 +16,7 @@ import tools.Emailer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by ehallmark on 12/27/16.
@@ -24,7 +25,44 @@ public class TestParagraphVectors {
     public static void main(String[] args) throws Exception {
         int numEpochs = 3;
         File testFile = new File("testFile.pvectors");
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs,5000);
+        List<String> patents = Arrays.asList(
+                    "9111371",
+                    "9349219",
+                    "8993027",
+                    "8940351" ,
+                    "8956678" ,
+                    "9144251" ,
+                    "9101161" ,
+                    "8956677" ,
+                    "8962058" ,
+                    "9101160" ,
+                    "8945652" ,
+                    "8940350" ,
+                    "9118358" ,
+                    "9148795" ,
+                    "9078084" ,
+                    "9119220" ,
+                    "9125093" ,
+                    "9130810" ,
+                    "8983468" ,
+                    "8995466" ,
+                    "9049722" ,
+                    "8989084" ,
+                    "9369943" ,
+                    "9338767" ,
+                    "9318428" ,
+                    "9071279" ,
+                    "9152902" ,
+                    "9231201" ,
+                    "9177602" ,
+                    "9369604" ,
+                    "9030299" ,
+                    "8988055" ,
+                    "9043608" ,
+                    "9008692",
+                    "9195661"
+        );
+        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs,patents);
         ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
