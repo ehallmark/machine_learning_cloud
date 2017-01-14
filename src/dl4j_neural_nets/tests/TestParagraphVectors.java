@@ -79,9 +79,9 @@ public class TestParagraphVectors {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(3)
-                .workers(4)
+                .workers(1)
                 .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
+                //.stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
                 .trainSequencesRepresentation(true)
                 .trainElementsRepresentation(true)
@@ -89,7 +89,7 @@ public class TestParagraphVectors {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(new MyTokenizerFactory())
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(testFile, "Paragraph Vectors All Paragraphs", 500, null, "7455590", "claim", "alkali_metal", "device", "femto", "finance", "touchscreen", "smartphone", "internet", "semiconductor", "artificial", "intelligence")
+                        new CustomWordVectorListener(null, "Paragraph Vectors Test", 5, null, "7455590", "claim", "alkali_metal", "device", "femto", "finance", "touchscreen", "smartphone", "internet", "semiconductor", "artificial", "intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
