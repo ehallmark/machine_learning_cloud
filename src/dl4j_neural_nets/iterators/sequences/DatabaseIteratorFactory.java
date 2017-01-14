@@ -26,7 +26,7 @@ public class DatabaseIteratorFactory {
     private static final String PatentSequenceQuery = "select pub_doc_number,tokens from patent_description_tokens";
     private static final String PatentSentenceSequenceQuery = "select pub_doc_number,tokens from patent_sentence_tokens";
     private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(?)";
-    private static final String ParagraphSampleTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens =ANY(?)";
+    private static final String ParagraphSampleTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens where pub_doc_number=ANY(?)";
     private static final String PatentClaimSequenceQuery = "select pub_doc_number,tokens from patent_claim_tokens";
     private static final String ClaimTextQueryByPatents = "select pub_doc_number,regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where pub_doc_number=ANY(?) and char_length(claim_text) > 100 ";
     private static final String ValuablePatentsQuery = "select case when pub_doc_number = ANY(?) then 'YES' else 'NO' end as valuable,regexp_replace(lower(claim_text),'[^a-z ]',' ','g') from (select * from patent_grant_claim_recent where char_length(claim_text) > 500 and (pub_doc_number = ANY(?) or pub_doc_number=ANY(?))) as temp order by random()";
