@@ -84,7 +84,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        System.out.println("Labels: "+documentQueue.peekFirst().getSequenceLabels());
+        System.out.println("Labels: "+documentQueue.peekFirst().getSequenceLabels().stream().map(vw->vw.getLabel()).collect(Collectors.toList()));
         return documentQueue.removeFirst();
     }
 
