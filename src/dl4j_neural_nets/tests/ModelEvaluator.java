@@ -130,7 +130,7 @@ public class ModelEvaluator {
         DataSetIterator iterator = new ParagraphVectorDataSetIterator(classificationToPatentMapForTesting,orderedLabels,1,fallbackToWordVectors,lookupTable);
         while(iterator.hasNext()){
             DataSet t = iterator.next();
-            INDArray features = t.getFeatureMatrix();
+            INDArray features = Nd4j.hstack(t.getFeatureMatrix(),t.getFeatureMatrix(),t.getFeatureMatrix());
             INDArray labels = t.getLabels();
             INDArray predicted = getPrediction(features,classificationsFeatureMap, orderedLabels);
             evaluation.eval(labels, predicted);
