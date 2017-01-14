@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 12/27/16.
@@ -31,7 +32,10 @@ public class TestParagraphVectors {
     public static void main(String[] args) throws Exception {
         int numEpochs = 1;
         File testFile = new File("testFile.pvectors");
-        List<String> patents = GetEtsiPatentsList.getExcelList(new File("etsi_patents.xls"),1,14);
+        List<String> patents = GetEtsiPatentsList.getExcelList(new File("etsi_patents.xls"),1,14)
+                .stream().filter(word->word!=null).map(word->word.split(" ")[0].replace("US","").trim())
+                .filter(word->word.length()>0&&word.replaceAll("[^0-9]","").length()==word.length())
+                .collect(Collectors.toList());
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
 
