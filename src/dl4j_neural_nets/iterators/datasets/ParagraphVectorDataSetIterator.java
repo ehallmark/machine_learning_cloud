@@ -44,7 +44,7 @@ public class ParagraphVectorDataSetIterator implements DataSetIterator {
         this.labelProbabilities = this.labels.stream().map(label->labelsToParagraphIDMap.containsKey(label)?(double)labelsToParagraphIDMap.get(label).size()/labelSum:0.0).collect(Collectors.toList());
         assert(Math.abs(labelProbabilities.stream().collect(Collectors.summingDouble(p->p))-1.0) < 0.000001) : "INVALID PROBABILITIES!";
         this.lookupTable=lookupTable;
-        this.numInputs=lookupTable.layerSize();
+        this.numInputs=lookupTable.layerSize()*3;
         this.batchSize=batchSize;
         this.labelsToParagraphIDMap=labelsToParagraphIDMap;
         labelsToParagraphIDIterator = new HashMap<>();
