@@ -77,12 +77,7 @@ public class TestParagraphVectors {
         INDArray inferredVectorA = vectors.inferVector("This is my world .");
         INDArray inferredVectorA2 = vectors.inferVector("This is my world .");
         INDArray inferredVectorB = vectors.inferVector("This is my way .");
-
-        // high similarity expected here, since in underlying corpus words WAY and WORLD have really close context
-        System.out.println("Cosine similarity A/B: " + Transforms.cosineSim(inferredVectorA, inferredVectorB));
-
-        // equality expected here, since inference is happening for the same sentences
-        System.out.println("Cosine similarity A/A2: " + Transforms.cosineSim(inferredVectorA, inferredVectorA2));
+        
         patents.forEach(patent->{
             INDArray vec = vectors.getLookupTable().vector(patent);
             System.out.println("Vector for "+patent+": "+vec);
