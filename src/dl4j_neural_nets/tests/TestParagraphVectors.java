@@ -89,7 +89,7 @@ public class TestParagraphVectors {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(new MyTokenizerFactory())
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(null, "Paragraph Vectors Test", 5, null, "7455590", "claim", "alkali_metal", "device", "femto", "finance", "touchscreen", "smartphone", "internet", "semiconductor", "artificial", "intelligence")
+                        new CustomWordVectorListener(null, "Paragraph Vectors Test", 50, null, "7455590", "claim", "alkali_metal", "device", "femto", "finance", "touchscreen", "smartphone", "internet", "semiconductor", "artificial", "intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
