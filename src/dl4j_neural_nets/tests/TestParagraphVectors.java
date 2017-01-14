@@ -32,10 +32,10 @@ public class TestParagraphVectors {
     public static void main(String[] args) throws Exception {
         int numEpochs = 1;
         File testFile = new File("testFile.pvectors");
-        List<String> patents = GetEtsiPatentsList.getExcelList(new File("etsi_patents.xls"),1,14)
-                .stream().filter(word->word!=null).map(word->word.split(" ")[0].replace("US","").trim())
-                .filter(word->word.length()>0&&word.replaceAll("[^0-9]","").length()==word.length())
-                .collect(Collectors.toList());
+        List<String> patents = new ArrayList<>();
+        GetEtsiPatentsList.getETSIPatentMap().values().forEach(list->{
+            patents.addAll(list);
+        });
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
 
