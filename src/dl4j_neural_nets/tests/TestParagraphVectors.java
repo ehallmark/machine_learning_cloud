@@ -3,6 +3,7 @@ package dl4j_neural_nets.tests;
 import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import dl4j_neural_nets.listeners.CustomWordVectorListener;
 import dl4j_neural_nets.tools.MyTokenizerFactory;
+import dl4j_neural_nets.vectorization.GloDV;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.learning.impl.elements.SkipGram;
 import org.deeplearning4j.models.embeddings.learning.impl.sequence.DBOW;
@@ -19,10 +20,8 @@ import seeding.GetEtsiPatentsList;
 import tools.Emailer;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -33,13 +32,13 @@ public class TestParagraphVectors {
         int numEpochs = 1;
         File testFile = new File("testFile.pvectors");
         List<String> patents = new ArrayList<>();
-        GetEtsiPatentsList.getETSIPatentMap().values().stream().limit(100).forEach(list->{
-            patents.addAll(list.stream().limit(50).collect(Collectors.toList()));
+        GetEtsiPatentsList.getETSIPatentMap().values().stream().limit(50).forEach(list->{
+            patents.addAll(list.stream().limit(20).collect(Collectors.toList()));
         });
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
 
-        ParagraphVectors net = new ParagraphVectors.Builder()
+       /* ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
@@ -69,7 +68,16 @@ public class TestParagraphVectors {
         net.fit();
 
         WordVectorSerializer.writeParagraphVectors(net, testFile.getAbsolutePath());
-
+        */
+        GloDV<VocabWord> model = new GloDV.Builder<VocabWord>()
+                .alpha(0.75)
+                .symmetric(true)
+                .shuffle(false)
+                .batchSize(1000)
+                .build();
+        while(sentenceIterator.hasMoreSequences()) {
+            model.learnSequence(sentenceIterator.nextSequence(),new AtomicLong(new Random(System.currentTimeMillis()).nextLong()), 0.05);
+        }
 
         ParagraphVectors vectors = ParagraphVectorModel.loadModel(testFile.getAbsolutePath());
 
