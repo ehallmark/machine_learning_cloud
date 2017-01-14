@@ -24,7 +24,7 @@ public class DatabaseIteratorFactory {
     private static final String PatentTextQuery = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]','','g'),regexp_replace(lower(substring(description from 1 for 10000)),'[^a-z ]','','g') from patent_grant_recent";
     private static final String PatentSequenceQuery = "select pub_doc_number,tokens from patent_description_tokens";
     private static final String PatentSentenceSequenceQuery = "select pub_doc_number,tokens from patent_sentence_tokens";
-    private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(20)";
+    private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(?)";
     private static final String PatentClaimSequenceQuery = "select pub_doc_number,tokens from patent_claim_tokens";
     private static final String ClaimTextQueryByPatents = "select pub_doc_number,regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where pub_doc_number=ANY(?) and char_length(claim_text) > 100 ";
     private static final String ValuablePatentsQuery = "select case when pub_doc_number = ANY(?) then 'YES' else 'NO' end as valuable,regexp_replace(lower(claim_text),'[^a-z ]',' ','g') from (select * from patent_grant_claim_recent where char_length(claim_text) > 500 and (pub_doc_number = ANY(?) or pub_doc_number=ANY(?))) as temp order by random()";
@@ -47,6 +47,18 @@ public class DatabaseIteratorFactory {
         return new DatabaseTextIterator.Builder(ClaimSentenceQuery,PatentDBUrl)
                 .addTextIndex(2)
                 .addLabelIndex(1)
+                .setFetchSize(5)
+                .build();
+    }
+
+    public static SequenceIterator<VocabWord> PatentParagraphSamplingSequenceIterator(int numEpochs, double sampling) throws SQLException {
+        return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
+                .addLabelIndex(1)
+                .addLabelArrayIndex(2) // classification vectors
+                .addLabelArrayIndex(3) // inventors
+                .addTextIndex(4)
+                .setParameterAsInt(1,(int)(sampling*100))
+                .setNumEpochs(numEpochs)
                 .setFetchSize(5)
                 .build();
     }
@@ -127,8 +139,9 @@ public class DatabaseIteratorFactory {
     }
 
     public static DatabaseSequenceIterator SamplePatentSequenceIterator() throws SQLException {
-        return new DatabaseSequenceIterator.Builder(PatentSampleSequenceQuery,PatentDBUrl)
+        return  new DatabaseSequenceIterator.Builder(PatentSampleSequenceQuery,PatentDBUrl)
                 .addTextIndex(2)
+                .setParameterAsInt(1,20)
                 .addLabelIndex(1)
                 .setFetchSize(5)
                 .build();
