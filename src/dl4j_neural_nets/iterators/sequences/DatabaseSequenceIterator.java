@@ -4,6 +4,7 @@ import dl4j_neural_nets.tools.DuplicatableSequence;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import seeding.Constants;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected List<Integer> labelArrayIndices;
     protected LinkedList<Sequence<VocabWord>> documentQueue;
     protected ResultSet resultSet;
-    protected final int seekDistance = 3000;
+    protected final int seekDistance = 100;
     protected int numEpochs = 1;
     protected AtomicInteger epochCounter = new AtomicInteger(0);
 
@@ -65,6 +66,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     String[] text = (String[]) resultSet.getArray(i).getArray();
                     if (text == null) continue;
                     List<VocabWord> words = Arrays.stream(text)
+                            .filter(word->!Constants.CLAIM_STOP_WORD_SET.contains(word))
                             .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
                     DuplicatableSequence<VocabWord> seq = new DuplicatableSequence<>(words);
