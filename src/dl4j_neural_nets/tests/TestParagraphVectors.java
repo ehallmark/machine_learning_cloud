@@ -94,8 +94,6 @@ public class TestParagraphVectors {
                 .iterate(sentenceIterator)
                 .build();
         net.fit();
-        // EXTRACT LABELS
-        net.extractLabels();
 
         WordVectorSerializer.writeParagraphVectors(net, testFile.getAbsolutePath());
 
@@ -120,6 +118,14 @@ public class TestParagraphVectors {
                 System.out.println("Similar lables to " + patent + ": " + String.join(", ", similar));
             }
         });
+
+        System.out.print("Labels: ");
+        vectors.getVocab().tokens().forEach(token->{
+            if(token.isLabel()) {
+                System.out.print(token.getLabel()+" ");
+            }
+        });
+
     }
 
 }
