@@ -16,6 +16,7 @@ import org.deeplearning4j.parallelism.AsyncIterator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
+import seeding.Database;
 import seeding.GetEtsiPatentsList;
 import tools.Emailer;
 
@@ -37,7 +38,7 @@ public class TestParagraphVectors {
         });
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
-
+        Database.setupSeedConn();
        ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)

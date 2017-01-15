@@ -1,5 +1,6 @@
 package dl4j_neural_nets.vectorization;
 
+import dl4j_neural_nets.iterators.sequences.AsyncSequenceIterator;
 import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import dl4j_neural_nets.listeners.CustomWordVectorListener;
 import dl4j_neural_nets.tools.MyPreprocessor;
@@ -141,7 +142,8 @@ public class ParagraphVectorModel {
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 3;
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),1);
+
         net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
@@ -154,7 +156,7 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(30)
-                .workers(4)
+                .workers(2)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
