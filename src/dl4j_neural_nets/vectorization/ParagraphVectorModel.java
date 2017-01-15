@@ -14,6 +14,8 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import org.nd4j.jita.conf.Configuration;
+import org.nd4j.jita.conf.CudaEnvironment;
 import seeding.Constants;
 
 import java.io.File;
@@ -141,8 +143,10 @@ public class ParagraphVectorModel {
     }*/
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
+        CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true).setMemoryModel(Configuration.MemoryModel.DELAYED.DELAYED);
         int numEpochs = 3;
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),3);
+
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),10);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
@@ -156,10 +160,11 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(30)
-                .workers(2)
+                .workers(4)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
+                .useHierarchicSoftmax(true)
                 .trainSequencesRepresentation(true)
                 .trainElementsRepresentation(true)
                 .elementsLearningAlgorithm(new SkipGram<>())
