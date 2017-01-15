@@ -77,8 +77,8 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
                 // Evaluate model
                 String currentName = modelName + "[EPOCH "+currentEpoch+", LINE " + argument + "]";
                 System.out.println(currentName);
-                String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
-                System.out.println(stats);
+               // String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
+                //System.out.println(stats);
             } catch(Exception e) {
                 e.printStackTrace();
             }

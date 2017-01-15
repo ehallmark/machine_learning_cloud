@@ -69,7 +69,7 @@ public class DatabaseIteratorFactory {
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addLabelIndex(1)
                 .addLabelArrayIndex(2) // classification vectors
-                .addLabelArrayIndex(3) // inventors
+                //.addLabelArrayIndex(3) // inventors
                 .addTextIndex(4)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)
