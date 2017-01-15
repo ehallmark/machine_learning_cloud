@@ -142,7 +142,7 @@ public class ParagraphVectorModel {
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 3;
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),1);
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),2);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
