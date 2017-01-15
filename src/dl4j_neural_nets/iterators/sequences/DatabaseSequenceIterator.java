@@ -57,7 +57,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         try {
             int counter = 0;
             // Check patent iterator
-            while (resultSet.next()&&counter<seekDistance) {
+            while (!resultSet.isClosed()&&resultSet.next()&&counter<seekDistance) {
                 List<String> labels = new ArrayList<>();
                 for (int i : labelArrayIndices) {
                     labels.addAll(Arrays.asList((String[]) resultSet.getArray(i).getArray()));
@@ -98,7 +98,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        if(sequenceCounter.get()%10000==0) {
+        if(sequenceCounter.get()%100000==0) {
             System.out.println("Line number: "+sequenceCounter.get());
         }
         sequenceCounter.getAndIncrement();

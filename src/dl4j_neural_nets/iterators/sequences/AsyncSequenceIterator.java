@@ -66,14 +66,14 @@ public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
     public void reset() {
         noMoreSequences.set(false);
         threads.clear();
-        startThreads();
         iterator.reset();
         queue.clear();
+        startThreads();
     }
 
     @Override
     public boolean hasMoreSequences() {
-        if(!queue.isEmpty()) return true;
+        if (!queue.isEmpty()) return true;
         else {
             if(noMoreSequences.get()) {
                 threads.forEach(thread->thread.join());
