@@ -1,8 +1,10 @@
 package dl4j_neural_nets.iterators.sequences;
 
+import dl4j_neural_nets.tools.DuplicatableSequence;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import seeding.Constants;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -27,9 +29,10 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected List<Integer> labelArrayIndices;
     protected LinkedList<Sequence<VocabWord>> documentQueue;
     protected ResultSet resultSet;
-    protected final int seekDistance = 1000;
+    protected final int seekDistance = 100;
     protected int numEpochs = 1;
     protected AtomicInteger epochCounter = new AtomicInteger(0);
+    protected AtomicInteger sequenceCounter;
 
     // used to tag each sequence with own Id
     private DatabaseSequenceIterator(String query, String databaseURL) throws SQLException {
@@ -40,10 +43,12 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         textIndices = new ArrayList<>();
         labelArrayIndices = new ArrayList<>();
         documentQueue = new LinkedList<>();
+        sequenceCounter = new AtomicInteger(0);
     }
 
     public void init() throws SQLException {
         resultSet = statement.executeQuery();
+        sequenceCounter.set(0);
         System.out.println(statement.toString());
     }
 
@@ -52,7 +57,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         try {
             int counter = 0;
             // Check patent iterator
-            while (resultSet.next()&&counter<seekDistance) {
+            while (!resultSet.isClosed()&&resultSet.next()&&counter<seekDistance) {
                 List<String> labels = new ArrayList<>();
                 for (int i : labelArrayIndices) {
                     labels.addAll(Arrays.asList((String[]) resultSet.getArray(i).getArray()));
@@ -61,21 +66,31 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     labels.add(resultSet.getString(i));
                 }
                 for (int i : textIndices) {
-                    String[] text = (String[])resultSet.getArray(i).getArray();
+                    String[] text = (String[]) resultSet.getArray(i).getArray();
                     if (text == null) continue;
                     List<VocabWord> words = Arrays.stream(text)
-                            .map(word->new VocabWord(1.0,word))
+                            .filter(word->!Constants.CLAIM_STOP_WORD_SET.contains(word))
+                            .map(word -> new VocabWord(1.0, word))
                             .collect(Collectors.toList());
-                    Sequence<VocabWord> seq = new Sequence<>(words);
-                    labels.forEach(label->{
-                        VocabWord labelledWord = new VocabWord(1.0,label);
+                    DuplicatableSequence<VocabWord> seq = new DuplicatableSequence<>(words);
+                    for (int s = 0; s < labels.size(); s++) {
+                        String label = labels.get(s);
+                        VocabWord labelledWord = new VocabWord(1.0, label);
                         labelledWord.setSpecial(true);
-                        seq.addSequenceLabel(labelledWord);
-                    });
-                    documentQueue.add(seq);
+                        Sequence<VocabWord> dupSeq;
+                        if (s > 0 && firstRunThrough) {
+                            dupSeq = new Sequence<>();
+                        } else {
+                            dupSeq = seq.dup();
+                        }
+
+                        dupSeq.setSequenceLabel(labelledWord);
+                        documentQueue.add(dupSeq);
+                    }
                 }
                 counter++;
             }
+
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -83,7 +98,11 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
 
     @Override
     public Sequence<VocabWord> nextSequence() {
-        return documentQueue.removeLast();
+        if(sequenceCounter.get()%100000==0) {
+            System.out.println("Line number: "+sequenceCounter.get());
+        }
+        sequenceCounter.getAndIncrement();
+        return documentQueue.removeFirst();
     }
 
     @Override

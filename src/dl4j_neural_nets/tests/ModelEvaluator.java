@@ -58,21 +58,21 @@ public class ModelEvaluator {
         transactionMap.put("1",FileUtils.readLines(new File("valuable_patents.csv")));
 
         StringJoiner join = new StringJoiner("\n");
-        Map<String,List<String>> gatherTechMap = Database.getGatherTechMap();
+       /* Map<String,List<String>> gatherTechMap = Database.getGatherTechMap();
         Database.setupSeedConn();
-        Map<String,List<String>> gatherValueMap = Database.getGatherRatingsMap();
-        Database.setupSeedConn();
+        Map<String,List<String>> gatherValueMap = Database.getGatherRatingsMap();*/
+        //Database.setupSeedConn();
 
         boolean fallBackToWordVectors = false;
         AtomicDouble scoreCounter = new AtomicDouble(0d);
 
-        join.add("Transaction Probability ("+modelName+")");
+        /*join.add("Transaction Probability ("+modelName+")");
         join.add(evaluateModel(transactionMap,fallBackToWordVectors,lookupTable));
         join.add("----------------------------");
 
         scoreCounter.addAndGet(score);
 
-        join.add("Gather Technologies ("+modelName+")");
+        /*join.add("Gather Technologies ("+modelName+")");
         join.add(evaluateModel(gatherTechMap,fallBackToWordVectors,lookupTable));
         join.add("----------------------------");
 
@@ -82,7 +82,7 @@ public class ModelEvaluator {
         join.add(evaluateModel(gatherValueMap,fallBackToWordVectors,lookupTable));
         join.add("----------------------------");
 
-        scoreCounter.addAndGet(score);
+        scoreCounter.addAndGet(score);*/
 
         join.add("ETSI Standards ("+modelName+")");
         join.add(evaluateModel(GetEtsiPatentsList.getETSIPatentMap(),fallBackToWordVectors,lookupTable));
@@ -147,10 +147,14 @@ public class ModelEvaluator {
         }
         for(int c = 0; c < orderedLabels.size(); c++) {
             String label = orderedLabels.get(c);
-            INDArray classificationFeatures = classificationsFeatureMap.get(label);
-            for (int i = 0; i < heaps.size(); i++) {
-                INDArray features = featuresMatrix.getRow(i);
-                heaps.get(i).add(new WordFrequencyPair<>(label, Transforms.cosineSim(features, classificationFeatures)));
+            if(classificationsFeatureMap.containsKey(label)) {
+                INDArray classificationFeatures = classificationsFeatureMap.get(label);
+                for (int i = 0; i < heaps.size(); i++) {
+                    INDArray features = featuresMatrix.getRow(i);
+                    if(features!=null && classificationFeatures!=null) {
+                        heaps.get(i).add(new WordFrequencyPair<>(label, Transforms.cosineSim(features, classificationFeatures)));
+                    }
+                }
             }
         }
 

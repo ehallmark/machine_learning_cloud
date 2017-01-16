@@ -101,7 +101,7 @@ public class SimilarPatentFinder {
             List<VocabWord> vocabWords = tokens.stream().map(word->paragraphVectors.getVocab().wordFor(word))
                     .filter(word->word!=null).collect(Collectors.toList());
             INDArray vector = paragraphVectors.inferVector(vocabWords);
-            patentList.add(new Patent(name,vector));
+            patentList.add(new Patent(name,Nd4j.hstack(vector.dup(),vector.dup(),vector.dup())));
 
             // Serialize List
             ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
@@ -195,7 +195,47 @@ public class SimilarPatentFinder {
     }
 
     public static INDArray handleResultSet(String label, WeightLookupTable<VocabWord> lookupTable) {
-        return lookupTable.vector(label);
+        Set<String> classifications = null;
+        try {
+            classifications = Database.classificationsFor(label);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        Set<String> inventors = null;
+        try {
+            inventors = Database.inventorsFor(label);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        try {
+            INDArray pVector = lookupTable.vector(label);
+            if(pVector==null) return null;
+            INDArray classVector;
+            try {
+                classVector = Nd4j.vstack(classifications.stream()
+                        .map(klass -> lookupTable.vector(klass))
+                        .filter(vec -> vec != null)
+                        .collect(Collectors.toList())).mean(0);
+            } catch(Exception e) {
+                classVector=pVector.dup();
+            }
+
+            INDArray inventorVector;
+            try {
+                inventorVector = Nd4j.vstack(inventors.stream()
+                        .map(inventor -> lookupTable.vector(inventor))
+                        .filter(vec -> vec != null)
+                        .collect(Collectors.toList())).mean(0);
+            } catch(Exception e) {
+                inventorVector=pVector.dup();
+            }
+
+            return Nd4j.hstack(pVector,classVector,inventorVector);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public String getName() {

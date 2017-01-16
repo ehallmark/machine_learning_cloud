@@ -5,6 +5,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIterator;
 
 import java.sql.SQLException;
+import java.sql.SQLType;
 import java.util.List;
 
 /**
@@ -18,13 +19,14 @@ public class DatabaseIteratorFactory {
     private static final String ClaimTextQueryWithLimitAndOffsetWithOrder = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 order by pub_doc_number desc offset ? limit ?";
     private static final String ClaimTextQueryWithLimitAndOffset = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 offset ? limit ?";
     private static final String ClaimTextQuery = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and char_length(claim_text) > 100 order by random()";
-    private static final String ParagraphTokensQuery = "select pub_doc_number, classifications, tokens from paragraph_tokens";
+    private static final String ParagraphTokensQuery = "select pub_doc_number, classifications[4], classifications[5], tokens from paragraph_tokens";
     private static final String ParentClaimTextQuery = "select pub_doc_number, regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where claim_text is not null and parent_claim_id is null and char_length(claim_text) > 100";
     private static final String PatentTextQueryWithLimitAndOffset = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]','','g'),regexp_replace(lower(substring(description from 1 for least(char_length(description),10000))),'[^a-z ]','','g') from patent_grant_recent where description is not null order by pub_doc_number desc offset ? limit ?";
     private static final String PatentTextQuery = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]','','g'),regexp_replace(lower(substring(description from 1 for 10000)),'[^a-z ]','','g') from patent_grant_recent";
     private static final String PatentSequenceQuery = "select pub_doc_number,tokens from patent_description_tokens";
     private static final String PatentSentenceSequenceQuery = "select pub_doc_number,tokens from patent_sentence_tokens";
-    private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(20)";
+    private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(?)";
+    private static final String ParagraphSampleTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens where pub_doc_number=ANY(?)";
     private static final String PatentClaimSequenceQuery = "select pub_doc_number,tokens from patent_claim_tokens";
     private static final String ClaimTextQueryByPatents = "select pub_doc_number,regexp_replace(lower(claim_text),'[^a-z ]','','g') from patent_grant_claim_recent where pub_doc_number=ANY(?) and char_length(claim_text) > 100 ";
     private static final String ValuablePatentsQuery = "select case when pub_doc_number = ANY(?) then 'YES' else 'NO' end as valuable,regexp_replace(lower(claim_text),'[^a-z ]',' ','g') from (select * from patent_grant_claim_recent where char_length(claim_text) > 500 and (pub_doc_number = ANY(?) or pub_doc_number=ANY(?))) as temp order by random()";
@@ -51,11 +53,24 @@ public class DatabaseIteratorFactory {
                 .build();
     }
 
+    public static SequenceIterator<VocabWord> PatentParagraphSamplingSequenceIterator(int numEpochs, List<String> patents) throws SQLException {
+        return new DatabaseSequenceIterator.Builder(ParagraphSampleTokensQuery,PatentDBUrl)
+                .addLabelIndex(1)
+                .addLabelArrayIndex(2) // classification vectors
+                .addLabelArrayIndex(3) // inventors
+                .addTextIndex(4)
+                .setParameterAsArray(1,patents.toArray(),"varchar")
+                .setNumEpochs(numEpochs)
+                .setFetchSize(5)
+                .build();
+    }
+
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addLabelIndex(1)
-                .addLabelArrayIndex(2) // classification vectors
-                .addTextIndex(3)
+                .addLabelIndex(2)
+                .addLabelIndex(3)
+                .addTextIndex(4)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)
                 .build();

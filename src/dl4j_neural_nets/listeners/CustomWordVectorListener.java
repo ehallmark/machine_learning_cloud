@@ -44,7 +44,7 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
             case EPOCH: {
                 if(argument!=currentEpoch) {
                     currentEpoch = argument;
-                    return true;
+                    //return true;
                 }
                 break;
 
@@ -63,24 +63,22 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
 
     @Override
     public void processEvent(ListenerEvent event, SequenceVectors<VocabWord> sequenceVectors, long argument) {
-        if (filepath != null) {
-            if (sequenceVectors instanceof Glove) {
-                WordVectorSerializer.writeWordVectors((Glove) sequenceVectors, filepath + currentEpoch);
-            } else if (sequenceVectors instanceof ParagraphVectors) {
-                WordVectorSerializer.writeWordVectors((ParagraphVectors) sequenceVectors, filepath + currentEpoch);
-            } else {
-                WordVectorSerializer.writeFullModel((Word2Vec) sequenceVectors, filepath + currentEpoch);
+        if (event.equals(ListenerEvent.LINE)) {
+            if (filepath != null) {
+                if (sequenceVectors instanceof Glove) {
+                    WordVectorSerializer.writeWordVectors((Glove) sequenceVectors, filepath + currentEpoch);
+                } else if (sequenceVectors instanceof ParagraphVectors) {
+                    WordVectorSerializer.writeParagraphVectors((ParagraphVectors) sequenceVectors, filepath + argument);
+                } else {
+                    WordVectorSerializer.writeWord2VecModel((Word2Vec) sequenceVectors, filepath + currentEpoch);
+                }
             }
-        }
-        if(event.equals(ListenerEvent.EPOCH)) {
-
-        } else if (event.equals(ListenerEvent.LINE)) {
             try {
                 // Evaluate model
                 String currentName = modelName + "[EPOCH "+currentEpoch+", LINE " + argument + "]";
                 System.out.println(currentName);
-                String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
-                System.out.println(stats);
+               // String stats = new ModelEvaluator().evaluateWordVectorModel(sequenceVectors.getLookupTable(),currentName);
+                //System.out.println(stats);
             } catch(Exception e) {
                 e.printStackTrace();
             }
