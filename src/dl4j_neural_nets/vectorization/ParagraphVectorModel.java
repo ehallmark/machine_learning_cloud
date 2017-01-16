@@ -29,7 +29,6 @@ import java.util.Arrays;
 public class ParagraphVectorModel {
     public static File claimsParagraphVectorFile = new File("claims_skipgram.paragraphvectors");
     public static File allParagraphsModelFile = new File("all_paragraphs.paragraphvectors");
-    public static File descriptionsParagraphVectorFile = new File("descriptions_skipgram.paragraphvectors");
     public static File allSentencesModelFile = new File("all_sentences_skipgram.paragraphvectors");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     private static Logger log = LoggerFactory.getLogger(ParagraphVectorModel.class);
@@ -78,37 +77,6 @@ public class ParagraphVectorModel {
         net.fit();
         WordVectorSerializer.writeWordVectors(net, claimsParagraphVectorFile.getAbsolutePath());
 
-    }
-    public void trainAndSaveDescriptionModel() throws SQLException {
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentSequenceIterator();
-        net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(100)
-                .epochs(100)
-                .windowSize(windowSize)
-                .layerSize(layerSize)
-                .sampling(sampling)
-                .negativeSample(negativeSampling)
-                .learningRate(learningRate)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(minElementFrequency)
-                .workers(8)
-                .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.STOP_WORD_SET))
-                .trainWordVectors(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(descriptionsParagraphVectorFile,"Description Paragraph Vectors",1000000,null,"claim","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
-                .iterate(sentenceIterator)
-                .build();
-        net.fit();
-        WordVectorSerializer.writeWordVectors(net, descriptionsParagraphVectorFile.getAbsolutePath());
     }
 
     public void trainAndSaveAllSentencesModel() throws SQLException {
@@ -178,12 +146,7 @@ public class ParagraphVectorModel {
 
     public static ParagraphVectors loadClaimModel() throws IOException {
         // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(claimsParagraphVectorFile.getAbsolutePath()+"10");
-    }
-
-    public static ParagraphVectors loadDescriptionModel() throws IOException {
-        // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(descriptionsParagraphVectorFile.getAbsolutePath());
+        return WordVectorSerializer.readParagraphVectorsFromText(claimsParagraphVectorFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadAllSentencesModel() throws IOException {
