@@ -49,6 +49,7 @@ public class SimilarPatentServer {
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String PREDICT_KEYWORDS_FORM_ID = "predict-keywords-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
+    private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     protected static ParagraphVectors paragraphVectors;
@@ -95,6 +96,20 @@ public class SimilarPatentServer {
         });
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
+
+        post("/assignee_asset_count", (req, res) -> {
+            res.type("application/json");
+            String assignee = req.queryParams("assignee");
+            if(assignee==null||assignee.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter an assignee"));
+
+            try {
+                return new Gson().toJson(new SimpleAjaxMessage(String.valueOf(Database.getAssetCountFor(assignee))));
+            } catch(SQLException sql) {
+                sql.printStackTrace();
+                return new Gson().toJson(new SimpleAjaxMessage("Database error trying to find asset count for: "+assignee));
+            }
+
+        });
 
         post("/create_group", (req, res) ->{
             if(req.queryParams("group_prefix")==null || req.queryParams("group_prefix").trim().length()==0) {
@@ -690,73 +705,79 @@ public class SimilarPatentServer {
         return div().with(//formScript(SELECT_CANDIDATE_FORM_ID, "/similar_patents", "Search"),
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
                 formScript(PREDICT_KEYWORDS_FORM_ID, "/predict_tokens", "Search", true),
+                formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                   td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Predict Keywords"),
-                                                form().withId(PREDICT_KEYWORDS_FORM_ID).with(
-                                                        selectCandidateSetDropdown("Candidate Set","name",false),
-                                                        label("Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                        button("Search").withId(PREDICT_KEYWORDS_FORM_ID+"-button").withType("submit")
+                                          a("Create a new Candidate Set").withHref("/new"),
+                                          h3("Get Asset Count for Assignee"),
+                                          form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
+                                                  label("Assignee"),br(),input().withType("text").withName("assignee"), br(),
+                                                  button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
+                                          ),hr(),
+                                          h3("Predict Keywords"),
+                                          form().withId(PREDICT_KEYWORDS_FORM_ID).with(
+                                                  selectCandidateSetDropdown("Candidate Set","name",false),
+                                                  label("Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                  button("Search").withId(PREDICT_KEYWORDS_FORM_ID+"-button").withType("submit")
+                                          ),hr(),
+                                          h3("Generate Assignee Mining Spreadsheet"),
+                                          form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
+                                                  h3("Main options"),
+                                                  selectCandidateSetDropdown("Candidate Set 1","name1",false),
+                                                  selectCandidateSetDropdown("Candidate Set 2", "name2",true),
+                                                  label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title"), br(),
+                                                  label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                  label("Min Patent Number"),br(),input().withType("text").withName("min_patent"),br(),
+                                                  label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
+                                                  label("Switch candidate sets"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
+                                                  label("Filter large assignees"),br(),input().withType("checkbox").withName("filterAssigneesByPatents"),br(),
+                                                  label("Largest portfolio size (only if filtering by large assignee)"),br(),input().withType("text").withName("filterAssigneesByPatents"),br(),
+                                                  hr(),
+                                                  h3("Contact Info (primarily for the cover page)"),
+                                                  label("Client Name"),br(),input().withType("text").withName("client"), br(),
+                                                  label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),
+                                                  label("Contact 1 Name"),br(),input().withType("text").withName("cname1").withValue(Constants.DEFAULT_EM_NAME), br(),
+                                                  label("Contact 1 Title"),br(),input().withType("text").withName("title1").withValue(Constants.DEFAULT_EM_TITLE), br(),
+                                                  label("Contact 1 Phone"),br(),input().withType("text").withName("phone1").withValue(Constants.DEFAULT_EM_PHONE), br(),
+                                                  label("Contact 1 Email"),br(),input().withType("text").withName("email1").withValue(Constants.DEFAULT_EM_EMAIL), br(),
+                                                  label("Contact 2 Label"),br(),input().withType("text").withName("label2").withValue(Constants.DEFAULT_SAM_LABEL), br(),
+                                                  label("Contact 2 Name"),br(),input().withType("text").withName("cname2").withValue(Constants.DEFAULT_SAM_NAME), br(),
+                                                  label("Contact 2 Title"),br(),input().withType("text").withName("title2").withValue(Constants.DEFAULT_SAM_TITLE), br(),
+                                                  label("Contact 2 Phone"),br(),input().withType("text").withName("phone2").withValue(Constants.DEFAULT_SAM_PHONE), br(),
+                                                  label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
+                                                  hr(),
+                                                  h3("Advanced Options"),
+                                                  label("Allow results from other comparison set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                  label("Limit groups?"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
+                                                  label("Group Limit"),br(),input().withType("text").withName("group_limit"), br(),
+                                                  label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
+                                                  label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
+                                                  //label("Rank assignees"),br(),input().withType("checkbox").withName("matchAssignees"),br(),
+                                                  label("Merge"),br(),input().withType("checkbox").withName("merge"),br(),
+                                                  label("Tag Index"),br(),input().withType("text").withName("tag_index"), br(),
+                                                  label("Use Additional Model 1"),br(),input().withType("checkbox").withName("use_additional_model_1"), br(),
+                                                  selectCandidateSetDropdown("Additional Model 1", "additional_model_1",true),
+                                                  label("Result Limit"),br(),input().withType("text").withName("additional_model_1_limit"), br(),
+                                                  label("Use Additional Model 2"),br(),input().withType("checkbox").withName("use_additional_model_2"), br(),
+                                                  selectGatherTechnologyDropdown("From Gather Technologies", "additional_model_2"),
+                                                  label("Result Limit"),br(),input().withType("text").withName("additional_model_2_limit"), br(),
+                                                  label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
+                                                  label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
+                                                  label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
+                                                  label("Assignee Highlighter (; separated)"),br(),textarea().withName("assigneeHighlighter"),br(),hr(),
+                                                  label("Require keywords"),br(),textarea().withName("required_keywords"),br(),hr(),
+                                                  label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
+                                                  button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
 
-                                                 ),hr(),
-                                                h3("Generate Assignee Mining Spreadsheet"),
-                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
-                                                        h3("Main options"),
-                                                        selectCandidateSetDropdown("Candidate Set 1","name1",false),
-                                                        selectCandidateSetDropdown("Candidate Set 2", "name2",true),
-                                                        label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title"), br(),
-                                                        label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                        label("Min Patent Number"),br(),input().withType("text").withName("min_patent"),br(),
-                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
-                                                        label("Switch candidate sets"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
-                                                        label("Filter large assignees"),br(),input().withType("checkbox").withName("filterAssigneesByPatents"),br(),
-                                                        label("Largest portfolio size (only if filtering by large assignee)"),br(),input().withType("text").withName("filterAssigneesByPatents"),br(),
-                                                        hr(),
-                                                        h3("Contact Info (primarily for the cover page)"),
-                                                        label("Client Name"),br(),input().withType("text").withName("client"), br(),
-                                                        label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),
-                                                        label("Contact 1 Name"),br(),input().withType("text").withName("cname1").withValue(Constants.DEFAULT_EM_NAME), br(),
-                                                        label("Contact 1 Title"),br(),input().withType("text").withName("title1").withValue(Constants.DEFAULT_EM_TITLE), br(),
-                                                        label("Contact 1 Phone"),br(),input().withType("text").withName("phone1").withValue(Constants.DEFAULT_EM_PHONE), br(),
-                                                        label("Contact 1 Email"),br(),input().withType("text").withName("email1").withValue(Constants.DEFAULT_EM_EMAIL), br(),
-                                                        label("Contact 2 Label"),br(),input().withType("text").withName("label2").withValue(Constants.DEFAULT_SAM_LABEL), br(),
-                                                        label("Contact 2 Name"),br(),input().withType("text").withName("cname2").withValue(Constants.DEFAULT_SAM_NAME), br(),
-                                                        label("Contact 2 Title"),br(),input().withType("text").withName("title2").withValue(Constants.DEFAULT_SAM_TITLE), br(),
-                                                        label("Contact 2 Phone"),br(),input().withType("text").withName("phone2").withValue(Constants.DEFAULT_SAM_PHONE), br(),
-                                                        label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
-                                                        hr(),
-                                                        h3("Advanced Options"),
-                                                        label("Allow results from other comparison set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                        label("Limit groups?"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
-                                                        label("Group Limit"),br(),input().withType("text").withName("group_limit"), br(),
-                                                        label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
-                                                        label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
-                                                        //label("Rank assignees"),br(),input().withType("checkbox").withName("matchAssignees"),br(),
-                                                        label("Merge"),br(),input().withType("checkbox").withName("merge"),br(),
-                                                        label("Tag Index"),br(),input().withType("text").withName("tag_index"), br(),
-                                                        label("Use Additional Model 1"),br(),input().withType("checkbox").withName("use_additional_model_1"), br(),
-                                                        selectCandidateSetDropdown("Additional Model 1", "additional_model_1",true),
-                                                        label("Result Limit"),br(),input().withType("text").withName("additional_model_1_limit"), br(),
-                                                        label("Use Additional Model 2"),br(),input().withType("checkbox").withName("use_additional_model_2"), br(),
-                                                        selectGatherTechnologyDropdown("From Gather Technologies", "additional_model_2"),
-                                                        label("Result Limit"),br(),input().withType("text").withName("additional_model_2_limit"), br(),
-                                                        label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
-                                                        label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                        label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
-                                                        label("Assignee Highlighter (; separated)"),br(),textarea().withName("assigneeHighlighter"),br(),hr(),
-                                                        label("Require keywords"),br(),textarea().withName("required_keywords"),br(),hr(),
-                                                        label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
-                                                        button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
+
+                                          )                                 )
                                 )
                         )
                 ),
                 br(),
-                br(),
-                a("Or create a new Candidate Set").withHref("/new")
+                br()
         );
     }
 

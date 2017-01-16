@@ -89,6 +89,20 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static int getAssetCountFor(String assignee) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select count(distinct pub_doc_number) from patent_grant_assignee where name ilike=?||'%'");
+		ps.setString(1, assignee);
+		ResultSet rs = ps.executeQuery();
+		int result;
+		if(rs.next()) {
+			result = rs.getInt(1);
+		}  else {
+			result = 0;
+		}
+		ps.close();
+		return result;
+	}
+
 	public static Set<String> classificationsFor(String patent) throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement("select classifications from paragraph_tokens where pub_doc_number=? limit 1");
 		ps.setString(1,patent);
