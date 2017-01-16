@@ -80,11 +80,6 @@
             <artifactId>deeplearning4j-core</artifactId>
             <version>${dl4j.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.deeplearning4j</groupId>
-            <artifactId>deeplearning4j-scaleout</artifactId>
-            <version>${dl4j.version}</version>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.deeplearning4j/dl4j-spark-nlp_2.11 -->
         <dependency>
             <groupId>org.deeplearning4j</groupId>
