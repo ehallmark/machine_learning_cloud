@@ -144,7 +144,7 @@ public class ParagraphVectorModel {
         //CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
         int numEpochs = 3;
 
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),2);
+        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
