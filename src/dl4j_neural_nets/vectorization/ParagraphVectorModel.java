@@ -143,8 +143,9 @@ public class ParagraphVectorModel {
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         //CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
         int numEpochs = 3;
+        int numThreads = 20;
 
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),numThreads/2);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
@@ -158,7 +159,7 @@ public class ParagraphVectorModel {
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(30)
-                .workers(1)
+                .workers(numThreads/2)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
