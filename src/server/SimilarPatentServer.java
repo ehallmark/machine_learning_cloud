@@ -99,16 +99,26 @@ public class SimilarPatentServer {
 
         post("/assignee_asset_count", (req, res) -> {
             res.type("application/json");
-            String assignee = req.queryParams("assignee");
-            if(assignee==null||assignee.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter an assignee"));
+            String assigneeStr = req.queryParams("assignee");
+            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
 
-            try {
-                return new Gson().toJson(new SimpleAjaxMessage(String.valueOf(Database.getAssetCountFor(assignee))));
-            } catch(SQLException sql) {
-                sql.printStackTrace();
-                return new Gson().toJson(new SimpleAjaxMessage("Database error trying to find asset count for: "+assignee));
-            }
+            String[] assignees = assigneeStr.split("\\n");
+            if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
+                StringJoiner sj = new StringJoiner("\n");
+                for(String assignee : assignees) {
+                    assignee=assignee.trim();
+                    if(assignee.isEmpty()) continue;
+                    try {
+                        String data = assignee+"\t"+String.valueOf(Database.getAssetCountFor(assignee));
+                        sj.add(data);
+                    } catch(SQLException sql) {
+                        sql.printStackTrace();
+                        String data = assignee+"\t"+"0";
+                        sj.add(data);
+                    }
+                }
 
+                return new Gson().toJson(new SimpleAjaxMessage(sj.toString()));
         });
 
         post("/create_group", (req, res) ->{
@@ -711,9 +721,10 @@ public class SimilarPatentServer {
                                 tr().attr("style", "vertical-align: top;").with(
                                   td().attr("style","width:33%; vertical-align: top;").with(
                                           a("Create a new Candidate Set").withHref("/new"),
-                                          h3("Get Asset Count for Assignee (Estimation Only)"),
+                                          h3("Get Asset Count for Assignees (Estimation Only)"),
+                                          h4("Please place each assignee on a separate line"),
                                           form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                  label("Assignee"),br(),input().withType("text").withName("assignee"), br(),
+                                                  label("Assignee"),br(),textarea().withName("assignee"), br(),
                                                   button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
                                           ),hr(),
                                           h3("Predict Keywords"),
