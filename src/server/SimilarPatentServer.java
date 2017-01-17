@@ -922,7 +922,9 @@ public class SimilarPatentServer {
 
     public static void main(String[] args) throws Exception {
         Database.setupSeedConn();
+        System.out.println("Starting to load lookup table...");
         loadLookupTable();
+        System.out.println("Finished loading lookup table...");
         if(!Arrays.asList(args).contains("dontLoadBaseFinder")) {
             System.out.println("Starting to load base finder...");
             loadBaseFinder();
