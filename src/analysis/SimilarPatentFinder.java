@@ -203,7 +203,7 @@ public class SimilarPatentFinder {
         }
         Set<String> inventors = null;
         try {
-            //inventors = Database.inventorsFor(label);
+            inventors = Database.assigneesFor(label);
         } catch(Exception e) {
             e.printStackTrace();
         }

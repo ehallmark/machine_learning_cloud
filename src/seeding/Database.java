@@ -115,8 +115,8 @@ public class Database {
 		return classifications;
 	}
 
-	public static Set<String> inventorsFor(String patent) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select inventors from paragraph_tokens where pub_doc_number=? limit 1");
+	public static Set<String> assigneesFor(String patent) throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select assignees from paragraph_tokens where pub_doc_number=? limit 1");
 		ps.setString(1,patent);
 		ResultSet rs = ps.executeQuery();
 		Set<String> inventors = new HashSet<>();
