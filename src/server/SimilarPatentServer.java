@@ -66,7 +66,8 @@ public class SimilarPatentServer {
         if(paragraphVectors!=null)return;
         //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
         //lookupTable = ParagraphVectorModel.loadClaimModel().getLookupTable();
-        paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+        //paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+        paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
     }
 
     private static void loadBaseFinder() {
