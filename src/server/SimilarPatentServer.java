@@ -711,7 +711,7 @@ public class SimilarPatentServer {
                                 tr().attr("style", "vertical-align: top;").with(
                                   td().attr("style","width:33%; vertical-align: top;").with(
                                           a("Create a new Candidate Set").withHref("/new"),
-                                          h3("Get Asset Count for Assignee"),
+                                          h3("Get Asset Count for Assignee (Estimation Only)"),
                                           form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
                                                   label("Assignee"),br(),input().withType("text").withName("assignee"), br(),
                                                   button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
