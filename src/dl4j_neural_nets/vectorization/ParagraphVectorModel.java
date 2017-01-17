@@ -189,7 +189,7 @@ public class ParagraphVectorModel {
 
 
     public static ParagraphVectors loadParagraphsModel() throws IOException {
-        return loadModel(allParagraphsModelFile.getAbsolutePath()+250000000);
+        return loadModel(allParagraphsModelFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadModel(String path) throws IOException {
