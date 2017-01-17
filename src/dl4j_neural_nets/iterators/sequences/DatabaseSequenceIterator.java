@@ -60,10 +60,15 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
             while (!resultSet.isClosed()&&resultSet.next()&&counter<seekDistance) {
                 List<String> labels = new ArrayList<>();
                 for (int i : labelArrayIndices) {
-                    labels.addAll(Arrays.asList((String[]) resultSet.getArray(i).getArray()));
+                    String[] mLabels = (String[]) resultSet.getArray(i).getArray();
+                    for(int m = 0; m < mLabels.length; m++) {
+                        String label = mLabels[m];
+                        if(label!=null&&label.length() > 0) labels.add(label);
+                    }
                 }
                 for (int i : labelIndices) {
-                    labels.add(resultSet.getString(i));
+                    String label = resultSet.getString(i);
+                   if(label!=null&&label.length() > 0) labels.add(label);
                 }
                 for (int i : textIndices) {
                     String[] text = (String[]) resultSet.getArray(i).getArray();
