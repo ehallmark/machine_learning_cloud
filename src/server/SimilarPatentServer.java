@@ -923,8 +923,12 @@ public class SimilarPatentServer {
         Database.setupSeedConn();
         loadLookupTable();
         if(!Arrays.asList(args).contains("dontLoadBaseFinder")) {
+            System.out.println("Starting to load base finder...");
             loadBaseFinder();
+            System.out.println("Finished loading base finder...");
         }
+        System.out.println("Starting server...");
         server();
+        System.out.println("Finished starting server...");
     }
 }
