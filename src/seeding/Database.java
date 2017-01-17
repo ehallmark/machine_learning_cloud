@@ -90,7 +90,7 @@ public class Database {
 	}
 
 	public static int getAssetCountFor(String assignee) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select count(distinct pub_doc_number) from patent_grant_assignee where orgname ilike ?||'%'");
+		PreparedStatement ps = seedConn.prepareStatement("select count(distinct pub_doc_number) from patent_grant_assignee where replace(replace(lower(orgname),'.',''),',','') where like lower(?)||'%'");
 		ps.setString(1, assignee);
 		ResultSet rs = ps.executeQuery();
 		int result;
