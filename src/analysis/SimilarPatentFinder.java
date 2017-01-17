@@ -197,7 +197,7 @@ public class SimilarPatentFinder {
     public static INDArray handleResultSet(String label, WeightLookupTable<VocabWord> lookupTable) {
         Set<String> classifications = null;
         try {
-            //classifications = Database.classificationsFor(label);
+            classifications = Database.classificationsFor(label);
         } catch(Exception e) {
             e.printStackTrace();
         }
