@@ -141,7 +141,7 @@ public class ParagraphVectorModel {
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         //CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
         int numEpochs = 3;
-        int numThreads = 30;
+        int numThreads = 60;
 
         SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),numThreads/2);
 
