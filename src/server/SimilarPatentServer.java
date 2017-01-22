@@ -198,7 +198,6 @@ public class SimilarPatentServer {
             }
         });
 
-
         post("/create", (req, res) -> {
             if(req.queryParams("name")==null || (req.queryParams("patents")==null && req.queryParams("assignee")==null)) {
                 req.session().attribute("message", "Invalid form parameters.");
