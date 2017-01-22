@@ -80,50 +80,6 @@ public class SimilarPatentFinder {
         this(null, new File("globalSimilarPatentFinder.obj"), "**ALL**", lookupTable);
     }
 
-
-    public SimilarPatentFinder(String name,WeightLookupTable<VocabWord> lookupTable) throws SQLException {
-        this(name, getVectorFromDB(name, lookupTable));
-    }
-
-    public SimilarPatentFinder(String name, INDArray data) throws SQLException {
-        this.name=name;
-        patentList = data==null?null:Arrays.asList(new Patent(name, data));
-    }
-
-    // article support
-    public SimilarPatentFinder(String articleName, File patentListFile, List<String> tokens, ParagraphVectors paragraphVectors) throws SQLException,IOException, ClassNotFoundException {
-        // construct lists
-        this.name=articleName;
-        System.out.println("--- Started Loading Patent Vectors ---");
-        if (!patentListFile.exists()) {
-            patentList = new ArrayList<>();
-            paragraphVectors.getConfiguration().setIterations(10);
-            List<VocabWord> vocabWords = tokens.stream().map(word->paragraphVectors.getVocab().wordFor(word))
-                    .filter(word->word!=null).collect(Collectors.toList());
-            INDArray vector = paragraphVectors.inferVector(vocabWords);
-            patentList.add(new Patent(name,Nd4j.hstack(vector.dup(),vector.dup(),vector.dup())));
-
-            // Serialize List
-            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
-            oos.writeObject(patentList);
-            oos.flush();
-            oos.close();
-        } else {
-            // read from file
-            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
-            Object obj = ois.readObject();
-            patentList = ((List<Patent>) obj);
-            ois.close();
-        }
-
-        // Now add stuff to the map
-        patentList.forEach(p->{
-            globalCache.put(p.getName(),p.getVector());
-        });
-
-        System.out.println("--- Finished Loading Patent Vectors ---");
-    }
-
     public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
@@ -132,7 +88,10 @@ public class SimilarPatentFinder {
             // read from file
             ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
             Object obj = ois.readObject();
-            patentList = ((List<Patent>) obj);
+            patentList = ((List<String>) obj).stream()
+                .map(patent->new Patent(patent,lookupTable.vector(patent)))
+                .filter(patent->patent.getVector()!=null)
+                .collect(Collectors.toList());
             // PCA
             ois.close();
 
@@ -170,7 +129,9 @@ public class SimilarPatentFinder {
             if (patentListFile != null) {
                 // Serialize List
                 ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
-                oos.writeObject(patentList);
+                oos.writeObject(patentList.stream()
+                    .map(patent->patent.getName())
+                    .collect(Collectors.toList()));
                 oos.flush();
                 oos.close();
             }
@@ -179,16 +140,6 @@ public class SimilarPatentFinder {
 
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
-
-    public static double distance(double[] v1, double[] v2) {
-        assert v1.length==v2.length : "VECTORS HAVE INCONSISTENT LENGTHS!";
-        double result = 0.0;
-        for(int i = 0; i < v1.length; i++) {
-            result+=Math.pow(v1[i]-v2[i],2);
-        }
-        return result;
-    }
-
 
     public List<Patent> getPatentList() {
         return patentList;

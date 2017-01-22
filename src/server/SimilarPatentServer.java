@@ -212,9 +212,9 @@ public class SimilarPatentServer {
                     if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
                         new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,paragraphVectors.lookupTable());
                     } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        new SimilarPatentFinder(preProcess(req.queryParams("patents")), file, name, paragraphVectors.lookupTable());
+                        new SimilarPatentFinder(preProcess(req.queryParams("patents"),"\\s+","US"), file, name, paragraphVectors.lookupTable());
                     } else if (req.queryParams("article")!=null&&req.queryParams("article").trim().length()>0) {
-                        new SimilarPatentFinder(name, file, tokenizerFactory.create(new PhrasePreprocessor().preProcess(req.queryParams("article"))).getTokens(),paragraphVectors);
+                        new SimilarPatentFinder(tokenizerFactory.create(new PhrasePreprocessor().preProcess(req.queryParams("article"))).getTokens(), file, name, paragraphVectors.lookupTable());
                     } else {
                         req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
                         res.redirect("/new");
@@ -276,36 +276,24 @@ public class SimilarPatentServer {
             int TagIndex = extractInt(req, "tag_index", 0);
             int limit = extractLimit(req);
 
-            boolean additionalModel1 = extractBool(req, "use_additional_model_1");
-            int limitAdditionalModel1 = extractInt(req, "additional_model_1_limit", limit);
-            List<String> additionalModel1Ids = additionalModel1 ? Arrays.asList(req.queryParamsValues("additional_model_1")) : null;
-
-            boolean additionalModel2 = extractBool(req, "use_additional_model_2");
-            int limitAdditionalModel2 = extractInt(req, "additional_model_2_limit", limit);
-            List<String> additionalModel2Ids = additionalModel2 ? Arrays.asList(req.queryParamsValues("additional_model_2")) : null;
-
             List<String> otherIds = Arrays.asList(req.queryParamsValues("name2"));
             if(otherIds.isEmpty()&&!gatherValue) return new Gson().toJson(new SimpleAjaxMessage("Must choose at least one other candidate set"));
 
             Integer id1 = Integer.valueOf(req.queryParams("name1"));
 
             // get more detailed params
-            String clientName = req.queryParams("client");
-            if(clientName==null) clientName="";
+            String clientName = extractString(req,"client","");
             int tagLimit = extractTagLimit(req);
             int groupLimit = extractGroupLimit(req);
-            boolean merge = extractBool(req,"merge");
             boolean limitGroups = extractAverageCandidates(req);
             Integer minPatentNum = extractMinPatentNumber(req);
             double threshold = extractThreshold(req);
             boolean findDissimilar = extractFindDissimilar(req);
-            List<String> badAssignees = preProcess(req.queryParams("assigneeFilter"),";");
-            Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter")));
-            List<String> highlightAssignees = preProcess(req.queryParams("assigneeHighlighter"),";").stream().map(str->str.toUpperCase()).collect(Collectors.toList());
-            String title = req.queryParams("title");
-            if(title==null)title="";
-            boolean FilterAssigneesByPatentCount = req.queryParams("filterAssigneesByPatents")!=null&&req.queryParams("filterAssigneesByPatents").startsWith("on");
-            boolean switchCandidateSets = req.queryParams("switchCandidateSets")!=null&&req.queryParams("switchCandidateSets").startsWith("on");
+            List<String> badAssignees = preProcess(req.queryParams("assigneeFilter"),"\n",null);
+            Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
+            List<String> highlightAssignees = preProcess(req.queryParams("assigneeHighlighter"),"\n",null).stream().map(str->str.toUpperCase()).collect(Collectors.toList());
+            String title = extractString(req,"title","");
+            boolean switchCandidateSets = extractBool(req, "switchCandidateSets");
             boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
 
             if(id1 < 0 && globalFinder==null)
@@ -326,60 +314,8 @@ public class SimilarPatentServer {
                         firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,paragraphVectors.lookupTable()));
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
-                Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets,merge);
+                Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets);
                 PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
-
-                final int assigneePatentLimit = 100;
-                if(FilterAssigneesByPatentCount) {
-                    Set<String> largeAssigneeSet = new HashSet<>();
-                    Database.selectPatentCountFromAssignee(patentList.getAssignees().stream().map(a->a.getName()).collect(Collectors.toList())).entrySet()
-                    .forEach(e->{
-                        if(e.getValue() > assigneePatentLimit) {
-                            largeAssigneeSet.add(e.getKey());
-                        }
-                    });
-                    patentList.setPatents(patentList.getPatents().stream()
-                        .filter(patent->!largeAssigneeSet.contains(patent.getAssignee().toUpperCase()))
-                        .collect(Collectors.toList()));
-                }
-
-
-                if(additionalModel1) {
-                    int tagIdx = 1;
-                    Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> additionalModel1Finders = getFirstAndSecondFinders(Arrays.asList(new SimilarPatentFinder(patentList.getPatentStrings(),null,patentList.getName1(),paragraphVectors.lookupTable())),additionalModel1Ids,switchCandidateSets,merge);
-                    PatentList additionalModel1List = runPatentFinderModel(title, additionalModel1Finders.getFirst(), additionalModel1Finders.getSecond(), tagIdx, limitAdditionalModel1, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
-                    Map<String,Map<String,Double>> orderedTags = new HashMap<>();
-                    additionalModel1List.getPatents().forEach(patent->{
-                        orderedTags.put(patent.getName(),patent.getTags());
-                    });
-                    List<AbstractPatent> taggedPatents = new ArrayList<>();
-                    patentList.getPatents().forEach(patent->{
-                        if (orderedTags.containsKey(patent.getName())) {
-                            patent.setTags(orderedTags.get(patent.getName()));
-                            taggedPatents.add(patent);
-                        }
-                    });
-                    patentList.setPatents(taggedPatents);
-                }
-
-                if(additionalModel2) {
-                    int tagIdx = 2;
-                    Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> additionalModel2Finders = getFirstAndSecondFinders(Arrays.asList(new SimilarPatentFinder(patentList.getPatentStrings(),null,patentList.getName1(),paragraphVectors.lookupTable())),additionalModel2Ids,switchCandidateSets,merge);
-                    PatentList additionalModel2List = runPatentFinderModel(title, additionalModel2Finders.getFirst(), additionalModel2Finders.getSecond(),tagIdx, limitAdditionalModel2, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
-                    Map<String,Map<String,Double>> orderedTags = new HashMap<>();
-                    additionalModel2List.getPatents().forEach(patent->{
-                        orderedTags.put(patent.getName(),patent.getTags());
-                    });
-                    List<AbstractPatent> taggedPatents = new ArrayList<>();
-                    patentList.getPatents().forEach(patent->{
-                        if (orderedTags.containsKey(patent.getName())) {
-                            patent.setTags(orderedTags.get(patent.getName()));
-                            taggedPatents.add(patent);
-                        }
-                    });
-                    patentList.setPatents(taggedPatents);
-                }
-
 
                 if (gatherValue && transactionProbabilityModel != null) {
                     for (AbstractPatent patent : patentList.getPatents()) {
@@ -467,7 +403,7 @@ public class SimilarPatentServer {
 
     }
 
-    private static Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> getFirstAndSecondFinders(List<SimilarPatentFinder> firstFinders, List<String> otherIds, boolean switchCandidateSets, boolean merge) throws Exception {
+    private static Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> getFirstAndSecondFinders(List<SimilarPatentFinder> firstFinders, List<String> otherIds, boolean switchCandidateSets) throws Exception {
         List<SimilarPatentFinder> secondFinders = new ArrayList<>();
         for(String id : otherIds) {
             SimilarPatentFinder finder = null;
@@ -506,17 +442,6 @@ public class SimilarPatentServer {
             firstFinders=secondFinders;
             secondFinders=tmpList;
         }
-        // merge if necessary
-        if(merge) {
-            List<SimilarPatentFinder> tmp = new ArrayList<>(1);
-            tmp.add(secondFinders.get(0));
-            tmp.get(0).setName("Merged Group");
-            for(int i = 1; i < secondFinders.size(); i++) {
-                tmp.get(0).getPatentList().addAll(secondFinders.get(i).getPatentList());
-            }
-            secondFinders = tmp;
-        }
-
         return new Pair<>(firstFinders, secondFinders);
     }
 
@@ -566,14 +491,9 @@ public class SimilarPatentServer {
         }
     }
 
-
-    private static List<String> preProcess(String str) {
-        return preProcess(str, "\\s+");
-    }
-
-    private static List<String> preProcess(String toSplit, String delim) {
+    private static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->str.trim().replaceFirst("US","")).collect(Collectors.toList());
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceFirst(toReplace,""):str.trim()).collect(Collectors.toList());
     }
 
     private static Tag templateWrapper(Response res, Tag form, String message) {
@@ -761,20 +681,12 @@ public class SimilarPatentServer {
                                                   label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
                                                   hr(),
                                                   h3("Advanced Options"),
-                                                  label("Allow results from other comparison set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                  label("Allow results from other candidate set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
                                                   label("Limit groups?"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
                                                   label("Group Limit"),br(),input().withType("text").withName("group_limit"), br(),
                                                   label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
                                                   label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
                                                   //label("Rank assignees"),br(),input().withType("checkbox").withName("matchAssignees"),br(),
-                                                  label("Merge"),br(),input().withType("checkbox").withName("merge"),br(),
-                                                  label("Tag Index"),br(),input().withType("text").withName("tag_index"), br(),
-                                                  label("Use Additional Model 1"),br(),input().withType("checkbox").withName("use_additional_model_1"), br(),
-                                                  selectCandidateSetDropdown("Additional Model 1", "additional_model_1",true),
-                                                  label("Result Limit"),br(),input().withType("text").withName("additional_model_1_limit"), br(),
-                                                  label("Use Additional Model 2"),br(),input().withType("checkbox").withName("use_additional_model_2"), br(),
-                                                  selectGatherTechnologyDropdown("From Gather Technologies", "additional_model_2"),
-                                                  label("Result Limit"),br(),input().withType("text").withName("additional_model_2_limit"), br(),
                                                   label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                   label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
                                                   label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
