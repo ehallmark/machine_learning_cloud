@@ -66,8 +66,8 @@ public class SimilarPatentServer {
         if(paragraphVectors!=null)return;
         //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
         //lookupTable = ParagraphVectorModel.loadClaimModel().getLookupTable();
-        //paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
-        paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
+        paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+        //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
     }
 
     private static void loadBaseFinder() {
@@ -284,11 +284,8 @@ public class SimilarPatentServer {
             // get more detailed params
             String clientName = extractString(req,"client","");
             int tagLimit = extractTagLimit(req);
-            int groupLimit = extractGroupLimit(req);
-            boolean limitGroups = extractAverageCandidates(req);
             Integer minPatentNum = extractMinPatentNumber(req);
             double threshold = extractThreshold(req);
-            boolean findDissimilar = extractFindDissimilar(req);
             List<String> badAssignees = preProcess(req.queryParams("assigneeFilter"),"\n",null);
             Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
             List<String> highlightAssignees = preProcess(req.queryParams("assigneeHighlighter"),"\n",null).stream().map(str->str.toUpperCase()).collect(Collectors.toList());
@@ -314,8 +311,10 @@ public class SimilarPatentServer {
                         firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,paragraphVectors.lookupTable()));
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
+
+                boolean findDissimilar = false;
                 Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets);
-                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, limitGroups, groupLimit, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
+                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
 
                 if (gatherValue && transactionProbabilityModel != null) {
                     for (AbstractPatent patent : patentList.getPatents()) {
@@ -445,16 +444,12 @@ public class SimilarPatentServer {
         return new Pair<>(firstFinders, secondFinders);
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int tagIdx, int limit, double threshold, boolean findDissimilar, Integer minPatentNum, boolean limitGroups, int groupLimit, Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
+    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int tagIdx, int limit, double threshold, boolean findDissimilar, Integer minPatentNum,Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
         List<PatentList> patentLists = new ArrayList<>();
         try {
             for(SimilarPatentFinder first : firstFinders) {
                 try {
                     List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, findDissimilar, minPatentNum, badAssets,allowResultsFromOtherCandidateSet);
-                    if(limitGroups) {
-                        similar=similar.stream().sorted().limit(groupLimit).collect(Collectors.toList());
-                    }
-
                     patentLists.addAll(similar);
                 } catch(Exception e) {
                     new Emailer("While calculating similar candidate set: "+e.getMessage());
@@ -465,7 +460,6 @@ public class SimilarPatentServer {
             new Emailer("IN OUTER LOOP of runpatentfindermodel: "+e.toString());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-
         return mergePatentLists(patentLists,badAssignees, name, tagIdx);
     }
 
@@ -648,13 +642,23 @@ public class SimilarPatentServer {
                                                   label("Assignee"),br(),textarea().withName("assignee"), br(),
                                                   button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
                                           ),hr(),
-                                          h3("Predict Keywords"),
+                                          h2("Knowledge Base"),
                                           form().withId(PREDICT_KEYWORDS_FORM_ID).with(
-                                                  selectCandidateSetDropdown("Candidate Set","name",false),
+                                                  label("Patents (1 per line)"),br(),textarea().withName("patents"),
+                                                  br(),
+                                                  label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
+                                                  br(),
+                                                  label("CPC Class Codes (1 per line)"),br(),textarea().withName("class_codes"),
+                                                  br(),
+                                                  label("Search for: "),br(),select().withName("search_type").with(
+                                                          option().withValue("patents").withText("Patents"),
+                                                          option().withValue("assignees").withText("Assignees"),
+                                                          option().withValue("class_codes").withText("CPC Class Codes")
+                                                  ),br(),
                                                   label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                   button("Search").withId(PREDICT_KEYWORDS_FORM_ID+"-button").withType("submit")
                                           ),hr(),
-                                          h3("Generate Assignee Mining Spreadsheet"),
+                                          h2("Candidate Set Comparison Tools"),
                                           form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                   h3("Main options"),
                                                   selectCandidateSetDropdown("Candidate Set 1","name1",false),
@@ -682,11 +686,7 @@ public class SimilarPatentServer {
                                                   hr(),
                                                   h3("Advanced Options"),
                                                   label("Allow results from other candidate set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                  label("Limit groups?"),br(),input().withType("checkbox").withName("averageCandidates"),br(),
-                                                  label("Group Limit"),br(),input().withType("text").withName("group_limit"), br(),
                                                   label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
-                                                  label("Find most dissimilar"),br(),input().withType("checkbox").withName("findDissimilar"),br(),
-                                                  //label("Rank assignees"),br(),input().withType("checkbox").withName("matchAssignees"),br(),
                                                   label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                   label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
                                                   label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
@@ -694,8 +694,6 @@ public class SimilarPatentServer {
                                                   label("Require keywords"),br(),textarea().withName("required_keywords"),br(),hr(),
                                                   label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
                                                   button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
-
-
                                           )                                 )
                                 )
                         )
@@ -731,15 +729,6 @@ public class SimilarPatentServer {
         }
     }
 
-    private static int extractGroupLimit(Request req) {
-        try {
-            return Integer.valueOf(req.queryParams("group_limit"));
-        } catch(Exception e) {
-            System.out.println("No limit parameter specified... using default");
-            return DEFAULT_LIMIT;
-        }
-    }
-
     private static int extractTagLimit(Request req) {
         try {
             return Integer.valueOf(req.queryParams("tag_limit"));
@@ -763,15 +752,6 @@ public class SimilarPatentServer {
             longString=longString.substring(0,tooBig)+ "...";
         }
         return longString;
-    }
-
-    private static boolean extractAverageCandidates(Request req) {
-        try {
-            return (req.queryParams("averageCandidates")==null||!req.queryParams("averageCandidates").startsWith("on")) ? false : true;
-        } catch(Exception e) {
-            System.out.println("No averageCandidates parameter specified... using default");
-            return false;
-        }
     }
 
     private static double extractThreshold(Request req) {
@@ -801,16 +781,6 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No focused_min_patent specified... using null");
             return null;
-        }
-    }
-
-
-    private static boolean extractFindDissimilar(Request req) {
-        try {
-            return (req.queryParams("findDissimilar")==null||!req.queryParams("findDissimilar").startsWith("on")) ? false : true;
-        } catch(Exception e) {
-            System.out.println("No findDissimilar parameter specified... using default");
-            return false;
         }
     }
 
