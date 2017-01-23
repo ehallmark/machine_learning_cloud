@@ -165,8 +165,18 @@ public class SimilarPatentServer {
 
         post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
-
-            return new Gson().toJson(new SimpleAjaxMessage("Not yet implemented"));
+            StringJoiner sj = new StringJoiner("<br />");
+            List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
+            List<String> assignees = preProcess(extractString(req,"assignees",null),"\n","[^a-zA-Z0-9 ]");
+            List<String> classCodes = preProcess(extractString(req,"class_codes",null),"\n","[^a-zA-Z0-9 /]");
+            String searchType = extractString(req,"search_type","patents");
+            int limit = extractInt(req,"limit",10);
+            sj.add("Patents: "+String.join("; ",patents));
+            sj.add("Class codes: "+String.join("; ",classCodes));
+            sj.add("Assignees: "+String.join("; ", assignees));
+            sj.add("Search Type: "+searchType);
+            sj.add("With limit: "+limit);
+            return new Gson().toJson(new SimpleAjaxMessage(sj.toString()));
         });
 
         post("/create", (req, res) -> {
@@ -354,22 +364,6 @@ public class SimilarPatentServer {
 
         });
 
-        post("/angle_between_patents", (req,res) ->{
-            res.type("application/json");
-            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first patent."));
-            if(req.queryParams("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second patent."));
-
-            String name1 = req.queryParams("name1");
-            String name2 = req.queryParams("name2");
-
-            if(name1==null || name2==null) return new Gson().toJson(new SimpleAjaxMessage("Please include two patents!"));
-
-            Double sim = globalFinder.angleBetweenPatents(name1, name2, paragraphVectors.lookupTable());
-
-            if(sim==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to find both patent vectors"));
-            return new Gson().toJson(new SimpleAjaxMessage("Similarity between "+name1+" and "+name2+" is "+sim.toString()));
-        });
-
     }
 
     private static Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> getFirstAndSecondFinders(List<SimilarPatentFinder> firstFinders, List<String> otherIds, boolean switchCandidateSets) throws Exception {
@@ -457,7 +451,7 @@ public class SimilarPatentServer {
 
     private static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceFirst(toReplace,""):str.trim()).collect(Collectors.toList());
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).collect(Collectors.toList());
     }
 
     private static Tag templateWrapper(Response res, Tag form, String message) {
@@ -629,7 +623,7 @@ public class SimilarPatentServer {
                                                         label("Switch Portfolios"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
                                                         hr(),
                                                         h3("Advanced Options"),
-                                                        label("Allow results from other candidate set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                        label("Allow results from Portfolio 2?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
                                                         label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
                                                         label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                         label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
@@ -684,10 +678,12 @@ public class SimilarPatentServer {
                                                   br(),
                                                   label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
                                                   br(),
-                                                  label("CPC Class Codes (1 per line)"),br(),textarea().withName("class_codes"),
+                                                  label("CPC Class Codes (1 per line)"),br(),
+                                                  label("Example: F05D 01/233"),br(),
+                                                  textarea().withName("class_codes"),
                                                   br(),
                                                   label("Search for: "),br(),select().withName("search_type").with(
-                                                          option().withValue("patents").withText("Patents"),
+                                                          option().withValue("patents").attr("selected","true").withText("Patents"),
                                                           option().withValue("assignees").withText("Assignees"),
                                                           option().withValue("class_codes").withText("CPC Class Codes")
                                                   ),br(),
