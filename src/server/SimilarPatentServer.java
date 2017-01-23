@@ -47,7 +47,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     private static int DEFAULT_LIMIT = 3;
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
-    private static final String PREDICT_KEYWORDS_FORM_ID = "predict-keywords-form";
+    private static final String KNOWLEDGE_BASE_FORM_ID = "knowledge-base-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
@@ -66,8 +66,13 @@ public class SimilarPatentServer {
         if(paragraphVectors!=null)return;
         //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
         //lookupTable = ParagraphVectorModel.loadClaimModel().getLookupTable();
-        paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
-        //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
+        try {
+            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("DEFAULTING TO OLDER MODEL");
+            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
+        }
     }
 
     private static void loadBaseFinder() {
@@ -84,17 +89,29 @@ public class SimilarPatentServer {
         return message;
     }
 
+    private static Tag homePage() {
+        return div().with(
+                h3().with(
+                        a("Knowledge Base").withHref("/knowledge_base")
+                ), br(),
+                h3().with(
+                        a("Portfolio Comparison").withHref("/candidate_set_models")
+                ), br(),
+                h3().with(
+                        a("Additional Patent Tools").withHref("/patent_toolbox")
+                ),br()
+        );
+    }
+
     public static void server() {
         port(4568);
-        get("/", (req, res) -> {
-            try {
-                return templateWrapper(res, div().with(selectCandidateForm(), hr()), getAndRemoveMessage(req.session()));
-            } catch(Exception e) {
-                new Emailer(e.toString());
-                System.out.println("EXCEPTION: "+e.toString());
-                return null;
-            }
-        });
+        get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
+
+        get("/patent_toolbox", (req, res) -> templateWrapper(res, div().with(patentToolboxForm(), hr()), getAndRemoveMessage(req.session())));
+
+        get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
+
+        get("/knowledge_base", (req, res) -> templateWrapper(res, div().with(knowledgeBaseForm(),hr()), getAndRemoveMessage(req.session())));
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
@@ -105,15 +122,24 @@ public class SimilarPatentServer {
 
             String[] assignees = assigneeStr.split("\\n");
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-                StringJoiner sj = new StringJoiner("\n");
-                for(String assignee : assignees) {
-                    assignee=assignee.trim();
-                    if(assignee.isEmpty()) continue;
-                    String data = assignee+"\t"+String.valueOf(Database.getAssetCountFor(assignee));
-                    sj.add(data);
-                }
+                Tag table = table().with(
+                        thead().with(
+                                tr().with(
+                                        th("Assignee"),
+                                        th("Approx. Asset Count")
+                                )
+                        ),
+                        tbody().with(
+                                Arrays.stream(assignees)
+                                        .filter(assignee->!(assignee==null||assignee.isEmpty()))
+                                        .map(assignee->tr().with(
+                                            td(assignee),
+                                            td(String.valueOf(Database.getAssetCountFor(assignee))))
+                                ).collect(Collectors.toList())
 
-                return new Gson().toJson(new SimpleAjaxMessage(sj.toString()));
+                        )
+                );
+                return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
         post("/create_group", (req, res) ->{
@@ -137,59 +163,10 @@ public class SimilarPatentServer {
             return null;
         });
 
-        post("/predict_tokens", (req, res) ->{
+        post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
 
-            if(req.queryParams("name")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
-
-            int limit = extractLimit(req);
-
-            Integer id1 = Integer.valueOf(req.queryParams("name"));
-
-            if(id1 < 0 && globalFinder==null)
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
-            else {
-
-                // get similar patent finders
-                List<SimilarPatentFinder> firstFinders;
-                if (id1 >= 0) {
-                    firstFinders = new ArrayList<>();
-                    if (groupedCandidateSetMap.containsKey(id1)) {
-                        for (Integer id : groupedCandidateSetMap.get(id1)) {
-                            String assignee = candidateSetMap.get(id).getSecond();
-                            assignee = assignee.replaceFirst(candidateSetMap.get(Integer.valueOf(id1)).getSecond(), "").trim();
-                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), assignee, paragraphVectors.lookupTable()));
-                        }
-                    } else {
-                        String name1 = candidateSetMap.get(id1).getSecond();
-                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1, paragraphVectors.lookupTable()));
-                    }
-                } else firstFinders = Arrays.asList(globalFinder);
-
-                return new Gson().toJson(new SimpleAjaxMessage(div().with(firstFinders.stream().map(similarPatentFinder -> {
-                    return div().with(similarPatentFinder.getPatentList().stream().map(patent->{
-                        if(!paragraphVectors.hasWord(patent.getName())) return null;
-
-                        Collection<String> words = null;
-                        try {
-                            words = paragraphVectors.wordsNearest(patent.getVector(), limit);
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                            new Emailer("Error finding closest words");
-                        }
-                        if(words!=null) {
-                            return table().with(thead().with(tr().with(
-                                    th(similarPatentFinder.getName()).attr("colspan","2"))),
-                                    tbody().with(words.stream()
-                                            .map(word -> tr().with(td(patent.getName()), td(word)))
-                                            .collect(Collectors.toList())));
-                        } else {
-                            return null;
-                        }
-                    }).collect(Collectors.toList()));
-                }).filter(v->v!=null).collect(Collectors.toList())).render()));
-
-            }
+            return new Gson().toJson(new SimpleAjaxMessage("Not yet implemented"));
         });
 
         post("/create", (req, res) -> {
@@ -511,9 +488,6 @@ public class SimilarPatentServer {
                 )
         );
     }
-    private static Tag formScript(String formId, String url, String buttonText) {
-        return formScript(formId,url,buttonText,true);
-    }
 
     private static Tag formScript(String formId, String url, String buttonText, boolean ajax) {
         return script().withText(ajax?
@@ -619,24 +593,93 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag selectCandidateForm() {
-        return div().with(//formScript(SELECT_CANDIDATE_FORM_ID, "/similar_patents", "Search"),
+    private static Tag coverPageForm() {
+        return div().with(h3("Contact Info (primarily for the cover page)"),
+                label("Client Name"),br(),input().withType("text").withName("client"), br(),
+                label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),
+                label("Contact 1 Name"),br(),input().withType("text").withName("cname1").withValue(Constants.DEFAULT_EM_NAME), br(),
+                label("Contact 1 Title"),br(),input().withType("text").withName("title1").withValue(Constants.DEFAULT_EM_TITLE), br(),
+                label("Contact 1 Phone"),br(),input().withType("text").withName("phone1").withValue(Constants.DEFAULT_EM_PHONE), br(),
+                label("Contact 1 Email"),br(),input().withType("text").withName("email1").withValue(Constants.DEFAULT_EM_EMAIL), br(),
+                label("Contact 2 Label"),br(),input().withType("text").withName("label2").withValue(Constants.DEFAULT_SAM_LABEL), br(),
+                label("Contact 2 Name"),br(),input().withType("text").withName("cname2").withValue(Constants.DEFAULT_SAM_NAME), br(),
+                label("Contact 2 Title"),br(),input().withType("text").withName("title2").withValue(Constants.DEFAULT_SAM_TITLE), br(),
+                label("Contact 2 Phone"),br(),input().withType("text").withName("phone2").withValue(Constants.DEFAULT_SAM_PHONE), br(),
+                label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
+                hr());
+    }
+
+    private static Tag candidateSetModelsForm() {
+        return div().with(
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
-                formScript(PREDICT_KEYWORDS_FORM_ID, "/predict_tokens", "Search", true),
+                table().with(
+                        tbody().with(
+                                tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                a("Create a new Portfolio").withHref("/new"),
+                                                h2("Portfolio Comparison Tool"),
+                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
+                                                        h3("Main options"),
+                                                        selectCandidateSetDropdown("Portfolio 1","name1",false),
+                                                        selectCandidateSetDropdown("Portfolio 2", "name2",true),
+                                                        label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title"), br(),
+                                                        label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                        label("Min Patent Number"),br(),input().withType("text").withName("min_patent"),br(),
+                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
+                                                        label("Switch Portfolios"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
+                                                        hr(),
+                                                        h3("Advanced Options"),
+                                                        label("Allow results from other candidate set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                        label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
+                                                        label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
+                                                        label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
+                                                        label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
+                                                        label("Assignee Highlighter (; separated)"),br(),textarea().withName("assigneeHighlighter"),br(),
+                                                        label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
+                                                        label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
+                                                        coverPageForm(),
+                                                        button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+                                )
+                        )
+                ),
+                br(),
+                br()
+        );
+    }
+
+    private static Tag patentToolboxForm() {
+        return div().with(
                 formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Asset Count for Assignees (Estimation Only)"),
+                                                h4("Please place each assignee on a separate line"),
+                                                form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
+                                                        label("Assignee"),br(),textarea().withName("assignee"), br(),
+                                                        button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+                                )
+                        )
+                ),
+                br(),
+                br()
+        );
+    }
+
+    private static Tag knowledgeBaseForm() {
+        return div().with(
+                formScript(KNOWLEDGE_BASE_FORM_ID, "/knowledge_base_predictions", "Search", true),
+                table().with(
+                        tbody().with(
+                                tr().attr("style", "vertical-align: top;").with(
                                   td().attr("style","width:33%; vertical-align: top;").with(
-                                          a("Create a new Candidate Set").withHref("/new"),
-                                          h3("Get Asset Count for Assignees (Estimation Only)"),
-                                          h4("Please place each assignee on a separate line"),
-                                          form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                  label("Assignee"),br(),textarea().withName("assignee"), br(),
-                                                  button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
-                                          ),hr(),
                                           h2("Knowledge Base"),
-                                          form().withId(PREDICT_KEYWORDS_FORM_ID).with(
+                                          form().withId(KNOWLEDGE_BASE_FORM_ID).with(
                                                   label("Patents (1 per line)"),br(),textarea().withName("patents"),
                                                   br(),
                                                   label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
@@ -649,45 +692,9 @@ public class SimilarPatentServer {
                                                           option().withValue("class_codes").withText("CPC Class Codes")
                                                   ),br(),
                                                   label("Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                  button("Search").withId(PREDICT_KEYWORDS_FORM_ID+"-button").withType("submit")
-                                          ),hr(),
-                                          h2("Candidate Set Comparison Tools"),
-                                          form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
-                                                  h3("Main options"),
-                                                  selectCandidateSetDropdown("Candidate Set 1","name1",false),
-                                                  selectCandidateSetDropdown("Candidate Set 2", "name2",true),
-                                                  label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title"), br(),
-                                                  label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                  label("Min Patent Number"),br(),input().withType("text").withName("min_patent"),br(),
-                                                  label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
-                                                  label("Switch candidate sets"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
-                                                  label("Filter large assignees"),br(),input().withType("checkbox").withName("filterAssigneesByPatents"),br(),
-                                                  label("Largest portfolio size (only if filtering by large assignee)"),br(),input().withType("text").withName("filterAssigneesByPatents"),br(),
-                                                  hr(),
-                                                  h3("Contact Info (primarily for the cover page)"),
-                                                  label("Client Name"),br(),input().withType("text").withName("client"), br(),
-                                                  label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),
-                                                  label("Contact 1 Name"),br(),input().withType("text").withName("cname1").withValue(Constants.DEFAULT_EM_NAME), br(),
-                                                  label("Contact 1 Title"),br(),input().withType("text").withName("title1").withValue(Constants.DEFAULT_EM_TITLE), br(),
-                                                  label("Contact 1 Phone"),br(),input().withType("text").withName("phone1").withValue(Constants.DEFAULT_EM_PHONE), br(),
-                                                  label("Contact 1 Email"),br(),input().withType("text").withName("email1").withValue(Constants.DEFAULT_EM_EMAIL), br(),
-                                                  label("Contact 2 Label"),br(),input().withType("text").withName("label2").withValue(Constants.DEFAULT_SAM_LABEL), br(),
-                                                  label("Contact 2 Name"),br(),input().withType("text").withName("cname2").withValue(Constants.DEFAULT_SAM_NAME), br(),
-                                                  label("Contact 2 Title"),br(),input().withType("text").withName("title2").withValue(Constants.DEFAULT_SAM_TITLE), br(),
-                                                  label("Contact 2 Phone"),br(),input().withType("text").withName("phone2").withValue(Constants.DEFAULT_SAM_PHONE), br(),
-                                                  label("Contact 2 Email"),br(),input().withType("text").withName("email2").withValue(Constants.DEFAULT_SAM_EMAIL), br(),
-                                                  hr(),
-                                                  h3("Advanced Options"),
-                                                  label("Allow results from other candidate set?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                  label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
-                                                  label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
-                                                  label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                  label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
-                                                  label("Assignee Highlighter (; separated)"),br(),textarea().withName("assigneeHighlighter"),br(),hr(),
-                                                  label("Require keywords"),br(),textarea().withName("required_keywords"),br(),hr(),
-                                                  label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
-                                                  button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
-                                          )                                 )
+                                                  button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")
+                                          )
+                                  )
                                 )
                         )
                 ),
