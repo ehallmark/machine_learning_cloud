@@ -31,7 +31,6 @@ public class PatentList implements Serializable, Comparable<PatentList> {
         this.name1=name1;
         this.name2=name2;
         this.patents=patentList;
-        //new Emailer(String.join(" ",assigneeMap.entrySet().stream().map(e->e.getKey()).collect(Collectors.toList())));
     }
 
     public void flipAvgSimilarity() {
@@ -70,14 +69,7 @@ public class PatentList implements Serializable, Comparable<PatentList> {
     }
 
     public void init(int tagLimit, int tagIndex) {
-        patents=patents.stream().filter(patent->{
-            try{
-                return !Database.isExpired(patent.getName());
-            }catch(SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }).collect(Collectors.toList());
+        patents=patents.stream().filter(patent->!Database.isExpired(patent.getName())).collect(Collectors.toList());
         this.assignees=Assignee.createAssigneesFromPatents(patents,tagIndex);
         this.tags = Tag.createTagsFromPatents(patents,tagLimit);
 

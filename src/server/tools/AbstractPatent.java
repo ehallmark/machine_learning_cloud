@@ -53,7 +53,7 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
         this.name = name;
         this.tags = new HashMap<>();
         this.similarity=similarity;
-        this.title= "";//Database.getTitleFromDB(name);
+        this.title= Database.getInventionTitleFor(name);
         this.collateral=false;
         this.collateralAgent=null;
         this.assignee = String.join("; ",Database.assigneesFor(name).stream().map(a->AssigneeTrimmer.standardizedAssignee(a)).collect(Collectors.toList()));

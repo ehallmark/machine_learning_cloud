@@ -46,14 +46,10 @@ public class SimilarPatentFinder {
     protected String name;
     protected int id;
 
-    private static TokenizerFactory tf = new DefaultTokenizerFactory();
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,INDArray> globalCandidateAvgCache = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,List<WordFrequencyPair<String,Float>>> patentKeywordCache = Collections.synchronizedMap(new HashMap<>());
-    static {
-        tf.setTokenPreProcessor(new MyPreprocessor());
-    }
 
     public void setName(String name) { this.name = name; }
 
@@ -80,7 +76,7 @@ public class SimilarPatentFinder {
         this(null, new File("globalSimilarPatentFinder.obj"), "**ALL**", lookupTable);
     }
 
-    public SimilarPatentFinder(List<String> candidateSet, File patentListFile, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(Collection<String> candidateSet, File patentListFile, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");

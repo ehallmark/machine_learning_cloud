@@ -34,7 +34,6 @@ public class GatherClassificationServer {
 
             //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
             Database.setupSeedConn();
-            Database.setupMainConn();
             gatherFinders = new ArrayList<>();
 
             for(edu.stanford.nlp.util.Pair<String,Integer> gatherNameAndId : Database.selectGatherCandidateSetsWithIds()) {

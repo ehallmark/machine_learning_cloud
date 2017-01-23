@@ -109,14 +109,8 @@ public class SimilarPatentServer {
                 for(String assignee : assignees) {
                     assignee=assignee.trim();
                     if(assignee.isEmpty()) continue;
-                    try {
-                        String data = assignee+"\t"+String.valueOf(Database.getAssetCountFor(assignee));
-                        sj.add(data);
-                    } catch(SQLException sql) {
-                        sql.printStackTrace();
-                        String data = assignee+"\t"+"0";
-                        sj.add(data);
-                    }
+                    String data = assignee+"\t"+String.valueOf(Database.getAssetCountFor(assignee));
+                    sj.add(data);
                 }
 
                 return new Gson().toJson(new SimpleAjaxMessage(sj.toString()));
