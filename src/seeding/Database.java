@@ -54,12 +54,12 @@ public class Database {
 	}
 
 	static {
-		patentToClassificationMap = (Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile);
-		patentToInventionTitleMap = (Map<String,String>)tryLoadObject(patentToInventionTitleMapFile);
-		patentToLatestAssigneeMap = (Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile);
-		patentToOriginalAssigneeMap = (Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile);
-		assigneeToPatentsMap = (Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile);
-		expiredPatentSet = (Set<String>)tryLoadObject(expiredPatentSetFile);
+		patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
+		patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
+		patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
+		patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
+		assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
+		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 	}
 
 	public static void setupGatherConn() throws SQLException {
