@@ -167,8 +167,8 @@ public class SimilarPatentServer {
             res.type("application/json");
             StringJoiner sj = new StringJoiner("<br />");
             List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
-            List<String> assignees = preProcess(extractString(req,"assignees",null),"\n","[^a-zA-Z0-9 ]");
-            List<String> classCodes = preProcess(extractString(req,"class_codes",null),"\n","[^a-zA-Z0-9 /]");
+            List<String> assignees = preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]");
+            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]");
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
             sj.add("Patents: "+String.join("; ",patents));
@@ -294,7 +294,7 @@ public class SimilarPatentServer {
 
                 boolean findDissimilar = false;
                 Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets);
-                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), 0, limit, threshold, findDissimilar, minPatentNum, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
+                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), limit, threshold, findDissimilar, minPatentNum, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
 
                 if (gatherValue && transactionProbabilityModel != null) {
                     for (AbstractPatent patent : patentList.getPatents()) {
@@ -385,7 +385,6 @@ public class SimilarPatentServer {
                     } else {
                         System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(Integer.valueOf(id)).getSecond());
                         String assignee = candidateSetMap.get(Integer.valueOf(id)).getSecond();
-                        //if(assignee.startsWith("Wiki - "))assignee=assignee.replaceFirst("Wiki - ","");
                         finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), assignee,paragraphVectors.lookupTable());
                         if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
                             secondFinders.add(finder);
@@ -408,7 +407,7 @@ public class SimilarPatentServer {
         return new Pair<>(firstFinders, secondFinders);
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int tagIdx, int limit, double threshold, boolean findDissimilar, Integer minPatentNum,Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
+    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, boolean findDissimilar, Integer minPatentNum,Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
         List<PatentList> patentLists = new ArrayList<>();
         try {
             for(SimilarPatentFinder first : firstFinders) {
@@ -424,10 +423,10 @@ public class SimilarPatentServer {
             new Emailer("IN OUTER LOOP of runpatentfindermodel: "+e.toString());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(patentLists,badAssignees, name, tagIdx);
+        return mergePatentLists(patentLists,badAssignees, name);
     }
 
-    private static PatentList mergePatentLists(List<PatentList> patentLists, List<String> assigneeFilter, String name, int tagIdx) {
+    private static PatentList mergePatentLists(List<PatentList> patentLists, List<String> assigneeFilter, String name) {
         try {
             Map<String, AbstractPatent> map = new HashMap<>();
             patentLists.forEach(patentList -> {
@@ -459,7 +458,6 @@ public class SimilarPatentServer {
         if(message==null)message="";
         return html().with(
                 head().with(
-                        //title(title),
                         script().attr("src","https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
@@ -468,7 +466,6 @@ public class SimilarPatentServer {
                                 a().attr("href", "/").with(
                                         img().attr("src", "/images/brand.png")
                                 ),
-                                //h2(title),
                                 hr(),
                                 h3("Artificial Intelligence Tools (Beta)"),
                                 hr(),
@@ -495,7 +492,6 @@ public class SimilarPatentServer {
                             + "  data: $('#"+formId+"').serialize(),"
                             + "  success: function(data) { "
                             + "    $('#results').html(data.message); "
-                            //+ "    alert(data.message);"
                             + "    $('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
                             + "  }"
                             + "});"
@@ -684,8 +680,7 @@ public class SimilarPatentServer {
                                                   br(),
                                                   label("Search for: "),br(),select().withName("search_type").with(
                                                           option().withValue("patents").attr("selected","true").withText("Patents"),
-                                                          option().withValue("assignees").withText("Assignees"),
-                                                          option().withValue("class_codes").withText("CPC Class Codes")
+                                                          option().withValue("assignees").withText("Assignees")
                                                   ),br(),
                                                   label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                   button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")
