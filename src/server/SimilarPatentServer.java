@@ -308,7 +308,7 @@ public class SimilarPatentServer {
                             )).collect(Collectors.toList())
                     )
             );
-            return new Gson().toJson(table.render());
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
         post("/create", (req, res) -> {
