@@ -168,6 +168,18 @@ public class SimilarPatentFinder {
         return avg;
     }
 
+    public static List<AbstractPatent> predictAnalogies(Set<String> labelsToExclude, INDArray first, INDArray second, INDArray third, int limit, ParagraphVectors model) {
+        INDArray similarTo = third.add(second.sub(first));
+
+        List<String> similar = model.wordsNearest(similarTo,limit+3).stream()
+                .filter(w->labelsToExclude==null||!labelsToExclude.contains(w))
+                .limit(limit)
+                .collect(Collectors.toList());
+
+        return similar.stream().map(word->new AbstractPatent(word,Transforms.cosineSim(similarTo,model.getLookupTable().vector(word)),null))
+                .collect(Collectors.toList());
+    }
+
     public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
         List<PatentList> list = new ArrayList<>(others.size());
         others.forEach(other->{

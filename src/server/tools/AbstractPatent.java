@@ -49,7 +49,7 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
     private String collateralAgent;
 
 
-    public AbstractPatent(String name, double similarity, String referringName) throws SQLException {
+    public AbstractPatent(String name, double similarity, String referringName) {
         this.name = name;
         this.tags = new HashMap<>();
         this.similarity=similarity;
