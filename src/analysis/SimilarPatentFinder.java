@@ -142,47 +142,7 @@ public class SimilarPatentFinder {
     }
 
     public static INDArray handleResultSet(String label, WeightLookupTable<VocabWord> lookupTable) {
-        Set<String> classifications = null;
-        try {
-            classifications = Database.classificationsFor(label);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        Set<String> inventors = null;
-        try {
-            inventors = Database.assigneesFor(label);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-        try {
-            INDArray pVector = lookupTable.vector(label);
-            if(pVector==null) return null;
-            INDArray classVector;
-            try {
-                classVector = Nd4j.vstack(classifications.stream()
-                        .map(klass -> lookupTable.vector(klass))
-                        .filter(vec -> vec != null)
-                        .collect(Collectors.toList())).mean(0);
-            } catch(Exception e) {
-                classVector=pVector.dup();
-            }
-
-            INDArray inventorVector;
-            try {
-                inventorVector = Nd4j.vstack(inventors.stream()
-                        .map(inventor -> lookupTable.vector(inventor))
-                        .filter(vec -> vec != null)
-                        .collect(Collectors.toList())).mean(0);
-            } catch(Exception e) {
-                inventorVector=pVector.dup();
-            }
-
-            return Nd4j.hstack(pVector,classVector,inventorVector);
-
-        } catch(Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return lookupTable.vector(label);
     }
 
     public String getName() {
