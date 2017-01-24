@@ -73,7 +73,7 @@ public class SimilarPatentFinder {
     }
 
     public SimilarPatentFinder(WeightLookupTable<VocabWord> lookupTable) throws SQLException, IOException, ClassNotFoundException {
-        this(null, new File("globalSimilarPatentFinder.obj"), "**ALL**", lookupTable);
+        this(null, null, "**ALL**", lookupTable);
     }
 
     public SimilarPatentFinder(Collection<String> candidateSet, File patentListFile, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {

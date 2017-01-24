@@ -48,12 +48,12 @@ import static spark.Spark.*;
  */
 public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
+    public static SimilarPatentFinder assigneeFinder;
     private static int DEFAULT_LIMIT = 3;
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String KNOWLEDGE_BASE_FORM_ID = "knowledge-base-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
-    private static final String ANALOGIES_FORM_ID = "predict-analogies-form";
     private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
     private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     protected static ParagraphVectors paragraphVectors;
@@ -82,6 +82,8 @@ public class SimilarPatentServer {
     private static void loadBaseFinder() {
         try {
             globalFinder = new SimilarPatentFinder(paragraphVectors.lookupTable());
+            assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),null,"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
+
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -103,10 +105,7 @@ public class SimilarPatentServer {
                 ), br(),
                 h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
-                ),br(),
-                h3().with(
-                        a("Predict Analogies").withHref("/analogies")
-                ), br()
+                ),br()
         );
     }
 
@@ -130,8 +129,6 @@ public class SimilarPatentServer {
         get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
 
         get("/knowledge_base", (req, res) -> templateWrapper(res, div().with(knowledgeBaseForm(),hr()), getAndRemoveMessage(req.session())));
-
-        get("/analogies", (req, res) -> templateWrapper(res, div().with(analogiesForm(),hr()), getAndRemoveMessage(req.session())));
 
         get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
@@ -183,68 +180,24 @@ public class SimilarPatentServer {
             return null;
         });
 
-        post("/predict_analogies", (req, res) -> {
-            res.type("application/json");
-            List<String> firstLabels = preProcess(extractString(req, "first_labels",null),"\n","[^A-Za-z0-9 /]");
-            List<String> secondLabels = preProcess(extractString(req, "second_labels",null),"\n","[^A-Za-z0-9 /]");
-            List<String> thirdLabels = preProcess(extractString(req, "third_labels",null),"\n","[^A-Za-z0-9 /]");
-            Set<String> labelsToExclude = new HashSet<>();
-            labelsToExclude.addAll(firstLabels);
-            labelsToExclude.addAll(secondLabels);
-            labelsToExclude.addAll(thirdLabels);
-            int limit = extractInt(req, "limit", 10);
-
-            // get representative vector
-            INDArray v1 = avgVector(firstLabels);
-            INDArray v2 = avgVector(secondLabels);
-            INDArray v3 = avgVector(thirdLabels);
-
-            if (v1 == null) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search terms: "+String.join("; ",firstLabels)));
-            } else if (v2 == null) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search terms: "+String.join("; ",secondLabels)));
-            } else if (v3 == null) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search terms: "+String.join("; ",thirdLabels)));
-            }
-
-            // search through labels
-            List<AbstractPatent> patentList = SimilarPatentFinder.predictAnalogies(labelsToExclude,v1,v2,v3,limit,paragraphVectors);
-            // create html
-            Tag table = div().with(
-                    h4(String.join("; ",firstLabels)+" is to "+String.join("; ",secondLabels)+ " as " + String.join("; ",thirdLabels)+ " is to _____."),
-                    table().with(
-                            thead().with(
-                                    tr().with(
-                                            th("Label"),
-                                            th("Similarity")
-                                    )
-                            ), tbody().with(
-                                    patentList.stream().map(item -> tr().with(
-                                            td(ClassCodeHandler.isClassCode(item.getName())?ClassCodeHandler.convertToHumanFormat(item.getName()):item.getName()),
-                                            td(String.valueOf(item.getSimilarity()))
-                                    )).collect(Collectors.toList())
-                            )
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
         post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
             List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
             Set<String> assignees = new HashSet<>();
             preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assignees.addAll(Database.possibleNamesForAssignee(assignee)));
+            System.out.println("Assignees: "+String.join("; ",assignees));
 
             List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]").stream()
                     .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).collect(Collectors.toList());
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
 
-            Collection<String> labelsToSearch;
+            SimilarPatentFinder finder;
             if(searchType.equals("patents")) {
-                labelsToSearch=Database.getValuablePatents();
+                finder = globalFinder;
             } else if(searchType.equals("assignees")) {
-                labelsToSearch=Database.getAssignees();
+                finder = assigneeFinder;
+                System.out.println("TOTAL NUM ASSIGNEES FOUND: "+assigneeFinder.getPatentList().size());
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
             }
@@ -283,7 +236,6 @@ public class SimilarPatentServer {
             patentsToExclude.addAll(classCodes);
 
             // search through labels
-            SimilarPatentFinder finder = new SimilarPatentFinder(labelsToSearch,null,searchType,paragraphVectors.getLookupTable());
             PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,0.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
             // create html
             Tag table = searchType.equals("patents")?table().with(
@@ -835,31 +787,6 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag analogiesForm() {
-        return div().with(
-                formScript(ANALOGIES_FORM_ID, "/predict_analogies", "Search", true),
-                table().with(
-                        tbody().with(
-                                tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:50%; vertical-align: top;").with(
-                                                h2("Predict Analogies"),
-                                                form().withId(ANALOGIES_FORM_ID).with(
-                                                        input().withType("text").withName("first_labels"),label("is to"),
-                                                        input().withType("text").withName("second_labels"),label(" as "),
-                                                        input().withType("text").withName("third_labels"),label(" is to ... "),
-                                                        br(),
-                                                        label("Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                        button("Search").withId(ANALOGIES_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
-                                )
-                        )
-                ),
-                br(),
-                br()
-        );
-    }
-
     private static Tag createNewCandidateSetForm() {
         return form().withId(NEW_CANDIDATE_FORM_ID).withAction("/create").withMethod("post").with(
                 p().withText("(May take awhile...)"),
@@ -964,11 +891,9 @@ public class SimilarPatentServer {
         System.out.println("Starting to load lookup table...");
         loadLookupTable();
         System.out.println("Finished loading lookup table...");
-        if(!Arrays.asList(args).contains("dontLoadBaseFinder")) {
-            System.out.println("Starting to load base finder...");
-            //loadBaseFinder();
-            System.out.println("Finished loading base finder...");
-        }
+        System.out.println("Starting to load base finder...");
+        loadBaseFinder();
+        System.out.println("Finished loading base finder...");
         System.out.println("Starting server...");
         server();
         System.out.println("Finished starting server...");

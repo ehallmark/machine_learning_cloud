@@ -57,7 +57,7 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
         this.collateral=false;
         this.collateralAgent=null;
         this.assignee = String.join("; ",Database.assigneesFor(name).stream().map(a->AssigneeTrimmer.standardizedAssignee(a)).collect(Collectors.toList()));
-        tags.put(referringName,similarity);
+        if(referringName!=null)tags.put(referringName,similarity);
 
         // collateral agent problem
 
