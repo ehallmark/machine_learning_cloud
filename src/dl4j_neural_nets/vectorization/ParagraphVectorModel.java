@@ -168,7 +168,7 @@ public class ParagraphVectorModel {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",50000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",100000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
