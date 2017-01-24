@@ -89,10 +89,6 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
         }*/
     }
 
-    public String getCollateralAgent() {
-        return collateralAgent;
-    }
-
     public void setSimilarity(double sim) {
         similarity=sim;
     }
@@ -105,11 +101,6 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
                 tags.put(e.getKey(), e.getValue());
             }
         });
-        //calculateOrderedTags();
-    }
-
-    public void setTags(Map<String,Double> tags) {
-        this.tags=tags;
     }
 
     public void setGatherValue(double value) {
@@ -118,10 +109,6 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
 
     public Double getGatherValue() {
         return gatherValue;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public String getName() {
