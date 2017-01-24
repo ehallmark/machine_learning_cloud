@@ -178,17 +178,11 @@ public class SimilarPatentServer {
 
         post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
-            StringJoiner sj = new StringJoiner("<br />");
             List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
             List<String> assignees = preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]");
             List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]");
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
-            sj.add("Patents: "+String.join("; ",patents));
-            sj.add("Class codes: "+String.join("; ",classCodes));
-            sj.add("Assignees: "+String.join("; ", assignees));
-            sj.add("Search Type: "+searchType);
-            sj.add("With limit: "+limit);
 
             Collection<String> labelsToSearch;
             if(searchType.equals("patents")) {
@@ -200,8 +194,6 @@ public class SimilarPatentServer {
             }
 
             // get representative vector
-            int numInputs = 0;
-
             INDArray patentVector = avgVector(patents);
             INDArray classVector = avgVector(classCodes);
             INDArray assigneeVector = avgVector(assignees);
@@ -230,10 +222,40 @@ public class SimilarPatentServer {
             }
 
             // search through labels
-            paragraphVectors.sim
-
+            SimilarPatentFinder finder = new SimilarPatentFinder(labelsToSearch,null,searchType,paragraphVectors.getLookupTable());
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,null,0.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
             // create html
-            Tag table;
+            Tag table = searchType.equals("patents")?table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Pat No."),
+                                    th("Similarity"),
+                                    th("Assignee"),
+                                    th("Invention Title")
+                            )
+                    ),tbody().with(
+                            patentList.getPatents().stream().map(item->tr().with(
+                                    td(item.getName()),
+                                    td(String.valueOf(item.getSimilarity())),
+                                    td(item.getFullAssignee()),
+                                    td(item.getInventionTitle())
+                            )).collect(Collectors.toList())
+                    )
+            ) : table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Assignee"),
+                                    th("Similarity"),
+                                    th("Approx. Num Assets")
+                            )
+                    ),tbody().with(
+                            patentList.getPatents().stream().map(item->tr().with(
+                                    td(item.getName()),
+                                    td(String.valueOf(item.getSimilarity())),
+                                    td(String.valueOf(Database.getAssetCountFor(item.getName())))
+                            )).collect(Collectors.toList())
+                    )
+            );
             return new Gson().toJson(table.render());
         });
 

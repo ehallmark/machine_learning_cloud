@@ -313,7 +313,6 @@ public class SimilarPatentFinder {
 
     // returns null if patentNumber not found
     public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, DistanceFunction dist, Integer minPatentNum) throws SQLException {
-        assert patentNumber!=null : "Patent number is null!";
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new ArrayList<>();

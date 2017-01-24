@@ -119,6 +119,8 @@ public class AbstractPatent implements Comparable<AbstractPatent>, ExcelWritable
         return similarity;
     }
 
+    public String getInventionTitle() { return title; }
+
     public Map<String,Double> getTags() {
         return tags;
     }
