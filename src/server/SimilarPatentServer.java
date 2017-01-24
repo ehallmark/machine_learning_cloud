@@ -49,6 +49,7 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     public static SimilarPatentFinder assigneeFinder;
+    public static SimilarPatentFinder classCodeFinder;
     private static int DEFAULT_LIMIT = 3;
     private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
     private static final String KNOWLEDGE_BASE_FORM_ID = "knowledge-base-form";
@@ -81,8 +82,9 @@ public class SimilarPatentServer {
 
     private static void loadBaseFinder() {
         try {
-            globalFinder = new SimilarPatentFinder(paragraphVectors.lookupTable());
+            globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),null,"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),null,"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
+            classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,"** ALL CLASS CODES **",paragraphVectors.lookupTable());
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -192,15 +194,17 @@ public class SimilarPatentServer {
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
 
-            Set<String> patentsToExclude = new HashSet<>();
-            patentsToExclude.addAll(patents);
+            Set<String> labelsToExclude = new HashSet<>();
+            labelsToExclude.addAll(patents);
             SimilarPatentFinder finder;
             if(searchType.equals("patents")) {
                 finder = globalFinder;
             } else if(searchType.equals("assignees")) {
                 finder = assigneeFinder;
-                patentsToExclude.addAll(assignees);
-                System.out.println("TOTAL NUM ASSIGNEES FOUND: "+assigneeFinder.getPatentList().size());
+                labelsToExclude.addAll(assignees);
+            } else if (searchType.equals("class_codes")) {
+                finder = classCodeFinder;
+                labelsToExclude.addAll(classCodes);
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
             }
@@ -234,7 +238,7 @@ public class SimilarPatentServer {
             }
 
             // search through labels
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,-1.0,limit).get(0);
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,labelsToExclude,0.0,limit).get(0);
             // create html
             Tag table = searchType.equals("patents")?table().with(
                     thead().with(
@@ -769,7 +773,8 @@ public class SimilarPatentServer {
                                                   br(),
                                                   label("Search for: "),br(),select().withName("search_type").with(
                                                           option().withValue("patents").attr("selected","true").withText("Patents"),
-                                                          option().withValue("assignees").withText("Assignees")
+                                                          option().withValue("assignees").withText("Assignees"),
+                                                          option().withValue("class_codes").withText("CPC Class Codes")
                                                   ),br(),
                                                   label("Limit"),br(),input().withType("text").withName("limit"), br(),
                                                   button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")

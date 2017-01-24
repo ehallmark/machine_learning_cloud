@@ -25,6 +25,7 @@ public class Database {
 	private static Set<String> expiredPatentSet;
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
+	private static Set<String> allClassCodes;
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
 	private static File patentToInventionTitleMapFile = new File("patent_to_invention_title_map.jobj");
 	private static File patentToLatestAssigneeMapFile = new File("patent_to_assignee_map_latest.jobj");
@@ -69,7 +70,15 @@ public class Database {
 			if(!expiredPatentSet.contains(patent)) valuablePatents.add(patent);
 		});
 		allAssignees=assigneeToPatentsMap.keySet();
+		allClassCodes=new HashSet<>();
+		patentToClassificationMap.values().forEach(classSet->{
+			classSet.forEach(cpcClass->{
+				allClassCodes.add(cpcClass);
+			});
+		});
 	}
+
+	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
 
 	public static Set<String> getAssignees() {return new HashSet<>(allAssignees);}
 
