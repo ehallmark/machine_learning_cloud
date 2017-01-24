@@ -8,14 +8,14 @@ import java.util.StringJoiner;
 public class ClassCodeHandler {
     public static String convertToLabelFormat(String code) {
         if(code==null)return null;
-        if(!code.contains("/")||code.indexOf("/")<5) return code;
+        if(!code.contains("/")||code.indexOf("/")<5||code.endsWith("/")||!(code.indexOf("/")==code.lastIndexOf("/"))) return code;
         if(code.length()<7)return code;
         String mainGroup = code.substring(4,code.indexOf("/")).trim();
         String lPad = "";
         for(int i = 0; i < 4 - mainGroup.length(); i++) {
             lPad+=" ";
         }
-        String subGroup = code.substring(code.indexOf("/"),code.length()).trim();
+        String subGroup = code.substring(code.indexOf("/")+1,code.length()).trim();
         String rPad = "";
         for(int i = 0; i < 6 - subGroup.length(); i++) {
             rPad+=" ";
