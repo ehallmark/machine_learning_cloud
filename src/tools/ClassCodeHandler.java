@@ -31,4 +31,8 @@ public class ClassCodeHandler {
         if(code.length()<14) return code;
         return code.substring(0,4).trim()+" "+code.substring(4,8).trim() + "/" + code.substring(8,14).trim();
     }
+
+    public static boolean isClassCode(String code) {
+        return code.length()==14&&code.replaceAll("[^0-9]","").length()>0;
+    }
 }

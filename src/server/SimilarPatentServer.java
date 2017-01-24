@@ -23,6 +23,7 @@ import server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
 import spark.Session;
+import tools.ClassCodeHandler;
 import tools.Emailer;
 import tools.PatentList;
 
@@ -219,20 +220,23 @@ public class SimilarPatentServer {
                                     )
                             ), tbody().with(
                                     patentList.stream().map(item -> tr().with(
-                                            td(item.getName()),
+                                            td(ClassCodeHandler.isClassCode(item.getName())?ClassCodeHandler.convertToHumanFormat(item.getName()):item.getName()),
                                             td(String.valueOf(item.getSimilarity()))
                                     )).collect(Collectors.toList())
                             )
                     )
             );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render())); 
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
         post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
             List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
-            List<String> assignees = preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]");
-            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]");
+            Set<String> assignees = new HashSet<>();
+            preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assignees.addAll(Database.possibleNamesForAssignee(assignee)));
+
+            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]").stream()
+                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).collect(Collectors.toList());
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
 
@@ -273,9 +277,14 @@ public class SimilarPatentServer {
                 representativeVector = representativeVectors.get(0);
             }
 
+            Set<String> patentsToExclude = new HashSet<>();
+            patentsToExclude.addAll(patents);
+            patentsToExclude.addAll(assignees);
+            patentsToExclude.addAll(classCodes);
+
             // search through labels
             SimilarPatentFinder finder = new SimilarPatentFinder(labelsToSearch,null,searchType,paragraphVectors.getLookupTable());
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,null,0.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,0.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
             // create html
             Tag table = searchType.equals("patents")?table().with(
                     thead().with(

@@ -78,7 +78,6 @@ public class Database {
 		gatherDBConn.setAutoCommit(false);
 	}
 
-
 	public static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
@@ -101,6 +100,17 @@ public class Database {
 		} else {
 			return "";
 		}
+	}
+
+	public static Set<String> possibleNamesForAssignee(String base) {
+		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
+		Set<String> possible = new HashSet<>();
+		allAssignees.forEach(assignee->{
+			if(assignee.startsWith(cleanBase)) {
+				possible.add(assignee);
+			}
+		});
+		return possible;
 	}
 
 	public static Set<String> classificationsFor(String patent) {
