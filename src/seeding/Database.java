@@ -23,6 +23,8 @@ public class Database {
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
 	private static Set<String> expiredPatentSet;
+	private static Set<String> allAssignees;
+	private static Set<String> valuablePatents;
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
 	private static File patentToInventionTitleMapFile = new File("patent_to_invention_title_map.jobj");
 	private static File patentToLatestAssigneeMapFile = new File("patent_to_assignee_map_latest.jobj");
@@ -60,7 +62,16 @@ public class Database {
 		patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
 		assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
+
+		// load dependent objects
+		valuablePatents=new HashSet<>();
+		patentToInventionTitleMap.keySet().forEach(patent->{
+			if(!expiredPatentSet.contains(patent)) valuablePatents.add(patent);
+		});
+		allAssignees=assigneeToPatentsMap.keySet();
 	}
+
+	public static Set<String> getAssignees() {return new HashSet<>(allAssignees);}
 
 	public static void setupGatherConn() throws SQLException {
 		gatherDBConn = DriverManager.getConnection(gatherDBUrl);
@@ -176,12 +187,8 @@ public class Database {
 	}
 
 
-	public static List<String> getValuablePatentsToList() {
-		List<String> patents = new ArrayList<>(patentToInventionTitleMap.size());
-		patentToInventionTitleMap.keySet().forEach(patent->{
-			if(!expiredPatentSet.contains(patent)) patents.add(patent);
-		});
-		return patents;
+	public static Collection<String> getValuablePatents() {
+		return new HashSet<>(valuablePatents);
 	}
 
 

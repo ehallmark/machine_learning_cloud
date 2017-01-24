@@ -1,5 +1,6 @@
 package server;
 
+import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import dl4j_neural_nets.classifiers.GatherTransactionProbabilityModel;
@@ -13,6 +14,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import server.tools.AbstractPatent;
@@ -103,6 +105,17 @@ public class SimilarPatentServer {
         );
     }
 
+    private static INDArray avgVector(Collection<String> patents) {
+        try {
+            return SimilarPatentFinder.computeAvg(patents
+                    .stream().map(patent->new Patent(patent,paragraphVectors.getLookupTable().vector(patent)))
+                    .filter(patent->patent.getVector()!=null)
+                    .collect(Collectors.toList()), null);
+        } catch(Exception e) {
+            return null;
+        }
+    }
+
     public static void server() {
         port(4568);
         get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
@@ -176,7 +189,52 @@ public class SimilarPatentServer {
             sj.add("Assignees: "+String.join("; ", assignees));
             sj.add("Search Type: "+searchType);
             sj.add("With limit: "+limit);
-            return new Gson().toJson(new SimpleAjaxMessage(sj.toString()));
+
+            Collection<String> labelsToSearch;
+            if(searchType.equals("patents")) {
+                labelsToSearch=Database.getValuablePatents();
+            } else if(searchType.equals("assignees")) {
+                labelsToSearch=Database.getAssignees();
+            } else {
+                return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
+            }
+
+            // get representative vector
+            int numInputs = 0;
+
+            INDArray patentVector = avgVector(patents);
+            INDArray classVector = avgVector(classCodes);
+            INDArray assigneeVector = avgVector(assignees);
+
+            List<INDArray> representativeVectors = new ArrayList<>(3);
+            if(patentVector!=null) {
+                representativeVectors.add(patentVector);
+            }
+
+            if(classVector!=null) {
+                representativeVectors.add(classVector);
+            }
+
+            if(assigneeVector!=null) {
+                representativeVectors.add(assigneeVector);
+            }
+
+            if(representativeVectors.isEmpty()) {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search terms."));
+            }
+            INDArray representativeVector;
+            if(representativeVectors.size()>1) {
+                representativeVector = Nd4j.vstack(representativeVectors).mean(0);
+            } else {
+                representativeVector = representativeVectors.get(0);
+            }
+
+            // search through labels
+            paragraphVectors.sim
+
+            // create html
+            Tag table;
+            return new Gson().toJson(table.render());
         });
 
         post("/create", (req, res) -> {
@@ -201,7 +259,7 @@ public class SimilarPatentServer {
                         return null;
                     }
                     req.session().attribute("message", "Candidate set created.");
-                    res.redirect("/");
+                    res.redirect("/candidate_set_models");
 
                 } catch(SQLException sql) {
                     sql.printStackTrace();

@@ -94,7 +94,7 @@ public class SimilarPatentFinder {
         } else {
             try {
                 if (candidateSet == null) {
-                    candidateSet = Database.getValuablePatentsToList();
+                    candidateSet = Database.getValuablePatents();
                 }
                 int arrayCapacity = candidateSet.size();
                 patentList = new ArrayList<>(arrayCapacity);
