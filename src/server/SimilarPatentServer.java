@@ -225,7 +225,7 @@ public class SimilarPatentServer {
                             )
                     )
             );
-            return new Gson().toJson(table.render());
+            return new Gson().toJson(new SimpleAjaxMessage(table.render())); 
         });
 
         post("/knowledge_base_predictions", (req, res) ->{
@@ -957,7 +957,7 @@ public class SimilarPatentServer {
         System.out.println("Finished loading lookup table...");
         if(!Arrays.asList(args).contains("dontLoadBaseFinder")) {
             System.out.println("Starting to load base finder...");
-            loadBaseFinder();
+            //loadBaseFinder();
             System.out.println("Finished loading base finder...");
         }
         System.out.println("Starting server...");
