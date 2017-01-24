@@ -240,37 +240,56 @@ public class SimilarPatentServer {
             // search through labels
             PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,labelsToExclude,0.0,limit).get(0);
             // create html
-            Tag table = searchType.equals("patents")?table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Pat No."),
-                                    th("Similarity"),
-                                    th("Assignee"),
-                                    th("Invention Title")
-                            )
-                    ),tbody().with(
-                            patentList.getPatents().stream().map(item->tr().with(
-                                    td(item.getName()),
-                                    td(String.valueOf(item.getSimilarity())),
-                                    td(item.getFullAssignee()),
-                                    td(item.getInventionTitle())
-                            )).collect(Collectors.toList())
-                    )
-            ) : table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Assignee"),
-                                    th("Similarity"),
-                                    th("Approx. Num Assets")
-                            )
-                    ),tbody().with(
-                            patentList.getPatents().stream().map(item->tr().with(
-                                    td(item.getName()),
-                                    td(String.valueOf(item.getSimilarity())),
-                                    td(String.valueOf(Database.getAssetCountFor(item.getName())))
-                            )).collect(Collectors.toList())
-                    )
-            );
+            Tag table;
+            if(searchType.equals("patents")) {
+                table = table().with(
+                        thead().with(
+                                tr().with(
+                                        th("Pat No."),
+                                        th("Similarity"),
+                                        th("Assignee"),
+                                        th("Invention Title")
+                                )
+                        ),tbody().with(
+                                patentList.getPatents().stream().map(item->tr().with(
+                                        td(item.getName()),
+                                        td(String.valueOf(item.getSimilarity())),
+                                        td(item.getFullAssignee()),
+                                        td(item.getInventionTitle())
+                                )).collect(Collectors.toList())
+                        )
+                );
+            } else if(searchType.equals("assignees")) {
+                table = table().with(
+                        thead().with(
+                                tr().with(
+                                        th("Assignee"),
+                                        th("Similarity"),
+                                        th("Approx. Num Assets")
+                                )
+                        ),tbody().with(
+                                patentList.getPatents().stream().map(item->tr().with(
+                                        td(item.getName()),
+                                        td(String.valueOf(item.getSimilarity())),
+                                        td(String.valueOf(Database.getAssetCountFor(item.getName())))
+                                )).collect(Collectors.toList())
+                        )
+                );
+            } else {
+                table = table().with(
+                        thead().with(
+                                tr().with(
+                                        th("Code"),
+                                        th("Similarity")
+                                )
+                        ),tbody().with(
+                                patentList.getPatents().stream().map(item->tr().with(
+                                        td(ClassCodeHandler.convertToHumanFormat(item.getName())),
+                                        td(String.valueOf(item.getSimilarity()))
+                                )).collect(Collectors.toList())
+                        )
+                );
+            }
             return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
