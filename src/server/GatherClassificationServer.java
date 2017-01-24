@@ -91,7 +91,7 @@ public class GatherClassificationServer {
         SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,null,String.valueOf(new Date().getTime()),lookupTable);
 
         // run model
-        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,false,null,new HashSet<>(),true).stream()
+        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>(),true).stream()
                 .sorted((s1,s2)->Double.compare(s2.getAvgSimilarity(),s1.getAvgSimilarity()))
                 .limit(tagLimit)
                 .map(result->result.getName2())
