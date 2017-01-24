@@ -189,8 +189,10 @@ public class SimilarPatentServer {
             preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assignees.addAll(Database.possibleNamesForAssignee(assignee)));
             System.out.println("Assignees: "+String.join("; ",assignees));
 
-            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n","[^a-zA-Z0-9 /]").stream()
+            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null).stream()
                     .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).collect(Collectors.toList());
+            System.out.println("Class code labels: "+String.join("; ",classCodes));
+
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
 
