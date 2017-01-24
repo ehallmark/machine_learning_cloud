@@ -192,11 +192,14 @@ public class SimilarPatentServer {
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
 
+            Set<String> patentsToExclude = new HashSet<>();
+            patentsToExclude.addAll(patents);
             SimilarPatentFinder finder;
             if(searchType.equals("patents")) {
                 finder = globalFinder;
             } else if(searchType.equals("assignees")) {
                 finder = assigneeFinder;
+                patentsToExclude.addAll(assignees);
                 System.out.println("TOTAL NUM ASSIGNEES FOUND: "+assigneeFinder.getPatentList().size());
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
@@ -230,13 +233,8 @@ public class SimilarPatentServer {
                 representativeVector = representativeVectors.get(0);
             }
 
-            Set<String> patentsToExclude = new HashSet<>();
-            patentsToExclude.addAll(patents);
-            patentsToExclude.addAll(assignees);
-            patentsToExclude.addAll(classCodes);
-
             // search through labels
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,0.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,-1.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
             // create html
             Tag table = searchType.equals("patents")?table().with(
                     thead().with(

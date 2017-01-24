@@ -23,7 +23,7 @@ public class Patent implements Comparable<Patent>, Serializable {
         this.vector=vector;
     }
 
-    public static AbstractPatent abstractClone(Patent old, String reffered) throws SQLException {
+    public static AbstractPatent abstractClone(Patent old, String reffered) {
         AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), reffered);
         return  clone;
     }
