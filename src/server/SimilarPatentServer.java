@@ -234,7 +234,7 @@ public class SimilarPatentServer {
             }
 
             // search through labels
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,-1.0,limit,Constants.DEFAULT_MIN_PATENT_NUMBER).get(0);
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,patentsToExclude,-1.0,limit).get(0);
             // create html
             Tag table = searchType.equals("patents")?table().with(
                     thead().with(
@@ -355,9 +355,10 @@ public class SimilarPatentServer {
             // get more detailed params
             String clientName = extractString(req,"client","");
             int tagLimit = extractTagLimit(req);
-            Integer minPatentNum = extractMinPatentNumber(req);
             double threshold = extractThreshold(req);
-            List<String> badAssignees = preProcess(req.queryParams("assigneeFilter"),"\n",null);
+            Set<String> badAssignees = new HashSet<>();
+            preProcess(extractString(req,"assigneeFilter","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
+
             Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
             List<String> highlightAssignees = preProcess(req.queryParams("assigneeHighlighter"),"\n",null).stream().map(str->str.toUpperCase()).collect(Collectors.toList());
             String title = extractString(req,"title","");
@@ -367,7 +368,6 @@ public class SimilarPatentServer {
             if(id1 < 0 && globalFinder==null)
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
             else {
-
                 // get similar patent finders
                 List<SimilarPatentFinder> firstFinders = new ArrayList<>();
                 if (id1 >= 0) {
@@ -383,9 +383,8 @@ public class SimilarPatentServer {
                     }
                 } else firstFinders = Arrays.asList(globalFinder);
 
-                boolean findDissimilar = false;
                 Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets);
-                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), limit, threshold, findDissimilar, minPatentNum, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
+                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), limit, threshold, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
 
                 if (gatherValue && transactionProbabilityModel != null) {
                     for (AbstractPatent patent : patentList.getPatents()) {
@@ -498,12 +497,12 @@ public class SimilarPatentServer {
         return new Pair<>(firstFinders, secondFinders);
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, boolean findDissimilar, Integer minPatentNum,Set<String> badAssets, List<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
+    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badAssets, Collection<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
         List<PatentList> patentLists = new ArrayList<>();
         try {
             for(SimilarPatentFinder first : firstFinders) {
                 try {
-                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, findDissimilar, minPatentNum, badAssets,allowResultsFromOtherCandidateSet);
+                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, badAssets,allowResultsFromOtherCandidateSet);
                     patentLists.addAll(similar);
                 } catch(Exception e) {
                     new Emailer("While calculating similar candidate set: "+e.getMessage());
@@ -517,7 +516,7 @@ public class SimilarPatentServer {
         return mergePatentLists(patentLists,badAssignees, name);
     }
 
-    private static PatentList mergePatentLists(List<PatentList> patentLists, List<String> assigneeFilter, String name) {
+    private static PatentList mergePatentLists(List<PatentList> patentLists, Collection<String> assigneeFilter, String name) {
         try {
             Map<String, AbstractPatent> map = new HashMap<>();
             patentLists.forEach(patentList -> {
@@ -714,8 +713,7 @@ public class SimilarPatentServer {
                                                         label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
                                                         label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                         label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                        label("Assignee Filter (; separated)"),br(),textarea().withName("assigneeFilter"),br(),
-                                                        label("Assignee Highlighter (; separated)"),br(),textarea().withName("assigneeHighlighter"),br(),
+                                                        label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                         label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
                                                         label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
                                                         coverPageForm(),

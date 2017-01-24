@@ -180,11 +180,11 @@ public class SimilarPatentFinder {
                 .collect(Collectors.toList());
     }
 
-    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
+    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
         List<PatentList> list = new ArrayList<>(others.size());
         others.forEach(other->{
             try {
-                list.addAll(similarFromCandidateSet(other, threshold, limit, findDissimilar,minPatentNum, badAssets,allowResultsFromOtherCandidateSet));
+                list.addAll(similarFromCandidateSet(other, threshold, limit, badAssets,allowResultsFromOtherCandidateSet));
             } catch(Exception sql) {
                 sql.printStackTrace();
             }
@@ -254,37 +254,32 @@ public class SimilarPatentFinder {
         List<AbstractPatent> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
-            try {
-                resultList.add(0, Patent.abstractClone(p, name));
-            } catch(SQLException sql) {
-                sql.printStackTrace();
-            }
+            resultList.add(0, Patent.abstractClone(p, name));
         }
         return Arrays.asList(new PatentList(resultList,name,"Gather Ranking"));
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, boolean findDissimilar, Integer minPatentNum, Set<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
         // Find the highest (pairwise) assets
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
         INDArray otherAvg = computeAvg(other.patentList,other.getName());
-        Set<String> dontMatch = badAssets;
+        Set<String> dontMatch = new HashSet<>(badAssets);
         if(!(other.name.equals(this.name) || allowResultsFromOtherCandidateSet)) other.patentList.forEach(p->dontMatch.add(p.getName()));
         try {
-            if(findDissimilar) lists.addAll(findOppositePatentsTo(other.name, otherAvg, dontMatch, threshold, limit,minPatentNum));
-            else lists.addAll(findSimilarPatentsTo(other.name, otherAvg, dontMatch, threshold, limit,minPatentNum));
+            lists.addAll(findSimilarPatentsTo(other.name, otherAvg, dontMatch, threshold, limit));
 
         } catch(SQLException sql) {
         }
         return lists;
     }
 
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, Integer minPatentNum) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, avgVector, patentNamesToExclude, threshold, limit, (v1,v2)->Transforms.cosineSim(v1,v2), minPatentNum);
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
+        return findSimilarPatentsTo(patentNumber, avgVector, patentNamesToExclude, threshold, limit, (v1,v2)->Transforms.cosineSim(v1,v2));
     }
 
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, DistanceFunction dist, Integer minPatentNum) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, DistanceFunction dist) throws SQLException {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new ArrayList<>();
@@ -296,7 +291,7 @@ public class SimilarPatentFinder {
         final Set<String> otherSet = Collections.unmodifiableSet(patentNamesToExclude);
 
         setupMinHeap(limit);
-        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector, otherSet, name, patentNumber, threshold, limit,dist,minPatentNum));
+        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector, otherSet, name, patentNumber, threshold, limit,dist));
 
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
@@ -315,8 +310,8 @@ public class SimilarPatentFinder {
     }
 
     // returns null if patentNumber not found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, Integer minPatentNum) throws SQLException {
-        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit, minPatentNum);
+    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
+        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit);
         for(PatentList l : toReturn) {
             l.flipAvgSimilarity();
             l.getPatents().forEach(p->p.flipSimilarity());
@@ -346,31 +341,18 @@ public class SimilarPatentFinder {
         }
     }
 
-    private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist, Integer minDate) {
+    private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist) {
         Patent.setBaseVector(baseVector);
-        patentList.stream()
-                .filter(p->{
-                    if(minDate==null) return true;
-                    try{
-                        if(Integer.valueOf(p.getName())>=minDate) return true;
-                    } catch(Exception e) {
-
-                    }
-                    return false;
-                }).forEach(patent -> {
-                    if(patent!=null&&!patentNamesToExclude.contains(patent.getName())) {
-                        patent.calculateSimilarityToTarget(dist);
-                        if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
-                    }
-                });
+        patentList.forEach(patent -> {
+            if(patent!=null&&!patentNamesToExclude.contains(patent.getName())) {
+                patent.calculateSimilarityToTarget(dist);
+                if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
+            }
+        });
         List<AbstractPatent> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
-            try {
-                resultList.add(0, Patent.abstractClone(p, name2));
-            } catch(SQLException sql) {
-                sql.printStackTrace();
-            }
+            resultList.add(0, Patent.abstractClone(p, name2));
         }
         //double avgSim = cnt.get() > 0 ? total.get()/cnt.get() : 0.0;
         PatentList results = new PatentList(resultList,name1,name2);
