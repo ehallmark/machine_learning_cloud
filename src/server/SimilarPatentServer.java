@@ -375,7 +375,6 @@ public class SimilarPatentServer {
             if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
 
             boolean gatherValue = extractBool(req, "gather_value");
-            int TagIndex = extractInt(req, "tag_index", 0);
             int limit = extractLimit(req);
 
             List<String> otherIds = Arrays.asList(req.queryParamsValues("name2"));
@@ -389,9 +388,10 @@ public class SimilarPatentServer {
             double threshold = extractThreshold(req);
             Set<String> badAssignees = new HashSet<>();
             preProcess(extractString(req,"assigneeFilter","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
-
             Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
-            List<String> highlightAssignees = preProcess(req.queryParams("assigneeHighlighter"),"\n",null).stream().map(str->str.toUpperCase()).collect(Collectors.toList());
+            Set<String> highlightAssignees = new HashSet<>();
+            preProcess(req.queryParams("assigneeHighlighter"),"\n","[^a-zA-Z0-9 ]").forEach(assignee->highlightAssignees.addAll(Database.possibleNamesForAssignee(assignee)))
+            ;
             String title = extractString(req,"title","");
             boolean switchCandidateSets = extractBool(req, "switchCandidateSets");
             boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
@@ -458,7 +458,7 @@ public class SimilarPatentServer {
                         }
                     }
                 }
-                patentList.init(tagLimit,TagIndex);
+                patentList.init(tagLimit);
 
                 // contact info
                 String EMLabel = extractContactInformation(req,"label1", Constants.DEFAULT_EM_LABEL);
@@ -474,7 +474,7 @@ public class SimilarPatentServer {
                 String[] EMData = new String[]{EMLabel,EMName,EMTitle,EMPhone,EMEmail};
                 String[] SAMData = new String[]{SAMLabel,SAMName, SAMTitle, SAMPhone, SAMEmail};
                 try {
-                    RespondWithJXL.writeDefaultSpreadSheetToRaw(raw, patentList, highlightAssignees,clientName, EMData, SAMData, tagLimit, gatherValue, TagIndex);
+                    RespondWithJXL.writeDefaultSpreadSheetToRaw(raw, patentList, highlightAssignees,clientName, EMData, SAMData, tagLimit, gatherValue);
                 } catch (Exception e) {
 
                     e.printStackTrace();
@@ -561,7 +561,7 @@ public class SimilarPatentServer {
                     }
                 });
             });
-            List<AbstractPatent> merged = map.values().stream().filter(p->!assigneeFilter.stream().anyMatch(assignee->p.getAssignee().toUpperCase().startsWith(assignee.toUpperCase()))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
+            List<AbstractPatent> merged = map.values().stream().filter(p->!assigneeFilter.contains(p.getAssignee())).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
             return new PatentList(merged,name,name);
         } catch(Exception e) {
             new Emailer("Error in merge patent lists: "+e.toString());

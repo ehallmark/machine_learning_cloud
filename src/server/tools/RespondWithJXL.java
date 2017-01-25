@@ -11,7 +11,6 @@ import jxl.write.Label;
 import jxl.write.Number;
 import jxl.write.*;
 import tools.PatentList;
-import tools.TreeGui;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -19,9 +18,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.List;
 
 import static spark.Spark.get;
 
@@ -194,7 +193,7 @@ public class RespondWithJXL {
     }
 
 
-    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, String[] headers, String[][] data, int[] colWidths, int assigneeCol, java.util.List<String> toHighlight, boolean gatherValue) throws Exception{
+    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, String[] headers, String[][] data, int[] colWidths, int assigneeCol, Collection<String> toHighlight, boolean gatherValue) throws Exception{
         workbook.setColourRGB(Colour.DARK_BLUE, 52, 89, 133);
         WritableSheet sheet = workbook.createSheet(sheetName, workbook.getNumberOfSheets());
         sheet.getSettings().setShowGridLines(false);
@@ -241,11 +240,11 @@ public class RespondWithJXL {
 
         return sheet;
     }
-    private static void writeHeadersAndData(WritableSheet sheet, String[] headers, String[][] data, int assigneeCol, java.util.List<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
+    private static void writeHeadersAndData(WritableSheet sheet, String[] headers, String[][] data, int assigneeCol, Collection<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
         writeHeadersAndData(sheet,null,headers,data,assigneeCol,toHighlight,rowOffset,gatherValue);
     }
 
-    private static void writeHeadersAndData(WritableSheet sheet, String preTitle, String[] headers, String[][] data, int assigneeCol, java.util.List<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
+    private static void writeHeadersAndData(WritableSheet sheet, String preTitle, String[] headers, String[][] data, int assigneeCol, Collection<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
         int headerRow = 6 + rowOffset;
 
         if(preTitle!=null) {
@@ -302,7 +301,7 @@ public class RespondWithJXL {
         }
     }
 
-    private static WritableSheet setupPatentList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, java.util.List<String> toHighlight, int tagLimit, boolean gatherValue, int tagIdx) throws Exception {
+    private static WritableSheet setupPatentList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, Collection<String> toHighlight, int tagLimit, boolean gatherValue) throws Exception {
         String[][] data = new String[patentList.getPatents().size()][];
         String[] headers = gatherValue ? new String[]{"Patent", "Relevance", "Value", "Assignee", "Tag Count", "Primary Tag", "Additional Tags", "Invention Title"}
             : new String[]{"Patent", "Relevance", "Assignee", "Tag Count", "Primary Tag", "Additional Tags", "Invention Title"};
@@ -324,7 +323,7 @@ public class RespondWithJXL {
         return sheet;
     }
 
-    private static WritableSheet setupSearchTerms(WritableWorkbook workbook, PatentList patentList, String sheetPrefix, boolean gatherValue, int tagIdx) throws Exception {
+    private static WritableSheet setupSearchTerms(WritableWorkbook workbook, PatentList patentList, String sheetPrefix, boolean gatherValue) throws Exception {
         final String sheetName = sheetPrefix+"- Search Terms";
         final String sheetTitle = "Search Terms and Results";
         final String[] headers = gatherValue ? new String[]{"Search Term","Results (No. of Assets)","Average Relevance","Average Value","No. Assets 4+","No. Assets 3+",  "No. Assets below 3"}
@@ -340,7 +339,7 @@ public class RespondWithJXL {
         return sheet;
     }
 
-    private static WritableSheet setupAssigneeQuantityList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, java.util.List<String> toHighlight, int tagLimit, boolean gatherValue, int tagIdx) throws Exception {
+    private static WritableSheet setupAssigneeQuantityList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, Collection<String> toHighlight, int tagLimit, boolean gatherValue) throws Exception {
         String sheetName = sheetPrefix+ "- Assignee List";
         String sheetTitle = sheetPrefix+ " - Assignee Quantity List ("+patentList.getAssignees().size()+" assignees)";
         String[][] data = new String[patentList.getAssignees().size()][];
@@ -497,7 +496,7 @@ public class RespondWithJXL {
     }
 
 
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, PatentList patentList, java.util.List<String> toHighlight, String clientName, String[] EMData, String[] SAMData, int tagLimit, boolean gatherValue, int tagIdx) throws Exception {
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, PatentList patentList, Collection<String> toHighlight, String clientName, String[] EMData, String[] SAMData, int tagLimit, boolean gatherValue) throws Exception {
         setupExcelFormats();
 
         ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -507,9 +506,9 @@ public class RespondWithJXL {
         buildCoverPage(workbook,clientName,EMData,SAMData);
 
 
-        setupAssigneeQuantityList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue,tagIdx);
-        setupPatentList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue,tagIdx);
-        setupSearchTerms(workbook, patentList, patentList.getName1(), gatherValue,tagIdx);
+        setupAssigneeQuantityList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue);
+        setupPatentList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue);
+        setupSearchTerms(workbook, patentList, patentList.getName1(), gatherValue);
 
 
         workbook.write();

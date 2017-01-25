@@ -79,9 +79,9 @@ public class PatentList implements Serializable, Comparable<PatentList> {
                 }).collect(Collectors.toList());
     }
 
-    public void init(int tagLimit, int tagIndex) {
+    public void init(int tagLimit) {
         patents=patents.stream().filter(patent->!Database.isExpired(patent.getName())).collect(Collectors.toList());
-        this.assignees=Assignee.createAssigneesFromPatents(patents,tagIndex);
+        this.assignees=Assignee.createAssigneesFromPatents(patents);
         this.tags = Tag.createTagsFromPatents(patents,tagLimit);
 
         Collections.sort(this.assignees);

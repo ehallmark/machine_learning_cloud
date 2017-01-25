@@ -18,7 +18,7 @@ public class Assignee implements Comparable<Assignee>, ExcelWritable {
     private List<AbstractPatent> patents;
     private List<String> tags;
 
-    public static List<Assignee> createAssigneesFromPatents(List<AbstractPatent> patents, int tagIdx) {
+    public static List<Assignee> createAssigneesFromPatents(List<AbstractPatent> patents) {
         Map<String,List<AbstractPatent>> assigneeMap = new HashMap<>();
         for(AbstractPatent patent : patents) {
             if(assigneeMap.containsKey(patent.getFullAssignee())) {
@@ -29,7 +29,7 @@ public class Assignee implements Comparable<Assignee>, ExcelWritable {
                 assigneeMap.put(patent.getFullAssignee(),list);
             }
         }
-        return assigneeMap.entrySet().stream().map(e->new Assignee(e.getKey(),e.getValue(),tagIdx)).collect(Collectors.toList());
+        return assigneeMap.entrySet().stream().map(e->new Assignee(e.getKey(),e.getValue())).collect(Collectors.toList());
     }
 
     public int get4OrGreaterCount() {
@@ -44,7 +44,7 @@ public class Assignee implements Comparable<Assignee>, ExcelWritable {
         return patents.stream().collect(Collectors.summingInt(p->p.getGatherValue()<3.0?1:0));
     }
 
-    public Assignee(String name, List<AbstractPatent> patents, int tagIdx) {
+    public Assignee(String name, List<AbstractPatent> patents) {
         this.name=name;
         this.patents=patents;
         avgSimilarity=0.0;
