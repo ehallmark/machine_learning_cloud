@@ -802,7 +802,7 @@ public class SimilarPatentServer {
                                                   textarea().withName("class_codes"),
                                                   br(),
                                                   label("Result Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                  label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"),
+                                                  label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                   button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")
                                           )
                                   )

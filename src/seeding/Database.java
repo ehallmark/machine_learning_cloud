@@ -22,6 +22,7 @@ public class Database {
 	private static Map<String,Set<String>> patentToClassificationMap;
 	private static Map<String,List<String>> patentToOriginalAssigneeMap;
 	private static Map<String,String> patentToInventionTitleMap;
+	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
@@ -36,6 +37,7 @@ public class Database {
 	private static File patentToOriginalAssigneeMapFile = new File("patent_to_original_assignee_map.jobj");
 	private static File assigneeToPatentsMapFile = new File("assignee_to_patents_map.jobj");
 	private static File expiredPatentSetFile = new File("expired_patents_set.jobj");
+	private static File classCodeToClassTitleMapFile = new File("class_code_to_class_title_map.jobj");
 	public static final String gatherTechnologyPrefix = "Gather Updated Tech -";
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=&tcpKeepAlive=true";
@@ -67,6 +69,7 @@ public class Database {
 		patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
 		assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
+		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 
 		// load dependent objects
 		valuablePatents=new HashSet<>();
@@ -111,6 +114,26 @@ public class Database {
 	public static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
 		compDBConn.setAutoCommit(false);
+	}
+
+	public static String getFullClassTitleFromClassCode(String formattedCode) {
+		StringJoiner sj = new StringJoiner(" | ");
+		for(int l = 1; l < formattedCode.length()+1; l++) {
+			if(!(l==4||l==8||l==14)) continue;
+			String subCode = formattedCode.substring(0,l);
+			if(l==4) {
+				subCode=subCode.trim().toUpperCase();
+			} else if (l==8) {
+				subCode=subCode.replaceAll(" ","").toUpperCase().trim();
+			} else if (l==14) {
+				subCode=subCode.substring(0,8)+"/"+subCode.substring(8,subCode.length());
+				subCode=subCode.replaceAll(" ","").toUpperCase().trim();
+			}
+			if(classCodeToClassTitleMap.containsKey(subCode)) {
+				sj.add(classCodeToClassTitleMap.get(subCode));
+			}
+		}
+		return sj.toString();
 	}
 
 	public static int getAssetCountFor(String assignee) {
