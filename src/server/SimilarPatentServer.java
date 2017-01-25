@@ -293,7 +293,7 @@ public class SimilarPatentServer {
                                 patentList.getPatents().stream().map(item->tr().with(
                                         td(ClassCodeHandler.convertToHumanFormat(item.getName())),
                                         td(String.valueOf(item.getSimilarity())),
-                                        td(Database.getFullClassTitleFromClassCode(item.getName()))
+                                        td(Database.getClassTitleFromClassCode(ClassCodeHandler.convertToHumanFormat(item.getName())))
                                 )).collect(Collectors.toList())
                         )
                 );

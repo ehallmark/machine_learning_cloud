@@ -9,6 +9,7 @@ import com.googlecode.concurrenttrees.suffix.SuffixTree;
 import edu.stanford.nlp.util.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.AssigneeTrimmer;
+import tools.ClassCodeHandler;
 import tools.Emailer;
 
 import java.io.*;
@@ -116,24 +117,10 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
-	public static String getFullClassTitleFromClassCode(String formattedCode) {
-		StringJoiner sj = new StringJoiner(" | ");
-		for(int l = 1; l < formattedCode.length()+1; l++) {
-			if(!(l==4||l==8||l==14)) continue;
-			String subCode = formattedCode.substring(0,l);
-			if(l==4) {
-				subCode=subCode.trim().toUpperCase();
-			} else if (l==8) {
-				subCode=subCode.replaceAll(" ","").toUpperCase().trim();
-			} else if (l==14) {
-				subCode=subCode.substring(0,8)+"/"+subCode.substring(8,subCode.length());
-				subCode=subCode.replaceAll(" ","").toUpperCase().trim();
-			}
-			if(classCodeToClassTitleMap.containsKey(subCode)) {
-				sj.add(classCodeToClassTitleMap.get(subCode));
-			}
-		}
-		return sj.toString();
+	public static String getClassTitleFromClassCode(String formattedCode) {
+		formattedCode=formattedCode.toUpperCase().replaceAll(" ","");
+		if(classCodeToClassTitleMap.containsKey(formattedCode)) return classCodeToClassTitleMap.get(formattedCode);
+		return "";
 	}
 
 	public static int getAssetCountFor(String assignee) {
