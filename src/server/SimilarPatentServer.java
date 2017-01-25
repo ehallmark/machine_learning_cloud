@@ -286,12 +286,14 @@ public class SimilarPatentServer {
                         thead().with(
                                 tr().with(
                                         th("Code"),
-                                        th("Similarity")
+                                        th("Similarity"),
+                                        th("Title")
                                 )
                         ),tbody().with(
                                 patentList.getPatents().stream().map(item->tr().with(
                                         td(ClassCodeHandler.convertToHumanFormat(item.getName())),
-                                        td(String.valueOf(item.getSimilarity()))
+                                        td(String.valueOf(item.getSimilarity())),
+                                        td(Database.getFullClassTitleFromClassCode(item.getName()))
                                 )).collect(Collectors.toList())
                         )
                 );
