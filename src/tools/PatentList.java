@@ -68,6 +68,17 @@ public class PatentList implements Serializable, Comparable<PatentList> {
         return patents.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
+    public void filterPortfolioSize(int limit, boolean isPatent) {
+        patents=patents.stream()
+                .filter(patent->{
+                    if(isPatent) {
+                        return Database.getAssetCountFor(patent.getAssignee()) <= limit;
+                    } else {
+                        return Database.getAssetCountFor(patent.getName()) <= limit;
+                    }
+                }).collect(Collectors.toList());
+    }
+
     public void init(int tagLimit, int tagIndex) {
         patents=patents.stream().filter(patent->!Database.isExpired(patent.getName())).collect(Collectors.toList());
         this.assignees=Assignee.createAssigneesFromPatents(patents,tagIndex);

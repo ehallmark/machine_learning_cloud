@@ -7,12 +7,14 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
 import com.googlecode.concurrenttrees.suffix.SuffixTree;
 import edu.stanford.nlp.util.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.AssigneeTrimmer;
 import tools.Emailer;
 
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -22,6 +24,8 @@ public class Database {
 	private static Map<String,String> patentToInventionTitleMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
+	private static RadixTree<String> assigneePrefixTrie;
+	private static RadixTree<String> classCodesPrefixTrie;
 	private static Set<String> expiredPatentSet;
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
@@ -76,6 +80,16 @@ public class Database {
 				allClassCodes.add(cpcClass);
 			});
 		});
+		// prefix trie for assignees
+		assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+		allAssignees.forEach(assignee->{
+			assigneePrefixTrie.put(assignee,assignee);
+		});
+		// class codes trie
+		classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+		allClassCodes.forEach(code->{
+			classCodesPrefixTrie.put(code,code);
+		});
 	}
 
 	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
@@ -100,7 +114,17 @@ public class Database {
 	}
 
 	public static int getAssetCountFor(String assignee) {
-		return selectPatentNumbersFromAssignee(assignee).size();
+		if(assignee==null||assignee.isEmpty()) return 0;
+		final String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
+		if(cleanAssignee.isEmpty()) return 0;
+		AtomicInteger count = new AtomicInteger(0);
+		// try fuzzy search thru trie
+		assigneePrefixTrie.getValuesForKeysStartingWith(cleanAssignee).forEach(name->{
+			if(assigneeToPatentsMap.containsKey(name)) {
+				count.getAndAdd(assigneeToPatentsMap.get(name).size());
+			}
+		});
+		return count.get();
 	}
 
 	public static String getInventionTitleFor(String patent) {
@@ -112,13 +136,18 @@ public class Database {
 	}
 
 	public static Set<String> possibleNamesForAssignee(String base) {
+		if(base==null||base.isEmpty()) return new HashSet<>();
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
+		if(cleanBase.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
-		allAssignees.forEach(assignee->{
-			if(assignee.startsWith(cleanBase)) {
-				possible.add(assignee);
-			}
-		});
+		assigneePrefixTrie.getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
+		return possible;
+	}
+
+	public static Set<String> subClassificationsForClass(String formattedCPC) {
+		if(formattedCPC==null||formattedCPC.isEmpty()) return new HashSet<>();
+		Set<String> possible = new HashSet<>();
+		classCodesPrefixTrie.getValuesForKeysStartingWith(formattedCPC).forEach(a->possible.add(a));
 		return possible;
 	}
 
@@ -212,13 +241,13 @@ public class Database {
 
 
 	public static Collection<String> selectPatentNumbersFromAssignee(String assignee){
+		if(assignee==null||assignee.isEmpty()) return new HashSet<>();
 		final String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
+		if(cleanAssignee.isEmpty()) return new HashSet<>();
 		Set<String> patents = new HashSet<>();
-		// try fuzzy search
-		assigneeToPatentsMap.keySet().forEach(a->{
-			if(a.startsWith(cleanAssignee)) {
-				patents.addAll(assigneeToPatentsMap.get(a));
-			}
+		// try fuzzy search thru trie
+		assigneePrefixTrie.getKeysStartingWith(cleanAssignee).forEach(name->{
+			patents.addAll(assigneeToPatentsMap.get(name));
 		});
 		return patents;
 	}

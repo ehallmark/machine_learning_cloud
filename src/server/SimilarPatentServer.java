@@ -188,17 +188,21 @@ public class SimilarPatentServer {
             Set<String> assignees = new HashSet<>();
             preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assignees.addAll(Database.possibleNamesForAssignee(assignee)));
 
-            List<String> classCodes = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null).stream()
-                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).collect(Collectors.toList());
+            Set<String> classCodes = new HashSet<>();
+            preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null).stream()
+                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc->classCodes.addAll(Database.subClassificationsForClass(cpc)));
 
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
+            int assigneePortfolioLimit = extractInt(req,"portfolio_limit",-1);
 
             Set<String> labelsToExclude = new HashSet<>();
             labelsToExclude.addAll(patents);
             SimilarPatentFinder finder;
+            boolean isPatent = false;
             if(searchType.equals("patents")) {
                 finder = globalFinder;
+                isPatent=true;
             } else if(searchType.equals("assignees")) {
                 finder = assigneeFinder;
                 labelsToExclude.addAll(assignees);
@@ -238,7 +242,9 @@ public class SimilarPatentServer {
             }
 
             // search through labels
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,labelsToExclude,0.0,limit).get(0);
+            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,labelsToExclude,0.5,limit).get(0);
+            if(assigneePortfolioLimit>0)patentList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
+
             // create html
             Tag table;
             if(searchType.equals("patents")) {
@@ -782,6 +788,11 @@ public class SimilarPatentServer {
                                   td().attr("style","width:33%; vertical-align: top;").with(
                                           h2("Knowledge Base"),
                                           form().withId(KNOWLEDGE_BASE_FORM_ID).with(
+                                                  h3("Search for "),select().withName("search_type").with(
+                                                          option().withValue("patents").attr("selected","true").withText("Patents"),
+                                                          option().withValue("assignees").withText("Assignees"),
+                                                          option().withValue("class_codes").withText("CPC Class Codes")
+                                                  ),h3("With relevance to"),
                                                   label("Patents (1 per line)"),br(),textarea().withName("patents"),
                                                   br(),
                                                   label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
@@ -790,12 +801,8 @@ public class SimilarPatentServer {
                                                   label("Example: F05D 01/233"),br(),
                                                   textarea().withName("class_codes"),
                                                   br(),
-                                                  label("Search for: "),br(),select().withName("search_type").with(
-                                                          option().withValue("patents").attr("selected","true").withText("Patents"),
-                                                          option().withValue("assignees").withText("Assignees"),
-                                                          option().withValue("class_codes").withText("CPC Class Codes")
-                                                  ),br(),
-                                                  label("Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                  label("Result Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                  label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"),
                                                   button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")
                                           )
                                   )
@@ -875,16 +882,6 @@ public class SimilarPatentServer {
         } catch(Exception e) {
             System.out.println("No "+param+"+ parameter specified... using default => "+defaultAnswer);
             return defaultAnswer;
-        }
-    }
-
-
-    private static Integer extractMinPatentNumber(Request req) {
-        try {
-            return Integer.valueOf(req.queryParams("min_patent"));
-        } catch(Exception e) {
-            System.out.println("No focused_min_patent specified... using null");
-            return null;
         }
     }
 
