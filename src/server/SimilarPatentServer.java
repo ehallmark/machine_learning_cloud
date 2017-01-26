@@ -588,7 +588,7 @@ public class SimilarPatentServer {
                                                         label("Example: F05D 01/233"),br(),
                                                         textarea().withName("class_codes"),
                                                         br(),
-                                                        label("Arbitrary Text"),
+                                                        label("Arbitrary Text"),br(),
                                                         textarea().withName("words"),
                                                         hr(),
                                                         expandableDiv("Advanced Options",
