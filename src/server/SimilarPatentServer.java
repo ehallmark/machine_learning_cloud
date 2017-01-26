@@ -1,20 +1,16 @@
 package server;
 
-import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import dl4j_neural_nets.classifiers.GatherTransactionProbabilityModel;
 import dl4j_neural_nets.tools.MyPreprocessor;
-import dl4j_neural_nets.tools.PhrasePreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import server.tools.AbstractPatent;
@@ -33,10 +29,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -51,14 +44,9 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder assigneeFinder;
     public static SimilarPatentFinder classCodeFinder;
     private static int DEFAULT_LIMIT = 3;
-    private static final String NEW_CANDIDATE_FORM_ID = "new-candidate-form";
-    private static final String KNOWLEDGE_BASE_FORM_ID = "knowledge-base-form";
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
-    private static Map<Integer, Pair<Boolean, String>> candidateSetMap;
-    private static Map<Integer, List<Integer>> groupedCandidateSetMap;
     protected static ParagraphVectors paragraphVectors;
-    private static String GATHER_RATINGS_ID;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static MultiLayerNetwork transactionProbabilityModel = GatherTransactionProbabilityModel.load();
     static {
@@ -532,7 +520,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag expandableDiv(String label, Tag... innnerStuff) {
-        String id = "div-"+new Random(System.currentTimeMillis()).nextInt();
+        String id = "div-"+label.hashCode();
         return div().with(label("Toggle "+label).attr("style","cursor: pointer; color: blue; text-decoration: underline;").attr("onclick","$('#"+id+"').toggle();"),
                 div().withId(id).attr("style","display: none;").with(
                         innnerStuff
@@ -550,9 +538,8 @@ public class SimilarPatentServer {
                                                 h2("Knowledge Base"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                         h3("Main options"),
-                                                        h4("Search in"),
-                                                        label("Entire Database"),br(),
-                                                        input().withType("checkbox").withName("search_all"),br(),
+                                                        h4("Search for results in"),
+                                                        label("Entire Database"),input().withType("checkbox").withName("search_all"),br(),
                                                         h4("Or by"),
                                                         label("Custom Patent List (1 per line)"),br(),
                                                         textarea().withName("custom_patent_list"),br(),
@@ -589,15 +576,13 @@ public class SimilarPatentServer {
                                                                 label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
                                                                 label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),
-                                                        expandableDiv("Cover Page Options",coverPageForm()),
+                                                        expandableDiv("Cover Page Options",coverPageForm()),br(),hr(),br(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
                         )
-                ),
-                br(),
-                br()
+                )
         );
     }
 
