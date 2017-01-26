@@ -70,10 +70,9 @@ public class SimilarPatentServer {
     protected static void loadLookupTable() throws IOException {
         if(paragraphVectors!=null)return;
         try {
-            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
-// FASTER FOR DEVELOPMENT!!!
-//            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         } catch(Exception e) {
+            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
             e.printStackTrace();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
@@ -90,6 +89,7 @@ public class SimilarPatentServer {
         }
     }
 
+
     private static String getAndRemoveMessage(Session session) {
         String message = session.attribute("message");
         if(message!=null)session.removeAttribute("message");
@@ -100,21 +100,21 @@ public class SimilarPatentServer {
         return div().with(
                 h3().with(
                         a("Portfolio Comparison").withHref("/candidate_set_models")
-                ), br(),
+                ),
                 h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
-                ),br()
+                )
         );
     }
 
     public static void server() {
         port(4568);
+        // GET METHODS
         get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
-
         get("/patent_toolbox", (req, res) -> templateWrapper(res, div().with(patentToolboxForm(), hr()), getAndRemoveMessage(req.session())));
-
         get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
 
+        // POST METHODS
         post("/assignee_asset_count", (req, res) -> {
             res.type("application/json");
             String assigneeStr = req.queryParams("assignee");
@@ -267,8 +267,9 @@ public class SimilarPatentServer {
                 } else if (searchType.equals("class_codes")) {
                     firstFinder = classCodeFinder;
                 } else {
-                    res.type("application/json");
-                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
+                    res.redirect("/candidate_set_models");
+                    req.session().attribute("message","Please enter a valid search type.");
+                    return null;
                 }
             } else {
                 // pre data
@@ -300,14 +301,16 @@ public class SimilarPatentServer {
                     patentsToSearchIn.forEach(patent->classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
                     firstFinder = new SimilarPatentFinder(classCodesToSearchIn,null,paragraphVectors.getLookupTable());
                 } else {
-                    res.type("application/json");
-                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
+                    res.redirect("/candidate_set_models");
+                    req.session().attribute("message","Please enter a valid search type.");
+                    return null;
                 }
             }
 
             if(firstFinder==null||firstFinder.getPatentList().size()==0) {
-                res.type("application/json");
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
+                res.redirect("/candidate_set_models");
+                req.session().attribute("message","Unable to find any results to search in.");
+                return null;
             }
 
             List<SimilarPatentFinder> secondFinders = new ArrayList<>();
@@ -317,8 +320,9 @@ public class SimilarPatentServer {
             if(!wordsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(wordsToSearchFor,"Words",paragraphVectors.getLookupTable()));
 
             if(secondFinders.isEmpty()||secondFinders.stream().collect(Collectors.summingInt(finder->finder.getPatentList().size()))==0) {
-                res.type("application/json");
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find any of the search inputs."));
+                res.redirect("/candidate_set_models");
+                req.session().attribute("message","Unable to find any of the search inputs.");
+                return null;
             }
 
             HttpServletResponse raw = res.raw();
@@ -409,25 +413,6 @@ public class SimilarPatentServer {
 
         });
 
-    }
-
-    private static INDArray avgVector(Collection<String> patents) {
-        try {
-            return SimilarPatentFinder.computeAvg(patents
-                    .stream().map(patent->new Patent(patent,paragraphVectors.getLookupTable().vector(patent)))
-                    .filter(patent->patent.getVector()!=null)
-                    .collect(Collectors.toList()));
-        } catch(Exception e) {
-            return null;
-        }
-    }
-
-    private static INDArray extractVector(Collection<String> tokens, boolean shouldInfer) {
-        if(shouldInfer) {
-            return paragraphVectors.inferVector(tokens.stream().map(token->paragraphVectors.getVocab().wordFor(token.toLowerCase())).filter(word->word!=null).collect(Collectors.toList()));
-        } else {
-            return avgVector(tokens);
-        }
     }
 
     private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
@@ -547,9 +532,9 @@ public class SimilarPatentServer {
     }
 
     private static Tag expandableDiv(String label, Tag... innnerStuff) {
-        String id = "div-"+label;
-        return div().with(button("Toggle "+label).attr("onclick","$('#"+id+"').toggle();"),
-                div().withId(id).attr("display","none").with(
+        String id = "div-"+new Random(System.currentTimeMillis()).nextInt();
+        return div().with(label("Toggle "+label).attr("style","cursor: pointer; color: blue; text-decoration: underline;").attr("onclick","$('#"+id+"').toggle();"),
+                div().withId(id).attr("style","display: none;").with(
                         innnerStuff
                 )
         );
@@ -562,7 +547,7 @@ public class SimilarPatentServer {
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
-                                                h2("Portfolio Comparison Tool"),
+                                                h2("Knowledge Base"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                         h3("Main options"),
                                                         h4("Search in"),
@@ -574,6 +559,7 @@ public class SimilarPatentServer {
                                                         label("Custom Assignee List (1 per line)"),br(),
                                                         textarea().withName("custom_assignee_list"),br(),
                                                         label("Custom CPC Class Code List (1 per line)"),br(),
+                                                        label("Example: F05D 01/233"),br(),
                                                         textarea().withName("custom_class_code_list"),br(),
                                                         h4("To find"),select().withName("search_type").with(
                                                                 option().withValue("patents").attr("selected","true").withText("Patents"),
