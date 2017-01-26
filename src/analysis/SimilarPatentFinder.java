@@ -53,14 +53,6 @@ public class SimilarPatentFinder {
 
     public void setName(String name) { this.name = name; }
 
-    public void setID(int id) {
-        this.id=id;
-    }
-
-    public int getID() {
-        return id;
-    }
-
     public static Map<String,INDArray> getGlobalCache() {
         return globalCache;
     }
@@ -72,68 +64,36 @@ public class SimilarPatentFinder {
         globalCache.clear();
     }
 
-    public SimilarPatentFinder(WeightLookupTable<VocabWord> lookupTable) throws SQLException, IOException, ClassNotFoundException {
-        this(null, null, "**ALL**", lookupTable);
-    }
-
-    public SimilarPatentFinder(Collection<String> candidateSet, File patentListFile, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(Collection<String> candidateSet, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
         // construct lists
+        if(candidateSet==null) throw new NullPointerException("candidateSet");
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
-        if(patentListFile!=null&&patentListFile.exists()){
-            // read from file
-            ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(patentListFile)));
-            Object obj = ois.readObject();
-            patentList = ((List<String>) obj).stream()
-                .map(patent->new Patent(patent,lookupTable.vector(patent)))
-                .filter(patent->patent.getVector()!=null)
-                .collect(Collectors.toList());
-            // PCA
-            ois.close();
-
-        } else {
-            try {
-                if (candidateSet == null) {
-                    candidateSet = Database.getValuablePatents();
+        try {
+            int arrayCapacity = candidateSet.size();
+            patentList = new ArrayList<>(arrayCapacity);
+            // go thru candidate set and remove all that we can find
+            List<String> toRemove = new ArrayList<>();
+            for (String patent : candidateSet) {
+                if (globalCache.containsKey(patent)) {
+                    patentList.add(new Patent(patent, globalCache.get(patent)));
+                    toRemove.add(patent);
                 }
-                int arrayCapacity = candidateSet.size();
-                patentList = new ArrayList<>(arrayCapacity);
-                // go thru candidate set and remove all that we can find
-                List<String> toRemove = new ArrayList<>();
-                for (String patent : candidateSet) {
-                    if (globalCache.containsKey(patent)) {
-                        patentList.add(new Patent(patent, globalCache.get(patent)));
-                        toRemove.add(patent);
-                    }
+            }
+            candidateSet.removeAll(toRemove);
+            for(String patent : candidateSet) {
+                INDArray vector;
+                vector = handleResultSet(patent,lookupTable);
+                if (vector != null) {
+                    patentList.add(new Patent(patent, vector));
                 }
-                candidateSet.removeAll(toRemove);
-                for(String patent : candidateSet) {
-                    INDArray vector;
-                    vector = handleResultSet(patent,lookupTable);
-                    if (vector != null) {
-                        patentList.add(new Patent(patent, vector));
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                // errors
-                patentList = null;
-                patentListFile = null;
             }
 
-            if (patentListFile != null) {
-                // Serialize List
-                ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentListFile)));
-                oos.writeObject(patentList.stream()
-                    .map(patent->patent.getName())
-                    .collect(Collectors.toList()));
-                oos.flush();
-                oos.close();
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            // errors
+            patentList = null;
         }
-
-
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
 
@@ -153,38 +113,20 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public static INDArray computeAvg(List<Patent> patentList, String candidateSetName) {
-        if(candidateSetName!=null&&globalCandidateAvgCache.containsKey(candidateSetName)) {
-            return globalCandidateAvgCache.get(candidateSetName);
-        }
+    public static INDArray computeAvg(List<Patent> patentList) {
         INDArray thisAvg = Nd4j.create(patentList.size(),patentList.stream().findFirst().get().getVector().columns());
         for(int i = 0; i < patentList.size(); i++) {
             thisAvg.putRow(i, patentList.get(i).getVector());
         }
         INDArray avg = thisAvg.mean(0);
-        if(candidateSetName!=null) {
-            globalCandidateAvgCache.put(candidateSetName,avg);
-        }
         return avg;
     }
 
-    public static List<AbstractPatent> predictAnalogies(Set<String> labelsToExclude, INDArray first, INDArray second, INDArray third, int limit, ParagraphVectors model) {
-        INDArray similarTo = third.add(second.sub(first));
-
-        List<String> similar = model.wordsNearest(similarTo,limit+3).stream()
-                .filter(w->labelsToExclude==null||!labelsToExclude.contains(w))
-                .limit(limit)
-                .collect(Collectors.toList());
-
-        return similar.stream().map(word->new AbstractPatent(word,Transforms.cosineSim(similarTo,model.getLookupTable().vector(word)),null))
-                .collect(Collectors.toList());
-    }
-
-    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
+    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets) throws SQLException {
         List<PatentList> list = new ArrayList<>(others.size());
         others.forEach(other->{
             try {
-                list.addAll(similarFromCandidateSet(other, threshold, limit, badAssets,allowResultsFromOtherCandidateSet));
+                list.addAll(similarFromCandidateSet(other, threshold, limit, badAssets));
             } catch(Exception sql) {
                 sql.printStackTrace();
             }
@@ -192,121 +134,31 @@ public class SimilarPatentFinder {
         return list;
     }
 
-    public static double predictGatherValue(AbstractPatent aPatent, List<SimilarPatentFinder> gatherValueFinders) {
-        String gatherPrefix = "Gather Ratings - ";
-        gatherValueFinders.forEach(other->{
-            assert other.getName().startsWith(gatherPrefix) : "Invalid other similar patent finder!";
-        });
-        List<Pair<Integer,INDArray>> avgVectors = gatherValueFinders.stream().map(spf->new Pair<>(Integer.valueOf(spf.getName().replaceFirst(gatherPrefix,"")),computeAvg(spf.getPatentList(),spf.getName()))).collect(Collectors.toList());
-        final int numTags = 3;
-        Patent patent = new Patent(aPatent.getName(),globalCache.get(aPatent.getName()));
-        Patent patentToAdd = new Patent(patent.getName(), patent.getVector());
-        patentToAdd.setSimilarity(0.0);
-        AtomicDouble normalizationContant = new AtomicDouble(0.0);
-        AtomicInteger inclusionFactor = new AtomicInteger(numTags);
-        AtomicDouble simToTop = new AtomicDouble(0.0);
-        DistanceFunction dist = (v1,v2) -> Transforms.cosineSim(v1,v2);
-        avgVectors.stream().map(other-> {
-            Patent.setBaseVector(other.getSecond());
-            patent.calculateSimilarityToTarget(dist);
-            if(other.getFirst().equals(5)) simToTop.set(patent.getSimilarityToTarget());
-            return new WordFrequencyPair<>(other.getFirst(), patent.getSimilarityToTarget());
-        }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(numTags).forEach(other->{
-            double val = other.getSecond()*Math.pow(inclusionFactor.getAndDecrement(),inclusionFactor.get());
-            normalizationContant.addAndGet(val);
-            patentToAdd.incrementSimilarityBy(val*other.getFirst());
-        });
-        return simToTop.get()*patentToAdd.getSimilarityToTarget()/(normalizationContant.get());
-    }
-
-    public List<PatentList> gatherValuePrediction(List<SimilarPatentFinder> others, int limit) throws SQLException {
-        String gatherPrefix = "Gather Ratings - ";
-        others.forEach(other->{
-            assert other.getName().startsWith(gatherPrefix) : "Invalid other similar patent finder!";
-        });
-        setupMinHeap(limit);
-        //DistanceFunction dist = (v1,v2)->-1.0*Math.log(v1.div(v1.norm2Number()).distance2(v2.div(v2.norm2Number())));
-        DistanceFunction dist = (v1,v2) -> Transforms.cosineSim(v1,v2);
-        List<Pair<Integer,INDArray>> avgVectors = others.stream().map(spf->new Pair<>(Integer.valueOf(spf.getName().replaceFirst(gatherPrefix,"")),computeAvg(spf.getPatentList(),spf.getName()))).collect(Collectors.toList());
-        AtomicDouble avgSim = new AtomicDouble(0.0);
-        final int numTags = 3;
-        patentList.forEach(patent->{
-            Patent patentToAdd = new Patent(patent.getName(),patent.getVector());
-            patentToAdd.setSimilarity(0.0);
-            AtomicDouble normalizationContant = new AtomicDouble(0.0);
-            AtomicInteger inclusionFactor = new AtomicInteger(numTags);
-            AtomicDouble simToTop = new AtomicDouble(0.0);
-            avgVectors.stream().map(other-> {
-                Patent.setBaseVector(other.getSecond());
-                patent.calculateSimilarityToTarget(dist);
-                if(other.getFirst().equals(5)) simToTop.set(patent.getSimilarityToTarget());
-                return new WordFrequencyPair<>(other.getFirst(), patent.getSimilarityToTarget());
-            }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(numTags).forEach(other->{
-                double val = other.getSecond()*Math.pow(inclusionFactor.getAndDecrement(),inclusionFactor.get());
-                normalizationContant.addAndGet(val);
-                patentToAdd.incrementSimilarityBy(val*other.getFirst());
-            });
-            heap.add(patentToAdd);
-            patentToAdd.setSimilarity(simToTop.get()*patentToAdd.getSimilarityToTarget()/(normalizationContant.get()));
-            avgSim.getAndAdd(patentToAdd.getSimilarityToTarget());
-        });
-
-        List<AbstractPatent> resultList = new ArrayList<>(limit);
-        while (!heap.isEmpty()) {
-            Patent p = heap.remove();
-            resultList.add(0, Patent.abstractClone(p, name));
-        }
-        return Arrays.asList(new PatentList(resultList,name,"Gather Ranking"));
-    }
-
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badAssets, boolean allowResultsFromOtherCandidateSet) throws SQLException {
+    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels) throws SQLException {
         // Find the highest (pairwise) assets
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
-        INDArray otherAvg = computeAvg(other.patentList,other.getName());
-        Set<String> dontMatch = new HashSet<>(badAssets);
-        if(!(other.name.equals(this.name) || allowResultsFromOtherCandidateSet)) other.patentList.forEach(p->dontMatch.add(p.getName()));
+        INDArray otherAvg = computeAvg(other.patentList);
         try {
-            lists.addAll(findSimilarPatentsTo(other.name, otherAvg, dontMatch, threshold, limit));
+            lists.addAll(findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit));
 
         } catch(SQLException sql) {
         }
         return lists;
     }
 
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
-        return findSimilarPatentsTo(patentNumber, avgVector, patentNamesToExclude, threshold, limit, (v1,v2)->Transforms.cosineSim(v1,v2));
-    }
-
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit, DistanceFunction dist) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit) throws SQLException {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new ArrayList<>();
         long startTime = System.currentTimeMillis();
-        if(patentNamesToExclude ==null) {
-            patentNamesToExclude=new HashSet<>();
-            if(patentNumber!=null)patentNamesToExclude.add(patentNumber);
-        }
-        final Set<String> otherSet = Collections.unmodifiableSet(patentNamesToExclude);
-
         setupMinHeap(limit);
-        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector, otherSet, name, patentNumber, threshold, limit,dist));
-
+        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1,v2)->Transforms.cosineSim(v1,v2)));
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find similar patents: "+time+" seconds");
-
         return lists;
-    }
-
-    public Double angleBetweenPatents(String name1, String name2, WeightLookupTable<VocabWord> lookupTable) throws SQLException {
-        INDArray first = tryFindParagraphVectors(name1,lookupTable);
-        INDArray second = tryFindParagraphVectors(name2,lookupTable);
-        if(first!=null && second!=null) {
-            //valid
-            return Transforms.cosineSim(first,second);
-        } else return null;
     }
 
     // returns null if patentNumber not found
@@ -332,19 +184,10 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    protected static INDArray tryFindParagraphVectors(String paragraphID,WeightLookupTable<VocabWord> lookupTable) {
-        try {
-            return lookupTable.vector(paragraphID);
-        } catch(Exception e) {
-            //e.printStackTrace();
-            return null;
-        }
-    }
-
-    private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Set<String> patentNamesToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist) {
+    private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist) {
         Patent.setBaseVector(baseVector);
         patentList.forEach(patent -> {
-            if(patent!=null&&!patentNamesToExclude.contains(patent.getName())) {
+            if(patent!=null&&!labelsToExclude.contains(patent.getName())) {
                 patent.calculateSimilarityToTarget(dist);
                 if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
             }
@@ -354,7 +197,6 @@ public class SimilarPatentFinder {
             Patent p = heap.remove();
             resultList.add(0, Patent.abstractClone(p, name2));
         }
-        //double avgSim = cnt.get() > 0 ? total.get()/cnt.get() : 0.0;
         PatentList results = new PatentList(resultList,name1,name2);
         return results;
     }

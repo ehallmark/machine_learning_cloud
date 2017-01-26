@@ -69,22 +69,21 @@ public class SimilarPatentServer {
 
     protected static void loadLookupTable() throws IOException {
         if(paragraphVectors!=null)return;
-        //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
-        //lookupTable = ParagraphVectorModel.loadClaimModel().getLookupTable();
         try {
-            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
+            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
+// FASTER FOW DEVELOPMENT!!!
+//            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("DEFAULTING TO OLDER MODEL");
-            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
         }
     }
 
     private static void loadBaseFinder() {
         try {
-            globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),null,"** ALL PATENTS **",paragraphVectors.lookupTable());
-            assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),null,"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
-            classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,"** ALL CLASS CODES **",paragraphVectors.lookupTable());
+            globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
+            assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
+            classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
 
         } catch(Exception e) {
             e.printStackTrace();
@@ -100,26 +99,12 @@ public class SimilarPatentServer {
     private static Tag homePage() {
         return div().with(
                 h3().with(
-                        a("Knowledge Base").withHref("/knowledge_base")
-                ), br(),
-                h3().with(
                         a("Portfolio Comparison").withHref("/candidate_set_models")
                 ), br(),
                 h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
                 ),br()
         );
-    }
-
-    private static INDArray avgVector(Collection<String> patents) {
-        try {
-            return SimilarPatentFinder.computeAvg(patents
-                    .stream().map(patent->new Patent(patent,paragraphVectors.getLookupTable().vector(patent)))
-                    .filter(patent->patent.getVector()!=null)
-                    .collect(Collectors.toList()), null);
-        } catch(Exception e) {
-            return null;
-        }
     }
 
     public static void server() {
@@ -129,10 +114,6 @@ public class SimilarPatentServer {
         get("/patent_toolbox", (req, res) -> templateWrapper(res, div().with(patentToolboxForm(), hr()), getAndRemoveMessage(req.session())));
 
         get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
-
-        get("/knowledge_base", (req, res) -> templateWrapper(res, div().with(knowledgeBaseForm(),hr()), getAndRemoveMessage(req.session())));
-
-        get("/new", (req, res) -> templateWrapper(res, createNewCandidateSetForm(), getAndRemoveMessage(req.session())));
 
         post("/assignee_asset_count", (req, res) -> {
             res.type("application/json");
@@ -161,89 +142,8 @@ public class SimilarPatentServer {
                 return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
-        post("/create_group", (req, res) ->{
-            if(req.queryParams("group_prefix")==null || req.queryParams("group_prefix").trim().length()==0) {
-                req.session().attribute("message", "Invalid form parameters.");
-                res.redirect("/new");
-            } else {
-                try {
-                    String name = req.queryParams("group_prefix");
-                    Database.createCandidateGroup(name);
-                    req.session().attribute("message", "Candidate group created.");
-                    res.redirect("/");
-
-                } catch(SQLException sql) {
-                    sql.printStackTrace();
-                    req.session().attribute("message", "Database Error");
-                    res.redirect("/new");
-
-                }
-            }
-            return null;
-        });
-
-        post("/knowledge_base_predictions", (req, res) ->{
+        /*post("/knowledge_base_predictions", (req, res) ->{
             res.type("application/json");
-            List<String> patents = preProcess(extractString(req,"patents",null),"\\s+","[^0-9]");
-            Set<String> assignees = new HashSet<>();
-            preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assignees.addAll(Database.possibleNamesForAssignee(assignee)));
-
-            Set<String> classCodes = new HashSet<>();
-            preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null).stream()
-                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc->classCodes.addAll(Database.subClassificationsForClass(cpc)));
-
-            String searchType = extractString(req,"search_type","patents");
-            int limit = extractInt(req,"limit",10);
-            int assigneePortfolioLimit = extractInt(req,"portfolio_limit",-1);
-
-            Set<String> labelsToExclude = new HashSet<>();
-            labelsToExclude.addAll(patents);
-            SimilarPatentFinder finder;
-            boolean isPatent = false;
-            if(searchType.equals("patents")) {
-                finder = globalFinder;
-                isPatent=true;
-            } else if(searchType.equals("assignees")) {
-                finder = assigneeFinder;
-                labelsToExclude.addAll(assignees);
-            } else if (searchType.equals("class_codes")) {
-                finder = classCodeFinder;
-                labelsToExclude.addAll(classCodes);
-            } else {
-                return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
-            }
-
-            // get representative vector
-            INDArray patentVector = avgVector(patents);
-            INDArray classVector = avgVector(classCodes);
-            INDArray assigneeVector = avgVector(assignees);
-
-            List<INDArray> representativeVectors = new ArrayList<>(3);
-            if(patentVector!=null) {
-                representativeVectors.add(patentVector);
-            }
-
-            if(classVector!=null) {
-                representativeVectors.add(classVector);
-            }
-
-            if(assigneeVector!=null) {
-                representativeVectors.add(assigneeVector);
-            }
-
-            if(representativeVectors.isEmpty()) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search terms."));
-            }
-            INDArray representativeVector;
-            if(representativeVectors.size()>1) {
-                representativeVector = Nd4j.vstack(representativeVectors).mean(0);
-            } else {
-                representativeVector = representativeVectors.get(0);
-            }
-
-            // search through labels
-            PatentList patentList = finder.findSimilarPatentsTo(null,representativeVector,labelsToExclude,0.5,limit).get(0);
-            if(assigneePortfolioLimit>0)patentList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
 
             // create html
             Tag table;
@@ -299,41 +199,7 @@ public class SimilarPatentServer {
                 );
             }
             return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/create", (req, res) -> {
-            if(req.queryParams("name")==null || (req.queryParams("patents")==null && req.queryParams("assignee")==null)) {
-                req.session().attribute("message", "Invalid form parameters.");
-                res.redirect("/new");
-            } else {
-                try {
-                    String name = req.queryParams("name");
-                    int id = Database.createCandidateSetAndReturnId(name);
-                    // try to get percentages from form
-                    File file = new File(Constants.CANDIDATE_SET_FOLDER+id);
-                    if(req.queryParams("assignee")!=null&&req.queryParams("assignee").trim().length()>0) {
-                        new SimilarPatentFinder(Database.selectPatentNumbersFromAssignee(req.queryParams("assignee")),file,name,paragraphVectors.lookupTable());
-                    } else if (req.queryParams("patents")!=null&&req.queryParams("patents").trim().length()>0) {
-                        new SimilarPatentFinder(preProcess(req.queryParams("patents"),"\\s+","US"), file, name, paragraphVectors.lookupTable());
-                    } else if (req.queryParams("article")!=null&&req.queryParams("article").trim().length()>0) {
-                        new SimilarPatentFinder(tokenizerFactory.create(new PhrasePreprocessor().preProcess(req.queryParams("article"))).getTokens(), file, name, paragraphVectors.lookupTable());
-                    } else {
-                        req.session().attribute("message", "Patents and Assignee parameters were blank. Please choose one to fill out");
-                        res.redirect("/new");
-                        return null;
-                    }
-                    req.session().attribute("message", "Candidate set created.");
-                    res.redirect("/candidate_set_models");
-
-                } catch(SQLException sql) {
-                    sql.printStackTrace();
-                    req.session().attribute("message", "Database Error: "+sql.toString());
-                    res.redirect("/new");
-
-                }
-            }
-            return null;
-        });
+        });*/
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -364,176 +230,212 @@ public class SimilarPatentServer {
         });
 
         post("/similar_candidate_sets", (req, res) -> {
-            //long startTime = System.currentTimeMillis();
+            // get input data
+            List<String> patentsToSearchFor = preProcess(extractString(req,"patents",""),"\\s+","[^0-9]");
+            List<String> wordsToSearchFor = preProcess(extractString(req,"words",""),"\\s+","[^a-zA-Z0-9 ]");
+            Set<String> assigneesToSearchFor = new HashSet<>();
+            preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assigneesToSearchFor.addAll(Database.possibleNamesForAssignee(assignee)));
+            Set<String> classCodesToSearchFor = new HashSet<>();
+            List<String> originalClassClodesToSearchFor = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null);
+            originalClassClodesToSearchFor.stream()
+                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc->classCodesToSearchFor.addAll(Database.subClassificationsForClass(cpc)));
+            String searchType = extractString(req,"search_type","patents");
+            int limit = extractInt(req,"limit",10);
+            boolean gatherValue = extractBool(req, "gather_value");
+            boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
+            boolean searchEntireDatabase = extractBool(req,"search_all");
+            int assigneePortfolioLimit = extractInt(req,"portfolio_limit",-1);
+            boolean isPatent = false;
+            boolean isAssignee = false;
+
+            SimilarPatentFinder firstFinder;
+            Set<String> labelsToExclude = new HashSet<>();
+            if(!allowResultsFromOtherCandidateSet) {
+                labelsToExclude.addAll(originalClassClodesToSearchFor);
+                labelsToExclude.addAll(assigneesToSearchFor);
+                labelsToExclude.addAll(patentsToSearchFor);
+            }
+
+            // get first finder
+            if(searchEntireDatabase) {
+                if(searchType.equals("patents")) {
+                    firstFinder = globalFinder;
+                    isPatent=true;
+                } else if(searchType.equals("assignees")) {
+                    firstFinder = assigneeFinder;
+                    isAssignee=true;
+                } else if (searchType.equals("class_codes")) {
+                    firstFinder = classCodeFinder;
+                } else {
+                    res.type("application/json");
+                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
+                }
+            } else {
+                // pre data
+                Collection<String> classCodesToSearchIn = new HashSet<>();
+                preProcess(extractString(req, "custom_class_code_list", "").toUpperCase(), "\n", null).stream()
+                        .map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchIn.addAll(Database.subClassificationsForClass(cpc)));
+                Collection<String> patentsToSearchIn = new HashSet<>(preProcess(extractString(req, "custom_patent_list", ""), "\\s+", "[^0-9]"));
+                Collection<String> assigneesToSearchIn = new HashSet<>();
+                List<String> customAssigneeList = preProcess(extractString(req, "custom_assignee_list", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+                customAssigneeList.forEach(assignee -> {
+                    if (assigneePortfolioLimit > 0 && Database.getAssetCountFor(assignee) > assigneePortfolioLimit)
+                        return;
+                    assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
+                });
+
+                // dependent on searchType
+                if(searchType.equals("patents")) {
+                    isPatent=true;
+                    customAssigneeList.forEach(assignee->patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                    firstFinder = new SimilarPatentFinder(patentsToSearchIn,null,paragraphVectors.getLookupTable());
+                } else if(searchType.equals("assignees")) {
+                    isAssignee=true;
+                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                    patentsToSearchIn.forEach(patent->Database.assigneesFor(patent).forEach(assignee->assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
+                    firstFinder = new SimilarPatentFinder(assigneesToSearchIn,null,paragraphVectors.getLookupTable());
+                } else if(searchType.equals("class_codes")) {
+                    customAssigneeList.forEach(assignee->patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    patentsToSearchIn.forEach(patent->classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
+                    firstFinder = new SimilarPatentFinder(classCodesToSearchIn,null,paragraphVectors.getLookupTable());
+                } else {
+                    res.type("application/json");
+                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid search type."));
+                }
+            }
+
+            if(firstFinder==null||firstFinder.getPatentList().size()==0) {
+                res.type("application/json");
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
+            }
+
+            List<SimilarPatentFinder> secondFinders = new ArrayList<>();
+            if(!patentsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(patentsToSearchFor,"Patents",paragraphVectors.getLookupTable()));
+            if(!classCodesToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(classCodesToSearchFor,"Patents",paragraphVectors.getLookupTable()));
+            if(!assigneesToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(assigneesToSearchFor,"Assignees",paragraphVectors.getLookupTable()));
+            if(!wordsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(wordsToSearchFor,"Words",paragraphVectors.getLookupTable()));
+
+            if(secondFinders.isEmpty()||secondFinders.stream().collect(Collectors.summingInt(finder->finder.getPatentList().size()))==0) {
+                res.type("application/json");
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find any of the search inputs."));
+            }
 
             HttpServletResponse raw = res.raw();
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
 
-            if(req.queryParamsValues("name2")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a second candidate set."));
-
-            if(req.queryParams("name1")==null)  return new Gson().toJson(new SimpleAjaxMessage("Please choose a first candidate set."));
-
-            boolean gatherValue = extractBool(req, "gather_value");
-            int limit = extractLimit(req);
-
-            List<String> otherIds = Arrays.asList(req.queryParamsValues("name2"));
-            if(otherIds.isEmpty()&&!gatherValue) return new Gson().toJson(new SimpleAjaxMessage("Must choose at least one other candidate set"));
-
-            Integer id1 = Integer.valueOf(req.queryParams("name1"));
 
             // get more detailed params
             String clientName = extractString(req,"client","");
-            int tagLimit = extractTagLimit(req);
+            int tagLimit = extractInt(req, "tag_limit", DEFAULT_LIMIT);
             double threshold = extractThreshold(req);
             Set<String> badAssignees = new HashSet<>();
             preProcess(extractString(req,"assigneeFilter","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
             Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
             Set<String> highlightAssignees = new HashSet<>();
-            preProcess(req.queryParams("assigneeHighlighter"),"\n","[^a-zA-Z0-9 ]").forEach(assignee->highlightAssignees.addAll(Database.possibleNamesForAssignee(assignee)))
-            ;
+            preProcess(req.queryParams("assigneeHighlighter"),"\n","[^a-zA-Z0-9 ]").forEach(assignee->highlightAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
             String title = extractString(req,"title","");
-            boolean switchCandidateSets = extractBool(req, "switchCandidateSets");
-            boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
 
-            if(id1 < 0 && globalFinder==null)
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to find first candidate set."));
-            else {
-                // get similar patent finders
-                List<SimilarPatentFinder> firstFinders = new ArrayList<>();
-                if (id1 >= 0) {
-                    if(groupedCandidateSetMap.containsKey(id1)) {
-                        for(Integer id : groupedCandidateSetMap.get(id1)) {
-                            String assignee = candidateSetMap.get(id).getSecond();
-                            assignee=assignee.replaceFirst(candidateSetMap.get(Integer.valueOf(id1)).getSecond(),"").trim();
-                            firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), assignee,paragraphVectors.lookupTable()));
-                        }
-                    } else {
-                        String name1 = candidateSetMap.get(id1).getSecond();
-                        firstFinders.add(new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id1), name1,paragraphVectors.lookupTable()));
-                    }
-                } else firstFinders = Arrays.asList(globalFinder);
+            labelsToExclude.addAll(badAssets);
+            labelsToExclude.addAll(badAssignees);
 
-                Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> firstAndSecondFinders = getFirstAndSecondFinders(firstFinders,otherIds,switchCandidateSets);
-                PatentList patentList = runPatentFinderModel(title, firstAndSecondFinders.getFirst(), firstAndSecondFinders.getSecond(), limit, threshold, badAssets, badAssignees,allowResultsFromOtherCandidateSet);
+            PatentList patentList = runPatentFinderModel(title, Arrays.asList(firstFinder), secondFinders, limit, threshold, labelsToExclude, badAssignees, allowResultsFromOtherCandidateSet);
+            if(assigneePortfolioLimit>0)patentList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
 
-                if (gatherValue && transactionProbabilityModel != null) {
-                    for (AbstractPatent patent : patentList.getPatents()) {
-                        try {
-                            INDArray vec = transactionProbabilityModel.output(SimilarPatentFinder.getVectorFromDB(patent.getName(), paragraphVectors.lookupTable()), false);
-                            double value = vec.getDouble(1);
-                            patent.setGatherValue(value);
-                            System.out.println("Value for patent: "+value);
-                        } catch(Exception e) {
-                            System.out.println("Unable to find value");
-                            patent.setGatherValue(0d);
-                        }
-                    }
-                    patentList.setPatents(patentList.getPatents());
-                }
-
-                {
-                    String keywordsToRequire = extractString(req, "required_keywords", null);
-                    if (keywordsToRequire != null) {
-                        String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
-                        if(keywords.length>0) {
-                            Set<String> patents = Database.patentsWithAllKeywords(patentList.getPatentStrings(), keywords);
-                            patentList.setPatents(patentList.getPatents().stream()
-                                    .filter(patent -> patents.contains(patent.getName()))
-                                    .collect(Collectors.toList())
-                            );
-                        }
+            if (gatherValue && transactionProbabilityModel != null) {
+                for (AbstractPatent patent : patentList.getPatents()) {
+                    try {
+                        INDArray vec = transactionProbabilityModel.output(SimilarPatentFinder.getVectorFromDB(patent.getName(), paragraphVectors.lookupTable()), false);
+                        double value = vec.getDouble(1);
+                        patent.setGatherValue(value);
+                        System.out.println("Value for patent: "+value);
+                    } catch(Exception e) {
+                        System.out.println("Unable to find value");
+                        patent.setGatherValue(0d);
                     }
                 }
-                {
-                    String keywordsToAvoid = extractString(req, "avoided_keywords", null);
-                    if (keywordsToAvoid != null) {
-                        String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
-                        if(keywords.length>0) {
-                            Set<String> patents = Database.patentsWithKeywords(patentList.getPatentStrings(), keywords);
-                            patentList.setPatents(patentList.getPatents().stream()
-                                    .filter(patent -> !patents.contains(patent.getName()))
-                                    .collect(Collectors.toList())
-                            );
-                        }
-                    }
-                }
-                patentList.init(tagLimit);
-
-                // contact info
-                String EMLabel = extractContactInformation(req,"label1", Constants.DEFAULT_EM_LABEL);
-                String EMName=extractContactInformation(req,"cname1", Constants.DEFAULT_EM_NAME);
-                String EMTitle=extractContactInformation(req,"title1", Constants.DEFAULT_EM_TITLE);
-                String EMPhone=extractContactInformation(req,"phone1", Constants.DEFAULT_EM_PHONE);
-                String EMEmail=extractContactInformation(req,"email1", Constants.DEFAULT_EM_EMAIL);
-                String SAMName=extractContactInformation(req,"cname2", Constants.DEFAULT_SAM_NAME);
-                String SAMTitle=extractContactInformation(req,"title2", Constants.DEFAULT_SAM_TITLE);
-                String SAMPhone=extractContactInformation(req,"phone2", Constants.DEFAULT_SAM_PHONE);
-                String SAMLabel = extractContactInformation(req,"label2", Constants.DEFAULT_SAM_LABEL);
-                String SAMEmail=extractContactInformation(req,"email2", Constants.DEFAULT_SAM_EMAIL);
-                String[] EMData = new String[]{EMLabel,EMName,EMTitle,EMPhone,EMEmail};
-                String[] SAMData = new String[]{SAMLabel,SAMName, SAMTitle, SAMPhone, SAMEmail};
-                try {
-                    RespondWithJXL.writeDefaultSpreadSheetToRaw(raw, patentList, highlightAssignees,clientName, EMData, SAMData, tagLimit, gatherValue);
-                } catch (Exception e) {
-
-                    e.printStackTrace();
-                }
-                return raw;
-
+                patentList.setPatents(patentList.getPatents());
             }
+
+            {
+                String keywordsToRequire = extractString(req, "required_keywords", null);
+                if (keywordsToRequire != null) {
+                    String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                    if(keywords.length>0) {
+                        Set<String> patents = Database.patentsWithAllKeywords(patentList.getPatentStrings(), keywords);
+                        patentList.setPatents(patentList.getPatents().stream()
+                                .filter(patent -> patents.contains(patent.getName()))
+                                .collect(Collectors.toList())
+                        );
+                    }
+                }
+            }
+            {
+                String keywordsToAvoid = extractString(req, "avoided_keywords", null);
+                if (keywordsToAvoid != null) {
+                    String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                    if(keywords.length>0) {
+                        Set<String> patents = Database.patentsWithKeywords(patentList.getPatentStrings(), keywords);
+                        patentList.setPatents(patentList.getPatents().stream()
+                                .filter(patent -> !patents.contains(patent.getName()))
+                                .collect(Collectors.toList())
+                        );
+                    }
+                }
+            }
+            patentList.init(tagLimit);
+
+            // contact info
+            String EMLabel = extractContactInformation(req,"label1", Constants.DEFAULT_EM_LABEL);
+            String EMName=extractContactInformation(req,"cname1", Constants.DEFAULT_EM_NAME);
+            String EMTitle=extractContactInformation(req,"title1", Constants.DEFAULT_EM_TITLE);
+            String EMPhone=extractContactInformation(req,"phone1", Constants.DEFAULT_EM_PHONE);
+            String EMEmail=extractContactInformation(req,"email1", Constants.DEFAULT_EM_EMAIL);
+            String SAMName=extractContactInformation(req,"cname2", Constants.DEFAULT_SAM_NAME);
+            String SAMTitle=extractContactInformation(req,"title2", Constants.DEFAULT_SAM_TITLE);
+            String SAMPhone=extractContactInformation(req,"phone2", Constants.DEFAULT_SAM_PHONE);
+            String SAMLabel = extractContactInformation(req,"label2", Constants.DEFAULT_SAM_LABEL);
+            String SAMEmail=extractContactInformation(req,"email2", Constants.DEFAULT_SAM_EMAIL);
+            String[] EMData = new String[]{EMLabel,EMName,EMTitle,EMPhone,EMEmail};
+            String[] SAMData = new String[]{SAMLabel,SAMName, SAMTitle, SAMPhone, SAMEmail};
+            try {
+                RespondWithJXL.writeDefaultSpreadSheetToRaw(raw, patentList, highlightAssignees,clientName, EMData, SAMData, tagLimit, gatherValue);
+            } catch (Exception e) {
+
+                e.printStackTrace();
+            }
+            return raw;
 
         });
 
     }
 
-    private static Pair<List<SimilarPatentFinder>,List<SimilarPatentFinder>> getFirstAndSecondFinders(List<SimilarPatentFinder> firstFinders, List<String> otherIds, boolean switchCandidateSets) throws Exception {
-        List<SimilarPatentFinder> secondFinders = new ArrayList<>();
-        for(String id : otherIds) {
-            SimilarPatentFinder finder = null;
-            if (Integer.valueOf(id) >= 0) {
-                try {
-                    if(groupedCandidateSetMap.containsKey(Integer.valueOf(id))) {
-                        for(Integer groupedId : groupedCandidateSetMap.get(Integer.valueOf(id))) {
-                            System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(groupedId).getSecond());
-                            String assignee = candidateSetMap.get(groupedId).getSecond();
-                            assignee=assignee.replaceFirst(candidateSetMap.get(Integer.valueOf(id)).getSecond(),"").trim();
-                            finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), assignee,paragraphVectors.lookupTable());
-                            if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
-                                secondFinders.add(finder);
-                            }
-                        }
-                    } else {
-                        System.out.println("CANDIDATE LOADING: " + candidateSetMap.get(Integer.valueOf(id)).getSecond());
-                        String assignee = candidateSetMap.get(Integer.valueOf(id)).getSecond();
-                        finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + id), assignee,paragraphVectors.lookupTable());
-                        if (finder != null && finder.getPatentList() != null && !finder.getPatentList().isEmpty()) {
-                            secondFinders.add(finder);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException(e);
-                }
-            } else {
-                secondFinders.add(globalFinder);
-            }
+    private static INDArray avgVector(Collection<String> patents) {
+        try {
+            return SimilarPatentFinder.computeAvg(patents
+                    .stream().map(patent->new Patent(patent,paragraphVectors.getLookupTable().vector(patent)))
+                    .filter(patent->patent.getVector()!=null)
+                    .collect(Collectors.toList()));
+        } catch(Exception e) {
+            return null;
         }
-        // switch candidate sets if necessary
-        if(switchCandidateSets) {
-            List<SimilarPatentFinder> tmpList = firstFinders;
-            firstFinders=secondFinders;
-            secondFinders=tmpList;
-        }
-        return new Pair<>(firstFinders, secondFinders);
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badAssets, Collection<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
+    private static INDArray extractVector(Collection<String> tokens, boolean shouldInfer) {
+        if(shouldInfer) {
+            return paragraphVectors.inferVector(tokens.stream().map(token->paragraphVectors.getVocab().wordFor(token.toLowerCase())).filter(word->word!=null).collect(Collectors.toList()));
+        } else {
+            return avgVector(tokens);
+        }
+    }
+
+    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
         List<PatentList> patentLists = new ArrayList<>();
         try {
             for(SimilarPatentFinder first : firstFinders) {
                 try {
-                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, badAssets,allowResultsFromOtherCandidateSet);
+                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, badLabels);
                     patentLists.addAll(similar);
                 } catch(Exception e) {
                     new Emailer("While calculating similar candidate set: "+e.getMessage());
@@ -627,85 +529,9 @@ public class SimilarPatentServer {
         );
     }
 
-
-    private static void importCandidateSetFromDB() throws SQLException {
-        Map<String,List<Integer>> groupedSetNameMap = new HashMap<>();
-        ResultSet rs = Database.selectGroupedCandidateSets();
-        while(rs.next()) {
-            groupedSetNameMap.put(rs.getString(1),new ArrayList<>());
-        }
-        rs.close();
-        ResultSet candidates = Database.selectAllCandidateSets();
-        while(candidates.next()) {
-            String name = candidates.getString(1);
-            AtomicBoolean hidden = new AtomicBoolean(false);
-            for(Map.Entry<String,List<Integer>> e : groupedSetNameMap.entrySet()) {
-                if(name.startsWith(e.getKey())) {
-                    hidden.set(true);
-                    e.getValue().add(candidates.getInt(2));
-                    break;
-                }
-            }
-            candidateSetMap.put(candidates.getInt(2),new Pair<>(hidden.get(),name));
-        }
-        candidates.close();
-        int size = Collections.max(candidateSetMap.keySet())+1;
-        for(Map.Entry<String,List<Integer>> e : groupedSetNameMap.entrySet()) {
-            if(e.getValue().size()>0) {
-                candidateSetMap.put(size,new Pair<>(false, e.getKey()));
-                groupedCandidateSetMap.put(size, e.getValue());
-                if(e.getKey().startsWith("Gather Rating")) {
-                    GATHER_RATINGS_ID=String.valueOf(size);
-                }
-                size++;
-            }
-        }
-    }
-
-    private static Tag selectCandidateSetDropdown(String label, String name, boolean multiple) {
-        candidateSetMap = new HashMap<>();
-        groupedCandidateSetMap = new HashMap<>();
-        candidateSetMap.put(-1, new Pair<>(false,"**ALL**")); // adds the default candidate set
-        try {
-            importCandidateSetFromDB();
-        } catch(SQLException sql ) {
-            sql.printStackTrace();
-            return label("ERROR:: Unable to load candidate set.");
-        }
-        return div().with(
-                label(label),
-                br(),
-                (multiple ? (select().attr("multiple","true")) : (select())).withName(name).with(
-                        candidateSetMap.entrySet().stream().sorted((o1,o2)->Integer.compare(o1.getKey(),o2.getKey())).map(entry->{if(entry.getValue().getFirst()) {return null; } if(entry.getKey()<0) return option().withText(reasonablySizedString(entry.getValue().getSecond())).attr("selected","true").withValue(entry.getKey().toString()); else return option().withText(reasonablySizedString(entry.getValue().getSecond())).withValue(entry.getKey().toString());}).filter(t->t!=null).collect(Collectors.toList())
-                )
-        );
-    }
-
-    private static Tag selectGatherTechnologyDropdown(String label, String name) {
-        candidateSetMap = new HashMap<>();
-        groupedCandidateSetMap = new HashMap<>();
-        candidateSetMap.put(-1, new Pair<>(false,"**ALL**")); // adds the default candidate set
-        try {
-            importCandidateSetFromDB();
-        } catch(SQLException sql ) {
-            sql.printStackTrace();
-            return label("ERROR:: Unable to load candidate set.");
-        }
-        return div().with(
-                label(label),
-                br(),
-                select().attr("multiple","true").withName(name).with(
-                        GatherClassificationServer.gatherFinders.stream()
-                                .sorted((o1,o2)->o1.getName().compareTo(o2.getName()))
-                                .map(finder->option().withText(reasonablySizedString(finder.getName())).withValue(String.valueOf(finder.getID())))
-                                .filter(t->t!=null)
-                                .collect(Collectors.toList())
-                )
-        );
-    }
-
     private static Tag coverPageForm() {
         return div().with(h3("Contact Info (primarily for the cover page)"),
+                label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title").withValue("Custom Search"), br(),
                 label("Client Name"),br(),input().withType("text").withName("client"), br(),
                 label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),
                 label("Contact 1 Name"),br(),input().withType("text").withName("cname1").withValue(Constants.DEFAULT_EM_NAME), br(),
@@ -720,9 +546,18 @@ public class SimilarPatentServer {
                 hr());
     }
 
+    private static Tag expandableDiv(String label, Tag... innnerStuff) {
+        String id = "div-"+System.currentTimeMillis();
+        return div().with(button("Toggle "+label).attr("onclick","$(#"+id+").toggle();"),
+                div().withId(id).with(
+                        innnerStuff
+                )
+        );
+    }
+
     private static Tag candidateSetModelsForm() {
         return div().with(
-                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
+                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -731,23 +566,45 @@ public class SimilarPatentServer {
                                                 h2("Portfolio Comparison Tool"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                         h3("Main options"),
-                                                        selectCandidateSetDropdown("Portfolio 1","name1",false),
-                                                        selectCandidateSetDropdown("Portfolio 2", "name2",true),
-                                                        label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title"), br(),
-                                                        label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                        label("Min Patent Number"),br(),input().withType("text").withName("min_patent"),br(),
-                                                        label("Threshold"),br(),input().withType("text").withName("threshold"),br(),
-                                                        label("Switch Portfolios"),br(),input().withType("checkbox").withName("switchCandidateSets"),br(),
+                                                        h4("Search in"),
+                                                        label("Entire Database"),br(),
+                                                        input().withType("checkbox").withName("search_all"),br(),
+                                                        h4("Or by"),
+                                                        label("Custom Patent List (1 per line)"),br(),
+                                                        textarea().withName("custom_patent_list"),br(),
+                                                        label("Custom Assignee List (1 per line)"),br(),
+                                                        textarea().withName("custom_assignee_list"),br(),
+                                                        label("Custom CPC Class Code List (1 per line)"),br(),
+                                                        textarea().withName("custom_class_code_list"),br(),
+                                                        h4("To find"),select().withName("search_type").with(
+                                                                option().withValue("patents").attr("selected","true").withText("Patents"),
+                                                                option().withValue("assignees").withText("Assignees"),
+                                                                option().withValue("class_codes").withText("CPC Class Codes")
+                                                        ),br(),h4("With relevance to"),
+                                                        label("Patents (1 per line)"),br(),textarea().withName("patents"),
+                                                        br(),
+                                                        label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
+                                                        br(),
+                                                        label("CPC Class Codes (1 per line)"),br(),
+                                                        label("Example: F05D 01/233"),br(),
+                                                        textarea().withName("class_codes"),
+                                                        br(),
+                                                        label("Arbitrary Text"),
+                                                        textarea().withName("words"),
                                                         hr(),
-                                                        h3("Advanced Options"),
-                                                        label("Allow results from Portfolio 2?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                        label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
-                                                        label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
-                                                        label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                        label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
-                                                        label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
-                                                        label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br(),hr(),
-                                                        coverPageForm(),
+                                                        expandableDiv("Advanced Options",
+                                                                h3("Advanced Options"),
+                                                                label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                                label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
+                                                                label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
+                                                                label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                                label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
+                                                                label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
+                                                                label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
+                                                                label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
+                                                                label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
+                                                                label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),
+                                                        expandableDiv("Cover Page Options",coverPageForm()),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
@@ -779,76 +636,6 @@ public class SimilarPatentServer {
                 br(),
                 br()
         );
-    }
-
-    private static Tag knowledgeBaseForm() {
-        return div().with(
-                formScript(KNOWLEDGE_BASE_FORM_ID, "/knowledge_base_predictions", "Search", true),
-                table().with(
-                        tbody().with(
-                                tr().attr("style", "vertical-align: top;").with(
-                                  td().attr("style","width:33%; vertical-align: top;").with(
-                                          h2("Knowledge Base"),
-                                          form().withId(KNOWLEDGE_BASE_FORM_ID).with(
-                                                  h3("Search for "),select().withName("search_type").with(
-                                                          option().withValue("patents").attr("selected","true").withText("Patents"),
-                                                          option().withValue("assignees").withText("Assignees"),
-                                                          option().withValue("class_codes").withText("CPC Class Codes")
-                                                  ),h3("With relevance to"),
-                                                  label("Patents (1 per line)"),br(),textarea().withName("patents"),
-                                                  br(),
-                                                  label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
-                                                  br(),
-                                                  label("CPC Class Codes (1 per line)"),br(),
-                                                  label("Example: F05D 01/233"),br(),
-                                                  textarea().withName("class_codes"),
-                                                  br(),
-                                                  label("Result Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                  label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
-                                                  button("Search").withId(KNOWLEDGE_BASE_FORM_ID+"-button").withType("submit")
-                                          )
-                                  )
-                                )
-                        )
-                ),
-                br(),
-                br()
-        );
-    }
-
-    private static Tag createNewCandidateSetForm() {
-        return form().withId(NEW_CANDIDATE_FORM_ID).withAction("/create").withMethod("post").with(
-                p().withText("(May take awhile...)"),
-                label("Name"),br(),
-                input().withType("text").withName("name"),
-                br(),
-                label("Seed By Assignee"),br(),
-                input().withType("text").withName("assignee"),
-                br(),
-                label("Or By Patent List (space separated)"), br(),
-                textarea().withName("patents"), br(),
-                label("Or By Article Text"), br(),
-                textarea().withName("article"), br(),
-                button("Create").withId(NEW_CANDIDATE_FORM_ID+"-button").withType("submit")
-        );
-    }
-
-    private static int extractLimit(Request req) {
-        try {
-            return Integer.valueOf(req.queryParams("limit"));
-        } catch(Exception e) {
-            System.out.println("No limit parameter specified... using default");
-            return 500;
-        }
-    }
-
-    private static int extractTagLimit(Request req) {
-        try {
-            return Integer.valueOf(req.queryParams("tag_limit"));
-        } catch(Exception e) {
-            System.out.println("No tag_limit parameter specified... using default");
-            return DEFAULT_LIMIT;
-        }
     }
 
     private static String extractString(Request req, String param, String defaultVal) {

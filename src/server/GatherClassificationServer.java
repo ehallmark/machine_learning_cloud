@@ -36,17 +36,17 @@ public class GatherClassificationServer {
             Database.setupSeedConn();
             gatherFinders = new ArrayList<>();
 
-            for(edu.stanford.nlp.util.Pair<String,Integer> gatherNameAndId : Database.selectGatherCandidateSetsWithIds()) {
-                int groupedId = gatherNameAndId.second();
-                String assignee = gatherNameAndId.first();
-                System.out.println("CANDIDATE LOADING: " + assignee);
-                assignee = assignee.replaceFirst(Database.gatherTechnologyPrefix, "").trim();
-                SimilarPatentFinder finder = new SimilarPatentFinder(null, new File(Constants.CANDIDATE_SET_FOLDER + groupedId), assignee, lookupTable);
-                finder.setID(groupedId);
-                if(finder!=null && finder.getPatentList().size()>0) {
-                    gatherFinders.add(finder);
+            Database.getGatherTechMap().forEach((tech,patents)->{
+                try {
+                    System.out.println("CANDIDATE LOADING: " + tech);
+                    SimilarPatentFinder finder = new SimilarPatentFinder(patents, tech, lookupTable);
+                    if (finder != null && finder.getPatentList().size() > 0) {
+                        gatherFinders.add(finder);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
-            }
+            });
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -88,10 +88,10 @@ public class GatherClassificationServer {
         final int tagLimit = tmp;
 
         // make sure patents exist
-        SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,null,String.valueOf(new Date().getTime()),lookupTable);
+        SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,String.valueOf(new Date().getTime()),lookupTable);
 
         // run model
-        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>(),true).stream()
+        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>()).stream()
                 .sorted((s1,s2)->Double.compare(s2.getAvgSimilarity(),s1.getAvgSimilarity()))
                 .limit(tagLimit)
                 .map(result->result.getName2())

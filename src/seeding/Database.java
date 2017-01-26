@@ -32,6 +32,7 @@ public class Database {
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
 	private static Set<String> allClassCodes;
+	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
 	private static File patentToInventionTitleMapFile = new File("patent_to_invention_title_map.jobj");
 	private static File patentToLatestAssigneeMapFile = new File("patent_to_assignee_map_latest.jobj");
@@ -47,7 +48,6 @@ public class Database {
 	private static Connection compDBConn;
 	private static Connection gatherDBConn;
 	private static final String selectGatherRatingsQuery = "select a.patent_rating,array_agg(p.number) as avg_patent_rating from assessments as a join patents as p on (p.id=a.patent_id) where patent_rating is not null and a.type = 'PublishedAssessment'  group by a.patent_rating";
-	private static final String selectAllCandidateSets = "SELECT name, id FROM candidate_sets";
 	private static final String selectGatherTechnologiesQuery = "select array_agg(distinct number), upper(name) from (select case when t.name like '%rs' then substring(t.name from 1 for char_length(t.name)-1) else replace(t.name,'-','') end as name, p.number as number from patents as p join assessments as a on (p.id=a.patent_id) join assessment_technologies as at on (a.id=at.assessment_id) join technologies as t on (at.technology_id=t.id) where char_length(coalesce(t.name,'')) > 0 and (not upper(t.name)='AUDIT')) as temp group by upper(name) having array_length(array_agg(number), 1) > 0";
 	private static final Set<Integer> badCompDBTechnologyIds = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
@@ -93,6 +93,19 @@ public class Database {
 		classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
 		allClassCodes.forEach(code->{
 			classCodesPrefixTrie.put(code,code);
+		});
+
+		classCodeToPatentMap = new HashMap<>();
+		patentToClassificationMap.forEach((patent,classes)->{
+			classes.forEach(klass->{
+				if(classCodeToPatentMap.containsKey(klass)) {
+					classCodeToPatentMap.get(klass).add(patent);
+				} else {
+					Set<String> patents = new HashSet<>();
+					patents.add(patent);
+					classCodeToPatentMap.put(klass,patents);
+				}
+			});
 		});
 	}
 
@@ -169,6 +182,12 @@ public class Database {
 		return classifications;
 	}
 
+	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {
+		if (classCodeToPatentMap.containsKey(cpcCode)) {
+			return classCodeToPatentMap.get(cpcCode);
+		} else return Collections.emptySet();
+	}
+
 	public static Set<String> assigneesFor(String patent) {
 		Set<String> assignees = new HashSet<>();
 		if(patentToLatestAssigneeMap.containsKey(patent)) {
@@ -179,76 +198,9 @@ public class Database {
 		return assignees;
 	}
 
-	public static List<Pair<String,Integer>> selectGatherCandidateSetsWithIds() throws SQLException {
-		List<Pair<String,Integer>> pairs = new ArrayList<>();
-		ResultSet rs = selectAllCandidateSets();
-		while(rs.next()) {
-			String name = rs.getString(1);
-			if(name==null||!name.startsWith(gatherTechnologyPrefix)) continue;
-			else {
-				pairs.add(new Pair<>(name.replaceFirst(gatherTechnologyPrefix,""),rs.getInt(2)));
-			}
-		}
-		return pairs;
-	}
-
-
-	public static int createCandidateSetAndReturnId(String name) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("INSERT INTO candidate_sets (name) VALUES (?)");
-		ps.setString(1,name);
-		ps.executeUpdate();
-		seedConn.commit();
-		ps = seedConn.prepareStatement("SELECT max(id) from candidate_sets");
-		ResultSet rs = ps.executeQuery();
-		if(rs.next()) {
-			return rs.getInt(1);
-		} else {
-			throw new RuntimeException("No maximum id found");
-		}
-	}
-
-	public static void createCandidateGroup(String groupPrefix) throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("INSERT INTO candidate_set_groups (group_prefix) VALUES (?)");
-		ps.setString(1, groupPrefix);
-		ps.executeUpdate();
-		ps.close();
-		seedConn.commit();
-	}
-
-
-	public static ResultSet selectAllCandidateSets() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement(selectAllCandidateSets);
-		return ps.executeQuery();
-	}
-
-	public static ResultSet selectGroupedCandidateSets() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select group_prefix from candidate_set_groups");
-		return ps.executeQuery();
-	}
-
-	public static Integer tryFindGatherTechnologyCandidateSetId(String tech) {
-		try {
-			if(!tech.startsWith(gatherTechnologyPrefix)) tech = gatherTechnologyPrefix + " " + tech;
-			PreparedStatement ps = seedConn.prepareStatement("select id from candidate_sets where name ilike ?");
-			ps.setString(1,tech);
-			ResultSet rs = ps.executeQuery();
-			if(rs.next()) {
-				return rs.getInt(1);
-			} else {
-				return null;
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-			new Emailer("In tryFindGatherTechnologyCandidateSetId: "+e.toString());
-			throw new RuntimeException(e);
-		}
-	}
-
-
 	public static Collection<String> getValuablePatents() {
 		return new HashSet<>(valuablePatents);
 	}
-
 
 	public static Collection<String> selectPatentNumbersFromAssignee(String assignee){
 		if(assignee==null||assignee.isEmpty()) return new HashSet<>();
