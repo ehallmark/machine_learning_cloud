@@ -71,7 +71,7 @@ public class SimilarPatentServer {
         if(paragraphVectors!=null)return;
         try {
             paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
-// FASTER FOW DEVELOPMENT!!!
+// FASTER FOR DEVELOPMENT!!!
 //            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         } catch(Exception e) {
             e.printStackTrace();
@@ -547,9 +547,9 @@ public class SimilarPatentServer {
     }
 
     private static Tag expandableDiv(String label, Tag... innnerStuff) {
-        String id = "div-"+System.currentTimeMillis();
-        return div().with(button("Toggle "+label).attr("onclick","$(#"+id+").toggle();"),
-                div().withId(id).with(
+        String id = "div-"+label;
+        return div().with(button("Toggle "+label).attr("onclick","$('#"+id+"').toggle();"),
+                div().withId(id).attr("display","none").with(
                         innnerStuff
                 )
         );
@@ -557,12 +557,11 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().with(
-                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", true),
+                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
-                                                a("Create a new Portfolio").withHref("/new"),
                                                 h2("Portfolio Comparison Tool"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                         h3("Main options"),
