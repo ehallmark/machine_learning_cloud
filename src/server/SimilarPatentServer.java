@@ -22,6 +22,8 @@ import spark.Session;
 import tools.ClassCodeHandler;
 import tools.Emailer;
 import tools.PatentList;
+import value_estimation.ClassificationEvaluator;
+import value_estimation.Evaluator;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -48,7 +50,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    private static MultiLayerNetwork transactionProbabilityModel = GatherTransactionProbabilityModel.load();
+    private static Evaluator valueModel;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -64,6 +66,8 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
+        // value model
+        valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
     }
 
     private static void loadBaseFinder() {
@@ -339,13 +343,12 @@ public class SimilarPatentServer {
             PatentList patentList = runPatentFinderModel(title, Arrays.asList(firstFinder), secondFinders, limit, threshold, labelsToExclude, badAssignees, allowResultsFromOtherCandidateSet);
             if(assigneePortfolioLimit>0)patentList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
 
-            if (gatherValue && transactionProbabilityModel != null) {
+            if (gatherValue && valueModel != null) {
                 for (AbstractPatent patent : patentList.getPatents()) {
                     try {
-                        INDArray vec = transactionProbabilityModel.output(SimilarPatentFinder.getVectorFromDB(patent.getName(), paragraphVectors.lookupTable()), false);
-                        double value = vec.getDouble(1);
-                        patent.setGatherValue(value);
-                        System.out.println("Value for patent: "+value);
+                        Double score = valueModel.evaluate(patent.getName());
+                        patent.setGatherValue(score);
+                        System.out.println("Value for patent: "+score);
                     } catch(Exception e) {
                         System.out.println("Unable to find value");
                         patent.setGatherValue(0d);

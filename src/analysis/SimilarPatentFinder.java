@@ -139,16 +139,12 @@ public class SimilarPatentFinder {
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
         List<PatentList> lists = new ArrayList<>();
         INDArray otherAvg = computeAvg(other.patentList);
-        try {
-            lists.addAll(findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit));
-
-        } catch(SQLException sql) {
-        }
+        lists.addAll(findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit));
         return lists;
     }
 
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit) throws SQLException {
+    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new ArrayList<>();
