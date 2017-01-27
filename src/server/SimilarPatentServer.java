@@ -302,10 +302,14 @@ public class SimilarPatentServer {
             }
 
             List<SimilarPatentFinder> secondFinders = new ArrayList<>();
-            if(!patentsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(patentsToSearchFor,"Patents",paragraphVectors.getLookupTable()));
-            if(!classCodesToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(classCodesToSearchFor,"Patents",paragraphVectors.getLookupTable()));
-            if(!assigneesToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(assigneesToSearchFor,"Assignees",paragraphVectors.getLookupTable()));
-            if(!wordsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(wordsToSearchFor,"Words",paragraphVectors.getLookupTable()));
+            Set<String> stuffToSearchFor = new HashSet<>();
+            stuffToSearchFor.addAll(patentsToSearchFor);
+            stuffToSearchFor.addAll(assigneesToSearchFor);
+            stuffToSearchFor.addAll(classCodesToSearchFor);
+
+            stuffToSearchFor.forEach(patent->secondFinders.add(new SimilarPatentFinder(Arrays.asList(patent),patent,paragraphVectors.getLookupTable())));
+            // handle words slightly differently
+            if(!wordsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(wordsToSearchFor,"Custom Text",paragraphVectors.getLookupTable()));
 
             if(secondFinders.isEmpty()||secondFinders.stream().collect(Collectors.summingInt(finder->finder.getPatentList().size()))==0) {
                 res.redirect("/candidate_set_models");

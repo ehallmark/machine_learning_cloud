@@ -64,7 +64,7 @@ public class SimilarPatentFinder {
         globalCache.clear();
     }
 
-    public SimilarPatentFinder(Collection<String> candidateSet, String name, WeightLookupTable<VocabWord> lookupTable) throws SQLException,IOException, ClassNotFoundException {
+    public SimilarPatentFinder(Collection<String> candidateSet, String name, WeightLookupTable<VocabWord> lookupTable) {
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         this.name=name;
