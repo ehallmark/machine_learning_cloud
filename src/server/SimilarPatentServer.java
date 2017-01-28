@@ -48,6 +48,7 @@ public class SimilarPatentServer {
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static Evaluator valueModel;
+    private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -229,7 +230,12 @@ public class SimilarPatentServer {
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
-                List<String> attributes = Arrays.asList("name", "similarity", "assignee", "primaryTag", "title");
+                if(req.queryParamsValues("dataAttributes")==null) {
+                    res.redirect("/candidate_set_models");
+                    req.session().attribute("message", "Please choose some data fields to report.");
+                    return null;
+                }
+                List<String> attributes = Arrays.stream(req.queryParamsValues("dataAttributes")).collect(Collectors.toList());
                 boolean gatherValue = extractBool(req, "gather_value");
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
@@ -571,14 +577,20 @@ public class SimilarPatentServer {
                                                         label("Arbitrary Text"),br(),
                                                         textarea().withName("words"),
                                                         hr(),
-                                                        expandableDiv("Advanced Options",
+                                                        expandableDiv("Data Fields",h3("Select Data Fields to capture"),
+                                                                select().attr("multiple","true").withName("dataAttributes").with(
+                                                                        humanParamMap.entrySet().stream().map(e-> {
+                                                                            return option().withText(e.getKey()).withValue(e.getValue());
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
                                                                 label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
-                                                                label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
+                                                                label("Asset Filter (space separated)"),br(),textarea().withName("assetFilter"),br(),
                                                                 label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
                                                                 label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),

@@ -9,13 +9,45 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 11/19/16.
  */
 public abstract class ExcelWritable implements Comparable<ExcelWritable> {
-    protected Map<String,Double> tags = new HashMap<>();
+    protected Map<String,Double> tags;
     protected List<String> orderedTags;
     private static final double DEFAULT_CELL_HEIGHT = 24;
     protected Map<String, ExcelCell> attributeData =new HashMap<>();
     protected String name;
     protected Double avgValue;
     protected double similarity;
+
+    protected static Map<String,String> humanAttrToJavaAttrMap;
+    protected static Map<String,String> javaAttrToHumanAttrMap;
+    static {
+        humanAttrToJavaAttrMap=new HashMap<>();
+        humanAttrToJavaAttrMap.put("Asset","name");
+        humanAttrToJavaAttrMap.put("Similarity","similarity");
+        humanAttrToJavaAttrMap.put("Classification Value","classValue");
+        humanAttrToJavaAttrMap.put("Relevant Asset(s)","relevantAssetsList");
+        humanAttrToJavaAttrMap.put("Relevant Asset Count","relevantAssetCount");
+        humanAttrToJavaAttrMap.put("Total Asset Count","totalAssetCount");
+        humanAttrToJavaAttrMap.put("Assignee","assignee");
+        humanAttrToJavaAttrMap.put("Title","title");
+        humanAttrToJavaAttrMap.put("Class Codes","classCode");
+
+
+        // inverted version to get human readables back
+        javaAttrToHumanAttrMap= new HashMap<>();
+        humanAttrToJavaAttrMap.forEach((k,v)->javaAttrToHumanAttrMap.put(v,k));
+    }
+
+    public static String humanAttributeFor(String attr) {
+        if(javaAttrToHumanAttrMap.containsKey(attr)) {
+            return javaAttrToHumanAttrMap.get(attr);
+        } else {
+            return "";
+        }
+    }
+
+    public static Map<String,String> getHumanAttrToJavaAttrMap() {
+        return Collections.unmodifiableMap(humanAttrToJavaAttrMap);
+    }
 
     protected ExcelWritable(String name, double similarity, String referringName) {
         this.name=name;

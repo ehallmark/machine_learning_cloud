@@ -286,7 +286,7 @@ public class ExcelHandler {
         int headerHeight = 50 * 20;
         sheet.setRowView(headerRow, headerHeight);
         for (int c = 0; c < attributes.size(); c++) {
-            sheet.addCell(new Label(1 + c, headerRow, attributes.get(c), CellFormatMap.get("headerStyle")));
+            sheet.addCell(new Label(1 + c, headerRow, ExcelWritable.humanAttributeFor(attributes.get(c)), CellFormatMap.get("headerStyle")));
         }
 
 

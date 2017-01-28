@@ -25,6 +25,9 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
 
     static {
         colWidthsMap=new HashMap<>();
+        colWidthsMap.put("title",75d);
+        colWidthsMap.put("assignee",50d);
+        colWidthsMap.put("similarity",25d);
     }
     //
     public PortfolioList(List<ExcelWritable> portfolioList, String name1, String name2, Type portfolioType) {
@@ -64,7 +67,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         for(int i = 0; i < attributes.size(); i++) {
             String attr = attributes.get(i);
             if(attr!=null&&colWidthsMap.containsKey(attr)) {
-                colWidths[i] = (int) ((double)colWidthsMap.get(attr));
+                colWidths[i] = colWidthsMap.get(attr).intValue();
             } else {
                 colWidths[i]= (int)ExcelHandler.CELL_DEFAULT_WIDTH;
             }
