@@ -10,7 +10,6 @@ import edu.stanford.nlp.util.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.AssigneeTrimmer;
 import tools.ClassCodeHandler;
-import tools.Emailer;
 
 import java.io.*;
 import java.sql.*;

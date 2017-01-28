@@ -18,7 +18,6 @@ import spark.Request;
 import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
-import tools.Emailer;
 import tools.PortfolioList;
 import value_estimation.ClassificationEvaluator;
 import value_estimation.Evaluator;
@@ -218,189 +217,196 @@ public class SimilarPatentServer {
         });
 
         post("/similar_candidate_sets", (req, res) -> {
-            // get input data
-            List<String> patentsToSearchFor = preProcess(extractString(req,"patents",""),"\\s+","[^0-9]");
-            List<String> wordsToSearchFor = preProcess(extractString(req,"words",""),"\\s+","[^a-zA-Z0-9 ]");
-            Set<String> assigneesToSearchFor = new HashSet<>();
-            preProcess(extractString(req,"assignees","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->assigneesToSearchFor.addAll(Database.possibleNamesForAssignee(assignee)));
-            Set<String> classCodesToSearchFor = new HashSet<>();
-            List<String> originalClassClodesToSearchFor = preProcess(extractString(req,"class_codes","").toUpperCase(),"\n",null);
-            originalClassClodesToSearchFor.stream()
-                    .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc->classCodesToSearchFor.addAll(Database.subClassificationsForClass(cpc)));
-            String searchType = extractString(req,"search_type","patents");
-            int limit = extractInt(req,"limit",10);
-            PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
-            List<String> attributes = Arrays.asList("name","similarity","primaryTag","title");
-            boolean gatherValue = extractBool(req, "gather_value");
-            boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
-            boolean searchEntireDatabase = extractBool(req,"search_all");
-            int assigneePortfolioLimit = extractInt(req,"portfolio_limit",-1);
-            boolean isPatent = false;
-            boolean isAssignee = false;
-
-            SimilarPatentFinder firstFinder;
-            Set<String> labelsToExclude = new HashSet<>();
-            if(!allowResultsFromOtherCandidateSet) {
-                labelsToExclude.addAll(originalClassClodesToSearchFor);
-                labelsToExclude.addAll(assigneesToSearchFor);
-                labelsToExclude.addAll(patentsToSearchFor);
-            }
-
-            // get first finder
-            if(searchEntireDatabase) {
-                if(searchType.equals("patents")) {
-                    firstFinder = globalFinder;
-                    isPatent=true;
-                } else if(searchType.equals("assignees")) {
-                    firstFinder = assigneeFinder;
-                    isAssignee=true;
-                } else if (searchType.equals("class_codes")) {
-                    firstFinder = classCodeFinder;
-                } else {
-                    res.redirect("/candidate_set_models");
-                    req.session().attribute("message","Please enter a valid search type.");
-                    return null;
-                }
-            } else {
-                // pre data
-                Collection<String> classCodesToSearchIn = new HashSet<>();
-                preProcess(extractString(req, "custom_class_code_list", "").toUpperCase(), "\n", null).stream()
-                        .map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchIn.addAll(Database.subClassificationsForClass(cpc)));
-                Collection<String> patentsToSearchIn = new HashSet<>(preProcess(extractString(req, "custom_patent_list", ""), "\\s+", "[^0-9]"));
-                Collection<String> assigneesToSearchIn = new HashSet<>();
-                List<String> customAssigneeList = preProcess(extractString(req, "custom_assignee_list", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-                customAssigneeList.forEach(assignee -> {
-                    if (assigneePortfolioLimit > 0 && Database.getAssetCountFor(assignee) > assigneePortfolioLimit)
-                        return;
-                    assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
-                });
-
-                // dependent on searchType
-                if(searchType.equals("patents")) {
-                    isPatent=true;
-                    customAssigneeList.forEach(assignee->patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
-                    firstFinder = new SimilarPatentFinder(patentsToSearchIn,null,paragraphVectors.getLookupTable());
-                } else if(searchType.equals("assignees")) {
-                    isAssignee=true;
-                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
-                    patentsToSearchIn.forEach(patent->Database.assigneesFor(patent).forEach(assignee->assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
-                    firstFinder = new SimilarPatentFinder(assigneesToSearchIn,null,paragraphVectors.getLookupTable());
-                } else if(searchType.equals("class_codes")) {
-                    customAssigneeList.forEach(assignee->patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                    patentsToSearchIn.forEach(patent->classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
-                    firstFinder = new SimilarPatentFinder(classCodesToSearchIn,null,paragraphVectors.getLookupTable());
-                } else {
-                    res.redirect("/candidate_set_models");
-                    req.session().attribute("message","Please enter a valid search type.");
-                    return null;
-                }
-            }
-
-            if(firstFinder==null||firstFinder.getPatentList().size()==0) {
-                res.redirect("/candidate_set_models");
-                req.session().attribute("message","Unable to find any results to search in.");
-                return null;
-            }
-
-            List<SimilarPatentFinder> secondFinders = new ArrayList<>();
-            Set<String> stuffToSearchFor = new HashSet<>();
-            stuffToSearchFor.addAll(patentsToSearchFor);
-            stuffToSearchFor.addAll(assigneesToSearchFor);
-            stuffToSearchFor.addAll(classCodesToSearchFor);
-
-            stuffToSearchFor.forEach(patent->secondFinders.add(new SimilarPatentFinder(Arrays.asList(patent),patent,paragraphVectors.getLookupTable())));
-            // handle words slightly differently
-            if(!wordsToSearchFor.isEmpty())secondFinders.add(new SimilarPatentFinder(wordsToSearchFor,"Custom Text",paragraphVectors.getLookupTable()));
-
-            if(secondFinders.isEmpty()||secondFinders.stream().collect(Collectors.summingInt(finder->finder.getPatentList().size()))==0) {
-                res.redirect("/candidate_set_models");
-                req.session().attribute("message","Unable to find any of the search inputs.");
-                return null;
-            }
-
-            HttpServletResponse raw = res.raw();
-            res.header("Content-Disposition", "attachment; filename=download.xls");
-            res.type("application/force-download");
-
-
-            // get more detailed params
-            String clientName = extractString(req,"client","");
-            double threshold = extractThreshold(req);
-            Set<String> badAssignees = new HashSet<>();
-            preProcess(extractString(req,"assigneeFilter","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
-            Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"),"\\s+","US"));
-            Set<String> highlightAssignees = new HashSet<>();
-            preProcess(req.queryParams("assigneeHighlighter"),"\n","[^a-zA-Z0-9 ]").forEach(assignee->highlightAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
-            String title = extractString(req,"title","");
-
-            labelsToExclude.addAll(badAssets);
-            labelsToExclude.addAll(badAssignees);
-
-            PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
-            if(assigneePortfolioLimit>0) portfolioList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
-
-            if (gatherValue && valueModel != null) {
-                for (ExcelWritable item : portfolioList.getPortfolio()) {
-                    try {
-                        Double score = valueModel.evaluate(item.getName());
-                        item.setAttribute("gatherValue",score, ExcelHandler.getDefaultFormat());
-                        System.out.println("Value for patent: "+score);
-                    } catch(Exception e) {
-                        System.out.println("Unable to find value");
-                        item.setAttribute("gatherValue",0d, ExcelHandler.getDefaultFormat());
-                    }
-                }
-            }
-
-            {
-                String keywordsToRequire = extractString(req, "required_keywords", null);
-                if (keywordsToRequire != null) {
-                    String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
-                    if(keywords.length>0) {
-                        Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getPortfolioAsStrings(), keywords);
-                        portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
-                                .filter(patent -> patents.contains(patent.getName()))
-                                .collect(Collectors.toList())
-                        );
-                    }
-                }
-            }
-            {
-                String keywordsToAvoid = extractString(req, "avoided_keywords", null);
-                if (keywordsToAvoid != null) {
-                    String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
-                    if(keywords.length>0) {
-                        Set<String> patents = Database.patentsWithKeywords(portfolioList.getPortfolioAsStrings(), keywords);
-                        portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
-                                .filter(patent -> !patents.contains(patent.getName()))
-                                .collect(Collectors.toList())
-                        );
-                    }
-                }
-            }
-            portfolioList.init();
-
-            // contact info
-            String EMLabel = extractContactInformation(req,"label1", Constants.DEFAULT_EM_LABEL);
-            String EMName=extractContactInformation(req,"cname1", Constants.DEFAULT_EM_NAME);
-            String EMTitle=extractContactInformation(req,"title1", Constants.DEFAULT_EM_TITLE);
-            String EMPhone=extractContactInformation(req,"phone1", Constants.DEFAULT_EM_PHONE);
-            String EMEmail=extractContactInformation(req,"email1", Constants.DEFAULT_EM_EMAIL);
-            String SAMName=extractContactInformation(req,"cname2", Constants.DEFAULT_SAM_NAME);
-            String SAMTitle=extractContactInformation(req,"title2", Constants.DEFAULT_SAM_TITLE);
-            String SAMPhone=extractContactInformation(req,"phone2", Constants.DEFAULT_SAM_PHONE);
-            String SAMLabel = extractContactInformation(req,"label2", Constants.DEFAULT_SAM_LABEL);
-            String SAMEmail=extractContactInformation(req,"email2", Constants.DEFAULT_SAM_EMAIL);
-            String[] EMData = new String[]{EMLabel,EMName,EMTitle,EMPhone,EMEmail};
-            String[] SAMData = new String[]{SAMLabel,SAMName, SAMTitle, SAMPhone, SAMEmail};
             try {
-                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees , title, clientName, EMData, SAMData, attributes, portfolioList);
-            } catch (Exception e) {
+                // get input data
+                List<String> patentsToSearchFor = preProcess(extractString(req, "patents", ""), "\\s+", "[^0-9]");
+                List<String> wordsToSearchFor = preProcess(extractString(req, "words", ""), "\\s+", "[^a-zA-Z0-9 ]");
+                Set<String> assigneesToSearchFor = new HashSet<>();
+                preProcess(extractString(req, "assignees", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> assigneesToSearchFor.addAll(Database.possibleNamesForAssignee(assignee)));
+                Set<String> classCodesToSearchFor = new HashSet<>();
+                List<String> originalClassClodesToSearchFor = preProcess(extractString(req, "class_codes", "").toUpperCase(), "\n", null);
+                originalClassClodesToSearchFor.stream()
+                        .map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchFor.addAll(Database.subClassificationsForClass(cpc)));
+                String searchType = extractString(req, "search_type", "patents");
+                int limit = extractInt(req, "limit", 10);
+                PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
+                List<String> attributes = Arrays.asList("name", "similarity", "primaryTag", "title");
+                boolean gatherValue = extractBool(req, "gather_value");
+                boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
+                boolean searchEntireDatabase = extractBool(req, "search_all");
+                int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
+                boolean isPatent = false;
+                boolean isAssignee = false;
 
-                e.printStackTrace();
+                SimilarPatentFinder firstFinder;
+                Set<String> labelsToExclude = new HashSet<>();
+                if (!allowResultsFromOtherCandidateSet) {
+                    labelsToExclude.addAll(originalClassClodesToSearchFor);
+                    labelsToExclude.addAll(assigneesToSearchFor);
+                    labelsToExclude.addAll(patentsToSearchFor);
+                }
+
+                // get first finder
+                if (searchEntireDatabase) {
+                    if (searchType.equals("patents")) {
+                        firstFinder = globalFinder;
+                        isPatent = true;
+                    } else if (searchType.equals("assignees")) {
+                        firstFinder = assigneeFinder;
+                        isAssignee = true;
+                    } else if (searchType.equals("class_codes")) {
+                        firstFinder = classCodeFinder;
+                    } else {
+                        res.redirect("/candidate_set_models");
+                        req.session().attribute("message", "Please enter a valid search type.");
+                        return null;
+                    }
+                } else {
+                    // pre data
+                    Collection<String> classCodesToSearchIn = new HashSet<>();
+                    preProcess(extractString(req, "custom_class_code_list", "").toUpperCase(), "\n", null).stream()
+                            .map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchIn.addAll(Database.subClassificationsForClass(cpc)));
+                    Collection<String> patentsToSearchIn = new HashSet<>(preProcess(extractString(req, "custom_patent_list", ""), "\\s+", "[^0-9]"));
+                    Collection<String> assigneesToSearchIn = new HashSet<>();
+                    List<String> customAssigneeList = preProcess(extractString(req, "custom_assignee_list", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+                    customAssigneeList.forEach(assignee -> {
+                        if (assigneePortfolioLimit > 0 && Database.getAssetCountFor(assignee) > assigneePortfolioLimit)
+                            return;
+                        assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
+                    });
+
+                    // dependent on searchType
+                    if (searchType.equals("patents")) {
+                        isPatent = true;
+                        customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                        firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
+                    } else if (searchType.equals("assignees")) {
+                        isAssignee = true;
+                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                        patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
+                        firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
+                    } else if (searchType.equals("class_codes")) {
+                        customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                        patentsToSearchIn.forEach(patent -> classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
+                        firstFinder = new SimilarPatentFinder(classCodesToSearchIn, null, paragraphVectors.getLookupTable());
+                    } else {
+                        res.redirect("/candidate_set_models");
+                        req.session().attribute("message", "Please enter a valid search type.");
+                        return null;
+                    }
+                }
+
+                if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
+                    res.redirect("/candidate_set_models");
+                    req.session().attribute("message", "Unable to find any results to search in.");
+                    return null;
+                }
+
+                List<SimilarPatentFinder> secondFinders = new ArrayList<>();
+                Set<String> stuffToSearchFor = new HashSet<>();
+                stuffToSearchFor.addAll(patentsToSearchFor);
+                stuffToSearchFor.addAll(assigneesToSearchFor);
+                stuffToSearchFor.addAll(classCodesToSearchFor);
+
+                stuffToSearchFor.forEach(patent -> secondFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+                // handle words slightly differently
+                if (!wordsToSearchFor.isEmpty())
+                    secondFinders.add(new SimilarPatentFinder(wordsToSearchFor, "Custom Text", paragraphVectors.getLookupTable()));
+
+                if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
+                    res.redirect("/candidate_set_models");
+                    req.session().attribute("message", "Unable to find any of the search inputs.");
+                    return null;
+                }
+
+                HttpServletResponse raw = res.raw();
+                res.header("Content-Disposition", "attachment; filename=download.xls");
+                res.type("application/force-download");
+
+
+                // get more detailed params
+                String clientName = extractString(req, "client", "");
+                double threshold = extractThreshold(req);
+                Set<String> badAssignees = new HashSet<>();
+                preProcess(extractString(req, "assigneeFilter", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
+                Set<String> badAssets = new HashSet<>(preProcess(req.queryParams("assetFilter"), "\\s+", "US"));
+                Set<String> highlightAssignees = new HashSet<>();
+                preProcess(req.queryParams("assigneeHighlighter"), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> highlightAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
+                String title = extractString(req, "title", "");
+
+                labelsToExclude.addAll(badAssets);
+                labelsToExclude.addAll(badAssignees);
+
+                PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
+                if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit, isPatent);
+
+                if (gatherValue && valueModel != null) {
+                    for (ExcelWritable item : portfolioList.getPortfolio()) {
+                        try {
+                            Double score = valueModel.evaluate(item.getName());
+                            item.setAttribute("gatherValue", score, ExcelHandler.getDefaultFormat());
+                            System.out.println("Value for patent: " + score);
+                        } catch (Exception e) {
+                            System.out.println("Unable to find value");
+                            item.setAttribute("gatherValue", 0d, ExcelHandler.getDefaultFormat());
+                        }
+                    }
+                }
+
+                {
+                    String keywordsToRequire = extractString(req, "required_keywords", null);
+                    if (keywordsToRequire != null) {
+                        String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                        if (keywords.length > 0) {
+                            Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                            portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
+                                    .filter(patent -> patents.contains(patent.getName()))
+                                    .collect(Collectors.toList())
+                            );
+                        }
+                    }
+                }
+                {
+                    String keywordsToAvoid = extractString(req, "avoided_keywords", null);
+                    if (keywordsToAvoid != null) {
+                        String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                        if (keywords.length > 0) {
+                            Set<String> patents = Database.patentsWithKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                            portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
+                                    .filter(patent -> !patents.contains(patent.getName()))
+                                    .collect(Collectors.toList())
+                            );
+                        }
+                    }
+                }
+                portfolioList.init();
+
+                // contact info
+                String EMLabel = extractContactInformation(req, "label1", Constants.DEFAULT_EM_LABEL);
+                String EMName = extractContactInformation(req, "cname1", Constants.DEFAULT_EM_NAME);
+                String EMTitle = extractContactInformation(req, "title1", Constants.DEFAULT_EM_TITLE);
+                String EMPhone = extractContactInformation(req, "phone1", Constants.DEFAULT_EM_PHONE);
+                String EMEmail = extractContactInformation(req, "email1", Constants.DEFAULT_EM_EMAIL);
+                String SAMName = extractContactInformation(req, "cname2", Constants.DEFAULT_SAM_NAME);
+                String SAMTitle = extractContactInformation(req, "title2", Constants.DEFAULT_SAM_TITLE);
+                String SAMPhone = extractContactInformation(req, "phone2", Constants.DEFAULT_SAM_PHONE);
+                String SAMLabel = extractContactInformation(req, "label2", Constants.DEFAULT_SAM_LABEL);
+                String SAMEmail = extractContactInformation(req, "email2", Constants.DEFAULT_SAM_EMAIL);
+                String[] EMData = new String[]{EMLabel, EMName, EMTitle, EMPhone, EMEmail};
+                String[] SAMData = new String[]{SAMLabel, SAMName, SAMTitle, SAMPhone, SAMEmail};
+                try {
+                    ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees, title, clientName, EMData, SAMData, attributes, portfolioList);
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+                }
+                return raw;
+            } catch(Exception e) {
+                res.redirect("/candidate_set_models");
+                req.session().attribute("message","Error occured: "+e.toString());
+                return null;
             }
-            return raw;
 
         });
 
@@ -412,7 +418,7 @@ public class SimilarPatentServer {
             List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limit, badLabels, portfolioType);
             portfolioLists.addAll(similar);
         } catch(Exception e) {
-            new Emailer("While calculating similar candidate set: "+e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
         return mergePatentLists(portfolioLists,badAssignees, name, portfolioType);
@@ -435,7 +441,6 @@ public class SimilarPatentServer {
             List<ExcelWritable> merged = map.values().stream().filter(p->!((portfolioType.equals(PortfolioList.Type.assignees)&&assigneeFilter.contains(p.getName()))||(portfolioType.equals(PortfolioList.Type.patents)&&assigneeFilter.contains(((AbstractPatent)p).getAssignee())))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
             return new PortfolioList(merged,name,name,portfolioType);
         } catch(Exception e) {
-            new Emailer("Error in merge patent lists: "+e.toString());
             throw new RuntimeException("Error merging patent lists");
         }
     }
