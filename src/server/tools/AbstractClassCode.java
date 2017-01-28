@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class AbstractClassCode extends ExcelWritable {
     public AbstractClassCode(String name, double similarity, String referringName) {
         this.name = name;
-        this.tags = new HashMap<>();
         if (referringName != null) tags.put(referringName, similarity);
     }
 

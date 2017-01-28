@@ -10,6 +10,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
+import server.tools.AbstractAssignee;
 import server.tools.AbstractPatent;
 import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelHandler;
@@ -222,11 +223,9 @@ public class SimilarPatentServer {
                 List<String> patentsToSearchFor = preProcess(extractString(req, "patents", ""), "\\s+", "[^0-9]");
                 List<String> wordsToSearchFor = preProcess(extractString(req, "words", ""), "\\s+", "[^a-zA-Z0-9 ]");
                 Set<String> assigneesToSearchFor = new HashSet<>();
-                preProcess(extractString(req, "assignees", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> assigneesToSearchFor.addAll(Database.possibleNamesForAssignee(assignee)));
+                preProcess(extractString(req, "assignees", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> assigneesToSearchFor.add(assignee));
                 Set<String> classCodesToSearchFor = new HashSet<>();
-                List<String> originalClassClodesToSearchFor = preProcess(extractString(req, "class_codes", "").toUpperCase(), "\n", null);
-                originalClassClodesToSearchFor.stream()
-                        .map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchFor.addAll(Database.subClassificationsForClass(cpc)));
+                preProcess(extractString(req, "class_codes", "").toUpperCase(), "\n", null).stream().map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchFor.add(cpc));
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
@@ -241,8 +240,12 @@ public class SimilarPatentServer {
                 SimilarPatentFinder firstFinder;
                 Set<String> labelsToExclude = new HashSet<>();
                 if (!allowResultsFromOtherCandidateSet) {
-                    labelsToExclude.addAll(originalClassClodesToSearchFor);
-                    labelsToExclude.addAll(assigneesToSearchFor);
+                    classCodesToSearchFor.forEach(code->{
+                        labelsToExclude.addAll(Database.subClassificationsForClass(code));
+                    });
+                    assigneesToSearchFor.forEach(assignee->{
+                        labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
+                    });
                     labelsToExclude.addAll(patentsToSearchFor);
                 }
 
@@ -438,10 +441,10 @@ public class SimilarPatentServer {
                     }
                 });
             });
-            List<ExcelWritable> merged = map.values().stream().filter(p->!((portfolioType.equals(PortfolioList.Type.assignees)&&assigneeFilter.contains(p.getName()))||(portfolioType.equals(PortfolioList.Type.patents)&&assigneeFilter.contains(((AbstractPatent)p).getAssignee())))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
+            List<ExcelWritable> merged = map.values().stream().filter(p->!((p instanceof AbstractAssignee&&assigneeFilter.contains(p.getName()))||(p instanceof AbstractPatent&&assigneeFilter.contains(((AbstractPatent)p).getAssignee())))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
             return new PortfolioList(merged,name,name,portfolioType);
         } catch(Exception e) {
-            throw new RuntimeException("Error merging patent lists");
+            throw new RuntimeException("Error merging patent lists: "+e.getMessage());
         }
     }
 

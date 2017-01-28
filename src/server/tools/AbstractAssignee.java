@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class AbstractAssignee extends ExcelWritable {
     public AbstractAssignee(String name, double similarity, String referringName) {
         this.name = name;
-        this.tags = new HashMap<>();
         if (referringName != null) tags.put(referringName, similarity);
     }
 

@@ -2,17 +2,14 @@ package server.tools.excel;
 
 import jxl.write.WritableCellFormat;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/19/16.
  */
 public abstract class ExcelWritable implements Comparable<ExcelWritable> {
-    protected Map<String,Double> tags;
+    protected Map<String,Double> tags = new HashMap<>();
     protected List<String> orderedTags;
     private static final double DEFAULT_CELL_HEIGHT = 24;
     protected Map<String, ExcelCell> attributeData =new HashMap<>();

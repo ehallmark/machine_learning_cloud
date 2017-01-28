@@ -183,9 +183,13 @@ public class Database {
 	}
 
 	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {
-		if (classCodeToPatentMap.containsKey(cpcCode)) {
-			return classCodeToPatentMap.get(cpcCode);
-		} else return Collections.emptySet();
+		Set<String> set = new HashSet<>();
+		subClassificationsForClass(cpcCode).forEach(code->{
+			if (classCodeToPatentMap.containsKey(cpcCode)) {
+				set.addAll(classCodeToPatentMap.get(cpcCode));
+			}
+		});
+		return set;
 	}
 
 	public static Set<String> assigneesFor(String patent) {
