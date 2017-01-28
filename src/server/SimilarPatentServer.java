@@ -229,7 +229,7 @@ public class SimilarPatentServer {
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
-                List<String> attributes = Arrays.asList("name", "similarity", "primaryTag", "title");
+                List<String> attributes = Arrays.asList("name", "similarity", "assignee", "primaryTag", "title");
                 boolean gatherValue = extractBool(req, "gather_value");
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");

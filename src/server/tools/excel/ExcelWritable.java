@@ -17,6 +17,13 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected Double avgValue;
     protected double similarity;
 
+    protected ExcelWritable(String name, double similarity, String referringName) {
+        this.name=name;
+        this.similarity=similarity;
+        this.tags = new HashMap<>();
+        if(referringName!=null)tags.put(referringName,similarity);
+    }
+
     protected void init() {
         calculateOrderedTags();
         String tag = "";

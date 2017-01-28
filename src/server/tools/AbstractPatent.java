@@ -16,12 +16,9 @@ public class AbstractPatent extends ExcelWritable {
     private String assignee;
     private String title;
     public AbstractPatent(String name, double similarity, String referringName) {
-        this.name=name;
-        this.tags = new HashMap<>();
+        super(name,similarity,referringName);
         this.title=Database.getInventionTitleFor(name);
         this.assignee = String.join("; ",Database.assigneesFor(name).stream().map(a->AssigneeTrimmer.standardizedAssignee(a)).collect(Collectors.toList()));
-        if(referringName!=null)tags.put(referringName,similarity);
-
         // collateral agent problem
 
         // check if this assignee has a lien

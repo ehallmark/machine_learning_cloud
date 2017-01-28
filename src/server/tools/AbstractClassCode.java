@@ -13,8 +13,7 @@ import java.util.stream.Collectors;
  */
 public class AbstractClassCode extends ExcelWritable {
     public AbstractClassCode(String name, double similarity, String referringName) {
-        this.name = name;
-        if (referringName != null) tags.put(referringName, similarity);
+        super(name,similarity,referringName);
     }
 
     @Override
