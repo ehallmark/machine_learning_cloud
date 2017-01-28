@@ -1,41 +1,18 @@
 package analysis;
 
 
-import com.google.common.util.concurrent.AtomicDouble;
-import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
-import com.googlecode.concurrenttrees.radix.RadixTree;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
-import com.googlecode.concurrenttrees.suffix.SuffixTree;
-import edu.stanford.nlp.util.Quadruple;
-
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
-import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.eclipse.jetty.util.ArrayQueue;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.api.rng.*;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.*;
+import server.tools.excel.ExcelWritable;
 import tools.*;
 
-import java.io.*;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.RecursiveTask;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import server.tools.AbstractPatent;
-import static j2html.TagCreator.*;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -122,49 +99,33 @@ public class SimilarPatentFinder {
         return avg;
     }
 
-    public List<PatentList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets) throws SQLException {
-        List<PatentList> list = new ArrayList<>(others.size());
+    public List<PortfolioList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
+        List<PortfolioList> list = new ArrayList<>(others.size());
         others.forEach(other->{
-            try {
-                list.addAll(similarFromCandidateSet(other, threshold, limit, badAssets));
-            } catch(Exception sql) {
-                sql.printStackTrace();
-            }
+            list.add(similarFromCandidateSet(other, threshold, limit, badAssets, portfolioType));
         });
         return list;
     }
 
-    public List<PatentList> similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels) throws SQLException {
+    public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
         // Find the highest (pairwise) assets
-        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new ArrayList<>();
-        List<PatentList> lists = new ArrayList<>();
+        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return null;
         INDArray otherAvg = computeAvg(other.patentList);
-        lists.addAll(findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit));
-        return lists;
+        return findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit,portfolioType);
     }
 
     // returns null if patentNumber not found
-    public List<PatentList> findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit)  {
+    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit, PortfolioList.Type portfolioType)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
-        if(avgVector==null) return new ArrayList<>();
+        if(avgVector==null) return null;
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
-        List<PatentList> lists = Arrays.asList(similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1,v2)->Transforms.cosineSim(v1,v2)));
+        PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find similar patents: "+time+" seconds");
-        return lists;
-    }
-
-    // returns null if patentNumber not found
-    public List<PatentList> findOppositePatentsTo(String patentNumber, INDArray avgVector, Set<String> patentNamesToExclude, double threshold, int limit) throws SQLException {
-        List<PatentList> toReturn = findSimilarPatentsTo(patentNumber, avgVector.mul(-1.0), patentNamesToExclude, threshold, limit);
-        for(PatentList l : toReturn) {
-            l.flipAvgSimilarity();
-            l.getPatents().forEach(p->p.flipSimilarity());
-        }
-        return toReturn;
+        return list;
     }
 
     public static INDArray getVectorFromDB(String patentNumber,WeightLookupTable<VocabWord> lookupTable) {
@@ -180,7 +141,7 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    private synchronized PatentList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist) {
+    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist, PortfolioList.Type portfolioType) {
         Patent.setBaseVector(baseVector);
         patentList.forEach(patent -> {
             if(patent!=null&&!labelsToExclude.contains(patent.getName())) {
@@ -188,12 +149,25 @@ public class SimilarPatentFinder {
                 if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
             }
         });
-        List<AbstractPatent> resultList = new ArrayList<>(limit);
+        List<ExcelWritable> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
-            resultList.add(0, Patent.abstractClone(p, name2));
+            ExcelWritable clone = null;
+            switch(portfolioType) {
+                case assignees: {
+                    clone=Patent.abstractAssignee(p,name2);
+                    break;
+                }case patents: {
+                    clone=Patent.abstractPatent(p,name2);
+                    break;
+                } case class_codes: {
+                    clone=Patent.abstractClassCode(p,name2);
+                    break;
+                }
+            }
+            if(clone!=null)resultList.add(0, clone);
         }
-        PatentList results = new PatentList(resultList,name1,name2);
+        PortfolioList results = new PortfolioList(resultList,name1,name2,portfolioType);
         return results;
     }
 

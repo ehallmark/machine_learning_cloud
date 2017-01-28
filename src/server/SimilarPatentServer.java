@@ -2,26 +2,24 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
-import dl4j_neural_nets.classifiers.GatherTransactionProbabilityModel;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import seeding.Database;
 import server.tools.AbstractPatent;
-import server.tools.RespondWithJXL;
 import server.tools.SimpleAjaxMessage;
+import server.tools.excel.ExcelHandler;
+import server.tools.excel.ExcelWritable;
 import spark.Request;
 import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
 import tools.Emailer;
-import tools.PatentList;
+import tools.PortfolioList;
 import value_estimation.ClassificationEvaluator;
 import value_estimation.Evaluator;
 
@@ -117,7 +115,7 @@ public class SimilarPatentServer {
                 Tag table = table().with(
                         thead().with(
                                 tr().with(
-                                        th("Assignee"),
+                                        th("AbstractAssignee"),
                                         th("Approx. Asset Count")
                                 )
                         ),
@@ -138,14 +136,14 @@ public class SimilarPatentServer {
             res.type("application/json");
 
             // create html
-            Tag table;
+            AbstractClassCode table;
             if(searchType.equals("patents")) {
                 table = table().with(
                         thead().with(
                                 tr().with(
                                         th("Pat No."),
                                         th("Similarity"),
-                                        th("Assignee"),
+                                        th("AbstractAssignee"),
                                         th("Invention Title")
                                 )
                         ),tbody().with(
@@ -161,7 +159,7 @@ public class SimilarPatentServer {
                 table = table().with(
                         thead().with(
                                 tr().with(
-                                        th("Assignee"),
+                                        th("AbstractAssignee"),
                                         th("Similarity"),
                                         th("Approx. Num Assets")
                                 )
@@ -233,6 +231,8 @@ public class SimilarPatentServer {
                     .map(classCode-> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc->classCodesToSearchFor.addAll(Database.subClassificationsForClass(cpc)));
             String searchType = extractString(req,"search_type","patents");
             int limit = extractInt(req,"limit",10);
+            PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
+            List<String> attributes = Arrays.asList("name","similarity","primaryTag","title");
             boolean gatherValue = extractBool(req, "gather_value");
             boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
             boolean searchEntireDatabase = extractBool(req,"search_all");
@@ -328,7 +328,6 @@ public class SimilarPatentServer {
 
             // get more detailed params
             String clientName = extractString(req,"client","");
-            int tagLimit = extractInt(req, "tag_limit", DEFAULT_LIMIT);
             double threshold = extractThreshold(req);
             Set<String> badAssignees = new HashSet<>();
             preProcess(extractString(req,"assigneeFilter","").toUpperCase(),"\n","[^a-zA-Z0-9 ]").forEach(assignee->badAssignees.addAll(Database.possibleNamesForAssignee(assignee)));
@@ -340,21 +339,20 @@ public class SimilarPatentServer {
             labelsToExclude.addAll(badAssets);
             labelsToExclude.addAll(badAssignees);
 
-            PatentList patentList = runPatentFinderModel(title, Arrays.asList(firstFinder), secondFinders, limit, threshold, labelsToExclude, badAssignees, allowResultsFromOtherCandidateSet);
-            if(assigneePortfolioLimit>0)patentList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
+            PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
+            if(assigneePortfolioLimit>0) portfolioList.filterPortfolioSize(assigneePortfolioLimit,isPatent);
 
             if (gatherValue && valueModel != null) {
-                for (AbstractPatent patent : patentList.getPatents()) {
+                for (ExcelWritable item : portfolioList.getPortfolio()) {
                     try {
-                        Double score = valueModel.evaluate(patent.getName());
-                        patent.setGatherValue(score);
+                        Double score = valueModel.evaluate(item.getName());
+                        item.setAttribute("gatherValue",score, ExcelHandler.getDefaultFormat());
                         System.out.println("Value for patent: "+score);
                     } catch(Exception e) {
                         System.out.println("Unable to find value");
-                        patent.setGatherValue(0d);
+                        item.setAttribute("gatherValue",0d, ExcelHandler.getDefaultFormat());
                     }
                 }
-                patentList.setPatents(patentList.getPatents());
             }
 
             {
@@ -362,8 +360,8 @@ public class SimilarPatentServer {
                 if (keywordsToRequire != null) {
                     String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
                     if(keywords.length>0) {
-                        Set<String> patents = Database.patentsWithAllKeywords(patentList.getPatentStrings(), keywords);
-                        patentList.setPatents(patentList.getPatents().stream()
+                        Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                        portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
                                 .filter(patent -> patents.contains(patent.getName()))
                                 .collect(Collectors.toList())
                         );
@@ -375,15 +373,15 @@ public class SimilarPatentServer {
                 if (keywordsToAvoid != null) {
                     String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
                     if(keywords.length>0) {
-                        Set<String> patents = Database.patentsWithKeywords(patentList.getPatentStrings(), keywords);
-                        patentList.setPatents(patentList.getPatents().stream()
+                        Set<String> patents = Database.patentsWithKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                        portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
                                 .filter(patent -> !patents.contains(patent.getName()))
                                 .collect(Collectors.toList())
                         );
                     }
                 }
             }
-            patentList.init(tagLimit);
+            portfolioList.init();
 
             // contact info
             String EMLabel = extractContactInformation(req,"label1", Constants.DEFAULT_EM_LABEL);
@@ -399,7 +397,7 @@ public class SimilarPatentServer {
             String[] EMData = new String[]{EMLabel,EMName,EMTitle,EMPhone,EMEmail};
             String[] SAMData = new String[]{SAMLabel,SAMName, SAMTitle, SAMPhone, SAMEmail};
             try {
-                RespondWithJXL.writeDefaultSpreadSheetToRaw(raw, patentList, highlightAssignees,clientName, EMData, SAMData, tagLimit, gatherValue);
+                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees , title, clientName, EMData, SAMData, attributes, portfolioList);
             } catch (Exception e) {
 
                 e.printStackTrace();
@@ -410,41 +408,34 @@ public class SimilarPatentServer {
 
     }
 
-    private static PatentList runPatentFinderModel(String name, List<SimilarPatentFinder> firstFinders, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, boolean allowResultsFromOtherCandidateSet) {
-        List<PatentList> patentLists = new ArrayList<>();
+    private static PortfolioList runPatentFinderModel(String name, SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
+    List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
-            for(SimilarPatentFinder first : firstFinders) {
-                try {
-                    List<PatentList> similar = first.similarFromCandidateSets(secondFinders, threshold, limit, badLabels);
-                    patentLists.addAll(similar);
-                } catch(Exception e) {
-                    new Emailer("While calculating similar candidate set: "+e.getMessage());
-                }
-            }
-        }
-        catch(Exception e) {
-            new Emailer("IN OUTER LOOP of runpatentfindermodel: "+e.toString());
+            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limit, badLabels, portfolioType);
+            portfolioLists.addAll(similar);
+        } catch(Exception e) {
+            new Emailer("While calculating similar candidate set: "+e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(patentLists,badAssignees, name);
+        return mergePatentLists(portfolioLists,badAssignees, name, portfolioType);
     }
 
-    private static PatentList mergePatentLists(List<PatentList> patentLists, Collection<String> assigneeFilter, String name) {
+    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, String name, PortfolioList.Type portfolioType) {
         try {
-            Map<String, AbstractPatent> map = new HashMap<>();
-            patentLists.forEach(patentList -> {
-                patentList.getPatents().forEach(patent -> {
-                    if (patent.getAssignee() == null || patent.getAssignee().length() == 0) return;
-                    if (map.containsKey(patent.getName())) {
-                        map.get(patent.getName()).appendTags(patent.getTags());
-                        map.get(patent.getName()).setSimilarity(Math.max(patent.getSimilarity(), map.get(patent.getName()).getSimilarity()));
+            Map<String, ExcelWritable> map = new HashMap<>();
+            portfolioLists.forEach(portfolioList -> {
+                portfolioList.getPortfolio().forEach(item -> {
+                    if (item.getName() == null || item.getName().length() == 0) return;
+                    if (map.containsKey(item.getName())) {
+                        map.get(item.getName()).appendTags(item.getTags());
+                        map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
                     } else {
-                        map.put(patent.getName(), patent);
+                        map.put(item.getName(), item);
                     }
                 });
             });
-            List<AbstractPatent> merged = map.values().stream().filter(p->!assigneeFilter.contains(p.getAssignee())).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
-            return new PatentList(merged,name,name);
+            List<ExcelWritable> merged = map.values().stream().filter(p->!((portfolioType.equals(PortfolioList.Type.assignees)&&assigneeFilter.contains(p.getName()))||(portfolioType.equals(PortfolioList.Type.patents)&&assigneeFilter.contains(((AbstractPatent)p).getAssignee())))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
+            return new PortfolioList(merged,name,name,portfolioType);
         } catch(Exception e) {
             new Emailer("Error in merge patent lists: "+e.toString());
             throw new RuntimeException("Error merging patent lists");
@@ -550,7 +541,7 @@ public class SimilarPatentServer {
                                                         h4("Or by"),
                                                         label("Custom Patent List (1 per line)"),br(),
                                                         textarea().withName("custom_patent_list"),br(),
-                                                        label("Custom Assignee List (1 per line)"),br(),
+                                                        label("Custom AbstractAssignee List (1 per line)"),br(),
                                                         textarea().withName("custom_assignee_list"),br(),
                                                         label("Custom CPC Class Code List (1 per line)"),br(),
                                                         label("Example: F05D 01/233"),br(),
@@ -577,10 +568,9 @@ public class SimilarPatentServer {
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                                label("Tag Limit"),br(),input().withType("text").withName("tag_limit"), br(),
                                                                 label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                                 label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                                label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
+                                                                label("AbstractAssignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
                                                                 label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),
                                                         expandableDiv("Cover Page Options",coverPageForm()),br(),hr(),br(),
@@ -603,7 +593,7 @@ public class SimilarPatentServer {
                                                 h3("Get Asset Count for Assignees (Estimation Only)"),
                                                 h4("Please place each assignee on a separate line"),
                                                 form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                        label("Assignee"),br(),textarea().withName("assignee"), br(),
+                                                        label("AbstractAssignee"),br(),textarea().withName("assignee"), br(),
                                                         button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
                                                 )
                                         )

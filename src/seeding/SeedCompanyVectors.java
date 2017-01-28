@@ -150,7 +150,7 @@ public class SeedCompanyVectors {
             String ADOBE_PREFIX = "Adobe Venture - ";
             BufferedWriter bw = new BufferedWriter(new FileWriter(csv));
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(csv2));
-            bw.write("Pitchbook Company,Patent,USPTO Assignee\n");
+            bw.write("Pitchbook Company,Patent,USPTO AbstractAssignee\n");
             bw2.write("Pitchbook Company,Patents\n");
             bw.flush();
             bw2.flush();

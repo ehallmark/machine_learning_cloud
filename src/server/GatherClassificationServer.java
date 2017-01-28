@@ -9,6 +9,7 @@ import seeding.Database;
 import server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
+import tools.PortfolioList;
 
 import java.io.File;
 import java.util.*;
@@ -91,7 +92,7 @@ public class GatherClassificationServer {
         SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,String.valueOf(new Date().getTime()),lookupTable);
 
         // run model
-        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>()).stream()
+        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>(), PortfolioList.Type.patents).stream()
                 .sorted((s1,s2)->Double.compare(s2.getAvgSimilarity(),s1.getAvgSimilarity()))
                 .limit(tagLimit)
                 .map(result->result.getName2())

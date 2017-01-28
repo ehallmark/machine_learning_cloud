@@ -2,11 +2,13 @@ package analysis;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import server.tools.AbstractAssignee;
+import server.tools.AbstractClassCode;
 import server.tools.AbstractPatent;
+import server.tools.excel.ExcelWritable;
 import tools.DistanceFunction;
 
 import java.io.Serializable;
-import java.sql.SQLException;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -23,9 +25,20 @@ public class Patent implements Comparable<Patent>, Serializable {
         this.vector=vector;
     }
 
-    public static AbstractPatent abstractClone(Patent old, String reffered) {
+    public static AbstractPatent abstractPatent(Patent old, String reffered) {
         AbstractPatent clone = new AbstractPatent(old.getName(), old.getSimilarityToTarget(), reffered);
         return  clone;
+    }
+
+    public static AbstractAssignee abstractAssignee(Patent old, String reffered) {
+        AbstractAssignee clone = new AbstractAssignee(old.getName(), old.getSimilarityToTarget(), reffered);
+        return clone;
+    }
+
+
+    public static AbstractClassCode abstractClassCode(Patent old, String reffered) {
+        AbstractClassCode clone = new AbstractClassCode(old.getName(), old.getSimilarityToTarget(), reffered);
+        return clone;
     }
 
     @Override

@@ -1,37 +1,47 @@
-package server.tools;
+package server.tools.excel;
 
 import jxl.Workbook;
+import jxl.format.*;
 import jxl.format.Alignment;
 import jxl.format.Border;
 import jxl.format.BorderLineStyle;
-import jxl.format.*;
 import jxl.format.Colour;
 import jxl.format.VerticalAlignment;
-import jxl.write.Label;
-import jxl.write.Number;
 import jxl.write.*;
-import tools.PatentList;
+import jxl.write.Number;
+import tools.PortfolioList;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
-
-import static spark.Spark.get;
 
 /**
- * Created by ehallmark on 9/8/16.
+ * Created by Evan on 1/27/2017.
  */
-public class RespondWithJXL {
-
-    private static final double CELL_DEFAULT_HEIGHT = 24;
+public class ExcelHandler {
     private static Map<String,WritableCellFormat> CellFormatMap = new HashMap<>();
+    public static final double CELL_DEFAULT_HEIGHT = 24;
+    public static final double CELL_DEFAULT_WIDTH = 25;
 
+    static {
+        try {
+            setupExcelFormats();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static WritableCellFormat getDefaultFormat() {
+        return CellFormatMap.get("dataStyle");
+    }
+
+    public static WritableCellFormat getPercentageFormat() {
+        return CellFormatMap.get("dataStylePercentage");
+    }
 
     private static void setupExcelFormats() throws Exception {
         // title style
@@ -192,8 +202,26 @@ public class RespondWithJXL {
         CellFormatMap.put("summaryStyle",cellFormat);
     }
 
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, Collection<String> toHighlight, String sheetPreTitle, String clientName, String[] EMData, String[] SAMData, List<String> attributes, PortfolioList... portfolioLists) throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WritableWorkbook workbook = Workbook.createWorkbook(os);
 
-    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, String[] headers, String[][] data, int[] colWidths, int assigneeCol, Collection<String> toHighlight, boolean gatherValue) throws Exception{
+        // cover
+        buildCoverPage(workbook,clientName,EMData,SAMData);
+
+        for(PortfolioList portfolioList: portfolioLists) {
+            createSheetWithTemplate(workbook, sheetPreTitle+portfolioList.getSheetName(), sheetPreTitle+portfolioList.getSheetTitle(), portfolioList, portfolioList.getColWidths(attributes), toHighlight, attributes);
+        }
+
+        workbook.write();
+        workbook.close();
+
+        raw.getOutputStream().write(os.toByteArray());
+        raw.getOutputStream().flush();
+        raw.getOutputStream().close();
+    }
+
+    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, PortfolioList portfolioList, int[] colWidths, Collection<String> toHighlight, List<String> attributes) throws Exception{
         workbook.setColourRGB(Colour.DARK_BLUE, 52, 89, 133);
         WritableSheet sheet = workbook.createSheet(sheetName, workbook.getNumberOfSheets());
         sheet.getSettings().setShowGridLines(false);
@@ -236,15 +264,12 @@ public class RespondWithJXL {
         sheet.addCell(new Label(1, row, "Privileged and Confidential Work Product", CellFormatMap.get("disclaimerStyle")));
 
 
-        if(data!=null&&headers!=null)writeHeadersAndData(sheet, headers, data, assigneeCol, toHighlight, 0,gatherValue);
+        writeHeadersAndData(sheet, null, portfolioList, toHighlight, row, attributes);
 
         return sheet;
     }
-    private static void writeHeadersAndData(WritableSheet sheet, String[] headers, String[][] data, int assigneeCol, Collection<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
-        writeHeadersAndData(sheet,null,headers,data,assigneeCol,toHighlight,rowOffset,gatherValue);
-    }
 
-    private static void writeHeadersAndData(WritableSheet sheet, String preTitle, String[] headers, String[][] data, int assigneeCol, Collection<String> toHighlight, int rowOffset, boolean gatherValue) throws Exception {
+    private static void writeHeadersAndData(WritableSheet sheet, String preTitle, PortfolioList portfolioList, Collection<String> toHighlight, int rowOffset, List<String> attributes) throws Exception {
         int headerRow = 6 + rowOffset;
 
         if(preTitle!=null) {
@@ -258,100 +283,27 @@ public class RespondWithJXL {
         // headers
         int headerHeight = 50 * 20;
         sheet.setRowView(headerRow, headerHeight);
-        for (int c = 0; c < headers.length; c++) {
-            sheet.addCell(new Label(1 + c, headerRow, headers[c], CellFormatMap.get("headerStyle")));
+        for (int c = 0; c < attributes.size(); c++) {
+            sheet.addCell(new Label(1 + c, headerRow, attributes.get(c), CellFormatMap.get("headerStyle")));
         }
 
 
-        for (int r = 0; r < data.length; r++) {
-            CellFormat defaultFormat = CellFormatMap.get("dataStyle");
-            CellFormat percentageFormat = CellFormatMap.get("dataStylePercentage");
-            final int thisRow = r;
-            if (toHighlight.stream().anyMatch(highlight -> data[thisRow][assigneeCol].toUpperCase().startsWith(highlight))) {
-                defaultFormat = CellFormatMap.get("dataStyleHighlighted");
-                percentageFormat = CellFormatMap.get("dataStylePercentageHighlighted");
-            }
-            for (int c = 0; c < data[r].length; c++) {
-                CellFormat format = defaultFormat;
-                boolean isNumber = false;
-                Double num = null;
-                try {
-                    num = (double) Integer.valueOf(data[r][c]);
-                    isNumber = true;
-                } catch (Exception e) {
-                    try {
-                        num = Double.valueOf(data[r][c]);
-                        isNumber = true;
-                        if((!gatherValue)||num<=1.0)format = percentageFormat;
-                    } catch (Exception e2) {
-
-                    }
-                }
+        for (int r = 0; r < portfolioList.getPortfolio().size(); r++) {
+            ExcelWritable item = portfolioList.getPortfolio().get(r);
+            ExcelRow excelRow = item.getDataAsRow(attributes);
+            for (int c = 0; c < attributes.size(); c++) {
                 int col = c + 1;
                 int row = headerRow + 1 + r;
-
                 WritableCell cell;
-                if (isNumber) {
-                    cell = new Number(col, row, num, format);
+                ExcelCell excelCell = excelRow.getCells().get(c);
+                if (excelCell.isNumber()) {
+                    cell = new Number(col, row, Double.valueOf(excelCell.getContent().toString()), excelCell.getFormat());
                 } else {
-                    cell = new Label(col, row, data[r][c].toUpperCase(), format);
+                    cell = new Label(col, row, excelCell.getContent().toString(), excelCell.getFormat());
                 }
                 sheet.addCell(cell);
             }
         }
-    }
-
-    private static WritableSheet setupPatentList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, Collection<String> toHighlight, int tagLimit, boolean gatherValue) throws Exception {
-        String[][] data = new String[patentList.getPatents().size()][];
-        String[] headers = gatherValue ? new String[]{"Patent", "Relevance", "Value", "Assignee", "Tag Count", "Primary Tag", "Additional Tags", "Invention Title"}
-            : new String[]{"Patent", "Relevance", "Assignee", "Tag Count", "Primary Tag", "Additional Tags", "Invention Title"};
-        java.util.List<AbstractPatent> patents = patentList.getPatents();
-        if(gatherValue) Collections.sort(patents, (p1,p2)->Double.compare(p2.getGatherValue(),p1.getGatherValue()));
-        for (int i = 0; i < patentList.getPatents().size(); i++) {
-            data[i] = patentList.getPatents().get(i).getDataAsRow(gatherValue,tagLimit);
-        }
-
-        String sheetName = sheetPrefix+ "- Patent List";
-        String sheetTitle = sheetPrefix+ " - Patent List ("+data.length+" patents)";
-        int assigneeColIdx = 2;
-        int[] colWidths = gatherValue ? new int[]{25, 25, 25, 75, 25, 25, 50, 75} : new int[]{25, 25, 75, 25, 25, 50, 75};
-        // patents are in first column - make sure they start with 'US'
-        for(int i = 0; i < data.length; i++) {
-            if(!data[i][0].startsWith("US")) data[i][0] = "US"+data[i][0];
-        }
-        WritableSheet sheet = createSheetWithTemplate(workbook, sheetName, sheetTitle, headers, data, colWidths, assigneeColIdx, toHighlight, gatherValue);
-        return sheet;
-    }
-
-    private static WritableSheet setupSearchTerms(WritableWorkbook workbook, PatentList patentList, String sheetPrefix, boolean gatherValue) throws Exception {
-        final String sheetName = sheetPrefix+"- Search Terms";
-        final String sheetTitle = "Search Terms and Results";
-        final String[] headers = gatherValue ? new String[]{"Search Term","Results (No. of Assets)","Average Relevance","Average Value","No. Assets 4+","No. Assets 3+",  "No. Assets below 3"}
-            : new String[]{"Search Term","Results (No. of Patents)","Average Relevance"};
-        final int[] colWidths = gatherValue ? new int[]{25,25,25,25,25,25,25}   :
-                new int[]{25,25,25};
-        WritableSheet sheet = createSheetWithTemplate(workbook, sheetName, sheetTitle, null, null, colWidths, 0, new ArrayList<>(),gatherValue);
-        String[][] data = new String[patentList.getTags().size()][];
-        for(int i = 0; i < patentList.getTags().size(); i++) {
-            data[i] = patentList.getTags().get(i).getDataAsRow(gatherValue,0);
-        }
-        writeHeadersAndData(sheet, sheetPrefix, headers, data, 0, new ArrayList<>(), 0, gatherValue);
-        return sheet;
-    }
-
-    private static WritableSheet setupAssigneeQuantityList(WritableWorkbook workbook, String sheetPrefix, PatentList patentList, Collection<String> toHighlight, int tagLimit, boolean gatherValue) throws Exception {
-        String sheetName = sheetPrefix+ "- Assignee List";
-        String sheetTitle = sheetPrefix+ " - Assignee Quantity List ("+patentList.getAssignees().size()+" assignees)";
-        String[][] data = new String[patentList.getAssignees().size()][];
-        for(int i = 0; i < data.length; i++) {
-            data[i] = patentList.getAssignees().get(i).getDataAsRow(gatherValue,tagLimit);
-        }
-        String[] headers = gatherValue ? new String[]{"Assignee","Patent Qty.","Avg. Relevance", "Avg. Value", "Tag Count", "Primary Tag", "Additional Tags"}
-                : new String[]{"Assignee","Patent Qty.","Avg. Relevance", "Tag Count", "Primary Tag", "Additional Tags"};
-        int assigneeIdx = 0;
-        int[] colWidths = gatherValue ? new int[]{75,25,25,25,25,25,50} : new int[]{75,25,25,25,25,50};
-        WritableSheet sheet = createSheetWithTemplate(workbook, sheetName, sheetTitle, headers, data, colWidths, assigneeIdx, toHighlight,gatherValue);
-        return sheet;
     }
 
     private static void buildCoverPage(WritableWorkbook workbook, String clientName, String[] EMData, String[] SAMData) throws Exception{
@@ -495,69 +447,4 @@ public class RespondWithJXL {
         }
     }
 
-
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, PatentList patentList, Collection<String> toHighlight, String clientName, String[] EMData, String[] SAMData, int tagLimit, boolean gatherValue) throws Exception {
-        setupExcelFormats();
-
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        WritableWorkbook workbook = Workbook.createWorkbook(os);
-
-        // cover
-        buildCoverPage(workbook,clientName,EMData,SAMData);
-
-
-        setupAssigneeQuantityList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue);
-        setupPatentList(workbook, patentList.getName1(), patentList, toHighlight, tagLimit, gatherValue);
-        setupSearchTerms(workbook, patentList, patentList.getName1(), gatherValue);
-
-
-        workbook.write();
-        workbook.close();
-
-        raw.getOutputStream().write(os.toByteArray());
-        raw.getOutputStream().flush();
-        raw.getOutputStream().close();
-    }
-
-
-
-    private static void server() {
-
-        get("/download", (req, res) -> {
-            HttpServletResponse raw = res.raw();
-            res.header("Content-Disposition", "attachment; filename=download.xls");
-            res.type("application/force-download");
-            try {
-               // writeDefaultSpreadSheetToRaw(raw,"Focused Search",null,null,null);
-            } catch (Exception e) {
-
-                e.printStackTrace();
-            }
-            return raw;
-        });
-
-    }
-
-    public static BufferedImage getImage(Panel c) {
-        BufferedImage bi;
-        try {
-            bi = new BufferedImage(c.getWidth(),c.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D g =GraphicsEnvironment.getLocalGraphicsEnvironment().createGraphics(bi);
-            //c.update(g2d);
-            g.setColor(c.getForeground());
-            g.setFont(c.getFont());
-            g.setBackground(c.getBackground());
-            c.print(g);
-            g.dispose();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-        return bi;
-    }
-
-
-    public static void main(String[] args) {
-        server();
-    }
 }
