@@ -234,8 +234,6 @@ public class SimilarPatentServer {
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
-                boolean isPatent = false;
-                boolean isAssignee = false;
 
                 SimilarPatentFinder firstFinder;
                 Set<String> labelsToExclude = new HashSet<>();
@@ -253,10 +251,8 @@ public class SimilarPatentServer {
                 if (searchEntireDatabase) {
                     if (searchType.equals("patents")) {
                         firstFinder = globalFinder;
-                        isPatent = true;
                     } else if (searchType.equals("assignees")) {
                         firstFinder = assigneeFinder;
-                        isAssignee = true;
                     } else if (searchType.equals("class_codes")) {
                         firstFinder = classCodeFinder;
                     } else {
@@ -342,7 +338,7 @@ public class SimilarPatentServer {
                 labelsToExclude.addAll(badAssignees);
 
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
-                if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit, isPatent);
+                if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
                 if (gatherValue && valueModel != null) {
                     for (ExcelWritable item : portfolioList.getPortfolio()) {

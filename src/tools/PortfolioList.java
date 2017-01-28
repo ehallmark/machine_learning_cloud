@@ -99,7 +99,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         return portfolio.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
-    public void filterPortfolioSize(int limit, boolean isPatent) {
+    public void filterPortfolioSize(int limit) {
         portfolio=portfolio.stream()
                 .filter(obj->{
                     if(obj instanceof AbstractPatent) {
@@ -118,7 +118,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         Collections.reverse(portfolio);
 
         if(portfolio.size()>0) {
-            this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(p -> (Double)p.getAttributeValue("similarity")));
+            this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj->obj.getSimilarity()));
         }
         else this.avgSimilarity=0.0d;
     }
