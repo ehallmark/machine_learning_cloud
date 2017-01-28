@@ -276,12 +276,10 @@ public class SimilarPatentServer {
 
                     // dependent on searchType
                     if (searchType.equals("patents")) {
-                        isPatent = true;
                         customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
                         classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
                         firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
                     } else if (searchType.equals("assignees")) {
-                        isAssignee = true;
                         classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
                         patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
                         firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
