@@ -43,7 +43,6 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     public static SimilarPatentFinder assigneeFinder;
     public static SimilarPatentFinder classCodeFinder;
-    private static int DEFAULT_LIMIT = 3;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     protected static ParagraphVectors paragraphVectors;
@@ -72,7 +71,7 @@ public class SimilarPatentServer {
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
-            valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
+           // valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
         } catch(Exception e) {
             e.printStackTrace();
         }

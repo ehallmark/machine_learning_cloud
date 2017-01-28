@@ -52,15 +52,16 @@ public class Database {
 	private static final Set<Integer> badCompDBTechnologyIds = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 
 	private static Object tryLoadObject(File file) {
+		System.out.println("Starting to load file: "+file.getName()+"...");
 		try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
 			Object toReturn = ois.readObject();
 			ois.close();
+			System.out.println("Sucessfully loaded "+file.getName()+".");
 			return toReturn;
 		} catch(Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException("Unable to open file: "+file.getPath());
 		}
-
 	}
 
 	static {
