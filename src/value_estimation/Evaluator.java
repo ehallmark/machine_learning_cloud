@@ -13,9 +13,7 @@ import java.util.Map;
 public abstract class Evaluator {
     // Instance class
     protected Map<String,Double> model;
-    protected WeightLookupTable<VocabWord> lookupTable;
-    public Evaluator(WeightLookupTable<VocabWord> lookupTable) {
-        this.lookupTable=lookupTable;
+    public Evaluator() {
         this.model=loadModel();
         ValueMapNormalizer.normalizeToRange(model,1.0,5.0);
     }

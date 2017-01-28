@@ -3,6 +3,7 @@ package value_estimation;
 import analysis.SimilarPatentFinder;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -20,9 +21,6 @@ import java.util.*;
  */
 public class ClassificationEvaluator extends Evaluator {
     private static final File file = new File("classification_value_model.jobj");
-    public ClassificationEvaluator(WeightLookupTable<VocabWord> lookupTable) {
-        super(lookupTable);
-    }
 
     @Override
     protected Map<String,Double> loadModel() {
@@ -33,15 +31,17 @@ public class ClassificationEvaluator extends Evaluator {
         return model;
     }
 
-    private static Map<String,Double> runModel(WeightLookupTable<VocabWord> lookupTable) {
+    private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
         System.out.println("Starting to load classification evaluator...");
         List<String> classifications = new ArrayList<>(Database.getClassCodes());
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
-
+        WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
         // sort patents
         Collections.sort(patents);
-        int periodSize = 20000;
+        final int periodSize = 10000;
+        final int numPeriods = 30;
+        patents=patents.subList(patents.size()-(periodSize*numPeriods),patents.size());
         double threshHold = 0.75;
         List<List<Double>> classScores = new ArrayList<>(patents.size()/periodSize+1);
         for(int i = 0; i < patents.size()-periodSize; i+= periodSize) {
@@ -55,18 +55,12 @@ public class ClassificationEvaluator extends Evaluator {
             // get relevance to each class code
             for(int c = 0; c < classifications.size(); c++) {
                 String clazz = classifications.get(c);
-                INDArray classVec = lookupTable.vector(clazz);
-                if(classVec!=null) {
+                Set<String> similar = new HashSet<>(paragraphVectors.similarWordsInVocabTo(clazz,threshHold));
+                System.out.println("Similar words to "+clazz+": "+similar.size());
+                if(similar!=null&&!similar.isEmpty()) {
                     double score = 0.0;
                     for(String patent : patentBatch) {
-                        INDArray patentVec = lookupTable.vector(patent);
-                        if(patentVec!=null) {
-                            double sim = Transforms.cosineSim(patentVec,classVec);
-                            if(sim>=threshHold) {
-                                score+=sim;
-                                System.out.println(patent+" is similar to "+clazz);
-                            }
-                        }
+                        if(similar.contains(patent)) score+=1.0;
                     }
                     scores.set(c,score);
                 }
@@ -139,9 +133,9 @@ public class ClassificationEvaluator extends Evaluator {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Starting to load lookupTable...");
-        WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
+        ParagraphVectors paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         System.out.println("Finished.");
-        Map<String,Double> map = runModel(lookupTable);
+        Map<String,Double> map = runModel(paragraphVectors);
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
         oos.writeObject(map);
         oos.flush();
