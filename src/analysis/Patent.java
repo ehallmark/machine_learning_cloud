@@ -54,14 +54,6 @@ public class Patent implements Comparable<Patent>, Serializable {
         similarity = dist.distance(baseVector,vector);
     }
 
-    public void setSimilarity(double sim) {
-        this.similarity=sim;
-    }
-
-    public void incrementSimilarityBy(double sim) {
-        similarity+=sim;
-    }
-
     public static void setBaseVector(INDArray baseVector) {
         Patent.baseVector=baseVector;
     }

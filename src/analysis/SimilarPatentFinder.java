@@ -109,7 +109,7 @@ public class SimilarPatentFinder {
 
     public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
         // Find the highest (pairwise) assets
-        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return null;
+        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),name,other.getName(),portfolioType);
         INDArray otherAvg = computeAvg(other.patentList);
         return findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit,portfolioType);
     }
@@ -118,7 +118,7 @@ public class SimilarPatentFinder {
     public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit, PortfolioList.Type portfolioType)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
-        if(avgVector==null) return null;
+        if(avgVector==null) return new PortfolioList(new ArrayList<>(),name,patentNumber,portfolioType);
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
         PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);

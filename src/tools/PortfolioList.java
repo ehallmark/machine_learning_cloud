@@ -113,13 +113,16 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     }
 
     public void init() {
-        portfolio=portfolio.stream().filter(obj->!Database.isExpired(obj.getName())).collect(Collectors.toList());
-        Collections.sort(portfolio);
-        Collections.reverse(portfolio);
+        try {
+            portfolio = portfolio.stream().filter(obj -> !Database.isExpired(obj.getName())).collect(Collectors.toList());
+            Collections.sort(portfolio);
+            Collections.reverse(portfolio);
 
-        if(portfolio.size()>0) {
-            this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj->obj.getSimilarity()));
+            if (portfolio.size() > 0) {
+                this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+            } else this.avgSimilarity = 0.0d;
+        } catch(Exception e) {
+            throw new RuntimeException("Error initializing Portfolio list: "+name1);
         }
-        else this.avgSimilarity=0.0d;
     }
 }

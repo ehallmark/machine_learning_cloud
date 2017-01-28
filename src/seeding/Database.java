@@ -184,9 +184,9 @@ public class Database {
 
 	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {
 		Set<String> set = new HashSet<>();
-		subClassificationsForClass(cpcCode).forEach(code->{
-			if (classCodeToPatentMap.containsKey(cpcCode)) {
-				set.addAll(classCodeToPatentMap.get(cpcCode));
+		subClassificationsForClass(cpcCode).forEach(subClass->{
+			if (classCodeToPatentMap.containsKey(subClass)) {
+				set.addAll(classCodeToPatentMap.get(subClass));
 			}
 		});
 		return set;

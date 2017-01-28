@@ -220,7 +220,7 @@ public class SimilarPatentServer {
         post("/similar_candidate_sets", (req, res) -> {
             try {
                 // get input data
-                List<String> patentsToSearchFor = preProcess(extractString(req, "patents", ""), "\\s+", "[^0-9]");
+                Set<String> patentsToSearchFor = new HashSet<>(preProcess(extractString(req, "patents", ""), "\\s+", "[^0-9]"));
                 List<String> wordsToSearchFor = preProcess(extractString(req, "words", ""), "\\s+", "[^a-zA-Z0-9 ]");
                 Set<String> assigneesToSearchFor = new HashSet<>();
                 preProcess(extractString(req, "assignees", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> assigneesToSearchFor.add(assignee));
@@ -426,17 +426,26 @@ public class SimilarPatentServer {
             Map<String, ExcelWritable> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
                 portfolioList.getPortfolio().forEach(item -> {
-                    if (item.getName() == null || item.getName().length() == 0) return;
-                    if (map.containsKey(item.getName())) {
-                        map.get(item.getName()).appendTags(item.getTags());
-                        map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
-                    } else {
-                        map.put(item.getName(), item);
+                    try {
+                        if (item.getName() == null || item.getName().length() == 0) return;
+                        if (map.containsKey(item.getName())) {
+                            map.get(item.getName()).appendTags(item.getTags());
+                            map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
+                        } else {
+                            map.put(item.getName(), item);
+                        }
+                    } catch(Exception e) {
+                        throw new RuntimeException("Error on item: "+item.getName());
                     }
                 });
             });
-            List<ExcelWritable> merged = map.values().stream().filter(p->!((p instanceof AbstractAssignee&&assigneeFilter.contains(p.getName()))||(p instanceof AbstractPatent&&assigneeFilter.contains(((AbstractPatent)p).getAssignee())))).sorted((o, o2)->Double.compare(o2.getSimilarity(),o.getSimilarity())).collect(Collectors.toList());
-            return new PortfolioList(merged,name,name,portfolioType);
+            try {
+                List<ExcelWritable> merged = map.values().stream().filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee())))).sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity())).collect(Collectors.toList());
+                return new PortfolioList(merged,name,name,portfolioType);
+
+            } catch(Exception e) {
+                throw new RuntimeException("Error merging values in final stream.");
+            }
         } catch(Exception e) {
             throw new RuntimeException("Error merging patent lists: "+e.getMessage());
         }
@@ -444,7 +453,7 @@ public class SimilarPatentServer {
 
     private static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).collect(Collectors.toList());
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
     private static Tag templateWrapper(Response res, Tag form, String message) {
