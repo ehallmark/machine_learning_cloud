@@ -1,6 +1,8 @@
 package tools;
 
 import seeding.Database;
+import server.tools.AbstractAssignee;
+import server.tools.AbstractPatent;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
 
@@ -94,22 +96,24 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     }
 
     public List<String> getPortfolioAsStrings() {
-        return portfolio.stream().map(p->(String)p.getAttributeValue("name")).collect(Collectors.toList());
+        return portfolio.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
     public void filterPortfolioSize(int limit, boolean isPatent) {
         portfolio=portfolio.stream()
-                .filter(patent->{
-                    if(isPatent) {
-                        return Database.getAssetCountFor((String)patent.getAttributeValue("assignee")) <= limit;
+                .filter(obj->{
+                    if(obj instanceof AbstractPatent) {
+                        return Database.getAssetCountFor(((AbstractPatent)obj).getAssignee()) <= limit;
+                    } else if (obj instanceof AbstractAssignee) {
+                        return Database.getAssetCountFor(obj.getName()) <= limit;
                     } else {
-                        return Database.getAssetCountFor((String)patent.getAttributeValue("name")) <= limit;
+                        return Database.selectPatentNumbersFromClassCode(obj.getName()).size() <= limit;
                     }
                 }).collect(Collectors.toList());
     }
 
     public void init() {
-        portfolio=portfolio.stream().filter(obj->!Database.isExpired((String)obj.getAttributeValue("name"))).collect(Collectors.toList());
+        portfolio=portfolio.stream().filter(obj->!Database.isExpired(obj.getName())).collect(Collectors.toList());
         Collections.sort(portfolio);
         Collections.reverse(portfolio);
 

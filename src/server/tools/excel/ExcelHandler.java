@@ -296,7 +296,10 @@ public class ExcelHandler {
                 int row = headerRow + 1 + r;
                 WritableCell cell;
                 ExcelCell excelCell = excelRow.getCells().get(c);
-                if (excelCell.isNumber()) {
+
+                if(excelCell==null) {
+                    cell = new Label(col, row, "", ExcelHandler.getDefaultFormat());
+                } else if (excelCell.isNumber()) {
                     cell = new Number(col, row, Double.valueOf(excelCell.getContent().toString()), excelCell.getFormat());
                 } else {
                     cell = new Label(col, row, excelCell.getContent().toString(), excelCell.getFormat());
