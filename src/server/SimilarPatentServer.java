@@ -113,7 +113,7 @@ public class SimilarPatentServer {
                 Tag table = table().with(
                         thead().with(
                                 tr().with(
-                                        th("AbstractAssignee"),
+                                        th("Assignee"),
                                         th("Approx. Asset Count")
                                 )
                         ),
@@ -141,7 +141,7 @@ public class SimilarPatentServer {
                                 tr().with(
                                         th("Pat No."),
                                         th("Similarity"),
-                                        th("AbstractAssignee"),
+                                        th("Assignee"),
                                         th("Invention Title")
                                 )
                         ),tbody().with(
@@ -157,7 +157,7 @@ public class SimilarPatentServer {
                 table = table().with(
                         thead().with(
                                 tr().with(
-                                        th("AbstractAssignee"),
+                                        th("Assignee"),
                                         th("Similarity"),
                                         th("Approx. Num Assets")
                                 )
@@ -550,7 +550,7 @@ public class SimilarPatentServer {
                                                         h4("Or by"),
                                                         label("Custom Patent List (1 per line)"),br(),
                                                         textarea().withName("custom_patent_list"),br(),
-                                                        label("Custom AbstractAssignee List (1 per line)"),br(),
+                                                        label("Custom Assignee List (1 per line)"),br(),
                                                         textarea().withName("custom_assignee_list"),br(),
                                                         label("Custom CPC Class Code List (1 per line)"),br(),
                                                         label("Example: F05D 01/233"),br(),
@@ -579,7 +579,7 @@ public class SimilarPatentServer {
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
                                                                 label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                                 label("Asset Filter (space separated)"),br(),textarea().attr("selected","true").withName("assetFilter"),br(),
-                                                                label("AbstractAssignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
+                                                                label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
                                                                 label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),
                                                         expandableDiv("Cover Page Options",coverPageForm()),br(),hr(),br(),
@@ -602,7 +602,7 @@ public class SimilarPatentServer {
                                                 h3("Get Asset Count for Assignees (Estimation Only)"),
                                                 h4("Please place each assignee on a separate line"),
                                                 form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                        label("AbstractAssignee"),br(),textarea().withName("assignee"), br(),
+                                                        label("Assignee"),br(),textarea().withName("assignee"), br(),
                                                         button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
                                                 )
                                         )

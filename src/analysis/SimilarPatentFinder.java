@@ -124,7 +124,7 @@ public class SimilarPatentFinder {
         PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
-        System.out.println("Time to find similar patents: "+time+" seconds");
+        System.out.println("Time to find "+list.getPortfolio().size()+" similar patents: "+time+" seconds");
         return list;
     }
 

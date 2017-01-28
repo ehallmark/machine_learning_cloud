@@ -270,6 +270,8 @@ public class ExcelHandler {
     }
 
     private static void writeHeadersAndData(WritableSheet sheet, String preTitle, PortfolioList portfolioList, Collection<String> toHighlight, int rowOffset, List<String> attributes) throws Exception {
+        System.out.println("Starting sheet: "+preTitle+" with "+portfolioList.getPortfolio().size()+ " elements");
+
         int headerRow = 6 + rowOffset;
 
         if(preTitle!=null) {

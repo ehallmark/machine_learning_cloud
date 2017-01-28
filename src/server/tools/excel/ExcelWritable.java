@@ -13,17 +13,9 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected List<String> orderedTags;
     private static final double DEFAULT_CELL_HEIGHT = 24;
     protected Map<String, ExcelCell> attributeData =new HashMap<>();
-    ;
     protected String name;
     protected Double avgValue;
     protected double similarity;
-    public Object getAttributeValue(String attr) {
-        if(attributeData.containsKey(attr)) {
-            return attributeData.get(attr).getContent();
-        } else {
-            return null;
-        }
-    }
 
     protected void init() {
         calculateOrderedTags();
@@ -47,7 +39,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
 
     public List<String> getOrderedTags() {
         if(orderedTags==null) calculateOrderedTags();
-        return (List<String>)attributeData.get("orderedTags");
+        return orderedTags;
     }
 
     public void setAttribute(String attr, Object value, WritableCellFormat format) {
@@ -90,6 +82,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
 
     @Override
     public int compareTo(ExcelWritable o) {
-        return Double.compare((Double)(attributeData.get("similarity").getContent()), (Double)(o.attributeData.get("similarity").getContent()));
+        return Double.compare(similarity, o.similarity);
     }
 }

@@ -14,9 +14,11 @@ import java.util.stream.Collectors;
  */
 public class AbstractPatent extends ExcelWritable {
     private String assignee;
+    private String title;
     public AbstractPatent(String name, double similarity, String referringName) {
         this.name=name;
         this.tags = new HashMap<>();
+        this.title=Database.getInventionTitleFor(name);
         this.assignee = String.join("; ",Database.assigneesFor(name).stream().map(a->AssigneeTrimmer.standardizedAssignee(a)).collect(Collectors.toList()));
         if(referringName!=null)tags.put(referringName,similarity);
 
@@ -54,13 +56,13 @@ public class AbstractPatent extends ExcelWritable {
     protected void init() {
         super.init();
         attributeData.put("assignee", new ExcelCell(ExcelHandler.getDefaultFormat(),assignee,false));
-        attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),Database.getInventionTitleFor(name),false));
+        attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),title,false));
     }
 
-    public String getInventionTitle() { return (String)(attributeData.get("title").getContent()); }
+    public String getInventionTitle() { return title; }
 
     public String getAssignee() {
-        return (String)attributeData.get("assignee").getContent();
+        return assignee;
     }
 
     public String getFullAssignee() {
