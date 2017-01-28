@@ -1,6 +1,7 @@
 package value_estimation;
 
 import analysis.SimilarPatentFinder;
+import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -8,18 +9,31 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 import tools.PortfolioList;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
 import java.util.*;
 
 /**
  * Created by Evan on 1/27/2017.
  */
 public class ClassificationEvaluator extends Evaluator {
+    private static final File file = new File("classification_value_model.jobj");
     public ClassificationEvaluator(WeightLookupTable<VocabWord> lookupTable) {
         super(lookupTable);
     }
 
     @Override
     protected Map<String,Double> loadModel() {
+        return (Map<String,Double>)Database.tryLoadObject(file);
+    }
+
+    public Map<String,Double> getMap() {
+        return model;
+    }
+
+    private static Map<String,Double> runModel(WeightLookupTable<VocabWord> lookupTable) {
         System.out.println("Starting to load classification evaluator...");
         List<String> classifications = new ArrayList<>(Database.getClassCodes());
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
@@ -121,5 +135,16 @@ public class ClassificationEvaluator extends Evaluator {
         });
         System.out.println("Finished evaluator...");
         return model;
+    }
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("Starting to load lookupTable...");
+        WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
+        System.out.println("Finished.");
+        Map<String,Double> map = runModel(lookupTable);
+        ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+        oos.writeObject(map);
+        oos.flush();
+        oos.close();
     }
 }
