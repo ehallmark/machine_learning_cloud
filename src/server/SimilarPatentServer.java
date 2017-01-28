@@ -64,8 +64,6 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
-        // value model
-        valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
     }
 
     private static void loadBaseFinder() {
@@ -73,7 +71,8 @@ public class SimilarPatentServer {
             globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
-
+            // value model
+            valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
         } catch(Exception e) {
             e.printStackTrace();
         }
