@@ -38,12 +38,21 @@ public class ClassificationEvaluator extends Evaluator {
         Collection<String> assignees = Database.getAssignees();
         WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
         // sort patents
+        List<Set<String>> similarWordList = new ArrayList<>(classifications.size());
         Collections.sort(patents);
         final int periodSize = 10000;
         final int numPeriods = 30;
         patents=patents.subList(patents.size()-(periodSize*numPeriods),patents.size());
-        double threshHold = 0.75;
+        double threshHold = 0.90;
         List<List<Double>> classScores = new ArrayList<>(patents.size()/periodSize+1);
+
+        // get relevance to each class code
+        for(int c = 0; c < classifications.size(); c++) {
+            String clazz = classifications.get(c);
+            Set<String> similar = new HashSet<>(paragraphVectors.similarWordsInVocabTo(clazz,threshHold));
+            System.out.println("Similar words to "+clazz+": "+similar.size());
+            similarWordList.add(similar);
+        }
         for(int i = 0; i < patents.size()-periodSize; i+= periodSize) {
             List<Double> scores = new ArrayList<>(classifications.size());
             classScores.add(scores);
@@ -55,13 +64,13 @@ public class ClassificationEvaluator extends Evaluator {
             // get relevance to each class code
             for(int c = 0; c < classifications.size(); c++) {
                 String clazz = classifications.get(c);
-                Set<String> similar = new HashSet<>(paragraphVectors.similarWordsInVocabTo(clazz,threshHold));
-                System.out.println("Similar words to "+clazz+": "+similar.size());
+                Set<String> similar = similarWordList.get(c);
                 if(similar!=null&&!similar.isEmpty()) {
                     double score = 0.0;
                     for(String patent : patentBatch) {
                         if(similar.contains(patent)) score+=1.0;
                     }
+                    System.out.println("Score for "+clazz+": "+score);
                     scores.set(c,score);
                 }
             }
