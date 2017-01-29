@@ -30,10 +30,6 @@ public class ClassificationEvaluator extends Evaluator {
         return (Map<String,Double>)Database.tryLoadObject(file);
     }
 
-    public Map<String,Double> getMap() {
-        return model;
-    }
-
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
         final LocalDate START_DATE = LocalDate.of(2010,1,1);
         final int SAMPLE_SIZE = 500;

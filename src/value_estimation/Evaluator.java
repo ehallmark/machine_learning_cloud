@@ -20,6 +20,10 @@ public abstract class Evaluator {
 
     protected abstract Map<String,Double> loadModel();
 
+    public Map<String,Double> getMap() {
+        return model;
+    }
+
     // Returns value between 1 and 5
     public double evaluate(String token) {
         if(model.containsKey(token)) {
