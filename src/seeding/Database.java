@@ -33,11 +33,14 @@ public class Database {
 	private static Set<String> allClassCodes;
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
+	private static File classCodeToPatentMapFile = new File("class_code_to_patent_map.jobj");
 	private static File patentToInventionTitleMapFile = new File("patent_to_invention_title_map.jobj");
 	private static File patentToLatestAssigneeMapFile = new File("patent_to_assignee_map_latest.jobj");
 	private static File patentToOriginalAssigneeMapFile = new File("patent_to_original_assignee_map.jobj");
 	private static File assigneeToPatentsMapFile = new File("assignee_to_patents_map.jobj");
 	private static File expiredPatentSetFile = new File("expired_patents_set.jobj");
+	private static File allClassCodesFile = new File("all_class_codes.jobj");
+	private static File valuablePatentsFile = new File("valuable_patents.jobj");
 	private static File classCodeToClassTitleMapFile = new File("class_code_to_class_title_map.jobj");
 	public static final String gatherTechnologyPrefix = "Gather Updated Tech -";
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
@@ -63,6 +66,17 @@ public class Database {
 		}
 	}
 
+	public static void trySaveObject(Object obj, File file) {
+		try {
+			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+			oos.writeObject(obj);
+			oos.flush();
+			oos.close();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	static {
 		patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
@@ -73,22 +87,34 @@ public class Database {
 		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 
 		// load dependent objects
-		valuablePatents=new HashSet<>();
-		patentToInventionTitleMap.keySet().forEach(patent->{
-			if(!expiredPatentSet.contains(patent)) valuablePatents.add(patent);
-		});
-		allAssignees=assigneeToPatentsMap.keySet();
-		allClassCodes=new HashSet<>();
-		patentToClassificationMap.values().forEach(classSet->{
-			classSet.forEach(cpcClass->{
-				allClassCodes.add(cpcClass);
+		if(valuablePatentsFile.exists()) {
+			valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
+		} else {
+			valuablePatents = new HashSet<>();
+			patentToInventionTitleMap.keySet().forEach(patent -> {
+				if (!expiredPatentSet.contains(patent)) valuablePatents.add(patent);
 			});
-		});
+			trySaveObject(valuablePatents,valuablePatentsFile);
+		}
+		allAssignees=assigneeToPatentsMap.keySet();
+		if(allClassCodesFile.exists()) {
+			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
+		} else {
+			allClassCodes = new HashSet<>();
+			patentToClassificationMap.values().forEach(classSet -> {
+				classSet.forEach(cpcClass -> {
+					allClassCodes.add(cpcClass);
+				});
+			});
+			trySaveObject(allClassCodes,allClassCodesFile);
+		}
 		// prefix trie for assignees
+		System.out.println("Building assignee trie...");
 		assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
 		allAssignees.forEach(assignee->{
 			assigneePrefixTrie.put(assignee,assignee);
 		});
+		System.out.println("Building class code trie...");
 		// class codes trie
 		classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
 		allClassCodes.forEach(code->{
@@ -96,17 +122,22 @@ public class Database {
 		});
 
 		classCodeToPatentMap = new HashMap<>();
-		patentToClassificationMap.forEach((patent,classes)->{
-			classes.forEach(klass->{
-				if(classCodeToPatentMap.containsKey(klass)) {
-					classCodeToPatentMap.get(klass).add(patent);
-				} else {
-					Set<String> patents = new HashSet<>();
-					patents.add(patent);
-					classCodeToPatentMap.put(klass,patents);
-				}
+		if(classCodeToPatentMapFile.exists()) {
+			classCodeToPatentMap = (HashMap<String,Set<String>>)tryLoadObject(classCodeToPatentMapFile);
+		} else {
+			patentToClassificationMap.forEach((patent, classes) -> {
+				classes.forEach(klass -> {
+					if (classCodeToPatentMap.containsKey(klass)) {
+						classCodeToPatentMap.get(klass).add(patent);
+					} else {
+						Set<String> patents = new HashSet<>();
+						patents.add(patent);
+						classCodeToPatentMap.put(klass, patents);
+					}
+				});
 			});
-		});
+			trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
+		}
 	}
 
 	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
