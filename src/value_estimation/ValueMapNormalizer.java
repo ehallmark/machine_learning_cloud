@@ -19,7 +19,7 @@ public class ValueMapNormalizer {
         double stdDev = Math.sqrt(array.varNumber().doubleValue());
         double mean = array.meanNumber().doubleValue();
         double min = mean-3.0*stdDev;
-        double max = mean+2.0*stdDev;
+        double max = mean+4.0*stdDev;
         model.keySet().forEach(key->{
             model.put(key,Math.max(Math.min(end,start+((model.get(key)-min)/(max-min))*(end-start)),start));
         });
