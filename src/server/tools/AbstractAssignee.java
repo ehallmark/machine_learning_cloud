@@ -7,10 +7,7 @@ import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
 import tools.AssigneeTrimmer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -22,8 +19,8 @@ public class AbstractAssignee extends ExcelWritable {
     }
 
         @Override
-    protected void init() {
-        super.init();
+    protected void init(Collection<String> params) {
+        super.init(params);
         attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.getAssetCountFor(name),true));
     }
 

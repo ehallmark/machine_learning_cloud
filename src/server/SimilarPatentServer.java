@@ -20,6 +20,7 @@ import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
 import tools.PortfolioList;
+import value_estimation.CitationEvaluator;
 import value_estimation.ClassificationEvaluator;
 import value_estimation.Evaluator;
 
@@ -47,7 +48,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    private static Evaluator valueModel;
+    private static CitationEvaluator citationValueModel;
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -77,7 +78,7 @@ public class SimilarPatentServer {
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
-           // valueModel=new ClassificationEvaluator(paragraphVectors.getLookupTable());
+            citationValueModel=new CitationEvaluator();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -241,7 +242,8 @@ public class SimilarPatentServer {
                     return null;
                 }
                 List<String> attributes = Arrays.stream(req.queryParamsValues("dataAttributes")).collect(Collectors.toList());
-                boolean gatherValue = extractBool(req, "gather_value");
+                boolean citationValue = attributes.contains("citationValue");
+                boolean classValue = attributes.contains("classValue");
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
@@ -349,15 +351,15 @@ public class SimilarPatentServer {
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
-                if (gatherValue && valueModel != null) {
+                if (citationValue && citationValueModel != null) {
                     for (ExcelWritable item : portfolioList.getPortfolio()) {
                         try {
-                            Double score = valueModel.evaluate(item.getName());
-                            item.setAttribute("gatherValue", score, ExcelHandler.getDefaultFormat());
+                            Double score = citationValueModel.evaluate(item.getName());
+                            item.setCitationValue(score);
                             System.out.println("Value for patent: " + score);
                         } catch (Exception e) {
                             System.out.println("Unable to find value");
-                            item.setAttribute("gatherValue", 0d, ExcelHandler.getDefaultFormat());
+                            item.setCitationValue(0d);
                         }
                     }
                 }

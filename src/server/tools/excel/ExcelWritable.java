@@ -14,7 +14,8 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     private static final double DEFAULT_CELL_HEIGHT = 24;
     protected Map<String, ExcelCell> attributeData =new HashMap<>();
     protected String name;
-    protected Double avgValue;
+    protected double classValue;
+    protected double citationValue;
     protected double similarity;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
@@ -24,6 +25,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.put("Asset","name");
         humanAttrToJavaAttrMap.put("Similarity","similarity");
         humanAttrToJavaAttrMap.put("Classification Value","classValue");
+        humanAttrToJavaAttrMap.put("Citation Value","citationValue");
         humanAttrToJavaAttrMap.put("Relevant Asset(s)","relevantAssetsList");
         humanAttrToJavaAttrMap.put("Relevant Asset Count","relevantAssetCount");
         humanAttrToJavaAttrMap.put("Total Asset Count","totalAssetCount");
@@ -56,17 +58,26 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         if(referringName!=null)tags.put(referringName,similarity);
     }
 
-    protected void init() {
+    public void setClassValue(double classValue) {
+        this.classValue=classValue;
+    }
+
+    public void setCitationValue(double citationValue) {
+        this.citationValue=citationValue;
+    }
+
+    protected void init(Collection<String> params) {
         calculateOrderedTags();
         String tag = "";
         List<String> tags = getOrderedTags();
         if(!tags.isEmpty()) {
             tag=tags.get(0);
         }
-        attributeData.put("primaryTag",new ExcelCell(ExcelHandler.getDefaultFormat(),tag,false));
-        attributeData.put("name",new ExcelCell(ExcelHandler.getDefaultFormat(),name,false));
-        attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),similarity,true));
-        if(avgValue!=null)attributeData.put("gatherValue",new ExcelCell(ExcelHandler.getDefaultFormat(),avgValue,true));
+        if(params.contains("primaryTag"))attributeData.put("primaryTag",new ExcelCell(ExcelHandler.getDefaultFormat(),tag,false));
+        if(params.contains("name"))attributeData.put("name",new ExcelCell(ExcelHandler.getDefaultFormat(),name,false));
+        if(params.contains("similarity"))attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),similarity,true));
+        if(params.contains("citationValue"))attributeData.put("citationValue",new ExcelCell(ExcelHandler.getDefaultFormat(),citationValue,true));
+        if(params.contains("classValue"))attributeData.put("classValue",new ExcelCell(ExcelHandler.getDefaultFormat(),classValue,true));
     }
     public Map<String,Double> getTags() {
         return tags;
@@ -85,7 +96,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         attributeData.put(attr,new ExcelCell(format,value,value instanceof Number));
     }
     public ExcelRow getDataAsRow(List<String> attributes) {
-        init();
+        init(attributes);
         List<ExcelCell> cells = new ArrayList<>();
         for(String attr : attributes) {
             if(attr!=null&&attributeData.containsKey(attr)) {
