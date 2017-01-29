@@ -82,7 +82,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
                 sheetName= "- Patent List";
                 break;
             } case assignees: {
-                sheetName= "- AbstractAssignee List";
+                sheetName= "- Assignee List";
                 break;
             } case class_codes: {
                 sheetName= "- Classification List";
