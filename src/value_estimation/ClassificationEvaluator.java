@@ -34,11 +34,10 @@ public class ClassificationEvaluator extends Evaluator {
         final LocalDate START_DATE = LocalDate.of(2010,1,1);
         final int SAMPLE_SIZE = 500;
         System.out.println("Starting to load classification evaluator...");
-        List<String> classifications = new ArrayList<>(Database.getClassCodes());
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
         SortedSet<LocalDate> sortedDates = new TreeSet<>(dateToPatentsMap.keySet());
-        sortedDates.removeIf(date->date.compareTo(START_DATE)>=0);
+        sortedDates.removeIf(date->date.compareTo(START_DATE)<0);
         Collection<String> assignees = Database.getAssignees();
         WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
         SimilarPatentFinder classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,lookupTable);
@@ -69,12 +68,12 @@ public class ClassificationEvaluator extends Evaluator {
         for(String patent: patents) {
             model.put(patent,0.0);
         }
-        for(int i = 0; i < classScores.size()-1; i+=2) {
+        for(int i = 0; i < classScores.size()-2; i+=2) {
             Map<String,Double> scoreT = classScores.get(i);
             Map<String,Double> scoreT2 = classScores.get(i+1);
-
-            for(int j = 0; j < scoreT.size(); j++) {
-                String clazz = classifications.get(j);
+            Set<String> classesToUpdate = scoreT.keySet();
+            for(String clazz : classesToUpdate) {
+                System.out.println("Updating class: "+clazz);
                 Double p1 = scoreT.get(clazz);
                 Double p2 = scoreT2.get(clazz);
                 if(p1>0) {
