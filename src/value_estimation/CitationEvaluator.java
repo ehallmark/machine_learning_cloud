@@ -65,12 +65,14 @@ public class CitationEvaluator extends Evaluator {
 
         System.out.println("Calculating scores for assignees...");
         assignees.forEach(assignee->{
+            System.out.println("Updating assignee: "+assignee);
             Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
             double score = 0.0;
             double toDivide = 0.0;
             INDArray assigneeVec = lookupTable.vector(assignee);
             if(assigneeVec!=null) {
                 for (String patent : assigneePatents) {
+                    if(!model.containsKey(patent)) continue;
                     INDArray patentVec = lookupTable.vector(patent);
                     if (patentVec != null) {
                         double weight = Math.max(0.2, Transforms.cosineSim(patentVec, assigneeVec));
@@ -91,7 +93,7 @@ public class CitationEvaluator extends Evaluator {
     public static void main(String[] args) throws Exception {
         System.out.println("Starting to run model.");
         Map<String,Double> map = runModel(ParagraphVectorModel.loadParagraphsModel().getLookupTable());
-        System.out.println("Finished... No writing model to file...");
+        System.out.println("Finished... Now writing model to file...");
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
         oos.writeObject(map);
         oos.flush();
