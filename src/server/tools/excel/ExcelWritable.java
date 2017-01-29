@@ -15,6 +15,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected Map<String, ExcelCell> attributeData =new HashMap<>();
     protected String name;
     protected double classValue;
+    protected double noveltyValue;
     protected double citationValue;
     protected double similarity;
 
@@ -32,6 +33,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.put("Assignee","assignee");
         humanAttrToJavaAttrMap.put("Title","title");
         humanAttrToJavaAttrMap.put("Class Codes","classCode");
+        humanAttrToJavaAttrMap.put("Novelty Value","noveltyValue");
 
 
         // inverted version to get human readables back
@@ -78,6 +80,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         if(params.contains("similarity"))attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),similarity,true));
         if(params.contains("citationValue"))attributeData.put("citationValue",new ExcelCell(ExcelHandler.getDefaultFormat(),citationValue,true));
         if(params.contains("classValue"))attributeData.put("classValue",new ExcelCell(ExcelHandler.getDefaultFormat(),classValue,true));
+        if(params.contains("noveltyValue"))attributeData.put("noveltyValue",new ExcelCell(ExcelHandler.getDefaultFormat(),noveltyValue,true));
     }
     public Map<String,Double> getTags() {
         return tags;
@@ -106,6 +109,10 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
             }
         }
         return new ExcelRow(cells,DEFAULT_CELL_HEIGHT);
+    }
+
+    public void setNoveltyValue(double noveltyValue) {
+        this.noveltyValue=noveltyValue;
     }
 
     public String getName() {

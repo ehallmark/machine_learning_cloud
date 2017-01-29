@@ -15,13 +15,10 @@ import java.util.stream.Collectors;
 public class ValueMapNormalizer {
     public static void normalizeToRange(Map<String,Double> model, double start, double end) {
         List<Double> values = model.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList());
-        INDArray array = Nd4j.create(ArrayUtils.toPrimitive(values.toArray(new Double[values.size()])));
-        double stdDev = Math.sqrt(array.varNumber().doubleValue());
-        double mean = array.meanNumber().doubleValue();
-        double min = mean-2*stdDev;
-        double max = mean+2.5*stdDev;
+        double min = Collections.min(values);
+        double max = Collections.max(values);
         model.keySet().forEach(key->{
-            model.put(key,Math.max(Math.min(end,start+((model.get(key)-min)/(max-min))*(end-start)),start));
+            model.put(key,start+((model.get(key)-min)/(max-min))*(end-start));
         });
     }
 }

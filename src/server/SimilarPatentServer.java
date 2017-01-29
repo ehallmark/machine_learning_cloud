@@ -23,6 +23,7 @@ import tools.PortfolioList;
 import value_estimation.CitationEvaluator;
 import value_estimation.ClassificationEvaluator;
 import value_estimation.Evaluator;
+import value_estimation.NoveltyEvaluator;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -49,6 +50,8 @@ public class SimilarPatentServer {
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static CitationEvaluator citationValueModel;
+    private static NoveltyEvaluator noveltyValueMap;
+    private static ClassificationEvaluator classValueMap;
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -79,6 +82,8 @@ public class SimilarPatentServer {
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
             citationValueModel=new CitationEvaluator();
+            //noveltyValueMap=new NoveltyEvaluator();
+            classValueMap=null;
         } catch(Exception e) {
             e.printStackTrace();
         }
