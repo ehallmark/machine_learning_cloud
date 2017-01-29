@@ -590,13 +590,12 @@ public class SimilarPatentServer {
                                                                             return option().withText(e.getKey()).withValue(e.getValue());
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),expandableDiv("Advanced Options",
+                                                        ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                                label("Gather Value Model (Special Model)"),br(),input().withType("checkbox").withName("gather_value"),br(),
                                                                 label("Asset Filter (space separated)"),br(),textarea().withName("assetFilter"),br(),
                                                                 label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
