@@ -58,7 +58,7 @@ public class SimilarPatentServer {
 
     protected static void loadLookupTable() throws IOException {
         if(paragraphVectors!=null)return;
-        boolean testing = true; // CHANGE THIS!!!!
+        boolean testing = false;
         try {
             if(testing==true) {
                 paragraphVectors = ParagraphVectorModel.loadTestParagraphsModel();
