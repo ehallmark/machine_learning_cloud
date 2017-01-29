@@ -29,7 +29,7 @@ public class ParagraphVectorModel {
     public static File claimsParagraphVectorFile = new File("claims_skipgram.paragraphvectors");
     public static File allParagraphsModelFile = new File("all_paragraphs.paragraphvectors");
     public static File allSentencesModelFile = new File("all_sentences_skipgram.paragraphvectors");
-    public static File testParagraphsModelFile = new File("test_paragraphs.paragraphvectors");
+    public static File testParagraphsModelFile = new File("simple.pv");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -227,6 +227,7 @@ public class ParagraphVectorModel {
     }
 
     public static ParagraphVectors loadTestParagraphsModel() throws IOException {
+        System.out.println("LOADING TEST MODEL!!! WARNING!!!!");
         return loadModel(testParagraphsModelFile.getAbsolutePath());
     }
 
