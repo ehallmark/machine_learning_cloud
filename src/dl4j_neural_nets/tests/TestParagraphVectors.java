@@ -37,7 +37,7 @@ public class TestParagraphVectors {
             patents.addAll(list.stream().limit(20).collect(Collectors.toList()));
         });
 
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, patents);
+        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(numEpochs, 1000);
         Database.setupSeedConn();
        ParagraphVectors net = new ParagraphVectors.Builder()
                 .seed(41)
