@@ -44,7 +44,7 @@ public class ClassificationEvaluator extends Evaluator {
         SimilarPatentFinder classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,lookupTable);
 
         List<Map<String,Double>> classScores = new ArrayList<>();
-        
+
         for(LocalDate date : sortedDates) {
 
             System.out.println("Starting date: "+date);
@@ -112,6 +112,7 @@ public class ClassificationEvaluator extends Evaluator {
             INDArray assigneeVec = lookupTable.vector(assignee);
             if(assigneeVec!=null) {
                 for (String patent : assigneePatents) {
+                    if(!model.containsKey(patent)) continue;
                     INDArray patentVec = lookupTable.vector(patent);
                     if (patentVec != null) {
                         double weight = Math.max(0.2, Transforms.cosineSim(patentVec, assigneeVec));
