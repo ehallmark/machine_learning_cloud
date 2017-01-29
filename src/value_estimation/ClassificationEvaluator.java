@@ -1,5 +1,6 @@
 package value_estimation;
 
+import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -43,8 +44,7 @@ public class ClassificationEvaluator extends Evaluator {
         SimilarPatentFinder classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,lookupTable);
 
         List<Map<String,Double>> classScores = new ArrayList<>();
-
-
+        
         for(LocalDate date : sortedDates) {
 
             System.out.println("Starting date: "+date);
@@ -68,6 +68,9 @@ public class ClassificationEvaluator extends Evaluator {
         for(String patent: patents) {
             model.put(patent,0.0);
         }
+        for(Patent clazz: classCodeFinder.getPatentList()) {
+            model.put(clazz.getName(),0.0);
+        }
         for(int i = 0; i < classScores.size()-2; i+=2) {
             Map<String,Double> scoreT = classScores.get(i);
             Map<String,Double> scoreT2 = classScores.get(i+1);
@@ -83,7 +86,6 @@ public class ClassificationEvaluator extends Evaluator {
             }
         }
         patents.forEach(patent->{
-            System.out.println("Patent: "+patent);
             double score = 0.0;
             double toDivide = 0.0;
             INDArray patentVec = lookupTable.vector(patent);
@@ -100,6 +102,7 @@ public class ClassificationEvaluator extends Evaluator {
             if(toDivide>0) {
                 score = score/toDivide;
             } else score=0.0;
+            System.out.println("Score for patent "+patent+": "+score);
             model.put(patent,score);
         });
         assignees.forEach(assignee->{
