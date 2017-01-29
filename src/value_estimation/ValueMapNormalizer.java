@@ -21,7 +21,7 @@ public class ValueMapNormalizer {
         double min = mean-2*stdDev;
         double max = mean+2*stdDev;
         model.keySet().forEach(key->{
-            model.put(key,Math.max(Math.min(max,start+((model.get(key)-min)/(max-min))*(end-start)),min));
+            model.put(key,Math.max(Math.min(end,start+((model.get(key)-min)/(max-min))*(end-start)),start));
         });
     }
 }
