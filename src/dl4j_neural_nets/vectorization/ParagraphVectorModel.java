@@ -29,6 +29,7 @@ public class ParagraphVectorModel {
     public static File claimsParagraphVectorFile = new File("claims_skipgram.paragraphvectors");
     public static File allParagraphsModelFile = new File("all_paragraphs.paragraphvectors");
     public static File allSentencesModelFile = new File("all_sentences_skipgram.paragraphvectors");
+    public static File testParagraphsModelFile = new File("test_paragraphs.paragraphvectors");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -138,6 +139,39 @@ public class ParagraphVectorModel {
         WordVectorSerializer.writeWordVectors(net, allSentencesModelFile.getAbsolutePath());
     }*/
 
+    public static void runTestModel() throws Exception {
+        int numThreads = 30;
+
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(1,1000),numThreads/2);
+
+        ParagraphVectors net = new ParagraphVectors.Builder()
+                .seed(41)
+                .batchSize(100)
+                .epochs(1) // hard coded to avoid learning rate from resetting
+                .windowSize(6)
+                .layerSize(50)
+                .sampling(0.00005)
+                .negativeSample(-1)
+                .learningRate(0.01)
+                .useAdaGrad(true)
+                .resetModel(true)
+                .minWordFrequency(30)
+                .workers(numThreads/2)
+                .iterations(1)
+                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
+                .trainWordVectors(true)
+                .useHierarchicSoftmax(true)
+                .trainSequencesRepresentation(true)
+                .trainElementsRepresentation(true)
+                .elementsLearningAlgorithm(new SkipGram<>())
+                .sequenceLearningAlgorithm(new DBOW<>())
+                .tokenizerFactory(tokenizerFactory)
+                .iterate(sentenceIterator)
+                .build();
+
+        net.fit();
+        WordVectorSerializer.writeParagraphVectors(net, testParagraphsModelFile.getAbsolutePath());
+    }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         //CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
         int numEpochs = 3;
@@ -190,6 +224,10 @@ public class ParagraphVectorModel {
 
     public static ParagraphVectors loadParagraphsModel() throws IOException {
         return loadModel(allParagraphsModelFile.getAbsolutePath()+1000000000);
+    }
+
+    public static ParagraphVectors loadTestParagraphsModel() throws IOException {
+        return loadModel(testParagraphsModelFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadModel(String path) throws IOException {
