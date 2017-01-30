@@ -83,7 +83,7 @@ public class SimilarPatentServer {
             // value model
             citationValueModel=new CitationEvaluator();
             priorArtValueModel=new PriorArtEvaluator();
-            classValueModel=null;
+            classValueModel=new ClassificationEvaluator();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -259,8 +259,6 @@ public class SimilarPatentServer {
                     return null;
                 }
                 List<String> attributes = Arrays.stream(req.queryParamsValues("dataAttributes")).collect(Collectors.toList());
-                boolean citationValue = attributes.contains("citationValue");
-                boolean classValue = attributes.contains("classValue");
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
@@ -376,7 +374,7 @@ public class SimilarPatentServer {
                     evaluateModel(priorArtValueModel,portfolioList.getPortfolio(),"priorArtValue");
                 }
 
-                if (attributes.contains("classValue") && priorArtValueModel != null) {
+                if (attributes.contains("classValue") && classValueModel != null) {
                     evaluateModel(classValueModel,portfolioList.getPortfolio(),"classValue");
                 }
 
