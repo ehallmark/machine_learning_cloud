@@ -22,8 +22,8 @@ import java.util.*;
 /**
  * Created by Evan on 1/27/2017.
  */
-public class NoveltyEvaluator extends Evaluator {
-    private static final File file = new File("novelty_value_model.jobj");
+public class PriorArtEvaluator extends Evaluator {
+    private static final File file = new File("prior_art_value_model.jobj");
 
     @Override
     protected Map<String,Double> loadModel() {
@@ -33,8 +33,7 @@ public class NoveltyEvaluator extends Evaluator {
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
         final int SAMPLE_SIZE = 200;
         final int WINDOW_SIZE = 36;
-        System.out.println("Starting to load novelty evaluator...");
-        List<String> patents = new ArrayList<>(Database.getValuablePatents());
+        System.out.println("Starting to load prior art evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
 
         // group dates by month

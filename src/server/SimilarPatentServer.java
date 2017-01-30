@@ -23,7 +23,7 @@ import tools.PortfolioList;
 import value_estimation.CitationEvaluator;
 import value_estimation.ClassificationEvaluator;
 import value_estimation.Evaluator;
-import value_estimation.NoveltyEvaluator;
+import value_estimation.PriorArtEvaluator;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +50,7 @@ public class SimilarPatentServer {
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static CitationEvaluator citationValueModel;
-    private static NoveltyEvaluator noveltyValueModel;
+    private static PriorArtEvaluator priorArtValueModel;
     private static ClassificationEvaluator classValueModel;
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
@@ -82,7 +82,7 @@ public class SimilarPatentServer {
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
             citationValueModel=new CitationEvaluator();
-            noveltyValueModel=new NoveltyEvaluator();
+            priorArtValueModel=new PriorArtEvaluator();
             classValueModel=null;
         } catch(Exception e) {
             e.printStackTrace();
@@ -372,8 +372,12 @@ public class SimilarPatentServer {
                     evaluateModel(citationValueModel,portfolioList.getPortfolio(),"citationValue");
                 }
 
-                if (attributes.contains("noveltyValue") && noveltyValueModel != null) {
-                    evaluateModel(noveltyValueModel,portfolioList.getPortfolio(),"noveltyValue");
+                if (attributes.contains("priorArtValue") && priorArtValueModel != null) {
+                    evaluateModel(priorArtValueModel,portfolioList.getPortfolio(),"priorArtValue");
+                }
+
+                if (attributes.contains("classValue") && priorArtValueModel != null) {
+                    evaluateModel(classValueModel,portfolioList.getPortfolio(),"classValue");
                 }
 
                 {
