@@ -93,10 +93,11 @@ public class CitationEvaluator extends Evaluator {
                     }
                     bonus+=tmp;
                 }
-                totalScore+=score+bonus;
+                totalScore+=Math.max(1.0,score+bonus);
             } else {
                 totalScore+=1.0;
             }
+            System.out.println("Score for patent "+patent+": "+totalScore);
             model.put(patent,totalScore);
 
         });
