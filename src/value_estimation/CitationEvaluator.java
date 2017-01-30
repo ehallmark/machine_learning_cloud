@@ -34,7 +34,7 @@ public class CitationEvaluator extends Evaluator {
         return (Map<String,Double>)Database.tryLoadObject(file);
     }
 
-    private static Map<String,Double> runModel(WeightLookupTable<VocabWord> lookupTable){
+    private static Map<String,Double> runModel(){
         System.out.println("Starting to load citation evaluator...");
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
@@ -45,6 +45,8 @@ public class CitationEvaluator extends Evaluator {
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
         Map<String,Double> oldScores = new HashMap<>();
+        LocalDate earliestDate = LocalDate.now().minusYears(20);
+        double beginningTrendValue = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1)/12.0);
         patents.forEach(patent->{
             double score = 0.0;
             if(patentToReferencedByMap.containsKey(patent)) {
@@ -55,53 +57,61 @@ public class CitationEvaluator extends Evaluator {
             if(patentToCitationsMap.containsKey(patent)) {
                 score-=Math.log(1.0+patentToCitationsMap.get(patent).size());
             }
-            oldScores.put(patent,score);
-        });
-        System.out.println("Updating scores again...");
-        LocalDate earliestDate = LocalDate.now().minusYears(20);
-        double beginningTrendValue = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1)/12.0);
-        patents.forEach(patent->{
-            double totalScore = 0.0;
             if(patentToDateMap.containsKey(patent)) {
                 LocalDate date = patentToDateMap.get(patent);
                 double trend = (new Double(date.getYear())+new Double(date.getMonthValue()-1)/12.0)-beginningTrendValue;
-                totalScore+=Math.log(Math.min(Math.E,trend));
+                score+=Math.log(Math.min(Math.E,trend));
             }
+            oldScores.put(patent,score);
+        });
+        System.out.println("Updating scores again...");
+        patents.forEach(patent->{
+            double totalScore = 0.0;
             if(patentToReferencedByMap.containsKey(patent)) {
                 double score = oldScores.get(patent);
                 Set<String> references = patentToReferencedByMap.get(patent);
                 double bonus = 0.0;
-                INDArray vec = lookupTable.vector(patent);
-                for (String ref : references) {
-                    double tmp;
+                Deque<String> stack = new ArrayDeque<>();
+                Set<String> hasSeen = new HashSet<>();
+                hasSeen.addAll(references);
+                stack.addAll(references);
+                while(!stack.isEmpty()) {
+                    String ref = stack.removeFirst();
+                    if(patentToReferencedByMap.containsKey(ref)) {
+                        patentToReferencedByMap.get(ref).forEach(patRef->{
+                            if(!hasSeen.contains(patRef)){
+                                hasSeen.add(patRef);
+                                stack.add(patRef);
+                            }
+                        });
+                    }
+                    double tmp = 0.0;
                     if(oldScores.containsKey(ref)) {
                         tmp = oldScores.get(ref);
                     } else {
                         tmp = 1.0;
                     }
-                    if(vec!=null) {
-                        INDArray refVec = lookupTable.vector(ref);
-                        if (refVec != null) {
-                            tmp*=(1.0+Transforms.cosineSim(refVec,vec));
-                        }
-                    }
-                    bonus+=(Math.pow(tmp,2.0));
+                    bonus+=tmp;
                 }
-                totalScore+=score+Math.sqrt(bonus);
+                totalScore+=score+bonus;
             } else {
                 totalScore+=1.0;
             }
             model.put(patent,totalScore);
 
         });
-        addScoresToAssigneesFromPatents(assignees,model,lookupTable);
+        try {
+            addScoresToAssigneesFromPatents(assignees, model, ParagraphVectorModel.loadParagraphsModel().getLookupTable());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("Finished evaluator...");
         return model;
     }
 
     public static void main(String[] args) throws Exception {
         System.out.println("Starting to run model.");
-        Map<String,Double> map = runModel(ParagraphVectorModel.loadParagraphsModel().getLookupTable());
+        Map<String,Double> map = runModel();
         System.out.println("Finished... Now writing model to file...");
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
         oos.writeObject(map);
