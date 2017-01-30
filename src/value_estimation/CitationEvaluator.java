@@ -26,7 +26,7 @@ public class CitationEvaluator extends Evaluator {
     private static final File file = new File("citation_value_model.jobj");
 
     public CitationEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Exponentional);
+        super(ValueMapNormalizer.DistributionType.Normal);
     }
 
     @Override
@@ -39,17 +39,23 @@ public class CitationEvaluator extends Evaluator {
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
+        Map<String,Set<String>> patentToCitationsMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
         Map<String,LocalDate> patentToDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_pubdate_map_file.jobj"));
 
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
         Map<String,Double> oldScores = new HashMap<>();
         patents.forEach(patent->{
+            double score = 0.0;
             if(patentToReferencedByMap.containsKey(patent)) {
-                oldScores.put(patent,(double)(patentToReferencedByMap.get(patent).size()));
+                score+=(double)(patentToReferencedByMap.get(patent).size());
             } else {
-                oldScores.put(patent,1.0);
+                score+=1.0;
             }
+            if(patentToCitationsMap.containsKey(patent)) {
+                score-=Math.log(1.0+patentToCitationsMap.get(patent).size());
+            }
+            oldScores.put(patent,score);
         });
         System.out.println("Updating scores again...");
         LocalDate earliestDate = LocalDate.now().minusYears(20);
