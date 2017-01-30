@@ -55,7 +55,7 @@ public class CitationEvaluator extends Evaluator {
                 score+=1.0;
             }
             if(patentToCitationsMap.containsKey(patent)) {
-                score-=Math.log(1.0+patentToCitationsMap.get(patent).size());
+                score+=Math.log(1.0+patentToCitationsMap.get(patent).size());
             }
             if(patentToDateMap.containsKey(patent)) {
                 LocalDate date = patentToDateMap.get(patent);
@@ -71,31 +71,24 @@ public class CitationEvaluator extends Evaluator {
                 double score = oldScores.get(patent);
                 Set<String> references = patentToReferencedByMap.get(patent);
                 double bonus = 0.0;
-                Deque<String> stack = new ArrayDeque<>();
-                Set<String> hasSeen = new HashSet<>();
-                hasSeen.addAll(references);
-                stack.addAll(references);
-                while(!stack.isEmpty()) {
-                    String ref = stack.removeFirst();
-                    if(patentToReferencedByMap.containsKey(ref)) {
-                        patentToReferencedByMap.get(ref).forEach(patRef->{
-                            if(!hasSeen.contains(patRef)){
-                                hasSeen.add(patRef);
-                                stack.add(patRef);
-                            }
-                        });
-                    }
+                for(String ref : references) {
                     double tmp = 0.0;
-                    if(oldScores.containsKey(ref)) {
+                    if (oldScores.containsKey(ref)) {
                         tmp = oldScores.get(ref);
                     } else {
                         tmp = 1.0;
                     }
-                    bonus+=tmp;
+                    bonus += tmp;
                 }
-                totalScore+=Math.max(1.0,score+bonus);
-            } else {
-                totalScore+=1.0;
+
+                totalScore += Math.max(1.0, score + bonus);
+            }
+            if(patentToCitationsMap.containsKey(patent)) {
+                for(String citation : patentToCitationsMap.get(patent)) {
+                    if(oldScores.containsKey(citation)) {
+                        totalScore+=Math.log(oldScores.get(citation));
+                    }
+                }
             }
             System.out.println("Score for patent "+patent+": "+totalScore);
             model.put(patent,totalScore);
