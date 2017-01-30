@@ -50,8 +50,8 @@ public class SimilarPatentServer {
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static CitationEvaluator citationValueModel;
-    private static NoveltyEvaluator noveltyValueMap;
-    private static ClassificationEvaluator classValueMap;
+    private static NoveltyEvaluator noveltyValueModel;
+    private static ClassificationEvaluator classValueModel;
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -82,13 +82,25 @@ public class SimilarPatentServer {
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
             citationValueModel=new CitationEvaluator();
-            //noveltyValueMap=new NoveltyEvaluator();
-            classValueMap=null;
+            noveltyValueModel=new NoveltyEvaluator();
+            classValueModel=null;
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
 
+    private static void evaluateModel(Evaluator model, Collection<ExcelWritable> portfolio, String valueParamType) {
+        for (ExcelWritable item : portfolio) {
+            try {
+                Double score = model.evaluate(item.getName());
+                item.setValue(valueParamType,score);
+                System.out.println("Value for patent: " + score);
+            } catch (Exception e) {
+                System.out.println("Unable to find value");
+                item.setValue(valueParamType,0d);
+            }
+        }
+    }
 
     private static String getAndRemoveMessage(Session session) {
         String message = session.attribute("message");
@@ -356,17 +368,12 @@ public class SimilarPatentServer {
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
-                if (citationValue && citationValueModel != null) {
-                    for (ExcelWritable item : portfolioList.getPortfolio()) {
-                        try {
-                            Double score = citationValueModel.evaluate(item.getName());
-                            item.setCitationValue(score);
-                            System.out.println("Value for patent: " + score);
-                        } catch (Exception e) {
-                            System.out.println("Unable to find value");
-                            item.setCitationValue(0d);
-                        }
-                    }
+                if (attributes.contains("citationValue") && citationValueModel != null) {
+                    evaluateModel(citationValueModel,portfolioList.getPortfolio(),"citationValue");
+                }
+
+                if (attributes.contains("noveltyValue") && noveltyValueModel != null) {
+                    evaluateModel(noveltyValueModel,portfolioList.getPortfolio(),"noveltyValue");
                 }
 
                 {

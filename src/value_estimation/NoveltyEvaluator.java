@@ -31,33 +31,58 @@ public class NoveltyEvaluator extends Evaluator {
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
-        final LocalDate START_DATE = LocalDate.of(2010,1,1);
-        final int SAMPLE_SIZE = 500;
+        final int SAMPLE_SIZE = 200;
+        final int WINDOW_SIZE = 36;
         System.out.println("Starting to load novelty evaluator...");
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
-        // group dates and patents by month
-        Map<LocalDate,Set<String>> groupedDateToPatentMap = new HashMap<>();
-        dateToPatentsMap.forEach((date,assets)->{
-            LocalDate firstDayOfMonth =LocalDate.of(date.getYear(),date.getMonthValue(),1);
-            if(groupedDateToPatentMap.containsKey(firstDayOfMonth)) {
-                groupedDateToPatentMap.get(firstDayOfMonth).addAll(assets);
-            } else {
-                Set<String> set = new HashSet<>(assets);
-                groupedDateToPatentMap.put(firstDayOfMonth,set);
-            }
-        });
+
+        // group dates by month
+        Map<LocalDate,Set<String>> groupedDateToPatentMap = groupMapByMonth(dateToPatentsMap,SAMPLE_SIZE);
+
+        List<INDArray> monthVectors = new ArrayList<>(groupedDateToPatentMap.size());
+        Map<String,List<INDArray>> patentToWindowDataMap = new HashMap<>();
+        List<LocalDate> datesToIndex = new ArrayList<>(groupedDateToPatentMap.size());
         SortedSet<LocalDate> sortedDates = new TreeSet<>(groupedDateToPatentMap.keySet());
+        sortedDates.forEach(date->{
+            System.out.println("Computing vector for: "+date);
+            Set<String> patentSet = groupedDateToPatentMap.get(date);
+            datesToIndex.add(date);
+            monthVectors.add(SimilarPatentFinder.computeAvg(new SimilarPatentFinder(patentSet,null,paragraphVectors.getLookupTable()).getPatentList()));
+        });
+
+        sortedDates.forEach(date->{
+            Set<String> patentSet = groupedDateToPatentMap.get(date);
+            int dateIdx = datesToIndex.indexOf(date);
+            if(dateIdx-WINDOW_SIZE<0) dateIdx=WINDOW_SIZE;
+            if(dateIdx+WINDOW_SIZE>monthVectors.size()) dateIdx=monthVectors.size()-WINDOW_SIZE;
+            List<INDArray> subList = monthVectors.subList(dateIdx-WINDOW_SIZE,dateIdx+WINDOW_SIZE);
+            patentSet.forEach(patent->{
+                System.out.println("adding window for for: "+patent);
+                patentToWindowDataMap.put(patent,subList);
+            });
+
+        });
+
         Collection<String> assignees = Database.getAssignees();
         WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
         SimilarPatentFinder patentFinder = new SimilarPatentFinder(Database.getValuablePatents(),null,lookupTable);
-
-        List<Map<String,Double>> allScores = new ArrayList<>();
+        // compute scores for each patent
         Map<String,Double> model = new HashMap<>();
-
-        for(LocalDate date : sortedDates) {
-
-        }
+        patentFinder.getPatentList().forEach(patent->{
+            List<INDArray> data = patentToWindowDataMap.get(patent.getName());
+            double totalScore = 0.0;
+            for(int i = 0; i < data.size()-1; i+=2) {
+                double simT = Transforms.cosineSim(patent.getVector(),data.get(i))+1.0;
+                double simT2 = Transforms.cosineSim(patent.getVector(),data.get(i+1))+1.0;
+                // calculate growth
+                double growth = (simT2-simT)/simT;
+                double timeFactor = (double)i-WINDOW_SIZE;
+                totalScore+=(timeFactor*growth);
+            }
+            System.out.println("Score for patent "+patent.getName()+": "+totalScore);
+            model.put(patent.getName(),totalScore);
+        });
         assignees.forEach(assignee->{
             Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
             double score = 0.0;

@@ -14,10 +14,8 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     private static final double DEFAULT_CELL_HEIGHT = 24;
     protected Map<String, ExcelCell> attributeData =new HashMap<>();
     protected String name;
-    protected double classValue;
-    protected double noveltyValue;
-    protected double citationValue;
     protected double similarity;
+    protected Map<String,Double> valueMap = new HashMap<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -60,12 +58,16 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         if(referringName!=null)tags.put(referringName,similarity);
     }
 
-    public void setClassValue(double classValue) {
-        this.classValue=classValue;
+    public void setValue(String valueType, double value) {
+        this.valueMap.put(valueType,value);
     }
 
-    public void setCitationValue(double citationValue) {
-        this.citationValue=citationValue;
+    public double getValue(String valueType) {
+        if(valueMap.containsKey(valueType)) {
+            return valueMap.get(valueType);
+        } else {
+            return 0d;
+        }
     }
 
     protected void init(Collection<String> params) {
@@ -78,9 +80,12 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         if(params.contains("primaryTag"))attributeData.put("primaryTag",new ExcelCell(ExcelHandler.getDefaultFormat(),tag,false));
         if(params.contains("name"))attributeData.put("name",new ExcelCell(ExcelHandler.getDefaultFormat(),name,false));
         if(params.contains("similarity"))attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),similarity,true));
-        if(params.contains("citationValue"))attributeData.put("citationValue",new ExcelCell(ExcelHandler.getDefaultFormat(),citationValue,true));
-        if(params.contains("classValue"))attributeData.put("classValue",new ExcelCell(ExcelHandler.getDefaultFormat(),classValue,true));
-        if(params.contains("noveltyValue"))attributeData.put("noveltyValue",new ExcelCell(ExcelHandler.getDefaultFormat(),noveltyValue,true));
+        //add value params if available
+        valueMap.forEach((type,value)->{
+            if(params.contains(type)) {
+                attributeData.put(type,new ExcelCell(ExcelHandler.getDefaultFormat(),value,true));
+            }
+        });
     }
     public Map<String,Double> getTags() {
         return tags;
@@ -109,10 +114,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
             }
         }
         return new ExcelRow(cells,DEFAULT_CELL_HEIGHT);
-    }
-
-    public void setNoveltyValue(double noveltyValue) {
-        this.noveltyValue=noveltyValue;
     }
 
     public String getName() {
