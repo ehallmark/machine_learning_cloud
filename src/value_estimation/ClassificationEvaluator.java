@@ -27,6 +27,10 @@ import java.util.stream.Collectors;
 public class ClassificationEvaluator extends Evaluator {
     private static final File file = new File("classification_value_model.jobj");
 
+    public ClassificationEvaluator() {
+        super(ValueMapNormalizer.DistributionType.Normal);
+    }
+
     @Override
     protected Map<String,Double> loadModel() {
         return (Map<String,Double>)Database.tryLoadObject(file);

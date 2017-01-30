@@ -2,6 +2,7 @@ package value_estimation;
 
 import analysis.SimilarPatentFinder;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -24,6 +25,10 @@ import java.util.*;
 public class CitationEvaluator extends Evaluator {
     private static final File file = new File("citation_value_model.jobj");
 
+    public CitationEvaluator() {
+        super(ValueMapNormalizer.DistributionType.Exponentional);
+    }
+
     @Override
     protected Map<String,Double> loadModel() {
         return (Map<String,Double>)Database.tryLoadObject(file);
@@ -34,33 +39,54 @@ public class CitationEvaluator extends Evaluator {
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
+        Map<String,LocalDate> patentToDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_pubdate_map_file.jobj"));
+
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
         Map<String,Double> oldScores = new HashMap<>();
         patents.forEach(patent->{
             if(patentToReferencedByMap.containsKey(patent)) {
-                oldScores.put(patent,(double)patentToReferencedByMap.get(patent).size());
+                oldScores.put(patent,(double)(patentToReferencedByMap.get(patent).size()));
             } else {
-                oldScores.put(patent,0d);
+                oldScores.put(patent,1.0);
             }
         });
         System.out.println("Updating scores again...");
+        LocalDate earliestDate = LocalDate.now().minusYears(20);
+        double beginningTrendValue = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1)/12.0);
         patents.forEach(patent->{
+            double totalScore = 0.0;
+            if(patentToDateMap.containsKey(patent)) {
+                LocalDate date = patentToDateMap.get(patent);
+                double trend = (new Double(date.getYear())+new Double(date.getMonthValue()-1)/12.0)-beginningTrendValue;
+                totalScore+=Math.log(Math.min(Math.E,trend));
+            }
             if(patentToReferencedByMap.containsKey(patent)) {
                 double score = oldScores.get(patent);
                 Set<String> references = patentToReferencedByMap.get(patent);
                 double bonus = 0.0;
+                INDArray vec = lookupTable.vector(patent);
                 for (String ref : references) {
+                    double tmp;
                     if(oldScores.containsKey(ref)) {
-                        bonus += oldScores.get(ref);
+                        tmp = oldScores.get(ref);
                     } else {
-                        bonus += 1.0;
+                        tmp = 1.0;
                     }
+                    if(vec!=null) {
+                        INDArray refVec = lookupTable.vector(ref);
+                        if (refVec != null) {
+                            tmp*=(1.0+Transforms.cosineSim(refVec,vec));
+                        }
+                    }
+                    bonus+=(Math.pow(tmp,2.0));
                 }
-                model.put(patent,score+Math.sqrt(bonus));
+                totalScore+=score+Math.sqrt(bonus);
             } else {
-                model.put(patent,0d);
+                totalScore+=1.0;
             }
+            model.put(patent,totalScore);
+
         });
         addScoresToAssigneesFromPatents(assignees,model,lookupTable);
         System.out.println("Finished evaluator...");

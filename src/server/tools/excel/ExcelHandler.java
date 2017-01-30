@@ -202,12 +202,12 @@ public class ExcelHandler {
         CellFormatMap.put("summaryStyle",cellFormat);
     }
 
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, Collection<String> toHighlight, String sheetPreTitle, String clientName, String[] EMData, String[] SAMData, List<String> attributes, PortfolioList... portfolioLists) throws Exception {
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, Collection<String> toHighlight, String sheetPreTitle, String clientName, String[] EMData, String[] SAMData, List<String> attributes, boolean includeCoverPage, PortfolioList... portfolioLists) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         WritableWorkbook workbook = Workbook.createWorkbook(os);
 
         // cover
-        buildCoverPage(workbook,clientName,EMData,SAMData);
+        if(includeCoverPage)buildCoverPage(workbook,clientName,EMData,SAMData);
 
         for(PortfolioList portfolioList: portfolioLists) {
             createSheetWithTemplate(workbook, sheetPreTitle+portfolioList.getSheetName(), sheetPreTitle+portfolioList.getSheetTitle(), portfolioList, portfolioList.getColWidths(attributes), toHighlight, attributes);

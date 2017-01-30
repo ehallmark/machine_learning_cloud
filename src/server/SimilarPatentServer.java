@@ -366,16 +366,21 @@ public class SimilarPatentServer {
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
-                if (attributes.contains("citationValue") && citationValueModel != null) {
+                if ((attributes.contains("overallValue")||attributes.contains("citationValue")) && citationValueModel != null) {
                     evaluateModel(citationValueModel,portfolioList.getPortfolio(),"citationValue");
                 }
 
-                if (attributes.contains("priorArtValue") && priorArtValueModel != null) {
+                if ((attributes.contains("overallValue")||attributes.contains("priorArtValue")) && priorArtValueModel != null) {
                     evaluateModel(priorArtValueModel,portfolioList.getPortfolio(),"priorArtValue");
                 }
 
-                if (attributes.contains("classValue") && classValueModel != null) {
+                if ((attributes.contains("overallValue")||attributes.contains("classValue")) && classValueModel != null) {
                     evaluateModel(classValueModel,portfolioList.getPortfolio(),"classValue");
+                }
+
+                // Handle overall value
+                if(attributes.contains("overallValue")) {
+                    portfolioList.computeAvgValues();
                 }
 
                 {
@@ -406,6 +411,8 @@ public class SimilarPatentServer {
                 }
                 portfolioList.init();
 
+                boolean includeCoverPage = extractBool(req,"include_cover_page");
+
                 // contact info
                 String EMLabel = extractContactInformation(req, "label1", Constants.DEFAULT_EM_LABEL);
                 String EMName = extractContactInformation(req, "cname1", Constants.DEFAULT_EM_NAME);
@@ -420,7 +427,7 @@ public class SimilarPatentServer {
                 String[] EMData = new String[]{EMLabel, EMName, EMTitle, EMPhone, EMEmail};
                 String[] SAMData = new String[]{SAMLabel, SAMName, SAMTitle, SAMPhone, SAMEmail};
                 try {
-                    ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees, title, clientName, EMData, SAMData, attributes, portfolioList);
+                    ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees, title, clientName, EMData, SAMData, attributes, includeCoverPage, portfolioList);
                 } catch (Exception e) {
 
                     e.printStackTrace();
@@ -538,6 +545,7 @@ public class SimilarPatentServer {
 
     private static Tag coverPageForm() {
         return div().with(h3("Contact Info (primarily for the cover page)"),
+                label("Include Cover Page? "),br(),input().withType("checkbox").withName("include_cover_page"),br(),
                 label("Search Type (eg. 'Focused Search')"),br(),input().withType("text").withName("title").withValue("Custom Search"), br(),
                 label("Client Name"),br(),input().withType("text").withName("client"), br(),
                 label("Contact 1 Label"),br(),input().withType("text").withName("label1").withValue(Constants.DEFAULT_EM_LABEL), br(),

@@ -92,6 +92,12 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         return sheetName;
     }
 
+    public void computeAvgValues() {
+        portfolio.forEach(item->{
+            item.setValue("overallValue",item.getAvgValue());
+        });
+    }
+
     public String getSheetTitle() { return getSheetName()+" ("+portfolio.size()+" results)"; }
 
     public void setPortfolio(List<ExcelWritable> portfolio) {

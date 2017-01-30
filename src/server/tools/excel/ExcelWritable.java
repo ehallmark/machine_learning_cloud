@@ -32,6 +32,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.put("Title","title");
         humanAttrToJavaAttrMap.put("Class Codes","classCode");
         humanAttrToJavaAttrMap.put("Prior Art Value","priorArtValue");
+        humanAttrToJavaAttrMap.put("Overall Value","overallValue");
 
 
         // inverted version to get human readables back
@@ -62,11 +63,10 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         this.valueMap.put(valueType,value);
     }
 
-    public double getValue(String valueType) {
-        if(valueMap.containsKey(valueType)) {
-            return valueMap.get(valueType);
-        } else {
-            return 0d;
+    public double getAvgValue() {
+        if(valueMap.isEmpty()) return 0d;
+        else {
+            return valueMap.entrySet().stream().collect(Collectors.averagingDouble(e->e.getValue()));
         }
     }
 
@@ -100,9 +100,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         return orderedTags;
     }
 
-    public void setAttribute(String attr, Object value, WritableCellFormat format) {
-        attributeData.put(attr,new ExcelCell(format,value,value instanceof Number));
-    }
     public ExcelRow getDataAsRow(List<String> attributes) {
         init(attributes);
         List<ExcelCell> cells = new ArrayList<>();

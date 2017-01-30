@@ -25,6 +25,10 @@ import java.util.*;
 public class PriorArtEvaluator extends Evaluator {
     private static final File file = new File("prior_art_value_model.jobj");
 
+    public PriorArtEvaluator() {
+        super(ValueMapNormalizer.DistributionType.Normal);
+    }
+
     @Override
     protected Map<String,Double> loadModel() {
         return (Map<String,Double>)Database.tryLoadObject(file);

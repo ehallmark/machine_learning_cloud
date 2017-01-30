@@ -15,9 +15,10 @@ import java.util.*;
 public abstract class Evaluator {
     // Instance class
     protected Map<String,Double> model;
-    public Evaluator() {
+
+    public Evaluator(ValueMapNormalizer.DistributionType distributionType) {
         this.model=loadModel();
-        ValueMapNormalizer.normalizeToRange(model,1.0,5.0);
+        new ValueMapNormalizer(distributionType).normalizeToRange(model,1.0,5.0);
     }
 
     public static Map<LocalDate,Set<String>> groupMapByMonth(Map<LocalDate,Set<String>> groupedByDayMap, int samples) {
