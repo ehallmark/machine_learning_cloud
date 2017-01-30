@@ -2,6 +2,8 @@ package value_estimation;
 
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
 import java.time.LocalDate;
@@ -34,6 +36,32 @@ public abstract class Evaluator {
             }
         });
         return groupedDateToPatentMap;
+    }
+
+    public static void addScoresToAssigneesFromPatents(Collection<String> assignees, Map<String,Double> model, WeightLookupTable<VocabWord> lookupTable) {
+        System.out.println("Adding scores to assignees...");
+        assignees.forEach(assignee->{
+            Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
+            double score = 0.0;
+            double toDivide = 0.0;
+            INDArray assigneeVec = lookupTable.vector(assignee);
+            if(assigneeVec!=null) {
+                for (String patent : assigneePatents) {
+                    if(!model.containsKey(patent)) continue;
+                    INDArray patentVec = lookupTable.vector(patent);
+                    if (patentVec != null) {
+                        double weight = Math.max(0.2, Transforms.cosineSim(patentVec, assigneeVec));
+                        score += model.get(patent) * weight;
+                        toDivide += weight;
+                    }
+                }
+            }
+            if(toDivide>0) {
+                score = score/toDivide;
+            } else score=0.0;
+            model.put(assignee,score);
+        });
+        System.out.println("Finished assignees.");
     }
 
     protected abstract Map<String,Double> loadModel();

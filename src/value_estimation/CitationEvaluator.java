@@ -62,30 +62,7 @@ public class CitationEvaluator extends Evaluator {
                 model.put(patent,0d);
             }
         });
-
-        System.out.println("Calculating scores for assignees...");
-        assignees.forEach(assignee->{
-            System.out.println("Updating assignee: "+assignee);
-            Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
-            double score = 0.0;
-            double toDivide = 0.0;
-            INDArray assigneeVec = lookupTable.vector(assignee);
-            if(assigneeVec!=null) {
-                for (String patent : assigneePatents) {
-                    if(!model.containsKey(patent)) continue;
-                    INDArray patentVec = lookupTable.vector(patent);
-                    if (patentVec != null) {
-                        double weight = Math.max(0.2, Transforms.cosineSim(patentVec, assigneeVec));
-                        score += model.get(patent) * weight;
-                        toDivide += weight;
-                    }
-                }
-            }
-            if(toDivide>0) {
-                score = score/toDivide;
-            } else score=0.0;
-            model.put(assignee,score);
-        });
+        addScoresToAssigneesFromPatents(assignees,model,lookupTable);
         System.out.println("Finished evaluator...");
         return model;
     }
