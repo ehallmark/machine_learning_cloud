@@ -51,6 +51,7 @@ public class AssigneeEvaluator extends Evaluator {
                 Map<String, Double> model = (Map<String, Double>) Database.tryLoadObject(file);
                 model.keySet().forEach(key->{
                     if(!assignees.contains(key)) model.remove(key);
+                    else System.out.println("Assignee FOUND! => "+key);
                 });
                 assigneeEvaluators.add(model);
             }catch(Exception e) {
