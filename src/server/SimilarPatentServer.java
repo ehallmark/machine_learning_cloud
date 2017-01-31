@@ -251,12 +251,14 @@ public class SimilarPatentServer {
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
-                if(req.queryParamsValues("dataAttributes")==null) {
+                if(req.queryParamsValues("dataAttributes[]")==null) {
                     res.redirect("/candidate_set_models");
                     req.session().attribute("message", "Please choose some data fields to report.");
                     return null;
                 }
-                List<String> attributes = Arrays.stream(req.queryParamsValues("dataAttributes")).collect(Collectors.toList());
+
+                List<String> attributes = Arrays.stream(req.queryParamsValues("dataAttributes[]")).collect(Collectors.toList());
+
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
@@ -600,7 +602,7 @@ public class SimilarPatentServer {
                                                         hr(),
                                                         expandableDiv("Data Fields",h3("Select Data Fields to capture"),div().with(
                                                                 humanParamMap.entrySet().stream().map(e-> {
-                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("dataAttributes[]").attr("checked","checked"));
+                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("dataAttributes[]").withValue(e.getValue()).attr("checked","checked"));
                                                                 }).collect(Collectors.toList()))
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
