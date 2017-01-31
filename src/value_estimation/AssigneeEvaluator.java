@@ -63,11 +63,11 @@ public class AssigneeEvaluator extends Evaluator {
                 for(String possibleAssignee: possibleAssignees) {
                     if (model.containsKey(possibleAssignee)) {
                         score += model.get(possibleAssignee);
+                        count++;
                     }
-                    count++;
                 }
             }
-            score/=count;
+            score/=Math.max(1,count);
             System.out.println("Score for assignee"+assignee+": "+score);
             assigneeModel.put(assignee,score);
         });
@@ -78,10 +78,10 @@ public class AssigneeEvaluator extends Evaluator {
             for(String possibleAssignee: possibleAssignees) {
                 if (assigneeModel.containsKey(possibleAssignee)) {
                     score += assigneeModel.get(possibleAssignee);
+                    count++;
                 }
-                count++;
             }
-            score/=count;
+            score/=Math.max(1,count);
             System.out.println("Score for patent "+patent+": "+score);
             assigneeModel.put(patent,score);
         });
