@@ -37,7 +37,7 @@ public class TechnologyEvaluator extends Evaluator {
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
-        final int SAMPLE_SIZE = 200;
+        final int SAMPLE_SIZE = 1000;
         System.out.println("Starting to load classification evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap(groupMapByMonth((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")),SAMPLE_SIZE));
         SortedSet<LocalDate> sortedDates = new TreeSet<>(dateToPatentsMap.keySet());

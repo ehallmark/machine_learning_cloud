@@ -36,8 +36,8 @@ public class PriorArtEvaluator extends Evaluator {
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
-        final int SAMPLE_SIZE = 200;
-        final int WINDOW_SIZE = 36;
+        final int SAMPLE_SIZE = 2000;
+        final int WINDOW_SIZE = 24;
         System.out.println("Starting to load prior art evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
 
