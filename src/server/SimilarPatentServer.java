@@ -80,6 +80,8 @@ public class SimilarPatentServer {
             modelMap.put("citationValue",new CitationEvaluator());
             modelMap.put("technologyValue",new TechnologyEvaluator());
             modelMap.put("claimValue",new ClaimEvaluator());
+            modelMap.put("marketValue",new MarketEvaluator());
+            modelMap.put("assigneeValue",new AssigneeEvaluator());
         } catch(Exception e) {
             e.printStackTrace();
         }

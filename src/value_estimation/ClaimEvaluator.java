@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
  * Created by Evan on 1/27/2017.
  */
 public class ClaimEvaluator extends Evaluator {
-    private static final File claimLengthModelFile = new File("independent_claim_length_value_model.jobj");
-    private static final File pendencyModelFile = new File("pendency_value_model.jobj");
-    private static final File claimRatioModelFile = new File("independent_claim_ratio_value_model.jobj");
+    static final File claimLengthModelFile = new File("independent_claim_length_value_model.jobj");
+    static final File pendencyModelFile = new File("pendency_value_model.jobj");
+    static final File claimRatioModelFile = new File("independent_claim_ratio_value_model.jobj");
     private static final File[] files = new File[]{
             claimLengthModelFile,
             pendencyModelFile,

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 1/27/2017.
  */
 public class TechnologyEvaluator extends Evaluator {
-    private static final File file = new File("classification_value_model.jobj");
+    static final File file = new File("classification_value_model.jobj");
     public TechnologyEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal);
     }

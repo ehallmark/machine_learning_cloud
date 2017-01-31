@@ -33,6 +33,8 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.put("Claim Value","claimValue");
         humanAttrToJavaAttrMap.put("Technology Value","technologyValue");
         humanAttrToJavaAttrMap.put("Overall Value","overallValue");
+        humanAttrToJavaAttrMap.put("Assignee Value","assigneeValue");
+        humanAttrToJavaAttrMap.put("Market Value","marketValue");
 
 
         // inverted version to get human readables back

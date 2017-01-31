@@ -23,7 +23,7 @@ import java.util.*;
  * Created by Evan on 1/27/2017.
  */
 public class CitationEvaluator extends Evaluator {
-    private static final File file = new File("citation_value_model.jobj");
+    static final File file = new File("citation_value_model.jobj");
 
     public CitationEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal);
