@@ -27,14 +27,6 @@ public class ExcelHandler {
     public static final double CELL_DEFAULT_HEIGHT = 24;
     public static final double CELL_DEFAULT_WIDTH = 25;
 
-    static {
-        try {
-            setupExcelFormats();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public static WritableCellFormat getDefaultFormat() {
         return CellFormatMap.get("dataStyle");
     }
@@ -270,6 +262,11 @@ public class ExcelHandler {
     }
 
     private static void writeHeadersAndData(WritableSheet sheet, String preTitle, PortfolioList portfolioList, Collection<String> toHighlight, int rowOffset, List<String> attributes) throws Exception {
+        try {
+            setupExcelFormats();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         System.out.println("Starting sheet with "+portfolioList.getPortfolio().size()+ " elements");
 
         int headerRow = 6 + rowOffset;
