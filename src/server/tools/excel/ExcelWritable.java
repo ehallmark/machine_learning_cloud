@@ -85,7 +85,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         //add value params if available
         valueMap.forEach((type,value)->{
             if(params.contains(type)) {
-                attributeData.put(type,new ExcelCell(ExcelHandler.getDefaultFormat(),value,true));
+                attributeData.put(type,new ExcelCell(ExcelHandler.getValueFormat(),value,true));
             }
         });
     }
