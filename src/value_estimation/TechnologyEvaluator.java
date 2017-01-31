@@ -24,16 +24,16 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 1/27/2017.
  */
-public class ClassificationEvaluator extends Evaluator {
+public class TechnologyEvaluator extends Evaluator {
     private static final File file = new File("classification_value_model.jobj");
-
-    public ClassificationEvaluator() {
+    public TechnologyEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal);
     }
 
     @Override
     protected List<Map<String,Double>> loadModels() {
-        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
+        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file),
+                (Map<String,Double>)Database.tryLoadObject(PriorArtEvaluator.file));
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){

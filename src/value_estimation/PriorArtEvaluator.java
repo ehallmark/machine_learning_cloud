@@ -23,15 +23,16 @@ import java.util.*;
  * Created by Evan on 1/27/2017.
  */
 public class PriorArtEvaluator extends Evaluator {
-    private static final File file = new File("prior_art_value_model.jobj");
+    static final File file = new File("prior_art_value_model.jobj");
 
-    public PriorArtEvaluator() {
+    private PriorArtEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal);
+        throw new RuntimeException("This model is now merged into technology value...");
     }
 
     @Override
     protected List<Map<String,Double>> loadModels() {
-        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
+        throw new RuntimeException("This model is now merged into technology value...");
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){

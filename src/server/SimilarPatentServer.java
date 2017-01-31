@@ -20,10 +20,7 @@ import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
 import tools.PortfolioList;
-import value_estimation.CitationEvaluator;
-import value_estimation.ClassificationEvaluator;
-import value_estimation.Evaluator;
-import value_estimation.PriorArtEvaluator;
+import value_estimation.*;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
@@ -50,8 +47,9 @@ public class SimilarPatentServer {
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static CitationEvaluator citationValueModel;
-    private static PriorArtEvaluator priorArtValueModel;
-    private static ClassificationEvaluator classValueModel;
+    private static TechnologyEvaluator technologyValueModel;
+    private static ClaimEvaluator claimValueModel;
+
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -82,8 +80,8 @@ public class SimilarPatentServer {
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
             citationValueModel=new CitationEvaluator();
-            priorArtValueModel=new PriorArtEvaluator();
-            classValueModel=new ClassificationEvaluator();
+            technologyValueModel=new TechnologyEvaluator();
+            claimValueModel=new ClaimEvaluator();
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -370,12 +368,12 @@ public class SimilarPatentServer {
                     evaluateModel(citationValueModel,portfolioList.getPortfolio(),"citationValue");
                 }
 
-                if ((attributes.contains("overallValue")||attributes.contains("priorArtValue")) && priorArtValueModel != null) {
-                    evaluateModel(priorArtValueModel,portfolioList.getPortfolio(),"priorArtValue");
+                if ((attributes.contains("overallValue")||attributes.contains("technologyValue")) && technologyValueModel != null) {
+                    evaluateModel(technologyValueModel,portfolioList.getPortfolio(),"technologyValue");
                 }
 
-                if ((attributes.contains("overallValue")||attributes.contains("classValue")) && classValueModel != null) {
-                    evaluateModel(classValueModel,portfolioList.getPortfolio(),"classValue");
+                if ((attributes.contains("overallValue")||attributes.contains("claimValue")) && claimValueModel != null) {
+                    evaluateModel(claimValueModel,portfolioList.getPortfolio(),"claimValue");
                 }
 
                 // Handle overall value

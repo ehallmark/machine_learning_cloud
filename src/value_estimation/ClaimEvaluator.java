@@ -52,10 +52,10 @@ public class ClaimEvaluator extends Evaluator {
                 if(patentToPubDateMap.containsKey(patent)&&patentToAppDateMap.containsKey(patent)) {
                     LocalDate pubDate = patentToPubDateMap.get(patent);
                     LocalDate appDate = patentToAppDateMap.get(patent);
-                    int pendency = appDate.until(pubDate).getDays();
-                    double score = (double)pendency;
-                    System.out.println("Score for patent "+patent+": "+score);
-                    pendencyModel.put(patent,score);
+                    double pendencyScore = pubDate.getYear()+(new Double(pubDate.getMonthValue()-1)/12)
+                            - (appDate.getYear()+(new Double(appDate.getMonthValue()-1)/12));
+                    System.out.println("Score for patent "+patent+": "+pendencyScore);
+                    pendencyModel.put(patent,pendencyScore);
                 }
             });
         }
