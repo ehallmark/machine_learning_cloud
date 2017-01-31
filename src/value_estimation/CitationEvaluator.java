@@ -45,7 +45,7 @@ public class CitationEvaluator extends Evaluator {
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
         Map<String,Double> oldScores = new HashMap<>();
-        LocalDate earliestDate = LocalDate.now().minusYears(5);
+        LocalDate earliestDate = LocalDate.now().minusYears(20);
         double beginningTrendValue = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1)/12.0);
         patents.forEach(patent->{
             double score = 0.0;
@@ -60,7 +60,7 @@ public class CitationEvaluator extends Evaluator {
             if(patentToDateMap.containsKey(patent)) {
                 LocalDate date = patentToDateMap.get(patent);
                 double trend = (new Double(date.getYear())+new Double(date.getMonthValue()-1)/12.0)-beginningTrendValue;
-                score+=trend/patentToDateMap.size();
+                score+=0.1*Math.pow(trend,2.0);
             }
             oldScores.put(patent,score);
         });
@@ -74,7 +74,7 @@ public class CitationEvaluator extends Evaluator {
                 for(String ref : references) {
                     double tmp = 0.0;
                     if (oldScores.containsKey(ref)) {
-                        tmp = Math.max(1.0,oldScores.get(ref));
+                        tmp = oldScores.get(ref);
                     } else {
                         tmp = 1.0;
                     }
@@ -84,9 +84,10 @@ public class CitationEvaluator extends Evaluator {
                 totalScore += Math.max(1.0, score + bonus);
             }
             if(patentToCitationsMap.containsKey(patent)) {
-                for(String citation : patentToCitationsMap.get(patent)) {
+                Set<String> citations = patentToCitationsMap.get(patent);
+                for(String citation : citations) {
                     if(oldScores.containsKey(citation)) {
-                        totalScore+=Math.max(-1.0,oldScores.get(citation));
+                        totalScore-=Math.log(oldScores.get(citation));
                     }
                 }
             }
