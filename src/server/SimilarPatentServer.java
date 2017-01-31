@@ -573,10 +573,9 @@ public class SimilarPatentServer {
                                         td().attr("style","width:33%; vertical-align: top;").with(
                                                 h2("Knowledge Base"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
-                                                        expandableDiv("Main Options",
+                                                        expandableDiv("Main Options", h3("Main options"),
                                                             h4("Search for results in"),
-                                                            h3("Main options"),
-                                                            label("Entire Database"),input().withType("checkbox").withName("search_all"),br(),
+                                                            label("Entire Database"),input().withType("checkbox").withName("search_all"),
                                                             h4("Or by"),
                                                             label("Custom Patent List (1 per line)"),br(),
                                                             textarea().withName("custom_patent_list"),br(),
@@ -584,20 +583,19 @@ public class SimilarPatentServer {
                                                             textarea().withName("custom_assignee_list"),br(),
                                                             label("Custom CPC Class Code List (1 per line)"),br(),
                                                             label("Example: F05D 01/233"),br(),
-                                                            textarea().withName("custom_class_code_list"),br(),
+                                                            textarea().withName("custom_class_code_list"),
                                                             h4("To find"),select().withName("search_type").with(
                                                                     option().withValue("patents").attr("selected","true").withText("Patents"),
                                                                     option().withValue("assignees").withText("Assignees"),
                                                                     option().withValue("class_codes").withText("CPC Class Codes")
-                                                            ),br(),h4("With relevance to"),
+                                                            ),h4("With relevance to"),
                                                             label("Patents (1 per line)"),br(),textarea().withName("patents"),
                                                             br(),
                                                             label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
                                                             br(),
                                                             label("CPC Class Codes (1 per line)"),br(),
                                                             label("Example: F05D 01/233"),br(),
-                                                            textarea().withName("class_codes"),
-                                                            br(),
+                                                            textarea().withName("class_codes"), br(),
                                                             label("Arbitrary Text"),br(),
                                                             textarea().withName("words")
                                                         ),
