@@ -81,7 +81,11 @@ public class PriorArtEvaluator extends Evaluator {
                 // calculate growth
                 double growth = (simT2-simT)/simT;
                 double timeFactor = (double)i-WINDOW_SIZE;
-                totalScore+=(timeFactor*growth);
+                if(i<WINDOW_SIZE) {
+                    totalScore-=Math.abs(timeFactor*growth);
+                } else {
+                    totalScore+=(timeFactor*growth);
+                }
             }
             System.out.println("Score for patent "+patent.getName()+": "+totalScore);
             model.put(patent.getName(),totalScore);
