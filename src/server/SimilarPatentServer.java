@@ -600,7 +600,7 @@ public class SimilarPatentServer {
                                                         hr(),
                                                         expandableDiv("Data Fields",h3("Select Data Fields to capture"),div().with(
                                                                 humanParamMap.entrySet().stream().map(e-> {
-                                                                    return div().with(label(e.getKey()),input().withType("checkbox")).withName("dataAttributes[]").attr("checked","checked");
+                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("dataAttributes[]").attr("checked","checked"));
                                                                 }).collect(Collectors.toList()))
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
