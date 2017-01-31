@@ -23,7 +23,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap=new HashMap<>();
         humanAttrToJavaAttrMap.put("Asset","name");
         humanAttrToJavaAttrMap.put("Similarity","similarity");
-        humanAttrToJavaAttrMap.put("Classification Value","classValue");
         humanAttrToJavaAttrMap.put("Citation Value","citationValue");
         humanAttrToJavaAttrMap.put("Relevant Asset(s)","relevantAssetsList");
         humanAttrToJavaAttrMap.put("Relevant Asset Count","relevantAssetCount");
