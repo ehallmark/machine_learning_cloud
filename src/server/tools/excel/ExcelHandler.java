@@ -214,6 +214,11 @@ public class ExcelHandler {
     }
 
     private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, PortfolioList portfolioList, int[] colWidths, Collection<String> toHighlight, List<String> attributes) throws Exception{
+        try {
+            setupExcelFormats();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         workbook.setColourRGB(Colour.DARK_BLUE, 52, 89, 133);
         WritableSheet sheet = workbook.createSheet(sheetName, workbook.getNumberOfSheets());
         sheet.getSettings().setShowGridLines(false);
@@ -262,11 +267,6 @@ public class ExcelHandler {
     }
 
     private static void writeHeadersAndData(WritableSheet sheet, String preTitle, PortfolioList portfolioList, Collection<String> toHighlight, int rowOffset, List<String> attributes) throws Exception {
-        try {
-            setupExcelFormats();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
         System.out.println("Starting sheet with "+portfolioList.getPortfolio().size()+ " elements");
 
         int headerRow = 6 + rowOffset;
@@ -309,6 +309,11 @@ public class ExcelHandler {
     }
 
     private static void buildCoverPage(WritableWorkbook workbook, String clientName, String[] EMData, String[] SAMData) throws Exception{
+        try {
+            setupExcelFormats();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
         workbook.setColourRGB(Colour.DARK_BLUE, 52, 89, 133);
         WritableSheet sheet = workbook.createSheet("Cover", workbook.getNumberOfSheets());
         sheet.getSettings().setShowGridLines(false);
