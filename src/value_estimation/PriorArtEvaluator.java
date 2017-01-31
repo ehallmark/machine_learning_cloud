@@ -36,13 +36,12 @@ public class PriorArtEvaluator extends Evaluator {
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
-        final int SAMPLE_SIZE = 2000;
         final int WINDOW_SIZE = 24;
         System.out.println("Starting to load prior art evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
 
         // group dates by month
-        Map<LocalDate,Set<String>> groupedDateToPatentMap = groupMapByMonth(dateToPatentsMap,SAMPLE_SIZE);
+        Map<LocalDate,Set<String>> groupedDateToPatentMap = groupMapByMonth(dateToPatentsMap);
 
         List<INDArray> monthVectors = new ArrayList<>(groupedDateToPatentMap.size());
         Map<String,List<INDArray>> patentToWindowDataMap = new HashMap<>();

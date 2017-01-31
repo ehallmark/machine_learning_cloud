@@ -20,13 +20,12 @@ public abstract class Evaluator {
         model=new ValueMapNormalizer(distributionType).normalizeAndMergeModels(loadModels());
     }
 
-    public static Map<LocalDate,Set<String>> groupMapByMonth(Map<LocalDate,Set<String>> groupedByDayMap, int samples) {
+    public static Map<LocalDate,Set<String>> groupMapByMonth(Map<LocalDate,Set<String>> groupedByDayMap) {
         // group dates and patents by month
         Map<LocalDate,Set<String>> groupedDateToPatentMap = new HashMap<>();
         groupedByDayMap.forEach((date,assets)->{
             List<String> assetList = new ArrayList<>(assets);
             Collections.shuffle(assetList);
-            assetList=assetList.subList(0,Math.max(assetList.size(),samples));
             LocalDate firstDayOfMonth =LocalDate.of(date.getYear(),date.getMonthValue(),1);
             if(groupedDateToPatentMap.containsKey(firstDayOfMonth)) {
                 groupedDateToPatentMap.get(firstDayOfMonth).addAll(assetList);
