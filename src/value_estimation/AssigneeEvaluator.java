@@ -45,26 +45,29 @@ public class AssigneeEvaluator extends Evaluator {
 
         System.out.println("Calculating scores for patents...");
 
-        List<Map<String,Double>> evaluators = new ArrayList<>();
+        List<Map<String,Double>> assigneeEvaluators = new ArrayList<>();
         Arrays.stream(files).forEach(file->{
             try {
                 Map<String, Double> model = (Map<String, Double>) Database.tryLoadObject(file);
-                evaluators.add(model);
+                model.keySet().forEach(key->{
+                    if(!assignees.contains(key)) model.remove(key);
+                });
+                assigneeEvaluators.add(model);
             }catch(Exception e) {
                 e.printStackTrace();
             }
         });
+        // normalize
+        Map<String,Double> normalizedAssigneeEvaluators = new ValueMapNormalizer(ValueMapNormalizer.DistributionType.Normal).normalizeAndMergeModels(assigneeEvaluators);
         Map<String,Double> assigneeModel = new HashMap<>();
         assignees.forEach(assignee->{
             double score = 0.0;
             int count = 0;
             Collection<String> possibleAssignees = Database.possibleNamesForAssignee(assignee);
-            for(Map<String,Double> model : evaluators) {
-                for(String possibleAssignee: possibleAssignees) {
-                    if (model.containsKey(possibleAssignee)) {
-                        score += model.get(possibleAssignee);
-                        count++;
-                    }
+            for(String possibleAssignee: possibleAssignees) {
+                if (normalizedAssigneeEvaluators.containsKey(possibleAssignee)) {
+                    score += normalizedAssigneeEvaluators.get(possibleAssignee);
+                    count++;
                 }
             }
             score/=Math.max(1,count);
