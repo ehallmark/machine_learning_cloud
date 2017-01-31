@@ -49,10 +49,12 @@ public class AssigneeEvaluator extends Evaluator {
         Arrays.stream(files).forEach(file->{
             try {
                 Map<String, Double> model = (Map<String, Double>) Database.tryLoadObject(file);
+                Set<String> keysToRemove = new HashSet<>();
                 model.keySet().forEach(key->{
-                    if(!assignees.contains(key)) model.remove(key);
-                    else System.out.println("Assignee FOUND! => "+key);
+                    if(!assignees.contains(key)) keysToRemove.add(key);
+                    else System.out.println("Assignee found => "+key);
                 });
+                keysToRemove.forEach(key->model.remove(key));
                 assigneeEvaluators.add(model);
             }catch(Exception e) {
                 e.printStackTrace();
