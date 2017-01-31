@@ -17,8 +17,7 @@ public abstract class Evaluator {
     protected Map<String,Double> model;
 
     public Evaluator(ValueMapNormalizer.DistributionType distributionType) {
-        this.model=loadModel();
-        new ValueMapNormalizer(distributionType).normalizeToRange(model,1.0,5.0);
+        model=new ValueMapNormalizer(distributionType).normalizeAndMergeModels(loadModels());
     }
 
     public static Map<LocalDate,Set<String>> groupMapByMonth(Map<LocalDate,Set<String>> groupedByDayMap, int samples) {
@@ -65,7 +64,7 @@ public abstract class Evaluator {
         System.out.println("Finished assignees.");
     }
 
-    protected abstract Map<String,Double> loadModel();
+    protected abstract List<Map<String,Double>> loadModels();
 
     public Map<String,Double> getMap() {
         return model;

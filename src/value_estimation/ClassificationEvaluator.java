@@ -32,8 +32,8 @@ public class ClassificationEvaluator extends Evaluator {
     }
 
     @Override
-    protected Map<String,Double> loadModel() {
-        return (Map<String,Double>)Database.tryLoadObject(file);
+    protected List<Map<String,Double>> loadModels() {
+        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
