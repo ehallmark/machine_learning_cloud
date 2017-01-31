@@ -46,9 +46,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    private static CitationEvaluator citationValueModel;
-    private static TechnologyEvaluator technologyValueModel;
-    private static ClaimEvaluator claimValueModel;
+    private static Map<String,Evaluator> modelMap = new HashMap<>();
 
     private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
     static {
@@ -79,9 +77,9 @@ public class SimilarPatentServer {
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
-            citationValueModel=new CitationEvaluator();
-            technologyValueModel=new TechnologyEvaluator();
-            claimValueModel=new ClaimEvaluator();
+            modelMap.put("citationValue",new CitationEvaluator());
+            modelMap.put("technologyValue",new TechnologyEvaluator());
+            modelMap.put("claimValue",new ClaimEvaluator());
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -364,17 +362,11 @@ public class SimilarPatentServer {
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
-                if ((attributes.contains("overallValue")||attributes.contains("citationValue")) && citationValueModel != null) {
-                    evaluateModel(citationValueModel,portfolioList.getPortfolio(),"citationValue");
-                }
-
-                if ((attributes.contains("overallValue")||attributes.contains("technologyValue")) && technologyValueModel != null) {
-                    evaluateModel(technologyValueModel,portfolioList.getPortfolio(),"technologyValue");
-                }
-
-                if ((attributes.contains("overallValue")||attributes.contains("claimValue")) && claimValueModel != null) {
-                    evaluateModel(claimValueModel,portfolioList.getPortfolio(),"claimValue");
-                }
+                modelMap.forEach((key,model)->{
+                    if ((attributes.contains("overallValue")||attributes.contains(key)) && model != null) {
+                        evaluateModel(model,portfolioList.getPortfolio(),key);
+                    }
+                });
 
                 // Handle overall value
                 if(attributes.contains("overallValue")) {
@@ -604,12 +596,10 @@ public class SimilarPatentServer {
                                                         label("Arbitrary Text"),br(),
                                                         textarea().withName("words"),
                                                         hr(),
-                                                        expandableDiv("Data Fields",h3("Select Data Fields to capture"),
-                                                                select().attr("multiple","true").withName("dataAttributes").with(
-                                                                        humanParamMap.entrySet().stream().map(e-> {
-                                                                            return option().withText(e.getKey()).withValue(e.getValue());
-                                                                        }).collect(Collectors.toList())
-                                                                )
+                                                        expandableDiv("Data Fields",h3("Select Data Fields to capture"),div().with(
+                                                                humanParamMap.entrySet().stream().map(e-> {
+                                                                    return div().with(label(e.getKey()),input().withType("checkbox")).withName("dataAttributes[]").attr("checked","checked");
+                                                                }).collect(Collectors.toList()))
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),

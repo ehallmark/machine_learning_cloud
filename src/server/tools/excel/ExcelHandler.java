@@ -35,6 +35,10 @@ public class ExcelHandler {
         return CellFormatMap.get("dataStylePercentage");
     }
 
+    public static WritableCellFormat getValueFormat() {
+        return CellFormatMap.get("valueFormat");
+    }
+
     private static void setupExcelFormats() throws Exception {
         // title style
         WritableFont cellFont = new WritableFont(WritableFont.ARIAL, 12);
@@ -114,6 +118,18 @@ public class ExcelHandler {
         cellFormat.setFont(cellFont);
         //write to datasheet
         CellFormatMap.put("dataStylePercentage",cellFormat);
+
+
+        // Data style number
+        cellFont = new WritableFont(WritableFont.ARIAL, 12);
+        decimalNo = new NumberFormat("0.0");
+        cellFormat = new WritableCellFormat(decimalNo);
+        cellFormat.setAlignment(Alignment.CENTRE);
+        cellFormat.setVerticalAlignment(VerticalAlignment.CENTRE);
+        cellFormat.setBorder(Border.ALL, BorderLineStyle.THIN, Colour.BLACK);
+        cellFormat.setFont(cellFont);
+        //write to datasheet
+        CellFormatMap.put("valueFormat",cellFormat);
 
         // Data style percentage highlighted
         cellFont = new WritableFont(WritableFont.ARIAL, 12);
