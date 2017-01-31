@@ -50,10 +50,6 @@ public class ValueMapNormalizer {
             }
 
         }
-
-        array.subi(mean).divi(stdDev);
-        // array is now standard normal
-
         for(int i = 0; i < keys.size(); i++) {
             String key = keys.get(i);
             double value = distribution.cumulativeProbability(array.getDouble(i))*(end-start)+start;
