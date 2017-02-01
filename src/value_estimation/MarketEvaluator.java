@@ -20,6 +20,7 @@ public class MarketEvaluator extends Evaluator {
     static final File transactionValueModelFile = new File("transaction_value_model.jobj");
     static final File assetFamilyValueModelFile = new File("asset_family_value_model.jobj");
     static final File maintenanceFeeValueModelFile = new File("maintenance_fee_value_model.jobj");
+
     private static final File[] files = new File[]{
             transactionValueModelFile,
             assetFamilyValueModelFile,
@@ -41,26 +42,68 @@ public class MarketEvaluator extends Evaluator {
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
 
-        System.out.println("Calculating scores for patents...");
-        // pendency model
+
+        System.out.println("Maintenance fee Model...");
+        Map<String,Double> maintenanceFeeModel = new HashMap<>();
+        {
+            // maintenance fee reminders
+            Map<String,Integer> maintenanceReminderCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("patent_to_fee_reminder_count_map.jobj"));
+            patents.forEach(patent->{
+                double score = 0.0;
+                if(maintenanceReminderCountMap.containsKey(patent)) {
+                    score-=(double)(maintenanceReminderCountMap.get(patent));
+                }
+                System.out.println("Maintenance score for "+patent+": "+score);
+                maintenanceFeeModel.put(patent,score);
+            });
+        }
+
+        System.out.println("Transaction Model...");
+        Map<String,Double> transactionModel = new HashMap<>();
+        {
+            // Formula: sum(transaction/size(transaction))-security interests
+            final File patentToSecurityInterestCountMapFile = new File("patent_to_security_interest_count_map.jobj");
+            Map<String,Integer> patentToSecurityInterestCountMap = (Map<String,Integer>)Database.tryLoadObject(patentToSecurityInterestCountMapFile);
+            final File patentToTransactionSizesMapFile = new File("patent_to_transaction_sizes_map.jobj");
+            Map<String,List<Integer>> patentToTransactionSizeMap = (Map<String,List<Integer>>)Database.tryLoadObject(patentToTransactionSizesMapFile);
+            patents.forEach(patent->{
+                double score = 0.0;
+                if(patentToTransactionSizeMap.containsKey(patent)) {
+                    List<Integer> transactionSizes = patentToTransactionSizeMap.get(patent);
+                    for(Integer transactionSize : transactionSizes) {
+                        if(transactionSize>0) {
+                            score += (1.0 / Math.log(1.0+transactionSize));
+                        }
+                    }
+                }
+                if(patentToSecurityInterestCountMap.containsKey(patent)) {
+                    score-=patentToSecurityInterestCountMap.get(patent);
+                }
+                System.out.println("Transaction score for patent "+patent+": "+score);
+                transactionModel.put(patent,score);
+            });
+        }
+
         System.out.println("Asset family model...");
-        // ind claim length model
         Map<String,Double> assetFamilyModel = new HashMap<>();
         {
             Map<String,Set<String>> relatedDocsMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_related_docs_map_file.jobj"));
             relatedDocsMap.forEach((patent,relatedAssets)->{
-                assetFamilyModel.put(patent,(double)(relatedAssets.size()));
+                if(relatedAssets.size()>0) {
+                    double score = Math.log(relatedAssets.size());
+                    for (String asset : relatedAssets) {
+                        if (transactionModel.containsKey(asset)) {
+                            score += transactionModel.get(asset);
+                        }
+                        if (maintenanceFeeModel.containsKey(asset)) {
+                            score += maintenanceFeeModel.get(asset);
+                        }
+                    }
+                    System.out.println("Family score for patent " + patent + ": " + score);
+                    assetFamilyModel.put(patent, score);
+                }
             });
         }
-
-
-        // ind claim length model
-        System.out.println("Maintenance fee Model...");
-        Map<String,Double> maintenanceFeeModel = new HashMap<>();
-
-        // ind claim ratio model
-        System.out.println("Transaction Model...");
-        Map<String,Double> transactionModel = new HashMap<>();
 
 
         try {

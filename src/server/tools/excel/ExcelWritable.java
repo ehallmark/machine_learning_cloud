@@ -1,6 +1,7 @@
 package server.tools.excel;
 
 import jxl.write.WritableCellFormat;
+import value_estimation.ValueMapNormalizer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,7 +66,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     }
 
     public double getAvgValue() {
-        if(valueMap.isEmpty()) return 0d;
+        if(valueMap.isEmpty()) return ValueMapNormalizer.DEFAULT_START;
         else {
             return valueMap.entrySet().stream().collect(Collectors.averagingDouble(e->e.getValue()));
         }

@@ -13,8 +13,8 @@ import java.util.*;
  * Created by Evan on 1/27/2017.
  */
 public class ValueMapNormalizer {
-    private static final Double DEFAULT_START = 1.0;
-    private static final Double DEFAULT_END = 5.0;
+    public static final Double DEFAULT_START = 1.0;
+    public static final Double DEFAULT_END = 5.0;
     private DistributionType type;
 
     public enum DistributionType {

@@ -74,7 +74,7 @@ public abstract class Evaluator {
         if(model.containsKey(token)) {
             return model.get(token);
         } else {
-            return 1.0;
+            return ValueMapNormalizer.DEFAULT_START;
         }
     }
 }
