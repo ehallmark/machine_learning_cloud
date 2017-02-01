@@ -41,17 +41,24 @@ public class MarketEvaluator extends Evaluator {
         System.out.println("Starting to load market evaluator...");
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
-
-
+        LocalDate earliestDate = LocalDate.now().minusYears(20);
+        double earlyTrend = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1.0)/12);
         System.out.println("Maintenance fee Model...");
         Map<String,Double> maintenanceFeeModel = new HashMap<>();
         {
             // maintenance fee reminders
+            Map<String,LocalDate> patentToPubDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_pubdate_map_file.jobj"));
             Map<String,Integer> maintenanceReminderCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("patent_to_fee_reminder_count_map.jobj"));
             patents.forEach(patent->{
                 double score = 0.0;
                 if(maintenanceReminderCountMap.containsKey(patent)) {
+                    // subtract score since it is bad
                     score-=(double)(maintenanceReminderCountMap.get(patent));
+                }
+                // standardize score by date
+                if(patentToPubDateMap.containsKey(patent)) {
+                    LocalDate patentDate = patentToPubDateMap.get(patent);
+                    score += ((new Double(patentDate.getYear())+new Double(patentDate.getMonthValue()-1.0)/12) - earlyTrend) / 5.0;
                 }
                 System.out.println("Maintenance score for "+patent+": "+score);
                 maintenanceFeeModel.put(patent,score);
