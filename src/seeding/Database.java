@@ -31,6 +31,9 @@ public class Database {
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
 	private static Set<String> allClassCodes;
+	private static Set<String> smallEntityPatents;
+	private static Set<String> largeEntityPatents;
+	private static Set<String> microEntityPatents;
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
 	private static File classCodeToPatentMapFile = new File("class_code_to_patent_map.jobj");
@@ -85,6 +88,9 @@ public class Database {
 		assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
+		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("large_entity_patents_set.jobj")));
+		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("small_entity_patents_set.jobj")));
+		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("micro_entity_patents_set.jobj")));
 
 		// load dependent objects
 		if(valuablePatentsFile.exists()) {
@@ -211,6 +217,25 @@ public class Database {
 			classifications.addAll(patentToClassificationMap.get(patent));
 		}
 		return classifications;
+	}
+
+	public static String assigneeEntityType(String assignee) {
+		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
+		Map<String,AtomicInteger> entityTypeToScoreMap = new HashMap<>();
+		entityTypeToScoreMap.put("Small",new AtomicInteger(0));
+		entityTypeToScoreMap.put("Large",new AtomicInteger(0));
+		entityTypeToScoreMap.put("Micro",new AtomicInteger(0));
+		if(assets.isEmpty()) return "Unknown";
+		assets.forEach(asset-> {
+			if (microEntityPatents.contains(asset)) {
+				entityTypeToScoreMap.get("Micro").getAndIncrement();
+			} else if(smallEntityPatents.contains(asset)) {
+				entityTypeToScoreMap.get("Small").getAndIncrement();
+			} else if(largeEntityPatents.contains(asset)) {
+				entityTypeToScoreMap.get("Large").getAndIncrement();
+			}
+		});
+		return entityTypeToScoreMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).findFirst().get().getKey();
 	}
 
 	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {
