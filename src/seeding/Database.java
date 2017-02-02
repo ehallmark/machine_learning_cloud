@@ -14,6 +14,7 @@ import tools.ClassCodeHandler;
 import java.io.*;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -220,13 +221,27 @@ public class Database {
 	}
 
 	public static String assigneeEntityType(String assignee) {
+		int sampleSize = 100;
 		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
 		Map<String,AtomicInteger> entityTypeToScoreMap = new HashMap<>();
 		entityTypeToScoreMap.put("Small",new AtomicInteger(0));
 		entityTypeToScoreMap.put("Large",new AtomicInteger(0));
 		entityTypeToScoreMap.put("Micro",new AtomicInteger(0));
 		if(assets.isEmpty()) return "Unknown";
-		assets.forEach(asset-> {
+		AtomicBoolean shouldStop = new AtomicBoolean(false);
+		assets.stream().sorted((a1,a2)->a2.compareTo(a1)).forEach(asset-> {
+			// stop conditions
+			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
+				shouldStop.set(true);
+			}
+			if(Math.abs(entityTypeToScoreMap.get("Micro").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
+				shouldStop.set(true);
+			}
+			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Micro").get())>sampleSize) {
+				shouldStop.set(true);
+			}
+			if(shouldStop.get()) return;
+
 			if (microEntityPatents.contains(asset)) {
 				entityTypeToScoreMap.get("Micro").getAndIncrement();
 			} else if(smallEntityPatents.contains(asset)) {
