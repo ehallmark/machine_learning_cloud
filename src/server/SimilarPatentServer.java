@@ -262,6 +262,7 @@ public class SimilarPatentServer {
                 boolean allowResultsFromOtherCandidateSet = extractBool(req, "allowResultsFromOtherCandidateSet");
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
+                boolean mergeSearchInput = extractBool(req, "merge_search_input");
 
                 SimilarPatentFinder firstFinder;
                 Set<String> labelsToExclude = new HashSet<>();
@@ -334,7 +335,11 @@ public class SimilarPatentServer {
                 stuffToSearchFor.addAll(assigneesToSearchFor);
                 stuffToSearchFor.addAll(classCodesToSearchFor);
 
-                stuffToSearchFor.forEach(patent -> secondFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+                if(mergeSearchInput) {
+                    secondFinders.add(new SimilarPatentFinder(stuffToSearchFor,null,paragraphVectors.getLookupTable()));
+                } else {
+                    stuffToSearchFor.forEach(patent -> secondFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+                }
                 // handle words slightly differently
                 if (!wordsToSearchFor.isEmpty())
                     secondFinders.add(new SimilarPatentFinder(wordsToSearchFor, "Custom Text", paragraphVectors.getLookupTable()));
@@ -446,10 +451,10 @@ public class SimilarPatentServer {
             throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(portfolioLists,badAssignees, name, portfolioType);
+        return mergePatentLists(portfolioLists,badAssignees, name, portfolioType,limit);
     }
 
-    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, String name, PortfolioList.Type portfolioType) {
+    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, String name, PortfolioList.Type portfolioType, int limit) {
         try {
             Map<String, ExcelWritable> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
@@ -468,7 +473,11 @@ public class SimilarPatentServer {
                 });
             });
             try {
-                List<ExcelWritable> merged = map.values().stream().filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee())))).sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity())).collect(Collectors.toList());
+                List<ExcelWritable> merged = map.values().stream()
+                        .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
+                        .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
+                        .limit(limit)
+                        .collect(Collectors.toList());
                 return new PortfolioList(merged,name,name,portfolioType);
 
             } catch(Exception e) {
@@ -607,6 +616,7 @@ public class SimilarPatentServer {
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                                label("Merge Search Input?"),br(),input().withType("checkbox").withName("merge_search_input"),br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
