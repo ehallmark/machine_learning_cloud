@@ -21,7 +21,8 @@ public class AbstractAssignee extends ExcelWritable {
     @Override
     protected void init(Collection<String> params) {
         super.init(params);
-        attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.getAssetCountFor(name), true));
+        if(params.contains("assignee"))attributeData.put("assignee",new ExcelCell(ExcelHandler.getDefaultFormat(), name, false));
+        if(params.contains("totalAssetCount"))attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.getAssetCountFor(name), true));
         if (params.contains("assigneeEntityType"))
             attributeData.put("assigneeEntityType", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.assigneeEntityType(name), false));
 
