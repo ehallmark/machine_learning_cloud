@@ -54,7 +54,7 @@ public class AbstractPatent extends ExcelWritable {
         super.init(params);
         if(params.contains("assignee"))attributeData.put("assignee", new ExcelCell(ExcelHandler.getDefaultFormat(),assignee,false));
         if(params.contains("title"))attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),title,false));
-        if(params.contains("assigneeEntityType")) attributeData.put("assigneeEntityType", new ExcelCell(ExcelHandler.getDefaultFormat(),Database.assigneeEntityType(assignee),false));
+        if(params.contains("assigneeEntityType")) attributeData.put("assigneeEntityType", new ExcelCell(ExcelHandler.getDefaultFormat(),Database.entityTypeForPatent(name),false));
         // override isNumber
         if(attributeData.containsKey("name")) {
             ExcelCell cell = attributeData.get("name");

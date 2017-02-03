@@ -220,6 +220,13 @@ public class Database {
 		return classifications;
 	}
 
+	public static String entityTypeForPatent(String patent) {
+		if(patent==null) throw new NullPointerException("patent");
+		if(microEntityPatents.contains(patent)) return "Micro";
+		if(smallEntityPatents.contains(patent)) return "Small";
+		if(largeEntityPatents.contains(patent)) return "Large";
+		return "Unknown";
+	}
 	public static String assigneeEntityType(String assignee) {
 		int sampleSize = 100;
 		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
