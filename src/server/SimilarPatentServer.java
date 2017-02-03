@@ -267,12 +267,16 @@ public class SimilarPatentServer {
                 SimilarPatentFinder firstFinder;
                 Set<String> labelsToExclude = new HashSet<>();
                 if (!allowResultsFromOtherCandidateSet) {
-                    classCodesToSearchFor.forEach(code->{
-                        labelsToExclude.addAll(Database.subClassificationsForClass(code));
-                    });
-                    assigneesToSearchFor.forEach(assignee->{
-                        labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
-                    });
+                    if(searchType.equals("class_codes")){
+                        classCodesToSearchFor.forEach(code->{
+                            labelsToExclude.addAll(Database.subClassificationsForClass(code));
+                        });
+                    }
+                    if(searchType.equals("assignees")) {
+                        assigneesToSearchFor.forEach(assignee -> {
+                            labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
+                        });
+                    }
                     labelsToExclude.addAll(patentsToSearchFor);
                 }
 
