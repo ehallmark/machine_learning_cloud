@@ -40,7 +40,12 @@ public class GatherClassificationServer {
             Database.getGatherTechMap().forEach((tech,patents)->{
                 try {
                     System.out.println("CANDIDATE LOADING: " + tech);
-                    SimilarPatentFinder finder = new SimilarPatentFinder(patents, tech, lookupTable);
+                    Set<String> data = new HashSet<>();
+                    patents.forEach(patent->{
+                        data.add(patent);
+                        data.addAll(Database.classificationsFor(patent));
+                    });
+                    SimilarPatentFinder finder = new SimilarPatentFinder(data, tech, lookupTable);
                     if (finder != null && finder.getPatentList().size() > 0) {
                         gatherFinders.add(finder);
                     }
