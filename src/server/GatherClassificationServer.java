@@ -53,6 +53,7 @@ public class GatherClassificationServer {
                     e.printStackTrace();
                 }
             });
+            System.out.println("Number of Gather Technologies found: "+gatherFinders.size());
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -94,10 +95,10 @@ public class GatherClassificationServer {
         final int tagLimit = tmp;
 
         // make sure patents exist
-        SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,String.valueOf(new Date().getTime()),lookupTable);
+        SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,String.valueOf(System.currentTimeMillis()),lookupTable);
 
         // run model
-        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.75,100,new HashSet<>(), PortfolioList.Type.patents).stream()
+        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.0,100,new HashSet<>(), PortfolioList.Type.class_codes).stream()
                 .sorted((s1,s2)->Double.compare(s2.getAvgSimilarity(),s1.getAvgSimilarity()))
                 .limit(tagLimit)
                 .map(result->result.getName2())
