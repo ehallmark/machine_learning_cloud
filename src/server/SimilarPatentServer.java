@@ -217,6 +217,7 @@ public class SimilarPatentServer {
             res.type("application/json");
             String classCodeStr = req.queryParams("class_code");
             if(classCodeStr==null||classCodeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
+            boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
             String[] classCodes = classCodeStr.split("\\n");
             if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
@@ -232,7 +233,7 @@ public class SimilarPatentServer {
                                     .filter(code->!(code==null||code.isEmpty()))
                                     .map(code->tr().with(
                                             td(code),
-                                            td(String.join(" ",Database.selectPatentNumbersFromExactClassCode(code))))
+                                            td(String.join(" ",includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(code):Database.selectPatentNumbersFromExactClassCode(code))))
                                     ).collect(Collectors.toList())
 
                     )
@@ -245,6 +246,7 @@ public class SimilarPatentServer {
             res.type("application/json");
             String patentStr = req.queryParams("patent");
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+            boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
             String[] patents = patentStr.split("\\n");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
@@ -260,7 +262,7 @@ public class SimilarPatentServer {
                                     .filter(patent->!(patent==null||patent.isEmpty()))
                                     .map(patent->tr().with(
                                             td(patent),
-                                            td(String.join(" ",Database.classificationsFor(patent))))
+                                            td(String.join(" ",includeSubclasses?Database.subClassificationsForPatent(patent):Database.classificationsFor(patent))))
                                     ).collect(Collectors.toList())
 
                     )
@@ -736,6 +738,7 @@ public class SimilarPatentServer {
                                                 h4("Please place each CPC code on a separate line"),
                                                 form().withId(CPC_TO_ASSETS_FORM_ID).with(
                                                         label("CPC Class Codes"),br(),textarea().withName("class_code"), br(),
+                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
                                                         button("Search").withId(CPC_TO_ASSETS_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),
@@ -744,6 +747,7 @@ public class SimilarPatentServer {
                                                 h4("Please place each patent on a separate line"),
                                                 form().withId(CPC_FROM_ASSETS_FORM_ID).with(
                                                         label("Patents"),br(),textarea().withName("patent"), br(),
+                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
                                                         button("Search").withId(CPC_FROM_ASSETS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )

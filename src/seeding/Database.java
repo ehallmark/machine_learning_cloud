@@ -229,6 +229,15 @@ public class Database {
 		return classifications;
 	}
 
+	public static Set<String> subClassificationsForPatent(String patent) {
+		Set<String> classifications = new HashSet<>();
+		classificationsFor(patent).forEach(clazz->{
+			classifications.add(clazz);
+			classifications.addAll(subClassificationsForClass(clazz));
+		});
+		return classifications;
+	}
+
 	public static String entityTypeForPatent(String patent) {
 		if(patent==null) throw new NullPointerException("patent");
 		if(microEntityPatents.contains(patent)) return "Micro";
