@@ -44,6 +44,8 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder classCodeFinder;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
+    private static final String ASSIGNEE_ASSETS_FORM_ID = "select-assignee-assets-form";
+    private static final String PATENTS_FROM_ETSI_FORM_ID = "select-patents-from-etsi-form";
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static Map<String,Evaluator> modelMap = new HashMap<>();
@@ -152,64 +154,59 @@ public class SimilarPatentServer {
                 return new Gson().toJson(new SimpleAjaxMessage(table.render()));
         });
 
-        /*post("/knowledge_base_predictions", (req, res) ->{
+        post("/assignee_assets", (req, res) -> {
             res.type("application/json");
+            String assigneeStr = req.queryParams("assignee");
+            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
 
-            // create html
-            AbstractClassCode table;
-            if(searchType.equals("patents")) {
-                table = table().with(
-                        thead().with(
-                                tr().with(
-                                        th("Pat No."),
-                                        th("Similarity"),
-                                        th("Assignee"),
-                                        th("Invention Title")
-                                )
-                        ),tbody().with(
-                                patentList.getPatents().stream().map(item->tr().with(
-                                        td(item.getName()),
-                                        td(String.valueOf(item.getSimilarity())),
-                                        td(item.getFullAssignee()),
-                                        td(item.getInventionTitle())
-                                )).collect(Collectors.toList())
-                        )
-                );
-            } else if(searchType.equals("assignees")) {
-                table = table().with(
-                        thead().with(
-                                tr().with(
-                                        th("Assignee"),
-                                        th("Similarity"),
-                                        th("Approx. Num Assets")
-                                )
-                        ),tbody().with(
-                                patentList.getPatents().stream().map(item->tr().with(
-                                        td(item.getName()),
-                                        td(String.valueOf(item.getSimilarity())),
-                                        td(String.valueOf(Database.getAssetCountFor(item.getName())))
-                                )).collect(Collectors.toList())
-                        )
-                );
-            } else {
-                table = table().with(
-                        thead().with(
-                                tr().with(
-                                        th("Code"),
-                                        th("Similarity"),
-                                        th("Title")
-                                )
-                        ),tbody().with(
-                                patentList.getPatents().stream().map(item->tr().with(
-                                        td(ClassCodeHandler.convertToHumanFormat(item.getName())),
-                                        td(String.valueOf(item.getSimilarity())),
-                                        td(Database.getClassTitleFromClassCode(ClassCodeHandler.convertToHumanFormat(item.getName())))
-                                )).collect(Collectors.toList())
-                        )
-                );
-            }
+            String[] assignees = assigneeStr.split("\\n");
+            if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Assignee"),
+                                    th("Current Assets")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(assignees)
+                                    .filter(assignee->!(assignee==null||assignee.isEmpty()))
+                                    .map(assignee->tr().with(
+                                            td(assignee),
+                                            td(String.join(" ",Database.selectPatentNumbersFromAssignee(assignee))))
+                                    ).collect(Collectors.toList())
+
+                    )
+            );
             return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });*/
+        });
+
+        post("/etsi_standards", (req, res) -> {
+            res.type("application/json");
+            String etsiStr = req.queryParams("etsi_standard");
+            if(etsiStr==null||etsiStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
+
+            String[] standards = etsiStr.split("\\n");
+            if(standards==null||standards.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Assignee"),
+                                    th("Current Assets")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(standards)
+                                    .filter(standard->!(standard==null||standard.isEmpty()))
+                                    .map(standard->tr().with(
+                                            td(standard),
+                                            td(String.join(" ",Database.selectPatentNumbersFromETSIStandard(standard))))
+                                    ).collect(Collectors.toList())
+
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -641,15 +638,33 @@ public class SimilarPatentServer {
     private static Tag patentToolboxForm() {
         return div().with(
                 formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
+                formScript(ASSIGNEE_ASSETS_FORM_ID, "/assignee_assets", "Search", true),
+                formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Asset Count for Assignees (Estimation Only)"),
+                                                h3("Get Asset Count for Assignees (Approximation Only)"),
                                                 h4("Please place each assignee on a separate line"),
                                                 form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                        label("Assignee"),br(),textarea().withName("assignee"), br(),
+                                                        label("Assignees"),br(),textarea().withName("assignee"), br(),
                                                         button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Current Assets for Assignees (Approximation Only)"),
+                                                h4("Please place each assignee on a separate line"),
+                                                form().withId(ASSIGNEE_ASSETS_FORM_ID).with(
+                                                        label("Assignees"),br(),textarea().withName("assignee"), br(),
+                                                        button("Search").withId(ASSIGNEE_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Current Assets for ETSI Standard (Approximation Only)"),
+                                                h4("Please place each ETSI Standard on a separate line"),
+                                                form().withId(PATENTS_FROM_ETSI_FORM_ID).with(
+                                                        label("ETSI Standards"),br(),textarea().withName("etsi_standard"), br(),
+                                                        button("Search").withId(PATENTS_FROM_ETSI_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )

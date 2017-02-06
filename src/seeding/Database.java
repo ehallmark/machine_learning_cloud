@@ -26,6 +26,7 @@ public class Database {
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
+	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
 	private static Set<String> expiredPatentSet;
@@ -145,6 +146,14 @@ public class Database {
 			});
 			trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
 		}
+
+		// ETSI
+		System.out.println("Handling ETSI patents...");
+		try {
+			etsiStandardToPatentsMap = GetEtsiPatentsList.getETSIPatentMap();
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
@@ -258,6 +267,14 @@ public class Database {
 			}
 		});
 		return entityTypeToScoreMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).findFirst().get().getKey();
+	}
+
+	public static Collection<String> selectPatentNumbersFromETSIStandard(String etsiStandard) {
+		if(etsiStandardToPatentsMap.containsKey(etsiStandard)) {
+			return new ArrayList<>(etsiStandardToPatentsMap.get(etsiStandard));
+		} else {
+			return Collections.emptySet();
+		}
 	}
 
 	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {

@@ -96,24 +96,23 @@ public class ModelEvaluator {
         return join.toString();
     }
 
-    public String evaluateModel(Map<String,List<String>> classificationToPatentMap, boolean fallbackToWordVectors, WeightLookupTable<VocabWord> lookupTable) {
+    public String evaluateModel(Map<String,Collection<String>> classificationToPatentMap, boolean fallbackToWordVectors, WeightLookupTable<VocabWord> lookupTable) {
         Evaluation evaluation = new Evaluation();
         Map<String,INDArray> classificationsFeatureMap = new HashMap<>();
         Map<String,List<String>> classificationToPatentMapForTesting = new HashMap<>();
         List<String> orderedLabels = new ArrayList<>(classificationToPatentMap.keySet());
         classificationToPatentMap.forEach((klass,_values)->{
-            List<String> patents;
+            Collection<String> patents;
             if(fallbackToWordVectors) {
                 patents = _values;
             } else {
                 patents = _values.stream().filter(patent -> lookupTable.vector(patent) != null).collect(Collectors.toList());
             }
             if(patents.size() <= 2) return;
-            Collections.sort(patents);
-            Collections.shuffle(patents,new Random(0));
+            Collections.shuffle((List<String>)patents,new Random(0));
             int splitIdx = (int)Math.floor(0.75*patents.size());
 
-            List<INDArray> features = patents.subList(0,splitIdx).stream().map(p->{
+            List<INDArray> features = ((List<String>)patents).subList(0,splitIdx).stream().map(p->{
                 try {
                     return SimilarPatentFinder.getVectorFromDB(p,lookupTable);
                 } catch(Exception e) {
@@ -125,7 +124,7 @@ public class ModelEvaluator {
             if(features.isEmpty()) return;
 
             classificationsFeatureMap.put(klass, Nd4j.vstack(features).mean(0));
-            classificationToPatentMapForTesting.put(klass,patents.subList(splitIdx,patents.size()));
+            classificationToPatentMapForTesting.put(klass,((List<String>)patents).subList(splitIdx,patents.size()));
         });
         DataSetIterator iterator = new ParagraphVectorDataSetIterator(classificationToPatentMapForTesting,orderedLabels,1,fallbackToWordVectors,lookupTable);
         while(iterator.hasNext()){

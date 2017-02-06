@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class GetEtsiPatentsList {
 
-    public static Map<String,List<String>> getETSIPatentMap() throws Exception {
+    public static Map<String,Collection<String>> getETSIPatentMap() throws Exception {
         File excelFile = new File("etsi_patents.xls");
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
         else System.out.println("--- Reading: "+excelFile.getName()+" ---");
@@ -27,7 +27,7 @@ public class GetEtsiPatentsList {
             throw new RuntimeException("--- Try converting to Excel 97-2004 (.xls) format ---");
         }
         Sheet sheet = wb.getSheet(0);
-        Map<String,List<String>> map = new HashMap<>();
+        Map<String,Collection<String>> map = new HashMap<>();
         for(int i = 0; i < sheet.getRows(); i++) {
             Cell[] row = sheet.getRow(i);
             if(row.length < 2) continue;
@@ -41,8 +41,8 @@ public class GetEtsiPatentsList {
                     int idxSpace = key.indexOf("(");
                     if(idxSpace >= 0) key = key.substring(0,idxSpace).trim();
                     if(key.length()==0)continue;
-                    if (!map.containsKey(key)) map.put(key, new ArrayList<>());
-                    List<String> values = map.get(key);
+                    if (!map.containsKey(key)) map.put(key, new HashSet<>());
+                    Collection<String> values = map.get(key);
                     values.add(name);
                 }
             }
