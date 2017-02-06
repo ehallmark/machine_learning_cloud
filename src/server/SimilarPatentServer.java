@@ -221,9 +221,6 @@ public class SimilarPatentServer {
 
             String[] classCodes = classCodeStr.split("\\n");
             if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
-            for(int i = 0; i < classCodes.length; i++) {
-                classCodes[i] = ClassCodeHandler.convertToLabelFormat(classCodes[i]);
-            }
             Tag table = table().with(
                     thead().with(
                             tr().with(
@@ -236,7 +233,7 @@ public class SimilarPatentServer {
                                     .filter(code->!(code==null||code.isEmpty()))
                                     .map(code->tr().with(
                                             td(code),
-                                            td(String.join(" ",(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(code):Database.selectPatentNumbersFromExactClassCode(code)))))
+                                            td(String.join(" ",(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(ClassCodeHandler.convertToLabelFormat(code)):Database.selectPatentNumbersFromExactClassCode(ClassCodeHandler.convertToLabelFormat(code))))))
                                     ).collect(Collectors.toList())
 
                     )
@@ -253,9 +250,6 @@ public class SimilarPatentServer {
 
             String[] patents = patentStr.split("\\n");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            for(int i = 0; i < patents.length; i++) {
-                patents[i]=patents[i].replaceAll("[^0-9]","");
-            }
             Tag table = table().with(
                     thead().with(
                             tr().with(
@@ -268,7 +262,7 @@ public class SimilarPatentServer {
                                     .filter(patent->!(patent==null||patent.isEmpty()))
                                     .map(patent->tr().with(
                                             td(patent),
-                                            td(String.join(" ",(includeSubclasses?Database.subClassificationsForPatent(patent):Database.classificationsFor(patent)).stream()
+                                            td(String.join(" ",(includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]",""))).stream()
                                                     .map(cpc->ClassCodeHandler.convertToHumanFormat(cpc)).collect(Collectors.toList()))))
                                     ).collect(Collectors.toList())
 
