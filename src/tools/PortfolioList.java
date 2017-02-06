@@ -116,7 +116,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
                     } else if (obj instanceof AbstractAssignee) {
                         return Database.getAssetCountFor(obj.getName()) <= limit;
                     } else {
-                        return Database.selectPatentNumbersFromClassCode(obj.getName()).size() <= limit;
+                        return Database.selectPatentNumbersFromClassAndSubclassCodes(obj.getName()).size() <= limit;
                     }
                 }).collect(Collectors.toList());
     }

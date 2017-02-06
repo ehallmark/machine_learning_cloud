@@ -19,7 +19,7 @@ public class AbstractClassCode extends ExcelWritable {
     @Override
     protected void init(Collection<String> params) {
         super.init(params);
-        attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.selectPatentNumbersFromClassCode(name).size(),true));
+        attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.selectPatentNumbersFromClassAndSubclassCodes(name).size(),true));
         attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),Database.getClassTitleFromClassCode(name),false));
     }
 
