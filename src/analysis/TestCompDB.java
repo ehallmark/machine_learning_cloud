@@ -143,7 +143,7 @@ public class TestCompDB {
         join.add(RunTest(transactionMap,lookupTable, "Transaction Probability ("+modelName+")"));
         join.add(RunTest(gatherTechMap,lookupTable, "Gather Technologies ("+modelName+")"));
         join.add(RunTest(gatherValueMap,lookupTable, "Gather Valuation ("+modelName+")"));
-        join.add(RunTest(GetEtsiPatentsList.getETSIPatentMap(),lookupTable, "ETSI Standards ("+modelName+")"));
+        //join.add(RunTest(GetEtsiPatentsList.getETSIPatentMap(),lookupTable, "ETSI Standards ("+modelName+")"));
         return join.toString();
     }
 
