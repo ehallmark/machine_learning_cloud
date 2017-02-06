@@ -46,6 +46,9 @@ public class SimilarPatentServer {
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     private static final String ASSIGNEE_ASSETS_FORM_ID = "select-assignee-assets-form";
     private static final String PATENTS_FROM_ETSI_FORM_ID = "select-patents-from-etsi-form";
+    private static final String CPC_FROM_ASSETS_FORM_ID = "select-cpc-from-assets-form";
+    private static final String CPC_TO_ASSETS_FORM_ID = "select-cpc-to-assets-form";
+
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     private static Map<String,Evaluator> modelMap = new HashMap<>();
@@ -165,7 +168,7 @@ public class SimilarPatentServer {
                     thead().with(
                             tr().with(
                                     th("Assignee"),
-                                    th("Current Assets")
+                                    th("Assets")
                             )
                     ),
                     tbody().with(
@@ -191,8 +194,8 @@ public class SimilarPatentServer {
             Tag table = table().with(
                     thead().with(
                             tr().with(
-                                    th("Assignee"),
-                                    th("Current Assets")
+                                    th("ETSI Standard"),
+                                    th("Assets")
                             )
                     ),
                     tbody().with(
@@ -201,6 +204,62 @@ public class SimilarPatentServer {
                                     .map(standard->tr().with(
                                             td(standard),
                                             td(String.join(" ",Database.selectPatentNumbersFromETSIStandard(standard))))
+                                    ).collect(Collectors.toList())
+
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
+
+
+        post("/cpc_to_assets", (req, res) -> {
+            res.type("application/json");
+            String classCodeStr = req.queryParams("class_code");
+            if(classCodeStr==null||classCodeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
+
+            String[] classCodes = classCodeStr.split("\\n");
+            if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Class Code"),
+                                    th("Assets")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(classCodes)
+                                    .filter(code->!(code==null||code.isEmpty()))
+                                    .map(code->tr().with(
+                                            td(code),
+                                            td(String.join(" ",Database.selectPatentNumbersFromExactClassCode(code))))
+                                    ).collect(Collectors.toList())
+
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
+
+
+        post("/cpc_from_assets", (req, res) -> {
+            res.type("application/json");
+            String patentStr = req.queryParams("patent");
+            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+
+            String[] patents = patentStr.split("\\n");
+            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Asset"),
+                                    th("Classifications")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(patents)
+                                    .filter(patent->!(patent==null||patent.isEmpty()))
+                                    .map(patent->tr().with(
+                                            td(patent),
+                                            td(String.join(" ",Database.classificationsFor(patent))))
                                     ).collect(Collectors.toList())
 
                     )
@@ -265,9 +324,7 @@ public class SimilarPatentServer {
                 Set<String> labelsToExclude = new HashSet<>();
                 if (!allowResultsFromOtherCandidateSet) {
                     if(searchType.equals("class_codes")){
-                        classCodesToSearchFor.forEach(code->{
-                            labelsToExclude.addAll(Database.subClassificationsForClass(code));
-                        });
+                        classCodesToSearchFor.forEach(code->labelsToExclude.add(code));
                     }
                     if(searchType.equals("assignees")) {
                         assigneesToSearchFor.forEach(assignee -> {
@@ -304,13 +361,15 @@ public class SimilarPatentServer {
                         assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
                     });
 
+                    boolean includeSubclasses = extractBool(req, "includeSubclasses");
+
                     // dependent on searchType
                     if (searchType.equals("patents")) {
                         customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(cpc):Database.selectPatentNumbersFromExactClassCode(cpc)));
                         firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
                     } else if (searchType.equals("assignees")) {
-                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromClassCode(cpc)));
+                        classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(cpc):Database.selectPatentNumbersFromExactClassCode(cpc)));
                         patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
                         firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
                     } else if (searchType.equals("class_codes")) {
@@ -621,6 +680,7 @@ public class SimilarPatentServer {
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
+                                                                label("Include CPC Subclasses (if using CPC codes)?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
                                                                 label("Asset Filter (space separated)"),br(),textarea().withName("assetFilter"),br(),
                                                                 label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
                                                                 label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
@@ -640,6 +700,8 @@ public class SimilarPatentServer {
                 formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
                 formScript(ASSIGNEE_ASSETS_FORM_ID, "/assignee_assets", "Search", true),
                 formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
+                formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
+                formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -665,6 +727,23 @@ public class SimilarPatentServer {
                                                 form().withId(PATENTS_FROM_ETSI_FORM_ID).with(
                                                         label("ETSI Standards"),br(),textarea().withName("etsi_standard"), br(),
                                                         button("Search").withId(PATENTS_FROM_ETSI_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+                                ),tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get patents from CPC (Approximation Only)"),
+                                                h4("Please place each CPC code on a separate line"),
+                                                form().withId(CPC_TO_ASSETS_FORM_ID).with(
+                                                        label("CPC Class Codes"),br(),textarea().withName("class_code"), br(),
+                                                        button("Search").withId(CPC_TO_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get CPC for patents (Approximation Only)"),
+                                                h4("Please place each patent on a separate line"),
+                                                form().withId(CPC_FROM_ASSETS_FORM_ID).with(
+                                                        label("Patents"),br(),textarea().withName("patent"), br(),
+                                                        button("Search").withId(CPC_FROM_ASSETS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )

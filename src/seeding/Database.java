@@ -277,13 +277,21 @@ public class Database {
 		}
 	}
 
-	public static Set<String> selectPatentNumbersFromClassCode(String cpcCode) {
+	public static Set<String> selectPatentNumbersFromClassAndSubclassCodes(String cpcCode) {
 		Set<String> set = new HashSet<>();
 		subClassificationsForClass(cpcCode).forEach(subClass->{
 			if (classCodeToPatentMap.containsKey(subClass)) {
 				set.addAll(classCodeToPatentMap.get(subClass));
 			}
 		});
+		return set;
+	}
+
+	public static Set<String> selectPatentNumbersFromExactClassCode(String cpcCode) {
+		Set<String> set = new HashSet<>();
+		if (classCodeToPatentMap.containsKey(cpcCode)) {
+			set.addAll(classCodeToPatentMap.get(cpcCode));
+		}
 		return set;
 	}
 
