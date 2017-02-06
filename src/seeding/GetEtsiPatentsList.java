@@ -15,6 +15,15 @@ import java.util.stream.Collectors;
  */
 public class GetEtsiPatentsList {
 
+    public static String cleanETSIString(String unClean) {
+        unClean=unClean.toUpperCase().replaceAll("\\."," ");
+        while(unClean.contains("  ")) unClean = unClean.replaceAll("  "," ");
+        unClean=unClean.trim();
+        int idxSpace = unClean.indexOf("(");
+        if(idxSpace >= 0) unClean = unClean.substring(0,idxSpace).trim();
+        return unClean;
+    }
+
     public static Map<String,Collection<String>> getETSIPatentMap() throws Exception {
         File excelFile = new File("etsi_patents.xls");
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
@@ -37,9 +46,7 @@ public class GetEtsiPatentsList {
             Cell t = row[10];
             if (t != null && t.getContents() != null) {
                 for(String key : t.getContents().split("\\|")) {
-                    key=key.replaceAll("\\."," ").trim().replaceAll("\\s+"," ").replaceAll("\\s+"," ");
-                    int idxSpace = key.indexOf("(");
-                    if(idxSpace >= 0) key = key.substring(0,idxSpace).trim();
+                    key = cleanETSIString(key);
                     if(key.length()==0)continue;
                     if (!map.containsKey(key)) map.put(key, new HashSet<>());
                     Collection<String> values = map.get(key);

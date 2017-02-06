@@ -10,6 +10,7 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
+import seeding.GetEtsiPatentsList;
 import server.tools.AbstractAssignee;
 import server.tools.AbstractPatent;
 import server.tools.SimpleAjaxMessage;
@@ -203,7 +204,7 @@ public class SimilarPatentServer {
                                     .filter(standard->!(standard==null||standard.isEmpty()))
                                     .map(standard->tr().with(
                                             td(standard),
-                                            td(String.join(" ",Database.selectPatentNumbersFromETSIStandard(standard))))
+                                            td(String.join(" ",Database.selectPatentNumbersFromETSIStandard(GetEtsiPatentsList.cleanETSIString(standard)))))
                                     ).collect(Collectors.toList())
 
                     )
