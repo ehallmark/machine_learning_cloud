@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/16/16.
  */
 public class GetEtsiPatentsList {
+    private static final File FULL_ETSI_FILE = new File("etsi_patents.xls");
+    private static final File ETSI_FILE_2G = new File("etsi_2g_filter.xls");
+    private static final File ETSI_FILE_3G = new File("etsi_3g_filter.xls");
+    private static final File ETSI_FILE_4G = new File("etsi_4g_filter.xls");
 
     public static String cleanETSIString(String unClean) {
         unClean=unClean.toUpperCase().replaceAll("\\."," ");
@@ -24,8 +28,7 @@ public class GetEtsiPatentsList {
         return unClean;
     }
 
-    public static Map<String,Collection<String>> getETSIPatentMap() throws Exception {
-        File excelFile = new File("etsi_patents.xls");
+    public static Map<String,Collection<String>> getETSIPatentMap(File excelFile) throws Exception {
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
         else System.out.println("--- Reading: "+excelFile.getName()+" ---");
         Workbook wb = null;
@@ -56,6 +59,42 @@ public class GetEtsiPatentsList {
         }
         return map;
     }
+
+    public static Map<String,Collection<String>> getETSIPatentMap() throws Exception {
+        return getETSIPatentMap(FULL_ETSI_FILE);
+    }
+
+    public static Map<String,Collection<String>> get2GPatentMap() throws Exception {
+        return getETSIPatentMap(ETSI_FILE_2G);
+    }
+
+    public static Map<String,Collection<String>> get3GPatentMap() throws Exception {
+        return getETSIPatentMap(ETSI_FILE_3G);
+    }
+
+    public static Map<String,Collection<String>> get4GPatentMap() throws Exception {
+        return getETSIPatentMap(ETSI_FILE_4G);
+    }
+
+    public static Collection<String> get2GPatents() throws Exception {
+        Set<String> patents = new HashSet<>();
+        get2GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
+        return patents;
+    }
+
+    public static Collection<String> get3GPatents() throws Exception {
+        Set<String> patents = new HashSet<>();
+        get3GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
+        return patents;
+    }
+
+    public static Collection<String> get4GPatents() throws Exception {
+        Set<String> patents = new HashSet<>();
+        get4GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
+        return patents;
+    }
+
+
     public static List<String> getExcelList(File excelFile, int colIdx, int offset) throws Exception {
         assert offset >= 0 : "Offset must be positive!";
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
@@ -102,9 +141,25 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
+        String name;
 
-        loadAndPrintExcelReservoir("orange_reservoir.xls",0,1);
-        loadAndPrintExcelReservoir("ricoh_reservoir.xls",1,1);
+        name = "2G (GSM)";
+        handleMap(get2GPatentMap(),name);
 
+        name = "3G (UMTS)";
+        handleMap(get3GPatentMap(),name);
+
+        name = "4G (LTE)";
+        handleMap(get4GPatentMap(),name);
+    }
+
+    private static void handleMap(Map<String,Collection<String>> map, String name) {
+        Set<String> allPatents = new HashSet<>();
+        Set<String> standards = new HashSet<>();
+        map.forEach((standard,patents)->{
+            allPatents.addAll(patents);
+            standards.add(standard);
+        });
+        System.out.println(name+"\t"+standards.size()+"\t"+String.join("; ",standards)+"\t"+allPatents.size()+"\t"+String.join(" ",allPatents));
     }
 }

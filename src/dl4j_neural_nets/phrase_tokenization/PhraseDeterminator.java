@@ -5,6 +5,7 @@ import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import seeding.Constants;
+import seeding.GetEtsiPatentsList;
 import tools.MinHeap;
 
 import java.io.*;
@@ -19,8 +20,9 @@ public class PhraseDeterminator {
     private static File file = new File("phrases_set.obj");
     private List<BiGram> topBigramList;
     private Set<String> phrases;
-    private Set<String> topPhraseSet;
-    private double threshold = 0.00001;
+    private Map<String,BiGram> topPhraseMap;
+    final static double delta = 100.0;
+    //private static final double threshold = 0.001;
     private int epoch;
     private int maxCapacity;
 
@@ -29,12 +31,20 @@ public class PhraseDeterminator {
         epoch = 0;
         this.iterator=iterator;
         phrases=new HashSet<>();
+        topPhraseMap= new HashMap<>();
         topBigramList = new ArrayList<>(maxCapacity);
+    }
+
+    public void reset() {
+        epoch = 0;
+        topBigramList.clear();
+        phrases.clear();
+        topPhraseMap.clear();
+        Word.reset();
     }
 
     public void determinePhrases() {
         epoch++;
-        Word.reset();
         long iteration = 0;
         while(iterator.hasMoreSequences()) {
             if(iteration%1000==0) {
@@ -71,32 +81,42 @@ public class PhraseDeterminator {
         for(Word word : words) {
             for(String nextWord : word.getNextWords()) {
                 BiGram biGram = new BiGram(word,nextWord);
-                if(biGram.score()>=threshold) {
+                //if(biGram.score()>=threshold/epoch) {
                     heap.add(biGram);
-                }
+                //}
             }
         }
         topBigramList.clear();
         while(!heap.isEmpty()) {
-            topBigramList.add(0,heap.remove());
+            BiGram biGram = heap.remove();
+            topBigramList.add(0,biGram);
+            topPhraseMap.put(biGram.toString(),biGram);
         }
-
-        topPhraseSet = topBigramList.stream().map(biGram->biGram.toString()).collect(Collectors.toSet());
-        phrases.addAll(topPhraseSet);
-        threshold/=2.0;
+        phrases.addAll(topPhraseMap.keySet());
     }
 
-    public List<BiGram> getBigrams() {
-        return topBigramList;
+    public double getScoreFor(String bigram) {
+        if(topPhraseMap.containsKey(bigram)) {
+            return topPhraseMap.get(bigram).score();
+        } else {
+            return Double.NEGATIVE_INFINITY;
+        }
     }
 
     public Set<String> getPhrasesSet() {
-        return topPhraseSet;
+        return new HashSet<>(topPhraseMap.keySet());
+    }
+
+    public List<BiGram> getBigrams() {
+        return topPhraseMap.entrySet().stream()
+                .map(e->e.getValue())
+                .sorted((o1,o2)->Double.compare(o2.score(),o1.score()))
+                .collect(Collectors.toList());
     }
 
     public void save() throws IOException {
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        oos.writeObject(topPhraseSet);
+        oos.writeObject(phrases);
         oos.flush();
         oos.close();
     }
@@ -110,23 +130,20 @@ public class PhraseDeterminator {
     }
 
     public static void main(String[] args) throws Exception {
-        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.SamplePatentSequenceIterator();
-        int maxNumResults = 100000;
+        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.SpecificPatentParagraphSequenceIterator(GetEtsiPatentsList.get4GPatents());
+        int maxNumResults = 300;
         PhraseDeterminator determinator = new PhraseDeterminator(test,maxNumResults);
         determinator.determinePhrases();
 
         // run again to find larger phrases
         determinator.determinePhrases();
+        determinator.determinePhrases();
         //determinator.determinePhrases();
 
         // now print results
-        for(String bigram: determinator.getPhrasesSet()) {
-            System.out.println("Phrase: "+bigram);
+        for(BiGram biGram: determinator.getBigrams()) {
+            System.out.println(biGram);
         }
-
-        determinator.save();
-
-        // test
-        TestPhraseDeterminator.main(new String[]{});
+        System.out.println("Total number of results: "+determinator.getPhrasesSet().size());
     }
 }

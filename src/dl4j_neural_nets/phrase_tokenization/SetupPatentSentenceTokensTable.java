@@ -79,10 +79,12 @@ public class SetupPatentSentenceTokensTable {
 
         LabelAwareSentenceIterator claimSentenceIterator = DatabaseIteratorFactory.ClaimSentenceIterator();
         setupFromIterator(claimSentenceIterator,"claim",insertConn,insertStatement);
-        */
+
 
         LabelAwareSentenceIterator abstractSentenceIterator = DatabaseIteratorFactory.AbstractSentenceIterator();
         setupFromIterator(abstractSentenceIterator,"abstract",insertConn,insertStatement);
+
+        */
 
         insertConn.close();
     }

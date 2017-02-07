@@ -14,8 +14,6 @@ public class Word {
     private double totalCount;
     private Map<String,AtomicDouble> coOccurenceFrequencies;
     private String text;
-    private static double delta = 25.0;
-
     private Word(String text) {
         this.text=text;
         totalCount=0.0;
@@ -69,7 +67,7 @@ public class Word {
         double count_ij = coOccurenceFrequencies.get(otherWord).get();
 
         if(count_ij >= 1.0) {
-            return (count_ij-delta)
+            return (count_ij-PhraseDeterminator.delta)
                     / (count_i*count_j);
         } else {
             return Double.NEGATIVE_INFINITY;
