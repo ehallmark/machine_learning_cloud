@@ -262,7 +262,7 @@ public class SimilarPatentServer {
                                     .filter(patent->!(patent==null||patent.isEmpty()))
                                     .map(patent->tr().with(
                                             td(patent),
-                                            td(String.join(" ",(includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]",""))).stream()
+                                            td(String.join("; ",(includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]",""))).stream()
                                                     .map(cpc->ClassCodeHandler.convertToHumanFormat(cpc)).collect(Collectors.toList()))))
                                     ).collect(Collectors.toList())
 
