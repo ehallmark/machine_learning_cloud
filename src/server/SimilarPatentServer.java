@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -49,6 +50,7 @@ public class SimilarPatentServer {
     private static final String PATENTS_FROM_ETSI_FORM_ID = "select-patents-from-etsi-form";
     private static final String CPC_FROM_ASSETS_FORM_ID = "select-cpc-from-assets-form";
     private static final String CPC_TO_ASSETS_FORM_ID = "select-cpc-to-assets-form";
+    private static final String CPC_FREQUENCY_FROM_ASSETS_FORM_ID = "select-cpc-frequency-from-assets-form";
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -266,6 +268,57 @@ public class SimilarPatentServer {
                                                     .map(cpc->ClassCodeHandler.convertToHumanFormat(cpc)).collect(Collectors.toList()))))
                                     ).collect(Collectors.toList())
 
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
+
+        post("/cpc_frequencies_from_assets", (req, res) -> {
+            res.type("application/json");
+            String patentStr = req.queryParams("patent");
+            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+            boolean includeSubclasses = extractBool(req, "includeSubclasses");
+
+            String[] patents = patentStr.split("\\n");
+            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+
+            AtomicInteger cnt = new AtomicInteger(0);
+            Map<String,Double> classScoreMap = new HashMap<>();
+            Arrays.stream(patents).forEach(patent->{
+                if(patent==null||patent.trim().isEmpty()) return;
+                Collection<String> data = (includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]","")));
+                if(data.isEmpty()) return;
+                data.stream()
+                        .forEach(cpc->{
+                            if(classScoreMap.containsKey(cpc)) {
+                                classScoreMap.put(cpc,classScoreMap.get(cpc)+1.0);
+                            } else {
+                                classScoreMap.put(cpc,1.0);
+                            }
+                        });
+                cnt.getAndIncrement();
+            });
+
+            // standardize numbers
+            Set<String> keys = new HashSet<>(classScoreMap.keySet());
+            keys.forEach(key->{
+                classScoreMap.put(key,classScoreMap.get(key)/cnt.get());
+            });
+
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Class Code"),
+                                    th("Frequency")
+                            )
+                    ),
+                    tbody().with(
+                            classScoreMap.entrySet().stream()
+                                    .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                                    .map(e->tr().with(
+                                            td(ClassCodeHandler.convertToHumanFormat(e.getKey())),
+                                            td(e.getValue().toString()))
+                                    ).collect(Collectors.toList())
                     )
             );
             return new Gson().toJson(new SimpleAjaxMessage(table.render()));
@@ -706,6 +759,7 @@ public class SimilarPatentServer {
                 formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
                 formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
                 formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
+                formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -750,6 +804,14 @@ public class SimilarPatentServer {
                                                         label("Patents"),br(),textarea().withName("patent"), br(),
                                                         label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
                                                         button("Search").withId(CPC_FROM_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get CPC frequencies for patents (Approximation Only)"),
+                                                h4("Please place each patent on a separate line"),
+                                                form().withId(CPC_FREQUENCY_FROM_ASSETS_FORM_ID).with(
+                                                        label("Patents"),br(),textarea().withName("patent"), br(),
+                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
+                                                        button("Search").withId(CPC_FREQUENCY_FROM_ASSETS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
