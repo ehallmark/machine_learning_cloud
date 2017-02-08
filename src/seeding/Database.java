@@ -183,6 +183,9 @@ public class Database {
 		return "";
 	}
 
+	public static int numPatentsWithCpcClassifications() {
+		return patentToClassificationMap.size();
+	}
 	public static int getAssetCountFor(String assignee) {
 		if(assignee==null||assignee.isEmpty()) return 0;
 		final String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);

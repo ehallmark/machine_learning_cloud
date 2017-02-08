@@ -299,26 +299,34 @@ public class SimilarPatentServer {
                 cnt.getAndIncrement();
             });
 
+            Map<String,Double> globalFrequencyMap = new HashMap<>();
+            Map<String,Double> ratioMap = new HashMap<>();
             // standardize numbers
             Set<String> keys = new HashSet<>(classScoreMap.keySet());
             keys.forEach(key->{
                 classScoreMap.put(key,classScoreMap.get(key)/cnt.get());
+                globalFrequencyMap.put(key,new Double(Database.selectPatentNumbersFromExactClassCode(key).size())/Database.numPatentsWithCpcClassifications());
+                ratioMap.put(key,classScoreMap.get(key)/globalFrequencyMap.get(key));
             });
 
             Tag table = table().with(
                     thead().with(
                             tr().with(
                                     th("Class Code"),
-                                    th("Frequency")
+                                    th("Frequency in asset list"),
+                                    th("Global Frequency"),
+                                    th("Frequency Ratio")
                             )
                     ),
                     tbody().with(
-                            classScoreMap.entrySet().stream()
+                            ratioMap.entrySet().stream()
                                     .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
                                     .map(e->tr().with(
                                             td(ClassCodeHandler.convertToHumanFormat(e.getKey())),
-                                            td(e.getValue().toString()))
-                                    ).collect(Collectors.toList())
+                                            td(classScoreMap.get(e.getKey()).toString()),
+                                            td(globalFrequencyMap.get(e.getKey()).toString()),
+                                            td(e.getValue().toString())
+                                    )).collect(Collectors.toList())
                     )
             );
             return new Gson().toJson(new SimpleAjaxMessage(table.render()));
