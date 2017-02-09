@@ -23,6 +23,7 @@ public class GetEtsiPatentsList {
         unClean=unClean.toUpperCase().replaceAll("\\."," ");
         while(unClean.contains("  ")) unClean = unClean.replaceAll("  "," ");
         unClean=unClean.trim();
+
         int idxSpace = unClean.indexOf("(");
         if(idxSpace >= 0) unClean = unClean.substring(0,idxSpace).trim();
         // trim middle 1 if possible
@@ -31,6 +32,7 @@ public class GetEtsiPatentsList {
             split[1]=split[1].substring(1);
             unClean=String.join(" ",split);
         }
+        if(unClean.contains(","))unClean=unClean.replaceAll(",","");
         return unClean;
     }
 
@@ -147,27 +149,40 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        String name;
+        Map<String,Collection<String>> map2G = get2GPatentMap();
 
-        name = "2G (GSM)";
-        handleMap(get2GPatentMap(),name, new File("standards_by_tech_2g.csv"));
+        Map<String,Collection<String>> map3G = get3GPatentMap();
 
-        name = "3G (UMTS)";
-        handleMap(get3GPatentMap(),name, new File("standards_by_tech_3g.csv"));
+        Map<String,Collection<String>> map4G = get4GPatentMap();
 
-        name = "4G (LTE)";
-        handleMap(get4GPatentMap(),name, new File("standards_by_tech_4g.csv"));
-    }
-
-    private static void handleMap(Map<String,Collection<String>> map, String name, File file) throws Exception{
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("standards_by_tech.csv")));
         // headers
-        writer.write("Technology,Standard,Declared US Assets\n");
+        writer.write("Standard,2G (GSM) Applicable,3G (UMTS) Applicable, 4G (LTE) Applicable,Declared US Assets\n");
         writer.flush();
-        map.forEach((standard,patents)->{
+        Set<String> allStandards = new HashSet<>();
+        allStandards.addAll(map2G.keySet());
+        allStandards.addAll(map3G.keySet());
+        allStandards.addAll(map4G.keySet());
+        allStandards.forEach(standard->{
             try {
+                Set<String> patents = new HashSet<>();
+                boolean is2G = false;
+                boolean is3G = false;
+                boolean is4G = false;
+                if(map2G.containsKey(standard)) {
+                    is2G=true;
+                    patents.addAll(map2G.get(standard));
+                }
+                if(map3G.containsKey(standard)) {
+                    is3G=true;
+                    patents.addAll(map3G.get(standard));
+                }
+                if(map4G.containsKey(standard)) {
+                    is4G=true;
+                    patents.addAll(map4G.get(standard));
+                }
                 StringJoiner line = new StringJoiner(",", "", "\n");
-                line.add(name).add(standard).add(String.join(" ", patents));
+                line.add(standard).add(boolToString(is2G)).add(boolToString(is3G)).add(boolToString(is4G)).add(String.join(" ", patents));
                 writer.write(line.toString());
                 writer.flush();
             } catch(Exception e) {
@@ -175,4 +190,10 @@ public class GetEtsiPatentsList {
             }
         });
     }
+
+    private static String boolToString(boolean isTrue) {
+        if(isTrue) return "Yes";
+        else return "No";
+    }
+
 }

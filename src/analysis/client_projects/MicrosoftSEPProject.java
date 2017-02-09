@@ -49,7 +49,7 @@ public class MicrosoftSEPProject {
             for(int i = 0; i < isSEP.size()*samplingRatio; i++) {
                 int nextRand = minPatNum+(Math.abs(rand.nextInt())%(maxPatNum-minPatNum));
                 System.out.println("Random patent: "+nextRand);
-                if(!isSEP.contains(String.valueOf(nextRand))&&Database.hasClassifications(String.valueOf(nextRand))) {
+                if(!isSEP.contains(String.valueOf(nextRand))) {
                     patents.add(String.valueOf(nextRand));
                 } else {
                     i--;
@@ -114,8 +114,8 @@ public class MicrosoftSEPProject {
 
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
-        final int keywordLimit = 50;
-        final int samplingRatio = 100;
+        final int keywordLimit = 300;
+        final int samplingRatio = 200;
         List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
         runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
         List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
