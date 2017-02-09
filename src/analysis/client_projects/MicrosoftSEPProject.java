@@ -17,6 +17,7 @@ public class MicrosoftSEPProject {
     private static List<String> loadKeywordFile(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
         List<String> keywords = reader.lines().filter(line->line!=null&&line.trim().length()>0).map(line->line.trim()).collect(Collectors.toList());
+        System.out.println("Keywords found: "+String.join("; ",keywords));
         reader.close();
         return keywords;
     }
@@ -46,6 +47,7 @@ public class MicrosoftSEPProject {
             Random rand = new Random(System.currentTimeMillis());
             for(int i = 0; i < isSEP.size()*samplingRatio; i++) {
                 int nextRand = minPatNum+Math.abs(rand.nextInt())*(maxPatNum-maxPatNum);
+                System.out.println("Random patent: "+nextRand);
                 if(!isSEP.contains(String.valueOf(nextRand))&&Database.hasClassifications(String.valueOf(nextRand))) {
                     patents.add(String.valueOf(nextRand));
                 } else {
@@ -107,7 +109,7 @@ public class MicrosoftSEPProject {
 
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
-        final int samplingRatio = 100;
+        final int samplingRatio = 10;
         List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
         runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio);
         List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
