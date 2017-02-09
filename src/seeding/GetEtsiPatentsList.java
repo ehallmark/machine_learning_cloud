@@ -28,7 +28,7 @@ public class GetEtsiPatentsList {
         return unClean;
     }
 
-    public static Map<String,Collection<String>> getETSIPatentMap(File excelFile) throws Exception {
+    public static Map<String,Collection<String>> getETSIPatentMap(File excelFile) throws IOException {
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
         else System.out.println("--- Reading: "+excelFile.getName()+" ---");
         Workbook wb = null;
@@ -60,35 +60,35 @@ public class GetEtsiPatentsList {
         return map;
     }
 
-    public static Map<String,Collection<String>> getETSIPatentMap() throws Exception {
+    public static Map<String,Collection<String>> getETSIPatentMap() throws IOException {
         return getETSIPatentMap(FULL_ETSI_FILE);
     }
 
-    public static Map<String,Collection<String>> get2GPatentMap() throws Exception {
+    public static Map<String,Collection<String>> get2GPatentMap() throws IOException {
         return getETSIPatentMap(ETSI_FILE_2G);
     }
 
-    public static Map<String,Collection<String>> get3GPatentMap() throws Exception {
+    public static Map<String,Collection<String>> get3GPatentMap() throws IOException {
         return getETSIPatentMap(ETSI_FILE_3G);
     }
 
-    public static Map<String,Collection<String>> get4GPatentMap() throws Exception {
+    public static Map<String,Collection<String>> get4GPatentMap() throws IOException {
         return getETSIPatentMap(ETSI_FILE_4G);
     }
 
-    public static Collection<String> get2GPatents() throws Exception {
+    public static Collection<String> get2GPatents() throws IOException {
         Set<String> patents = new HashSet<>();
         get2GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
         return patents;
     }
 
-    public static Collection<String> get3GPatents() throws Exception {
+    public static Collection<String> get3GPatents() throws IOException {
         Set<String> patents = new HashSet<>();
         get3GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
         return patents;
     }
 
-    public static Collection<String> get4GPatents() throws Exception {
+    public static Collection<String> get4GPatents() throws IOException {
         Set<String> patents = new HashSet<>();
         get4GPatentMap().values().forEach((patentSet)->patents.addAll(patentSet));
         return patents;

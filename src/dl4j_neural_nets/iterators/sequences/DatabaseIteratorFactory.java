@@ -68,6 +68,16 @@ public class DatabaseIteratorFactory {
         return new AbstractSequenceIterator.Builder<>(transformer).build();
     }
 
+    public static DatabaseTextIterator SpecificPatentParagraphTextIterator(Collection<String> patents) throws SQLException {
+        return new DatabaseTextIterator.Builder(PatentTextQuery,PatentDBUrl)
+                        .addTextIndex(2) // abstract
+                        //.addTextIndex(3) // description
+                        .addLabelIndex(1)
+                        .setFetchSize(5)
+                        .setParameterAsArray(1,patents.toArray(),"varchar")
+                        .build();
+    }
+
     public static DatabaseSequenceIterator PatentSequenceIterator() throws SQLException {
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addTextIndex(4)

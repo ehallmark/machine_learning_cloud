@@ -156,6 +156,10 @@ public class Database {
 		}
 	}
 
+	public static boolean hasClassifications(String pat) {
+		return patentToClassificationMap.containsKey(pat);
+	}
+
 	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
 
 	public static Set<String> getAssignees() {return new HashSet<>(allAssignees);}
