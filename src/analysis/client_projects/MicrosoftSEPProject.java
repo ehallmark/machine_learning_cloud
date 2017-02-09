@@ -2,7 +2,6 @@ package analysis.client_projects;
 
 import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import dl4j_neural_nets.iterators.sequences.DatabaseTextIterator;
-import seeding.Database;
 import seeding.GetEtsiPatentsList;
 
 import java.io.*;
@@ -77,7 +76,10 @@ public class MicrosoftSEPProject {
                 }
                 data[i+1]=score;
             }
-            patentToDataMap.put(label,data);
+            if(Arrays.stream(data).collect(Collectors.summingDouble(d->d))>=0.5) {
+                // no need to add lame data
+                patentToDataMap.put(label, data);
+            }
         }
 
         List<String> headers = new ArrayList<>();
@@ -115,7 +117,7 @@ public class MicrosoftSEPProject {
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
         final int keywordLimit = 300;
-        final int samplingRatio = 200;
+        final int samplingRatio = 300;
         List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
         runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
         List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
