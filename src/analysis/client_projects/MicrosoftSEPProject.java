@@ -60,6 +60,7 @@ public class MicrosoftSEPProject {
         DatabaseTextIterator iterator = DatabaseIteratorFactory.SpecificPatentParagraphTextIterator(patents);
         while(iterator.hasNext()) {
             String sentence = iterator.nextSentence();
+            if(sentence==null||sentence.isEmpty()) continue;
             final String oldSentence = sentence;
             String label = iterator.currentLabel();
             System.out.println("Starting patent: "+label);
@@ -75,6 +76,7 @@ public class MicrosoftSEPProject {
                 }
                 data[i+1]=score;
             }
+            patentToDataMap.put(label,data);
         }
 
         List<String> headers = new ArrayList<>();
