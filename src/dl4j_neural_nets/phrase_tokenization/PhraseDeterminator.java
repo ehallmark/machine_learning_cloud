@@ -21,7 +21,7 @@ public class PhraseDeterminator {
     private List<BiGram> topBigramList;
     private Set<String> phrases;
     private Map<String,BiGram> topPhraseMap;
-    final static double delta = 100.0;
+    final static double delta = 50.0;
     //private static final double threshold = 0.001;
     private int epoch;
     private int maxCapacity;
@@ -130,7 +130,7 @@ public class PhraseDeterminator {
     }
 
     public static void main(String[] args) throws Exception {
-        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.SpecificPatentParagraphSequenceIterator(GetEtsiPatentsList.get4GPatents());
+        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.SpecificPatentParagraphSequenceIterator(GetEtsiPatentsList.get2GPatents());
         int maxNumResults = 300;
         PhraseDeterminator determinator = new PhraseDeterminator(test,maxNumResults);
         determinator.determinePhrases();
@@ -142,7 +142,7 @@ public class PhraseDeterminator {
 
         // now print results
         for(BiGram biGram: determinator.getBigrams()) {
-            System.out.println(biGram);
+            System.out.println(biGram+"\t"+biGram.score());
         }
         System.out.println("Total number of results: "+determinator.getPhrasesSet().size());
     }
