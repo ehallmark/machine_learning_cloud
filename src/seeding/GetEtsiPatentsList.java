@@ -25,6 +25,12 @@ public class GetEtsiPatentsList {
         unClean=unClean.trim();
         int idxSpace = unClean.indexOf("(");
         if(idxSpace >= 0) unClean = unClean.substring(0,idxSpace).trim();
+        // trim middle 1 if possible
+        String[] split = unClean.split(" ");
+        if(split.length>2 && split[1].length()==3 && split[1].startsWith("1")) {
+            split[1]=split[1].substring(1);
+            unClean=String.join(" ",split);
+        }
         return unClean;
     }
 
@@ -144,22 +150,29 @@ public class GetEtsiPatentsList {
         String name;
 
         name = "2G (GSM)";
-        handleMap(get2GPatentMap(),name);
+        handleMap(get2GPatentMap(),name, new File("standards_by_tech_2g.csv"));
 
         name = "3G (UMTS)";
-        handleMap(get3GPatentMap(),name);
+        handleMap(get3GPatentMap(),name, new File("standards_by_tech_3g.csv"));
 
         name = "4G (LTE)";
-        handleMap(get4GPatentMap(),name);
+        handleMap(get4GPatentMap(),name, new File("standards_by_tech_4g.csv"));
     }
 
-    private static void handleMap(Map<String,Collection<String>> map, String name) {
-        Set<String> allPatents = new HashSet<>();
-        Set<String> standards = new HashSet<>();
+    private static void handleMap(Map<String,Collection<String>> map, String name, File file) throws Exception{
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        // headers
+        writer.write("Technology,Standard,Declared US Assets\n");
+        writer.flush();
         map.forEach((standard,patents)->{
-            allPatents.addAll(patents);
-            standards.add(standard);
+            try {
+                StringJoiner line = new StringJoiner(",", "", "\n");
+                line.add(name).add(standard).add(String.join(" ", patents));
+                writer.write(line.toString());
+                writer.flush();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         });
-        System.out.println(name+"\t"+standards.size()+"\t"+String.join("; ",standards)+"\t"+allPatents.size()+"\t"+String.join(" ",allPatents));
     }
 }

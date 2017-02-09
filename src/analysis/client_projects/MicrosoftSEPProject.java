@@ -22,10 +22,11 @@ public class MicrosoftSEPProject {
         return keywords;
     }
 
-    private static void runModel(File outputFile, File keywordFile, List<String> patents, final int samplingRatio) throws IOException,SQLException {
+    private static void runModel(File outputFile, File keywordFile, List<String> patents, final int samplingRatio, final int keywordLimit) throws IOException,SQLException {
         // load keywords
         List<String> keywords = loadKeywordFile(keywordFile).stream()
                 .map(keyword->keyword.toLowerCase().replaceAll("_"," ").trim())
+                .limit(keywordLimit)
                 .collect(Collectors.toList());
 
         // load patents
@@ -87,9 +88,11 @@ public class MicrosoftSEPProject {
         }
         BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
         // write headers
+        StringJoiner headerLine = new StringJoiner(",","","\n");
         for(String header : headers) {
-            bw.write(header.toLowerCase().replaceAll(" ","_").replaceAll(",",""));
+            headerLine.add(header.toLowerCase().replaceAll(" ","_").replaceAll(",",""));
         }
+        bw.write(headerLine.toString());
         // write data
         patentToDataMap.forEach((patent,data)->{
             StringJoiner line = new StringJoiner(",","","\n");
@@ -111,13 +114,14 @@ public class MicrosoftSEPProject {
 
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
+        final int keywordLimit = 50;
         final int samplingRatio = 100;
         List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
-        runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio);
+        runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
         List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
-        runModel(new File("ms_sep_3g_results.csv"), new File("ms_sep_3g_keywords.csv"),patents3G,samplingRatio);
+        runModel(new File("ms_sep_3g_results.csv"), new File("ms_sep_3g_keywords.csv"),patents3G,samplingRatio,keywordLimit);
         List<String> patents4G = new ArrayList<>(GetEtsiPatentsList.get4GPatents());
-        runModel(new File("ms_sep_4g_results.csv"), new File("ms_sep_4g_keywords.csv"),patents4G,samplingRatio);
+        runModel(new File("ms_sep_4g_results.csv"), new File("ms_sep_4g_keywords.csv"),patents4G,samplingRatio,keywordLimit);
 
     }
 }
