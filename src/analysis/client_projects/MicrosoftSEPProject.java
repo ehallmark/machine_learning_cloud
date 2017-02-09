@@ -46,7 +46,7 @@ public class MicrosoftSEPProject {
             int maxPatNum =(int) (avg+(Collections.max(patNums)-avg)/2);
             Random rand = new Random(System.currentTimeMillis());
             for(int i = 0; i < isSEP.size()*samplingRatio; i++) {
-                int nextRand = minPatNum+Math.abs(rand.nextInt())*(maxPatNum-minPatNum);
+                int nextRand = minPatNum+(Math.abs(rand.nextInt())%(maxPatNum-minPatNum));
                 System.out.println("Random patent: "+nextRand);
                 if(!isSEP.contains(String.valueOf(nextRand))&&Database.hasClassifications(String.valueOf(nextRand))) {
                     patents.add(String.valueOf(nextRand));
