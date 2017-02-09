@@ -116,14 +116,14 @@ public class MicrosoftSEPProject {
 
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
-        final int keywordLimit = 300;
-        final int samplingRatio = 300;
+        final int keywordLimit = 200;
+        final int samplingRatio = 500;
         List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
         runModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
-        List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
+        /*List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
         runModel(new File("ms_sep_3g_results.csv"), new File("ms_sep_3g_keywords.csv"),patents3G,samplingRatio,keywordLimit);
         List<String> patents4G = new ArrayList<>(GetEtsiPatentsList.get4GPatents());
         runModel(new File("ms_sep_4g_results.csv"), new File("ms_sep_4g_keywords.csv"),patents4G,samplingRatio,keywordLimit);
-
+        */
     }
 }
