@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class MicrosoftSEPProject {
     private static List<String> loadKeywordFile(File file) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(file));
-        List<String> keywords = reader.lines().filter(line->line==null||line.trim().length()==0).map(line->line.trim()).collect(Collectors.toList());
+        List<String> keywords = reader.lines().filter(line->line!=null&&line.trim().length()>0).map(line->line.trim()).collect(Collectors.toList());
         reader.close();
         return keywords;
     }
