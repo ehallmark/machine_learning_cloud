@@ -41,11 +41,13 @@ public class MicrosoftSEPProject {
             int minPatNum =(int) (avg-(avg-Collections.min(patNums))/2);
             int maxPatNum =(int) (avg+(Collections.max(patNums)-avg)/2);
             Random rand = new Random(System.currentTimeMillis());
+            Set<String> alreadyFound = new HashSet<>(patents);
             for(int i = 0; i < isSEP.size()*samplingRatio; i++) {
                 int nextRand = minPatNum+(Math.abs(rand.nextInt())%(maxPatNum-minPatNum));
                 System.out.println("Random patent: "+nextRand);
-                if(!patents.contains(String.valueOf(nextRand))) {
+                if(!alreadyFound.contains(String.valueOf(nextRand))) {
                     patents.add(String.valueOf(nextRand));
+                    alreadyFound.add(String.valueOf(nextRand));
                 } else {
                     i--;
                 }
