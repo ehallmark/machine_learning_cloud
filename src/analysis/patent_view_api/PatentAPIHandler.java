@@ -42,58 +42,75 @@ public class PatentAPIHandler {
         return results;
     }
 
-    public static List<Patent> requestAllPatents(Collection<String> patents) {
-        AllPatentQuery query = new AllPatentQuery(patents,1);
-        int totalResults;
-        List<Patent> results=null;
-        try {
-            PatentResponse response = requestPatents(query);
-            totalResults = response.getTotalPatentCount();
-            if(totalResults==0) return new ArrayList<>();
-            results = new ArrayList<>(totalResults);
-            results.addAll(response.getPatents());
-        } catch(Exception e) {
-            e.printStackTrace();
-            totalResults=0;
-        }
-        if(results==null) return new ArrayList<>();
-        int page = 2;
-        while(results.size()<totalResults) {
-            query = new AllPatentQuery(patents,page);
+    public static Collection<Patent> requestAllPatents(Collection<String> _patents) {
+        List<String> patentList = new ArrayList<>(_patents);
+        int batch = 500;
+        Collection<Patent> allResults = new HashSet<>();
+        for(int i = 0; i < patentList.size(); i+=batch) {
+            List<String> patents = patentList.subList(i,Math.min(patentList.size(),i+batch));
+            AllPatentQuery query = new AllPatentQuery(patents, 1);
+            int totalResults;
+            List<Patent> results = null;
             try {
-                results.addAll(requestPatents(query).getPatents());
-            } catch(Exception e) {
+                PatentResponse response = requestPatents(query);
+                totalResults = response.getTotalPatentCount();
+                if (totalResults == 0) return new ArrayList<>();
+                results = new ArrayList<>(totalResults);
+                results.addAll(response.getPatents());
+            } catch (Exception e) {
                 e.printStackTrace();
-                break;
+                totalResults = 0;
             }
-            page++;
+            if (results != null) {
+                int page = 2;
+                while (results.size() < totalResults) {
+                    query = new AllPatentQuery(patents, page);
+                    try {
+                        results.addAll(requestPatents(query).getPatents());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    page++;
+                }
+                allResults.addAll(results);
+            }
         }
-        return results;
+        return allResults;
     }
 
-    public static List<Patent> requestAllPatentsFromKeywords(Collection<String> keywords) {
-        PatentKeywordQuery query = new PatentKeywordQuery(keywords,1);
-        int totalResults;
-        try {
-            totalResults = requestPatents(query).getTotalPatentCount();
-        } catch(Exception e) {
-            e.printStackTrace();
-            totalResults=0;
-        }
-        if(totalResults==0) return new ArrayList<>();
-        List<Patent> results = new ArrayList<>(totalResults);
-        int page = 1;
-        while(results.size()<totalResults) {
-            query = new PatentKeywordQuery(keywords,page);
+    public static Collection<Patent> requestAllPatentsFromKeywords(Collection<String> largeKeywordSet) {
+        List<String> list = new ArrayList<>(largeKeywordSet);
+        int batch = 20;
+        Set<Patent> allPatents = new HashSet<>();
+        for(int i = 0; i < list.size(); i+=batch) {
+            Collection<String> keywords = list.subList(i,Math.min(list.size(),i+batch));
+            PatentKeywordQuery query = new PatentKeywordQuery(keywords,1);
+            int totalResults;
             try {
-                results.addAll(requestPatents(query).getPatents());
+                totalResults = requestPatents(query).getTotalPatentCount();
             } catch(Exception e) {
                 e.printStackTrace();
-                break;
+                totalResults=0;
             }
-            page++;
+            if(totalResults>0) {
+                int page = 1;
+                List<Patent> results = new ArrayList<>(totalResults);
+                while (results.size() < totalResults) {
+                    query = new PatentKeywordQuery(keywords, page);
+                    try {
+                        results.addAll(requestPatents(query).getPatents());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        break;
+                    }
+                    page++;
+                }
+                allPatents.addAll(results);
+            }
         }
-        return results;
+
+        return allPatents;
     }
 
     private static PatentResponse requestPatents(Query query) {
@@ -124,7 +141,7 @@ public class PatentAPIHandler {
         return null;
     }
 
-    private static void addResultsToAssigneeMap(List<Patent> patents, Map<String,Set<String>> map) {
+    private static void addResultsToAssigneeMap(Collection<Patent> patents, Map<String,Set<String>> map) {
         patents.forEach(patent->{
             String patNum = patent.getPatentNumber();
             patent.getAssignees().forEach(assignee->{
@@ -164,6 +181,7 @@ public class PatentAPIHandler {
         // consolidate assignees
         Map<String,Set<String>> newMap = new HashMap<>();
         importantAssignees.forEach(assignee->newMap.put(assignee,new HashSet<>()));
+        newMap.put("**OTHER**", new HashSet<>());
         for(Map.Entry<String,Set<String>> e : map.entrySet()) {
             String importantAssignee = null;
             for(String assignee: importantAssignees) {
@@ -173,13 +191,15 @@ public class PatentAPIHandler {
                 }
             }
             if(importantAssignee==null) {
-                if(newMap.containsKey(e.getKey())) {
+                /*if(newMap.containsKey(e.getKey())) {
                     newMap.get(e.getKey()).addAll(e.getValue());
                 } else {
                     Set<String> set = new HashSet<>();
                     set.addAll(e.getValue());
                     newMap.put(e.getKey(),set);
-                }
+                }*/
+                if(e.getValue().size()>3) newMap.get("**OTHER**").addAll(e.getValue());
+
             } else {
                 newMap.get(importantAssignee).addAll(e.getValue());
             }
@@ -193,7 +213,7 @@ public class PatentAPIHandler {
         List<String> keywords = reader.lines()
                 .filter(line->line!=null&&line.trim().length()>0)
                 .map(line->line.trim().replaceAll("_"," "))
-                .limit(30)
+                //.limit(30)
                 .collect(Collectors.toList());
         System.out.println("Keywords: "+String.join("; ",keywords));
         reader.close();
@@ -204,35 +224,35 @@ public class PatentAPIHandler {
         /*
             List<Patent> patents = requestAllPatentsFromAssigneesAndClassCodes(Arrays.asList("microsoft","panasonic"),Arrays.asList("G06F3\\/0383"));
         */
-        List<String> importantAssignees = Arrays.asList("Nokia", "Samsung", "Ericsson", "Panasonic", "NTT DoCoMo", "IP Bridge", "Sisvel", "Philips","Microsoft")
+        List<String> importantAssignees = Arrays.asList("Nokia","ETRI","Sharp","Alcatel","Huawei","ZTE","InterDigital","LG ","Sony","Cisco","International Business Machines","Motorola","Nortel","Apple", "Siemens", "Sprint", "Verizon", "ATT", "Blackberry", "Qualcomm","Broadcom","Cingular","Intel","Bell","Samsung", "Ericsson", "Panasonic", "NTT DoCoMo", "IP Bridge", "Sisvel", "Philips","Microsoft")
                 .stream()
                 .map(a->a.toUpperCase())
                 .collect(Collectors.toList());
         {
             Map<String, Set<String>> assigneeTo2GMap = new HashMap<>();
-            List<Patent> patents2G = requestAllPatentsFromKeywords(loadKeywordFile(new File("ms_sep_2g_keywords.csv")));
+            Collection<String> patentList2G = loadKeywordFile(new File("relevant_patents_2g_output.csv"));
+            Collection<Patent> patents2G = requestAllPatents(patentList2G);
             System.out.println("Total 2G patents found: " + patents2G.size());
             addResultsToAssigneeMap(patents2G, assigneeTo2GMap);
             groupImportantAssignees(assigneeTo2GMap,importantAssignees);
-            Database.trySaveObject(assigneeTo2GMap,new File("assignee_to_2g_patents_map.jobj"));
             writeAssigneeDataCountsToCSV(assigneeTo2GMap,new File("2g_assignee_data.csv"));
         }
         {
             Map<String,Set<String>> assigneeTo3GMap = new HashMap<>();
-            List<Patent> patents3G = requestAllPatentsFromKeywords(loadKeywordFile(new File("ms_sep_3g_keywords.csv")));
-            System.out.println("Total 4G patents found: "+patents3G.size());
+            Collection<String> patentList3G = loadKeywordFile(new File("relevant_patents_3g_output.csv"));
+            Collection<Patent> patents3G = requestAllPatents(patentList3G);
+            System.out.println("Total 3G patents found: "+patents3G.size());
             addResultsToAssigneeMap(patents3G, assigneeTo3GMap);
             groupImportantAssignees(assigneeTo3GMap,importantAssignees);
-            Database.trySaveObject(assigneeTo3GMap,new File("assignee_to_3g_patents_map.jobj"));
             writeAssigneeDataCountsToCSV(assigneeTo3GMap,new File("3g_assignee_data.csv"));
         }
         {
-            List<Patent> patents4G = requestAllPatentsFromKeywords(loadKeywordFile(new File("ms_sep_4g_keywords.csv")));
+            Collection<String> patentList4G = loadKeywordFile(new File("relevant_patents_4g_output.csv"));
+            Collection<Patent> patents4G = requestAllPatents(patentList4G);
             System.out.println("Total 4G patents found: " + patents4G.size());
             Map<String, Set<String>> assigneeTo4GMap = new HashMap<>();
             addResultsToAssigneeMap(patents4G, assigneeTo4GMap);
             groupImportantAssignees(assigneeTo4GMap,importantAssignees);
-            Database.trySaveObject(assigneeTo4GMap,new File("assignee_to_4g_patents_map.jobj"));
             writeAssigneeDataCountsToCSV(assigneeTo4GMap,new File("4g_assignee_data.csv"));
         }
 

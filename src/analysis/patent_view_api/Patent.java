@@ -26,4 +26,13 @@ public class Patent {
     public List<CPC> getClassCodes() {
         return cpcs;
     }
+
+    @Override
+    public int hashCode() {
+        return patent_number.hashCode();
+    }
+    @Override
+    public boolean equals(Object other) {
+        return other.equals(patent_number);
+    }
 }

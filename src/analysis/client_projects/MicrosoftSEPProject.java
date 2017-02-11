@@ -23,7 +23,27 @@ public class MicrosoftSEPProject {
         return keywords;
     }
 
-    private static void runCPCModel(File outputFile, List<String> patents, final int samplingRatio) throws IOException {
+    private static Collection<String> getRelevantPatents(Collection<String> cpcs, Collection<String> keywords) throws IOException {
+        Set<String> cpcPatents = new HashSet<>();
+        Set<String> keyPatents = new HashSet<>();
+        PatentAPIHandler.requestAllPatentsFromClassCodes(cpcs.stream().map(key->{
+            String base = key.toUpperCase().replaceFirst("\\.","\\/").trim();
+            System.out.println("Base: "+base);
+            return base;
+        }).collect(Collectors.toList())).forEach(patent->{
+            cpcPatents.add(patent.getPatentNumber());
+        });
+        PatentAPIHandler.requestAllPatentsFromKeywords(keywords.stream().map(key->key.replaceAll("_"," ")).collect(Collectors.toList())).forEach(patent->{
+            keyPatents.add(patent.getPatentNumber());
+        });
+        Set<String> patents = new HashSet<>();
+        cpcPatents.forEach(patent->{
+            if(keyPatents.contains(patent)) patents.add(patent);
+        });
+        return patents;
+    }
+
+    private static void runCPCModel(File outputFile, List<String> patents, final int samplingRatio, final int limit) throws IOException {
         // load patents
         Set<String> isSEP = new HashSet<>(patents);
 
@@ -60,8 +80,8 @@ public class MicrosoftSEPProject {
         {
             Set<String> relevantClassSet = new HashSet<>();
             int batchSize = 500;
-            for(int i = 0; i < patents.size()-batchSize; i+=batchSize) {
-                PatentAPIHandler.requestAllPatents(patents.subList(i,i+batchSize)).forEach(patent -> {
+            for(int i = 0; i < patents.size(); i+=batchSize) {
+                PatentAPIHandler.requestAllPatents(patents.subList(i,Math.min(patents.size(),i+batchSize))).forEach(patent -> {
                     Set<String> classes = patent.getClassCodes().stream()
                             .map(c->c.getSubgroup()).collect(Collectors.toSet());
                     if(isSEP.contains(patent.getPatentNumber())) {
@@ -83,7 +103,6 @@ public class MicrosoftSEPProject {
         // load data
         Map<String,Double[]> patentToDataMap = new HashMap<>();
         Random rand = new Random(System.currentTimeMillis());
-        int limit = 100;
         List<String> sortedClasses = relevantClasses.stream().sorted((c1,c2)->classScoreMap.get(c2).compareTo(classScoreMap.get(c1)))
                 .limit(limit).collect(Collectors.toList());
 
@@ -230,16 +249,44 @@ public class MicrosoftSEPProject {
         bw.close();
     }
 
+    public static void writeListToFile(Collection<String> toWrite, File file) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        for(String line : toWrite) {
+            writer.write(line+"\n");
+            writer.flush();
+        }
+        writer.close();
+    }
+
     public static void main(String[] args) throws IOException,SQLException {
         // run all three models consecutively
-        final int keywordLimit = 200;
-        final int samplingRatio = 100;
-        List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
-        runCPCModel(new File("ms_2g_cpc_results.csv"),patents2G,samplingRatio);
-        List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
+        //List<String> patents2G = new ArrayList<>(GetEtsiPatentsList.get2GPatents());
+        //runCPCModel(new File("ms_2g_cpc_results.csv"),patents2G,500, 100);
+        /*List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
         runCPCModel(new File("ms_3g_cpc_results.csv"),patents3G,samplingRatio);
         List<String> patents4G = new ArrayList<>(GetEtsiPatentsList.get4GPatents());
-        runCPCModel(new File("ms_4g_cpc_results.csv"),patents4G,samplingRatio);//runKeywordModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
+        runCPCModel(new File("ms_4g_cpc_results.csv"),patents4G,samplingRatio);*/
+
+        {
+            Collection<String> relevantPatents2G = getRelevantPatents(loadKeywordFile(new File("relevant_cpcs_2g.csv")), loadKeywordFile(new File("relevant_keywords_2g.csv")));
+            System.out.println("ALL PATENTS: ");
+            System.out.println(String.join(" ", relevantPatents2G));
+            writeListToFile(relevantPatents2G, new File("relevant_patents_2g_output.csv"));
+        }
+        {
+            Collection<String> relevantPatents3G = getRelevantPatents(loadKeywordFile(new File("relevant_cpcs_3g.csv")), loadKeywordFile(new File("relevant_keywords_3g.csv")));
+            System.out.println("ALL PATENTS: ");
+            System.out.println(String.join(" ", relevantPatents3G));
+            writeListToFile(relevantPatents3G, new File("relevant_patents_3g_output.csv"));
+        }
+        {
+            Collection<String> relevantPatents4G = getRelevantPatents(loadKeywordFile(new File("relevant_cpcs_4g.csv")), loadKeywordFile(new File("relevant_keywords_4g.csv")));
+            System.out.println("ALL PATENTS: ");
+            System.out.println(String.join(" ", relevantPatents4G));
+            writeListToFile(relevantPatents4G, new File("relevant_patents_4g_output.csv"));
+        }
+
+        //runKeywordModel(new File("ms_sep_2g_results.csv"), new File("ms_sep_2g_keywords.csv"),patents2G,samplingRatio,keywordLimit);
         /*List<String> patents3G = new ArrayList<>(GetEtsiPatentsList.get3GPatents());
         runKeywordModel(new File("ms_sep_3g_results.csv"), new File("ms_sep_3g_keywords.csv"),patents3G,samplingRatio,keywordLimit);
         List<String> patents4G = new ArrayList<>(GetEtsiPatentsList.get4GPatents());
