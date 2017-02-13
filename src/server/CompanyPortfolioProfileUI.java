@@ -270,22 +270,29 @@ public class CompanyPortfolioProfileUI {
 
             portfolioList.init();
 
+            System.out.println("Finished initializing portfolio");
+
+            try {
             return new Gson().toJson(new SimpleAjaxMessage(div().with(
                     h4(reportType+" for "+assigneeStr),
-                    tableFromPatentList(portfolioList.getPortfolio(), attributes.stream().map(attr->ExcelWritable.humanAttributeFor(attr)).collect(Collectors.toList()))
+                    tableFromPatentList(portfolioList.getPortfolio(), attributes)
             ).render()));
+            } catch(Exception e) {
+                System.out.println("Failed to create table from patentlist");
+                return null;
+            }
         });
     }
 
-    static Tag tableFromPatentList(List<ExcelWritable> items, List<String> headers) {
+    static Tag tableFromPatentList(List<ExcelWritable> items, List<String> attributes) {
         return table().with(
                 thead().with(
                         tr().with(
-                                headers.stream().map(header->th(header)).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(ExcelWritable.humanAttributeFor(attr))).collect(Collectors.toList())
                         )
                 ),tbody().with(
                         items.stream().sorted().map(item->tr().with(
-                                item.getDataAsRow(headers).getCells().stream().map(cell->td(cell.getContent().toString())).collect(Collectors.toList())
+                                item.getDataAsRow(attributes).getCells().stream().map(cell->td(cell.getContent().toString())).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
 
