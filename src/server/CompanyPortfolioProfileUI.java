@@ -228,20 +228,18 @@ public class CompanyPortfolioProfileUI {
                 firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, searchType, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
                 if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
-                    res.redirect("/company_profile");
-                    req.session().attribute("message", "Unable to find any results to search in.");
-                    return null;
+                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
                 }
 
                 List<SimilarPatentFinder> secondFinders = SimilarPatentServer.getSecondPatentFinder(mergeSearchInput, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
                 if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
-                    res.redirect("/company_profile");
-                    req.session().attribute("message", "Unable to find any of the search inputs.");
-                    return null;
+                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find any of the search inputs."));
                 }
 
+                System.out.println("Starting to run similar patent model...");
                 portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
+                System.out.println("Finished similar patent model.");
 
             } else {
                 System.out.println("Using abstract portfolio type");
@@ -285,7 +283,7 @@ public class CompanyPortfolioProfileUI {
 
             try {
             return new Gson().toJson(new AjaxChartMessage(Test.getTestOptions(),div().with(
-                    h4(reportType+" for "+assigneeStr),
+                    h3(reportType+" for "+assigneeStr),
                     div().withId("chart"),
                     tableFromPatentList(portfolioList.getPortfolio(), attributes)
             ).render()));
