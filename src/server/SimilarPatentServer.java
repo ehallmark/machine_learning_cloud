@@ -106,14 +106,8 @@ public class SimilarPatentServer {
 
     static void evaluateModel(Evaluator model, Collection<ExcelWritable> portfolio, String valueParamType) {
         for (ExcelWritable item : portfolio) {
-            try {
-                Double score = model.evaluate(item.getName());
-                item.setValue(valueParamType,score);
-                System.out.println("Value for patent: " + score);
-            } catch (Exception e) {
-                System.out.println("Unable to find value");
-                item.setValue(valueParamType,0d);
-            }
+            double score = model.evaluate(item.getName());
+            item.setValue(valueParamType,score);
         }
     }
 

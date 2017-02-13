@@ -137,17 +137,11 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
                 }).collect(Collectors.toList());
     }
 
-    public void init(Comparator<ExcelWritable> compator) {
-        try {
-            portfolio = portfolio.stream().filter(obj -> !Database.isExpired(obj.getName())).collect(Collectors.toList());
-            Collections.sort(portfolio);
-            Collections.reverse(portfolio);
-
-            if (portfolio.size() > 0) {
-                this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
-            } else this.avgSimilarity = 0.0d;
-        } catch(Exception e) {
-            throw new RuntimeException("Error initializing Portfolio list: "+name1);
-        }
+    public void init(Comparator<ExcelWritable> comparator) {
+        portfolio = portfolio.stream().collect(Collectors.toList());
+        Collections.sort(portfolio,comparator.reversed());
+        if (portfolio.size() > 0) {
+            this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+        } else this.avgSimilarity = 0.0d;
     }
 }
