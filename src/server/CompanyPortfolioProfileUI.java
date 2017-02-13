@@ -81,9 +81,10 @@ public class CompanyPortfolioProfileUI {
                                             label(type),input().withType("radio").withName("report_type").withValue(type),br()
                                     );
                                 }).collect(Collectors.toList())
-                        )
+                        ),br(),
+                        label("Result Limit"),br(),input().withValue("100").withType("number").withName("limit"),br()
                 )),
-                label("Result Limit"),input().withValue("100").withType("number").withName("limit"),br(),
+                br(),
                 button("Generate Report(s)").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
         );
     }
