@@ -279,6 +279,7 @@ public class CompanyPortfolioProfileUI {
             ).render()));
             } catch(Exception e) {
                 System.out.println("Failed to create table from patentlist");
+                e.printStackTrace();
                 return null;
             }
         });
@@ -292,7 +293,7 @@ public class CompanyPortfolioProfileUI {
                         )
                 ),tbody().with(
                         items.stream().sorted().map(item->tr().with(
-                                item.getDataAsRow(attributes).getCells().stream().map(cell->td(cell.getContent().toString())).collect(Collectors.toList())
+                                item.getDataAsRow(attributes).getCells().stream().map(cell->cell==null?td(""):td(cell.getContent().toString())).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
 
