@@ -118,6 +118,8 @@ public class SimilarPatentServer {
         return div().with(
                 h3().with(
                         a("Portfolio Comparison").withHref("/candidate_set_models")
+                ),h3().with(
+                        a("Company Profiler").withHref("/company_profile")
                 ),
                 h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
