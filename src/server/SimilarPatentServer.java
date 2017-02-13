@@ -462,7 +462,7 @@ public class SimilarPatentServer {
                         }
                     }
                 }
-                portfolioList.init(comparator);
+                portfolioList.init(comparator,limit);
 
                 boolean includeCoverPage = extractBool(req,"include_cover_page");
 
@@ -482,7 +482,6 @@ public class SimilarPatentServer {
                 try {
                     ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees, title, clientName, EMData, SAMData, attributes, includeCoverPage, portfolioList);
                 } catch (Exception e) {
-
                     e.printStackTrace();
                 }
                 return raw;
@@ -862,7 +861,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static int extractInt(Request req, String param, int defaultVal) {
+    static int extractInt(Request req, String param, int defaultVal) {
         try {
             return Integer.valueOf(req.queryParams(param));
         } catch(Exception e) {

@@ -82,7 +82,8 @@ public class CompanyPortfolioProfileUI {
                                     );
                                 }).collect(Collectors.toList())
                         )
-                )),br(),
+                )),
+                label("Result Limit"),input().withValue("100").withType("number").withName("limit"),br(),
                 button("Generate Report(s)").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
         );
     }
@@ -123,6 +124,7 @@ public class CompanyPortfolioProfileUI {
             List<String> attributes = attributesMap.get(reportType);
             if(attributes==null) return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid Report Type: "+reportType+" not in ["+String.join("; ",reportTypes)+"]"));
 
+            int limit = SimilarPatentServer.extractInt(req,"limit",100);
             SimilarPatentFinder firstFinder;
             boolean includeSubclasses = false;
             boolean allowResultsFromOtherCandidateSet;
@@ -235,7 +237,7 @@ public class CompanyPortfolioProfileUI {
                     return null;
                 }
 
-                portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, 100, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
+                portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
 
             } else {
                 System.out.println("Using abstract portfolio type");
@@ -273,7 +275,7 @@ public class CompanyPortfolioProfileUI {
             }
             System.out.println("Finished overall value");
 
-            portfolioList.init(comparator);
+            portfolioList.init(comparator,limit);
 
             System.out.println("Finished initializing portfolio");
 
