@@ -29,7 +29,18 @@ import static spark.Spark.post;
 public class CompanyPortfolioProfileUI {
     private static final String SELECT_COMPANY_NAME_FORM_ID = "select-company-name-form";
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static final List<String> reportTypes = Arrays.asList("Similar Assignee Report","Similar Patent Report","Patent Valuation Report","Technology Tag Report");
+    private static final List<String> reportTypes = Arrays.asList("Portfolio Valuation","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
+    private static final Map<String,List<String>> attributesMap;
+    static {
+        attributesMap=new HashMap<>();
+        List<String> valueAttrs = Arrays.asList("asset","assignee","title","citationValue","technologyValue","classValue","marketValue","claimValue","overallValue");
+        attributesMap.put("Portfolio Valuation",valueAttrs);
+        List<String> similarPatentAttrs = Arrays.asList("asset","similarity","assignee","title");
+        attributesMap.put("Representative Patents",similarPatentAttrs);
+        attributesMap.put("Similar Patent Finder",similarPatentAttrs);
+        List<String> companyAttrs = Arrays.asList("assignee","totalAssetCount","similarity","relevantAssets");
+        attributesMap.put("Similar Company Finder",companyAttrs);
+    }
     static Tag companyNameForm() {
         return div().with(
                 h3("Company Profiler"),
@@ -109,40 +120,133 @@ public class CompanyPortfolioProfileUI {
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company"));
             if(reportType==null||reportType.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
-            List<String> attributes = Arrays.asList("assignee","totalAssetCount","claimValue","citationValue","technologyValue","claimValue","overallValue");
+            List<String> attributes = attributesMap.get(reportType);
+            if(attributes==null) return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid Report Type: "+reportType+" not in ["+String.join("; ",reportTypes)+"]"));
 
+            SimilarPatentFinder firstFinder;
             boolean includeSubclasses = false;
-            boolean allowResultsFromOtherCandidateSet = true;
-            boolean searchEntireDatabase = true;
-            boolean mergeSearchInput = true;
-            String searchType = "assignees";
-            PortfolioList.Type portfolioType = PortfolioList.Type.assignees;
-            Set<String> patentsToSearchFor = new HashSet<>();
-            Set<String> classCodesToSearchFor = new HashSet<>();
-            Set<String> assigneesToSearchFor = new HashSet<>();
+            boolean allowResultsFromOtherCandidateSet;
+            boolean searchEntireDatabase;
+            boolean mergeSearchInput;
+            String searchType;
+            PortfolioList.Type portfolioType;
+            Set<String> patentsToSearchFor;
+            Set<String> classCodesToSearchFor;
+            Set<String> assigneesToSearchFor;
+            boolean useSimilarPatentFinders;
 
             // pre data
-            Collection<String> patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
-            List<String> customAssigneeList = Arrays.asList(assigneeStr);
-            Set<String> labelsToExclude = new HashSet<>();
-
-            SimilarPatentFinder firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude,customAssigneeList,patentsToSearchIn,new HashSet<>(),searchEntireDatabase,includeSubclasses,allowResultsFromOtherCandidateSet,searchType,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
-
-            if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
-                res.redirect("/company_profile");
-                req.session().attribute("message", "Unable to find any results to search in.");
-                return null;
+            Collection<String> patentsToSearchIn;
+            List<String> customAssigneeList;
+            Set<String> labelsToExclude;
+            switch(reportType) {
+                case "Portfolio Valuation": {
+                    searchEntireDatabase=false;
+                    useSimilarPatentFinders=false;
+                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    customAssigneeList = Collections.emptyList();
+                    assigneesToSearchFor=null;
+                    patentsToSearchFor=null;
+                    classCodesToSearchFor=null;
+                    portfolioType= PortfolioList.Type.patents;
+                    labelsToExclude=new HashSet<>();
+                    mergeSearchInput=false;
+                    allowResultsFromOtherCandidateSet=true;
+                    searchType="patents";
+                    break;
+                }
+                case "Representative Patents": {
+                    searchEntireDatabase=false;
+                    useSimilarPatentFinders=true;
+                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    customAssigneeList = Collections.emptyList();
+                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
+                    patentsToSearchFor=null;
+                    classCodesToSearchFor=null;
+                    portfolioType= PortfolioList.Type.patents;
+                    labelsToExclude=new HashSet<>();
+                    mergeSearchInput=false;
+                    allowResultsFromOtherCandidateSet=true;
+                    searchType="patents";
+                    break;
+                }
+                case "Similar Patent Finder": {
+                    searchEntireDatabase=true;
+                    useSimilarPatentFinders=true;
+                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    customAssigneeList = Arrays.asList(assigneeStr);
+                    assigneesToSearchFor=null;
+                    patentsToSearchFor=null;
+                    classCodesToSearchFor=null;
+                    portfolioType= PortfolioList.Type.patents;
+                    labelsToExclude=new HashSet<>();
+                    mergeSearchInput=false;
+                    allowResultsFromOtherCandidateSet=false;
+                    searchType="patents";
+                    break;
+                }
+                case "Similar Company Finder": {
+                    searchEntireDatabase=true;
+                    useSimilarPatentFinders=true;
+                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    customAssigneeList = Arrays.asList(assigneeStr);
+                    assigneesToSearchFor=null;
+                    patentsToSearchFor=null;
+                    classCodesToSearchFor=null;
+                    portfolioType= PortfolioList.Type.assignees;
+                    labelsToExclude=new HashSet<>();
+                    mergeSearchInput=false;
+                    allowResultsFromOtherCandidateSet=false;
+                    searchType="assignees";
+                    break;
+                }
+                /*case "Portfolio Technology Tagging": {
+                    // special model
+                    break;
+                }*/
+                default: {
+                    return new Gson().toJson(new SimpleAjaxMessage("Report option not yet implemented"));
+                }
             }
 
-            List<SimilarPatentFinder> secondFinders = SimilarPatentServer.getSecondPatentFinder(mergeSearchInput,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
+            PortfolioList portfolioList;
 
-            if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
-                res.redirect("/company_profile");
-                req.session().attribute("message", "Unable to find any of the search inputs.");
-                return null;
+            if(useSimilarPatentFinders) {
+                firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, searchType, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+
+                if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
+                    res.redirect("/company_profile");
+                    req.session().attribute("message", "Unable to find any results to search in.");
+                    return null;
+                }
+
+                List<SimilarPatentFinder> secondFinders = SimilarPatentServer.getSecondPatentFinder(mergeSearchInput, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+
+                if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
+                    res.redirect("/company_profile");
+                    req.session().attribute("message", "Unable to find any of the search inputs.");
+                    return null;
+                }
+
+                portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, 100, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
+
+            } else {
+                Set<String> toSearchIn = new HashSet<>();
+                switch(portfolioType) {
+                    case assignees: {
+                        customAssigneeList.forEach(assignee->toSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
+                        break;
+                    } case patents: {
+                        toSearchIn.addAll(patentsToSearchIn);
+                        break;
+                    }case class_codes: {
+                        break;
+                    }
+                }
+
+                portfolioList=PortfolioList.abstractPorfolioList(toSearchIn,portfolioType);
             }
 
-            PortfolioList portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, 100, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
 
             SimilarPatentServer.modelMap.forEach((key,model)->{
                 if ((attributes.contains("overallValue")||attributes.contains(key)) && model != null) {

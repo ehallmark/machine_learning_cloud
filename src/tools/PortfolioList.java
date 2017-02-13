@@ -2,6 +2,7 @@ package tools;
 
 import seeding.Database;
 import server.tools.AbstractAssignee;
+import server.tools.AbstractClassCode;
 import server.tools.AbstractPatent;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
@@ -28,6 +29,20 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         colWidthsMap.put("title",75d);
         colWidthsMap.put("assignee",50d);
         colWidthsMap.put("similarity",25d);
+    }
+
+    public static PortfolioList abstractPorfolioList(Collection<String> labels, PortfolioList.Type type) {
+        switch(type) {
+            case assignees: {
+                return new PortfolioList(labels.stream().map(label->new AbstractAssignee(label,0d,null)).collect(Collectors.toList()), null,null,type);
+            } case class_codes: {
+                return new PortfolioList(labels.stream().map(label->new AbstractPatent(label,0d,null)).collect(Collectors.toList()), null,null,type);
+            } case patents: {
+                return new PortfolioList(labels.stream().map(label->new AbstractClassCode(label,0d,null)).collect(Collectors.toList()), null,null,type);
+            }default: {
+                return null;
+            }
+        }
     }
     //
     public PortfolioList(List<ExcelWritable> portfolioList, String name1, String name2, Type portfolioType) {
