@@ -33,9 +33,9 @@ public class CompanyPortfolioProfileUI {
     private static final Map<String,List<String>> attributesMap;
     static {
         attributesMap=new HashMap<>();
-        List<String> valueAttrs = Arrays.asList("asset","assignee","title","citationValue","technologyValue","classValue","marketValue","claimValue","overallValue");
+        List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
         attributesMap.put("Portfolio Valuation",valueAttrs);
-        List<String> similarPatentAttrs = Arrays.asList("asset","similarity","assignee","title");
+        List<String> similarPatentAttrs = Arrays.asList("name","similarity","assignee","title");
         attributesMap.put("Representative Patents",similarPatentAttrs);
         attributesMap.put("Similar Patent Finder",similarPatentAttrs);
         List<String> companyAttrs = Arrays.asList("assignee","totalAssetCount","similarity","relevantAssets");
@@ -301,6 +301,7 @@ public class CompanyPortfolioProfileUI {
     }
 
     public static void main(String[] args) throws Exception {
+        SimilarPatentServer.loadValueModels();
         setupServer();
     }
 }

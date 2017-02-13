@@ -79,17 +79,26 @@ public class SimilarPatentServer {
         }
     }
 
+    static void loadValueModels() {
+        try {
+            modelMap.put("citationValue",new CitationEvaluator());
+            modelMap.put("technologyValue",new TechnologyEvaluator());
+            modelMap.put("claimValue",new ClaimEvaluator());
+            modelMap.put("marketValue",new MarketEvaluator());
+            modelMap.put("assigneeValue",new AssigneeEvaluator());
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private static void loadBaseFinder() {
         try {
             globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             // value model
-            modelMap.put("citationValue",new CitationEvaluator());
-            modelMap.put("technologyValue",new TechnologyEvaluator());
-            modelMap.put("claimValue",new ClaimEvaluator());
-            modelMap.put("marketValue",new MarketEvaluator());
-            modelMap.put("assigneeValue",new AssigneeEvaluator());
+            loadValueModels();
+
         } catch(Exception e) {
             e.printStackTrace();
         }
