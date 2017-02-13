@@ -434,9 +434,12 @@ public class SimilarPatentServer {
                     }
                 });
 
+                Comparator<ExcelWritable> comparator = ExcelWritable.similarityComparator();
+
                 // Handle overall value
                 if(attributes.contains("overallValue")) {
                     portfolioList.computeAvgValues();
+                    comparator = ExcelWritable.valueComparator();
                 }
 
                 {
@@ -465,7 +468,7 @@ public class SimilarPatentServer {
                         }
                     }
                 }
-                portfolioList.init();
+                portfolioList.init(comparator);
 
                 boolean includeCoverPage = extractBool(req,"include_cover_page");
 

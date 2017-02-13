@@ -134,6 +134,7 @@ public class CompanyPortfolioProfileUI {
             Set<String> classCodesToSearchFor;
             Set<String> assigneesToSearchFor;
             boolean useSimilarPatentFinders;
+            Comparator<ExcelWritable> comparator;
 
             // pre data
             Collection<String> patentsToSearchIn;
@@ -153,6 +154,7 @@ public class CompanyPortfolioProfileUI {
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=true;
                     searchType="patents";
+                    comparator=ExcelWritable.valueComparator();
                     break;
                 }
                 case "Representative Patents": {
@@ -168,6 +170,7 @@ public class CompanyPortfolioProfileUI {
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=true;
                     searchType="patents";
+                    comparator=ExcelWritable.similarityComparator();
                     break;
                 }
                 case "Similar Patent Finder": {
@@ -183,6 +186,7 @@ public class CompanyPortfolioProfileUI {
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=false;
                     searchType="patents";
+                    comparator=ExcelWritable.similarityComparator();
                     break;
                 }
                 case "Similar Company Finder": {
@@ -198,6 +202,7 @@ public class CompanyPortfolioProfileUI {
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=false;
                     searchType="assignees";
+                    comparator=ExcelWritable.similarityComparator();
                     break;
                 }
                 /*case "Portfolio Technology Tagging": {
@@ -268,7 +273,7 @@ public class CompanyPortfolioProfileUI {
             }
             System.out.println("Finished overall value");
 
-            portfolioList.init();
+            portfolioList.init(comparator);
 
             System.out.println("Finished initializing portfolio");
 

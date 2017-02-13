@@ -24,6 +24,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     private double avgSimilarity;
     public enum Type { patents, assignees, class_codes }
 
+
     static {
         colWidthsMap=new HashMap<>();
         colWidthsMap.put("title",75d);
@@ -36,9 +37,9 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
             case assignees: {
                 return new PortfolioList(labels.stream().map(label->new AbstractAssignee(label,0d,null)).collect(Collectors.toList()), null,null,type);
             } case class_codes: {
-                return new PortfolioList(labels.stream().map(label->new AbstractPatent(label,0d,null)).collect(Collectors.toList()), null,null,type);
-            } case patents: {
                 return new PortfolioList(labels.stream().map(label->new AbstractClassCode(label,0d,null)).collect(Collectors.toList()), null,null,type);
+            } case patents: {
+                return new PortfolioList(labels.stream().map(label->new AbstractPatent(label,0d,null)).collect(Collectors.toList()), null,null,type);
             }default: {
                 return null;
             }
@@ -136,7 +137,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
                 }).collect(Collectors.toList());
     }
 
-    public void init() {
+    public void init(Comparator<ExcelWritable> compator) {
         try {
             portfolio = portfolio.stream().filter(obj -> !Database.isExpired(obj.getName())).collect(Collectors.toList());
             Collections.sort(portfolio);

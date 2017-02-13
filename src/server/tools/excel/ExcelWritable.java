@@ -44,6 +44,10 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.forEach((k,v)->javaAttrToHumanAttrMap.put(v,k));
     }
 
+    public static final Comparator<ExcelWritable> similarityComparator() { return (o1,o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
+
+    public static final Comparator<ExcelWritable> valueComparator() { return (o1,o2)->Double.compare(o1.getAvgValue(),o2.getAvgValue());}
+
     public static String humanAttributeFor(String attr) {
         if(javaAttrToHumanAttrMap.containsKey(attr)) {
             return javaAttrToHumanAttrMap.get(attr);
