@@ -209,9 +209,11 @@ public class CompanyPortfolioProfileUI {
                 }
             }
 
+            System.out.println("Starting to retrieve portfolio list...");
             PortfolioList portfolioList;
 
             if(useSimilarPatentFinders) {
+                System.out.println("Using similar patent finders");
                 firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, searchType, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
                 if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
@@ -231,6 +233,7 @@ public class CompanyPortfolioProfileUI {
                 portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, 100, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
 
             } else {
+                System.out.println("Using abstract portfolio type");
                 Set<String> toSearchIn = new HashSet<>();
                 switch(portfolioType) {
                     case assignees: {
@@ -244,10 +247,13 @@ public class CompanyPortfolioProfileUI {
                     }
                 }
 
-                portfolioList=PortfolioList.abstractPorfolioList(toSearchIn,portfolioType);
+                System.out.println("Starting building portfolio list");
+                portfolioList = PortfolioList.abstractPorfolioList(toSearchIn, portfolioType);
+                System.out.println("Finished building portfolio list");
             }
 
 
+            System.out.println("Starting values");
             SimilarPatentServer.modelMap.forEach((key,model)->{
                 if ((attributes.contains("overallValue")||attributes.contains(key)) && model != null) {
                     SimilarPatentServer.evaluateModel(model,portfolioList.getPortfolio(),key);
@@ -256,9 +262,11 @@ public class CompanyPortfolioProfileUI {
 
 
             // Handle overall value
+            System.out.println("Starting overall value");
             if(attributes.contains("overallValue")) {
                 portfolioList.computeAvgValues();
             }
+            System.out.println("Finished overall value");
 
             portfolioList.init();
 
