@@ -69,6 +69,7 @@ public class CompanyPortfolioProfileUI {
                 + "  success: function(data) { "
                 + "     $copy = $('#results form');"
                 + "     $copy.siblings().remove();"
+                        +"alert(data.chart);"
                 + "    $('#results').html($copy[0].outerHTML+'<hr />'+data.message); "
                 + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
                 + "    var chart = Highcharts.chart('chart', data.chart);"
