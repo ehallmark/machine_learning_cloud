@@ -60,14 +60,16 @@ public class Database {
 
 	public static Object tryLoadObject(File file) {
 		System.out.println("Starting to load file: "+file.getName()+"...");
-		try (ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)))) {
+		try {
+			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
 			System.out.println("Sucessfully loaded "+file.getName()+".");
 			return toReturn;
 		} catch(Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException("Unable to open file: "+file.getPath());
+			//throw new RuntimeException("Unable to open file: "+file.getPath());
+			return null;
 		}
 	}
 
@@ -85,9 +87,6 @@ public class Database {
 	static {
 		patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
-		patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
-		patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
-		assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("large_entity_patents_set.jobj")));
@@ -104,7 +103,6 @@ public class Database {
 			});
 			trySaveObject(valuablePatents,valuablePatentsFile);
 		}
-		allAssignees=assigneeToPatentsMap.keySet();
 		if(allClassCodesFile.exists()) {
 			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
 		} else {
@@ -116,12 +114,6 @@ public class Database {
 			});
 			trySaveObject(allClassCodes,allClassCodesFile);
 		}
-		// prefix trie for assignees
-		System.out.println("Building assignee trie...");
-		assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
-		allAssignees.forEach(assignee->{
-			assigneePrefixTrie.put(assignee,assignee);
-		});
 		System.out.println("Building class code trie...");
 		// class codes trie
 		classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
@@ -153,6 +145,19 @@ public class Database {
 			etsiStandardToPatentsMap = GetEtsiPatentsList.getETSIPatentMap();
 		} catch(Exception e) {
 			e.printStackTrace();
+		}
+		// assignee stuff
+		{
+			patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
+			patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
+			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
+			allAssignees=assigneeToPatentsMap.keySet();
+			// prefix trie for assignees
+			System.out.println("Building assignee trie...");
+			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			allAssignees.forEach(assignee->{
+				assigneePrefixTrie.put(assignee,assignee);
+			});
 		}
 	}
 

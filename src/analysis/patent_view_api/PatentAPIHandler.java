@@ -196,9 +196,10 @@ public class PatentAPIHandler {
                 } else {
                     Set<String> set = new HashSet<>();
                     set.addAll(e.getValue());
-                    newMap.put(e.getKey(),set);
+                    newMap.put(e.getKey(), set);
                 }*/
-                if(e.getValue().size()>3) newMap.get("**OTHER**").addAll(e.getValue());
+                if(e.getValue().size()>1)
+                    newMap.get("**OTHER**").addAll(e.getValue());
 
             } else {
                 newMap.get(importantAssignee).addAll(e.getValue());
@@ -224,11 +225,38 @@ public class PatentAPIHandler {
         /*
             List<Patent> patents = requestAllPatentsFromAssigneesAndClassCodes(Arrays.asList("microsoft","panasonic"),Arrays.asList("G06F3\\/0383"));
         */
-        List<String> importantAssignees = Arrays.asList("Nokia","ETRI","Sharp","Alcatel","Huawei","ZTE","InterDigital","LG ","Sony","Cisco","International Business Machines","Motorola","Nortel","Apple", "Siemens", "Sprint", "Verizon", "ATT", "Blackberry", "Qualcomm","Broadcom","Cingular","Intel","Bell","Samsung", "Ericsson", "Panasonic", "NTT DoCoMo", "IP Bridge", "Sisvel", "Philips","Microsoft")
+        List<String> importantAssignees = Arrays.asList("Kyocera","Google","HTC","Terayon","Qwest","Golden Bridge","Tantivy","Toshiba","Research In Motion","Futurewei","NEC","Texas Instruments","Marvell","Nokia","ETRI","Sharp","Alcatel","Huawei","ZTE","InterDigital","LG ","Sony","Cisco","IBM","Motorola","Nortel","Apple", "Siemens", "Sprint", "Verizon", "ATT", "Blackberry", "Qualcomm","Broadcom","Cingular","Intel","Bell","Samsung", "Ericsson", "Panasonic", "NTT DoCoMo", "IP Bridge", "Sisvel", "Philips","Microsoft")
                 .stream()
                 .map(a->a.toUpperCase())
                 .collect(Collectors.toList());
         {
+            Map<String, Set<String>> assigneeTo2GMap = new HashMap<>();
+            Collection<String> patentList2G = loadKeywordFile(new File("patents_2g_date_filter.csv"));
+            Collection<Patent> patents2G = requestAllPatents(patentList2G);
+            System.out.println("Total 2G patents found: " + patents2G.size());
+            addResultsToAssigneeMap(patents2G, assigneeTo2GMap);
+            groupImportantAssignees(assigneeTo2GMap,importantAssignees);
+            writeAssigneeDataCountsToCSV(assigneeTo2GMap,new File("2g_assignee_date_filtered_data.csv"));
+        }
+        {
+            Map<String,Set<String>> assigneeTo3GMap = new HashMap<>();
+            Collection<String> patentList3G = loadKeywordFile(new File("patents_3g_date_filter.csv"));
+            Collection<Patent> patents3G = requestAllPatents(patentList3G);
+            System.out.println("Total 3G patents found: "+patents3G.size());
+            addResultsToAssigneeMap(patents3G, assigneeTo3GMap);
+            groupImportantAssignees(assigneeTo3GMap,importantAssignees);
+            writeAssigneeDataCountsToCSV(assigneeTo3GMap,new File("3g_assignee_date_filtered_data.csv"));
+        }
+        {
+            Collection<String> patentList4G = loadKeywordFile(new File("patents_4g_date_filter.csv"));
+            Collection<Patent> patents4G = requestAllPatents(patentList4G);
+            System.out.println("Total 4G patents found: " + patents4G.size());
+            Map<String, Set<String>> assigneeTo4GMap = new HashMap<>();
+            addResultsToAssigneeMap(patents4G, assigneeTo4GMap);
+            groupImportantAssignees(assigneeTo4GMap,importantAssignees);
+            writeAssigneeDataCountsToCSV(assigneeTo4GMap,new File("4g_assignee_date_filtered_data.csv"));
+        }
+        /*{
             Map<String, Set<String>> assigneeTo2GMap = new HashMap<>();
             Collection<String> patentList2G = loadKeywordFile(new File("relevant_patents_2g_output.csv"));
             Collection<Patent> patents2G = requestAllPatents(patentList2G);
@@ -254,7 +282,7 @@ public class PatentAPIHandler {
             addResultsToAssigneeMap(patents4G, assigneeTo4GMap);
             groupImportantAssignees(assigneeTo4GMap,importantAssignees);
             writeAssigneeDataCountsToCSV(assigneeTo4GMap,new File("4g_assignee_data.csv"));
-        }
+        }*/
 
     }
 }

@@ -1,5 +1,6 @@
 package analysis.patent_view_api;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -10,6 +11,7 @@ public class Patent {
     private List<Assignee> assignees;
     private String patent_number;
     private String patent_title;
+    private String patent_date;
 
     public String getInventionTitle() {
         return patent_title;
@@ -25,6 +27,14 @@ public class Patent {
 
     public List<CPC> getClassCodes() {
         return cpcs;
+    }
+
+    public LocalDate getPubDate() {
+        try {
+            return LocalDate.parse(patent_date);
+        } catch(Exception e) {
+            return null;
+        }
     }
 
     @Override

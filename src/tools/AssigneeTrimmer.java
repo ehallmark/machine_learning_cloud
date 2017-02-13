@@ -64,6 +64,8 @@ public class AssigneeTrimmer {
         tmp.put("ALCATEL LUCENT", defaultNokia);
         tmp.put("ALCATEL-LUCENT USA INC", defaultNokia);
         tmp.put("ALCATEL-LUCENT CANADA INC", defaultNokia);
+        tmp.put("LUCENT TECHNOLOGIES",defaultNokia);
+        tmp.put("ALCATEL",defaultNokia);
         tmp.put("ALCATEL", defaultNokia);
         tmp.put("ALCATEL LUCENT (SUCCESSOR IN INTEREST TO ALCATEL-LUCENT NV)", defaultNokia);
         tmp.put("ALCATEL-LUCENT", defaultNokia);
@@ -83,6 +85,11 @@ public class AssigneeTrimmer {
         tmp.put("VERIZON DEUTSCHLAND GMBH",defaultVerizon);
         tmp.put("CELLCO PARTNERSHIP D/B/A VERIZON WIRELESSS",defaultVerizon);
         tmp.put("VERIZON PATENT AND LISCENSING INC",defaultVerizon);
+        tmp.put("ELECTRONICS AND TELECOMMUNICATIONS RESEARCH INSTITUTE","ETRI");
+        tmp.put("INTERNATIONAL BUSINESS MACHINES","IBM");
+        tmp.put("QUALOCOMM","QUALCOMM");
+        tmp.put("OUALCOMM","QUALCOMM");
+        tmp.put("INTER DIGITAL","INTERDIGITAL");
 
         // lower case each string just in case
         Set<Map.Entry<String,String>> entries = tmp.entrySet();
