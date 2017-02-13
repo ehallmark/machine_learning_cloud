@@ -68,7 +68,7 @@ public class CompanyPortfolioProfileUI {
                 + "     $copy = $('#results form');"
                 + "     $copy.siblings().remove();"
                 + "    $('#results').html($copy[0].outerHTML+'<hr />'+data.message); "
-                + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report(s)');"
+                + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
                 + "  }"
                 + "});"
                 + "return false; "
@@ -85,7 +85,7 @@ public class CompanyPortfolioProfileUI {
                         label("Result Limit"),br(),input().withValue("100").withType("number").withName("limit"),br()
                 )),
                 br(),
-                button("Generate Report(s)").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
+                button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
         );
     }
 
