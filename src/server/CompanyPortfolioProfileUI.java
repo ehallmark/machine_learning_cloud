@@ -5,7 +5,9 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import j2html.tags.*;
 import seeding.Database;
+import server.highcharts.Test;
 import server.tools.AbstractPatent;
+import server.tools.AjaxChartMessage;
 import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
@@ -69,6 +71,7 @@ public class CompanyPortfolioProfileUI {
                 + "     $copy.siblings().remove();"
                 + "    $('#results').html($copy[0].outerHTML+'<hr />'+data.message); "
                 + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
+                + "    var chart = Highcharts.chart('chart', data.chart);"
                 + "  }"
                 + "});"
                 + "return false; "
@@ -281,8 +284,9 @@ public class CompanyPortfolioProfileUI {
             System.out.println("Finished initializing portfolio");
 
             try {
-            return new Gson().toJson(new SimpleAjaxMessage(div().with(
+            return new Gson().toJson(new AjaxChartMessage(Test.getTestOptions(),div().with(
                     h4(reportType+" for "+assigneeStr),
+                    div().withId("chart"),
                     tableFromPatentList(portfolioList.getPortfolio(), attributes)
             ).render()));
             } catch(Exception e) {

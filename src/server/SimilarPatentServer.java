@@ -615,7 +615,8 @@ public class SimilarPatentServer {
         return html().with(
                 head().with(
                         script().attr("src","https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"),
-                        script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
+                        script().attr("src","http://code.highcharts.com/highcharts.js")
+                        //script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().attr("OnKeyPress","return disableKeyPress(event);").with(
                         div().attr("style", "width:80%; padding: 2% 10%;").with(
