@@ -49,6 +49,7 @@ public class HighchartDataAdapter {
             }
         }
         PointSeries series = new PointSeries();
+        series.setName(company);
         dates.forEach(date->{
             Point point = new Point()
                     .setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY)

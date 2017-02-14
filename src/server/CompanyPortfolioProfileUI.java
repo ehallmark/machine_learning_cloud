@@ -3,6 +3,8 @@ package server;
 import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
+import com.googlecode.wickedcharts.highcharts.options.Axis;
+import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import j2html.tags.*;
 import seeding.Database;
@@ -293,7 +295,8 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Finished building portfolio list");
             } else if(recentTimeline) {
                 portfolioList=null;
-                charts.add(new LineChart("Recent Activity Timeline for "+assigneeStr, HighchartDataAdapter.collectCompanyActivityData(assigneeStr)));
+                LineChart lineChart = new LineChart("Recent Activity Timeline for "+assigneeStr, HighchartDataAdapter.collectCompanyActivityData(assigneeStr), AxisType.DATETIME);
+                charts.add(lineChart);
 
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Unrecognized options."));
