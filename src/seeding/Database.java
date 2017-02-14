@@ -229,7 +229,8 @@ public class Database {
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
 		if(cleanBase.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
-		assigneePrefixTrie.getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
+		if(allAssignees.contains(cleanBase)) possible.add(cleanBase);
+		assigneePrefixTrie.getValuesForKeysStartingWith(cleanBase+" ").forEach(a->possible.add(a));
 		return possible;
 	}
 
@@ -338,12 +339,9 @@ public class Database {
 	}
 
 	public static Collection<String> selectPatentNumbersFromAssignee(String assignee){
-		if(assignee==null||assignee.isEmpty()) return new HashSet<>();
-		final String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
-		if(cleanAssignee.isEmpty()) return new HashSet<>();
 		Set<String> patents = new HashSet<>();
 		// try fuzzy search thru trie
-		assigneePrefixTrie.getKeysStartingWith(cleanAssignee).forEach(name->{
+		possibleNamesForAssignee(assignee).forEach(name->{
 			patents.addAll(assigneeToPatentsMap.get(name));
 		});
 		return patents;

@@ -91,7 +91,7 @@ public class CompanyPortfolioProfileUI {
                         input().withType("hidden").withName("assignee").withValue(assignee),
                         div().with(reportTypes.stream().sorted().map(type->{
                                     return div().with(
-                                            label().with(input().withType("radio").withName("report_type").withValue(type),span(type)),br()
+                                            label().with(input().withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
                                     );
                                 }).collect(Collectors.toList())
                         ),br(),
