@@ -174,8 +174,8 @@ public class CompanyPortfolioProfileUI {
                     patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
                     customAssigneeList = Collections.emptyList();
                     assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
-                    patentsToSearchFor=null;
-                    classCodesToSearchFor=null;
+                    patentsToSearchFor=Collections.emptySet();
+                    classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=false;
@@ -187,11 +187,11 @@ public class CompanyPortfolioProfileUI {
                 case "Similar Patent Finder": {
                     searchEntireDatabase=true;
                     useSimilarPatentFinders=true;
-                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
-                    customAssigneeList = Arrays.asList(assigneeStr);
-                    assigneesToSearchFor=null;
-                    patentsToSearchFor=null;
-                    classCodesToSearchFor=null;
+                    patentsToSearchIn = null;
+                    customAssigneeList = null;
+                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));;
+                    patentsToSearchFor=Collections.emptySet();
+                    classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=false;
@@ -203,11 +203,11 @@ public class CompanyPortfolioProfileUI {
                 case "Similar Company Finder": {
                     searchEntireDatabase=true;
                     useSimilarPatentFinders=true;
-                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
-                    customAssigneeList = Arrays.asList(assigneeStr);
-                    assigneesToSearchFor=null;
-                    patentsToSearchFor=null;
-                    classCodesToSearchFor=null;
+                    patentsToSearchIn = null;
+                    customAssigneeList = null;
+                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));;
+                    patentsToSearchFor=new HashSet<>();
+                    classCodesToSearchFor=new HashSet<>();
                     portfolioType= PortfolioList.Type.assignees;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=false;
