@@ -133,9 +133,6 @@ public class CompanyPortfolioProfileUI {
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company"));
             if(reportType==null||reportType.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
-            List<String> attributes = attributesMap.get(reportType);
-            if(attributes==null) return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid Report Type: "+reportType+" not in ["+String.join("; ",reportTypes)+"]"));
-
             List<AbstractChart> charts = new ArrayList<>();
             int limit = SimilarPatentServer.extractInt(req,"limit",100);
             SimilarPatentFinder firstFinder;
@@ -152,6 +149,7 @@ public class CompanyPortfolioProfileUI {
             Comparator<ExcelWritable> comparator;
             boolean portfolioValuation=false;
             boolean recentTimeline = false;
+            boolean useAttributes = true;
             PortfolioList portfolioList;
 
             // pre data
@@ -168,6 +166,7 @@ public class CompanyPortfolioProfileUI {
                     assigneesToSearchFor=null;
                     patentsToSearchFor=null;
                     classCodesToSearchFor=null;
+                    useAttributes=false;
                     portfolioType=null;
                     labelsToExclude=null;
                     mergeSearchInput=false;
@@ -251,7 +250,11 @@ public class CompanyPortfolioProfileUI {
             }
 
             System.out.println("Starting to retrieve portfolio list...");
-
+            List<String> attributes = new ArrayList<>(10);
+            if(useAttributes) {
+                if(!attributesMap.containsKey(reportType)) return new Gson().toJson(new SimpleAjaxMessage("Attributes not defined for Report Type: "+reportType));
+                attributes.addAll(attributesMap.get(reportType));
+            }
             if(useSimilarPatentFinders) {
                 System.out.println("Using similar patent finders");
                 firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, searchType, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
