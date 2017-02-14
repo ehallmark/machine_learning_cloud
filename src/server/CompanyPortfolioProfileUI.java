@@ -86,12 +86,12 @@ public class CompanyPortfolioProfileUI {
                 + "});"
                 + "return false; "
                 )).with(
-                SimilarPatentServer.expandableDiv("Report Types",div().with(
+                SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                         h4("Report Types"),
                         input().withType("hidden").withName("assignee").withValue(assignee),
                         div().with(reportTypes.stream().sorted().map(type->{
                                     return div().with(
-                                            label(type),input().withType("radio").withName("report_type").withValue(type),br()
+                                            label().with(input().withType("radio").withName("report_type").withValue(type),p(type)),br()
                                     );
                                 }).collect(Collectors.toList())
                         ),br(),
