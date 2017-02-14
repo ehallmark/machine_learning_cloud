@@ -13,6 +13,7 @@ import tools.ClassCodeHandler;
 
 import java.io.*;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,6 +38,8 @@ public class Database {
 	private static Set<String> largeEntityPatents;
 	private static Set<String> microEntityPatents;
 	private static Map<String,Set<String>> classCodeToPatentMap;
+	private static Map<String,LocalDate> patentToPubDateMap;
+	private static File patentToPubDateMapFile = new File("patent_to_pubdate_map_file.jobj");
 	private static File patentToClassificationMapFile = new File("patent_to_classification_map.jobj");
 	private static File classCodeToPatentMapFile = new File("class_code_to_patent_map.jobj");
 	private static File patentToInventionTitleMapFile = new File("patent_to_invention_title_map.jobj");
@@ -92,7 +95,7 @@ public class Database {
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("micro_entity_patents_set.jobj")));
-
+		patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		// load dependent objects
 		if(valuablePatentsFile.exists()) {
 			valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
@@ -207,6 +210,10 @@ public class Database {
 			}
 		});
 		return count.get();
+	}
+
+	public static LocalDate getPubDateFor(String patent) {
+		return patentToPubDateMap.get(patent);
 	}
 
 	public static String getInventionTitleFor(String patent) {

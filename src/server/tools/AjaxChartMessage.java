@@ -2,12 +2,16 @@ package server.tools;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.Options;
+import server.highcharts.AbstractChart;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/13/17.
  */
 public class AjaxChartMessage extends ServerResponse {
-    public AjaxChartMessage(String message,Options... chartOptions) {
-        super(new JsonRenderer().toJson(chartOptions).toString(),message);
+    public AjaxChartMessage(String message, List<AbstractChart> charts) {
+        super(new JsonRenderer().toJson(charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList())),message);
     }
 }

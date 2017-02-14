@@ -6,6 +6,9 @@ import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import j2html.tags.*;
 import seeding.Database;
+import server.highcharts.AbstractChart;
+import server.highcharts.HighchartDataAdapter;
+import server.highcharts.LineChart;
 import server.highcharts.Test;
 import server.tools.AbstractPatent;
 import server.tools.AjaxChartMessage;
@@ -133,6 +136,7 @@ public class CompanyPortfolioProfileUI {
             List<String> attributes = attributesMap.get(reportType);
             if(attributes==null) return new Gson().toJson(new SimpleAjaxMessage("Please enter a valid Report Type: "+reportType+" not in ["+String.join("; ",reportTypes)+"]"));
 
+            List<AbstractChart> charts = new ArrayList<>();
             int limit = SimilarPatentServer.extractInt(req,"limit",100);
             SimilarPatentFinder firstFinder;
             boolean includeSubclasses = false;
@@ -146,13 +150,34 @@ public class CompanyPortfolioProfileUI {
             Set<String> assigneesToSearchFor;
             boolean useSimilarPatentFinders;
             Comparator<ExcelWritable> comparator;
+            boolean portfolioValuation=false;
+            boolean recentTimeline = false;
+            PortfolioList portfolioList;
 
             // pre data
             Collection<String> patentsToSearchIn;
             List<String> customAssigneeList;
             Set<String> labelsToExclude;
             switch(reportType) {
+                case "Recent Timeline": {
+                    recentTimeline=true;
+                    searchEntireDatabase=false;
+                    useSimilarPatentFinders=false;
+                    patentsToSearchIn = null;
+                    customAssigneeList = null;
+                    assigneesToSearchFor=null;
+                    patentsToSearchFor=null;
+                    classCodesToSearchFor=null;
+                    portfolioType=null;
+                    labelsToExclude=null;
+                    mergeSearchInput=false;
+                    allowResultsFromOtherCandidateSet=false;
+                    searchType=null;
+                    comparator=null;
+                    break;
+                }
                 case "Portfolio Valuation": {
+                    portfolioValuation=true;
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=false;
                     patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
@@ -226,7 +251,6 @@ public class CompanyPortfolioProfileUI {
             }
 
             System.out.println("Starting to retrieve portfolio list...");
-            PortfolioList portfolioList;
 
             if(useSimilarPatentFinders) {
                 System.out.println("Using similar patent finders");
@@ -246,7 +270,7 @@ public class CompanyPortfolioProfileUI {
                 portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
                 System.out.println("Finished similar patent model.");
 
-            } else {
+            } else if (portfolioValuation) {
                 System.out.println("Using abstract portfolio type");
                 Set<String> toSearchIn = new HashSet<>();
                 switch(portfolioType) {
@@ -264,45 +288,47 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Starting building portfolio list");
                 portfolioList = PortfolioList.abstractPorfolioList(toSearchIn, portfolioType);
                 System.out.println("Finished building portfolio list");
+            } else if(recentTimeline) {
+                portfolioList=null;
+                charts.add(new LineChart("Recent Activity Timeline for "+assigneeStr, HighchartDataAdapter.collectCompanyActivityData(assigneeStr)));
+
+            } else {
+                return new Gson().toJson(new SimpleAjaxMessage("Unrecognized options."));
             }
 
 
-            System.out.println("Starting values");
-            SimilarPatentServer.modelMap.forEach((key,model)->{
-                if ((attributes.contains("overallValue")||attributes.contains(key)) && model != null) {
-                    SimilarPatentServer.evaluateModel(model,portfolioList.getPortfolio(),key);
+            if(portfolioList!=null) {
+                System.out.println("Starting values");
+                SimilarPatentServer.modelMap.forEach((key, model) -> {
+                    if ((attributes.contains("overallValue") || attributes.contains(key)) && model != null) {
+                        SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key);
+                    }
+                });
+
+                // Handle overall value
+                System.out.println("Starting overall value");
+                if (attributes.contains("overallValue")) {
+                    portfolioList.computeAvgValues();
                 }
-            });
-
-
-            // Handle overall value
-            System.out.println("Starting overall value");
-            if(attributes.contains("overallValue")) {
-                portfolioList.computeAvgValues();
+                System.out.println("Finished overall value");
+                portfolioList.init(comparator, limit);
             }
-            System.out.println("Finished overall value");
-
-            portfolioList.init(comparator,limit);
 
             System.out.println("Finished initializing portfolio");
-
-            Options[] charts = new Options[2];
-            charts[0] = Test.getTestOptions();
-            charts[1] = Test.getTestOptions();
 
             AtomicInteger chartCnt = new AtomicInteger(0);
 
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
                     h3(reportType+" for "+assigneeStr),
-                    div().with(
+                    charts.isEmpty()?div():div().with(
                             h4("Charts"),
                             div().with(
-                                    Arrays.stream(charts).map(c->div().withId("chart-"+chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                    charts.stream().map(c->div().withId("chart-"+chartCnt.getAndIncrement())).collect(Collectors.toList())
                             )
                     ),
-                    div().with(
-                            h4("Raw Data"),
+                    portfolioList==null?div():div().with(
+                            h4("Data"),
                             tableFromPatentList(portfolioList.getPortfolio(), attributes)
                     )
             ).render(),charts));
