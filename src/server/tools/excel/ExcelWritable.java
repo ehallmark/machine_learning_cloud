@@ -87,11 +87,11 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         }
         if(params.contains("primaryTag"))attributeData.put("primaryTag",new ExcelCell(ExcelHandler.getDefaultFormat(),tag,false));
         if(params.contains("name"))attributeData.put("name",new ExcelCell(ExcelHandler.getDefaultFormat(),name,false));
-        if(params.contains("similarity"))attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),similarity,true));
+        if(params.contains("similarity"))attributeData.put("similarity",new ExcelCell(ExcelHandler.getPercentageFormat(),String.format("%.4f",similarity),true));
         //add value params if available
         valueMap.forEach((type,value)->{
             if(params.contains(type)) {
-                attributeData.put(type,new ExcelCell(ExcelHandler.getValueFormat(),value,true));
+                attributeData.put(type,new ExcelCell(ExcelHandler.getValueFormat(),String.format("%.2f",value),true));
             }
         });
     }
