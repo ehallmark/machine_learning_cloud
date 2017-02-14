@@ -36,7 +36,7 @@ import static spark.Spark.post;
 public class CompanyPortfolioProfileUI {
     private static final String SELECT_COMPANY_NAME_FORM_ID = "select-company-name-form";
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static final List<String> reportTypes = Arrays.asList("Portfolio Valuation","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
+    private static final List<String> reportTypes = Arrays.asList("Portfolio Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
     private static final Map<String,List<String>> attributesMap;
     static {
         attributesMap=new HashMap<>();
@@ -159,7 +159,7 @@ public class CompanyPortfolioProfileUI {
             List<String> customAssigneeList;
             Set<String> labelsToExclude;
             switch(reportType) {
-                case "Recent Timeline": {
+                case "Recent Activity Timeline": {
                     recentTimeline=true;
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=false;
