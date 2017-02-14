@@ -41,8 +41,9 @@ public abstract class AbstractChart {
                 .setTitle(new Title(""))
                 .setLineWidth(0)
                 .setMinorGridLineWidth(0)
-                .setLabels(new Labels().setEnabled(false))
+                //.setLabels(new Labels().setEnabled(false))
                 .setMinorTickWidth(0)
+                .setGridLineWidth(0)
                 .setTickWidth(0);
     }
 

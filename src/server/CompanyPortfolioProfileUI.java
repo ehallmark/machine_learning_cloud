@@ -36,12 +36,12 @@ import static spark.Spark.post;
 public class CompanyPortfolioProfileUI {
     private static final String SELECT_COMPANY_NAME_FORM_ID = "select-company-name-form";
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static final List<String> reportTypes = Arrays.asList("Portfolio Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
+    private static final List<String> reportTypes = Arrays.asList("Company Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
     private static final Map<String,List<String>> attributesMap;
     static {
         attributesMap=new HashMap<>();
         List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
-        attributesMap.put("Portfolio Valuation",valueAttrs);
+        attributesMap.put("Company Valuation",valueAttrs);
         List<String> similarPatentAttrs = Arrays.asList("name","similarity","assignee","title");
         attributesMap.put("Representative Patents",similarPatentAttrs);
         attributesMap.put("Similar Patent Finder",similarPatentAttrs);
@@ -175,7 +175,7 @@ public class CompanyPortfolioProfileUI {
                     comparator=null;
                     break;
                 }
-                case "Portfolio Valuation": {
+                case "Company Valuation": {
                     portfolioValuation=true;
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=false;
@@ -287,7 +287,7 @@ public class CompanyPortfolioProfileUI {
                         break;
                     }
                 }
-                ColumnChart columnChart = new ColumnChart("Estimated Company Value for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.values().toArray(new Evaluator[]{})),1.0,5.0);
+                ColumnChart columnChart = new ColumnChart("Valuation for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,(Evaluator[])(SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).toArray())),1.0,5.0);
                 charts.add(columnChart);
 
                 System.out.println("Starting building portfolio list");
