@@ -189,7 +189,7 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));;
+                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
                     patentsToSearchFor=Collections.emptySet();
                     classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
@@ -205,7 +205,7 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));;
+                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
                     patentsToSearchFor=new HashSet<>();
                     classCodesToSearchFor=new HashSet<>();
                     portfolioType= PortfolioList.Type.assignees;
