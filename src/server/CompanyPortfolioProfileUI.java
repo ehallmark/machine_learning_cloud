@@ -23,6 +23,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,7 @@ public class CompanyPortfolioProfileUI {
     }
 
     static Tag generateReportsForm(String assignee) {
+        AtomicBoolean isFirst = new AtomicBoolean(true);
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",  (
                 "$('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',true).text('Generating...');"
                 + "var url = '/company_profile_report'; "
@@ -88,8 +90,9 @@ public class CompanyPortfolioProfileUI {
                         h4("Report Types"),
                         input().withType("hidden").withName("assignee").withValue(assignee),
                         div().with(reportTypes.stream().sorted().map(type->{
+                                    EmptyTag radio = isFirst.getAndSet(false)?input().attr("checked","checked"):input();
                                     return div().with(
-                                            label().with(input().withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
+                                            label().with(radio.withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
                                     );
                                 }).collect(Collectors.toList())
                         ),br(),
