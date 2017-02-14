@@ -287,9 +287,9 @@ public class CompanyPortfolioProfileUI {
                         break;
                     }
                 }
-                BarChart barChart = new BarChart("Estimated Company Value", HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.values().toArray(new Evaluator[]{})));
-                charts.add(barChart);
-                
+                ColumnChart columnChart = new ColumnChart("Estimated Company Value for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.values().toArray(new Evaluator[]{})),1.0,5.0);
+                charts.add(columnChart);
+
                 System.out.println("Starting building portfolio list");
                 portfolioList = PortfolioList.abstractPorfolioList(toSearchIn, portfolioType);
                 System.out.println("Finished building portfolio list");

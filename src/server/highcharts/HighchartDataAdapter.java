@@ -66,14 +66,14 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>(1);
         Collection<String> likelyCompanies = Database.possibleNamesForAssignee(company);
         if(likelyCompanies.isEmpty()) return Collections.emptyList();
+        PointSeries series = new PointSeries();
         Arrays.stream(evaluators).forEach(evaluator->{
-            PointSeries series = new PointSeries();
             series.setName(company);
             double value = likelyCompanies.stream().collect(Collectors.averagingDouble(c->evaluator.evaluate(c)));
             Point point = new Point(evaluator.getModelName(),value);
             series.addPoint(point);
-            data.add(series);
         });
+        data.add(series);
         return data;
     }
 }

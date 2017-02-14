@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
+import java.awt.*;
 import java.util.List;
 
 /**
@@ -15,6 +16,30 @@ public abstract class AbstractChart {
 
     public Options getOptions() {
         return options;
+    }
+
+    protected void setupAxes() {
+        stripAxis(options.getSingleXAxis());
+        stripAxis(options.getSingleYAxis());
+        options.getSeries().forEach(series->{
+            series.setDataLabels(new DataLabels(true)
+                    .setRotation(-90)
+                    .setColor(Color.white)
+                    .setAlign(HorizontalAlignment.RIGHT)
+                    .setFormat("{point.y:.1f}")
+                    .setY(-20)
+            );
+        });
+    }
+
+    protected static void stripAxis(Axis axis) {
+        axis
+                .setTitle(new Title(""))
+                .setLineWidth(0)
+                .setMinorGridLineWidth(0)
+                .setLabels(new Labels().setEnabled(false))
+                .setMinorTickWidth(0)
+                .setTickLength(0);
     }
 
     protected AbstractChart(String title, List<Series<?>> data, SeriesType type) {
