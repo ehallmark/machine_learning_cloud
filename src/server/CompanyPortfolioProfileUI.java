@@ -3,6 +3,7 @@ package server;
 import analysis.Patent;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
+import com.googlecode.wickedcharts.highcharts.options.Options;
 import j2html.tags.*;
 import seeding.Database;
 import server.highcharts.Test;
@@ -19,6 +20,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -67,11 +69,14 @@ public class CompanyPortfolioProfileUI {
                 + "  url: url,"
                 + "  data: $('#"+GENERATE_REPORTS_FORM_ID+"').serialize(),"
                 + "  success: function(data) { "
-                + "     $copy = $('#results form');"
-                + "     $copy.siblings().remove();"
+                + "    $copy = $('#results form');"
+                + "    $copy.siblings().remove();"
                 + "    $('#results').html($copy[0].outerHTML+'<hr />'+data.message); "
                 + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
-                + "    var chart = Highcharts.chart('chart', JSON.parse(data.chart));"
+                + "    var charts = JSON.parse(data.charts); "
+                + "    for(var i = 0; i<charts.length; i++) { "
+                + "       Highcharts.chart('chart-'+i.toString(), charts[i]);"
+                + "    }  "
                 + "  }"
                 + "});"
                 + "return false; "
@@ -281,12 +286,27 @@ public class CompanyPortfolioProfileUI {
 
             System.out.println("Finished initializing portfolio");
 
+            Options[] charts = new Options[2];
+            charts[0] = Test.getTestOptions();
+            charts[1] = Test.getTestOptions();
+
+            AtomicInteger chartCnt = new AtomicInteger(0);
+
             try {
-            return new Gson().toJson(new AjaxChartMessage(Test.getTestOptions(),div().with(
+            return new Gson().toJson(new AjaxChartMessage(div().with(
                     h3(reportType+" for "+assigneeStr),
-                    div().withId("chart"),
-                    tableFromPatentList(portfolioList.getPortfolio(), attributes)
-            ).render()));
+                    div().with(
+                            h4("Charts"),
+                            div().with(
+                                    Arrays.stream(charts).map(c->div().withId("chart-"+chartCnt.getAndIncrement())).collect(Collectors.toList())
+                            )
+                    ),
+                    div().with(
+                            h4("Raw Data"),
+                            tableFromPatentList(portfolioList.getPortfolio(), attributes)
+                    )
+            ).render(),charts));
+
             } catch(Exception e) {
                 System.out.println("Failed to create table from patentlist");
                 e.printStackTrace();

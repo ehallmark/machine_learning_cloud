@@ -4,11 +4,11 @@ package server.tools;
  * Created by ehallmark on 8/2/16.
  */
 public class ServerResponse {
-    public String chart;
+    public String charts;
     public String message;
-    public ServerResponse(String chart, String message) {
+    public ServerResponse(String charts, String message) {
         //this.results=results;
-        this.chart=chart;
+        this.charts=charts;
         this.message=message;
     }
 }

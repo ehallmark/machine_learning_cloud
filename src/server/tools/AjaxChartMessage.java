@@ -7,7 +7,7 @@ import com.googlecode.wickedcharts.highcharts.options.Options;
  * Created by ehallmark on 2/13/17.
  */
 public class AjaxChartMessage extends ServerResponse {
-    public AjaxChartMessage(Options chartOptions, String message) {
+    public AjaxChartMessage(String message,Options... chartOptions) {
         super(new JsonRenderer().toJson(chartOptions).toString(),message);
     }
 }
