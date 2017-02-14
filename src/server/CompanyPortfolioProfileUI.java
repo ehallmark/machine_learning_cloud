@@ -51,7 +51,7 @@ public class CompanyPortfolioProfileUI {
     }
     static Tag companyNameForm() {
         return div().with(
-                h3("Company Profiler"),
+                h2("Company Profiler"),
                 SimilarPatentServer.expandableDiv("",false,div().with(
                 SimilarPatentServer.formScript(SELECT_COMPANY_NAME_FORM_ID, "/company_names", "Search",true),
                 form().withId(SELECT_COMPANY_NAME_FORM_ID).with(
