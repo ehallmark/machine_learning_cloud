@@ -19,6 +19,8 @@ public abstract class AbstractChart {
     }
 
     protected void setupAxes() {
+        options.setxAxis(new Axis());
+        options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
         stripAxis(options.getSingleYAxis());
         options.getSeries().forEach(series->{
