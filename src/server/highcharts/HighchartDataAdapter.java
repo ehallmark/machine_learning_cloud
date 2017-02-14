@@ -64,13 +64,13 @@ public class HighchartDataAdapter {
         return data;
     }
 
-    public static List<Series<?>> collectAverageCompanyValueData(String company, Evaluator... evaluators) {
+    public static List<Series<?>> collectAverageCompanyValueData(String company, List<Evaluator> evaluators) {
         // Weighted avg by portfolio size
         List<Series<?>> data = new ArrayList<>(1);
         Collection<String> likelyCompanies = Database.possibleNamesForAssignee(company);
         if(likelyCompanies.isEmpty()) return Collections.emptyList();
         PointSeries series = new PointSeries();
-        Arrays.stream(evaluators).forEach(evaluator->{
+        evaluators.forEach(evaluator->{
             series.setName(company);
             AtomicDouble value = new AtomicDouble(0.0);
             AtomicInteger totalSize = new AtomicInteger(0);

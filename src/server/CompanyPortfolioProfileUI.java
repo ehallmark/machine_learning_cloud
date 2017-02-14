@@ -287,7 +287,7 @@ public class CompanyPortfolioProfileUI {
                         break;
                     }
                 }
-                ColumnChart columnChart = new ColumnChart("Valuation for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,(Evaluator[])(SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).toArray())),1.0,5.0);
+                ColumnChart columnChart = new ColumnChart("Valuation for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
                 charts.add(columnChart);
 
                 System.out.println("Starting building portfolio list");
