@@ -198,18 +198,24 @@ public class Database {
 	public static int numPatentsWithCpcClassifications() {
 		return patentToClassificationMap.size();
 	}
+
 	public static int getAssetCountFor(String assignee) {
-		if(assignee==null||assignee.isEmpty()) return 0;
-		final String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
-		if(cleanAssignee.isEmpty()) return 0;
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
-		assigneePrefixTrie.getValuesForKeysStartingWith(cleanAssignee).forEach(name->{
+		possibleNamesForAssignee(assignee).forEach(name->{
 			if(assigneeToPatentsMap.containsKey(name)) {
 				count.getAndAdd(assigneeToPatentsMap.get(name).size());
 			}
 		});
 		return count.get();
+	}
+
+	public static int getExactAssetCountFor(String assignee) {
+		if(assigneeToPatentsMap.containsKey(assignee)) {
+			return assigneeToPatentsMap.get(assignee).size();
+		} else {
+			return 0;
+		}
 	}
 
 	public static LocalDate getPubDateFor(String patent) {

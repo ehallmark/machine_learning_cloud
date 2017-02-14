@@ -7,6 +7,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
 import java.awt.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -18,15 +19,16 @@ public abstract class AbstractChart {
         return options;
     }
 
-    protected void setupAxes() {
+    protected void setupColumnAndBarAxes() {
         options.setxAxis(new Axis());
         options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
         stripAxis(options.getSingleYAxis());
+        options.getSingleXAxis().setType(AxisType.CATEGORY);
         options.getSeries().forEach(series->{
             series.setDataLabels(new DataLabels(true)
                     .setRotation(-90)
-                    .setColor(Color.white)
+                    .setColor(Color.black)
                     .setAlign(HorizontalAlignment.RIGHT)
                     .setFormat("{point.y:.1f}")
                     .setY(-20)
@@ -41,7 +43,7 @@ public abstract class AbstractChart {
                 .setMinorGridLineWidth(0)
                 .setLabels(new Labels().setEnabled(false))
                 .setMinorTickWidth(0)
-                .setTickLength(0);
+                .setTickWidth(0);
     }
 
     protected AbstractChart(String title, List<Series<?>> data, SeriesType type) {

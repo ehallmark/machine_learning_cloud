@@ -11,11 +11,11 @@ import java.util.List;
 public class ColumnChart extends AbstractChart {
     public ColumnChart(String title, List<Series<?>> data, double min, double max) {
         super(title, data, SeriesType.COLUMN);
-        setupAxes();
+        setupColumnAndBarAxes();
         options.getSingleXAxis().setMin(min).setMax(max);
     }
     public ColumnChart(String title, List<Series<?>> data) {
         super(title, data, SeriesType.COLUMN);
-        setupAxes();
+        setupColumnAndBarAxes();
     }
 }

@@ -1,5 +1,6 @@
 package server.highcharts;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -8,6 +9,7 @@ import value_estimation.Evaluator;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -63,14 +65,21 @@ public class HighchartDataAdapter {
     }
 
     public static List<Series<?>> collectAverageCompanyValueData(String company, Evaluator... evaluators) {
+        // Weighted avg by portfolio size
         List<Series<?>> data = new ArrayList<>(1);
         Collection<String> likelyCompanies = Database.possibleNamesForAssignee(company);
         if(likelyCompanies.isEmpty()) return Collections.emptyList();
         PointSeries series = new PointSeries();
         Arrays.stream(evaluators).forEach(evaluator->{
             series.setName(company);
-            double value = likelyCompanies.stream().collect(Collectors.averagingDouble(c->evaluator.evaluate(c)));
-            Point point = new Point(evaluator.getModelName(),value);
+            AtomicDouble value = new AtomicDouble(0.0);
+            AtomicInteger totalSize = new AtomicInteger(0);
+            likelyCompanies.forEach(c->{
+                int size = Database.getExactAssetCountFor(c);
+                totalSize.addAndGet(size);
+                value.addAndGet(evaluator.evaluate(c)*size);
+            });
+            Point point = new Point(evaluator.getModelName(),value.get()/totalSize.get());
             series.addPoint(point);
         });
         data.add(series);
