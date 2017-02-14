@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 public class TechnologyEvaluator extends Evaluator {
     static final File file = new File("classification_value_model.jobj");
     public TechnologyEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
+        super(ValueMapNormalizer.DistributionType.Normal,"Technology Value");
     }
 
     @Override

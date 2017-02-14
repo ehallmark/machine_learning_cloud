@@ -27,7 +27,7 @@ public class ClaimEvaluator extends Evaluator {
     };
 
     public ClaimEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
+        super(ValueMapNormalizer.DistributionType.Normal,"Claim Value");
     }
 
     @Override

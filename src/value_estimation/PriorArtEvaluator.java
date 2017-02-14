@@ -26,7 +26,7 @@ public class PriorArtEvaluator extends Evaluator {
     static final File file = new File("prior_art_value_model.jobj");
 
     private PriorArtEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
+        super(ValueMapNormalizer.DistributionType.Normal,"Prior Art Value");
         throw new RuntimeException("This model is now merged into technology value...");
     }
 

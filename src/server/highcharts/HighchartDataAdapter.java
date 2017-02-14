@@ -3,8 +3,8 @@ package server.highcharts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import seeding.Database;
+import value_estimation.Evaluator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -59,6 +59,21 @@ public class HighchartDataAdapter {
 
         data.add(series);
 
+        return data;
+    }
+
+    public static List<Series<?>> collectAverageCompanyValueData(String company, Evaluator... evaluators) {
+        List<Series<?>> data = new ArrayList<>(1);
+        Collection<String> likelyCompanies = Database.possibleNamesForAssignee(company);
+        if(likelyCompanies.isEmpty()) return Collections.emptyList();
+        Arrays.stream(evaluators).forEach(evaluator->{
+            PointSeries series = new PointSeries();
+            series.setName(company);
+            double value = likelyCompanies.stream().collect(Collectors.averagingDouble(c->evaluator.evaluate(c)));
+            Point point = new Point(evaluator.getModelName(),value);
+            series.addPoint(point);
+            data.add(series);
+        });
         return data;
     }
 }

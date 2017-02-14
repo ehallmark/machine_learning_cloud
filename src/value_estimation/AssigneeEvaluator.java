@@ -30,7 +30,7 @@ public class AssigneeEvaluator extends Evaluator {
     };
 
     public AssigneeEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
+        super(ValueMapNormalizer.DistributionType.Normal,"Assignee Value");
     }
 
     @Override

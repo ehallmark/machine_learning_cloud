@@ -26,7 +26,7 @@ public class CitationEvaluator extends Evaluator {
     static final File file = new File("citation_value_model.jobj");
 
     public CitationEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
+        super(ValueMapNormalizer.DistributionType.Normal,"Citation Value");
     }
 
     @Override

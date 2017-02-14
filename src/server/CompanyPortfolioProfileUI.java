@@ -8,10 +8,7 @@ import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.Options;
 import j2html.tags.*;
 import seeding.Database;
-import server.highcharts.AbstractChart;
-import server.highcharts.HighchartDataAdapter;
-import server.highcharts.LineChart;
-import server.highcharts.Test;
+import server.highcharts.*;
 import server.tools.AbstractPatent;
 import server.tools.AjaxChartMessage;
 import server.tools.SimpleAjaxMessage;
@@ -19,6 +16,7 @@ import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
 import tools.ClassCodeHandler;
 import tools.PortfolioList;
+import value_estimation.Evaluator;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -289,7 +287,9 @@ public class CompanyPortfolioProfileUI {
                         break;
                     }
                 }
-
+                BarChart barChart = new BarChart("Estimated Company Value", HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.values().toArray(new Evaluator[]{})));
+                charts.add(barChart);
+                
                 System.out.println("Starting building portfolio list");
                 portfolioList = PortfolioList.abstractPorfolioList(toSearchIn, portfolioType);
                 System.out.println("Finished building portfolio list");
