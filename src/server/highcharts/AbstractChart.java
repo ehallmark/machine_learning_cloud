@@ -21,6 +21,7 @@ public abstract class AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
                 .setTitle(new Title(title))
+                .setCredits(new CreditOptions().setEnabled(true).setHref("www.gttgrp.com"))
                 .setSeries(data);
     }
 
