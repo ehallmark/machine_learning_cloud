@@ -38,7 +38,7 @@ public abstract class AbstractChart {
     }
 
     public void setEvent(String event) { // NEED DOUBLE CLICK
-        options.getPlotOptions().getBar().setEvents(new Events().setCheckboxClick())
+       // options.getPlotOptions().getBar().setEvents(new Events().setCheckboxClick())
     }
 
     protected void setValueSuffix(String suffix) {
