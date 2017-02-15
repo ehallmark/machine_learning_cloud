@@ -9,13 +9,12 @@ import java.util.List;
  * Created by ehallmark on 2/14/17.
  */
 public class ColumnChart extends AbstractChart {
-    public ColumnChart(String title, List<Series<?>> data, double min, double max) {
+    public ColumnChart(String title, List<Series<?>> data, double min, double max, String valueSuffix) {
         super(title, data, SeriesType.COLUMN);
-        setupColumnAndBarAxes();
+        setupColumnAndBarAxes(valueSuffix);
         options.getSingleYAxis().setMin(min).setMax(max);
     }
-    public ColumnChart(String title, List<Series<?>> data) {
-        super(title, data, SeriesType.COLUMN);
-        setupColumnAndBarAxes();
+    public ColumnChart(String title, List<Series<?>> data, double min, double max) {
+        this(title,data,min,max,"");
     }
 }

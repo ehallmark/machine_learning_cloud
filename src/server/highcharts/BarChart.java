@@ -13,8 +13,12 @@ import java.util.List;
 public class BarChart extends AbstractChart {
     public BarChart(String title, List<Series<?>> data, double min, double max, String valueSuffix) {
         super(title, data, SeriesType.BAR);
-        setupColumnAndBarAxes();
+        setupColumnAndBarAxes(valueSuffix);
         setValueSuffix(valueSuffix);
         options.getSingleYAxis().setMin(min).setMax(max);
+    }
+
+    public BarChart(String title, List<Series<?>> data, double min, double max) {
+        this(title,data,min,max,"");
     }
 }
