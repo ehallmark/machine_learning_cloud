@@ -10,6 +10,7 @@ import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelWritable;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Spark;
 import tools.PortfolioList;
@@ -65,7 +66,7 @@ public class CompanyPortfolioProfileUI {
                 + "return false; "
                 )).with(h2("Company Profiler"),
                 h3("Company Information"),
-                label("Company Name"),br(),input().withType("text").withName("assignee"),br(),
+                label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
                 SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                         h4("Report Types"),
                         div().with(reportTypes.stream().sorted().map(type->{
@@ -82,7 +83,7 @@ public class CompanyPortfolioProfileUI {
     }
 
     private static Tag navigationTag() {
-        return div().with(SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-back", "/company_profile_report", "Back",true),
+        return div().attr("style","margin-bottom: 30px;").with(SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-back", "/company_profile_report", "Back",true),
                 form().attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
                         button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
@@ -137,30 +138,33 @@ public class CompanyPortfolioProfileUI {
         post("/company_profile_report", (req, res) -> {
             res.type("application/json");
 
+            QueryParamsMap params;
+
             // handle navigation
             BackButtonHandler navigator;
             if(req.session().attribute("navigator")==null) {
-                navigator = new BackButtonHandler(req);
+                navigator = new BackButtonHandler(new QueryParamsMap(req.raw()));
                 req.session().attribute("navigator",navigator);
             } else {
                 navigator = req.session().attribute("navigator");
             }
 
             if(SimilarPatentServer.extractBool(req, "goBack")) {
-                Request tmp = navigator.goBack();
+                QueryParamsMap tmp = navigator.goBack();
                 if(tmp==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
-                req=tmp;
+                params=tmp;
             } else if(SimilarPatentServer.extractBool(req, "goForward")) {
-                Request tmp = navigator.goForward();
+                QueryParamsMap tmp = navigator.goForward();
                 if(tmp==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
-                req=tmp;
+                params=tmp;
             } else {
-                navigator.addRequest(req);
+                params=req.queryMap();
+                navigator.addRequest(new QueryParamsMap(req.raw()));
             }
 
-            String assigneeStr = SimilarPatentServer.extractString(req,"assignee",null);
-            String patentStr = SimilarPatentServer.extractString(req,"patent",null);
-            String reportType = req.queryParams("report_type");
+            String assigneeStr = params.get("assignee").value();
+            String patentStr = params.get("patent").value();
+            String reportType = params.get("report_type").value();
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company"));
             if(reportType==null||reportType.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
@@ -379,7 +383,7 @@ public class CompanyPortfolioProfileUI {
 
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
-                    navigationTag(),hr(),
+                    navigationTag(),
                     h3(reportType+" for "+assigneeStr),
                     charts.isEmpty()?div():div().with(
                             h4("Charts"),

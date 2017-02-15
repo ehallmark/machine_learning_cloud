@@ -19,7 +19,7 @@ public abstract class AbstractChart {
         return options;
     }
 
-    protected void setupColumnAndBarAxes() {
+    protected void setupColumnAndBarAxes(String valueSuffix) {
         options.setxAxis(new Axis());
         options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
@@ -31,7 +31,7 @@ public abstract class AbstractChart {
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat("{point.y:.1f}")
+                    .setFormat("{point.y:.1f}"+valueSuffix)
                     .setY(-5)
             );
         });

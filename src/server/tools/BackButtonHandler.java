@@ -1,5 +1,6 @@
 package server.tools;
 
+import spark.QueryParamsMap;
 import spark.Request;
 
 import java.util.ArrayList;
@@ -9,31 +10,31 @@ import java.util.Stack;
  * Created by ehallmark on 2/15/17.
  */
 public class BackButtonHandler {
-    private Stack<Request> backStack = new Stack<>();
-    private Stack<Request> forwardStack = new Stack();
-    private Request currentRequest;
+    private Stack<QueryParamsMap> backStack = new Stack<>();
+    private Stack<QueryParamsMap> forwardStack = new Stack();
+    private QueryParamsMap currentRequest;
 
-    public BackButtonHandler(Request currentRequest){
+    public BackButtonHandler(QueryParamsMap currentRequest){
         this.currentRequest=currentRequest;
     }
 
-    public void addRequest(Request req) {
+    public void addRequest(QueryParamsMap req) {
         if(req==null)throw new NullPointerException("request input is null");
         backStack.add(currentRequest);
         currentRequest=req;
     }
 
-    public Request goBack() {
+    public QueryParamsMap goBack() {
         if(backStack.isEmpty()) return null;
-        Request back = backStack.pop();
+        QueryParamsMap back = backStack.pop();
         forwardStack.add(currentRequest);
         currentRequest=back;
         return back;
     }
 
-    public Request goForward() {
+    public QueryParamsMap goForward() {
         if(forwardStack.isEmpty()) return null;
-        Request forward = forwardStack.pop();
+        QueryParamsMap forward = forwardStack.pop();
         backStack.add(currentRequest);
         currentRequest=forward;
         return forward;

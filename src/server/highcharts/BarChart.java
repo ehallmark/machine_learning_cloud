@@ -15,6 +15,6 @@ public class BarChart extends AbstractChart {
         super(title, data, SeriesType.BAR);
         setupColumnAndBarAxes();
         setValueSuffix(valueSuffix);
-        options.getSingleXAxis().setMin(min).setMax(max);
+        options.getSingleYAxis().setMin(min).setMax(max);
     }
 }

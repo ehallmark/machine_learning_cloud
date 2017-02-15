@@ -24,7 +24,7 @@ public class HighchartDataAdapter {
         PointSeries series = new PointSeries();
         series.setName(assignee);
         portfolioList.getPortfolio().forEach(p->{
-            Point point = new Point(p.getName(),p.getSimilarity());
+            Point point = new Point(p.getName(),p.getSimilarity()*100); // for visualizing percentages
             series.addPoint(point);
         });
         data.add(series);
