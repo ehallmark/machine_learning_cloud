@@ -49,14 +49,8 @@ public class CompanyPortfolioProfileUI {
         List<String> companyAttrs = Arrays.asList("assignee","totalAssetCount","similarity","relevantAssets");
         attributesMap.put("Similar Company Finder",companyAttrs);
     }
-    static Tag companyNameForm() {
-        return div().with(
 
-            ))
-        );
-    }
-
-    static Tag generateReportsForm(String assignee) {
+    static Tag generateReportsForm() {
         AtomicBoolean isFirst = new AtomicBoolean(true);
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",  (
                 "$('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',true).text('Generating...');"
@@ -78,12 +72,8 @@ public class CompanyPortfolioProfileUI {
                 + "});"
                 + "return false; "
                 )).with(h2("Company Profiler"),
-                SimilarPatentServer.expandableDiv("",false,div().with(
-                        SimilarPatentServer.formScript(SELECT_COMPANY_NAME_FORM_ID, "/company_names", "Search",true),
-                        form().withId(SELECT_COMPANY_NAME_FORM_ID).with(
-
-                                button("Search").withId(SELECT_COMPANY_NAME_FORM_ID+"-button").withType("submit")
-                        ),br(),
+                h3("Company Information"),
+                label("Company Name"),br(),input().withType("text").withName("assignee"),br(),
                 SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                         h4("Report Types"),
                         div().with(reportTypes.stream().sorted().map(type->{
@@ -92,8 +82,7 @@ public class CompanyPortfolioProfileUI {
                                             label().with(radio.withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
                                     );
                                 }).collect(Collectors.toList())
-                        ),br(),
-                        label("Result Limit"),br(),input().withValue("100").withType("number").withName("limit"),br()
+                        ),br()
                 )),
                 br(),
                 button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
@@ -114,17 +103,8 @@ public class CompanyPortfolioProfileUI {
             return response.body();
         });
 
-        get("/company_profile", (req, res) -> SimilarPatentServer.templateWrapper(res, div().with(companyNameForm(), hr()), SimilarPatentServer.getAndRemoveMessage(req.session())));
-        post("/company_names", (req, res) -> {
-            res.type("application/json");
-            String assigneeStr = req.queryParams("assignee");
-            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company"));
-            return new Gson().toJson(new SimpleAjaxMessage(div().with(
-                    label("Patents found: "+String.valueOf(Database.getAssetCountFor(assigneeStr))),br(),
-                    hr(),
-                    generateReportsForm(assigneeStr)
-            ).render()));
-        });
+        get("/company_profile", (req, res) -> SimilarPatentServer.templateWrapper(res, div().with(generateReportsForm(), hr()), SimilarPatentServer.getAndRemoveMessage(req.session())));
+
 
         post("/company_profile_report", (req, res) -> {
             res.type("application/json");

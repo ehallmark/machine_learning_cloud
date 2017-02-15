@@ -30,9 +30,9 @@ public abstract class AbstractChart {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
-                    .setAlign(HorizontalAlignment.RIGHT)
+                    .setAlign(HorizontalAlignment.CENTER)
                     .setFormat("{point.y:.1f}")
-                    .setY(-20)
+                    .setY(-5)
             );
         });
     }
