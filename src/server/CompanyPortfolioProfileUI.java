@@ -45,26 +45,29 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Similar Company Finder",companyAttrs);
     }
 
-    static Tag generateReportsForm() {
-        AtomicBoolean isFirst = new AtomicBoolean(true);
-        return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",  (
-                "$('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',true).text('Generating...');"
+    static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
+        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
                 + "var url = '/company_profile_report'; "
                 + "$.ajax({"
                 + "  type: 'POST',"
                 + "  url: url,"
-                + "  data: $('#"+GENERATE_REPORTS_FORM_ID+"').serialize(),"
+                + "  data: $('#"+ID+"').serialize(),"
                 + "  success: function(data) { "
                 + "    $('#results').html(data.message); "
-                + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
+                + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
                 + "    var charts = JSON.parse(data.charts); "
                 + "    for(var i = 0; i<charts.length; i++) { "
                 + "       Highcharts.chart('chart-'+i.toString(), charts[i]);"
                 + "    }  "
                 + "  }"
                 + "});"
-                + "return false; "
-                )).with(h2("Company Profiler"),
+                + "return false; ";
+    }
+
+    static Tag generateReportsForm() {
+        AtomicBoolean isFirst = new AtomicBoolean(true);
+        return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(h2("Company Profiler"),
                 h3("Company Information"),
                 label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
                 SimilarPatentServer.expandableDiv("Report Types",false,div().with(
@@ -83,12 +86,14 @@ public class CompanyPortfolioProfileUI {
     }
 
     private static Tag navigationTag() {
-        return div().attr("style","margin-bottom: 30px;").with(SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-back", "/company_profile_report", "Back",true),
-                form().attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                        input().withName("goBack").withValue("on").withType("hidden"), br(),
-                        button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
-                ),SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-forward", "/company_profile_report", "Forward",true),
-                form().attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
+        return div().with(h2("Company Profiler"),
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
+                        .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
+                            input().withName("goBack").withValue("on").withType("hidden"), br(),
+                            button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                ),
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward","Forward","Going forward"))
+                        .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
                         button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                 ));
@@ -383,7 +388,7 @@ public class CompanyPortfolioProfileUI {
 
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
-                    navigationTag(),
+                    navigationTag(),br(),br(),br(),
                     h3(reportType+" for "+assigneeStr),
                     charts.isEmpty()?div():div().with(
                             h4("Charts"),
