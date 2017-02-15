@@ -49,19 +49,19 @@ public class CompanyPortfolioProfileUI {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
                 + "var url = '/company_profile_report'; "
                 + "$.ajax({"
-                + "  type: 'POST',"
-                + "  url: url,"
+                + "  type: 'POST', "
+                + "  url: url,     "
                 + "  data: $('#"+ID+"').serialize(),"
                 + "  success: function(data) { "
                 + "    $('#results').html(data.message); "
                 + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
-                + "    if (data.hasOwnProperty('charts')) {  "
-                + "      var charts = JSON.parse(data.charts); "
-                + "      for(var i = 0; i<charts.length; i++) { "
+                + "    if (data.hasOwnProperty('charts')) {                    "
+                + "      var charts = JSON.parse(data.charts);                 "
+                + "      for(var i = 0; i<charts.length; i++) {                "
                 + "         Highcharts.chart('chart-'+i.toString(), charts[i]);"
                 + "      }  "
-                + "    }  "
-                + "  }"
+                + "    }    "
+                + "  }      "
                 + "});"
                 + "return false; ";
     }
@@ -69,21 +69,23 @@ public class CompanyPortfolioProfileUI {
     static Tag generateReportsForm() {
         AtomicBoolean isFirst = new AtomicBoolean(true);
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(h2("Company Profiler"),
-                h3("Company Information"),
-                label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
-                SimilarPatentServer.expandableDiv("Report Types",false,div().with(
-                        h4("Report Types"),
-                        div().with(reportTypes.stream().sorted().map(type->{
-                                    EmptyTag radio = isFirst.getAndSet(false)?input().attr("checked","checked"):input();
-                                    return div().with(
-                                            label().with(radio.withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
-                                    );
-                                }).collect(Collectors.toList())
-                        ),br()
-                )),
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
+                        h2("Company Profiler"),
+                        h3("Company Information"),
+                        label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
+                        SimilarPatentServer.expandableDiv("Report Types",false,div().with(
+                                h4("Report Types"),
+                                div().with(reportTypes.stream().sorted().map(type->{
+                                            EmptyTag radio = isFirst.getAndSet(false)?input().attr("checked","checked"):input();
+                                            return div().with(
+                                                    label().with(radio.withType("radio").withName("report_type").withValue(type),span(type).attr("style","margin-left:7px;")),br()
+                                            );
+                                        }).collect(Collectors.toList())
+                                ),br()
+                        )),
                 br(),
-                button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"))
+                button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
+                navigationTag(),br(),br(),br()
         );
     }
 
@@ -139,7 +141,7 @@ public class CompanyPortfolioProfileUI {
             return response.body();
         });
 
-        get("/company_profile", (req, res) -> SimilarPatentServer.templateWrapper(res, div().with(generateReportsForm(), hr()), SimilarPatentServer.getAndRemoveMessage(req.session())));
+        get("/company_profile", (req, res) -> SimilarPatentServer.templateWrapper(res, generateReportsForm(), SimilarPatentServer.getAndRemoveMessage(req.session())));
 
 
         post("/company_profile_report", (req, res) -> {
@@ -390,7 +392,6 @@ public class CompanyPortfolioProfileUI {
 
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
-                    navigationTag(),br(),br(),br(),
                     h3(reportType+" for "+assigneeStr),
                     charts.isEmpty()?div():div().with(
                             h4("Charts"),
@@ -405,9 +406,8 @@ public class CompanyPortfolioProfileUI {
             ).render(),charts));
 
             } catch(Exception e) {
-                System.out.println("Failed to create table from patentlist");
                 e.printStackTrace();
-                return null;
+                return new Gson().toJson(new SimpleAjaxMessage("Failed to render data"));
             }
         });
     }
