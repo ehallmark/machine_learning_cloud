@@ -16,8 +16,7 @@ import tools.PortfolioList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -98,6 +97,30 @@ public class CompanyPortfolioProfileUI {
 
     static void setupServer() {
         Spark.staticFileLocation("/public");
+
+        get("/js/customEvents.js",(request, response) -> {
+            response.type("text/javascript");
+
+            String pathToFile = "public/js/customEvents.js";
+            File f = new File(pathToFile);
+
+            OutputStream out = response.raw().getOutputStream();
+            BufferedReader reader = new BufferedReader(new FileReader(f));
+            reader.lines().forEach(line->{
+                try {
+                    out.write(line.getBytes());
+                    out.write("\n".getBytes());
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+
+            out.close();
+            response.status(200);
+            return response.body();
+        });
+
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
