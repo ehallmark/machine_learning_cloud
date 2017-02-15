@@ -83,11 +83,11 @@ public class CompanyPortfolioProfileUI {
 
     private static Tag navigationTag() {
         return div().with(SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-back", "/company_profile_report", "Back",true),
-                form().withId(GENERATE_REPORTS_FORM_ID+"-back").with(
+                form().attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
                         button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                 ),SimilarPatentServer.formScript(GENERATE_REPORTS_FORM_ID+"-forward", "/company_profile_report", "Forward",true),
-                form().withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
+                form().attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
                         button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                 ));
@@ -135,8 +135,9 @@ public class CompanyPortfolioProfileUI {
 
 
         post("/company_profile_report", (req, res) -> {
-            // handle navigation
+            res.type("application/json");
 
+            // handle navigation
             BackButtonHandler navigator;
             if(req.session().attribute("navigator")==null) {
                 navigator = new BackButtonHandler(req);
@@ -146,7 +147,7 @@ public class CompanyPortfolioProfileUI {
             }
 
             if(SimilarPatentServer.extractBool(req, "goBack")) {
-                Request tmp = navigator.goForward();
+                Request tmp = navigator.goBack();
                 if(tmp==null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                 req=tmp;
             } else if(SimilarPatentServer.extractBool(req, "goForward")) {
@@ -157,7 +158,6 @@ public class CompanyPortfolioProfileUI {
                 navigator.addRequest(req);
             }
 
-            res.type("application/json");
             String assigneeStr = SimilarPatentServer.extractString(req,"assignee",null);
             String patentStr = SimilarPatentServer.extractString(req,"patent",null);
             String reportType = req.queryParams("report_type");
