@@ -54,9 +54,7 @@ public class CompanyPortfolioProfileUI {
                 + "  url: url,"
                 + "  data: $('#"+GENERATE_REPORTS_FORM_ID+"').serialize(),"
                 + "  success: function(data) { "
-                + "    $copy = $('#results form');"
-                + "    $copy.siblings().remove();"
-                + "    $('#results').html($copy[0].outerHTML+'<hr />'+data.message); "
+                + "    $('#results').html(data.message); "
                 + "    $('#"+GENERATE_REPORTS_FORM_ID+"-button').attr('disabled',false).text('Generate Report');"
                 + "    var charts = JSON.parse(data.charts); "
                 + "    for(var i = 0; i<charts.length; i++) { "
@@ -96,8 +94,6 @@ public class CompanyPortfolioProfileUI {
     }
 
     static void setupServer() {
-        Spark.staticFileLocation("/public");
-
         get("/js/customEvents.js",(request, response) -> {
             response.type("text/javascript");
 
