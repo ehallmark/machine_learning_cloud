@@ -348,8 +348,10 @@ public class CompanyPortfolioProfileUI {
                     });
                 }
 
-                BarChart barChart = new BarChart("Similarity to "+assigneeStr, HighchartDataAdapter.collectSimilarityData(assigneeStr,portfolioList),0d,100d, "%");
-                charts.add(barChart);
+                if(useSimilarPatentFinders) {
+                    BarChart barChart = new BarChart("Similarity to " + assigneeStr, HighchartDataAdapter.collectSimilarityData(assigneeStr, portfolioList), 0d, 100d, "%");
+                    charts.add(barChart);
+                }
             }
 
             System.out.println("Finished initializing portfolio");
