@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import seeding.Database;
+import tools.PortfolioList;
 import value_estimation.Evaluator;
 
 import java.time.LocalDate;
@@ -17,6 +18,19 @@ import java.util.stream.Collectors;
  */
 public class HighchartDataAdapter {
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
+
+    public static List<Series<?>> collectSimilarityData(String assignee,PortfolioList portfolioList) {
+        List<Series<?>> data = new ArrayList<>();
+        PointSeries series = new PointSeries();
+        series.setName(assignee);
+        portfolioList.getPortfolio().forEach(p->{
+            Point point = new Point(p.getName(),p.getSimilarity());
+            series.addPoint(point);
+        });
+        data.add(series);
+        return data;
+    }
+
     public static List<Series<?>> collectCompanyActivityData(String company) {
         List<Series<?>> data = new ArrayList<>();
 

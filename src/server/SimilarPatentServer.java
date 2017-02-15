@@ -616,6 +616,7 @@ public class SimilarPatentServer {
                 head().with(
                         script().attr("src","https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"),
                         script().attr("src","http://code.highcharts.com/highcharts.js"),
+                        script().attr("src","/js/customEvents.js"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().attr("OnKeyPress","return disableEnterKey(event);").with(
@@ -826,7 +827,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static String extractString(Request req, String param, String defaultVal) {
+    static String extractString(Request req, String param, String defaultVal) {
         if(req.queryParams(param)!=null&&req.queryParams(param).trim().length()>0) {
             return req.queryParams(param);
         } else {

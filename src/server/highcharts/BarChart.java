@@ -11,13 +11,10 @@ import java.util.List;
  * Created by ehallmark on 2/14/17.
  */
 public class BarChart extends AbstractChart {
-    public BarChart(String title, List<Series<?>> data, double min, double max) {
+    public BarChart(String title, List<Series<?>> data, double min, double max, String valueSuffix) {
         super(title, data, SeriesType.BAR);
         setupColumnAndBarAxes();
-        options.getSingleYAxis().setMin(min).setMax(max);
-    }
-    public BarChart(String title, List<Series<?>> data) {
-        super(title, data, SeriesType.BAR);
-        setupColumnAndBarAxes();
+        setValueSuffix(valueSuffix);
+        options.getSingleXAxis().setMin(min).setMax(max);
     }
 }
