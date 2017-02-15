@@ -51,15 +51,7 @@ public class CompanyPortfolioProfileUI {
     }
     static Tag companyNameForm() {
         return div().with(
-                h2("Company Profiler"),
-                SimilarPatentServer.expandableDiv("",false,div().with(
-                SimilarPatentServer.formScript(SELECT_COMPANY_NAME_FORM_ID, "/company_names", "Search",true),
-                form().withId(SELECT_COMPANY_NAME_FORM_ID).with(
-                        h3("Company Information"),
-                        label("Enter Company Name"),br(),
-                        input().withType("text").withName("assignee"),br(),br(),
-                        button("Search").withId(SELECT_COMPANY_NAME_FORM_ID+"-button").withType("submit")
-                )
+
             ))
         );
     }
@@ -85,10 +77,15 @@ public class CompanyPortfolioProfileUI {
                 + "  }"
                 + "});"
                 + "return false; "
-                )).with(
+                )).with(h2("Company Profiler"),
+                SimilarPatentServer.expandableDiv("",false,div().with(
+                        SimilarPatentServer.formScript(SELECT_COMPANY_NAME_FORM_ID, "/company_names", "Search",true),
+                        form().withId(SELECT_COMPANY_NAME_FORM_ID).with(
+
+                                button("Search").withId(SELECT_COMPANY_NAME_FORM_ID+"-button").withType("submit")
+                        ),br(),
                 SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                         h4("Report Types"),
-                        input().withType("hidden").withName("assignee").withValue(assignee),
                         div().with(reportTypes.stream().sorted().map(type->{
                                     EmptyTag radio = isFirst.getAndSet(false)?input().attr("checked","checked"):input();
                                     return div().with(
