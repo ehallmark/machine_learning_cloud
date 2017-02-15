@@ -90,7 +90,7 @@ public class CompanyPortfolioProfileUI {
     }
 
     private static Tag navigationTag() {
-        return div().with(h2("Company Profiler"),
+        return div().with(
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                             input().withName("goBack").withValue("on").withType("hidden"), br(),
@@ -152,7 +152,7 @@ public class CompanyPortfolioProfileUI {
             // handle navigation
             BackButtonHandler navigator;
             if(req.session().attribute("navigator")==null) {
-                navigator = new BackButtonHandler(new QueryParamsMap(req.raw()));
+                navigator = new BackButtonHandler();
                 req.session().attribute("navigator",navigator);
             } else {
                 navigator = req.session().attribute("navigator");

@@ -14,20 +14,16 @@ public class BackButtonHandler {
     private Stack<QueryParamsMap> forwardStack = new Stack();
     private QueryParamsMap currentRequest;
 
-    public BackButtonHandler(QueryParamsMap currentRequest){
-        this.currentRequest=currentRequest;
-    }
-
     public void addRequest(QueryParamsMap req) {
         if(req==null)throw new NullPointerException("request input is null");
-        backStack.add(currentRequest);
+        if(currentRequest!=null)backStack.add(currentRequest);
         currentRequest=req;
     }
 
     public QueryParamsMap goBack() {
         if(backStack.isEmpty()) return null;
         QueryParamsMap back = backStack.pop();
-        forwardStack.add(currentRequest);
+        if(currentRequest!=null)forwardStack.add(currentRequest);
         currentRequest=back;
         return back;
     }
@@ -35,7 +31,7 @@ public class BackButtonHandler {
     public QueryParamsMap goForward() {
         if(forwardStack.isEmpty()) return null;
         QueryParamsMap forward = forwardStack.pop();
-        backStack.add(currentRequest);
+        if(currentRequest!=null)backStack.add(currentRequest);
         currentRequest=forward;
         return forward;
     }
