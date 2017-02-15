@@ -179,7 +179,7 @@ public class CompanyPortfolioProfileUI {
 
             PortfolioList.Type inputType = assigneeStr==null? PortfolioList.Type.patents: PortfolioList.Type.assignees;
             List<AbstractChart> charts = new ArrayList<>();
-            int limit = SimilarPatentServer.extractInt(req,"limit",20);
+            int limit = 20;
             SimilarPatentFinder firstFinder;
             boolean includeSubclasses = false;
             boolean allowResultsFromOtherCandidateSet;

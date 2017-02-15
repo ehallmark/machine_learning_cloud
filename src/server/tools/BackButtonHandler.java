@@ -21,17 +21,17 @@ public class BackButtonHandler {
     }
 
     public QueryParamsMap goBack() {
+        if(currentRequest!=null)forwardStack.add(currentRequest);
         if(backStack.isEmpty()) return null;
         QueryParamsMap back = backStack.pop();
-        if(currentRequest!=null)forwardStack.add(currentRequest);
         currentRequest=back;
         return back;
     }
 
     public QueryParamsMap goForward() {
+        if(currentRequest!=null)backStack.add(currentRequest);
         if(forwardStack.isEmpty()) return null;
         QueryParamsMap forward = forwardStack.pop();
-        if(currentRequest!=null)backStack.add(currentRequest);
         currentRequest=forward;
         return forward;
     }
