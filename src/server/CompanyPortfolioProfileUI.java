@@ -68,7 +68,7 @@ public class CompanyPortfolioProfileUI {
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      var charts = JSON.parse(data.charts);                 "
                 + "      for(var i = 0; i<charts.length; i++) {                "
-                + "         Highcharts.chart('chart-'+i.toString(), charts[i]);"
+                + "         $('#chart-'+i.toString()).highcharts(charts[i]);"
                 + "      }  "
                 + "    }    "
                 + "  }      "

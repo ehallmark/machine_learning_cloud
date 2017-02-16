@@ -64,10 +64,10 @@ public abstract class AbstractChart {
 
     public void attachDoubleClickToForm(String inputID) {
         String functionString = "$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();";
-        
+
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(""))))));
+                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(functionString))))));
 
     }
 
