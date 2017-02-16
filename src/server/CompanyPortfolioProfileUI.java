@@ -398,7 +398,7 @@ public class CompanyPortfolioProfileUI {
                 }
 
                 if(useSimilarPatentFinders) {
-                    BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(portfolioString, inputType, portfolioList), 0d, 100d, "%");
+                    BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(portfolioString, portfolioList), 0d, 100d, "%");
                     barChart.attachDoubleClickToForm(MAIN_INPUT_ID);
                     charts.add(barChart);
                 }
