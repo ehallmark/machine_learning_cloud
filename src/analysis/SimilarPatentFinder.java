@@ -6,6 +6,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import seeding.Database;
 import server.tools.excel.ExcelWritable;
 import tools.*;
 
@@ -19,6 +20,7 @@ import server.tools.AbstractPatent;
  */
 public class SimilarPatentFinder {
     protected MinHeap<Patent> heap;
+    protected INDArray avgVector;
     protected List<Patent> patentList;
     protected String name;
     protected int id;
@@ -90,13 +92,19 @@ public class SimilarPatentFinder {
         heap = MinHeap.setupPatentHeap(capacity);
     }
 
-    public static INDArray computeAvg(List<Patent> patentList) {
+    public INDArray computeAvg() {
+        if(avgVector!=null) return avgVector;
+
         INDArray thisAvg = Nd4j.create(patentList.size(),patentList.stream().findFirst().get().getVector().columns());
+        double totalWeight = 0.0;
         for(int i = 0; i < patentList.size(); i++) {
-            thisAvg.putRow(i, patentList.get(i).getVector());
+            Patent p = patentList.get(i);
+            double weight = Math.max(1.0,(double)(Database.getExactAssetCountFor(p.getName())));
+            thisAvg.putRow(i, p.getVector().mul(weight));
+            totalWeight+=weight;
         }
-        INDArray avg = thisAvg.mean(0);
-        return avg;
+        avgVector=thisAvg.sum(0).divi(totalWeight);
+        return avgVector;
     }
 
     public List<PortfolioList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
@@ -110,7 +118,7 @@ public class SimilarPatentFinder {
     public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
         // Find the highest (pairwise) assets
         if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),name,other.getName(),portfolioType);
-        INDArray otherAvg = computeAvg(other.patentList);
+        INDArray otherAvg = other.computeAvg();
         return findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit,portfolioType);
     }
 

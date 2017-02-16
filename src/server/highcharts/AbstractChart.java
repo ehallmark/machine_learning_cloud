@@ -63,6 +63,13 @@ public abstract class AbstractChart {
                 .setTooltip(new Tooltip().setPointFormat("{point.y:.2f}"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data);
+   }
+
+    public void attachDoubleClickToForm(String inputID) {
+        options
+                .setPlotOptions(new PlotOptionsChoice().setPlotOptions(new PlotOptions()
+                .setPoint(new PointOptions().setEvents(new Events().setDoubleClick(new Function().setFunction("$('#"+inputID+"').val('{point.name}').closet('form').submit();")))),options.getChartOptions().getType()));
+
     }
 
     @Override

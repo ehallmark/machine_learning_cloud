@@ -363,6 +363,7 @@ public class SimilarPatentServer {
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
+
                 if(req.queryParamsValues("dataAttributes[]")==null) {
                     res.redirect("/candidate_set_models");
                     req.session().attribute("message", "Please choose some data fields to report.");
@@ -384,6 +385,7 @@ public class SimilarPatentServer {
                 Collection<String> patentsToSearchIn = new HashSet<>(preProcess(extractString(req, "custom_patent_list", ""), "\\s+", "[^0-9]"));
                 List<String> customAssigneeList = preProcess(extractString(req, "custom_assignee_list", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
                 Set<String> labelsToExclude = new HashSet<>();
+
 
                 SimilarPatentFinder firstFinder = getFirstPatentFinder(labelsToExclude,customAssigneeList,patentsToSearchIn,classCodesToSearchIn,searchEntireDatabase,includeSubclasses,allowResultsFromOtherCandidateSet,searchType,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
 

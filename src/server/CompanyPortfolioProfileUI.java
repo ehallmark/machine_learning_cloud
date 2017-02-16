@@ -32,6 +32,7 @@ import static spark.Spark.post;
  */
 public class CompanyPortfolioProfileUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
+    private static final String MAIN_INPUT_ID = "main-input-id";
     private static final List<String> reportTypes = Arrays.asList("Company Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
     private static final Map<String,List<String>> attributesMap;
     static {
@@ -79,7 +80,7 @@ public class CompanyPortfolioProfileUI {
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
                         h2("Company Profiler"),
                         h3("Company Information"),
-                        label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
+                        label("Company Name"),br(),input().withId(MAIN_INPUT_ID).withType("text").withName("assignee"),br(),br(),
                         SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                                 h4("Report Types"),
                                 div().with(reportTypes.stream().sorted().map(type->{
@@ -251,12 +252,12 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
                     customAssigneeList = Collections.emptyList();
-                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
+                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
                     patentsToSearchFor=Collections.emptySet();
                     classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
-                    mergeSearchInput=false;
+                    mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=true;
                     searchType="patents";
                     comparator=ExcelWritable.similarityComparator();
@@ -267,12 +268,12 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
+                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
                     patentsToSearchFor=Collections.emptySet();
                     classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
-                    mergeSearchInput=false;
+                    mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=false;
                     searchType="patents";
                     comparator=ExcelWritable.similarityComparator();
@@ -283,12 +284,12 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=new HashSet<>(Arrays.asList(assigneeStr));
+                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
                     patentsToSearchFor=new HashSet<>();
                     classCodesToSearchFor=new HashSet<>();
                     portfolioType= PortfolioList.Type.assignees;
                     labelsToExclude=new HashSet<>();
-                    mergeSearchInput=false;
+                    mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=false;
                     searchType="assignees";
                     comparator=ExcelWritable.similarityComparator();
@@ -389,6 +390,7 @@ public class CompanyPortfolioProfileUI {
 
                 if(useSimilarPatentFinders) {
                     BarChart barChart = new BarChart("Similarity to " + assigneeStr, HighchartDataAdapter.collectSimilarityData(assigneeStr, portfolioList), 0d, 100d, "%");
+                    barChart.attachDoubleClickToForm(MAIN_INPUT_ID);
                     charts.add(barChart);
                 }
             }
