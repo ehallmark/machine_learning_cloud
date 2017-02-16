@@ -51,7 +51,7 @@ public class PriorArtEvaluator extends Evaluator {
             System.out.println("Computing vector for: "+date);
             Set<String> patentSet = groupedDateToPatentMap.get(date);
             datesToIndex.add(date);
-            monthVectors.add(SimilarPatentFinder.computeAvg(new SimilarPatentFinder(patentSet,null,paragraphVectors.getLookupTable()).getPatentList()));
+            monthVectors.add(new SimilarPatentFinder(patentSet,null,paragraphVectors.getLookupTable()).computeAvg());
         });
 
         sortedDates.forEach(date->{

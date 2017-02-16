@@ -50,7 +50,7 @@ public class TechnologyEvaluator extends Evaluator {
             System.out.println("Starting date: "+date);
             List<String> patentSample = new ArrayList<>(dateToPatentsMap.get(date));
             SimilarPatentFinder sampleFinder = new SimilarPatentFinder(patentSample,null,lookupTable);
-            INDArray avg = SimilarPatentFinder.computeAvg(sampleFinder.getPatentList());
+            INDArray avg = sampleFinder.computeAvg();
             if(avg!=null) {
                 data.add(avg);
             }
