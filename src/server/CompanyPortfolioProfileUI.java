@@ -356,6 +356,8 @@ public class CompanyPortfolioProfileUI {
                 portfolioList=null;
                 System.out.println("Using abstract portfolio type");
                 ColumnChart columnChart = new ColumnChart("Valuation for "+portfolioString, HighchartDataAdapter.collectAverageValueData(portfolioString,inputType,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
+                // test!
+                columnChart.attachDoubleClickToForm(MAIN_INPUT_ID);
                 charts.add(columnChart);
 
             } else if(recentTimeline) {

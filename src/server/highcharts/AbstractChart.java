@@ -37,10 +37,6 @@ public abstract class AbstractChart {
         });
     }
 
-    public void setEvent(String event) { // NEED DOUBLE CLICK
-       // options.getPlotOptions().getBar().setEvents(new Events().setCheckboxClick())
-    }
-
     protected void setValueSuffix(String suffix) {
         options.setTooltip(new Tooltip().setValueSuffix(suffix));
     }
@@ -68,7 +64,7 @@ public abstract class AbstractChart {
     public void attachDoubleClickToForm(String inputID) {
         options
                 .setPlotOptions(new PlotOptionsChoice().setPlotOptions(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDoubleClick(new Function().setFunction("$('#"+inputID+"').val('{point.name}').closet('form').submit();")))),options.getChartOptions().getType()));
+                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function().setFunction("$('#"+inputID+"').val(this.name).closest('form').submit();")))),options.getChartOptions().getType()));
 
     }
 
