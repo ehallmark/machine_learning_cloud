@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.options.*;
 import com.googlecode.wickedcharts.highcharts.options.functions.RedirectFunction;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.awt.*;
 import java.util.List;
@@ -63,8 +64,7 @@ public abstract class AbstractChart {
    }
 
     public void attachDoubleClickToForm(String inputID) {
-        String functionString = "$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();";
-
+        String functionString = StringEscapeUtils.escapeJson("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();");
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
                 .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(functionString))))));
