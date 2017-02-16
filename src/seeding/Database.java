@@ -219,11 +219,12 @@ public class Database {
 	}
 
 	public static boolean isPatent(String patent) {
+		if(patent.length()<7||patent.length()>8)return false;
 		return expiredPatentSet.contains(patent)||valuablePatents.contains(patent);
 	}
 
 	public static boolean isAssignee(String assignee) {
-		return allAssignees.contains(assignee);
+		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
 	}
 
 	public static LocalDate getPubDateFor(String patent) {
