@@ -64,7 +64,7 @@ public abstract class AbstractChart {
     public void attachDoubleClickToForm(String inputID) {
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function().setFunction("$(\"#"+inputID+"\").val(\"test\"); $(\"#" + inputID + "\").closest(\"form\").submit();"))))));
+                .setPoint(new PointOptions().setEvents(new Events().setClick(new Function().setFunction("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();"))))));
 
     }
 
