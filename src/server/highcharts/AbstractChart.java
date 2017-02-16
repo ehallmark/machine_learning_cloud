@@ -64,12 +64,12 @@ public abstract class AbstractChart {
     public void attachDoubleClickToForm(String inputID) {
         options
                 .setPlotOptions(new PlotOptionsChoice().setPlotOptions(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function().setFunction("$('#"+inputID+"').val(this.name).closest('form').submit();")))),options.getChartOptions().getType()));
+                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function().setFunction("$(\"#"+inputID+"\").val(this.name).closest(\"form\").submit();")))),options.getChartOptions().getType()));
 
     }
 
     @Override
     public String toString() {
-        return new JsonRenderer().toJson(options).toString();
+        return new JsonRenderer().toJson(options);
     }
 }
