@@ -426,7 +426,7 @@ public class CompanyPortfolioProfileUI {
                                 attributes.stream().map(attr->th(ExcelWritable.humanAttributeFor(attr))).collect(Collectors.toList())
                         )
                 ),tbody().with(
-                        items.stream().sorted().map(item->tr().with(
+                        items.stream().map(item->tr().with(
                                 item.getDataAsRow(attributes).getCells().stream().map(cell->cell==null?td(""):td(cell.getContent().toString())).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
