@@ -2,6 +2,7 @@ package server.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.functions.RedirectFunction;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
@@ -62,10 +63,12 @@ public abstract class AbstractChart {
    }
 
     public void attachDoubleClickToForm(String inputID) {
-        /*options
+        String functionString = "$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();";
+        
+        options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function().setFunction("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();"))))));
-        */
+                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(""))))));
+
     }
 
     @Override
