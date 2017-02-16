@@ -64,7 +64,7 @@ public abstract class AbstractChart {
    }
 
     public void attachDoubleClickToForm(String inputID) {
-        String functionString = StringEscapeUtils.escapeJson("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();");
+        String functionString = StringEscapeUtils.unescapeJson("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();");
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
                 .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(functionString))))));
