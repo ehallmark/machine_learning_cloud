@@ -218,6 +218,14 @@ public class Database {
 		}
 	}
 
+	public static boolean isPatent(String patent) {
+		return expiredPatentSet.contains(patent)||valuablePatents.contains(patent);
+	}
+
+	public static boolean isAssignee(String assignee) {
+		return allAssignees.contains(assignee);
+	}
+
 	public static LocalDate getPubDateFor(String patent) {
 		return patentToPubDateMap.get(patent);
 	}

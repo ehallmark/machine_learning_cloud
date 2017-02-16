@@ -11,7 +11,6 @@ import value_estimation.Evaluator;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -19,10 +18,10 @@ import java.util.stream.Collectors;
 public class HighchartDataAdapter {
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
 
-    public static List<Series<?>> collectSimilarityData(String assignee,PortfolioList portfolioList) {
+    public static List<Series<?>> collectSimilarityData(String name, PortfolioList portfolioList) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
-        series.setName(assignee);
+        series.setName(name);
         portfolioList.getPortfolio().forEach(p->{
             Point point = new Point(p.getName(),p.getSimilarity()*100); // for visualizing percentages
             series.addPoint(point);
@@ -78,17 +77,18 @@ public class HighchartDataAdapter {
         return data;
     }
 
-    public static List<Series<?>> collectAverageCompanyValueData(String company, List<Evaluator> evaluators) {
+    public static List<Series<?>> collectAverageValueData(String portfolio, PortfolioList.Type inputType, List<Evaluator> evaluators) {
         // Weighted avg by portfolio size
         List<Series<?>> data = new ArrayList<>(1);
-        Collection<String> likelyCompanies = Database.possibleNamesForAssignee(company);
-        if(likelyCompanies.isEmpty()) return Collections.emptyList();
+        Collection<String> collection = inputType.equals(PortfolioList.Type.assignees) ?
+                Database.possibleNamesForAssignee(portfolio) : new HashSet<>(Arrays.asList(portfolio));
+        if(collection.isEmpty()) return Collections.emptyList();
         PointSeries series = new PointSeries();
         evaluators.forEach(evaluator->{
-            series.setName(company);
+            series.setName(portfolio);
             AtomicDouble value = new AtomicDouble(0.0);
             AtomicInteger totalSize = new AtomicInteger(0);
-            likelyCompanies.forEach(c->{
+            collection.forEach(c->{
                 int size = Database.getExactAssetCountFor(c);
                 totalSize.addAndGet(size);
                 value.addAndGet(evaluator.evaluate(c)*size);

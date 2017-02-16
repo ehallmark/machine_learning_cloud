@@ -33,12 +33,12 @@ import static spark.Spark.post;
 public class CompanyPortfolioProfileUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static final List<String> reportTypes = Arrays.asList("Company Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
+    private static final List<String> reportTypes = Arrays.asList("Portfolio Valuation","Recent Activity Timeline","Representative Patents","Similar Patent Finder", "Similar Company Finder","Portfolio Technology Tagging");
     private static final Map<String,List<String>> attributesMap;
     static {
         attributesMap=new HashMap<>();
         List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
-        attributesMap.put("Company Valuation",valueAttrs);
+        attributesMap.put("Portfolio Valuation",valueAttrs);
         List<String> similarPatentAttrs = Arrays.asList("name","similarity","assignee","title");
         attributesMap.put("Representative Patents",similarPatentAttrs);
         attributesMap.put("Similar Patent Finder",similarPatentAttrs);
@@ -179,13 +179,22 @@ public class CompanyPortfolioProfileUI {
                 navigator.addRequest(new QueryParamsMap(req.raw()));
             }
 
-            String assigneeStr = params.get("assignee").value();
-            String patentStr = params.get("patent").value();
+
+            String portfolioString = params.get("assignee").value();
+            if(portfolioString==null||portfolioString.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company or a Patent"));
+            portfolioString=portfolioString.trim();
+            PortfolioList.Type inputType;
+            if(Database.isAssignee(portfolioString)) {
+                inputType= PortfolioList.Type.assignees;
+            } else if (Database.isPatent(portfolioString)) {
+                inputType= PortfolioList.Type.patents;
+            } else {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to find "+portfolioString));
+            }
+
             String reportType = params.get("report_type").value();
-            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company"));
             if(reportType==null||reportType.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
-            PortfolioList.Type inputType = assigneeStr==null? PortfolioList.Type.patents: PortfolioList.Type.assignees;
             List<AbstractChart> charts = new ArrayList<>();
             int limit = 20;
             SimilarPatentFinder firstFinder;
@@ -193,7 +202,6 @@ public class CompanyPortfolioProfileUI {
             boolean allowResultsFromOtherCandidateSet;
             boolean searchEntireDatabase;
             boolean mergeSearchInput;
-            String searchType;
             PortfolioList.Type portfolioType;
             Set<String> patentsToSearchFor;
             Set<String> classCodesToSearchFor;
@@ -212,6 +220,7 @@ public class CompanyPortfolioProfileUI {
             Set<String> labelsToExclude;
             switch(reportType) {
                 case "Recent Activity Timeline": {
+                    if(inputType.equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                     recentTimeline=true;
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=false;
@@ -225,41 +234,45 @@ public class CompanyPortfolioProfileUI {
                     labelsToExclude=null;
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=false;
-                    searchType=null;
                     comparator=null;
                     break;
                 }
-                case "Company Valuation": {
+                case "Portfolio Valuation": {
                     portfolioValuation=true;
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=false;
-                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    patentsToSearchIn = null;
                     customAssigneeList = Collections.emptyList();
-                    assigneesToSearchFor=null;
-                    patentsToSearchFor=null;
-                    classCodesToSearchFor=null;
-                    portfolioType= PortfolioList.Type.patents;
+                    if(inputType.equals(PortfolioList.Type.assignees)) {
+                        assigneesToSearchFor= Database.possibleNamesForAssignee(portfolioString);
+                        patentsToSearchFor=Collections.emptySet();
+                    } else {
+                        //patents
+                        assigneesToSearchFor=Collections.emptySet();
+                        patentsToSearchFor=new HashSet<>(Arrays.asList(portfolioString));
+                    }
+                    classCodesToSearchFor=Collections.emptySet();
+                    portfolioType= PortfolioList.Type.assignees;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=false;
-                    allowResultsFromOtherCandidateSet=true;
-                    searchType="patents";
+                    allowResultsFromOtherCandidateSet=false;
                     comparator=ExcelWritable.valueComparator();
                     comparingByValue=true;
                     break;
                 }
                 case "Representative Patents": {
+                    if(inputType.equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                     searchEntireDatabase=false;
                     useSimilarPatentFinders=true;
-                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(assigneeStr);
+                    patentsToSearchIn = Database.selectPatentNumbersFromAssignee(portfolioString);
                     customAssigneeList = Collections.emptyList();
-                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
+                    assigneesToSearchFor=Database.possibleNamesForAssignee(portfolioString);
                     patentsToSearchFor=Collections.emptySet();
                     classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=true;
-                    searchType="patents";
                     comparator=ExcelWritable.similarityComparator();
                     break;
                 }
@@ -268,14 +281,19 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
-                    patentsToSearchFor=Collections.emptySet();
+                    if(inputType.equals(PortfolioList.Type.assignees)) {
+                        assigneesToSearchFor= Database.possibleNamesForAssignee(portfolioString);
+                        patentsToSearchFor=Collections.emptySet();
+                    } else {
+                        //patents
+                        assigneesToSearchFor=Collections.emptySet();
+                        patentsToSearchFor=new HashSet<>(Arrays.asList(portfolioString));
+                    }
                     classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.patents;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=false;
-                    searchType="patents";
                     comparator=ExcelWritable.similarityComparator();
                     break;
                 }
@@ -284,14 +302,19 @@ public class CompanyPortfolioProfileUI {
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
                     customAssigneeList = null;
-                    assigneesToSearchFor=Database.possibleNamesForAssignee(assigneeStr);
-                    patentsToSearchFor=new HashSet<>();
-                    classCodesToSearchFor=new HashSet<>();
+                    if(inputType.equals(PortfolioList.Type.assignees)) {
+                        assigneesToSearchFor= Database.possibleNamesForAssignee(portfolioString);
+                        patentsToSearchFor=Collections.emptySet();
+                    } else {
+                        //patents
+                        assigneesToSearchFor=Collections.emptySet();
+                        patentsToSearchFor=new HashSet<>(Arrays.asList(portfolioString));
+                    }
+                    classCodesToSearchFor=Collections.emptySet();
                     portfolioType= PortfolioList.Type.assignees;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=true;
                     allowResultsFromOtherCandidateSet=false;
-                    searchType="assignees";
                     comparator=ExcelWritable.similarityComparator();
                     break;
                 }
@@ -312,7 +335,7 @@ public class CompanyPortfolioProfileUI {
             }
             if(useSimilarPatentFinders) {
                 System.out.println("Using similar patent finders");
-                firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, searchType, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, inputType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
                 if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
                     return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
@@ -330,28 +353,14 @@ public class CompanyPortfolioProfileUI {
 
 
             } else if (portfolioValuation) {
+                portfolioList=null;
                 System.out.println("Using abstract portfolio type");
-                Set<String> toSearchIn = new HashSet<>();
-                switch(portfolioType) {
-                    case assignees: {
-                        customAssigneeList.forEach(assignee->toSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
-                        break;
-                    } case patents: {
-                        toSearchIn.addAll(patentsToSearchIn);
-                        break;
-                    }case class_codes: {
-                        break;
-                    }
-                }
-                ColumnChart columnChart = new ColumnChart("Valuation for "+assigneeStr, HighchartDataAdapter.collectAverageCompanyValueData(assigneeStr,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
+                ColumnChart columnChart = new ColumnChart("Valuation for "+portfolioString, HighchartDataAdapter.collectAverageValueData(portfolioString,inputType,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
                 charts.add(columnChart);
 
-                System.out.println("Starting building portfolio list");
-                portfolioList = PortfolioList.abstractPorfolioList(toSearchIn, portfolioType);
-                System.out.println("Finished building portfolio list");
             } else if(recentTimeline) {
                 portfolioList=null;
-                LineChart lineChart = new LineChart("Recent Activity Timeline for "+assigneeStr, HighchartDataAdapter.collectCompanyActivityData(assigneeStr), AxisType.DATETIME);
+                LineChart lineChart = new LineChart("Recent Activity Timeline for "+portfolioString, HighchartDataAdapter.collectCompanyActivityData(portfolioString), AxisType.DATETIME);
                 charts.add(lineChart);
 
             } else {
@@ -389,7 +398,7 @@ public class CompanyPortfolioProfileUI {
                 }
 
                 if(useSimilarPatentFinders) {
-                    BarChart barChart = new BarChart("Similarity to " + assigneeStr, HighchartDataAdapter.collectSimilarityData(assigneeStr, portfolioList), 0d, 100d, "%");
+                    BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(portfolioString, inputType, portfolioList), 0d, 100d, "%");
                     barChart.attachDoubleClickToForm(MAIN_INPUT_ID);
                     charts.add(barChart);
                 }
@@ -401,7 +410,7 @@ public class CompanyPortfolioProfileUI {
 
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
-                    h3(reportType+" for "+assigneeStr),
+                    h3(reportType+" for "+portfolioString),
                     charts.isEmpty()?div():div().with(
                             h4("Charts"),
                             div().with(
