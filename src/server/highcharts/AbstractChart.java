@@ -64,7 +64,7 @@ public abstract class AbstractChart {
    }
 
     public void attachDoubleClickToForm(String inputID) {
-        String functionString = StringEscapeUtils.unescapeJson("$(\"#"+inputID+"\").val(this.name); $(\"#" + inputID + "\").closest(\"form\").submit();");
+        String functionString = "$('#"+inputID+"').val(this.name); $('#" + inputID + "').closest('form').submit();";
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
                 .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(functionString))))));
@@ -73,6 +73,6 @@ public abstract class AbstractChart {
 
     @Override
     public String toString() {
-        return new JsonRenderer().toJson(options);
+        return StringEscapeUtils.escapeJson(new JsonRenderer().toJson(options));
     }
 }
