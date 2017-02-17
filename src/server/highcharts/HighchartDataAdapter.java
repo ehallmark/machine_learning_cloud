@@ -18,17 +18,26 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HighchartDataAdapter {
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
 
-    public static List<Series<?>> collectSimilarityData(String name, PortfolioList portfolioList) {
+    public static List<Series<?>> collectData(String name, PortfolioList portfolioList, boolean similarity) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(name);
         portfolioList.getPortfolio().forEach(p->{
-            Point point = new Point(p.getName(),p.getSimilarity()*100); // for visualizing percentages
+            Point point = new Point(p.getName(),similarity?(p.getSimilarity()*100):p.getAvgValue()); // for visualizing percentages
             series.addPoint(point);
         });
         data.add(series);
         return data;
     }
+
+    public static List<Series<?>> collectSimilarityData(String name, PortfolioList portfolioList) {
+        return collectData(name,portfolioList,true);
+    }
+
+    public static List<Series<?>> collectValueData(String name, PortfolioList portfolioList) {
+        return collectData(name,portfolioList,false);
+    }
+
 
     public static List<Series<?>> collectCompanyActivityData(String company) {
         List<Series<?>> data = new ArrayList<>();
