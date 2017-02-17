@@ -73,6 +73,7 @@ public class CompanyPortfolioProfileUI {
                 + "      for(var i = 0; i<charts.length; i++) {  "
                 + "         var clickable = $('#chart-'+i.toString()).attr('ajaxclickable');     "
                 + "         if(typeof attr !== typeof undefined && attr !== false && attr.toLowerCase() !== 'false') {"
+                + "             alert('DOUBLE CLICK EVENT FOUND');"
                 + "             charts[i].plotOptions.series.point.events.dblclick=function() {"
                 + "                 $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
                 + "             };     "
