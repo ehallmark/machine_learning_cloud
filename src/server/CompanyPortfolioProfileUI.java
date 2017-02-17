@@ -45,7 +45,7 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Valuable Patents",valueAttrs);
         attributesMap.put("Similar Patent Finder",similarPatentAttrs);
         List<String> companyAttrs = Arrays.asList("assignee","totalAssetCount","similarity","relevantAssets");
-        attributesMap.put("Similar Company Finder",companyAttrs);
+        attributesMap.put("Similar Portfolio Finder",companyAttrs);
         tmp.addAll(attributesMap.keySet());
         reportTypes=Collections.unmodifiableList(tmp).stream().sorted().collect(Collectors.toList());
     }
@@ -334,7 +334,7 @@ public class CompanyPortfolioProfileUI {
                     comparator=ExcelWritable.similarityComparator();
                     break;
                 }
-                case "Similar Company Finder": {
+                case "Similar Portfolio Finder": {
                     searchEntireDatabase=true;
                     useSimilarPatentFinders=true;
                     patentsToSearchIn = null;
@@ -372,7 +372,7 @@ public class CompanyPortfolioProfileUI {
             }
             if(useSimilarPatentFinders) {
                 System.out.println("Using similar patent finders");
-                firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, inputType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, portfolioType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
                 if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
                     return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
