@@ -448,9 +448,6 @@ public class CompanyPortfolioProfileUI {
                 }
             }
 
-            // TESTING
-            ajaxClickablePoints=true;
-
             System.out.println("Finished initializing portfolio");
 
             AtomicInteger chartCnt = new AtomicInteger(0);
