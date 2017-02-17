@@ -54,6 +54,7 @@ public class CompanyPortfolioProfileUI {
                 + "var tempScrollTop = $(window).scrollTop();"
                 + "$.ajax({"
                 + "  type: 'POST', "
+                + "  dataType: 'json',"
                 + "  url: url,     "
                 + "  data: $('#"+ID+"').serialize(),"
                 + "  complete: function(jqxhr,status) {"
