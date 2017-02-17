@@ -311,16 +311,16 @@ public class SimilarPatentServer {
             keys.forEach(key->{
                 classScoreMap.put(key,classScoreMap.get(key)/cnt.get());
                 globalFrequencyMap.put(key,new Double(Database.selectPatentNumbersFromExactClassCode(key).size())/Database.numPatentsWithCpcClassifications());
-                ratioMap.put(key,classScoreMap.get(key)/globalFrequencyMap.get(key));
+                ratioMap.put(key,classScoreMap.get(key)*Math.log(1.0+globalFrequencyMap.get(key)));
             });
 
             Tag table = table().with(
                     thead().with(
                             tr().with(
                                     th("Class Code"),
-                                    th("Frequency in asset list"),
+                                    th("Frequency in Portfolio"),
                                     th("Global Frequency"),
-                                    th("Frequency Ratio")
+                                    th("Frequency Score (f_p*log(1+f_g))")
                             )
                     ),
                     tbody().with(
@@ -772,6 +772,7 @@ public class SimilarPatentServer {
                 formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
                 formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
                 formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
+                p("(Warning: Data only available from 2007 and onwards)"),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
