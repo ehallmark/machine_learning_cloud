@@ -63,16 +63,15 @@ public abstract class AbstractChart {
                 .setSeries(data);
    }
 
-    public void attachDoubleClickToForm(String inputID) {
-        String functionString = "$('#"+inputID+"').val(this.name); $('#" + inputID + "').closest('form').submit();";
+    public void attachDoubleClickToForm() {
         options
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events().setDblclick(new Function(functionString))))));
+                .setPoint(new PointOptions().setEvents(new Events()))));
 
     }
 
     @Override
     public String toString() {
-        return StringEscapeUtils.escapeJson(new JsonRenderer().toJson(options));
+        return new JsonRenderer().toJson(options);
     }
 }

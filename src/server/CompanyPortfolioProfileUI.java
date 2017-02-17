@@ -54,7 +54,7 @@ public class CompanyPortfolioProfileUI {
                 + "var tempScrollTop = $(window).scrollTop();"
                 + "$.ajax({"
                 + "  type: 'POST', "
-                + "  dataType: 'jsonp',"
+                + "  dataType: 'json',"
                 + "  url: url,     "
                 + "  data: $('#"+ID+"').serialize(),"
                 + "  complete: function(jqxhr,status) {"
@@ -68,11 +68,14 @@ public class CompanyPortfolioProfileUI {
                 + "    $('#results').html(data.message); "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      var charts = JSON.parse(data.charts);                 "
-                + "      for(var i = 0; i<charts.length; i++) {                "
+                + "      for(var i = 0; i<charts.length; i++) {  "
+                + "         charts[i].plotOptions.series.point.events.dblclick=function() {"
+                + "             $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
+                + "         };                     "
                 + "         $('#chart-'+i.toString()).highcharts(charts[i]);"
-                + "      }  "
-                + "    }    "
-                + "  }      "
+                + "      }                        "
+                + "    }                          "
+                + "  }                            "
                 + "});"
                 + "return false; ";
     }
@@ -364,7 +367,7 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Using abstract portfolio type");
                 ColumnChart columnChart = new ColumnChart("Valuation for "+portfolioString, HighchartDataAdapter.collectAverageValueData(cleanPortfolioString,inputType,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
                 // test!
-                columnChart.attachDoubleClickToForm(MAIN_INPUT_ID);
+                columnChart.attachDoubleClickToForm();
                 charts.add(columnChart);
 
             } else if(recentTimeline) {
@@ -408,7 +411,7 @@ public class CompanyPortfolioProfileUI {
 
                 if(useSimilarPatentFinders) {
                     BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(cleanPortfolioString, portfolioList), 0d, 100d, "%");
-                    barChart.attachDoubleClickToForm(MAIN_INPUT_ID);
+                    barChart.attachDoubleClickToForm();
                     charts.add(barChart);
                 }
             }
