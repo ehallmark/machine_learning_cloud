@@ -269,7 +269,7 @@ public class CompanyPortfolioProfileUI {
                         patentsToSearchFor=new HashSet<>(Arrays.asList(cleanPortfolioString));
                     }
                     classCodesToSearchFor=Collections.emptySet();
-                    portfolioType= PortfolioList.Type.assignees;
+                    portfolioType= inputType;
                     labelsToExclude=new HashSet<>();
                     mergeSearchInput=false;
                     allowResultsFromOtherCandidateSet=false;

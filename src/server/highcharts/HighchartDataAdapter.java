@@ -98,7 +98,7 @@ public class HighchartDataAdapter {
             AtomicDouble value = new AtomicDouble(0.0);
             AtomicInteger totalSize = new AtomicInteger(0);
             collection.forEach(c->{
-                int size = Database.getExactAssetCountFor(c);
+                int size = Math.max(1,Database.getExactAssetCountFor(c));
                 totalSize.addAndGet(size);
                 value.addAndGet(evaluator.evaluate(c)*size);
             });
