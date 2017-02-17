@@ -60,15 +60,10 @@ public abstract class AbstractChart {
                 .setTitle(new Title(title))
                 .setTooltip(new Tooltip().setPointFormat("{point.y:.2f}"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
-                .setSeries(data);
-   }
-
-    public void attachDoubleClickToForm() {
-        options
+                .setSeries(data)
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                .setPoint(new PointOptions().setEvents(new Events()))));
-
-    }
+                        .setPoint(new PointOptions().setEvents(new Events()))));
+   }
 
     @Override
     public String toString() {

@@ -1,7 +1,6 @@
 package server;
 
 import analysis.SimilarPatentFinder;
-import analysis.patent_view_api.Assignee;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import j2html.tags.*;
@@ -12,8 +11,6 @@ import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelWritable;
 import spark.QueryParamsMap;
-import spark.Request;
-import spark.Spark;
 import tools.AssigneeTrimmer;
 import tools.PortfolioList;
 
@@ -69,9 +66,12 @@ public class CompanyPortfolioProfileUI {
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      var charts = JSON.parse(data.charts);                 "
                 + "      for(var i = 0; i<charts.length; i++) {  "
-                + "         charts[i].plotOptions.series.point.events.dblclick=function() {"
-                + "             $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
-                + "         };                     "
+                + "         var clickable = $('#chart-'+i.toString()).attr('ajaxclickable');     "
+                + "         if(typeof attr !== typeof undefined && attr !== false && attr.toLowerCase() !== 'false') {"
+                + "             charts[i].plotOptions.series.point.events.dblclick=function() {"
+                + "                 $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
+                + "             };     "
+                + "         }       "
                 + "         $('#chart-'+i.toString()).highcharts(charts[i]);"
                 + "      }                        "
                 + "    }                          "
@@ -223,6 +223,7 @@ public class CompanyPortfolioProfileUI {
             boolean useAttributes = true;
             boolean comparingByValue=false;
             PortfolioList portfolioList;
+            boolean ajaxClickablePoints = false;
 
             // pre data
             Collection<String> patentsToSearchIn;
@@ -367,7 +368,6 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Using abstract portfolio type");
                 ColumnChart columnChart = new ColumnChart("Valuation for "+portfolioString, HighchartDataAdapter.collectAverageValueData(cleanPortfolioString,inputType,SimilarPatentServer.modelMap.entrySet().stream().map(e->e.getValue()).collect(Collectors.toList())),1.0,5.0);
                 // test!
-                columnChart.attachDoubleClickToForm();
                 charts.add(columnChart);
 
             } else if(recentTimeline) {
@@ -411,22 +411,26 @@ public class CompanyPortfolioProfileUI {
 
                 if(useSimilarPatentFinders) {
                     BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(cleanPortfolioString, portfolioList), 0d, 100d, "%");
-                    barChart.attachDoubleClickToForm();
+                    ajaxClickablePoints=true;
                     charts.add(barChart);
                 }
             }
+
+            // TESTING
+            ajaxClickablePoints=true;
 
             System.out.println("Finished initializing portfolio");
 
             AtomicInteger chartCnt = new AtomicInteger(0);
 
+            final boolean useAjaxClickablePoints = ajaxClickablePoints;
             try {
             return new Gson().toJson(new AjaxChartMessage(div().with(
                     h3(reportType+" for "+portfolioString),
                     charts.isEmpty()?div():div().with(
                             h4("Charts"),
                             div().with(
-                                    charts.stream().map(c->div().withId("chart-"+chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                    charts.stream().map(c->(useAjaxClickablePoints?div().attr("ajaxclickable","true"):div()).withId("chart-"+chartCnt.getAndIncrement())).collect(Collectors.toList())
                             )
                     ),
                     portfolioList==null?div():div().with(
