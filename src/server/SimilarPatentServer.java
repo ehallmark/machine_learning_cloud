@@ -649,7 +649,7 @@ public class SimilarPatentServer {
                             + "var tempScrollTop = $(window).scrollTop();"
                             + "$.ajax({"
                             + "  type: 'POST',"
-                            + "  dataType: 'json',"
+                            + "  dataType: 'jsonp',"
                             + "  url: url,"
                             + "  data: $('#"+formId+"').serialize(),"
                             + "  complete: function(jqxhr,status) {"
