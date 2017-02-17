@@ -72,6 +72,7 @@ public class CompanyPortfolioProfileUI {
                 + "      var charts = JSON.parse(data.charts);                 "
                 + "      for(var i = 0; i<charts.length; i++) {  "
                 + "         var clickable = $('#chart-'+i.toString()).attr('ajaxclickable');     "
+                + "         alert(clickable);"
                 + "         if(typeof attr !== typeof undefined && attr !== false && attr.toLowerCase() !== 'false') {"
                 + "             alert('DOUBLE CLICK EVENT FOUND');"
                 + "             charts[i].plotOptions.series.point.events.dblclick=function() {"
