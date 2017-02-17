@@ -72,7 +72,7 @@ public class CompanyPortfolioProfileUI {
                 + "      var charts = JSON.parse(data.charts);                 "
                 + "      for(var i = 0; i<charts.length; i++) {  "
                 + "         var clickable = $('#chart-'+i.toString()).attr('ajaxclickable');     "
-                + "         if(typeof clickable !== typeof undefined && clickable !== false && clickable === typeof ' ' && clickable.toLowerCase() !== 'false') {"
+                + "         if((typeof clickable !== typeof undefined) && (clickable !== false)) {"
                 + "             alert('DOUBLE CLICK EVENT FOUND');"
                 + "             charts[i].plotOptions.series.point.events.dblclick=function() {"
                 + "                 $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
