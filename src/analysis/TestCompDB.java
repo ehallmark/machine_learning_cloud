@@ -135,13 +135,13 @@ public class TestCompDB {
         transactionMap.put("1",FileUtils.readLines(new File("valuable_patents.csv")));
 
         StringJoiner join = new StringJoiner("\n");
-        Map<String,List<String>> gatherTechMap = Database.getGatherTechMap();
+        Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Database.setupSeedConn();
         Map<String,List<String>> gatherValueMap = Database.getGatherRatingsMap();
         Database.setupSeedConn();
 
         join.add(RunTest(transactionMap,lookupTable, "Transaction Probability ("+modelName+")"));
-        join.add(RunTest(gatherTechMap,lookupTable, "Gather Technologies ("+modelName+")"));
+        //join.add(RunTest(gatherTechMap,lookupTable, "Gather Technologies ("+modelName+")"));
         join.add(RunTest(gatherValueMap,lookupTable, "Gather Valuation ("+modelName+")"));
         //join.add(RunTest(GetEtsiPatentsList.getETSIPatentMap(),lookupTable, "ETSI Standards ("+modelName+")"));
         return join.toString();

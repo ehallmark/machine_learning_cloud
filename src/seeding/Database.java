@@ -449,16 +449,16 @@ public class Database {
 		return map;
 	}
 
-	public static Map<String,List<String>> getGatherTechMap() throws SQLException {
+	public static Map<String,Collection<String>> getGatherTechMap() throws SQLException {
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
-		Map<String, List<String>> techToPatentMap = new HashMap<>();
+		Map<String, Collection<String>> techToPatentMap = new HashMap<>();
 		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherTechnologiesQuery);
 		ps.setFetchSize(10);
 		//ps.setArray(1, gatherDBConn.createArrayOf("int4",badTech.toArray()));
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
-			techToPatentMap.put(rs.getString(2),Arrays.asList((String[])rs.getArray(1).getArray()));
+			techToPatentMap.put(rs.getString(2),new HashSet<>(Arrays.asList((String[])rs.getArray(1).getArray())));
 		}
 		ps.close();
 		Database.close();

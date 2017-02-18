@@ -1,5 +1,7 @@
 package analysis.patent_view_api;
 
+import java.util.Collection;
+
 /**
  * Created by Evan on 2/5/2017.
  */
@@ -9,4 +11,5 @@ public class CPC {
     public String getSubgroup() {
         return cpc_subgroup_id;
     }
+
 }
