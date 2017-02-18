@@ -39,15 +39,17 @@ public class CompanyPortfolioProfileUI {
         List<String> tmp = new ArrayList<>();
         attributesMap=new HashMap<>();
         List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
-        attributesMap.put("Company/Patent Valuation",valueAttrs);
+        attributesMap.put("Portfolio Valuation",valueAttrs);
         List<String> similarPatentAttrs = Arrays.asList("name","similarity","assignee","title");
         attributesMap.put("Representative Patents",similarPatentAttrs);
         attributesMap.put("Valuable Patents",valueAttrs);
         attributesMap.put("Similar Patent Finder",similarPatentAttrs);
         List<String> companyAttrs = Arrays.asList("assignee","totalAssetCount","similarity","relevantAssets");
         attributesMap.put("Similar Portfolio Finder",companyAttrs);
+        List<String> techAttrs = Arrays.asList("name","technology");
+        attributesMap.put("Technology Tagging",techAttrs);
         tmp.addAll(attributesMap.keySet());
-        reportTypes=Collections.unmodifiableList(tmp).stream().sorted().collect(Collectors.toList());
+        reportTypes=tmp.stream().sorted().collect(Collectors.toList());
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -260,7 +262,7 @@ public class CompanyPortfolioProfileUI {
                             break;
                         }
                     }
-                    case "Company/Patent Valuation": {
+                    case "Portfolio Valuation": {
                         portfolioValuation = true;
                         if (inputType.equals(PortfolioList.Type.assignees)) {
                             assigneesToSearchFor = Database.possibleNamesForAssignee(cleanPortfolioString);
@@ -307,10 +309,10 @@ public class CompanyPortfolioProfileUI {
                         portfolioType = PortfolioList.Type.assignees;
                         break;
                     }
-                    /*case "Portfolio Technology Tagging": {
+                    case "Technology Tagging": {
                         // special model
                         break;
-                    }*/
+                    }
                     default: {
                         return new Gson().toJson(new SimpleAjaxMessage("Report option not yet implemented"));
                     }

@@ -18,6 +18,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HighchartDataAdapter {
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
 
+    public static List<Series<?>> collectTechnologyData(String seriesName, PortfolioList portfolioList) {
+        List<Series<?>> data = new ArrayList<>();
+        PointSeries series = new PointSeries();
+        series.setName(seriesName);
+        Map<String,AtomicInteger> countMap = new HashMap<>();
+        portfolioList.getPortfolio().forEach(asset->{
+            if(asset.getTechnology()!=null&&asset.getTechnology().length()>0) {
+                if(countMap.containsKey(asset.getTechnology())) {
+                    countMap.get(asset.getTechnology()).getAndIncrement();
+                } else {
+                    countMap.put(asset.getTechnology(),new AtomicInteger(1));
+                }
+            }
+        });
+        countMap.forEach((asset,count)->{
+            Point point = new Point(asset,count.get());
+            series.addPoint(point);
+        });
+        data.add(series);
+        return data;
+    }
+
     public static List<Series<?>> collectData(String name, PortfolioList portfolioList, boolean similarity) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();

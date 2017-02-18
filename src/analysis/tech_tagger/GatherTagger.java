@@ -22,6 +22,12 @@ public class GatherTagger {
         technologies=(List<String>)Database.tryLoadObject(BuildCPCToGatherStatistics.techListFile);
     }
 
+    public String predictTechnology(String patent) {
+        List<String> predictions = predictTechnologies(patent,1);
+        if(predictions.isEmpty()) return "";
+        return predictions.get(0);
+    }
+
     public List<String> predictTechnologies(String patent, int n) {
         final int MIN_CLASS_SIZE = BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH;
         final int numTechnologies = technologies.size();
