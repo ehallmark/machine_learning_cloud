@@ -256,6 +256,10 @@ public class Database {
 		return possible;
 	}
 
+	public static Collection<String> getExpiredPatents() {
+		return expiredPatentSet;
+	}
+
 	public static Set<String> classificationsFor(String patent) {
 		Set<String> classifications = new HashSet<>();
 		if(patentToClassificationMap.containsKey(patent)) {
