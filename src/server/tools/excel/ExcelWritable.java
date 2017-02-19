@@ -2,6 +2,7 @@ package server.tools.excel;
 
 import analysis.tech_tagger.GatherTagger;
 import jxl.write.WritableCellFormat;
+import org.deeplearning4j.berkeley.Pair;
 import value_estimation.ValueMapNormalizer;
 
 import java.util.*;
@@ -19,6 +20,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected double similarity;
     protected Map<String,Double> valueMap = new HashMap<>();
     protected String technology;
+    protected List<Pair<String,Double>> technologyList;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -81,18 +83,12 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         }
     }
 
-    public String getTechnology() { return technology; }
-    
     protected void init(Collection<String> params) {
         calculateOrderedTags();
         String tag = "";
         List<String> tags = getOrderedTags();
         if(!tags.isEmpty()) {
             tag=tags.get(0);
-        }
-        if(params.contains("technology")) {
-            technology=new GatherTagger().predictTechnology(name);
-            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
         }
         if(params.contains("primaryTag"))attributeData.put("primaryTag",new ExcelCell(ExcelHandler.getDefaultFormat(),tag,false));
         if(params.contains("name"))attributeData.put("name",new ExcelCell(ExcelHandler.getDefaultFormat(),name,false));

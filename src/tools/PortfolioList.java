@@ -22,6 +22,7 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     private String name2;
     private Type portfolioType;
     private double avgSimilarity;
+    private List<String> attributes;
     public enum Type { patents, assignees, class_codes }
 
 
@@ -52,6 +53,12 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
         this.portfolioType=portfolioType;
         this.portfolio=portfolioList;
     }
+
+    public void setAttributes(List<String> attrs) {
+        this.attributes=attrs;
+    }
+
+    public List<String> getAttributes() { return attributes; }
 
     public void flipAvgSimilarity() {
         avgSimilarity=avgSimilarity*-1.0;

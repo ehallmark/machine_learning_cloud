@@ -1,10 +1,12 @@
 package server.tools;
 
+import analysis.tech_tagger.GatherTagger;
 import seeding.Database;
 import server.tools.excel.ExcelCell;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
 import tools.AssigneeTrimmer;
+import tools.PortfolioList;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -59,6 +61,12 @@ public class AbstractPatent extends ExcelWritable {
         if(attributeData.containsKey("name")) {
             ExcelCell cell = attributeData.get("name");
             attributeData.put("name",new ExcelCell(cell.getFormat(),cell.getContent(),true));
+        }
+        if(params.contains("technology")) {
+            technologyList = GatherTagger.getTechnologiesFor(name, PortfolioList.Type.patents,5);
+            if(technologyList.isEmpty())technology="";
+            else technology=technologyList.get(0).getFirst();
+            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
         }
     }
 

@@ -1,5 +1,6 @@
 package server.highcharts;
 
+import analysis.tech_tagger.GatherTagger;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
@@ -18,22 +19,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class HighchartDataAdapter {
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
 
-    public static List<Series<?>> collectTechnologyData(String seriesName, PortfolioList portfolioList) {
+    public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
-        series.setName(seriesName);
-        Map<String,AtomicInteger> countMap = new HashMap<>();
-        portfolioList.getPortfolio().forEach(asset->{
-            if(asset.getTechnology()!=null&&asset.getTechnology().length()>0) {
-                if(countMap.containsKey(asset.getTechnology())) {
-                    countMap.get(asset.getTechnology()).getAndIncrement();
-                } else {
-                    countMap.put(asset.getTechnology(),new AtomicInteger(1));
-                }
-            }
-        });
-        countMap.forEach((asset,count)->{
-            Point point = new Point(asset,count.get());
+        series.setName(portfolio);
+        GatherTagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
+            String tech = pair.getFirst();
+            double prob = pair.getSecond();
+            Point point = new Point(tech,prob);
             series.addPoint(point);
         });
         data.add(series);

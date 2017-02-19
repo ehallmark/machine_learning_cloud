@@ -7,6 +7,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import tools.MinHeap;
+import tools.PortfolioList;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -25,13 +26,40 @@ public class GatherTagger {
     }
 
 
-    public static List<Pair<String,Double>> getTechnologiesFor(String item, int n) {
-        if(item==null)return Collections.emptyList();
-        return topTechnologies(technologyMap.get(item),n);
+    public static List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
+        return topTechnologies(handlePortfolioType(item,type),n);
     }
 
-    private static List<String> getTechnologiesAsStringsFor(String item, int n) {
-        return getTechnologiesFor(item,n).stream().map(pair->pair.getFirst()).collect(Collectors.toList());
+
+    private static INDArray handlePortfolioType(String name, PortfolioList.Type type) {
+        if(name==null||type==null)return null;
+
+        INDArray vec=null;
+        if(type.equals(PortfolioList.Type.assignees)) {
+            Collection<String> assignees = Database.possibleNamesForAssignee(name);
+            if(assignees.isEmpty()) return null;
+            Map<String,Integer> assigneeMap = new HashMap<>();
+            assignees.forEach(assignee->{
+               if(technologyMap.containsKey(assignee)) {
+                   assigneeMap.put(assignee,Database.getExactAssetCountFor(assignee));
+               }
+            });
+            if(assigneeMap.isEmpty()) return null;
+            String bestBet = assigneeMap.entrySet().stream().max((a1,a2)->Integer.compare(a1.getValue(),a2.getValue())).get().getKey();
+            vec = technologyMap.get(bestBet);
+        } else if (type.equals(PortfolioList.Type.patents)) {
+            vec = technologyMap.get(name);
+        } else if (type.equals(PortfolioList.Type.class_codes)) {
+            String prefix = name.trim();
+            while(prefix.length()>=BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH) {
+                if(technologyMap.containsKey(prefix)) {
+                    vec = technologyMap.get(prefix);
+                    break;
+                }
+                prefix = prefix.substring(0,prefix.length()-1).trim();
+            }
+        } else return null;
+        return vec;
     }
 
     private static List<Pair<String,Double>> topTechnologies(INDArray vec, int n) {
