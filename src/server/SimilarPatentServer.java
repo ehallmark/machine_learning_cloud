@@ -1,10 +1,12 @@
 package server;
 
 import analysis.SimilarPatentFinder;
+import analysis.tech_tagger.GatherTagger;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
@@ -51,6 +53,9 @@ public class SimilarPatentServer {
     private static final String CPC_FROM_ASSETS_FORM_ID = "select-cpc-from-assets-form";
     private static final String CPC_TO_ASSETS_FORM_ID = "select-cpc-to-assets-form";
     private static final String CPC_FREQUENCY_FROM_ASSETS_FORM_ID = "select-cpc-frequency-from-assets-form";
+    private static final String TECH_PREDICTION_FROM_ASSETS_FORM_ID = "tech-from-assets-form";
+    private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
+    private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -186,6 +191,51 @@ public class SimilarPatentServer {
                                             td(assignee),
                                             td(String.join(" ",Database.selectPatentNumbersFromAssignee(assignee))))
                                     ).collect(Collectors.toList())
+
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
+
+        post("/tech_predictions", (req, res) -> {
+            res.type("application/json");
+            String type = req.queryParams("report_type");
+            if(type==null||!Arrays.asList("patents","assignees","class_codes").contains(type)) {
+                return new Gson().toJson(new SimpleAjaxMessage("Unknown report type"));
+            }
+            String asset = req.queryParams("item");
+            if(asset==null||asset.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
+            PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(type);
+            String[] assets = asset.split("\\n");
+            if(assets==null||assets.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th(type.substring(0,1).toUpperCase()+type.substring(1).replaceAll("_"," ")),
+                                    th("Probability"),
+                                    th("Technology")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(assets)
+                                    .filter(assignee->!(assignee==null||assignee.isEmpty()))
+                                    .map(item->{
+                                        final String prettyItem = item;
+                                        if(portfolioType.equals(PortfolioList.Type.class_codes)) item=ClassCodeHandler.convertToLabelFormat(item);
+                                        List<Pair<String,Double>> pairs = GatherTagger.getTechnologiesFor(item,portfolioType,1);
+                                        String val = "";
+                                        double probability = 0.0;
+                                        if(!pairs.isEmpty()) {
+                                            Pair<String,Double> pair = pairs.get(0);
+                                            val+=pair.getFirst();
+                                            probability+=pair.getSecond();
+                                        }
+                                        return tr().with(
+                                                td(prettyItem),
+                                                td(String.valueOf(probability)),
+                                                td(val)
+                                        );
+                                    }).collect(Collectors.toList())
 
                     )
             );
@@ -772,6 +822,9 @@ public class SimilarPatentServer {
                 formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
                 formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
                 formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
+                formScript(TECH_PREDICTION_FROM_ASSETS_FORM_ID,"/tech_predictions", "Search", true),
+                formScript(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID,"/tech_predictions", "Search", true),
+                formScript(TECH_PREDICTION_FROM_CPCS_FORM_ID,"/tech_predictions", "Search", true),
                 p("(Warning: Data only available from 2007 and onwards)"),
                 table().with(
                         tbody().with(
@@ -825,6 +878,33 @@ public class SimilarPatentServer {
                                                         label("Patents"),br(),textarea().withName("patent"), br(),
                                                         label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
                                                         button("Search").withId(CPC_FREQUENCY_FROM_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+                                ),tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Technology from Patents (Approximation Only)"),
+                                                h4("Please place each Patent on a separate line"),
+                                                form().withId(TECH_PREDICTION_FROM_ASSETS_FORM_ID).with(
+                                                        input().withType("hidden").withName("report_type").withValue("patents"),
+                                                        label("Patents"),br(),textarea().withName("item"), br(),
+                                                        button("Search").withId(TECH_PREDICTION_FROM_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Technology from Assignees (Approximation Only)"),
+                                                h4("Please place each Assignee on a separate line"),
+                                                form().withId(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID).with(
+                                                        input().withType("hidden").withName("report_type").withValue("assignees"),
+                                                        label("Assignees"),br(),textarea().withName("item"), br(),
+                                                        button("Search").withId(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Technology from CPC Codes (Approximation Only)"),
+                                                h4("Please place each CPC Code on a separate line"),
+                                                form().withId(TECH_PREDICTION_FROM_CPCS_FORM_ID).with(
+                                                        input().withType("hidden").withName("report_type").withValue("class_codes"),
+                                                        label("CPC Codes"),br(),textarea().withName("item"), br(),
+                                                        button("Search").withId(TECH_PREDICTION_FROM_CPCS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
