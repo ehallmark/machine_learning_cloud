@@ -1,7 +1,9 @@
 package server;
 
 import analysis.SimilarPatentFinder;
+import analysis.tech_tagger.GatherTagger;
 import com.google.gson.Gson;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import seeding.Constants;
@@ -21,46 +23,6 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
-    public static List<SimilarPatentFinder> gatherFinders;
-    private static WeightLookupTable<VocabWord> lookupTable;
-
-    static {
-        try {
-            if(SimilarPatentServer.paragraphVectors==null) {
-                SimilarPatentServer.loadLookupTable();
-            }
-
-            lookupTable = SimilarPatentServer.paragraphVectors.lookupTable();
-
-
-            //lookupTable = org.deeplearning4j.models.embeddings.loader.WordVectorSerializer.readParagraphVectorsFromText(new File("wordvectorexample2.txt")).getLookupTable();
-            Database.setupSeedConn();
-            gatherFinders = new ArrayList<>();
-
-            Database.getGatherTechMap().forEach((tech,patents)->{
-                try {
-                    System.out.println("CANDIDATE LOADING: " + tech);
-                    Set<String> data = new HashSet<>();
-                    patents.forEach(patent->{
-                        data.add(patent);
-                        data.addAll(Database.classificationsFor(patent));
-                    });
-                    SimilarPatentFinder finder = new SimilarPatentFinder(data, tech, lookupTable);
-                    if (finder != null && finder.getPatentList().size() > 0) {
-                        gatherFinders.add(finder);
-                    }
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            });
-            System.out.println("Number of Gather Technologies found: "+gatherFinders.size());
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
-
     public static void StartServer() {
         port(6969);
         before((request, response) -> {
@@ -95,18 +57,12 @@ public class GatherClassificationServer {
         final int tagLimit = tmp;
 
         // make sure patents exist
-        SimilarPatentFinder tmpFinder = new SimilarPatentFinder(patents,String.valueOf(System.currentTimeMillis()),lookupTable);
-
         // run model
-        List<String> topTags = tmpFinder.similarFromCandidateSets(gatherFinders,0.0,100,new HashSet<>(), PortfolioList.Type.class_codes).stream()
-                .sorted((s1,s2)->Double.compare(s2.getAvgSimilarity(),s1.getAvgSimilarity()))
-                .limit(tagLimit)
-                .map(result->result.getName2())
-                .collect(Collectors.toList());
+        List<Pair<String,Double>> topTags = GatherTagger.getTechnologiesFor(patents, PortfolioList.Type.patents, tagLimit);
 
         // return results
         if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));
-        return new Gson().toJson(topTags);
+        return new Gson().toJson(topTags.stream().map(tag->tag.getFirst()).collect(Collectors.toList()));
     }
 
     public static void main(String[] args) throws Exception {

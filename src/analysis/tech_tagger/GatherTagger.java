@@ -30,6 +30,18 @@ public class GatherTagger {
         return topTechnologies(handlePortfolioType(item,type),n);
     }
 
+    public static List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
+        List<INDArray> vectors = new ArrayList<>(items.size());
+        items.forEach(item->{
+            INDArray v = handlePortfolioType(item,type);
+            if(v!=null)vectors.add(v);
+        });
+        if(vectors.isEmpty()) return Collections.emptyList();
+        INDArray vec;
+        if(vectors.size()==1) vec = vectors.get(0).dup();
+        else vec = Nd4j.vstack(vectors).mean(0);
+        return topTechnologies(vec,n);
+    }
 
     private static INDArray handlePortfolioType(String name, PortfolioList.Type type) {
         if(name==null||type==null)return null;
