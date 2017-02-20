@@ -28,7 +28,7 @@ public class HighchartDataAdapter {
         tagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
-            Point point = new Point(tech,prob);
+            Point point = new Point(tech,prob*100);
             series.addPoint(point);
         });
         data.add(series);

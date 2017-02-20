@@ -14,7 +14,6 @@ public class BarChart extends AbstractChart {
     public BarChart(String title, List<Series<?>> data, double min, double max, String valueSuffix) {
         super(title, data, SeriesType.BAR);
         setupColumnAndBarAxes(valueSuffix);
-        setValueSuffix(valueSuffix);
         options.getSingleYAxis().setMin(min).setMax(max);
     }
 

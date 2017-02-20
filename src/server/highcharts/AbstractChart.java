@@ -28,6 +28,7 @@ public abstract class AbstractChart {
         stripAxis(options.getSingleYAxis());
         options.getSingleXAxis().setType(AxisType.CATEGORY);
         options.getSingleYAxis().setType(AxisType.LINEAR);
+        options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+valueSuffix));
         options.getSeries().forEach(series->{
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
@@ -37,10 +38,7 @@ public abstract class AbstractChart {
                     .setY(-5)
             );
         });
-    }
-
-    protected void setValueSuffix(String suffix) {
-        options.setTooltip(new Tooltip().setValueSuffix(suffix));
+        options.setTooltip(new Tooltip().setValueSuffix(valueSuffix));
     }
 
     protected static void stripAxis(Axis axis) {
