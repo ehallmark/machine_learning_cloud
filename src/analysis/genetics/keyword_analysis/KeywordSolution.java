@@ -68,7 +68,7 @@ public class KeywordSolution implements Solution {
                     newWords.add(word);
                 }
             });
-            int randInt = 1+random.nextInt(removedCount.get()*2);
+            int randInt = random.nextInt(1+removedCount.get()*2);
             // add random words
             for(int i = 0; i < randInt; i++) {
                 String randomWord = ALL_WORDS.get(random.nextInt(ALL_WORDS.size()));
