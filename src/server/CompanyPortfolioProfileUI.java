@@ -56,7 +56,7 @@ public class CompanyPortfolioProfileUI {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
                 + "var url = '/company_profile_report'; "
                 + "var tempScrollTop = $(window).scrollTop();"
-                + "window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {"
+                + "window.onerror = function(errorMsg, url, lineNumber) {"
                 + "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
                 + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
                 + "    return false;"
