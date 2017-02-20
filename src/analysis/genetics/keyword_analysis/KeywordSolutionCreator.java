@@ -30,8 +30,12 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     newSet.add(word);
                 }
             });
+            System.out.println(newSet.size());
             randomTechToWordMap.put(tech,newSet);
         });
-        return new KeywordSolution(randomTechToWordMap);
+        Solution solution = new KeywordSolution(randomTechToWordMap);
+        solution.calculateFitness();
+        System.out.print("Solution score: "+solution.fitness());
+        return solution;
     }
 }

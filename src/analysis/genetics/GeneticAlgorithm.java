@@ -74,36 +74,4 @@ public class GeneticAlgorithm {
         if(toValidate<0.0||toValidate>1.0) throw new RuntimeException("Invalid probability: "+toValidate);
     }
 
-    /**
-     * Created by Evan on 2/19/2017.
-     */
-    public static class TFIDFSolution implements Solution {
-        private double fitness;
-
-
-        @Override
-        public double fitness() {
-            return fitness;
-        }
-
-        @Override
-        public void calculateFitness() {
-
-        }
-
-        @Override
-        public Solution mutate() {
-            return null;
-        }
-
-        @Override
-        public Solution crossover(Solution other) {
-            return null;
-        }
-
-        @Override
-        public int compareTo(Solution o) {
-            return 0;
-        }
-    }
 }
