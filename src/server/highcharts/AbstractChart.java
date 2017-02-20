@@ -2,14 +2,10 @@ package server.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.*;
-import com.googlecode.wickedcharts.highcharts.options.functions.RedirectFunction;
-import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -38,7 +34,7 @@ public abstract class AbstractChart {
                     .setY(-5)
             );
         });
-        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\\u25CF</span> {series.name}: <b>{point.y:.1f}</b><br/>").setValueSuffix(valueSuffix));
+        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {series.name}: <b>{point.y:.1f}"+valueSuffix+"</b><br/>"));
     }
 
     protected static void stripAxis(Axis axis) {

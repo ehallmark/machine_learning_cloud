@@ -319,7 +319,10 @@ public class CompanyPortfolioProfileUI {
                         portfolioType=inputType;
                         portfolioList=null;
                         System.out.println("Using abstract portfolio type");
-                        AbstractChart chart = new ColumnChart("Technology Distribution for "+portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType,5),0d,100d,"%");
+                        int numTechnologies;
+                        if(inputType.equals(PortfolioList.Type.assignees)) numTechnologies=10;
+                        else numTechnologies=5;
+                        AbstractChart chart = new ColumnChart("Technology Distribution for "+portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType,numTechnologies),0d,100d,"%");
                         // test!
                         charts.add(chart);
                         break;
