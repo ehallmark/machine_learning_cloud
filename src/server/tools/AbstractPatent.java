@@ -18,7 +18,7 @@ public class AbstractPatent extends ExcelWritable {
     private String assignee;
     private String title;
     public AbstractPatent(String name, double similarity, String referringName) {
-        super(name,similarity,referringName);
+        super(name,similarity,referringName, PortfolioList.Type.patents);
         this.title=Database.getInventionTitleFor(name);
         this.assignee = String.join("; ",Database.assigneesFor(name).stream().map(a->AssigneeTrimmer.standardizedAssignee(a)).collect(Collectors.toList()));
         // collateral agent problem
@@ -61,12 +61,6 @@ public class AbstractPatent extends ExcelWritable {
         if(attributeData.containsKey("name")) {
             ExcelCell cell = attributeData.get("name");
             attributeData.put("name",new ExcelCell(cell.getFormat(),cell.getContent(),true));
-        }
-        if(params.contains("technology")) {
-            technologyList = GatherTagger.getTechnologiesFor(name, PortfolioList.Type.patents,5);
-            if(technologyList.isEmpty())technology="";
-            else technology=technologyList.get(0).getFirst();
-            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
         }
     }
 

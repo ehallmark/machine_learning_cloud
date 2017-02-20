@@ -1,6 +1,7 @@
 package server.highcharts;
 
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.TechTagger;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
@@ -17,13 +18,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 2/14/17.
  */
 public class HighchartDataAdapter {
+    private static final TechTagger tagger = new GatherTagger();
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(portfolio);
-        GatherTagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
+        tagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
             Point point = new Point(tech,prob);

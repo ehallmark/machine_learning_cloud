@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class AbstractClassCode extends ExcelWritable {
     public AbstractClassCode(String name, double similarity, String referringName) {
-        super(name,similarity,referringName);
+        super(name,similarity,referringName, PortfolioList.Type.class_codes);
     }
 
     @Override
@@ -23,12 +23,6 @@ public class AbstractClassCode extends ExcelWritable {
         super.init(params);
         attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.selectPatentNumbersFromClassAndSubclassCodes(name).size(),true));
         attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),Database.getClassTitleFromClassCode(name),false));
-        if(params.contains("technology")) {
-            technologyList = GatherTagger.getTechnologiesFor(name, PortfolioList.Type.class_codes,5);
-            if(technologyList.isEmpty())technology="";
-            else technology=technologyList.get(0).getFirst();
-            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
-        }
     }
 
 }

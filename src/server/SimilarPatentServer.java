@@ -2,6 +2,7 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.TechTagger;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
@@ -56,6 +57,8 @@ public class SimilarPatentServer {
     private static final String TECH_PREDICTION_FROM_ASSETS_FORM_ID = "tech-from-assets-form";
     private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
     private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
+
+    private static final TechTagger tagger = new GatherTagger();
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -222,7 +225,7 @@ public class SimilarPatentServer {
                                     .map(item->{
                                         final String prettyItem = item;
                                         if(portfolioType.equals(PortfolioList.Type.class_codes)) item=ClassCodeHandler.convertToLabelFormat(item);
-                                        List<Pair<String,Double>> pairs = GatherTagger.getTechnologiesFor(item,portfolioType,1);
+                                        List<Pair<String,Double>> pairs = tagger.getTechnologiesFor(item,portfolioType,1);
                                         String val = "";
                                         double probability = 0.0;
                                         if(!pairs.isEmpty()) {

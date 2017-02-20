@@ -1,8 +1,10 @@
 package server.tools.excel;
 
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.TechTagger;
 import jxl.write.WritableCellFormat;
 import org.deeplearning4j.berkeley.Pair;
+import tools.PortfolioList;
 import value_estimation.ValueMapNormalizer;
 
 import java.util.*;
@@ -21,6 +23,8 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected Map<String,Double> valueMap = new HashMap<>();
     protected String technology;
     protected List<Pair<String,Double>> technologyList;
+    protected PortfolioList.Type type;
+    private static final TechTagger tagger = new GatherTagger();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -65,9 +69,10 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         return Collections.unmodifiableMap(humanAttrToJavaAttrMap);
     }
 
-    protected ExcelWritable(String name, double similarity, String referringName) {
+    protected ExcelWritable(String name, double similarity, String referringName, PortfolioList.Type type) {
         this.name=name;
         this.similarity=similarity;
+        this.type=type;
         this.tags = new HashMap<>();
         if(referringName!=null)tags.put(referringName,similarity);
     }
@@ -99,6 +104,12 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
                 attributeData.put(type,new ExcelCell(ExcelHandler.getValueFormat(),String.format("%.2f",value),true));
             }
         });
+        if(params.contains("technology")) {
+            technologyList = tagger.getTechnologiesFor(name, type,5);
+            if(technologyList.isEmpty())technology="";
+            else technology=technologyList.get(0).getFirst();
+            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
+        }
     }
     public Map<String,Double> getTags() {
         return tags;

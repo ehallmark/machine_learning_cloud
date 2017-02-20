@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class AbstractAssignee extends ExcelWritable {
     public AbstractAssignee(String name, double similarity, String referringName) {
-        super(name,similarity,referringName);
+        super(name,similarity,referringName, PortfolioList.Type.assignees);
     }
 
     @Override
@@ -27,11 +27,5 @@ public class AbstractAssignee extends ExcelWritable {
         if(params.contains("totalAssetCount"))attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.getAssetCountFor(name), true));
         if (params.contains("assigneeEntityType"))
             attributeData.put("assigneeEntityType", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.assigneeEntityType(name), false));
-        if(params.contains("technology")) {
-            technologyList = GatherTagger.getTechnologiesFor(name, PortfolioList.Type.assignees,5);
-            if(technologyList.isEmpty())technology="";
-            else technology=technologyList.get(0).getFirst();
-            attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
-        }
     }
 }
