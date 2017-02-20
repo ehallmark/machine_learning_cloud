@@ -12,11 +12,15 @@ public class GeneticAlgorithm {
     private List<Solution> population;
     private int maxPopulationSize;
     private static Random random = new Random(69);
+    private final double startingScore;
 
     public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
         this.maxPopulationSize=maxPopulationSize;
         population=new ArrayList<>(maxPopulationSize);
-        for(int i = 0; i < maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
+        for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
+        calculateSolutionsAndKillOfTheWeak();
+        startingScore=averagePopulationScore();
+        System.out.println("Starting score: "+startingScore);
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
@@ -27,6 +31,8 @@ public class GeneticAlgorithm {
             simulateEpoch(probMutation,probCrossover);
             timer.finish();
             System.out.println("Time to complete: "+(timer.getElapsedTime()/1000)+ " seconds");
+            System.out.println("Starting Score: "+startingScore);
+            System.out.println("Current score: "+averagePopulationScore());
         }
     }
 
@@ -59,7 +65,6 @@ public class GeneticAlgorithm {
     private void calculateSolutionsAndKillOfTheWeak() {
         population.forEach(solution->solution.calculateFitness());
         population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
-        System.out.println("Average score: "+averagePopulationScore());
     }
 
     private double averagePopulationScore() {
