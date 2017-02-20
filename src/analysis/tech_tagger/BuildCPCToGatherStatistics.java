@@ -37,13 +37,14 @@ public class BuildCPCToGatherStatistics {
             for(int i = 0; i < orderedTechnologies.size(); i++) {
                 String tech = orderedTechnologies.get(i);
                 Collection<String> patentsInTech = gatherTechMap.get(tech);
+                int techSize = patentsInTech.size();
                 AtomicInteger cnt = new AtomicInteger(0);
                 patentsInTech.forEach(p->{
                     if(patentsInClass.contains(p)) {
                         cnt.getAndIncrement();
                     }
                 });
-                double probability = new Double(cnt.get())/(classSize);
+                double probability = new Double(cnt.get())/(classSize*techSize);
                 probabilityVector.putScalar(i,probability);
             }
             classCodeToCondProbMap.put(cpc,probabilityVector);
