@@ -11,7 +11,7 @@ public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
         int populationSize = 10;
-        double samplingProbability = 0.001;
+        double samplingProbability = 0.1;
         int numEpochs = 100;
         double mutationRate = 0.001;
         double crossoverRate = 0.01;
