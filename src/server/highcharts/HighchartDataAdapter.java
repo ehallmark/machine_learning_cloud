@@ -25,12 +25,15 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(portfolio);
+        AtomicDouble total = new AtomicDouble(0d);
         tagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
-            Point point = new Point(tech,prob*100);
+            Point point = new Point(tech,prob);
+            total.addAndGet(prob);
             series.addPoint(point);
         });
+        series.getData().forEach(point->point.setY(point.getY().doubleValue()/total.get()*100));
         data.add(series);
         return data;
     }
