@@ -2,6 +2,7 @@ package server.highcharts;
 
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.TechTagger;
+import com.amazonaws.services.devicefarm.model.Run;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
@@ -33,6 +34,7 @@ public class HighchartDataAdapter {
             total.addAndGet(prob);
             series.addPoint(point);
         });
+        if(total.get()<=0) throw new RuntimeException("No data available for: "+portfolio);
         series.getData().forEach(point->point.setY(point.getY().doubleValue()/total.get()*100));
         data.add(series);
         return data;
