@@ -1,8 +1,10 @@
 package analysis.genetics.keyword_analysis;
 
 import analysis.patent_view_api.PatentAPIHandler;
+import com.google.common.util.concurrent.AtomicDouble;
 import seeding.Database;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,6 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by Evan on 2/19/2017.
  */
 public class WordFrequencyCalculator {
+    static final File wordFrequencyMapFile = new File("globalFrequencyMap.jobj");
+    static final File technologyToWordFrequencyMapFile = new File("technologyToFrequencyMap.jobj");
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn) {
         // Get Data
@@ -65,21 +69,25 @@ public class WordFrequencyCalculator {
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
             techMap.put(tech,frequencyMap);
         });
+        AtomicDouble weights = new AtomicDouble(0d);
         techMap.forEach((tech,map)->{
             System.out.println("Merging tech: "+tech);
+            double weight = (double) (map.size());
+            weights.addAndGet(weight);
             map.forEach((word,freq)->{
+                double score = freq*weight;
                 if(globalMap.containsKey(word)) {
-                    globalMap.put(word,globalMap.get(word)+freq);
+                    globalMap.put(word,globalMap.get(word)+score);
                 } else {
-                    globalMap.put(word,freq);
+                    globalMap.put(word,score);
                 }
             });
         });
         // average values
         new ArrayList<>(globalMap.keySet()).forEach(word->{
-            globalMap.put(word,globalMap.get(word)/techMap.size());
+            globalMap.put(word,globalMap.get(word)/weights.get());
         });
-        Database.trySaveObject(globalMap,KeywordSolution.wordFrequencyMapFile);
-        Database.trySaveObject(techMap,KeywordSolution.technologyToWordFrequencyMapFile);
+        Database.trySaveObject(globalMap,wordFrequencyMapFile);
+        Database.trySaveObject(techMap,technologyToWordFrequencyMapFile);
     }
 }
