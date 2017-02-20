@@ -35,7 +35,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         });
         Solution solution = new KeywordSolution(randomTechToWordMap);
         solution.calculateFitness();
-        System.out.print("Solution score: "+solution.fitness());
+        System.out.println("Solution score: "+solution.fitness());
         return solution;
     }
 }

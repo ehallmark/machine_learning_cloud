@@ -10,13 +10,13 @@ import java.util.stream.Collectors;
  */
 public class GeneticAlgorithm {
     private List<Solution> population;
-    private int populationSize;
+    private int maxPopulationSize;
     private static Random random = new Random(69);
 
-    public GeneticAlgorithm(SolutionCreator creator, int populationSize) {
-        this.populationSize=populationSize;
-        population=new ArrayList<>(populationSize);
-        for(int i = 0; i < populationSize; i++) { population.add(creator.nextRandomSolution()); }
+    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
+        this.maxPopulationSize=maxPopulationSize;
+        population=new ArrayList<>(maxPopulationSize);
+        for(int i = 0; i < maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
@@ -58,16 +58,17 @@ public class GeneticAlgorithm {
 
     private void calculateSolutionsAndKillOfTheWeak() {
         population.forEach(solution->solution.calculateFitness());
-        population=population.stream().sorted(Collections.reverseOrder()).limit(populationSize).collect(Collectors.toList());
+        population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
         System.out.println("Average score: "+averagePopulationScore());
     }
 
     private double averagePopulationScore() {
+        if(population.size()==0) return 0d;
         double score = 0.0;
         for(Solution solution: population) {
             score+=solution.fitness();
         }
-        return score/populationSize;
+        return score/population.size();
     }
 
     private static void assertValidProbability(double toValidate) {

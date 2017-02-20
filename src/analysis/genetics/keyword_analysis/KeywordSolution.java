@@ -109,7 +109,7 @@ public class KeywordSolution implements Solution {
     private static double tfidfScore(String word, Map<String,Double> tech) {
         double score = 0.0;
         if(tech.containsKey(word)&&GLOBAL_WORD_FREQUENCY_MAP.containsKey(word)) {
-            score+=tech.get(word)*-Math.log(1.0+GLOBAL_WORD_FREQUENCY_MAP.get(word));
+            score+=tech.get(word)*-Math.log(GLOBAL_WORD_FREQUENCY_MAP.get(word));
         }
         return score;
     }
