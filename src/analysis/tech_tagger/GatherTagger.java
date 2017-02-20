@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 2/18/2017.
  */
-public class GatherTagger {
+public class GatherTagger implements TechTagger {
     private static Map<String,INDArray> technologyMap;
     private static List<String> orderedTechnologies;
     static {
@@ -26,11 +26,11 @@ public class GatherTagger {
     }
 
 
-    public static List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
+    public List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
         return topTechnologies(handlePortfolioType(item,type),n);
     }
 
-    public static List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
+    public List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
         List<INDArray> vectors = new ArrayList<>(items.size());
         items.forEach(item->{
             INDArray v = handlePortfolioType(item,type);
@@ -43,7 +43,7 @@ public class GatherTagger {
         return topTechnologies(vec,n);
     }
 
-    private static INDArray handlePortfolioType(String name, PortfolioList.Type type) {
+    private INDArray handlePortfolioType(String name, PortfolioList.Type type) {
         if(name==null||type==null)return null;
 
         INDArray vec=null;
@@ -74,7 +74,7 @@ public class GatherTagger {
         return vec;
     }
 
-    private static List<Pair<String,Double>> topTechnologies(INDArray vec, int n) {
+    private List<Pair<String,Double>> topTechnologies(INDArray vec, int n) {
         if(vec==null)return Collections.emptyList();
         MinHeap<Technology> heap = new MinHeap<>(n);
         for(int i = 0; i < orderedTechnologies.size(); i++) {
@@ -87,39 +87,6 @@ public class GatherTagger {
             predictions.add(0,new Pair<>(tech.name,tech.score));
         }
         return predictions;
-    }
-
-    static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate, int n) {
-        final int MIN_CLASS_SIZE = BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH;
-        final int numTechnologies = technologies.size();
-        Collection<String> classCodes = Database.classificationsFor(patent);
-        AtomicDouble overallWeight = new AtomicDouble(0d);
-        INDArray probVec = Nd4j.zeros(numTechnologies);
-        if(!classCodes.isEmpty()) {
-            classCodes.forEach(cpc->{
-                cpc=cpc.trim();
-                // get parent classes and weight probabilities
-                double weight = 1.0;
-                double totalWeight = 0d;
-                while(cpc.length()>=MIN_CLASS_SIZE) {
-                    INDArray vec = classProbabilities.get(cpc);
-                    if(vec!=null) {
-                        vec.muli(weight);
-                        totalWeight+=weight;
-                        probVec.addi(vec);
-                    }
-                    weight/=decayRate;
-                    cpc=cpc.substring(0,cpc.length()-1).trim();
-                }
-                if(totalWeight>0) {
-                    overallWeight.getAndAdd(totalWeight);
-                }
-            });
-        }
-        if(overallWeight.get()<=0) return null;
-
-        probVec.divi(overallWeight.get());
-        return probVec;
     }
 
 }

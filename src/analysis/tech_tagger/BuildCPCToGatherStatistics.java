@@ -2,6 +2,7 @@ package analysis.tech_tagger;
 
 import analysis.patent_view_api.Patent;
 import analysis.patent_view_api.PatentAPIHandler;
+import com.google.common.util.concurrent.AtomicDouble;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
@@ -49,6 +50,39 @@ public class BuildCPCToGatherStatistics {
         });
     }
 
+    private static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate, int n) {
+        final int MIN_CLASS_SIZE = BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH;
+        final int numTechnologies = technologies.size();
+        Collection<String> classCodes = Database.classificationsFor(patent);
+        AtomicDouble overallWeight = new AtomicDouble(0d);
+        INDArray probVec = Nd4j.zeros(numTechnologies);
+        if(!classCodes.isEmpty()) {
+            classCodes.forEach(cpc->{
+                cpc=cpc.trim();
+                // get parent classes and weight probabilities
+                double weight = 1.0;
+                double totalWeight = 0d;
+                while(cpc.length()>=MIN_CLASS_SIZE) {
+                    INDArray vec = classProbabilities.get(cpc);
+                    if(vec!=null) {
+                        vec.muli(weight);
+                        totalWeight+=weight;
+                        probVec.addi(vec);
+                    }
+                    weight/=decayRate;
+                    cpc=cpc.substring(0,cpc.length()-1).trim();
+                }
+                if(totalWeight>0) {
+                    overallWeight.getAndAdd(totalWeight);
+                }
+            });
+        }
+        if(overallWeight.get()<=0) return null;
+
+        probVec.divi(overallWeight.get());
+        return probVec;
+    }
+
     public static void main(String[] args) throws Exception {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         List<String> orderedTechnologies = new ArrayList<>(gatherTechMap.keySet());
@@ -90,7 +124,7 @@ public class BuildCPCToGatherStatistics {
         patents.addAll(Database.getExpiredPatents());
         Map<String,INDArray> map = new HashMap<>();
         patents.forEach(patent->{
-           INDArray probVec = GatherTagger.predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE,1);
+           INDArray probVec = predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE,1);
            if(probVec!=null) {
                map.put(patent,probVec);
            }

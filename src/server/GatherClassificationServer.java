@@ -2,6 +2,7 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.TechTagger;
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -23,6 +24,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
+    private static TechTagger tagger = new GatherTagger();
     public static void StartServer() {
         port(6969);
         before((request, response) -> {
@@ -58,7 +60,7 @@ public class GatherClassificationServer {
 
         // make sure patents exist
         // run model
-        List<Pair<String,Double>> topTags = GatherTagger.getTechnologiesFor(patents, PortfolioList.Type.patents, tagLimit);
+        List<Pair<String,Double>> topTags = tagger.getTechnologiesFor(patents, PortfolioList.Type.patents, tagLimit);
 
         // return results
         if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));
