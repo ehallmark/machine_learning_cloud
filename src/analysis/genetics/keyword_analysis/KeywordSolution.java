@@ -16,15 +16,18 @@ public class KeywordSolution implements Solution {
     /*
      DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
      */
+    static final File wordFrequencyMapFile = new File("globalFrequencyMap.jobj");
+    static final File technologyToWordFrequencyMapFile = new File("technologyToFrequencyMap.jobj");
     private static Map<String,Double> GLOBAL_WORD_FREQUENCY_MAP;
     private static List<String> ALL_WORDS;
     private static Map<String,Map<String,Double>> TECHNOLOGY_TO_WORD_FREQUENCY_MAP;
     static {
-        GLOBAL_WORD_FREQUENCY_MAP=(Map<String,Double>) Database.tryLoadObject(new File("globalFrequencyMap.jobj"));
-        TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(new File("technologyToWordFrequencyMap.jobj"));
+        GLOBAL_WORD_FREQUENCY_MAP=(Map<String,Double>) Database.tryLoadObject(wordFrequencyMapFile);
+        TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(technologyToWordFrequencyMapFile);
         ALL_WORDS=new ArrayList<>(GLOBAL_WORD_FREQUENCY_MAP.keySet());
     }
 
+    public static Map<String,Map<String,Double>> getTechnologyToWordFrequencyMap() { return TECHNOLOGY_TO_WORD_FREQUENCY_MAP; }
     /*
      Start of class
      */

@@ -12,7 +12,7 @@ public class AllPatentQuery implements Query {
     public AllPatentQuery(Collection<String> patents, int page) {
         StringJoiner patentsOr = new StringJoiner("\",\"","[\"","\"]");
         patents.forEach(classCode->patentsOr.add(classCode));
-        query="q={\"_and\":[{\"patent_number\":"+patentsOr.toString()+"},{\"_gte\":{\"patent_date\":\"" + LocalDate.now().minusYears(20).toString() + "\"}}]}&f=[\"patent_number\",\"assignee_organization\",\"cpc_subgroup_id\",\"patent_date\"]&o={\"page\":"+page+",\"per_page\":1000}";
+        query="q={\"_and\":[{\"patent_number\":"+patentsOr.toString()+"},{\"_gte\":{\"patent_date\":\"" + LocalDate.now().minusYears(20).toString() + "\"}}]}&f=[\"patent_number\",\"assignee_organization\",\"cpc_subgroup_id\",\"patent_date\",\"patent_abstract\"]&o={\"page\":"+page+",\"per_page\":1000}";
     }
     public String toString() {
         return query;

@@ -12,6 +12,7 @@ public class Patent {
     private String patent_number;
     private String patent_title;
     private String patent_date;
+    private String patent_abstract;
 
     public String getInventionTitle() {
         return patent_title;
@@ -28,6 +29,8 @@ public class Patent {
     public List<CPC> getClassCodes() {
         return cpcs;
     }
+
+    public String getAbstract() { return patent_abstract; }
 
     public LocalDate getPubDate() {
         try {
