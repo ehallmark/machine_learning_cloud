@@ -30,6 +30,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
             Set<String> newSet = new HashSet<>(samples);
             for(int i = 0; i < samples; i++) {
                 String randomWord = words.get(random.nextInt(words.size()));
+                System.out.print(randomWord);
                 newSet.add(randomWord);
             }
             size.getAndAdd(newSet.size());
