@@ -465,6 +465,7 @@ public class Database {
 	}
 
 	public static Map<String,Collection<String>> getGatherTechMap() throws SQLException {
+		if(gatherTechMap!=null) return getGatherTechMap();
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
 		Map<String, Collection<String>> techToPatentMap = new HashMap<>();
