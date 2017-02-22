@@ -14,7 +14,6 @@ public class GeneticAlgorithm {
     private int maxPopulationSize;
     private static Random random = new Random(69);
     private final double startingScore;
-    private double bestScoreSoFar;
     private Solution bestSolutionSoFar;
     private double currentScore;
 
@@ -39,7 +38,6 @@ public class GeneticAlgorithm {
             System.out.println("Time to complete epoch: "+(new Double(timer.getElapsedTime())/1000)+ " seconds");
             System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
-            System.out.println("Best Avg Score: "+bestScoreSoFar);
             System.out.println("Current Avg Score: "+currentScore);
             System.out.println("Best Solution: "+bestSolutionSoFar.fitness());
         }
@@ -101,7 +99,6 @@ public class GeneticAlgorithm {
             currentScore+=solution.fitness();
         }
         if(population.size()>0)currentScore/=population.size();
-        if(currentScore>bestScoreSoFar)bestScoreSoFar=currentScore;
     }
 
     private static void assertValidProbability(double toValidate) {
