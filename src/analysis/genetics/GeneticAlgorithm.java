@@ -36,8 +36,8 @@ public class GeneticAlgorithm {
             clearScreen();
             globalTimer+=timer.getElapsedTime();
             System.out.println("EPOCH ["+n+"]");
-            System.out.println("Time to complete epoch: "+(timer.getElapsedTime()/1000)+ " seconds");
-            System.out.println("Total time elapsed: "+globalTimer+ " seconds");
+            System.out.println("Time to complete epoch: "+(new Double(timer.getElapsedTime())/1000)+ " seconds");
+            System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Best Avg Score: "+bestScoreSoFar);
             System.out.println("Current Avg Score: "+currentScore);
