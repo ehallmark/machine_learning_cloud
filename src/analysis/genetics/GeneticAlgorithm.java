@@ -29,11 +29,11 @@ public class GeneticAlgorithm {
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
         SimpleTimer timer = new SimpleTimer();
         for(int n = 0; n < numEpochs; n++) {
-            clearScreen();
-            System.out.println("Starting Epoch: "+n);
             timer.start();
             simulateEpoch(probMutation,probCrossover);
             timer.finish();
+            clearScreen();
+            System.out.println("EPOCH ["+n+"]");
             System.out.println("Time to complete: "+(timer.getElapsedTime()/1000)+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Best Avg Score: "+bestScoreSoFar);
