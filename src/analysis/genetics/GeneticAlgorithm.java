@@ -3,6 +3,7 @@ package analysis.genetics;
 import tools.SimpleTimer;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -43,23 +44,29 @@ public class GeneticAlgorithm {
         assertValidProbability(probMutation);
         assertValidProbability(probCrossover);
 
+        AtomicInteger mutationCounter = new AtomicInteger(0);
+        AtomicInteger crossoverCounter = new AtomicInteger(0);
+
         Collection<Solution> children = new ArrayList<>();
         // mutate
         population.forEach(solution->{
             if(random.nextDouble()<probMutation) {
                 children.add(solution.mutate());
+                mutationCounter.getAndIncrement();
             }
         });
+        System.out.println(Integer.valueOf(mutationCounter.get())+" mutations");
 
         // crossover
         for(int i = 0; i < population.size(); i++) {
             for(int j = i+1; j < population.size(); j++) {
                 if(random.nextDouble()<probCrossover) {
                     children.add(population.get(i).crossover(population.get(j)));
+                    crossoverCounter.getAndIncrement();
                 }
             }
         }
-
+        System.out.println(Integer.valueOf(crossoverCounter.get())+" crossovers");
         population.addAll(children);
 
         // evaluate

@@ -57,15 +57,15 @@ public class KeywordSolution implements Solution {
 
     @Override
     public Solution mutate() {
-        double removalRate = 0.01;
         Map<String,Set<String>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
+            if(random.nextBoolean()||random.nextBoolean()) return;
             AtomicInteger removedCount = new AtomicInteger(0);
             Set<String> newWords = new HashSet<>(words.size());
             words.forEach(word->{
-                if(random.nextDouble()<removalRate) {
+                if(random.nextBoolean()&&random.nextBoolean()) {
                     removedCount.getAndIncrement();
-                    newWords.add(word);
+                    newWords.remove(word);
                 }
             });
             int randInt = random.nextInt(1+removedCount.get()*2);
@@ -86,12 +86,12 @@ public class KeywordSolution implements Solution {
         technologyToWordsMap.forEach((tech,words)->{
             Set<String> newSet = new HashSet<>();
             words.forEach(word->{
-                if(random.nextDouble()<0.5) {
+                if(random.nextBoolean()) {
                     newSet.add(word);
                 }
             });
             ((KeywordSolution)other).technologyToWordsMap.get(tech).forEach(word->{
-                if(random.nextDouble()<0.5) {
+                if(random.nextBoolean()) {
                     newSet.add(word);
                 }
             });
