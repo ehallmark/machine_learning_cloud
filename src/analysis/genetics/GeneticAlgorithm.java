@@ -60,6 +60,8 @@ public class GeneticAlgorithm {
             }
         }
 
+        population.addAll(children);
+
         // evaluate
         calculateSolutionsAndKillOfTheWeak();
     }
