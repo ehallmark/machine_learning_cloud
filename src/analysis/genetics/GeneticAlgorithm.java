@@ -15,13 +15,15 @@ public class GeneticAlgorithm {
     private static Random random = new Random(69);
     private final double startingScore;
     private double bestScoreSoFar;
+    private Solution bestSolutionSoFar;
+    private double currentScore;
 
     public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
         this.maxPopulationSize=maxPopulationSize;
         population=new ArrayList<>(maxPopulationSize);
         for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
-        startingScore=averagePopulationScore();
+        startingScore=currentScore;
         bestScoreSoFar=startingScore;
         System.out.println("Starting score: "+startingScore);
     }
@@ -36,7 +38,8 @@ public class GeneticAlgorithm {
             System.out.println("Time to complete: "+(timer.getElapsedTime()/1000)+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Best Avg Score: "+bestScoreSoFar);
-            System.out.println("Current Avg Score: "+averagePopulationScore());
+            System.out.println("Current Avg Score: "+currentScore);
+            System.out.println("Best Solution: "+bestSolutionSoFar.fitness());
         }
     }
 
@@ -77,18 +80,24 @@ public class GeneticAlgorithm {
     private void calculateSolutionsAndKillOfTheWeak() {
         population.forEach(solution->solution.calculateFitness());
         population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
+        calculateAveragePopulationScores();
+        setBestSolution();
     }
 
-    private double averagePopulationScore() {
-        if(population.size()==0) return 0d;
-        double score = 0.0;
-        for(Solution solution: population) {
-            final double fitness = solution.fitness();
-            score+=fitness;
+    private void setBestSolution() {
+        if(!population.isEmpty()) {
+            Solution currentBestSolution = population.get(0);
+            if(bestSolutionSoFar==null||(bestSolutionSoFar.fitness()<currentBestSolution.fitness())) bestSolutionSoFar=currentBestSolution;
         }
-        final double avgScore = score/population.size();
-        if(avgScore>bestScoreSoFar)bestScoreSoFar=avgScore;
-        return avgScore;
+    }
+
+    private void calculateAveragePopulationScores() {
+        currentScore = 0.0;
+        for(Solution solution: population) {
+            currentScore+=solution.fitness();
+        }
+        if(population.size()>0)currentScore/=population.size();
+        if(currentScore>bestScoreSoFar)bestScoreSoFar=currentScore;
     }
 
     private static void assertValidProbability(double toValidate) {
