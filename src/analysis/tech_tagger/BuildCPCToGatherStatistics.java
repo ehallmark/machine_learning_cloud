@@ -44,7 +44,7 @@ public class BuildCPCToGatherStatistics {
                         cnt.getAndIncrement();
                     }
                 });
-                double probability = new Double(cnt.get())/(classSize*techSize);
+                double probability = new Double(cnt.get())*Math.log(1.0+Database.subClassificationsForClass(cpc).size())/(classSize*techSize);
                 probabilityVector.putScalar(i,probability);
             }
             classCodeToCondProbMap.put(cpc,probabilityVector);
