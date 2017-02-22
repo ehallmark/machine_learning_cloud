@@ -105,7 +105,7 @@ public class KeywordSolution implements Solution {
 
     @Override
     public int compareTo(Solution o) {
-        return 0;
+        return Double.compare(fitness,o.fitness());
     }
 
     private static double tfidfScore(String word, Map<String,Double> tech) {
