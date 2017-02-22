@@ -10,11 +10,11 @@ import java.util.Map;
 public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
-        int populationSize = 10;
-        double samplingProbability = 0.05;
+        int populationSize = 200;
+        double samplingProbability = 0.1;
         int numEpochs = 10000;
-        double mutationRate = 0.01;
-        double crossoverRate = 0.1;
+        double mutationRate = 0.2;
+        double crossoverRate = 0.2;
         Map<String,Map<String,Double>> techFrequencyMap = KeywordSolution.getTechnologyToWordFrequencyMap();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(techFrequencyMap, samplingProbability),populationSize);
         algorithm.simulate(numEpochs,mutationRate,crossoverRate);
