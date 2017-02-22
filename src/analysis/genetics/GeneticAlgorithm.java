@@ -28,13 +28,16 @@ public class GeneticAlgorithm {
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
         SimpleTimer timer = new SimpleTimer();
+        double globalTimer = 0d;
         for(int n = 0; n < numEpochs; n++) {
             timer.start();
             simulateEpoch(probMutation,probCrossover);
             timer.finish();
             clearScreen();
+            globalTimer+=timer.getElapsedTime();
             System.out.println("EPOCH ["+n+"]");
-            System.out.println("Time to complete: "+(timer.getElapsedTime()/1000)+ " seconds");
+            System.out.println("Time to complete epoch: "+(timer.getElapsedTime()/1000)+ " seconds");
+            System.out.println("Total time elapsed: "+globalTimer+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Best Avg Score: "+bestScoreSoFar);
             System.out.println("Current Avg Score: "+currentScore);
@@ -57,7 +60,7 @@ public class GeneticAlgorithm {
                 mutationCounter.getAndIncrement();
             }
         });
-        System.out.println(Integer.valueOf(mutationCounter.get())+" mutations");
+        if(mutationCounter.get()==0) System.out.println("Warning no mutations");
 
         // crossover
         for(int i = 0; i < population.size(); i++) {
@@ -68,7 +71,9 @@ public class GeneticAlgorithm {
                 }
             }
         }
-        System.out.println(Integer.valueOf(crossoverCounter.get())+" crossovers");
+        if(crossoverCounter.get()==0) System.out.println("Warning no crossovers");
+
+
         population.addAll(children);
 
         // evaluate
