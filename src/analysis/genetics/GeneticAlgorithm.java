@@ -13,6 +13,7 @@ public class GeneticAlgorithm {
     private int maxPopulationSize;
     private static Random random = new Random(69);
     private final double startingScore;
+    private double bestScoreSoFar;
 
     public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
         this.maxPopulationSize=maxPopulationSize;
@@ -20,6 +21,7 @@ public class GeneticAlgorithm {
         for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
         startingScore=averagePopulationScore();
+        bestScoreSoFar=startingScore;
         System.out.println("Starting score: "+startingScore);
     }
 
@@ -31,8 +33,9 @@ public class GeneticAlgorithm {
             simulateEpoch(probMutation,probCrossover);
             timer.finish();
             System.out.println("Time to complete: "+(timer.getElapsedTime()/1000)+ " seconds");
-            System.out.println("Starting Score: "+startingScore);
-            System.out.println("Current score: "+averagePopulationScore());
+            System.out.println("Starting Avg Score: "+startingScore);
+            System.out.println("Best Avg Score: "+bestScoreSoFar);
+            System.out.println("Current Avg Score: "+averagePopulationScore());
         }
     }
 
@@ -71,9 +74,12 @@ public class GeneticAlgorithm {
         if(population.size()==0) return 0d;
         double score = 0.0;
         for(Solution solution: population) {
-            score+=solution.fitness();
+            final double fitness = solution.fitness();
+            score+=fitness;
         }
-        return score/population.size();
+        final double avgScore = score/population.size();
+        if(avgScore>bestScoreSoFar)bestScoreSoFar=avgScore;
+        return avgScore;
     }
 
     private static void assertValidProbability(double toValidate) {
