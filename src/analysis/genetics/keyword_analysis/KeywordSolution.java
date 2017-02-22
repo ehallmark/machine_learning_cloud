@@ -59,20 +59,22 @@ public class KeywordSolution implements Solution {
     public Solution mutate() {
         Map<String,Set<String>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
-            if(random.nextBoolean()||random.nextBoolean()) return;
-            AtomicInteger removedCount = new AtomicInteger(0);
-            Set<String> newWords = new HashSet<>(words.size());
-            words.forEach(word->{
-                if(random.nextBoolean()&&random.nextBoolean()) {
-                    removedCount.getAndIncrement();
-                    newWords.remove(word);
+            Set<String> newWords = new HashSet<>(words);
+            if(!(random.nextBoolean()||random.nextBoolean())) {
+                AtomicInteger removedCount = new AtomicInteger(0);
+                words.forEach(word -> {
+                    if (random.nextBoolean() && random.nextBoolean()) {
+                        removedCount.getAndIncrement();
+                        newWords.remove(word);
+                    }
+                });
+                int randInt = random.nextInt(1 + removedCount.get() * 2);
+                System.out.println("Adding "+randInt+" words");
+                // add random words
+                for (int i = 0; i < randInt; i++) {
+                    String randomWord = ALL_WORDS.get(random.nextInt(ALL_WORDS.size()));
+                    newWords.add(randomWord);
                 }
-            });
-            int randInt = random.nextInt(1+removedCount.get()*2);
-            // add random words
-            for(int i = 0; i < randInt; i++) {
-                String randomWord = ALL_WORDS.get(random.nextInt(ALL_WORDS.size()));
-                newWords.add(randomWord);
             }
             newTechMap.put(tech,newWords);
 
