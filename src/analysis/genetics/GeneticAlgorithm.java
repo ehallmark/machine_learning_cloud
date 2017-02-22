@@ -24,13 +24,12 @@ public class GeneticAlgorithm {
         for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
         startingScore=currentScore;
-        bestScoreSoFar=startingScore;
-        System.out.println("Starting score: "+startingScore);
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
         SimpleTimer timer = new SimpleTimer();
         for(int n = 0; n < numEpochs; n++) {
+            clearScreen();
             System.out.println("Starting Epoch: "+n);
             timer.start();
             simulateEpoch(probMutation,probCrossover);
@@ -103,5 +102,11 @@ public class GeneticAlgorithm {
     private static void assertValidProbability(double toValidate) {
         if(toValidate<0.0||toValidate>1.0) throw new RuntimeException("Invalid probability: "+toValidate);
     }
+
+    private static void clearScreen() {
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+    }
+
 
 }
