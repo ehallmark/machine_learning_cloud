@@ -3,6 +3,8 @@ package value_estimation;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 
 import java.io.BufferedOutputStream;
@@ -11,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +44,23 @@ public class ClaimEvaluator extends Evaluator {
         List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
 
+        // ind claim length model
+        System.out.println("Claim length model...");
+        Map<String,Double> indClaimLengthModel = new HashMap<>();
+        {
+            Map<String,Integer> indClaimLengthMap = (Map<String,Integer>)Database.tryLoadObject(new File("patent_to_independent_claim_length_map.jobj"));
+            INDArray claimLengthVector = Nd4j.create(indClaimLengthMap.size());
+            AtomicInteger cnt = new AtomicInteger(0);
+            indClaimLengthMap.forEach((patent,intVal)->{
+                claimLengthVector.putScalar(cnt.getAndIncrement(),(double)intVal);
+            });
+            // we actually want to determine the distance from the mean claim length
+            final double mean = claimLengthVector.meanNumber().doubleValue();
+            indClaimLengthMap.forEach((patent,intVal)->{
+                indClaimLengthModel.put(patent,Math.pow(((double)intVal)-mean,2.0));
+            });
+        }
+        
         System.out.println("Calculating scores for patents...");
         // pendency model
         System.out.println("Pendency model...");
@@ -57,17 +77,6 @@ public class ClaimEvaluator extends Evaluator {
                     System.out.println("Score for patent "+patent+": "+pendencyScore);
                     pendencyModel.put(patent,pendencyScore);
                 }
-            });
-        }
-
-
-        // ind claim length model
-        System.out.println("Claim length model...");
-        Map<String,Double> indClaimLengthModel = new HashMap<>();
-        {
-            Map<String,Integer> indClaimLengthMap = (Map<String,Integer>)Database.tryLoadObject(new File("patent_to_independent_claim_length_map.jobj"));
-            indClaimLengthMap.forEach((patent,intVal)->{
-                indClaimLengthModel.put(patent,(double)intVal);
             });
         }
 
