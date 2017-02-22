@@ -45,12 +45,14 @@ public class KeywordSolution implements Solution {
     public void calculateFitness() {
         AtomicDouble score = new AtomicDouble(0d);
         technologyToWordsMap.forEach((tech,words)->{
-            AtomicDouble techScore = new AtomicDouble(0d);
-            Map<String,Double> techToFreqMap = TECHNOLOGY_TO_WORD_FREQUENCY_MAP.get(tech);
-            words.forEach(word->{
-                techScore.addAndGet(tfidfScore(word,techToFreqMap));
-            });
-            score.addAndGet(techScore.get()/words.size());
+            if(!words.isEmpty()) {
+                AtomicDouble techScore = new AtomicDouble(0d);
+                Map<String, Double> techToFreqMap = TECHNOLOGY_TO_WORD_FREQUENCY_MAP.get(tech);
+                words.forEach(word -> {
+                    techScore.addAndGet(tfidfScore(word, techToFreqMap));
+                });
+                score.addAndGet(techScore.get() / words.size());
+            }
         });
         fitness=score.get()/TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size();
     }
@@ -69,7 +71,6 @@ public class KeywordSolution implements Solution {
                     }
                 });
                 int randInt = random.nextInt(1 + removedCount.get() * 2);
-                System.out.println("Adding "+randInt+" words");
                 // add random words
                 for (int i = 0; i < randInt; i++) {
                     String randomWord = ALL_WORDS.get(random.nextInt(ALL_WORDS.size()));
