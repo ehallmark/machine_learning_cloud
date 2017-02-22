@@ -57,10 +57,10 @@ public class ClaimEvaluator extends Evaluator {
             // we actually want to determine the distance from the mean claim length
             final double mean = claimLengthVector.meanNumber().doubleValue();
             indClaimLengthMap.forEach((patent,intVal)->{
-                indClaimLengthModel.put(patent,Math.pow(((double)intVal)-mean,2.0));
+                indClaimLengthModel.put(patent,-Math.pow(((double)intVal)-mean,2.0));
             });
         }
-        
+
         System.out.println("Calculating scores for patents...");
         // pendency model
         System.out.println("Pendency model...");
