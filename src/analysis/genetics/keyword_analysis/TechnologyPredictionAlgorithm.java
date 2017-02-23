@@ -11,9 +11,9 @@ public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
         int populationSize = 100;
-        double samplingProbability = 0.01;
-        int numEpochs = 10000;
-        double mutationRate = 0.3;
+        double samplingProbability = 0.05;
+        int numEpochs = 50000;
+        double mutationRate = 0.5;
         double crossoverRate = 0.02;
         Map<String,Map<String,Double>> techFrequencyMap = KeywordSolution.getTechnologyToWordFrequencyMap();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(techFrequencyMap, samplingProbability),populationSize, new KeywordListener());

@@ -133,6 +133,16 @@ public class KeywordSolution implements Solution {
         if(tech.containsKey(word)&&GLOBAL_WORD_FREQUENCY_MAP.containsKey(word)) {
             score+=tech.get(word)*-Math.log(GLOBAL_WORD_FREQUENCY_MAP.get(word));
         }
-        return score;
+        return score/(1+numUnderscores(word));
+    }
+
+    private static double numUnderscores(String word) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        word.chars().forEach(c->{
+            if(c=='_') {
+                cnt.getAndIncrement();
+            }
+        });
+        return cnt.get();
     }
 }

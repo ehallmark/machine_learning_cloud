@@ -167,7 +167,7 @@ public class Database {
 				assigneePrefixTrie.put(assignee,assignee);
 			});
 		}
-		
+
 		if(valuablePatentsFile.exists()) {
 			valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
 		} else {

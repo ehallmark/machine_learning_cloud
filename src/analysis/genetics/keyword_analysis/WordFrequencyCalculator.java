@@ -7,6 +7,7 @@ import seeding.Database;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 2/19/2017.
@@ -17,7 +18,7 @@ public class WordFrequencyCalculator {
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn) {
         // Get Data
-        final int N = 4;
+        final int N = 3;
         Map<String,Integer> wordCounts = new HashMap<>();
         AtomicInteger totalCount = new AtomicInteger(0);
         PatentAPIHandler.requestAllPatents(patentsToSearchIn).forEach(patent->{
@@ -64,8 +65,10 @@ public class WordFrequencyCalculator {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
+        final int sampleSize = 30;
         gatherTechMap.forEach((tech,patents)->{
             System.out.println("Starting tech: "+tech);
+            patents=patents.stream().sorted(Comparator.reverseOrder()).limit(sampleSize).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
             techMap.put(tech,frequencyMap);
         });
