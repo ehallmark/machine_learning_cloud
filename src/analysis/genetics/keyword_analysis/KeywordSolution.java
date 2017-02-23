@@ -136,7 +136,7 @@ public class KeywordSolution implements Solution {
         return score;
     }
 
-    private static double numUnderscores(String word) {
+    private static double wordCount(String word) {
         AtomicInteger cnt = new AtomicInteger(0);
         word.chars().forEach(c->{
             if(Character.compare((char)c,'_')==0) {

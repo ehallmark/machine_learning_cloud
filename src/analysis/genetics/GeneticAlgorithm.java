@@ -113,7 +113,24 @@ public class GeneticAlgorithm {
 
 
     private void calculateSolutionsAndKillOfTheWeak() {
-        population.parallelStream().forEach(solution->solution.calculateFitness());
+        ForkJoinPool pool = new ForkJoinPool(numThreads);
+        population.forEach(solution->{
+            RecursiveAction action = new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    solution.calculateFitness();
+                }
+            };
+            pool.execute(action);
+        });
+
+        pool.shutdown();
+        try {
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
         calculateAveragePopulationScores();
         setBestSolution();
