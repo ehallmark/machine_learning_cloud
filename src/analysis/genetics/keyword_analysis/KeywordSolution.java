@@ -18,12 +18,16 @@ public class KeywordSolution implements Solution {
      DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
      */
     private static Map<String,Double> GLOBAL_WORD_FREQUENCY_MAP;
-    private static List<String> ALL_WORDS;
+    private static Map<String,List<String>> ALL_WORD_MAP;
     private static Map<String,Map<String,Double>> TECHNOLOGY_TO_WORD_FREQUENCY_MAP;
     static {
         GLOBAL_WORD_FREQUENCY_MAP=(Map<String,Double>) Database.tryLoadObject(WordFrequencyCalculator.wordFrequencyMapFile);
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(WordFrequencyCalculator.technologyToWordFrequencyMapFile);
-        ALL_WORDS=new ArrayList<>(GLOBAL_WORD_FREQUENCY_MAP.keySet());
+        ALL_WORD_MAP=new HashMap<>(TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size());
+        TECHNOLOGY_TO_WORD_FREQUENCY_MAP.forEach((tech,map)->{
+            List<String> words = new ArrayList<>(map.keySet());
+            ALL_WORD_MAP.put(tech,words);
+        });
     }
 
     public static Map<String,Map<String,Double>> getTechnologyToWordFrequencyMap() { return TECHNOLOGY_TO_WORD_FREQUENCY_MAP; }
@@ -84,15 +88,16 @@ public class KeywordSolution implements Solution {
             if(!(random.nextBoolean()||random.nextBoolean())) {
                 AtomicInteger removedCount = new AtomicInteger(0);
                 words.forEach(word -> {
-                    if (random.nextBoolean() && random.nextBoolean()) {
+                    if (random.nextBoolean() && random.nextBoolean() && random.nextBoolean()) {
                         removedCount.getAndIncrement();
                         newWords.remove(word);
                     }
                 });
-                int randInt = random.nextInt(1 + removedCount.get() * 2);
+                int randInt = (removedCount.get()/2) +random.nextInt(1 + removedCount.get());
                 // add random words
+                List<String> allTechWords = ALL_WORD_MAP.get(tech);
                 for (int i = 0; i < randInt; i++) {
-                    String randomWord = ALL_WORDS.get(random.nextInt(ALL_WORDS.size()));
+                    String randomWord = allTechWords.get(random.nextInt(allTechWords.size()));
                     newWords.add(randomWord);
                 }
             }
