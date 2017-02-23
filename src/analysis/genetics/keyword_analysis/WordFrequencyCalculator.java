@@ -23,22 +23,27 @@ public class WordFrequencyCalculator {
         AtomicInteger totalCount = new AtomicInteger(0);
         PatentAPIHandler.requestAllPatents(patentsToSearchIn).forEach(patent->{
             String text = patent.getAbstract();
-            Map<String,Integer> wordMap = allNGramsFor(text,N);
-            wordMap.forEach((word,count)->{
-               if(wordCounts.containsKey(word)) {
-                   wordCounts.put(word,wordCounts.get(word)+count);
-               } else {
-                   wordCounts.put(word,count);
-               }
-               totalCount.getAndAdd(count);
-            });
+            if(text!=null) {
+                Map<String, Integer> wordMap = allNGramsFor(text, N);
+                wordMap.forEach((word, count) -> {
+                    if (wordCounts.containsKey(word)) {
+                        wordCounts.put(word, wordCounts.get(word) + count);
+                    } else {
+                        wordCounts.put(word, count);
+                    }
+                    totalCount.getAndAdd(count);
+                });
+            }
         });
         final int finalCount = totalCount.get();
         Map<String,Double> wordFrequencies = new HashMap<>(wordCounts.size());
-        wordCounts.forEach((word,count)->{
-            wordFrequencies.put(word,new Double(count)/finalCount);
-        });
-        return wordFrequencies;
+        if(finalCount>0) {
+            wordCounts.forEach((word, count) -> {
+                wordFrequencies.put(word, new Double(count) / finalCount);
+            });
+            return wordFrequencies;
+        }
+        return null;
     }
 
     private static Map<String,Integer> allNGramsFor(String text, int n) {
@@ -70,7 +75,9 @@ public class WordFrequencyCalculator {
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).limit(sampleSize).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
-            techMap.put(tech,frequencyMap);
+            if(frequencyMap!=null) {
+                techMap.put(tech, frequencyMap);
+            }
         });
         AtomicDouble weights = new AtomicDouble(0d);
         techMap.forEach((tech,map)->{
