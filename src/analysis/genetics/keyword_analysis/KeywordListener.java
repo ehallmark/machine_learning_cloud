@@ -15,7 +15,7 @@ public class KeywordListener implements Listener {
         KeywordSolution keywordSolution = (KeywordSolution)solution;
         Map<String,Set<String>> map = keywordSolution.getTechnologyToWordsMap();
         map.keySet().stream().sorted().limit(20).forEach(tech->{
-            System.out.println("Top keyword for "+tech+": "+String.join("; ",keywordSolution.topKeywordsFromTechnology(tech,1)));
+            System.out.println("Top keywords for "+tech+": "+String.join("; ",keywordSolution.topKeywordsFromTechnology(tech,3)));
         });
     }
 }

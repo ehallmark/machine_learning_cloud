@@ -27,7 +27,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         AtomicInteger size = new AtomicInteger(0);
         techToWordMap.forEach((tech,words)->{
             if(words.size()<500) return; // avoid too small of samples
-            int samples = Math.round((float)samplingProbability*words.size());
+            int samples = Math.max(30,Math.round((float)samplingProbability*words.size()));
             Set<String> newSet = new HashSet<>(samples);
             for(int i = 0; i < samples; i++) {
                 String randomWord = words.get(random.nextInt(words.size()));

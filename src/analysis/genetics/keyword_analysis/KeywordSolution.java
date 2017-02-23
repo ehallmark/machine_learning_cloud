@@ -88,7 +88,7 @@ public class KeywordSolution implements Solution {
             if(!(random.nextBoolean()||random.nextBoolean())) {
                 AtomicInteger removedCount = new AtomicInteger(0);
                 words.forEach(word -> {
-                    if (random.nextBoolean() && random.nextBoolean() && random.nextBoolean()) {
+                    if (newWords.size()>=5 && random.nextBoolean() && random.nextBoolean() && random.nextBoolean()) {
                         removedCount.getAndIncrement();
                         newWords.remove(word);
                     }
@@ -110,21 +110,20 @@ public class KeywordSolution implements Solution {
     @Override
     public Solution crossover(Solution other) {
         Map<String,Set<String>> newTechMap = new HashMap<>(technologyToWordsMap.size());
-        technologyToWordsMap.forEach((tech,words)->{
+        technologyToWordsMap.keySet().forEach(tech->{
             Set<String> newSet = new HashSet<>();
-            words.forEach(word->{
-                if(random.nextBoolean()) {
-                    newSet.add(word);
-                }
-            });
             ((KeywordSolution)other).technologyToWordsMap.get(tech).forEach(word->{
                 if(random.nextBoolean()) {
                     newSet.add(word);
                 }
             });
+            technologyToWordsMap.get(tech).forEach(word->{
+                if(!newSet.contains(word)&&random.nextBoolean()) {
+                    newSet.add(word);
+                }
+            });
             newTechMap.put(tech,newSet);
         });
-
         return new KeywordSolution(newTechMap);
     }
 
