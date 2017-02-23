@@ -133,7 +133,7 @@ public class KeywordSolution implements Solution {
         if(tech.containsKey(word)&&GLOBAL_WORD_FREQUENCY_MAP.containsKey(word)) {
             score+=tech.get(word)*-Math.log(GLOBAL_WORD_FREQUENCY_MAP.get(word));
         }
-        return score/(1+Math.pow(numUnderscores(word),2));
+        return score/Math.pow(numUnderscores(word),2);
     }
 
     private static double numUnderscores(String word) {
@@ -144,6 +144,6 @@ public class KeywordSolution implements Solution {
             }
         });
         System.out.println("Word size: "+cnt.get());
-        return cnt.get();
+        return 1+cnt.get();
     }
 }
