@@ -47,7 +47,7 @@ public class WordFrequencyCalculator {
     }
 
     private static Map<String,Integer> allNGramsFor(String text, int n) {
-        List<String> words = Arrays.asList(text.toLowerCase().replaceAll("[-_\\/\\.]"," ").replaceAll("[^a-z ]","").split("\\s+"));
+        List<String> words = Arrays.asList(text.toLowerCase().replaceAll("[-_/\\.]"," ").replaceAll("[^a-z ]","").split("\\s+"));
         Map<String,Integer> wordCounts = new HashMap<>();
         for(int i = 1; i <= n; i++) {
             addNGramsFor(wordCounts,words,i);
