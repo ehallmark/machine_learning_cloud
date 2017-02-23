@@ -139,10 +139,11 @@ public class KeywordSolution implements Solution {
     private static double numUnderscores(String word) {
         AtomicInteger cnt = new AtomicInteger(0);
         word.chars().forEach(c->{
-            if(c=='_') {
+            if(Character.compare((char)c,'_')==0) {
                 cnt.getAndIncrement();
             }
         });
+        System.out.println("Word size: "+cnt.get());
         return cnt.get();
     }
 }

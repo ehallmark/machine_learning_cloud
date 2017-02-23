@@ -72,6 +72,7 @@ public class GeneticAlgorithm {
                     @Override
                     protected void compute() {
                         children.add(solution.mutate());
+                        mutationCounter.getAndIncrement();
                     }
                 };
                 pool.execute(action);
