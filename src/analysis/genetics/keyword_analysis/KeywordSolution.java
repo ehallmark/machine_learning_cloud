@@ -133,7 +133,7 @@ public class KeywordSolution implements Solution {
         if(tech.containsKey(word)&&GLOBAL_WORD_FREQUENCY_MAP.containsKey(word)) {
             score+=tech.get(word)*-Math.log(GLOBAL_WORD_FREQUENCY_MAP.get(word));
         }
-        return score/(1+numUnderscores(word));
+        return score/(1+Math.pow(numUnderscores(word),2));
     }
 
     private static double numUnderscores(String word) {

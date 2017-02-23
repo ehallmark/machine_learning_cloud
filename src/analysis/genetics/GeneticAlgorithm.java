@@ -3,6 +3,7 @@ package analysis.genetics;
 import tools.SimpleTimer;
 
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -14,21 +15,23 @@ public class GeneticAlgorithm {
     private int maxPopulationSize;
     private static Random random = new Random(69);
     private final double startingScore;
+    private final int numThreads;
     private Solution bestSolutionSoFar;
     private double currentScore;
     private Listener listener;
 
-    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize, Listener listener) {
+    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize, Listener listener, int numThreads) {
         this.maxPopulationSize=maxPopulationSize;
+        this.numThreads=numThreads;
         this.listener=listener;
-        population=new ArrayList<>(maxPopulationSize);
+        population=Collections.synchronizedList(new ArrayList<>(maxPopulationSize));
         for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
         startingScore=currentScore;
     }
 
     public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
-        this(creator,maxPopulationSize,null);
+        this(creator,maxPopulationSize,null,1);
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
@@ -59,37 +62,57 @@ public class GeneticAlgorithm {
         AtomicInteger mutationCounter = new AtomicInteger(0);
         AtomicInteger crossoverCounter = new AtomicInteger(0);
 
-        Collection<Solution> children = new ArrayList<>();
+        ForkJoinPool pool = new ForkJoinPool(numThreads);
+
+        Collection<Solution> children = Collections.synchronizedList(new ArrayList<>());
         // mutate
         population.forEach(solution->{
             if(random.nextDouble()<probMutation) {
-                children.add(solution.mutate());
-                mutationCounter.getAndIncrement();
+                RecursiveAction action = new RecursiveAction() {
+                    @Override
+                    protected void compute() {
+                        children.add(solution.mutate());
+                    }
+                };
+                pool.execute(action);
             }
         });
-        if(mutationCounter.get()==0) System.out.println("Warning no mutations");
 
         // crossover
         for(int i = 0; i < population.size(); i++) {
             for(int j = i+1; j < population.size(); j++) {
                 if(random.nextDouble()<probCrossover) {
-                    children.add(population.get(i).crossover(population.get(j)));
-                    crossoverCounter.getAndIncrement();
+                    Solution x = population.get(i);
+                    Solution y = population.get(j);
+                    RecursiveAction action = new RecursiveAction() {
+                        @Override
+                        protected void compute() {
+                            children.add(x.crossover(y));
+                            crossoverCounter.getAndIncrement();
+                        }
+                    };
+                    pool.execute(action);
                 }
             }
         }
+
+        pool.shutdown();
+        try {
+            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
         if(crossoverCounter.get()==0) System.out.println("Warning no crossovers");
-
-
+        if(mutationCounter.get()==0) System.out.println("Warning no mutations");
         population.addAll(children);
-
         // evaluate
         calculateSolutionsAndKillOfTheWeak();
     }
 
 
     private void calculateSolutionsAndKillOfTheWeak() {
-        population.forEach(solution->solution.calculateFitness());
+        population.parallelStream().forEach(solution->solution.calculateFitness());
         population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
         calculateAveragePopulationScores();
         setBestSolution();
