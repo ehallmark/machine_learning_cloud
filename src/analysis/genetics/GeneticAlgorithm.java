@@ -16,13 +16,19 @@ public class GeneticAlgorithm {
     private final double startingScore;
     private Solution bestSolutionSoFar;
     private double currentScore;
+    private Listener listener;
 
-    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
+    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize, Listener listener) {
         this.maxPopulationSize=maxPopulationSize;
+        this.listener=listener;
         population=new ArrayList<>(maxPopulationSize);
         for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
         startingScore=currentScore;
+    }
+
+    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
+        this(creator,maxPopulationSize,null);
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
@@ -40,6 +46,10 @@ public class GeneticAlgorithm {
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Current Avg Score: "+currentScore);
             System.out.println("Best Solution: "+bestSolutionSoFar.fitness());
+            // listener
+            if(bestSolutionSoFar!=null&&listener!=null) {
+                listener.print(bestSolutionSoFar);
+            }
         }
     }
 

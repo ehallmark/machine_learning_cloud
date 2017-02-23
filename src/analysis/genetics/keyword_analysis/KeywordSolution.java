@@ -7,6 +7,7 @@ import seeding.Database;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 2/19/2017.
@@ -26,6 +27,8 @@ public class KeywordSolution implements Solution {
     }
 
     public static Map<String,Map<String,Double>> getTechnologyToWordFrequencyMap() { return TECHNOLOGY_TO_WORD_FREQUENCY_MAP; }
+
+
     /*
      Start of class
      */
@@ -34,6 +37,22 @@ public class KeywordSolution implements Solution {
 
     public KeywordSolution(Map<String,Set<String>> technologyToWordsMap) {
         this.technologyToWordsMap=technologyToWordsMap;
+    }
+
+    public Map<String,Set<String>> getTechnologyToWordsMap() {
+        return technologyToWordsMap;
+    }
+
+    public List<String> topKeywordsFromTechnology(String tech, int n) {
+        if(!technologyToWordsMap.containsKey(tech)) return Collections.emptyList();
+        Set<String> keywords = technologyToWordsMap.get(tech);
+        Map<String, Double> techToFreqMap = TECHNOLOGY_TO_WORD_FREQUENCY_MAP.get(tech);
+        Map<String,Double> scores = new HashMap<>(keywords.size());
+        keywords.forEach(word->{
+            scores.put(word,tfidfScore(word,techToFreqMap));
+        });
+        return scores.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                .limit(n).map(e->e.getKey()).collect(Collectors.toList());
     }
 
     @Override

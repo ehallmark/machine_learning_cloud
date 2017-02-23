@@ -121,8 +121,7 @@ public class BuildCPCToGatherStatistics {
         System.out.println("Finished handling cpcs...");
 
         // get values for each patent and assignee
-        Collection<String> patents = new HashSet<>(Database.getValuablePatents());
-        patents.addAll(Database.getExpiredPatents());
+        Collection<String> patents = Database.getCopyOfAllPatents();
         Map<String,INDArray> map = new HashMap<>();
         patents.forEach(patent->{
            INDArray probVec = predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE,1);
