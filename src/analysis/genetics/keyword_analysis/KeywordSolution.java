@@ -74,7 +74,7 @@ public class KeywordSolution implements Solution {
                 words.forEach(word -> {
                     techScore.addAndGet(tfidfScore(word, techToFreqMap));
                 });
-                score.addAndGet(techScore.get() / words.size());
+                score.addAndGet(techScore.get() / Math.log(Math.E+words.size()));
             }
         });
         fitness=score.get()/TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size();
