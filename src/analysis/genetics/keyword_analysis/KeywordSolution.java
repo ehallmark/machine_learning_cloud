@@ -143,7 +143,6 @@ public class KeywordSolution implements Solution {
                 cnt.getAndIncrement();
             }
         });
-        System.out.println("Word size: "+cnt.get());
         return 1+cnt.get();
     }
 }
