@@ -111,20 +111,6 @@ public class Database {
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("micro_entity_patents_set.jobj")));
 		patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		// load dependent objects
-		if(valuablePatentsFile.exists()) {
-			valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
-		} else {
-			System.out.println("Starting to build valuable patents...");
-			valuablePatents = new HashSet<>();
-			Set<String> allPatents = new HashSet<>();
-			allPatents.addAll(patentToInventionTitleMap.keySet());
-			allPatents.addAll(patentToPubDateMap.keySet());
-			allPatents.addAll(patentToOriginalAssigneeMap.keySet());
-			allPatents.forEach(patent -> {
-				if (!(expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent))) valuablePatents.add(patent);
-			});
-			trySaveObject(valuablePatents,valuablePatentsFile);
-		}
 		if(allClassCodesFile.exists()) {
 			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
 		} else {
@@ -180,6 +166,21 @@ public class Database {
 			allAssignees.forEach(assignee->{
 				assigneePrefixTrie.put(assignee,assignee);
 			});
+		}
+		
+		if(valuablePatentsFile.exists()) {
+			valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
+		} else {
+			System.out.println("Starting to build valuable patents...");
+			valuablePatents = new HashSet<>();
+			Set<String> allPatents = new HashSet<>();
+			allPatents.addAll(patentToInventionTitleMap.keySet());
+			allPatents.addAll(patentToPubDateMap.keySet());
+			allPatents.addAll(patentToOriginalAssigneeMap.keySet());
+			allPatents.forEach(patent -> {
+				if (!(expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent))) valuablePatents.add(patent);
+			});
+			trySaveObject(valuablePatents,valuablePatentsFile);
 		}
 	}
 
