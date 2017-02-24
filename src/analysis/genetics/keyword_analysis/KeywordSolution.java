@@ -92,6 +92,7 @@ public class KeywordSolution implements Solution {
         Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
+            if(random.nextBoolean()) return;
             List<Word> newWords = new ArrayList<>(words);
             int rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
             Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
@@ -142,7 +143,8 @@ public class KeywordSolution implements Solution {
                     newSet.add(word);
                 }
             });
-            newTechMap.put(tech,newSet.stream().sequential().limit(size).collect(Collectors.toList()));
+            AtomicInteger cnt = new AtomicInteger(1);
+            newTechMap.put(tech,newSet.stream().sequential().filter(w->cnt.get()<=minWordsPerTechnology||random.nextDouble()<1.0/cnt.getAndIncrement()).limit(size).collect(Collectors.toList()));
             alreadyAddedMap.put(tech,alreadyAdded);
         });
         return new KeywordSolution(newTechMap,alreadyAddedMap,minWordsPerTechnology);
