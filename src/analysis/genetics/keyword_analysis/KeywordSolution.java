@@ -95,7 +95,7 @@ public class KeywordSolution implements Solution {
                         newWords.remove(word);
                     }
                 });
-                int randInt = (removedCount.get()/2) +random.nextInt(1 + removedCount.get());
+                int randInt = 10+(removedCount.get()/2) +random.nextInt(1 + removedCount.get());
                 // add random words
                 List<String> allTechWords = ALL_WORD_MAP.get(tech);
                 for (int i = 0; i < randInt; i++) {
@@ -115,12 +115,12 @@ public class KeywordSolution implements Solution {
         technologyToWordsMap.keySet().forEach(tech->{
             Set<String> newSet = new HashSet<>();
             ((KeywordSolution)other).technologyToWordsMap.get(tech).forEach(word->{
-                if(random.nextBoolean()) {
+                if(random.nextBoolean()||newSet.size()<minWordsPerTechnology/2) {
                     newSet.add(word);
                 }
             });
             technologyToWordsMap.get(tech).forEach(word->{
-                if(!newSet.contains(word)&&random.nextBoolean()) {
+                if(random.nextBoolean()||newSet.size()<minWordsPerTechnology) {
                     newSet.add(word);
                 }
             });
