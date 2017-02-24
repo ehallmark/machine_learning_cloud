@@ -13,7 +13,7 @@ public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
         int populationSize = 500;
-        double samplingProbability = 0.01;
+        double samplingProbability = 0.005;
         int numThreads = 30;
         int numEpochs = 50000;
         double mutationRate = 0.1;

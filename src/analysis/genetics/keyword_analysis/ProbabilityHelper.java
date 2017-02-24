@@ -10,9 +10,8 @@ import java.util.Random;
 public class ProbabilityHelper {
     private static Random random = new Random(76);
     public static int getLowNumberWithMaxUpTo(int max) {
-        GeometricDistribution dist = new GeometricDistribution(4.0/max);
+        GeometricDistribution dist = new GeometricDistribution(1.0/Math.cbrt(max));
         int num = Math.max(0, Math.min(dist.inverseCumulativeProbability(random.nextDouble())-1,max-1));
-        System.out.println("Random num: "+num);
         return num;
     }
 

@@ -38,6 +38,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     newSet.add(randomWord);
                     wordSet.add(randomWord.getWord());
                 }
+                System.out.println("Words found so far: "+newSet.size());
             }
             size.getAndAdd(newSet.size());
             randomTechToWordMap.put(tech,newSet);
