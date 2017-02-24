@@ -4,6 +4,7 @@ import analysis.patent_view_api.PatentAPIHandler;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -111,7 +112,7 @@ public class WordFrequencyCalculator {
         Set<String> wordsToRemove = new HashSet<>();
         globalMap.forEach((word,freq)->{
             double z = ((freq-mean)/stddev);
-            if(z > -2.0 && z < 0.0) {
+            if(Constants.STOP_WORD_SET.contains(word) || (z > -2.0 && z < -0.5)) {
                 // probably good?
                 wordsToRemove.add(word);
             }
