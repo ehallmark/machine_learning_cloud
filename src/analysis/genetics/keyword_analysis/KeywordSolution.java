@@ -14,8 +14,7 @@ import java.util.stream.Collectors;
  */
 public class KeywordSolution implements Solution {
     private static Random random = new Random(69);
-    /*
-     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
+    /*     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
      */
     private static Map<String,Double> GLOBAL_WORD_FREQUENCY_MAP;
     private static Map<String,List<Word>> ALL_WORD_MAP;
@@ -34,8 +33,7 @@ public class KeywordSolution implements Solution {
         });
     }
 
-    public static Map<String,Map<String,Double>> getTechnologyToWordFrequencyMap() { return TECHNOLOGY_TO_WORD_FREQUENCY_MAP; }
-
+    public static Map<String,List<Word>> getAllWordsMap() { return ALL_WORD_MAP; }
 
     /*
      Start of class
@@ -44,6 +42,7 @@ public class KeywordSolution implements Solution {
     private Map<String,Set<String>> techWordSets;
     private double fitness;
     private final int minWordsPerTechnology;
+    private double randFitness;
 
     public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, Map<String,Set<String>> techWordSets, int minWordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
@@ -84,6 +83,7 @@ public class KeywordSolution implements Solution {
             }
         });
         fitness=score.get()/TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size();
+        randFitness = fitness+fitness*random.nextDouble()/100;
     }
 
     @Override
@@ -151,7 +151,7 @@ public class KeywordSolution implements Solution {
 
     @Override
     public int compareTo(Solution o) {
-        return Double.compare(fitness,o.fitness());
+        return Double.compare(randFitness,((KeywordSolution)o).randFitness);
     }
 
     static double tfidfScore(String word, Map<String,Double> tech) {

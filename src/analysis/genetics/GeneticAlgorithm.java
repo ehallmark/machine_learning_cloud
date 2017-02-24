@@ -26,13 +26,9 @@ public class GeneticAlgorithm {
         this.numThreads=numThreads;
         this.listener=listener;
         population=Collections.synchronizedList(new ArrayList<>(maxPopulationSize));
-        for(int i = 0; i < 2*maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
+        for(int i = 0; i < maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
         calculateSolutionsAndKillOfTheWeak();
         startingScore=currentScore;
-    }
-
-    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize) {
-        this(creator,maxPopulationSize,null,1);
     }
 
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
@@ -67,8 +63,9 @@ public class GeneticAlgorithm {
 
         Collection<Solution> children = Collections.synchronizedList(new ArrayList<>());
         // mutate
-        population.forEach(solution->{
+        for(int i = 0; i < population.size(); i++) {
             if(random.nextDouble()<probMutation/Math.log(Math.E+mutationCounter.get())) {
+                Solution solution = population.get(i);
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
@@ -78,7 +75,8 @@ public class GeneticAlgorithm {
                 };
                 pool.execute(action);
             }
-        });
+        }
+
 
         // crossover
         for(int i = 0; i < population.size(); i++) {
@@ -132,7 +130,7 @@ public class GeneticAlgorithm {
             e.printStackTrace();
         }
 
-        population=population.stream().sorted(Collections.reverseOrder()).limit(maxPopulationSize).collect(Collectors.toList());
+        population=population.stream().sorted().limit(maxPopulationSize).collect(Collectors.toList());
         calculateAveragePopulationScores();
         setBestSolution();
     }

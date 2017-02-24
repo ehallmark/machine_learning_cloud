@@ -3,6 +3,7 @@ package analysis.genetics.keyword_analysis;
 import analysis.genetics.GeneticAlgorithm;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,8 +19,8 @@ public class TechnologyPredictionAlgorithm {
         double mutationRate = 0.1;
         int minWordsPerTech = 50;
         double crossoverRate = 0.1;
-        Map<String,Map<String,Double>> techFrequencyMap = KeywordSolution.getTechnologyToWordFrequencyMap();
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(techFrequencyMap, samplingProbability,minWordsPerTech),populationSize, new KeywordListener(),numThreads);
+        Map<String,List<Word>> allWordsMap = KeywordSolution.getAllWordsMap();
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(allWordsMap, samplingProbability,minWordsPerTech),populationSize, new KeywordListener(),numThreads);
         algorithm.simulate(numEpochs,mutationRate,crossoverRate);
     }
 }
