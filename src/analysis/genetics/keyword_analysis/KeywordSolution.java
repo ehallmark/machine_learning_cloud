@@ -142,7 +142,7 @@ public class KeywordSolution implements Solution {
                     newSet.add(word);
                 }
             });
-            newTechMap.put(tech,newSet.stream().limit(size).collect(Collectors.toList()));
+            newTechMap.put(tech,newSet.stream().sequential().limit(size).collect(Collectors.toList()));
             alreadyAddedMap.put(tech,alreadyAdded);
         });
         return new KeywordSolution(newTechMap,alreadyAddedMap,minWordsPerTechnology);
@@ -150,7 +150,7 @@ public class KeywordSolution implements Solution {
 
     @Override
     public int compareTo(Solution o) {
-        return Double.compare(randFitness,((KeywordSolution)o).randFitness);
+        return Double.compare(((KeywordSolution)o).randFitness,randFitness);
     }
 
     static double tfidfScore(String word, Map<String,Double> tech) {
