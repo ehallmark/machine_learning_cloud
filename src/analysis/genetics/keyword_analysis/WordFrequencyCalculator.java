@@ -21,7 +21,7 @@ public class WordFrequencyCalculator {
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {
         // Get Data
-        final int N = 4;
+        final int N = 3;
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Integer> wordCounts = new HashMap<>();
         AtomicInteger totalCount = new AtomicInteger(0);
