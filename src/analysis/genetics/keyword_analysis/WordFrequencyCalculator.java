@@ -21,7 +21,7 @@ public class WordFrequencyCalculator {
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn) {
         // Get Data
-        final int N = 3;
+        final int N = 4;
         Map<String,Integer> wordCounts = new HashMap<>();
         AtomicInteger totalCount = new AtomicInteger(0);
         PatentAPIHandler.requestAllPatents(patentsToSearchIn).forEach(patent->{
@@ -73,9 +73,9 @@ public class WordFrequencyCalculator {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
-        final int sampleSize = 30;
+        final int sampleSize = 50;
         gatherTechMap.forEach((tech,patents)->{
-            if(patents.size()<5) return;
+            if(patents.size()<10) return;
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).limit(sampleSize).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
@@ -113,7 +113,7 @@ public class WordFrequencyCalculator {
         Set<String> wordsToRemove = new HashSet<>();
         globalMap.forEach((word,freq)->{
             double z = ((freq-mean)/stddev);
-            if(Constants.STOP_WORD_SET.contains(word) || (z > -2.5 && z < -1.0)) {
+            if(Constants.STOP_WORD_SET.contains(word) || (z >= -3 && z < -0.5)) {
                 // probably good?
                 wordsToRemove.add(word);
             }
