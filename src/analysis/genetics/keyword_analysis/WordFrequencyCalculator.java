@@ -19,14 +19,16 @@ public class WordFrequencyCalculator {
     static final File wordFrequencyMapFile = new File("globalFrequencyMap.jobj");
     static final File technologyToWordFrequencyMapFile = new File("technologyToFrequencyMap.jobj");
 
-    public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn) {
+    public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {
         // Get Data
         final int N = 4;
+        AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Integer> wordCounts = new HashMap<>();
         AtomicInteger totalCount = new AtomicInteger(0);
         PatentAPIHandler.requestAllPatents(patentsToSearchIn).forEach(patent->{
             String text = patent.getAbstract();
             if(text!=null) {
+                cnt.getAndIncrement();
                 Map<String, Integer> wordMap = allNGramsFor(text, N);
                 wordMap.forEach((word, count) -> {
                     if (wordCounts.containsKey(word)) {
@@ -40,7 +42,7 @@ public class WordFrequencyCalculator {
         });
         final int finalCount = totalCount.get();
         Map<String,Double> wordFrequencies = new HashMap<>(wordCounts.size());
-        if(finalCount>0) {
+        if(finalCount>0&&cnt.get()>=minimum) {
             wordCounts.forEach((word, count) -> {
                 wordFrequencies.put(word, new Double(count) / finalCount);
             });
@@ -73,12 +75,12 @@ public class WordFrequencyCalculator {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
-        final int sampleSize = 50;
+        final int minimumPatentCount = 10;
         gatherTechMap.forEach((tech,patents)->{
             if(patents.size()<10) return;
             System.out.println("Starting tech: "+tech);
-            patents=patents.stream().sorted(Comparator.reverseOrder()).limit(sampleSize).collect(Collectors.toList());
-            Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
+            patents=patents.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+            Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents, minimumPatentCount);
             if(frequencyMap!=null) {
                 techMap.put(tech, frequencyMap);
             }
