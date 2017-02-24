@@ -75,6 +75,7 @@ public class WordFrequencyCalculator {
         Map<String,Double> globalMap = new HashMap<>();
         final int sampleSize = 30;
         gatherTechMap.forEach((tech,patents)->{
+            if(patents.size()<5) return;
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).limit(sampleSize).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents);
