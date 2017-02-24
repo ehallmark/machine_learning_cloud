@@ -31,7 +31,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         AtomicInteger size = new AtomicInteger(0);
         techToWordMap.forEach((tech,words)->{
             for(int solutionNum = 0; solutionNum < num; solutionNum++) {
-                System.out.println("Creating random solution "+(solutionNum+1)+" out of "+num+" solutions");
+                System.out.println("Creating random "+tech+" solution "+(solutionNum+1)+" out of "+num+" solutions");
                 Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
                 Map<String,Set<String>> alreadyAddedMap = alreadyAddedMapList.get(solutionNum);
                 int samples = Math.max(minWordsPerTechnology, Math.round((float) samplingProbability * words.size()));
