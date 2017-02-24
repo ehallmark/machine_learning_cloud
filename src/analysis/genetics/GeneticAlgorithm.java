@@ -1,5 +1,6 @@
 package analysis.genetics;
 
+import analysis.genetics.keyword_analysis.ProbabilityHelper;
 import tools.SimpleTimer;
 
 import java.util.*;
@@ -84,7 +85,7 @@ public class GeneticAlgorithm {
             if(random.nextDouble()<probCrossover) {
                 Solution x = population.get(i);
                 // get a random solution near the front
-                int j = Math.max(0,Math.round((float)Math.pow(random.nextInt(population.size()),0.5)));
+                int j = ProbabilityHelper.getLowNumberWithMaxUpTo(population.size());
                 Solution y = population.get(j);
                 RecursiveAction action = new RecursiveAction() {
                     @Override

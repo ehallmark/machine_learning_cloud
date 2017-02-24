@@ -12,34 +12,38 @@ import java.util.stream.Collectors;
  */
 public class KeywordSolutionCreator implements SolutionCreator {
     private Map<String,List<Word>> techToWordMap;
-    private static Random random = new Random(69);
     private final double samplingProbability;
     private final int minWordsPerTechnology;
-    public KeywordSolutionCreator(Map<String,Map<String,Double>> techFrequencyMap, double samplingProbability, int minWordsPerTechnology) {
+    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, double samplingProbability, int minWordsPerTechnology) {
         this.techToWordMap=new HashMap<>();
         this.minWordsPerTechnology=minWordsPerTechnology;
         this.samplingProbability=samplingProbability;
-        techFrequencyMap.forEach((tech,map)->{
-            techToWordMap.put(tech,map.keySet().stream().map(word->new Word(word,KeywordSolution.tfidfScore(word,map))).collect(Collectors.toList()));
-        });
+        techToWordMap=allWordMap;
     }
     @Override
     public Solution nextRandomSolution() {
-        Map<String,SortedSet<Word>> randomTechToWordMap = new HashMap<>();
+        Map<String,List<Word>> randomTechToWordMap = new HashMap<>();
+        Map<String,Set<String>> alreadyAddedMap = new HashMap<>();
         System.out.println("Creating random solution...");
         AtomicInteger size = new AtomicInteger(0);
         techToWordMap.forEach((tech,words)->{
-            if(words.size()<minWordsPerTechnology*10) return; // avoid too small of samples
             int samples = Math.max(minWordsPerTechnology,Math.round((float)samplingProbability*words.size()));
-            SortedSet<Word> newSet = new TreeSet<>();
+            List<Word> newSet = new ArrayList<>(samples);
+            Set<String> wordSet = new HashSet<>(samples);
             for(int i = 0; i < samples; i++) {
-                Word randomWord = words.get(random.nextInt(words.size()));
-                newSet.add(randomWord);
+                Word randomWord = words.get(ProbabilityHelper.getLowNumberWithMaxUpTo(words.size()));
+                if(wordSet.contains(randomWord.getWord())) {
+                    i--;
+                } else {
+                    newSet.add(randomWord);
+                    wordSet.add(randomWord.getWord());
+                }
             }
             size.getAndAdd(newSet.size());
             randomTechToWordMap.put(tech,newSet);
+            alreadyAddedMap.put(tech,wordSet);
         });
-        Solution solution = new KeywordSolution(randomTechToWordMap,minWordsPerTechnology);
+        Solution solution = new KeywordSolution(randomTechToWordMap,alreadyAddedMap,minWordsPerTechnology);
         solution.calculateFitness();
         System.out.println("Solution Size: "+size.get());
         System.out.println("Solution score: "+solution.fitness());
