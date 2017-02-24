@@ -67,7 +67,7 @@ public class GeneticAlgorithm {
         Collection<Solution> children = Collections.synchronizedList(new ArrayList<>());
         // mutate
         population.forEach(solution->{
-            if(random.nextDouble()<probMutation) {
+            if(random.nextDouble()<probMutation/Math.log(Math.E+mutationCounter.get())) {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
@@ -81,19 +81,19 @@ public class GeneticAlgorithm {
 
         // crossover
         for(int i = 0; i < population.size(); i++) {
-            for(int j = i+1; j < population.size(); j++) {
-                if(random.nextDouble()<probCrossover) {
-                    Solution x = population.get(i);
-                    Solution y = population.get(j);
-                    RecursiveAction action = new RecursiveAction() {
-                        @Override
-                        protected void compute() {
-                            children.add(x.crossover(y));
-                            crossoverCounter.getAndIncrement();
-                        }
-                    };
-                    pool.execute(action);
-                }
+            if(random.nextDouble()<probCrossover) {
+                Solution x = population.get(i);
+                // get a random solution near the front
+                int j = Math.max(0,Math.round((float)Math.log(1.0+random.nextInt(population.size()))));
+                Solution y = population.get(j);
+                RecursiveAction action = new RecursiveAction() {
+                    @Override
+                    protected void compute() {
+                        children.add(x.crossover(y));
+                        crossoverCounter.getAndIncrement();
+                    }
+                };
+                pool.execute(action);
             }
         }
 
