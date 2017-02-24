@@ -1,5 +1,7 @@
 package analysis.genetics.keyword_analysis;
 
+import org.apache.commons.math3.distribution.GeometricDistribution;
+
 import java.util.Random;
 
 /**
@@ -8,10 +10,11 @@ import java.util.Random;
 public class ProbabilityHelper {
     private static Random random = new Random(76);
     public static int getLowNumberWithMaxUpTo(int max) {
-        return Math.max(0,Math.round((float)Math.pow(random.nextInt(max),0.5)));
+        GeometricDistribution dist = new GeometricDistribution(4.0/max);
+        return Math.min(dist.inverseCumulativeProbability(random.nextDouble())-1,max-1);
     }
 
     public static int getHighNumberWithMaxUpTo(int max){
-        return Math.min(max-1,max-1-Math.round((float)Math.pow(random.nextInt(max),0.5)));
+        return max-1-getLowNumberWithMaxUpTo(max);
     }
 }
