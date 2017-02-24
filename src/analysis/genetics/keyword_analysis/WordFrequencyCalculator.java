@@ -112,7 +112,7 @@ public class WordFrequencyCalculator {
         Set<String> wordsToRemove = new HashSet<>();
         globalMap.forEach((word,freq)->{
             double z = ((freq-mean)/stddev);
-            if(Constants.STOP_WORD_SET.contains(word) || (z > -2.0 && z < -0.5)) {
+            if(Constants.STOP_WORD_SET.contains(word) || (z > -2.5 && z < -1.0)) {
                 // probably good?
                 wordsToRemove.add(word);
             }
