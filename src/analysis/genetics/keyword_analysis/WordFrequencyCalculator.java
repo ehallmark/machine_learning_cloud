@@ -2,6 +2,8 @@ package analysis.genetics.keyword_analysis;
 
 import analysis.patent_view_api.PatentAPIHandler;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 
 import java.io.File;
@@ -96,6 +98,31 @@ public class WordFrequencyCalculator {
         // average values
         new ArrayList<>(globalMap.keySet()).forEach(word->{
             globalMap.put(word,globalMap.get(word)/weights.get());
+        });
+
+        // get frequency stats
+        INDArray vec = Nd4j.create(globalMap.size());
+        AtomicInteger idx = new AtomicInteger(0);
+        globalMap.forEach((word,freq)->{
+            vec.putScalar(idx.getAndIncrement(),freq);
+        });
+        double stddev = Math.sqrt(vec.varNumber().doubleValue());
+        double mean = vec.meanNumber().doubleValue();
+        Set<String> wordsToRemove = new HashSet<>();
+        globalMap.forEach((word,freq)->{
+            double z = ((freq-mean)/stddev);
+            if(z > -2.0 && z < 0.0) {
+                // probably good?
+                wordsToRemove.add(word);
+            }
+        });
+        techMap.forEach((tech,map)->{
+            wordsToRemove.forEach(toRemove->{
+                if(map.containsKey(toRemove)) map.remove(toRemove);
+            });
+        });
+        wordsToRemove.forEach(toRemove->{
+            if(globalMap.containsKey(toRemove)) globalMap.remove(toRemove);
         });
         Database.trySaveObject(globalMap,wordFrequencyMapFile);
         Database.trySaveObject(techMap,technologyToWordFrequencyMapFile);
