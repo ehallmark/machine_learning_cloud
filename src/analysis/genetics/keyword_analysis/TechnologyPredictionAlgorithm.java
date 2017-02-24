@@ -13,14 +13,13 @@ public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
         int populationSize = 500;
-        double samplingProbability = 0.01;
-        int numThreads = Runtime.getRuntime().availableProcessors()*4;
+        int numThreads = Runtime.getRuntime().availableProcessors()*2;
         int numEpochs = 50000;
         double mutationRate = 0.5;
-        int minWordsPerTech = 200;
+        int minWordsPerTech = 250;
         double crossoverRate = 0.5;
         Map<String,List<Word>> allWordsMap = KeywordSolution.getAllWordsMap();
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(allWordsMap, samplingProbability,minWordsPerTech,numThreads),populationSize, new KeywordListener(),numThreads);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(allWordsMap,minWordsPerTech,numThreads),populationSize, new KeywordListener(),numThreads);
         algorithm.simulate(numEpochs,mutationRate,crossoverRate);
     }
 }

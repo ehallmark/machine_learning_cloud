@@ -15,15 +15,13 @@ import java.util.stream.Collectors;
  */
 public class KeywordSolutionCreator implements SolutionCreator {
     private Map<String,List<Word>> techToWordMap;
-    private final double samplingProbability;
     private final int minWordsPerTechnology;
     private final int numThreads;
     private static final Random random = new Random(69);
-    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, double samplingProbability, int minWordsPerTechnology, int numThreads) {
+    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, int minWordsPerTechnology, int numThreads) {
         this.techToWordMap=allWordMap;
         this.numThreads=numThreads;
         this.minWordsPerTechnology=minWordsPerTechnology;
-        this.samplingProbability=samplingProbability;
     }
     @Override
     public Collection<Solution> nextRandomSolutions(int num) {
@@ -44,10 +42,9 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
                         Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
                         Map<String,Set<String>> alreadyAddedMap = alreadyAddedMapList.get(solutionNum);
-                        int samples = Math.max(minWordsPerTechnology, Math.round((float) samplingProbability * words.size()));
-                        List<Word> newSet = new ArrayList<>(samples);
-                        Set<String> wordSet = new HashSet<>(samples);
-                        for (int i = 0; i < samples; i++) {
+                        List<Word> newSet = new ArrayList<>(minWordsPerTechnology);
+                        Set<String> wordSet = new HashSet<>(minWordsPerTechnology);
+                        for (int i = 0; i < minWordsPerTechnology; i++) {
                             int randIdx = random.nextInt(words.size());
                             Word randomWord = words.get(randIdx);
                             if (wordSet.contains(randomWord.getWord())) {
