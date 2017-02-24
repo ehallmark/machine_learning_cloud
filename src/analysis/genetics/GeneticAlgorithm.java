@@ -25,8 +25,8 @@ public class GeneticAlgorithm {
         this.maxPopulationSize=maxPopulationSize;
         this.numThreads=numThreads;
         this.listener=listener;
-        population=Collections.synchronizedList(new ArrayList<>(maxPopulationSize));
-        for(int i = 0; i < maxPopulationSize; i++) { population.add(creator.nextRandomSolution()); }
+        population=new ArrayList<>(maxPopulationSize);
+        population.addAll(creator.nextRandomSolutions(maxPopulationSize));
         calculateSolutionsAndKillOfTheWeak();
         startingScore=currentScore;
     }
