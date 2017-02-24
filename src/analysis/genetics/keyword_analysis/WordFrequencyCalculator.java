@@ -113,8 +113,17 @@ public class WordFrequencyCalculator {
         Set<String> wordsToRemove = new HashSet<>();
         globalMap.forEach((word,freq)->{
             double z = ((freq-mean)/stddev);
-            if(Constants.STOP_WORD_SET.contains(word) || (z >= -3 && z < -0.5)) {
-                // probably good?
+            // only allow < 1/2 stop words
+            String[] wordSplit = word.split("_");
+            double stopWordPercentage = 0.0;
+            for(String inner : wordSplit) {
+                if(Constants.STOP_WORD_SET.contains(inner)) {
+                    stopWordPercentage+=1.0;
+                }
+            }
+            stopWordPercentage/=wordSplit.length;
+            if(stopWordPercentage > 0.4 || z > 0.0 || z < -3.5) {
+                // probably a bad word?
                 wordsToRemove.add(word);
             }
         });
