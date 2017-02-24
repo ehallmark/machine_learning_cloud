@@ -49,7 +49,7 @@ public class KeywordSolution implements Solution {
         this.technologyToWordsMap=technologyToWordsMap;
         this.minWordsPerTechnology=minWordsPerTechnology;
         if(techWordSets==null) {
-            technologyToWordsMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(w->w.getWord()).collect(Collectors.toSet())));
+            this.techWordSets=technologyToWordsMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(w->w.getWord()).collect(Collectors.toSet())));
         } else {
             this.techWordSets = techWordSets;
         }
@@ -128,23 +128,21 @@ public class KeywordSolution implements Solution {
             List<Word> otherWords = ((KeywordSolution)other).technologyToWordsMap.get(tech);
             List<Word> myWords = technologyToWordsMap.get(tech);
             int size = Math.max((otherWords.size()+myWords.size())/2,minWordsPerTechnology);
-            List<Word> newSet = new ArrayList<>(size);
-            Set<String> alreadyAdded = new HashSet<>();
-            while(newSet.size()<size) {
-                int idx1 = ProbabilityHelper.getLowNumberWithMaxUpTo(myWords.size());
-                Word word1 = myWords.get(idx1);
-                if(!alreadyAdded.contains(word1.getWord())) {
-                    alreadyAdded.add(word1.getWord());
-                    newSet.add(word1);
+            SortedSet<Word> newSet = new TreeSet<>();
+            Set<String> alreadyAdded = new HashSet<>(size*2);
+            myWords.forEach(word->{
+                if(!alreadyAdded.contains(word.getWord())) {
+                    alreadyAdded.add(word.getWord());
+                    newSet.add(word);
                 }
-                int idx2 = ProbabilityHelper.getLowNumberWithMaxUpTo(otherWords.size());
-                Word word2 = otherWords.get(idx2);
-                if(!alreadyAdded.contains(word2.getWord())) {
-                    alreadyAdded.add(word2.getWord());
-                    newSet.add(word2);
+            });
+            otherWords.forEach(word->{
+                if(!alreadyAdded.contains(word.getWord())) {
+                    alreadyAdded.add(word.getWord());
+                    newSet.add(word);
                 }
-            }
-            newTechMap.put(tech,newSet);
+            });
+            newTechMap.put(tech,newSet.stream().limit(size).collect(Collectors.toList()));
             alreadyAddedMap.put(tech,alreadyAdded);
         });
         return new KeywordSolution(newTechMap,alreadyAddedMap,minWordsPerTechnology);
