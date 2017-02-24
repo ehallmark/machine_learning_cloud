@@ -4,7 +4,6 @@ import analysis.genetics.Solution;
 import com.google.common.util.concurrent.AtomicDouble;
 import seeding.Database;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -13,6 +12,8 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class KeywordSolution implements Solution {
+    public static final int MIN_WORDS_PER_TECH = 250;
+
     private static Random random = new Random(69);
     /*     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
      */
@@ -24,7 +25,7 @@ public class KeywordSolution implements Solution {
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(WordFrequencyCalculator.technologyToWordFrequencyMapFile);
         ALL_WORD_MAP=new HashMap<>(TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size());
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP.forEach((tech,map)->{
-            if(map.isEmpty())return;
+            if(map.size()<MIN_WORDS_PER_TECH*2)return;
             Map<String,Double> scores = new HashMap<>();
             map.keySet().forEach(word->{
                 scores.put(word,tfidfScore(word,map));
@@ -48,11 +49,7 @@ public class KeywordSolution implements Solution {
     public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, Map<String,Set<String>> techWordSets, int minWordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
         this.minWordsPerTechnology=minWordsPerTechnology;
-        if(techWordSets==null) {
-            this.techWordSets=technologyToWordsMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(w->w.getWord()).collect(Collectors.toSet())));
-        } else {
-            this.techWordSets = techWordSets;
-        }
+        this.techWordSets = techWordSets;
     }
 
     public Map<String,List<Word>> getTechnologyToWordsMap() {

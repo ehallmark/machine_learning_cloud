@@ -15,16 +15,15 @@ import java.util.stream.Collectors;
  */
 public class KeywordSolutionCreator implements SolutionCreator {
     private Map<String,List<Word>> techToWordMap;
-    private final int minWordsPerTechnology;
     private final int numThreads;
     private static final Random random = new Random(69);
-    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, int minWordsPerTechnology, int numThreads) {
+    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, int numThreads) {
         this.techToWordMap=allWordMap;
         this.numThreads=numThreads;
-        this.minWordsPerTechnology=minWordsPerTechnology;
     }
     @Override
     public Collection<Solution> nextRandomSolutions(int num) {
+        final int minWordsPerTechnology = KeywordSolution.MIN_WORDS_PER_TECH;
         List<Map<String,List<Word>>> randomTechToWordMapList = Collections.synchronizedList(new ArrayList<>(num));
         List<Map<String,Set<String>>> alreadyAddedMapList = Collections.synchronizedList(new ArrayList<>(num));
         for(int i = 0; i < num; i++) {
