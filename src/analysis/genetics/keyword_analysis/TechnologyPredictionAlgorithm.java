@@ -2,6 +2,7 @@ package analysis.genetics.keyword_analysis;
 
 import analysis.genetics.GeneticAlgorithm;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 /**

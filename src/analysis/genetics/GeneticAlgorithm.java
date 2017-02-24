@@ -84,7 +84,7 @@ public class GeneticAlgorithm {
             if(random.nextDouble()<probCrossover) {
                 Solution x = population.get(i);
                 // get a random solution near the front
-                int j = Math.max(0,Math.round((float)Math.log(1.0+random.nextInt(population.size()))));
+                int j = Math.max(0,Math.round((float)Math.pow(random.nextInt(population.size()),0.5)));
                 Solution y = population.get(j);
                 RecursiveAction action = new RecursiveAction() {
                     @Override
