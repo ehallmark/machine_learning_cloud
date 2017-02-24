@@ -12,7 +12,7 @@ import java.util.Map;
 public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
-        int populationSize = 500;
+        int populationSize = 10;
         double samplingProbability = 0.005;
         int numThreads = 30;
         int numEpochs = 50000;
