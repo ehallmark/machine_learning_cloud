@@ -17,7 +17,7 @@ public class TechnologyPredictionAlgorithm {
         int numThreads = Runtime.getRuntime().availableProcessors()*4;
         int numEpochs = 50000;
         double mutationRate = 0.5;
-        int minWordsPerTech = 50;
+        int minWordsPerTech = 200;
         double crossoverRate = 0.5;
         Map<String,List<Word>> allWordsMap = KeywordSolution.getAllWordsMap();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(allWordsMap, samplingProbability,minWordsPerTech,numThreads),populationSize, new KeywordListener(),numThreads);

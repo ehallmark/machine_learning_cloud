@@ -36,10 +36,10 @@ public class KeywordSolutionCreator implements SolutionCreator {
         AtomicInteger size = new AtomicInteger(0);
         ForkJoinPool pool = new ForkJoinPool(numThreads);
         techToWordMap.forEach((tech,words)->{
-            System.out.println("Creating random "+tech+" solution ["+cnt.getAndIncrement()+"/"+techToWordMap.size()+"]");
             RecursiveAction action = new RecursiveAction() {
                 @Override
                 protected void compute() {
+                    System.out.println("Creating random "+tech+" solution ["+cnt.getAndIncrement()+"/"+techToWordMap.size()+"]");
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
                         Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
                         Map<String,Set<String>> alreadyAddedMap = alreadyAddedMapList.get(solutionNum);
@@ -74,7 +74,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                         randomTechToWordMap.put(tech, newSet);
                         alreadyAddedMap.put(tech, wordSet);
                     }
-
+                    System.out.println("Finished "+tech+" solution ["+cnt.get()+"/"+techToWordMap.size()+"]");
                 }
             };
             pool.execute(action);
