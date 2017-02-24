@@ -18,6 +18,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
     private final double samplingProbability;
     private final int minWordsPerTechnology;
     private final int numThreads;
+    private static final Random random = new Random(69);
     public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, double samplingProbability, int minWordsPerTechnology, int numThreads) {
         this.techToWordMap=allWordMap;
         this.numThreads=numThreads;
@@ -47,7 +48,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                         List<Word> newSet = new ArrayList<>(samples);
                         Set<String> wordSet = new HashSet<>(samples);
                         for (int i = 0; i < samples; i++) {
-                            int randIdx = ProbabilityHelper.getLowNumberWithMaxUpTo(words.size());
+                            int randIdx = random.nextInt(words.size());
                             Word randomWord = words.get(randIdx);
                             if (wordSet.contains(randomWord.getWord())) {
                                 boolean ended = false;
