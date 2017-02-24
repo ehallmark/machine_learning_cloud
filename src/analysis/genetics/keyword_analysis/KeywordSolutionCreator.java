@@ -13,8 +13,10 @@ public class KeywordSolutionCreator implements SolutionCreator {
     private Map<String,List<String>> techToWordMap;
     private static Random random = new Random(69);
     private final double samplingProbability;
-    public KeywordSolutionCreator(Map<String,Map<String,Double>> techFrequencyMap, double samplingProbability) {
+    private final int minWordsPerTechnology;
+    public KeywordSolutionCreator(Map<String,Map<String,Double>> techFrequencyMap, double samplingProbability, int minWordsPerTechnology) {
         this.techToWordMap=new HashMap<>();
+        this.minWordsPerTechnology=minWordsPerTechnology;
         this.samplingProbability=samplingProbability;
         techFrequencyMap.forEach((tech,map)->{
             techToWordMap.put(tech,new ArrayList<>(map.keySet()));
@@ -26,8 +28,8 @@ public class KeywordSolutionCreator implements SolutionCreator {
         System.out.println("Creating random solution...");
         AtomicInteger size = new AtomicInteger(0);
         techToWordMap.forEach((tech,words)->{
-            if(words.size()<500) return; // avoid too small of samples
-            int samples = Math.max(30,Math.round((float)samplingProbability*words.size()));
+            if(words.size()<minWordsPerTechnology*10) return; // avoid too small of samples
+            int samples = Math.max(minWordsPerTechnology,Math.round((float)samplingProbability*words.size()));
             Set<String> newSet = new HashSet<>(samples);
             for(int i = 0; i < samples; i++) {
                 String randomWord = words.get(random.nextInt(words.size()));
@@ -36,7 +38,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
             size.getAndAdd(newSet.size());
             randomTechToWordMap.put(tech,newSet);
         });
-        Solution solution = new KeywordSolution(randomTechToWordMap);
+        Solution solution = new KeywordSolution(randomTechToWordMap,minWordsPerTechnology);
         solution.calculateFitness();
         System.out.println("Solution Size: "+size.get());
         System.out.println("Solution score: "+solution.fitness());

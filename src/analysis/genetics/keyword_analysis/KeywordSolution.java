@@ -38,9 +38,11 @@ public class KeywordSolution implements Solution {
      */
     private Map<String,Set<String>> technologyToWordsMap;
     private double fitness;
+    private final int minWordsPerTechnology;
 
-    public KeywordSolution(Map<String,Set<String>> technologyToWordsMap) {
+    public KeywordSolution(Map<String,Set<String>> technologyToWordsMap, int minWordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
+        this.minWordsPerTechnology=minWordsPerTechnology;
     }
 
     public Map<String,Set<String>> getTechnologyToWordsMap() {
@@ -74,7 +76,7 @@ public class KeywordSolution implements Solution {
                 words.forEach(word -> {
                     techScore.addAndGet(tfidfScore(word, techToFreqMap));
                 });
-                score.addAndGet(techScore.get() / Math.log(Math.E+words.size()));
+                score.addAndGet(techScore.get() / words.size());
             }
         });
         fitness=score.get()/TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size();
@@ -88,7 +90,7 @@ public class KeywordSolution implements Solution {
             if(!(random.nextBoolean()||random.nextBoolean())) {
                 AtomicInteger removedCount = new AtomicInteger(0);
                 words.forEach(word -> {
-                    if (newWords.size()>=5 && random.nextBoolean() && random.nextBoolean() && random.nextBoolean()) {
+                    if (newWords.size()>=minWordsPerTechnology && random.nextBoolean() && random.nextBoolean() && random.nextBoolean()) {
                         removedCount.getAndIncrement();
                         newWords.remove(word);
                     }
@@ -104,7 +106,7 @@ public class KeywordSolution implements Solution {
             newTechMap.put(tech,newWords);
 
         });
-        return new KeywordSolution(newTechMap);
+        return new KeywordSolution(newTechMap,minWordsPerTechnology);
     }
 
     @Override
@@ -124,7 +126,7 @@ public class KeywordSolution implements Solution {
             });
             newTechMap.put(tech,newSet);
         });
-        return new KeywordSolution(newTechMap);
+        return new KeywordSolution(newTechMap,minWordsPerTechnology);
     }
 
     @Override
