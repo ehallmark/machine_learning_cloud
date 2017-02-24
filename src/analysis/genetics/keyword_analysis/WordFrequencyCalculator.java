@@ -121,9 +121,6 @@ public class WordFrequencyCalculator {
                 if(map.containsKey(toRemove)) map.remove(toRemove);
             });
         });
-        wordsToRemove.forEach(toRemove->{
-            if(globalMap.containsKey(toRemove)) globalMap.remove(toRemove);
-        });
         Database.trySaveObject(globalMap,wordFrequencyMapFile);
         Database.trySaveObject(techMap,technologyToWordFrequencyMapFile);
     }
