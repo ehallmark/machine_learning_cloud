@@ -27,6 +27,8 @@ public class CitationEvaluator extends Evaluator {
 
     public CitationEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Citation Value");
+        setModel();
+
     }
 
     @Override

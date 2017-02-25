@@ -31,6 +31,8 @@ public class ClaimEvaluator extends Evaluator {
 
     public ClaimEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Claim Value");
+        setModel();
+
     }
 
     @Override

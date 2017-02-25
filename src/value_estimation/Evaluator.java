@@ -16,9 +16,14 @@ public abstract class Evaluator {
     // Instance class
     protected Map<String,Double> model;
     protected String modelName;
+    protected ValueMapNormalizer.DistributionType distributionType;
 
     public Evaluator(ValueMapNormalizer.DistributionType distributionType, String modelName) {
         this.modelName=modelName;
+        this.distributionType=distributionType;
+    }
+
+    public void setModel() {
         model=new ValueMapNormalizer(distributionType).normalizeAndMergeModels(loadModels());
     }
 

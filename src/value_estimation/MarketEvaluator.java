@@ -29,6 +29,8 @@ public class MarketEvaluator extends Evaluator {
 
     public MarketEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Market Value");
+        setModel();
+
     }
 
     @Override

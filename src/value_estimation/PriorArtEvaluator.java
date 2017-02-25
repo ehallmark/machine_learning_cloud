@@ -27,6 +27,7 @@ public class PriorArtEvaluator extends Evaluator {
 
     private PriorArtEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Prior Art Value");
+        setModel();
         throw new RuntimeException("This model is now merged into technology value...");
     }
 

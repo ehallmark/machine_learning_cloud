@@ -30,6 +30,18 @@ public class GatherTagger implements TechTagger {
         return topTechnologies(handlePortfolioType(item,type),n);
     }
 
+    public double getTechnologyValueFor(String item, String technology) {
+        int idx = orderedTechnologies.indexOf(technology);
+        if(idx>=0) {
+            INDArray array = technologyMap.get(item);
+            if(array!=null&&array.length()>idx) {
+                return array.getDouble(idx);
+            } else {
+                return 0d;
+            }
+        }else return 0d;
+    }
+
     public List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
         List<INDArray> vectors = new ArrayList<>(items.size());
         items.forEach(item->{
