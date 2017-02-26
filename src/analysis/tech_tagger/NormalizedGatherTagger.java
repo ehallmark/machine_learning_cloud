@@ -28,10 +28,9 @@ public class NormalizedGatherTagger extends GatherTagger {
         assignees.forEach(assignee->{
             if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
                 vec.putRow(row.getAndIncrement(),DEFAULT_TECHNOLOGY_MAP.get(assignee));
-            } else {
-                vec.reshape(vec.rows()-1,vec.columns());
-            }
+            } 
         });
+        vec.reshape(row.get(),numTech);
         System.out.println("Calculating statistics...");
         INDArray vars = vec.var(0);
         INDArray means = vec.mean(0);
