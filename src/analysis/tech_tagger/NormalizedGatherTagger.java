@@ -54,6 +54,7 @@ public class NormalizedGatherTagger extends GatherTagger {
             }
             normalizedMap.put(assignee,newVec);
         }
+        System.out.println("Finished Calculating Statistics...");
     }
     public NormalizedGatherTagger() {
         super(normalizedMap,DEFAULT_ORDERED_TECHNOLOGIES);

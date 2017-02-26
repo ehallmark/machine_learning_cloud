@@ -268,5 +268,6 @@ public class LeadDevelopmentUI {
     public static void main(String[] args) throws Exception {
         SimilarPatentServer.loadValueModels();
         setupServer();
+        System.out.println("Finished Setting up LD Server.");
     }
 }
