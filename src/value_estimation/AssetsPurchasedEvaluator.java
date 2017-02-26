@@ -27,12 +27,14 @@ public class AssetsPurchasedEvaluator extends Evaluator {
     private static Map<String,Double> runModel(){
         System.out.println("Starting to load citation evaluator...");
         Collection<String> assignees = Database.getAssignees();
+
         Map<String,Integer> patentToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("assignee_to_assets_purchased_count_map.jobj"));
 
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for assignees...");
         assignees.forEach(assignee->{
             if(patentToAssetsPurchasedCountMap.containsKey(assignee)) {
+                System.out.println("Found: "+assignee);
                 int totalAsssets = Database.getExactAssetCountFor(assignee);
                 if (totalAsssets > 0) {
                     Double score = new Double(patentToAssetsPurchasedCountMap.get(assignee))/totalAsssets;

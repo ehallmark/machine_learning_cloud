@@ -35,6 +35,7 @@ public class AssetsSoldEvaluator extends Evaluator {
         System.out.println("Calculating scores for assignees...");
         assignees.forEach(assignee->{
             if(patentToAssetsSoldCountMap.containsKey(assignee)) {
+                System.out.println("Found: "+assignee);
                 int totalAsssets = Database.getExactAssetCountFor(assignee);
                 if (totalAsssets > 0) {
                     Double score = new Double(patentToAssetsSoldCountMap.get(assignee))/totalAsssets;
