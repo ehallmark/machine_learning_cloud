@@ -11,6 +11,7 @@ import tools.MinHeap;
 import tools.PortfolioList;
 import value_estimation.ValueMapNormalizer;
 
+import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,48 +20,55 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NormalizedGatherTagger extends GatherTagger {
     protected static final Map<String,INDArray> normalizedMap;
+    static final File normalizedMapFile = new File("normalized_gather_tech_map.jobj");
     static {
-        normalizedMap=new HashMap<>();
-        int numTech = DEFAULT_ORDERED_TECHNOLOGIES.size();
-        List<String> assignees = new ArrayList<>(Database.getAssignees());
-        INDArray vec = Nd4j.create(assignees.size(),numTech);
-        AtomicInteger row = new AtomicInteger(0);
-        System.out.println("Normalizing gather tech map...");
-        for(String assignee : assignees) {
-            if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
-                vec.putRow(row.getAndIncrement(),DEFAULT_TECHNOLOGY_MAP.get(assignee));
-            }
-        }
-        vec=vec.get(NDArrayIndex.interval(0,row.get(),false),NDArrayIndex.all());
-        System.out.println("Calculating statistics...");
-        INDArray vars = vec.var(0);
-        INDArray means = vec.mean(0);
-        double end = ValueMapNormalizer.DEFAULT_END;
-        double start = ValueMapNormalizer.DEFAULT_START;
-        AtomicInteger cnt = new AtomicInteger(0);
-        RealDistribution[] distributions = new RealDistribution[numTech];
-        for(int i = 0; i < numTech; i++) {
-            distributions[i]=new NormalDistribution(vars.getDouble(i),means.getDouble(i));
-        }
-        for(String assignee : assignees) {
-            INDArray newVec = Nd4j.create(numTech);
-            System.out.println("Vec for assignee: "+assignee);
-            if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
-                INDArray techVec = vec.getRow(cnt.getAndIncrement());
-                for(int i = 0; i < numTech; i++) {
-                    RealDistribution distribution = distributions[i];
-                    double value = distribution.cumulativeProbability(techVec.getDouble(i))*(end-start)+start;
-                    newVec.putScalar(i,value);
-                }
-            } else {
-                for(int i = 0; i < numTech; i++) {
-                    newVec.putScalar(i,start);
+        if(normalizedMapFile.exists()) {
+            normalizedMap = (Map<String,INDArray>)Database.tryLoadObject(normalizedMapFile);
+        } else {
+            normalizedMap = new HashMap<>();
+            int numTech = DEFAULT_ORDERED_TECHNOLOGIES.size();
+            List<String> assignees = new ArrayList<>(Database.getAssignees());
+            INDArray vec = Nd4j.create(assignees.size(), numTech);
+            AtomicInteger row = new AtomicInteger(0);
+            System.out.println("Normalizing gather tech map...");
+            for (String assignee : assignees) {
+                if (DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
+                    INDArray techVec = DEFAULT_TECHNOLOGY_MAP.get(assignee);
+                    // check if there is any relevance at all
+                    vec.putRow(row.getAndIncrement(), techVec);
                 }
             }
-            System.out.println("    "+newVec.toString());
-            normalizedMap.put(assignee,newVec);
+            vec = vec.get(NDArrayIndex.interval(0, row.get(), false), NDArrayIndex.all());
+            System.out.println("Calculating statistics...");
+            INDArray stds = vec.std(0);
+            INDArray means = vec.mean(0);
+            double end = ValueMapNormalizer.DEFAULT_END;
+            double start = ValueMapNormalizer.DEFAULT_START;
+            RealDistribution[] distributions = new RealDistribution[numTech];
+            for (int i = 0; i < numTech; i++) {
+                distributions[i] = new NormalDistribution(stds.getDouble(i), means.getDouble(i));
+            }
+            final double relevanceThreshold = 0d;
+            for (String assignee : assignees) {
+                INDArray newVec = Nd4j.create(numTech);
+                if (DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
+                    INDArray techVec = DEFAULT_TECHNOLOGY_MAP.get(assignee);
+                    // check if there is any relevance at all
+                    if (techVec.sub(means).div(stds).maxNumber().doubleValue() > relevanceThreshold) {
+                        System.out.print("RELEVANT");
+                        for (int i = 0; i < numTech; i++) {
+                            RealDistribution distribution = distributions[i];
+                            double value = distribution.cumulativeProbability(techVec.getDouble(i)) * (end - start) + start;
+                            newVec.putScalar(i, value);
+                        }
+                        normalizedMap.put(assignee, newVec);
+                    }
+                }
+                System.out.println(" Assignee: " + assignee);
+            }
+            System.out.println("Finished Calculating Statistics...");
+            Database.trySaveObject(normalizedMap,normalizedMapFile);
         }
-        System.out.println("Finished Calculating Statistics...");
     }
     public NormalizedGatherTagger() {
         super(normalizedMap,DEFAULT_ORDERED_TECHNOLOGIES);
