@@ -13,4 +13,5 @@ public interface TechTagger {
     double getTechnologyValueFor(String item, String technology);
     List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n);
     List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n);
+    Collection<String> getAllTechnologies();
 }

@@ -12,6 +12,16 @@ public class ValueAttribute extends Attribute {
         this.model=model;
     }
 
+    private ValueAttribute(String name, double importance, Evaluator model, int id) {
+        super(name,importance,id);
+        this.model=model;
+    }
+
+    @Override
+    public Attribute dup() {
+        return new ValueAttribute(name,importance,model,getId());
+    }
+
     @Override
     public double scoreAssignee(String assignee) {
         return model.evaluate(assignee);

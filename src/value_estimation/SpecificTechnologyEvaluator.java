@@ -12,8 +12,8 @@ public class SpecificTechnologyEvaluator extends Evaluator {
     private static final String MODEL_PREFIX = "Value in ";
     private TechTagger tagger;
     private String technology;
-    public SpecificTechnologyEvaluator(ValueMapNormalizer.DistributionType distributionType, String technology, TechTagger tagger) {
-        super(distributionType,MODEL_PREFIX+technology);
+    public SpecificTechnologyEvaluator(String technology, TechTagger tagger) {
+        super(ValueMapNormalizer.DistributionType.Normal,MODEL_PREFIX+technology);
         this.tagger=tagger;
         this.technology=technology;
     }

@@ -25,6 +25,8 @@ public class CompanySolution implements Solution {
         fitness=companyScores.stream().collect(Collectors.averagingDouble(e->e.getValue()));
     }
 
+    public List<Map.Entry<String,Double>> getCompanyScores() { return companyScores; }
+
     @Override
     public double fitness() {
         return fitness;

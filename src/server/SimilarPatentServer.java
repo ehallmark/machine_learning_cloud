@@ -19,6 +19,7 @@ import server.tools.AbstractPatent;
 import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
+import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
@@ -94,6 +95,9 @@ public class SimilarPatentServer {
             modelMap.put("claimValue",new ClaimEvaluator());
             modelMap.put("marketValue",new MarketEvaluator());
             modelMap.put("assigneeValue",new AssigneeEvaluator());
+            modelMap.put("assetsPurchased",new AssetsPurchasedEvaluator());
+            modelMap.put("assetsSold",new AssetsSoldEvaluator());
+            modelMap.put("largePortfolios",new PortfolioSizeEvaluator());
         }catch(Exception e) {
             e.printStackTrace();
         }
@@ -957,6 +961,15 @@ public class SimilarPatentServer {
     static int extractInt(Request req, String param, int defaultVal) {
         try {
             return Integer.valueOf(req.queryParams(param));
+        } catch(Exception e) {
+            System.out.println("No "+param+" parameter specified... using default");
+            return defaultVal;
+        }
+    }
+
+    static double extractDouble(QueryParamsMap queryMap, String param, double defaultVal) {
+        try {
+            return Double.valueOf(queryMap.value(param));
         } catch(Exception e) {
             System.out.println("No "+param+" parameter specified... using default");
             return defaultVal;

@@ -55,6 +55,11 @@ public class GatherTagger implements TechTagger {
         return topTechnologies(vec,n);
     }
 
+    @Override
+    public Collection<String> getAllTechnologies() {
+        return new HashSet<>(orderedTechnologies);
+    }
+
     private INDArray handlePortfolioType(String name, PortfolioList.Type type) {
         if(name==null||type==null)return null;
 
