@@ -1,5 +1,6 @@
 package analysis.genetics.lead_development;
 
+import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
 import analysis.genetics.keyword_analysis.KeywordSolution;
 import analysis.genetics.keyword_analysis.ProbabilityHelper;
@@ -7,6 +8,7 @@ import analysis.genetics.keyword_analysis.Word;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
 import seeding.Database;
+import value_estimation.PortfolioSizeEvaluator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,5 +76,12 @@ public class CompanySolution implements Solution {
          } else {
              return 0d;
          }
+    }
+
+    public static void main(String[] args) {
+        // test
+        Attribute attr = new ValueAttribute("Portfolio Size",1,new PortfolioSizeEvaluator());
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),10,10),10,new CompanySolutionListener(),10);
+        algorithm.simulate(10000,0.5,0.5);
     }
 }
