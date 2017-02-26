@@ -5,6 +5,7 @@ import org.apache.commons.math3.distribution.RealDistribution;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Database;
 import tools.MinHeap;
 import tools.PortfolioList;
@@ -25,19 +26,19 @@ public class NormalizedGatherTagger extends GatherTagger {
         INDArray vec = Nd4j.create(assignees.size(),numTech);
         AtomicInteger row = new AtomicInteger(0);
         System.out.println("Normalizing gather tech map...");
-        assignees.forEach(assignee->{
+        for(String assignee : assignees) {
             if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
                 vec.putRow(row.getAndIncrement(),DEFAULT_TECHNOLOGY_MAP.get(assignee));
-            } 
-        });
-        vec.reshape(row.get(),numTech);
+            }
+        }
+        vec=vec.get(NDArrayIndex.interval(0,row.get(),false),NDArrayIndex.all());
         System.out.println("Calculating statistics...");
         INDArray vars = vec.var(0);
         INDArray means = vec.mean(0);
         double end = ValueMapNormalizer.DEFAULT_END;
         double start = ValueMapNormalizer.DEFAULT_START;
         AtomicInteger cnt = new AtomicInteger(0);
-        assignees.forEach(assignee->{
+        for(String assignee : assignees) {
             INDArray newVec = Nd4j.create(numTech);
             if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
                 INDArray techVec = vec.getRow(cnt.getAndIncrement());
@@ -52,7 +53,7 @@ public class NormalizedGatherTagger extends GatherTagger {
                 }
             }
             normalizedMap.put(assignee,newVec);
-        });
+        }
     }
     public NormalizedGatherTagger() {
         super(normalizedMap,DEFAULT_ORDERED_TECHNOLOGIES);
