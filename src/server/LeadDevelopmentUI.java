@@ -4,6 +4,7 @@ import analysis.SimilarPatentFinder;
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.NormalizedGatherTagger;
 import analysis.tech_tagger.TechTagger;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
@@ -44,7 +45,7 @@ public class LeadDevelopmentUI {
     private static final TechTagger techTagger;
 
     static {
-        techTagger=new GatherTagger();
+        techTagger=new NormalizedGatherTagger();
         technologies=new ArrayList<>();
         techTagger.getAllTechnologies().stream().sorted().forEach(tech->technologies.add(tech));
     }

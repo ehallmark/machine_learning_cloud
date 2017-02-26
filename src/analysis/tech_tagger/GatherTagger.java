@@ -17,12 +17,23 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/18/2017.
  */
 public class GatherTagger implements TechTagger {
-    private static Map<String,INDArray> technologyMap;
-    private static List<String> orderedTechnologies;
+    protected Map<String,INDArray> technologyMap;
+    protected List<String> orderedTechnologies;
+    protected static final Map<String,INDArray> DEFAULT_TECHNOLOGY_MAP;
+    protected static final List<String> DEFAULT_ORDERED_TECHNOLOGIES;
     static {
-        technologyMap=(Map<String,INDArray>)Database.tryLoadObject(BuildCPCToGatherStatistics.techMapFile);
-        orderedTechnologies=(List<String>)Database.tryLoadObject(BuildCPCToGatherStatistics.techListFile);
+        DEFAULT_TECHNOLOGY_MAP=(Map<String,INDArray>)Database.tryLoadObject(BuildCPCToGatherStatistics.techMapFile);
+        DEFAULT_ORDERED_TECHNOLOGIES=(List<String>)Database.tryLoadObject(BuildCPCToGatherStatistics.techListFile);
 
+    }
+
+    public GatherTagger() {
+        this(DEFAULT_TECHNOLOGY_MAP,DEFAULT_ORDERED_TECHNOLOGIES);
+    }
+
+    protected GatherTagger(Map<String,INDArray> techMap, List<String> orderedTech) {
+        this.technologyMap=techMap;
+        this.orderedTechnologies=orderedTech;
     }
 
 
