@@ -247,7 +247,9 @@ public class LeadDevelopmentUI {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,30,new CompanySolutionListener(),numThreads);
+        System.out.println("Finished initializing genetic algorithm");
         algorithm.simulate(1000,0.5,0.3);
+        System.out.println("Finished simulating epochs");
         if(algorithm.getBestSolution()==null)return null;
         return (CompanySolution) (algorithm.getBestSolution());
     }

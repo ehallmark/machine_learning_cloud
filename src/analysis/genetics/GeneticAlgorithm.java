@@ -74,6 +74,7 @@ public class GeneticAlgorithm {
                     @Override
                     protected void compute() {
                         children.add(solution.mutate());
+                        System.out.println("mutate");
                         mutationCounter.getAndIncrement();
                     }
                 };
@@ -92,6 +93,7 @@ public class GeneticAlgorithm {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
+                        System.out.println("crossover");
                         children.add(x.crossover(y));
                         crossoverCounter.getAndIncrement();
                     }
