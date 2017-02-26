@@ -40,14 +40,14 @@ import static spark.Spark.post;
 public class LeadDevelopmentUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static final Map<String,Attribute> attributesMap = new HashMap<>();
-    private static final List<String> technologies;
-    private static final TechTagger techTagger;
+    private static final Map<String,Attribute> ATTRIBUTES = new HashMap<>();
+    private static final List<String> TECHNOLOGIES;
+    private static final TechTagger TECH_TAGGER;
 
     static {
-        techTagger=new NormalizedGatherTagger();
-        technologies=new ArrayList<>();
-        techTagger.getAllTechnologies().stream().sorted().forEach(tech->technologies.add(tech));
+        TECH_TAGGER=new NormalizedGatherTagger();
+        TECHNOLOGIES=new ArrayList<>();
+        TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -107,7 +107,7 @@ public class LeadDevelopmentUI {
                                                         th("Relative Importance").attr("style","text-align: left;")
                                                 )
                                         ),tbody().with(
-                                                attributesMap.entrySet().stream().map(e->label().with(tr().with(
+                                                ATTRIBUTES.entrySet().stream().map(e->label().with(tr().with(
                                                                 td(e.getKey()),td().with(input().withType("number").withName("importance-"+e.getValue().getId()).withValue("0"))
                                                         ))
                                                 ).collect(Collectors.toList())
@@ -117,9 +117,9 @@ public class LeadDevelopmentUI {
                         )),
                         SimilarPatentServer.expandableDiv("Technology",false,div().with(
                                 label("Relative Importance").with(br(),
-                                        input().withType("number").withName("importance-tech"),br()),
-                                select().withName("technologies").attr("multiple","multiple").with(
-                                        technologies.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
+                                        input().withType("number").withValue("0").withName("importance-tech"),br()),
+                                select().withName("technologies[]").attr("multiple","multiple").with(
+                                        TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
                                 ),br()
                         )),
                 br(),
@@ -144,7 +144,7 @@ public class LeadDevelopmentUI {
 
     static void loadData() {
         SimilarPatentServer.modelMap.forEach((name,model)->{
-            attributesMap.put(ExcelWritable.humanAttributeFor(name),new ValueAttribute(name,0d,model));
+            ATTRIBUTES.put(ExcelWritable.humanAttributeFor(name),new ValueAttribute(name,0d,model));
         });
     }
 
@@ -202,23 +202,25 @@ public class LeadDevelopmentUI {
                 int resultLimit = 30;
                 long timeLimit = 3000;
 
-                List<Attribute> attrsToUseList = new ArrayList<>(attributesMap.size());
-                attributesMap.forEach((name,attr)->{
+                List<Attribute> attrsToUseList = new ArrayList<>(ATTRIBUTES.size());
+                ATTRIBUTES.forEach((name,attr)->{
                     Attribute newAttr = attr.dup();
                     newAttr.importance=SimilarPatentServer.extractDouble(params,"importance-"+attr.getId(),0d);
                     if(newAttr.importance>0) {
-                        System.out.println("Using attr: "+attr);
+                        System.out.println("Using attr: "+name);
                         attrsToUseList.add(newAttr);
                     }
                 });
                 {
                     double technologyImportance = SimilarPatentServer.extractDouble(params,"importance-tech",0d);
+                    System.out.println("Technology Importance: "+technologyImportance);
                     if(technologyImportance>0) {
                         String[] technologies = params.get("technologies[]").values();
                         if(technologies!=null&&technologies.length>0) {
+                            System.out.println("Num technologies: "+technologies.length);
                             for(String tech : technologies) {
                                 System.out.println("Using technology: "+tech);
-                                Evaluator techModel = new SpecificTechnologyEvaluator(tech,techTagger);
+                                Evaluator techModel = new SpecificTechnologyEvaluator(tech,TECH_TAGGER);
                                 attrsToUseList.add(new ValueAttribute(tech,technologyImportance,techModel));
                             }
                         }
