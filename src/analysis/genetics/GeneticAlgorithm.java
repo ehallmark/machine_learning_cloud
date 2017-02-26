@@ -48,7 +48,7 @@ public class GeneticAlgorithm {
             System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Current Avg Score:  "+currentScore);
-            System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
+            if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
             // listener
             if(bestSolutionSoFar!=null&&listener!=null) {
                 listener.print(bestSolutionSoFar);

@@ -199,7 +199,7 @@ public class LeadDevelopmentUI {
                 }
 
                 System.out.println("Handled navigator");
-                int limit = 100;
+                int limit = 30;
 
                 List<Attribute> attrsToUseList = new ArrayList<>(attributesMap.size());
                 attributesMap.forEach((name,attr)->{
@@ -246,7 +246,7 @@ public class LeadDevelopmentUI {
     static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit) {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,limit,new CompanySolutionListener(),numThreads);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,30,new CompanySolutionListener(),numThreads);
         algorithm.simulate(1000,0.5,0.3);
         if(algorithm.getBestSolution()==null)return null;
         return (CompanySolution) (algorithm.getBestSolution());
