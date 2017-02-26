@@ -199,7 +199,8 @@ public class LeadDevelopmentUI {
                 }
 
                 System.out.println("Handled navigator");
-                int limit = 30;
+                int resultLimit = 30;
+                long timeLimit = 3000;
 
                 List<Attribute> attrsToUseList = new ArrayList<>(attributesMap.size());
                 attributesMap.forEach((name,attr)->{
@@ -224,8 +225,9 @@ public class LeadDevelopmentUI {
                     }
                 }
 
+
                 System.out.println("Starting genetic solution");
-                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, limit);
+                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, resultLimit, timeLimit);
                 System.out.println("Finished");
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
@@ -243,12 +245,12 @@ public class LeadDevelopmentUI {
         });
     }
 
-    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit) {
+    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit, long timeLimit) {
         int numThreads = 1;//Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,30,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");
-        algorithm.simulate(1000,0.5,0.3);
+        algorithm.simulate(timeLimit,0.5,0.3);
         System.out.println("Finished simulating epochs");
         if(algorithm.getBestSolution()==null)return null;
         return (CompanySolution) (algorithm.getBestSolution());

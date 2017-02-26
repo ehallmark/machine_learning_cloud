@@ -35,16 +35,18 @@ public class GeneticAlgorithm {
         return bestSolutionSoFar;
     }
 
-    public void simulate(int numEpochs, double probMutation, double probCrossover) {
+    public void simulate(long timeLimit, double probMutation, double probCrossover) {
         SimpleTimer timer = new SimpleTimer();
         double globalTimer = 0d;
-        for(int n = 0; n < numEpochs; n++) {
+        AtomicInteger epochCounter = new AtomicInteger(0);
+        while(true) {
             timer.start();
             simulateEpoch(probMutation,probCrossover);
             timer.finish();
             clearScreen();
             globalTimer+=timer.getElapsedTime();
-            System.out.println("EPOCH ["+n+"]");
+            timer.start();
+            System.out.println("EPOCH ["+epochCounter.getAndIncrement()+"]");
             System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
             System.out.println("Starting Avg Score: "+startingScore);
             System.out.println("Current Avg Score:  "+currentScore);
@@ -53,6 +55,9 @@ public class GeneticAlgorithm {
             if(bestSolutionSoFar!=null&&listener!=null) {
                 listener.print(bestSolutionSoFar);
             }
+            timer.finish();
+            globalTimer+=timer.getElapsedTime();
+            if(globalTimer>timeLimit) break;
         }
     }
 
