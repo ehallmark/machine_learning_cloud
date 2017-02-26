@@ -45,7 +45,7 @@ public class LeadDevelopmentUI {
     private static final TechTagger TECH_TAGGER;
 
     static {
-        TECH_TAGGER=new NormalizedGatherTagger();
+        TECH_TAGGER=new GatherTagger();
         TECHNOLOGIES=new ArrayList<>();
         TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }
