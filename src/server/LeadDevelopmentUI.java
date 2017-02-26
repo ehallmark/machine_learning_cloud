@@ -244,7 +244,7 @@ public class LeadDevelopmentUI {
     }
 
     static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit) {
-        int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
+        int numThreads = 1;//Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,30,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");

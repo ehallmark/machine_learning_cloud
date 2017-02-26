@@ -36,7 +36,7 @@ public class CompanySolutionCreator implements SolutionCreator {
                     List<Map.Entry<String, Double>> companyScores = new ArrayList<>(solutionSize);
                     for(int i = 0; i < solutionSize; i++) {
                         String randomAssignee = Database.getRandomAssignee();
-                        System.out.println("Random assignee: "+randomAssignee);
+                        //System.out.println("Random assignee: "+randomAssignee);
                         companyScores.add(Maps.immutableEntry(randomAssignee,CompanySolution.getScoreFromCompanyAndAttrs(randomAssignee,attributes)));
                     }
                     Solution solution = new CompanySolution(companyScores,attributes);
