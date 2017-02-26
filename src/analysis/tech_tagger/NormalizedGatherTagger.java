@@ -38,12 +38,17 @@ public class NormalizedGatherTagger extends GatherTagger {
         double end = ValueMapNormalizer.DEFAULT_END;
         double start = ValueMapNormalizer.DEFAULT_START;
         AtomicInteger cnt = new AtomicInteger(0);
+        RealDistribution[] distributions = new RealDistribution[numTech];
+        for(int i = 0; i < numTech; i++) {
+            distributions[i]=new NormalDistribution(vars.getDouble(i),means.getDouble(i));
+        }
         for(String assignee : assignees) {
             INDArray newVec = Nd4j.create(numTech);
+            System.out.println("Vec for assignee: "+assignee);
             if(DEFAULT_TECHNOLOGY_MAP.containsKey(assignee)) {
                 INDArray techVec = vec.getRow(cnt.getAndIncrement());
                 for(int i = 0; i < numTech; i++) {
-                    RealDistribution distribution = new NormalDistribution(vars.getDouble(i),means.getDouble(i));
+                    RealDistribution distribution = distributions[i];
                     double value = distribution.cumulativeProbability(techVec.getDouble(i))*(end-start)+start;
                     newVec.putScalar(i,value);
                 }
@@ -52,6 +57,7 @@ public class NormalizedGatherTagger extends GatherTagger {
                     newVec.putScalar(i,start);
                 }
             }
+            System.out.println("    "+newVec.toString());
             normalizedMap.put(assignee,newVec);
         }
         System.out.println("Finished Calculating Statistics...");
