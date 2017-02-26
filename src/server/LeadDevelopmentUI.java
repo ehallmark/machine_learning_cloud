@@ -52,7 +52,7 @@ public class LeadDevelopmentUI {
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
-                + "var url = '/company_profile_report'; "
+                + "var url = '/lead_development_report'; "
                 + "var tempScrollTop = $(window).scrollTop();"
                 //+ "window.onerror = function(errorMsg, url, lineNumber) {"
                 //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
@@ -95,18 +95,16 @@ public class LeadDevelopmentUI {
     }
 
     static Tag generateReportsForm() {
-        AtomicBoolean isFirst = new AtomicBoolean(true);
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
-                        h2("Company Profiler"),
-                        h3("Company Information"),
-                        label("Company Name"),br(),input().withId(MAIN_INPUT_ID).withType("text").withName("assignee"),br(),br(),
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Start Search","Searching")).with(
+                        h2("Lead Generation"),
+                        h3("Genetic Search"),
                         SimilarPatentServer.expandableDiv("Attributes",false,div().with(
                                 table().with(
                                         thead().with(
                                                 tr().with(
-                                                        th("Attributes"),
-                                                        th("Relative Importance")
+                                                        th("Attributes").attr("style","text-align: left;"),
+                                                        th("Relative Importance").attr("style","text-align: left;")
                                                 )
                                         ),tbody().with(
                                                 attributesMap.entrySet().stream().map(e->label().with(tr().with(
@@ -118,13 +116,14 @@ public class LeadDevelopmentUI {
                                 ),br()
                         )),
                         SimilarPatentServer.expandableDiv("Technology",false,div().with(
-                                input().withType("number").withName("importance-tech"),
+                                label("Relative Importance").with(br(),
+                                        input().withType("number").withName("importance-tech"),br()),
                                 select().withName("technologies").attr("multiple","multiple").with(
                                         technologies.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
                                 ),br()
                         )),
                 br(),
-                button("Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
+                button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
                 navigationTag(),br(),br(),br()
         );
     }
@@ -174,6 +173,7 @@ public class LeadDevelopmentUI {
             res.type("application/json");
             try {
 
+                System.out.println("Received request...");
                 QueryParamsMap params;
 
                 // handle navigation
@@ -198,6 +198,7 @@ public class LeadDevelopmentUI {
                     navigator.addRequest(new QueryParamsMap(req.raw()));
                 }
 
+                System.out.println("Handled navigator");
                 int limit = 100;
 
                 List<Attribute> attrsToUseList = new ArrayList<>(attributesMap.size());
@@ -205,6 +206,7 @@ public class LeadDevelopmentUI {
                     Attribute newAttr = attr.dup();
                     newAttr.importance=SimilarPatentServer.extractDouble(params,"importance-"+attr.getId(),0d);
                     if(newAttr.importance>0) {
+                        System.out.println("Using attr: "+attr);
                         attrsToUseList.add(newAttr);
                     }
                 });
@@ -214,6 +216,7 @@ public class LeadDevelopmentUI {
                         String[] technologies = params.get("technologies[]").values();
                         if(technologies!=null&&technologies.length>0) {
                             for(String tech : technologies) {
+                                System.out.println("Using technology: "+tech);
                                 Evaluator techModel = new SpecificTechnologyEvaluator(tech,techTagger);
                                 attrsToUseList.add(new ValueAttribute(tech,technologyImportance,techModel));
                             }
@@ -221,7 +224,10 @@ public class LeadDevelopmentUI {
                     }
                 }
 
+                System.out.println("Starting genetic solution");
                 CompanySolution solution = runGeneticAlgorithm(attrsToUseList, limit);
+                System.out.println("Finished");
+
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
                 return new Gson().toJson(new SimpleAjaxMessage(div().with(
                         solution == null ? div().with(h4("No Solution Found.")) : div().with(
