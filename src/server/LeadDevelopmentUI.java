@@ -215,7 +215,12 @@ public class LeadDevelopmentUI {
                     double technologyImportance = SimilarPatentServer.extractDouble(params,"importance-tech",0d);
                     System.out.println("Technology Importance: "+technologyImportance);
                     if(technologyImportance>0) {
-                        String[] technologies = params.get("technologies[]").values();
+                        String[] technologies=null;
+                        try {
+                            technologies = params.get("technologies").values();
+                        } catch(Exception e2) {
+                            System.out.println("EXCEPTION!!!!");
+                        }
                         if(technologies!=null&&technologies.length>0) {
                             System.out.println("Num technologies: "+technologies.length);
                             for(String tech : technologies) {
