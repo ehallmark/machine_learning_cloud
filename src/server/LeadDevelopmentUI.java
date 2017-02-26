@@ -99,6 +99,14 @@ public class LeadDevelopmentUI {
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Start Search","Searching")).with(
                         h2("Lead Generation"),
                         h3("Genetic Search"),
+                        label("Result Limit").with(
+                                br(),
+                                input().withType("number").withValue("30").withName("result_limit")
+                        ),br(),
+                        label("Time Limit (Seconds)").with(
+                                br(),
+                                input().withType("number").withValue("5").withName("time_limit")
+                        ),br(),
                         SimilarPatentServer.expandableDiv("Attributes",false,div().with(
                                 table().with(
                                         thead().with(
@@ -107,7 +115,7 @@ public class LeadDevelopmentUI {
                                                         th("Relative Importance").attr("style","text-align: left;")
                                                 )
                                         ),tbody().with(
-                                                ATTRIBUTES.entrySet().stream().map(e->label().with(tr().with(
+                                                ATTRIBUTES.entrySet().stream().sorted((e1,e2)->e1.getKey().compareTo(e2.getKey())).map(e->label().with(tr().with(
                                                                 td(e.getKey()),td().with(input().withType("number").withName("importance-"+e.getValue().getId()).withValue("0"))
                                                         ))
                                                 ).collect(Collectors.toList())
@@ -199,8 +207,24 @@ public class LeadDevelopmentUI {
                 }
 
                 System.out.println("Handled navigator");
-                int resultLimit = 30;
-                long timeLimit = 3000;
+                long timeLimit = ((long)(SimilarPatentServer.extractDouble(params,"time_limit",5d)))*1000;
+                int resultLimit = (int)(SimilarPatentServer.extractDouble(params,"result_limit",30d));
+
+                if(resultLimit<1) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a positive result limit"));
+                }
+
+                if(timeLimit<1) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a positive time limit"));
+                }
+
+                if(timeLimit/1000>60) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Time limit should be less than a minute"));
+                }
+
+                if(resultLimit>1000) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Result limit should be less than a 1000"));
+                }
 
                 List<Attribute> attrsToUseList = new ArrayList<>(ATTRIBUTES.size());
                 ATTRIBUTES.forEach((name,attr)->{
@@ -232,6 +256,10 @@ public class LeadDevelopmentUI {
                     }
                 }
 
+                // make sure some attributes exist
+                if(attrsToUseList.isEmpty()) {
+                    return new Gson().toJson(new SimpleAjaxMessage("No attributes found."));
+                }
 
                 System.out.println("Starting genetic solution");
                 CompanySolution solution = runGeneticAlgorithm(attrsToUseList, resultLimit, timeLimit);

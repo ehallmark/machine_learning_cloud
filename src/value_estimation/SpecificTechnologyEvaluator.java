@@ -2,6 +2,7 @@ package value_estimation;
 
 import analysis.tech_tagger.TechTagger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,8 @@ public class SpecificTechnologyEvaluator extends Evaluator {
 
     @Override
     protected List<Map<String, Double>> loadModels() {
-        throw new RuntimeException("Model does not need to be loaded...");
+        //throw new RuntimeException("Model does not need to be loaded...");
+        return new ArrayList<>();
     }
 
     @Override
