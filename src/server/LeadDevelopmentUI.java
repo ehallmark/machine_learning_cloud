@@ -1,9 +1,8 @@
 package server;
 
 import analysis.SimilarPatentFinder;
-import analysis.genetics.lead_development.Attribute;
-import analysis.genetics.lead_development.CompanySolution;
-import analysis.genetics.lead_development.ValueAttribute;
+import analysis.genetics.GeneticAlgorithm;
+import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.TechTagger;
 import com.google.gson.Gson;
@@ -145,7 +144,7 @@ public class LeadDevelopmentUI {
 
     static void loadData() {
         SimilarPatentServer.modelMap.forEach((name,model)->{
-            attributesMap.put(name,new ValueAttribute(name,0d,model));
+            attributesMap.put(ExcelWritable.humanAttributeFor(name),new ValueAttribute(name,0d,model));
         });
     }
 
@@ -198,6 +197,7 @@ public class LeadDevelopmentUI {
                     navigator.addRequest(new QueryParamsMap(req.raw()));
                 }
 
+                int limit = 100;
 
                 List<Attribute> attrsToUseList = new ArrayList<>(attributesMap.size());
                 attributesMap.forEach((name,attr)->{
@@ -220,8 +220,8 @@ public class LeadDevelopmentUI {
                     }
                 }
 
-                CompanySolution solution = null;
-
+                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, limit);
+                if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
                 return new Gson().toJson(new SimpleAjaxMessage(div().with(
                         solution == null ? div().with(h4("No Solution Found.")) : div().with(
                                 h4("Solution"),
@@ -234,6 +234,15 @@ public class LeadDevelopmentUI {
                 return new Gson().toJson(new SimpleAjaxMessage(e.getMessage()));
             }
         });
+    }
+
+    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit) {
+        int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
+        CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,limit,new CompanySolutionListener(),numThreads);
+        algorithm.simulate(1000,0.5,0.3);
+        if(algorithm.getBestSolution()==null)return null;
+        return (CompanySolution) (algorithm.getBestSolution());
     }
 
     static Tag tableFromSolution(CompanySolution solution) {

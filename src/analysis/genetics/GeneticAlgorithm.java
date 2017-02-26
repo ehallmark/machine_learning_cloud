@@ -31,6 +31,10 @@ public class GeneticAlgorithm {
         startingScore=currentScore;
     }
 
+    public Solution getBestSolution() {
+        return bestSolutionSoFar;
+    }
+
     public void simulate(int numEpochs, double probMutation, double probCrossover) {
         SimpleTimer timer = new SimpleTimer();
         double globalTimer = 0d;

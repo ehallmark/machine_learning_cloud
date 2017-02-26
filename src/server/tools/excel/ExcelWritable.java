@@ -64,7 +64,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         if(javaAttrToHumanAttrMap.containsKey(attr)) {
             return javaAttrToHumanAttrMap.get(attr);
         } else {
-            return "";
+            return attr;
         }
     }
 
