@@ -138,6 +138,9 @@ public class SimilarPatentServer {
                         a("Company Profiler").withHref("/company_profile")
                 ),
                 h3().with(
+                        a("Lead Development").withHref("/lead_development")
+                ),
+                h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
                 )
         );
@@ -997,6 +1000,7 @@ public class SimilarPatentServer {
         System.out.println("Starting server...");
         server();
         System.out.println("Finished starting server.");
+        LeadDevelopmentUI.setupServer();
         System.out.println("Starting Company Profile UI Server...");
         CompanyPortfolioProfileUI.setupServer();
         System.out.println("Finished starting server.");
