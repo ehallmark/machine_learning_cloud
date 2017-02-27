@@ -202,7 +202,7 @@ public class LeadDevelopmentUI {
                     else {
                         // RETURN SOLUTION
                         System.out.println("Going back");
-                        return null;
+                        return renderSolution(tmp);
                     }
                 } else if (SimilarPatentServer.extractBool(req, "goForward")) {
                     CompanySolution tmp = navigator.goForward();
@@ -210,7 +210,7 @@ public class LeadDevelopmentUI {
                     else {
                         // RETURN SOLUTION
                         System.out.println("Going forward");
-                        return null;
+                        return renderSolution(tmp);
                     }
                 } else {
                     params = req.queryMap();
@@ -272,12 +272,7 @@ public class LeadDevelopmentUI {
                 // add to request map
                 navigator.addRequest(solution);
 
-                return new Gson().toJson(new SimpleAjaxMessage(div().with(
-                        solution == null ? div().with(h4("No Solution Found.")) : div().with(
-                                h4("Solution"),
-                                tableFromSolution(solution)
-                        )
-                ).render()));
+                return renderSolution(solution);
 
 
             } catch(Exception e) {
@@ -286,6 +281,14 @@ public class LeadDevelopmentUI {
         });
     }
 
+    private static String renderSolution(CompanySolution solution) {
+        return new Gson().toJson(new SimpleAjaxMessage(div().with(
+                solution == null ? div().with(h4("No Solution Found.")) : div().with(
+                        h4("Solution"),
+                        tableFromSolution(solution)
+                )
+        ).render()));
+    }
     static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit, long timeLimit) {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
