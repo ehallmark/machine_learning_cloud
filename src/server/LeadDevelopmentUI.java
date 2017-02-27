@@ -45,7 +45,7 @@ public class LeadDevelopmentUI {
     private static final TechTagger TECH_TAGGER;
 
     static {
-        TECH_TAGGER=new GatherTagger();
+        TECH_TAGGER=new NormalizedGatherTagger();
         TECHNOLOGIES=new ArrayList<>();
         TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }
@@ -126,9 +126,11 @@ public class LeadDevelopmentUI {
                         SimilarPatentServer.expandableDiv("Technology",false,div().with(
                                 label("Relative Importance").with(br(),
                                         input().withType("number").withValue("0").withName("importance-tech"),br()),
-                                select().withName("technology").with(
-                                        TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
-                                ),br()
+                                label("Technology").with(
+                                    select().withName("technology").with(
+                                            TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
+                                    ),br()
+                                )
                         )),
                 br(),
                 button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),

@@ -36,28 +36,38 @@ public class GeneticAlgorithm {
     }
 
     public void simulate(long timeLimit, double probMutation, double probCrossover) {
-        SimpleTimer timer = new SimpleTimer();
-        double globalTimer = 0d;
-        AtomicInteger epochCounter = new AtomicInteger(0);
-        while(true) {
-            timer.start();
-            simulateEpoch(probMutation,probCrossover);
-            timer.finish();
-            clearScreen();
-            globalTimer+=timer.getElapsedTime();
-            timer.start();
-            System.out.println("EPOCH ["+epochCounter.getAndIncrement()+"]");
-            System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
-            System.out.println("Starting Avg Score: "+startingScore);
-            System.out.println("Current Avg Score:  "+currentScore);
-            if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
-            // listener
-            if(bestSolutionSoFar!=null&&listener!=null) {
-                listener.print(bestSolutionSoFar);
+        RecursiveAction action = new RecursiveAction() {
+            @Override
+            protected void compute() {
+                SimpleTimer timer = new SimpleTimer();
+                double globalTimer = 0d;
+                AtomicInteger epochCounter = new AtomicInteger(0);
+                while(true) {
+                    timer.start();
+                    simulateEpoch(probMutation,probCrossover);
+                    timer.finish();
+                    clearScreen();
+                    globalTimer+=timer.getElapsedTime();
+                    System.out.println("EPOCH ["+epochCounter.getAndIncrement()+"]");
+                    System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
+                    System.out.println("Starting Avg Score: "+startingScore);
+                    System.out.println("Current Avg Score:  "+currentScore);
+                    if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
+                    // listener
+                    if(bestSolutionSoFar!=null&&listener!=null) {
+                        listener.print(bestSolutionSoFar);
+                    }
+                }
             }
-            timer.finish();
-            globalTimer+=timer.getElapsedTime();
-            if(globalTimer>timeLimit) break;
+        };
+
+        ForkJoinPool pool = new ForkJoinPool(2);
+        pool.execute(action);
+        pool.shutdown();
+        try {
+            pool.awaitTermination(timeLimit, TimeUnit.MILLISECONDS);
+        } catch(Exception e) {
+            System.out.println( "TIME LIMIT REACHED!");
         }
     }
 
