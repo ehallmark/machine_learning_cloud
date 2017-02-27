@@ -241,7 +241,7 @@ public class LeadDevelopmentUI {
                     if(technologyImportance>0) {
                         String[] technologies=null;
                         try {
-                            technologies = params.get("technologies").values();
+                            technologies = params.toMap().get("technologies");
                         } catch(Exception e2) {
                             System.out.println("EXCEPTION!!!!");
                         }
