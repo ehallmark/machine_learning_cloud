@@ -106,8 +106,9 @@ public class LeadDevelopmentUI {
                         label("Time Limit (Seconds)").with(
                                 br(),
                                 input().withType("number").withValue("5").withName("time_limit")
-                        ),br(),
+                        ),br(),br(),
                         SimilarPatentServer.expandableDiv("Attributes",false,div().with(
+                                br(),br(),
                                 table().with(
                                         thead().with(
                                                 tr().with(
@@ -121,17 +122,26 @@ public class LeadDevelopmentUI {
                                                 ).collect(Collectors.toList())
 
                                         )
+                                ),br(),br(),
+                                table().with(
+                                        thead().with(
+                                                tr().with(
+                                                        th("Technology").attr("style","text-align: left;"),
+                                                        th("Relative Importance").attr("style","text-align: left;")
+                                                )
+                                        ),tbody().with(
+                                                tr().with(
+                                                        td().with(
+                                                                select().withName("technology").with(
+                                                                        TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
+                                                                )
+                                                        ),
+                                                        td().with(
+                                                                input().withType("number").withValue("0").withName("importance-tech")
+                                                        )
+                                                )
+                                        )
                                 ),br()
-                        )),
-                        SimilarPatentServer.expandableDiv("Technology Search",false,div().with(
-                                h4("Technology Search"),
-                                label("Relative Importance").with(br(),
-                                        input().withType("number").withValue("0").withName("importance-tech"),br()),
-                                label("Technology").with(br(),
-                                    select().withName("technology").with(
-                                            TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
-                                    ),br()
-                                )
                         )),
                 br(),
                 button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),

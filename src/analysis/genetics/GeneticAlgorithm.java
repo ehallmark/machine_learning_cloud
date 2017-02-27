@@ -88,7 +88,6 @@ public class GeneticAlgorithm {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
-                        System.out.println("mutate");
                         Solution child = solution.mutate();
                         if(child==null) {
                             System.out.println("Mutation Failed");
@@ -113,7 +112,6 @@ public class GeneticAlgorithm {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
-                        System.out.println("crossover");
                         Solution child = x.crossover(y);
                         if(child==null) {
                             System.out.println("Crossover Failed");
