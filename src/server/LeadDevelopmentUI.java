@@ -188,25 +188,32 @@ public class LeadDevelopmentUI {
                 QueryParamsMap params;
 
                 // handle navigation
-                BackButtonHandler navigator;
+                BackButtonHandler<CompanySolution> navigator;
                 if (req.session().attribute("navigator") == null) {
-                    navigator = new BackButtonHandler();
+                    navigator = new BackButtonHandler<>();
                     req.session().attribute("navigator", navigator);
                 } else {
                     navigator = req.session().attribute("navigator");
                 }
 
                 if (SimilarPatentServer.extractBool(req, "goBack")) {
-                    QueryParamsMap tmp = navigator.goBack();
+                    CompanySolution tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
-                    params = tmp;
+                    else {
+                        // RETURN SOLUTION
+                        System.out.println("Going back");
+                        return null;
+                    }
                 } else if (SimilarPatentServer.extractBool(req, "goForward")) {
-                    QueryParamsMap tmp = navigator.goForward();
+                    CompanySolution tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
-                    params = tmp;
+                    else {
+                        // RETURN SOLUTION
+                        System.out.println("Going forward");
+                        return null;
+                    }
                 } else {
                     params = req.queryMap();
-                    navigator.addRequest(new QueryParamsMap(req.raw()));
                 }
 
                 System.out.println("Handled navigator");
@@ -261,6 +268,10 @@ public class LeadDevelopmentUI {
                 System.out.println("Finished");
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
+
+                // add to request map
+                navigator.addRequest(solution);
+
                 return new Gson().toJson(new SimpleAjaxMessage(div().with(
                         solution == null ? div().with(h4("No Solution Found.")) : div().with(
                                 h4("Solution"),
@@ -276,11 +287,11 @@ public class LeadDevelopmentUI {
     }
 
     static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit, long timeLimit) {
-        int numThreads = 1;//Math.max(1,Runtime.getRuntime().availableProcessors()/2);
+        int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,30,new CompanySolutionListener(),numThreads);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,250,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");
-        algorithm.simulate(timeLimit,0.5,0.3);
+        algorithm.simulate(timeLimit,0.7,0.7);
         System.out.println("Finished simulating epochs");
         if(algorithm.getBestSolution()==null)return null;
         return (CompanySolution) (algorithm.getBestSolution());
@@ -292,11 +303,13 @@ public class LeadDevelopmentUI {
                     thead().with(
                             tr().with(
                                     th("Company"),
+                                    th("Portfolio Size after 2006"),
                                     th("Score")
                             )
                     ),tbody().with(
                             solution.getCompanyScores().stream().map(entry->tr().with(
                                     td(entry.getKey()),
+                                    td(String.valueOf(Database.getAssetCountFor(entry.getKey()))),
                                     td(entry.getValue().toString())
                             )).collect(Collectors.toList())
                     )

@@ -181,9 +181,9 @@ public class CompanyPortfolioProfileUI {
                 QueryParamsMap params;
 
                 // handle navigation
-                BackButtonHandler navigator;
+                BackButtonHandler<QueryParamsMap> navigator;
                 if (req.session().attribute("navigator") == null) {
-                    navigator = new BackButtonHandler();
+                    navigator = new BackButtonHandler<>();
                     req.session().attribute("navigator", navigator);
                 } else {
                     navigator = req.session().attribute("navigator");
