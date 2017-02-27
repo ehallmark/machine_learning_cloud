@@ -438,6 +438,7 @@ public class SimilarPatentServer {
                 boolean searchEntireDatabase = extractBool(req, "search_all");
                 int assigneePortfolioLimit = extractInt(req, "portfolio_limit", -1);
                 boolean mergeSearchInput = extractBool(req, "merge_search_input");
+                boolean removeGatherPatents = extractBool(req, "remove_gather_patents");
 
                 // pre data
                 Collection<String> classCodesToSearchIn = new HashSet<>();
@@ -481,6 +482,11 @@ public class SimilarPatentServer {
 
                 labelsToExclude.addAll(badAssets);
                 labelsToExclude.addAll(badAssignees);
+
+
+                if(removeGatherPatents) {
+                    labelsToExclude.addAll(Database.getGatherPatents());
+                }
 
                 PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
@@ -807,6 +813,7 @@ public class SimilarPatentServer {
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
                                                                 label("Merge Search Input?"),br(),input().withType("checkbox").withName("merge_search_input"),br(),
+                                                                label("Remove Gather Assets?"),br(),input().withType("checkbox").withName("remove_gather_patents"),br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
                                                                 label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
                                                                 label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),

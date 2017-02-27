@@ -64,6 +64,7 @@ public class Database {
 	private static final File gatherTechMapFile = new File("gather_technology_to_patent_map.jobj");
 	private static Map<String,Collection<String>> gatherTechMap;
 	private static List<String> assigneeList;
+	private static Set<String> gatherPatentSet;
 	private static Random random = new Random(22);
 
 	public static Object tryLoadObject(File file) {
@@ -103,6 +104,10 @@ public class Database {
 				sql.printStackTrace();
 			}
 		}
+		gatherPatentSet = new HashSet<>();
+		gatherTechMap.forEach((tech,patents)->{
+			gatherPatentSet.addAll(patents);
+		});
 		patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
@@ -429,6 +434,10 @@ public class Database {
 			validPatents.add(patent);
 		}
 		return validPatents;
+	}
+
+	public static Collection<String> getGatherPatents() {
+		return new ArrayList<>(gatherPatentSet);
 	}
 
 	public static boolean isExpired(String patent) {

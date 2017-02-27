@@ -145,7 +145,8 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     }
 
     public void init(Comparator<ExcelWritable> comparator, int limit) {
-        portfolio = portfolio.stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+        if(portfolioType.equals(Type.patents))
+        portfolio = portfolio.stream().filter(p->(!portfolioType.equals(Type.patents))||(!Database.isExpired(p.getName()))).sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
         if (portfolio.size() > 0) {
             this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
         } else this.avgSimilarity = 0.0d;
