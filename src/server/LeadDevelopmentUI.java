@@ -126,7 +126,7 @@ public class LeadDevelopmentUI {
                         SimilarPatentServer.expandableDiv("Technology",false,div().with(
                                 label("Relative Importance").with(br(),
                                         input().withType("number").withValue("0").withName("importance-tech"),br()),
-                                select().withName("technologies[]").attr("multiple","multiple").with(
+                                select().withName("technology").with(
                                         TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
                                 ),br()
                         )),
@@ -239,19 +239,11 @@ public class LeadDevelopmentUI {
                     double technologyImportance = SimilarPatentServer.extractDouble(params,"importance-tech",0d);
                     System.out.println("Technology Importance: "+technologyImportance);
                     if(technologyImportance>0) {
-                        String[] technologies=null;
-                        try {
-                            technologies = params.toMap().get("technologies");
-                        } catch(Exception e2) {
-                            System.out.println("EXCEPTION!!!!");
-                        }
-                        if(technologies!=null&&technologies.length>0) {
-                            System.out.println("Num technologies: "+technologies.length);
-                            for(String tech : technologies) {
-                                System.out.println("Using technology: "+tech);
-                                Evaluator techModel = new SpecificTechnologyEvaluator(tech,TECH_TAGGER);
-                                attrsToUseList.add(new ValueAttribute(tech,technologyImportance,techModel));
-                            }
+                        String technology = params.get("technology").value();
+                        if(technology!=null&&technology.length()>0) {
+                            System.out.println("Using technology: "+technology);
+                            Evaluator techModel = new SpecificTechnologyEvaluator(technology,TECH_TAGGER);
+                            attrsToUseList.add(new ValueAttribute(technology,technologyImportance,techModel));
                         }
                     }
                 }
