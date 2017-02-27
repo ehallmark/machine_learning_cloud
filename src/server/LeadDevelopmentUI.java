@@ -123,10 +123,11 @@ public class LeadDevelopmentUI {
                                         )
                                 ),br()
                         )),
-                        SimilarPatentServer.expandableDiv("Technology",false,div().with(
+                        SimilarPatentServer.expandableDiv("Technology Search",false,div().with(
+                                h4("Technology Search"),
                                 label("Relative Importance").with(br(),
                                         input().withType("number").withValue("0").withName("importance-tech"),br()),
-                                label("Technology").with(
+                                label("Technology").with(br(),
                                     select().withName("technology").with(
                                             TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
                                     ),br()
