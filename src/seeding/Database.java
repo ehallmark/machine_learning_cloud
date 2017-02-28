@@ -231,6 +231,10 @@ public class Database {
 		return "";
 	}
 
+	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() { return assigneeToAssetsSoldCountMap; }
+
+	public static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() { return assigneeToAssetsPurchasedCountMap; }
+
 	public static int numPatentsWithCpcClassifications() {
 		return patentToClassificationMap.size();
 	}

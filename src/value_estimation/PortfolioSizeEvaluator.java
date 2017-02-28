@@ -19,7 +19,11 @@ import java.util.stream.Collectors;
 public class PortfolioSizeEvaluator extends Evaluator {
 
     public PortfolioSizeEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Portfolio Size Value");
+        this("Portfolio Size Value");
+    }
+
+    protected PortfolioSizeEvaluator(String name) {
+        super(ValueMapNormalizer.DistributionType.Normal,name);
         setModel();
     }
 

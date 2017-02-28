@@ -293,7 +293,9 @@ public class CompanyPortfolioProfileUI {
                             comparator = ExcelWritable.valueComparator();
                             comparingByValue = true;
                             portfolioList = null;
-                            AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, HighchartDataAdapter.collectAverageValueData(cleanPortfolioString, inputType, SimilarPatentServer.modelMap.entrySet().stream().map(e -> e.getValue()).collect(Collectors.toList())), 1.0, 5.0);
+                            Set<String> badValueModels = new HashSet<>();
+                            badValueModels.add("smallPortfolios");
+                            AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, HighchartDataAdapter.collectAverageValueData(cleanPortfolioString, inputType, SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList())), 1.0, 5.0);
                             // test!
                             charts.add(chart);
                             break;
