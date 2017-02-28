@@ -36,7 +36,6 @@ public class CompanyPortfolioProfileUI {
     private static final List<String> reportTypes;
     private static final Map<String,List<String>> attributesMap;
     static {
-        List<String> tmp = new ArrayList<>();
         attributesMap=new HashMap<>();
         List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
         attributesMap.put("Portfolio Valuation",valueAttrs);
@@ -48,9 +47,8 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Similar Portfolio Finder",companyAttrs);
         List<String> techAttrs = Arrays.asList("name","technology");
         attributesMap.put("Technology Distribution",techAttrs);
-        tmp.addAll(attributesMap.keySet());
         attributesMap.put("Company Details", Collections.emptyList());
-        reportTypes=tmp.stream().sorted().collect(Collectors.toList());
+        reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
