@@ -35,6 +35,8 @@ public class GeneticAlgorithm {
         return bestSolutionSoFar;
     }
 
+    public Collection<Solution> getAllSolutions() { return new HashSet<>(population); }
+
     public void simulate(long timeLimit, double probMutation, double probCrossover) {
         RecursiveAction action = new RecursiveAction() {
             @Override
@@ -61,7 +63,7 @@ public class GeneticAlgorithm {
             }
         };
 
-        ForkJoinPool pool = new ForkJoinPool(2);
+        ForkJoinPool pool = new ForkJoinPool();
         pool.execute(action);
         pool.shutdown();
         try {

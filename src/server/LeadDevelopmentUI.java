@@ -1,11 +1,14 @@
 package server;
 
 import analysis.SimilarPatentFinder;
+import analysis.WordFrequencyPair;
 import analysis.genetics.GeneticAlgorithm;
+import analysis.genetics.Solution;
 import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.NormalizedGatherTagger;
 import analysis.tech_tagger.TechTagger;
+import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import j2html.tags.EmptyTag;
@@ -18,6 +21,7 @@ import server.tools.SimpleAjaxMessage;
 import server.tools.excel.ExcelWritable;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
+import tools.MinHeap;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
 import value_estimation.SpecificTechnologyEvaluator;
@@ -302,12 +306,30 @@ public class LeadDevelopmentUI {
     static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit, long timeLimit) {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
         CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,250,new CompanySolutionListener(),numThreads);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,100,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");
         algorithm.simulate(timeLimit,0.7,0.7);
         System.out.println("Finished simulating epochs");
-        if(algorithm.getBestSolution()==null)return null;
-        return (CompanySolution) (algorithm.getBestSolution());
+        Collection<Solution> population = algorithm.getAllSolutions();
+        if(population.isEmpty())return null;
+        // merge results
+        MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
+        Set<String> alreadySeen = new HashSet<>();
+        population.forEach(solution->{
+            ((CompanySolution)solution).getCompanyScores().forEach(e->{
+                if(!alreadySeen.contains(e.getKey())) {
+                    heap.add(new WordFrequencyPair<>(e.getKey(),e.getValue()));
+                    alreadySeen.add(e.getKey());
+                }
+            });
+        });
+
+        List<Map.Entry<String,Double>> scores = new ArrayList<>(limit);
+        while(!heap.isEmpty()) {
+            WordFrequencyPair<String,Double> entry = heap.remove();
+            scores.add(0, Maps.immutableEntry(entry.getFirst(),entry.getSecond()));
+        }
+        return new CompanySolution(scores,attributes);
     }
 
     static Tag tableFromSolution(CompanySolution solution) {
