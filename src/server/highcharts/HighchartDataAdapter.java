@@ -7,6 +7,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import seeding.Database;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
@@ -50,6 +51,16 @@ public class HighchartDataAdapter {
         });
         data.add(series);
         return data;
+    }
+
+    public static List<Series<?>> collectCompanyDetailsData(String company) {
+        PointSeries series = new PointSeries();
+        series.setName(company);
+        // assets purchased
+        series.addPoint(new Point("Portfolio Size",Database.getAssetCountFor(company)));
+        series.addPoint(new Point("Assets Purchased",Database.getAssetsPurchasedCountFor(company)));
+        series.addPoint(new Point("Assets Sold",Database.getAssetsSoldCountFor(company)));
+        return Arrays.asList(series);
     }
 
     public static List<Series<?>> collectSimilarityData(String name, PortfolioList portfolioList) {

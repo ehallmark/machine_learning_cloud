@@ -38,6 +38,8 @@ public class Database {
 	private static Set<String> smallEntityPatents;
 	private static Set<String> largeEntityPatents;
 	private static Set<String> microEntityPatents;
+	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
+	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static Map<String,LocalDate> patentToPubDateMap;
 	private static File patentToPubDateMapFile = new File("patent_to_pubdate_map_file.jobj");
@@ -191,6 +193,11 @@ public class Database {
 		}
 
 		assigneeList=new ArrayList<>(allAssignees);
+
+
+		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("assignee_to_assets_sold_count_map.jobj"));
+		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("assignee_to_assets_purchased_count_map.jobj"));
+
 	}
 
 	public static boolean hasClassifications(String pat) {
@@ -234,6 +241,28 @@ public class Database {
 		possibleNamesForAssignee(assignee).forEach(name->{
 			if(assigneeToPatentsMap.containsKey(name)) {
 				count.getAndAdd(assigneeToPatentsMap.get(name).size());
+			}
+		});
+		return count.get();
+	}
+
+	public static int getAssetsSoldCountFor(String assignee) {
+		AtomicInteger count = new AtomicInteger(0);
+		// try fuzzy search thru trie
+		possibleNamesForAssignee(assignee).forEach(name->{
+			if(assigneeToAssetsSoldCountMap.containsKey(name)) {
+				count.getAndAdd(assigneeToAssetsSoldCountMap.get(name));
+			}
+		});
+		return count.get();
+	}
+
+	public static int getAssetsPurchasedCountFor(String assignee) {
+		AtomicInteger count = new AtomicInteger(0);
+		// try fuzzy search thru trie
+		possibleNamesForAssignee(assignee).forEach(name->{
+			if(assigneeToAssetsSoldCountMap.containsKey(name)) {
+				count.getAndAdd(assigneeToAssetsSoldCountMap.get(name));
 			}
 		});
 		return count.get();

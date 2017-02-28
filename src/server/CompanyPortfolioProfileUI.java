@@ -49,6 +49,7 @@ public class CompanyPortfolioProfileUI {
         List<String> techAttrs = Arrays.asList("name","technology");
         attributesMap.put("Technology Distribution",techAttrs);
         tmp.addAll(attributesMap.keySet());
+        attributesMap.put("Company Details", Collections.emptyList());
         reportTypes=tmp.stream().sorted().collect(Collectors.toList());
     }
 
@@ -249,6 +250,18 @@ public class CompanyPortfolioProfileUI {
                 while (retry) {
                     retry = false;
                     switch (reportType) {
+                        case "Company Details": {
+                            // COLUMN CHART
+                                // assets sold
+                                // assets purchased
+                                // total assets
+                            if (inputType.equals(PortfolioList.Type.patents))
+                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
+                            portfolioList = null;
+                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets");
+                            charts.add(chart);
+                            break;
+                        }
                         case "Recent Activity Timeline": {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
