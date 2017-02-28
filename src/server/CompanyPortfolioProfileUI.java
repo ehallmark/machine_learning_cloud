@@ -256,7 +256,7 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets");
+                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets", "{point.y}");
                             charts.add(chart);
                             break;
                         }

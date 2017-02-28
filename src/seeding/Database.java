@@ -261,8 +261,8 @@ public class Database {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			if(assigneeToAssetsSoldCountMap.containsKey(name)) {
-				count.getAndAdd(assigneeToAssetsSoldCountMap.get(name));
+			if(assigneeToAssetsPurchasedCountMap.containsKey(name)) {
+				count.getAndAdd(assigneeToAssetsPurchasedCountMap.get(name));
 			}
 		});
 		return count.get();

@@ -12,12 +12,18 @@ import java.util.List;
  */
 public abstract class AbstractChart {
     protected Options options;
+    public static final String defaultPointFormat = "{point.y:.1f}";
 
     public Options getOptions() {
         return options;
     }
 
     protected void setupColumnAndBarAxes(String valueSuffix) {
+        setupColumnAndBarAxes(valueSuffix,defaultPointFormat);
+    }
+
+    protected void setupColumnAndBarAxes(String valueSuffix, String pointFormat) {
+        if(pointFormat==null)pointFormat=defaultPointFormat;
         options.setxAxis(new Axis());
         options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
@@ -25,16 +31,16 @@ public abstract class AbstractChart {
         options.getSingleXAxis().setType(AxisType.CATEGORY);
         options.getSingleYAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+valueSuffix));
-        options.getSeries().forEach(series->{
+        for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat("{point.y:.1f}"+valueSuffix)
+                    .setFormat(pointFormat+valueSuffix)
                     .setY(-5)
             );
-        });
-        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {series.name}: <b>{point.y:.1f}"+valueSuffix+"</b><br/>"));
+        }
+        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {series.name}: <b>"+pointFormat+valueSuffix+"</b><br/>"));
     }
 
     protected static void stripAxis(Axis axis) {

@@ -57,7 +57,6 @@ public class HighchartDataAdapter {
         PointSeries series = new PointSeries();
         series.setName(company);
         // assets purchased
-        series.addPoint(new Point("Portfolio Size",Database.getAssetCountFor(company)));
         series.addPoint(new Point("Assets Purchased",Database.getAssetsPurchasedCountFor(company)));
         series.addPoint(new Point("Assets Sold",Database.getAssetsSoldCountFor(company)));
         return Arrays.asList(series);
