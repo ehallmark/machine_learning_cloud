@@ -8,7 +8,9 @@ import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
@@ -70,7 +72,9 @@ public class SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-
+    public static WeightLookupTable<VocabWord> getLookupTable() {
+        return paragraphVectors.getLookupTable();
+    }
 
     protected static void loadLookupTable() throws IOException {
         if(paragraphVectors!=null)return;

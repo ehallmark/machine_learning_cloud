@@ -13,6 +13,8 @@ import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import j2html.tags.EmptyTag;
 import j2html.tags.Tag;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import server.highcharts.*;
 import server.tools.AjaxChartMessage;
@@ -24,6 +26,7 @@ import tools.AssigneeTrimmer;
 import tools.MinHeap;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
+import value_estimation.SimilarityEvaluator;
 import value_estimation.SpecificTechnologyEvaluator;
 
 import javax.imageio.ImageIO;
@@ -111,7 +114,7 @@ public class LeadDevelopmentUI {
                                 br(),
                                 input().withType("number").withValue("5").withName("time_limit")
                         ),br(),br(),
-                        SimilarPatentServer.expandableDiv("Attributes",false,div().with(
+                        SimilarPatentServer.expandableDiv("Company Attributes",false,div().with(
                                 br(),br(),
                                 table().with(
                                         thead().with(
@@ -130,7 +133,7 @@ public class LeadDevelopmentUI {
                                 table().with(
                                         thead().with(
                                                 tr().with(
-                                                        th("Technology").attr("style","text-align: left;"),
+                                                        th("Portfolio Technology").attr("style","text-align: left;"),
                                                         th("Relative Importance").attr("style","text-align: left;")
                                                 )
                                         ),tbody().with(
@@ -142,6 +145,23 @@ public class LeadDevelopmentUI {
                                                         ),
                                                         td().with(
                                                                 input().withType("number").withValue("0").withName("importance-tech")
+                                                        )
+                                                )
+                                        )
+                                ),br(),br(),
+                                table().with(
+                                        thead().with(
+                                                tr().with(
+                                                        th("AI Searches").attr("style","text-align: left;"),
+                                                        th("Relative Importance").attr("style","text-align: left;")
+                                                )
+                                        ),tbody().with(
+                                                tr().with(
+                                                        td().with(
+                                                                input().withType("text").withName("custom-0")
+                                                        ),
+                                                        td().with(
+                                                                input().withType("number").withValue("0").withName("importance-custom")
                                                         )
                                                 )
                                         )
@@ -259,7 +279,7 @@ public class LeadDevelopmentUI {
                         attrsToUseList.add(newAttr);
                     }
                 });
-                {
+                {   // CPC To Tech prediction
                     double technologyImportance = SimilarPatentServer.extractDouble(params,"importance-tech",0d);
                     System.out.println("Technology Importance: "+technologyImportance);
                     if(technologyImportance>0) {
@@ -268,6 +288,30 @@ public class LeadDevelopmentUI {
                             System.out.println("Using technology: "+technology);
                             Evaluator techModel = new SpecificTechnologyEvaluator(technology,TECH_TAGGER);
                             attrsToUseList.add(new ValueAttribute(technology,technologyImportance,techModel));
+                        }
+                    }
+                }
+                {
+                    String name = "Custom Search";
+                    double customSearchImportance = SimilarPatentServer.extractDouble(params,"importance-custom",0d);
+                    if(customSearchImportance>0) {
+                        // AI Tech prediction
+                        if (SimilarPatentServer.getLookupTable() == null) {
+                            return new Gson().toJson(new SimpleAjaxMessage("No lookup table found for AI Model..."));
+                        } else {
+                            Collection<INDArray> vectors = new ArrayList<>();
+                            // pull vectors from search input
+                            for(int i = 0; i < 100; i++) {
+                                String param = params.get("custom-"+i).value();
+                                if(param==null||param.length()==0) break;
+                                INDArray vec = SimilarPatentServer.getLookupTable().vector(param);
+                                if(vec!=null) vectors.add(vec);
+                            }
+                            if (vectors.isEmpty()) {
+                                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search input for AI Model..."));
+                            }
+                            SimilarityEvaluator evaluator = new SimilarityEvaluator(name, SimilarPatentServer.getLookupTable(), Nd4j.vstack(vectors).mean(0));
+                            attrsToUseList.add(new ValueAttribute(name, customSearchImportance, evaluator));
                         }
                     }
                 }
