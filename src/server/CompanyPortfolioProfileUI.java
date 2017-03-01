@@ -374,7 +374,7 @@ public class CompanyPortfolioProfileUI {
                     }
 
                     System.out.println("Starting to run similar patent model...");
-                    portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.0, labelsToExclude, new HashSet<>(), portfolioType);
+                    portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.5, labelsToExclude, new HashSet<>(), portfolioType);
                     System.out.println("Finished similar patent model.");
                 }
 
