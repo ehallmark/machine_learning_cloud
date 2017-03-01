@@ -161,7 +161,23 @@ public class LeadDevelopmentUI {
                                                                 input().withType("text").withName("custom-0")
                                                         ),
                                                         td().with(
-                                                                input().withType("number").withValue("0").withName("importance-custom")
+                                                                input().withType("number").withValue("0").withName("importance-custom-0")
+                                                        )
+                                                ),
+                                                tr().with(
+                                                        td().with(
+                                                                input().withType("text").withName("custom-1")
+                                                        ),
+                                                        td().with(
+                                                                input().withType("number").withValue("0").withName("importance-custom-1")
+                                                        )
+                                                ),
+                                                tr().with(
+                                                        td().with(
+                                                                input().withType("text").withName("custom-2")
+                                                        ),
+                                                        td().with(
+                                                                input().withType("number").withValue("0").withName("importance-custom-2")
                                                         )
                                                 )
                                         )
@@ -293,25 +309,43 @@ public class LeadDevelopmentUI {
                 }
                 {
                     String name = "Custom Search";
-                    double customSearchImportance = SimilarPatentServer.extractDouble(params,"importance-custom",0d);
-                    if(customSearchImportance>0) {
+                    Collection<INDArray> vectors = new ArrayList<>();
+                    boolean shouldUseAIModel = false;
+                    boolean noAIInputFound = true;
+                    // pull vectors from search input
+                    for(int i = 0; i < 10; i++) {
+                        double importance = SimilarPatentServer.extractDouble(params,"importance-custom-"+i,0d);
+                        if(importance>0) {
+                            shouldUseAIModel=true;
+                            if (SimilarPatentServer.getLookupTable() == null) {
+                                return new Gson().toJson(new SimpleAjaxMessage("No lookup table found for AI Model..."));
+                            }
+                            String param = params.get("custom-" + i).value();
+                            if (param == null || param.length() == 0) continue;
+
+                            String assigneeStr = AssigneeTrimmer.standardizedAssignee(param);
+                            String patentStr = param.replaceAll("[^0-9]", "");
+                            final String cleanParam;
+                            if (Database.isAssignee(assigneeStr)) {
+                                cleanParam = assigneeStr;
+                            } else if (Database.isPatent(patentStr)) {
+                                cleanParam = patentStr;
+                            } else {
+                                return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + param));
+                            }
+                            INDArray vec = SimilarPatentServer.getLookupTable().vector(cleanParam);
+                            if (vec != null) {
+                                SimilarityEvaluator evaluator = new SimilarityEvaluator(name, SimilarPatentServer.getLookupTable(), vec);
+                                attrsToUseList.add(new ValueAttribute(name+" - "+param, importance, evaluator));
+                                noAIInputFound=false;
+                            }
+                        }
+                    }
+
+                    if(shouldUseAIModel&&noAIInputFound) {
                         // AI Tech prediction
-                        if (SimilarPatentServer.getLookupTable() == null) {
-                            return new Gson().toJson(new SimpleAjaxMessage("No lookup table found for AI Model..."));
-                        } else {
-                            Collection<INDArray> vectors = new ArrayList<>();
-                            // pull vectors from search input
-                            for(int i = 0; i < 100; i++) {
-                                String param = params.get("custom-"+i).value();
-                                if(param==null||param.length()==0) break;
-                                INDArray vec = SimilarPatentServer.getLookupTable().vector(param);
-                                if(vec!=null) vectors.add(vec);
-                            }
-                            if (vectors.isEmpty()) {
-                                return new Gson().toJson(new SimpleAjaxMessage("Unable to find search input for AI Model..."));
-                            }
-                            SimilarityEvaluator evaluator = new SimilarityEvaluator(name, SimilarPatentServer.getLookupTable(), Nd4j.vstack(vectors).mean(0));
-                            attrsToUseList.add(new ValueAttribute(name, customSearchImportance, evaluator));
+                        if (vectors.isEmpty()) {
+                            return new Gson().toJson(new SimpleAjaxMessage("Unable to find search input for AI Model..."));
                         }
                     }
                 }

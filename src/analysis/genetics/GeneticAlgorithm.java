@@ -44,7 +44,7 @@ public class GeneticAlgorithm {
                 SimpleTimer timer = new SimpleTimer();
                 double globalTimer = 0d;
                 AtomicInteger epochCounter = new AtomicInteger(0);
-                while(true) {
+                while(globalTimer<=timeLimit) {
                     timer.start();
                     simulateEpoch(probMutation,probCrossover);
                     timer.finish();
@@ -70,6 +70,11 @@ public class GeneticAlgorithm {
             pool.awaitTermination(timeLimit, TimeUnit.MILLISECONDS);
         } catch(Exception e) {
             System.out.println( "TIME LIMIT REACHED!");
+            try {
+                action.cancel(true);
+            } catch(Exception e2) {
+                e2.printStackTrace();
+            }
         }
     }
 
