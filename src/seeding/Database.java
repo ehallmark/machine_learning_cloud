@@ -100,7 +100,7 @@ public class Database {
 			gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
 		} else {
 			try {
-				gatherTechMap = getGatherTechMap();
+				gatherTechMap = loadGatherTechMap();
 				Database.trySaveObject(gatherTechMap,gatherTechMapFile);
 			} catch(SQLException sql) {
 				sql.printStackTrace();
@@ -527,8 +527,7 @@ public class Database {
 		return map;
 	}
 
-	public static Map<String,Collection<String>> getGatherTechMap() throws SQLException {
-		if(gatherTechMap!=null) return gatherTechMap;
+	private static Map<String,Collection<String>> loadGatherTechMap() throws SQLException {
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
 		Map<String, Collection<String>> techToPatentMap = new HashMap<>();
@@ -544,6 +543,10 @@ public class Database {
 		ps.close();
 		Database.close();
 		return techToPatentMap;
+	}
+
+	public static Map<String,Collection<String>> getGatherTechMap() {
+		return new HashMap<>(gatherTechMap);
 	}
 
 	public static org.deeplearning4j.berkeley.Pair<Map<String,List<String>>,Map<String,List<String>>> getGatherTechTestAndTrain() throws SQLException {
