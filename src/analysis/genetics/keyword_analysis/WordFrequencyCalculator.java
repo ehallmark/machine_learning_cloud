@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class WordFrequencyCalculator {
-    static final File wordFrequencyMapFile = new File("globalFrequencyMap.jobj");
-    static final File technologyToWordFrequencyMapFile = new File("technologyToFrequencyMap.jobj");
+    static final File wordFrequencyMapFile = new File("global_word_frequency_map.jobj");
+    static final File technologyToWordFrequencyMapFile = new File("technology_to_word_frequency_map.jobj");
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {
         // Get Data

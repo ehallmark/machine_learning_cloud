@@ -17,13 +17,10 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/18/2017.
  */
 public class BuildCPCToGatherStatistics {
-    static final File techListFile = new File("gather_tech_list.jobj");
+    static final File techListFile = new File("ordered_gather_tech_list.jobj");
     static final File techMapFile = new File("gather_tech_map.jobj");
     static final int MIN_CLASS_CODE_LENGTH = 4;
     private static final double DECAY_RATE = 1.4d;
-
-
-
 
 
     // compute probability of T given C
