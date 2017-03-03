@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 public class BuildCPCToGatherStatistics {
     static final File techListFile = new File("ordered_gather_tech_list.jobj");
     static final File techMapFile = new File("gather_tech_map.jobj");
-    static final int MIN_CLASS_CODE_LENGTH = 4;
-    private static final double DECAY_RATE = 1.4d;
+    static final int MIN_CLASS_CODE_LENGTH = 2;
+    private static final double DECAY_RATE = 1.75;
 
 
     // compute probability of T given C
@@ -48,7 +48,7 @@ public class BuildCPCToGatherStatistics {
         });
     }
 
-    private static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate, int n) {
+    private static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate) {
         final int MIN_CLASS_SIZE = BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH;
         final int numTechnologies = technologies.size();
         Collection<String> classCodes = Database.classificationsFor(patent);
@@ -121,7 +121,7 @@ public class BuildCPCToGatherStatistics {
         Collection<String> patents = Database.getCopyOfAllPatents();
         Map<String,INDArray> map = new HashMap<>();
         patents.forEach(patent->{
-           INDArray probVec = predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE,1);
+           INDArray probVec = predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE);
            if(probVec!=null) {
                map.put(patent,probVec);
            }
@@ -138,7 +138,7 @@ public class BuildCPCToGatherStatistics {
            if(patentList.isEmpty()) return;
            INDArray avg = Nd4j.create(patentList.size(),orderedTechnologies.size());
            for(int i = 0; i < patentList.size(); i++) {
-               avg.putRow(i,map.get(patentList.get(i)));
+               avg.putRow(i,map.get(patentList.get(i)).dup());
            }
            assigneeMap.put(assignee,avg.mean(0));
            System.out.println("Added probabilities for assignee: "+assignee);
