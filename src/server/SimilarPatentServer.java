@@ -145,6 +145,9 @@ public class SimilarPatentServer {
                         a("Lead Development").withHref("/lead_development")
                 ),
                 h3().with(
+                        a("Tech Tagger").withHref("/tech_tagger")
+                ),
+                h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
                 )
         );
@@ -1014,6 +1017,9 @@ public class SimilarPatentServer {
         LeadDevelopmentUI.setupServer();
         System.out.println("Starting Company Profile UI Server...");
         CompanyPortfolioProfileUI.setupServer();
+        System.out.println("Finished starting server.");
+        System.out.println("Starting Tech Tagger UI Server...");
+        TechTaggerUI.setupServer();
         System.out.println("Finished starting server.");
     }
 }
