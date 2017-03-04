@@ -374,7 +374,11 @@ public class CompanyPortfolioProfileUI {
                     }
 
                     System.out.println("Starting to run similar patent model...");
-                    portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, 0.5, labelsToExclude, new HashSet<>(), portfolioType);
+                    double threshold = 0.5;
+                    while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
+                        portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
+                        threshold-=0.2;
+                    }
                     System.out.println("Finished similar patent model.");
                 }
 
