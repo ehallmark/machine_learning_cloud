@@ -40,11 +40,9 @@ public class TechTaggerUI {
     private static final String MAIN_INPUT_ID = "main-input-id";
     private static final TechTagger CPC_TAGGER;
     private static final TechTagger SIMILARITY_TAGGER;
-    private static final TechTagger TAGGER;
     static {
         CPC_TAGGER=new GatherTagger();
         SIMILARITY_TAGGER=new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
-        TAGGER = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER),Arrays.asList(0.7,1.0));
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -98,6 +96,14 @@ public class TechTaggerUI {
                         label("To Search For").with(
                                 br(),
                                 input().withType("text").withName("search_input")
+                        ),br(),
+                        label("CPC Model percentage").with(
+                                br(),
+                                input().withType("number").attr("step","0.01").withName("cpc_percent").withValue("1.0")
+                        ),br(),
+                        label("AI Model Percentage").with(
+                                br(),
+                                input().withType("number").attr("step","0.01").withName("ai_percent").withValue("1.0")
                         ),br(),
                         label("Tag Limit").with(
                                 br(),
@@ -182,6 +188,10 @@ public class TechTaggerUI {
 
                 System.out.println("Handled navigator");
                 int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
+                double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",1.0));
+                double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",1.0));
+                if(ai_percent<0)ai_percent=0;
+                if(cpc_percent<0)cpc_percent=0;
                 String search_input = params.get("search_input").value();
                 if(search_input==null||search_input.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
 
@@ -200,7 +210,8 @@ public class TechTaggerUI {
                 }
 
                 System.out.println("Starting similarity tagger");
-                List<Pair<String,Double>> results = TAGGER.getTechnologiesFor(cleanSearchInput, inputType, tag_limit);
+                TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER),Arrays.asList(cpc_percent,ai_percent));
+                List<Pair<String,Double>> results = tagger.getTechnologiesFor(cleanSearchInput, inputType, tag_limit);
 
                 TechnologySolution solution = new TechnologySolution(results);
 
