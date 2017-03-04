@@ -35,10 +35,9 @@ public class TechTaggerNormalizer implements TechTagger {
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Double> technologyScores = new HashMap<>();
-        Map<String,AtomicInteger> technologyCounter = new HashMap<>();
         taggers.forEach(tagger->{
             int i = cnt.getAndIncrement();
-            List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,Math.min(n*10,sizes[i]));
+            List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,sizes[i]);
             if(data!=null&&data.size()>=10) {
                 // normalize data
                 double mean = data.stream().map(pair->pair.getSecond()).collect(Collectors.averagingDouble(d->d));
@@ -46,27 +45,24 @@ public class TechTaggerNormalizer implements TechTagger {
                 if(stddev>0) {
                     data.forEach(pair -> {
                         double val = ((pair.getSecond() - mean) / stddev) * weights.get(i);
-                        if (technologyScores.containsKey(pair.getFirst())) {
-                            technologyScores.put(pair.getFirst(), technologyScores.get(pair.getFirst()) + val);
-                            technologyCounter.get(pair.getFirst()).getAndIncrement();
-                        } else {
-                            technologyScores.put(pair.getFirst(), val);
-                            technologyCounter.put(pair.getFirst(), new AtomicInteger(1));
+                        if(val>0) {
+                            if (technologyScores.containsKey(pair.getFirst())) {
+                                technologyScores.put(pair.getFirst(), Math.max(technologyScores.get(pair.getFirst()), val));
+                            } else {
+                                technologyScores.put(pair.getFirst(), val);
+                            }
                         }
                     });
                 }
-            }
-        });
-        technologyCounter.forEach((tech,counter)->{
-            if(counter.get()>1) {
-                technologyScores.put(tech,technologyScores.get(tech)/counter.get());
             }
         });
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
         technologyScores.entrySet().forEach(e->{
             String name = e.getKey();
             double val = e.getValue();
-            heap.add(new WordFrequencyPair<>(name, val));
+            if(val>0) {
+                heap.add(new WordFrequencyPair<>(name, val));
+            }
         });
         List<Pair<String,Double>> data = new ArrayList<>(n);
         while(!heap.isEmpty()) {
