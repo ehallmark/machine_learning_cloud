@@ -100,10 +100,11 @@ public class TechTaggerUI {
                         label("Tag Limit").with(
                                 br(),
                                 input().withType("number").withValue("5").withName("tag_limit")
-                        ),br(),br()
+                        ),br(),br(),
+                        button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
+
                 ),
                 br(),
-                button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr(),
                 navigationTag(),br(),br(),br()
         );
     }
