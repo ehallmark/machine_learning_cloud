@@ -2,6 +2,7 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
@@ -24,8 +25,9 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
-    private static TechTagger tagger = new GatherTagger();
-    public static void StartServer() {
+    private static TechTagger tagger = SimilarityTechTagger.getGatherTagger();
+    public static void StartServer() throws Exception{
+
         port(6969);
         before((request, response) -> {
             boolean authenticated = true;

@@ -1,6 +1,7 @@
 package server.highcharts;
 
 import analysis.tech_tagger.GatherTagger;
+import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import com.amazonaws.services.devicefarm.model.Run;
 import com.google.common.util.concurrent.AtomicDouble;
@@ -9,6 +10,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import seeding.Database;
+import server.SimilarPatentServer;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
 
@@ -20,8 +22,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 2/14/17.
  */
 public class HighchartDataAdapter {
-    private static final TechTagger tagger = new GatherTagger();
+    private static final TechTagger tagger;
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
+    static {
+        try {
+            SimilarPatentServer.loadLookupTable();
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        tagger = SimilarityTechTagger.getGatherTagger();
+    }
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
         List<Series<?>> data = new ArrayList<>();

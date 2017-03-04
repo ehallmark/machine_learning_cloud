@@ -8,6 +8,8 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import seeding.Database;
+import server.SimilarPatentServer;
 import tools.MinHeap;
 import tools.PortfolioList;
 
@@ -24,7 +26,21 @@ public class SimilarityTechTagger implements TechTagger {
     List<INDArray> vectors;
     List<String> names;
     WeightLookupTable<VocabWord> lookupTable;
-    public SimilarityTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
+    private static final SimilarityTechTagger gatherTagger;
+    static {
+        try {
+            SimilarPatentServer.loadLookupTable();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        gatherTagger = new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
+    }
+
+    public static SimilarityTechTagger getGatherTagger() {
+        return gatherTagger;
+    }
+
+    private SimilarityTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
             this.vectors = new ArrayList<>(nameToInputMap.size());
             this.names = new ArrayList<>(nameToInputMap.size());
             this.lookupTable = lookupTable;

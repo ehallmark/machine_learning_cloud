@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 public class BuildCPCToGatherStatistics {
     static final File techListFile = new File("ordered_gather_tech_list.jobj");
     static final File techMapFile = new File("gather_tech_map.jobj");
-    static final int MIN_CLASS_CODE_LENGTH = 2;
-    private static final double DECAY_RATE = 1.75;
+    static final int MIN_CLASS_CODE_LENGTH = 3;
+    private static final double DECAY_RATE = 2d;
 
 
     // compute probability of T given C

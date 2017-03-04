@@ -7,6 +7,7 @@ import analysis.genetics.Solution;
 import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.NormalizedGatherTagger;
+import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -52,7 +53,12 @@ public class LeadDevelopmentUI {
     private static final TechTagger TECH_TAGGER;
 
     static {
-        TECH_TAGGER=new NormalizedGatherTagger();
+        try {
+            SimilarPatentServer.loadLookupTable();
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
+        TECH_TAGGER=SimilarityTechTagger.getGatherTagger();
         TECHNOLOGIES=new ArrayList<>();
         TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }

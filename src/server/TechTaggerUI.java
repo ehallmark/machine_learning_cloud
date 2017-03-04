@@ -42,7 +42,7 @@ public class TechTaggerUI {
     private static final TechTagger SIMILARITY_TAGGER;
     static {
         CPC_TAGGER=new GatherTagger();
-        SIMILARITY_TAGGER=new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
+        SIMILARITY_TAGGER=SimilarityTechTagger.getGatherTagger();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
