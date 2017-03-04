@@ -7,6 +7,7 @@ import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
+import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
@@ -39,10 +40,11 @@ public class TechTaggerUI {
     private static final String MAIN_INPUT_ID = "main-input-id";
     private static final TechTagger CPC_TAGGER;
     private static final TechTagger SIMILARITY_TAGGER;
-
+    private static final TechTagger TAGGER;
     static {
         CPC_TAGGER=new GatherTagger();
         SIMILARITY_TAGGER=new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
+        TAGGER = new TechTaggerNormalizer(CPC_TAGGER,SIMILARITY_TAGGER);
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -182,7 +184,6 @@ public class TechTaggerUI {
                 int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
                 String search_input = params.get("search_input").value();
                 if(search_input==null||search_input.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
-                boolean useSimilarityTagger = true;
 
                 PortfolioList.Type inputType;
                 String assigneeStr = AssigneeTrimmer.standardizedAssignee(search_input);
@@ -198,15 +199,8 @@ public class TechTaggerUI {
                     return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + search_input));
                 }
 
-                List<Pair<String,Double>> results;
-                if(useSimilarityTagger) {
-                    System.out.println("Starting similarity tagger");
-                    results = SIMILARITY_TAGGER.getTechnologiesFor(cleanSearchInput, null, tag_limit);
-                } else {
-                    System.out.println("Starting CPC tagger");
-                    results = CPC_TAGGER.getTechnologiesFor(cleanSearchInput, inputType, tag_limit);
-                }
-
+                System.out.println("Starting similarity tagger");
+                List<Pair<String,Double>> results = TAGGER.getTechnologiesFor(cleanSearchInput, inputType, tag_limit);
 
                 TechnologySolution solution = new TechnologySolution(results);
 
