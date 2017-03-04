@@ -15,14 +15,16 @@ import java.util.stream.Collectors;
  * Created by Evan on 3/4/2017.
  */
 public class TechTaggerNormalizer implements TechTagger {
-    TechTagger[] taggers;
+    List<TechTagger> taggers;
+    List<Double> weights;
     int[] sizes;
-    public TechTaggerNormalizer(TechTagger... taggers) {
+    public TechTaggerNormalizer(List<TechTagger> taggers, List<Double> weights) {
         this.taggers=taggers;
-        sizes=new int[taggers.length];
-        for(int i = 0; i < taggers.length; i++) {
-            sizes[i]=taggers[i].getAllTechnologies().size();
+        sizes=new int[taggers.size()];
+        for(int i = 0; i < taggers.size(); i++) {
+            sizes[i]=taggers.get(i).getAllTechnologies().size();
         }
+        this.weights=weights;
     }
     @Override
     public double getTechnologyValueFor(String item, String technology) {
@@ -33,7 +35,8 @@ public class TechTaggerNormalizer implements TechTagger {
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Double> technologyScores = new HashMap<>();
-        Arrays.stream(taggers).forEach(tagger->{
+        Map<String,AtomicInteger> technologyCounter = new HashMap<>();
+        taggers.forEach(tagger->{
             int i = cnt.getAndIncrement();
             List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,Math.min(n*10,sizes[i]));
             if(data!=null&&data.size()>=10) {
@@ -42,14 +45,21 @@ public class TechTaggerNormalizer implements TechTagger {
                 double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->Math.pow(d-mean,2.0)))/(data.size()-1));
                 if(stddev>0) {
                     data.forEach(pair -> {
-                        double val = (pair.getSecond() - mean) / stddev;
+                        double val = ((pair.getSecond() - mean) / stddev) * weights.get(i);
                         if (technologyScores.containsKey(pair.getFirst())) {
                             technologyScores.put(pair.getFirst(), technologyScores.get(pair.getFirst()) + val);
+                            technologyCounter.get(pair.getFirst()).getAndIncrement();
                         } else {
                             technologyScores.put(pair.getFirst(), val);
+                            technologyCounter.put(pair.getFirst(), new AtomicInteger(1));
                         }
                     });
                 }
+            }
+        });
+        technologyCounter.forEach((tech,counter)->{
+            if(counter.get()>1) {
+                technologyScores.put(tech,technologyScores.get(tech)/counter.get());
             }
         });
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
