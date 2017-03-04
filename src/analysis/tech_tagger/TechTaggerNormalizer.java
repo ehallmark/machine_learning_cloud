@@ -35,11 +35,11 @@ public class TechTaggerNormalizer implements TechTagger {
         Map<String,Double> technologyScores = new HashMap<>();
         Arrays.stream(taggers).forEach(tagger->{
             int i = cnt.getAndIncrement();
-            List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,sizes[i]);
+            List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,Math.min(n*10,sizes[i]));
             if(data!=null&&data.size()>3) {
                 // normalize data
                 double mean = data.stream().map(pair->pair.getSecond()).collect(Collectors.averagingDouble(d->d));
-                double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->d*d)))/data.size();
+                double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->Math.pow(d-mean,2.0)))/(data.size()-1));
 
                 data.forEach(pair->{
                     double val = (pair.getSecond()-mean)/stddev;
