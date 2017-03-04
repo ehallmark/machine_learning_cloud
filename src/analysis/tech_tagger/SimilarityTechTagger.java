@@ -60,10 +60,10 @@ public class SimilarityTechTagger implements TechTagger {
             INDArray vec = vectors.get(idx);
             INDArray vec2 = lookupTable.vector(item);
             if(vec2!=null) {
-                return Transforms.cosineSim(vec,vec2);
+                return 3.0+(2.0*Transforms.cosineSim(vec,vec2));
             }
         }
-        return -1d;
+        return 1d;
     }
 
     private List<Pair<String,Double>> technologiesFor(INDArray vec, int n) {
