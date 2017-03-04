@@ -3,6 +3,7 @@ package server.highcharts;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
+import analysis.tech_tagger.TechTaggerNormalizer;
 import com.amazonaws.services.devicefarm.model.Run;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
@@ -30,7 +31,7 @@ public class HighchartDataAdapter {
         }catch(Exception e) {
             e.printStackTrace();
         }
-        tagger = SimilarityTechTagger.getGatherTagger();
+        tagger = TechTaggerNormalizer.getDefaultTechTagger();
     }
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {

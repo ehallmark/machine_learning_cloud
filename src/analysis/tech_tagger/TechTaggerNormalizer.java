@@ -14,21 +14,26 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class TechTaggerNormalizer implements TechTagger {
-    List<TechTagger> taggers;
-    List<Double> weights;
-    int[] sizes;
+public class TechTaggerNormalizer extends TechTagger {
+    private List<TechTagger> taggers;
+    private int[] sizes;
+    private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new GatherTagger(),SimilarityTechTagger.getGatherTagger()),Arrays.asList(0.25,1.0));
+
     public TechTaggerNormalizer(List<TechTagger> taggers, List<Double> weights) {
         this.taggers=taggers;
         sizes=new int[taggers.size()];
         for(int i = 0; i < taggers.size(); i++) {
+            taggers.get(i).setWeight(weights.get(i));
             sizes[i]=taggers.get(i).getAllTechnologies().size();
         }
-        this.weights=weights;
+    }
+
+    public static TechTagger getDefaultTechTagger() {
+        return tagger;
     }
     @Override
     public double getTechnologyValueFor(String item, String technology) {
-        throw new RuntimeException("Not implementend yet (getTechnologyValueFor)");
+        return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(item,technology)*tagger.getWeight()));
     }
 
     @Override
@@ -44,7 +49,7 @@ public class TechTaggerNormalizer implements TechTagger {
                 double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->Math.pow(d-mean,2.0)))/(data.size()-1));
                 if(stddev>0) {
                     data.forEach(pair -> {
-                        double val = ((pair.getSecond() - mean) / stddev) * weights.get(i);
+                        double val = ((pair.getSecond() - mean) / stddev) * tagger.getWeight();
                         if(val>0) {
                             if (technologyScores.containsKey(pair.getFirst())) {
                                 technologyScores.put(pair.getFirst(), Math.max(technologyScores.get(pair.getFirst()), val));

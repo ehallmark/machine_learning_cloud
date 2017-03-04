@@ -4,6 +4,7 @@ import analysis.SimilarPatentFinder;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
+import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
@@ -62,7 +63,7 @@ public class SimilarPatentServer {
     private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
     private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
 
-    private static final TechTagger tagger = SimilarityTechTagger.getGatherTagger();
+    private static final TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();

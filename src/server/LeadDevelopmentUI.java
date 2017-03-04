@@ -5,10 +5,7 @@ import analysis.WordFrequencyPair;
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
 import analysis.genetics.lead_development.*;
-import analysis.tech_tagger.GatherTagger;
-import analysis.tech_tagger.NormalizedGatherTagger;
-import analysis.tech_tagger.SimilarityTechTagger;
-import analysis.tech_tagger.TechTagger;
+import analysis.tech_tagger.*;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
@@ -58,7 +55,7 @@ public class LeadDevelopmentUI {
         }catch(Exception e) {
             e.printStackTrace();
         }
-        TECH_TAGGER=SimilarityTechTagger.getGatherTagger();
+        TECH_TAGGER=TechTaggerNormalizer.getDefaultTechTagger();
         TECHNOLOGIES=new ArrayList<>();
         TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }
