@@ -36,19 +36,20 @@ public class TechTaggerNormalizer implements TechTagger {
         Arrays.stream(taggers).forEach(tagger->{
             int i = cnt.getAndIncrement();
             List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,Math.min(n*10,sizes[i]));
-            if(data!=null&&data.size()>3) {
+            if(data!=null&&data.size()>=10) {
                 // normalize data
                 double mean = data.stream().map(pair->pair.getSecond()).collect(Collectors.averagingDouble(d->d));
                 double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->Math.pow(d-mean,2.0)))/(data.size()-1));
-
-                data.forEach(pair->{
-                    double val = (pair.getSecond()-mean)/stddev;
-                    if(technologyScores.containsKey(pair.getFirst())) {
-                        technologyScores.put(pair.getFirst(),technologyScores.get(pair.getFirst())+val);
-                    } else {
-                        technologyScores.put(pair.getFirst(),val);
-                    }
-                });
+                if(stddev>0) {
+                    data.forEach(pair -> {
+                        double val = (pair.getSecond() - mean) / stddev;
+                        if (technologyScores.containsKey(pair.getFirst())) {
+                            technologyScores.put(pair.getFirst(), technologyScores.get(pair.getFirst()) + val);
+                        } else {
+                            technologyScores.put(pair.getFirst(), val);
+                        }
+                    });
+                }
             }
         });
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
