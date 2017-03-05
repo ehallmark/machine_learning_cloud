@@ -2,6 +2,7 @@ package analysis.genetics.keyword_analysis;
 
 import analysis.genetics.Solution;
 import analysis.genetics.SolutionCreator;
+import org.deeplearning4j.berkeley.Pair;
 
 import java.util.*;
 import java.util.concurrent.ForkJoinPool;
@@ -15,17 +16,17 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class KeywordSolutionCreator implements SolutionCreator {
-    private Map<String,List<Word>> techToWordMap;
+    private Map<String,List<Pair<String,Double>>> techToWordMap;
     private final int numThreads;
     private static final Random random = new Random(69);
-    public KeywordSolutionCreator(Map<String,List<Word>> allWordMap, int numThreads) {
+    public KeywordSolutionCreator(Map<String,List<Pair<String,Double>>> allWordMap, int numThreads) {
         this.techToWordMap=allWordMap;
         this.numThreads=numThreads;
     }
     @Override
     public Collection<Solution> nextRandomSolutions(int num) {
         final int wordsPerTech = KeywordSolution.WORDS_PER_TECH;
-        List<Map<String,List<Word>>> randomTechToWordMapList = Collections.synchronizedList(new ArrayList<>(num));
+        List<Map<String,List<Pair<String,Double>>>> randomTechToWordMapList = Collections.synchronizedList(new ArrayList<>(num));
         for(int i = 0; i < num; i++) {
             randomTechToWordMapList.add(Collections.synchronizedMap(new HashMap<>(techToWordMap.size())));
         }
@@ -37,20 +38,19 @@ public class KeywordSolutionCreator implements SolutionCreator {
                 protected void compute() {
                     System.out.println("Creating random "+tech+" solution ["+cnt.getAndIncrement()+"/"+techToWordMap.size()+"]");
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
-                        Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
-                        SortedSet<Word> newSet = new TreeSet<>();
+                        Map<String,List<Pair<String,Double>>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
+                        Set<String> alreadyContained = new HashSet<>();
+                        List<Pair<String,Double> newSet = new ArrayList<>();
                         while(newSet.size()<wordsPerTech) {
                             int randIdx = random.nextInt(words.size());
-                            Word randomWord = words.get(randIdx);
-                            newSet.add(randomWord);
+                            Pair<String,Double> randomWord = words.get(randIdx);
+                            if(!alreadyContained.contains(randomWord.getFirst())) {
+                                newSet.add(randomWord);
+                                alreadyContained.add(randomWord.getFirst());
+                            }
                         }
-                        List<Word> newList = new ArrayList<>(newSet);
-                        if(newList.size()==newSet.size()) {
-                            randomTechToWordMap.put(tech, newList);
-                        } else {
-                            System.out.println("Wordset is not the same size as the new set");
-                            throw new RuntimeException("Invalid solution in solution creator");
-                        }
+                        Collections.sort(newSet,(w1,w2)->w2.getSecond().compareTo(w1.getSecond()));
+                        randomTechToWordMap.put(tech, newSet);
                     }
                     System.out.println("Finished "+tech+" solution ["+cnt.get()+"/"+techToWordMap.size()+"]");
                 }
