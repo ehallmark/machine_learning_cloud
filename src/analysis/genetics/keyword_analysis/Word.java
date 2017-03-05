@@ -24,7 +24,11 @@ public class Word implements Comparable<Word> {
 
     @Override
     public boolean equals(Object other) {
-        return word.equals(other);
+        if(other instanceof String) {
+            return word.equals((String)other);
+        } else {
+            return word.hashCode()==((Word)other).word.hashCode();
+        }
     }
 
     @Override
