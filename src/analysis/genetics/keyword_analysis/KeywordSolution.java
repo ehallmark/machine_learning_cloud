@@ -72,7 +72,9 @@ public class KeywordSolution implements Solution {
     public void calculateFitness() {
         AtomicDouble score = new AtomicDouble(0d);
         technologyToWordsMap.forEach((tech,words)->{
-            if(words.size()!=wordsPerTechnology) throw new RuntimeException("Incorrect number of words found in a solution for tech: "+tech);
+            if(words.size()!=wordsPerTechnology) {
+                System.out.println("WARNING: TECHNOLOGY HAS INCORRECT WORD SIZE!!!!!!");
+            }
             AtomicDouble techScore = new AtomicDouble(0d);
             words.forEach(word -> {
                 techScore.addAndGet(word.getScore());
@@ -101,7 +103,7 @@ public class KeywordSolution implements Solution {
                 }
             }
             List<Word> sortedWordList = newWords.stream().sequential().collect(Collectors.toList());
-            while(newWords.size()>wordsPerTechnology+1) {
+            while(newWords.size()>wordsPerTechnology) {
                 // remove a word towards the end
                 int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
                 wordSet.remove(sortedWordList.remove(idxToRemove).getWord());
