@@ -72,13 +72,12 @@ public class KeywordSolution implements Solution {
     public void calculateFitness() {
         AtomicDouble score = new AtomicDouble(0d);
         technologyToWordsMap.forEach((tech,words)->{
-            if(!words.isEmpty()) {
-                AtomicDouble techScore = new AtomicDouble(0d);
-                words.forEach(word -> {
-                    techScore.addAndGet(word.getScore());
-                });
-                score.addAndGet(techScore.get() / words.size());
-            }
+            if(words.size()!=wordsPerTechnology) throw new RuntimeException("Incorrect number of words found in a solution for tech: "+tech);
+            AtomicDouble techScore = new AtomicDouble(0d);
+            words.forEach(word -> {
+                techScore.addAndGet(word.getScore());
+            });
+            score.addAndGet(techScore.get() / words.size());
         });
         fitness=score.get()/TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size();
         randFitness = fitness+fitness*random.nextDouble()/100;
