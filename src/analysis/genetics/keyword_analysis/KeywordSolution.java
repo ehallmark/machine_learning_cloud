@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class KeywordSolution implements Solution {
-    public static final int MIN_WORDS_PER_TECH = 250;
+    public static final int WORDS_PER_TECH = 75;
 
     private static Random random = new Random(69);
     /*     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
@@ -25,7 +25,7 @@ public class KeywordSolution implements Solution {
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(WordFrequencyCalculator.technologyToWordFrequencyMapFile);
         ALL_WORD_MAP=new HashMap<>(TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size());
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP.forEach((tech,map)->{
-            if(map.size()<MIN_WORDS_PER_TECH*2)return;
+            if(map.size()<WORDS_PER_TECH*10)return;
             Map<String,Double> scores = new HashMap<>();
             map.keySet().forEach(word->{
                 scores.put(word,tfidfScore(word,map));
@@ -43,12 +43,12 @@ public class KeywordSolution implements Solution {
     private Map<String,List<Word>> technologyToWordsMap;
     private Map<String,Set<String>> techWordSets;
     private double fitness;
-    private final int minWordsPerTechnology;
+    private final int wordsPerTechnology;
     private double randFitness;
 
-    public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, Map<String,Set<String>> techWordSets, int minWordsPerTechnology) {
+    public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, Map<String,Set<String>> techWordSets, int wordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
-        this.minWordsPerTechnology=minWordsPerTechnology;
+        this.wordsPerTechnology=wordsPerTechnology;
         this.techWordSets = techWordSets;
     }
 
@@ -90,19 +90,10 @@ public class KeywordSolution implements Solution {
         Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
             if(random.nextBoolean()) return;
-            List<Word> newWords = new ArrayList<>(words);
+            SortedSet<Word> newWords = new TreeSet<>(words);
             int rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
-            Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
-            for(int i = 0; i < rand; i++) {
-                // remove a word towards the end
-                if(newWords.isEmpty()) break;
-                int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
-                wordSet.remove(newWords.remove(idxToRemove).getWord());
-            }
-
-            /// add words back in
-            rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
             // add random words
+            Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
             for (int i = 0; i < rand; i++) {
                 Word randomWord = allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size()));
@@ -111,11 +102,17 @@ public class KeywordSolution implements Solution {
                     wordSet.add(randomWord.getWord());
                 }
             }
+            List<Word> sortedWordList = newWords.stream().sequential().collect(Collectors.toList());
+            while(newWords.size()>wordsPerTechnology) {
+                // remove a word towards the end
+                int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
+                wordSet.remove(sortedWordList.remove(idxToRemove).getWord());
+            }
 
-            newTechMap.put(tech,newWords);
+            newTechMap.put(tech,sortedWordList);
             alreadyAddedMap.put(tech,wordSet);
         });
-        return new KeywordSolution(newTechMap,alreadyAddedMap,minWordsPerTechnology);
+        return new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
     }
 
     @Override
@@ -125,9 +122,8 @@ public class KeywordSolution implements Solution {
         technologyToWordsMap.keySet().forEach(tech->{
             List<Word> otherWords = ((KeywordSolution)other).technologyToWordsMap.get(tech);
             List<Word> myWords = technologyToWordsMap.get(tech);
-            int size = Math.max((otherWords.size()+myWords.size())/2,minWordsPerTechnology);
             SortedSet<Word> newSet = new TreeSet<>();
-            Set<String> alreadyAdded = new HashSet<>(size*2);
+            Set<String> alreadyAdded = new HashSet<>(wordsPerTechnology*2);
             myWords.forEach(word->{
                 if(!alreadyAdded.contains(word.getWord())) {
                     alreadyAdded.add(word.getWord());
@@ -140,11 +136,23 @@ public class KeywordSolution implements Solution {
                     newSet.add(word);
                 }
             });
-            AtomicInteger cnt = new AtomicInteger(1);
-            newTechMap.put(tech,newSet.stream().sequential().filter(w->cnt.get()<=minWordsPerTechnology||random.nextDouble()<1.0/cnt.getAndIncrement()).limit(size).collect(Collectors.toList()));
+            if(newSet.size()<wordsPerTechnology) {
+                if(random.nextBoolean()) {
+                    newTechMap.put(tech,myWords);
+                } else {
+                    newTechMap.put(tech,otherWords);
+                }
+            } else {
+                List<Word> wordList = newSet.stream().sequential().collect(Collectors.toList());
+                for(int i = wordsPerTechnology; i < wordList.size(); i++) {
+                    Word word = wordList.get(i);
+                    alreadyAdded.remove(word.getWord());
+                }
+                newTechMap.put(tech, wordList.subList(0,wordsPerTechnology));
+            }
             alreadyAddedMap.put(tech,alreadyAdded);
         });
-        return new KeywordSolution(newTechMap,alreadyAddedMap,minWordsPerTechnology);
+        return new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
     }
 
     @Override
@@ -158,15 +166,5 @@ public class KeywordSolution implements Solution {
             score+=tech.get(word)*-Math.log(GLOBAL_WORD_FREQUENCY_MAP.get(word));
         }
         return score;
-    }
-
-    private static double wordCount(String word) {
-        AtomicInteger cnt = new AtomicInteger(0);
-        word.chars().forEach(c->{
-            if(Character.compare((char)c,'_')==0) {
-                cnt.getAndIncrement();
-            }
-        });
-        return 1+cnt.get();
     }
 }

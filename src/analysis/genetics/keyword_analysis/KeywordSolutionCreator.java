@@ -23,7 +23,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
     }
     @Override
     public Collection<Solution> nextRandomSolutions(int num) {
-        final int minWordsPerTechnology = KeywordSolution.MIN_WORDS_PER_TECH;
+        final int wordsPerTech = KeywordSolution.WORDS_PER_TECH;
         List<Map<String,List<Word>>> randomTechToWordMapList = Collections.synchronizedList(new ArrayList<>(num));
         List<Map<String,Set<String>>> alreadyAddedMapList = Collections.synchronizedList(new ArrayList<>(num));
         for(int i = 0; i < num; i++) {
@@ -41,9 +41,9 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
                         Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
                         Map<String,Set<String>> alreadyAddedMap = alreadyAddedMapList.get(solutionNum);
-                        List<Word> newSet = new ArrayList<>(minWordsPerTechnology);
-                        Set<String> wordSet = new HashSet<>(minWordsPerTechnology);
-                        for (int i = 0; i < minWordsPerTechnology; i++) {
+                        List<Word> newSet = new ArrayList<>(wordsPerTech);
+                        Set<String> wordSet = new HashSet<>(wordsPerTech);
+                        for (int i = 0; i < wordsPerTech; i++) {
                             int randIdx = random.nextInt(words.size());
                             Word randomWord = words.get(randIdx);
                             if (wordSet.contains(randomWord.getWord())) {
@@ -84,7 +84,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         }
         Collection<Solution> solutions = new HashSet<>(num);
         for(int i = 0; i < num; i++) {
-            Solution solution = new KeywordSolution(randomTechToWordMapList.get(i),alreadyAddedMapList.get(i),minWordsPerTechnology);
+            Solution solution = new KeywordSolution(randomTechToWordMapList.get(i),alreadyAddedMapList.get(i),wordsPerTech);
             solution.calculateFitness();
             solutions.add(solution);
             System.out.println("Solution score: "+solution.fitness());
