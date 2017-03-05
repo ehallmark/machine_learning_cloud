@@ -90,7 +90,6 @@ public class KeywordSolution implements Solution {
         Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
-            if(words.isEmpty()) System.out.println("WORDS IS EMPTY!!!!!!!!!!!!!!!!!");
             SortedSet<Word> newWords = new TreeSet<>(words);
             int rand = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
             // add random words
@@ -104,7 +103,7 @@ public class KeywordSolution implements Solution {
                 }
             }
             List<Word> sortedWordList = new ArrayList<>(newWords);
-            while(newWords.size()>wordsPerTechnology+1) {
+            while(sortedWordList.size()>wordsPerTechnology) {
                 // remove a word towards the end
                 int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(sortedWordList.size());
                 wordSet.remove(sortedWordList.remove(idxToRemove).getWord());
