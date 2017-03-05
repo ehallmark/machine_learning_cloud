@@ -90,13 +90,12 @@ public class KeywordSolution implements Solution {
         Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
             SortedSet<Word> newWords = new TreeSet<>(words);
-            int rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
+            int rand = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
             // add random words
             Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
-            int i = 0;
             int total =  Math.max(0,wordsPerTechnology-newWords.size())+rand;
-            while(i < total) {
+            for(int i = 0; i < total; i++) {
                 Word randomWord = allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size()));
                 if(!wordSet.contains(randomWord.getWord())) {
                     newWords.add(randomWord);
