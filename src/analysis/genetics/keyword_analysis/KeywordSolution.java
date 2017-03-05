@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class KeywordSolution implements Solution {
-    public static final int WORDS_PER_TECH = 75;
+    public static final int WORDS_PER_TECH = 30;
 
     private static Random random = new Random(69);
     /*     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
