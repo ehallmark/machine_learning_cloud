@@ -2,6 +2,7 @@ package analysis.genetics.keyword_analysis;
 
 import analysis.genetics.Solution;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 
 import java.util.*;
@@ -18,7 +19,7 @@ public class KeywordSolution implements Solution {
     /*     DATA WE NEED TO PRECOMPUTE IN ORDER FOR THE ALGORITHM TO WORK
      */
     private static Map<String,Double> GLOBAL_WORD_FREQUENCY_MAP;
-    private static Map<String,List<Word>> ALL_WORD_MAP;
+    private static Map<String,List<Pair<String,Double>>> ALL_WORD_MAP;
     private static Map<String,Map<String,Double>> TECHNOLOGY_TO_WORD_FREQUENCY_MAP;
     static {
         GLOBAL_WORD_FREQUENCY_MAP=(Map<String,Double>) Database.tryLoadObject(WordFrequencyCalculator.wordFrequencyMapFile);
@@ -29,35 +30,35 @@ public class KeywordSolution implements Solution {
             map.keySet().forEach(word->{
                 scores.put(word,tfidfScore(word,map));
             });
-            List<Word> words = scores.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).map(e->new Word(e.getKey(),e.getValue())).collect(Collectors.toList());
+            List<Pair<String,Double>> words = scores.entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
             ALL_WORD_MAP.put(tech,words);
         });
     }
 
-    public static Map<String,List<Word>> getAllWordsMap() { return ALL_WORD_MAP; }
+    public static Map<String,List<Pair<String,Double>>> getAllWordsMap() { return ALL_WORD_MAP; }
 
     /*
      Start of class
      */
-    private Map<String,List<Word>> technologyToWordsMap;
+    private Map<String,List<Pair<String,Double>>> technologyToWordsMap;
     private double fitness;
     private final int wordsPerTechnology;
     private double randFitness;
 
-    public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, int wordsPerTechnology) {
+    public KeywordSolution(Map<String,List<Pair<String,Double>>> technologyToWordsMap, int wordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
         this.wordsPerTechnology=wordsPerTechnology;
     }
 
-    public Map<String,List<Word>> getTechnologyToWordsMap() {
+    public Map<String,List<Pair<String,Double>>> getTechnologyToWordsMap() {
         return technologyToWordsMap;
     }
 
     public List<String> topKeywordsFromTechnology(String tech, int n) {
         if(!technologyToWordsMap.containsKey(tech)) return Collections.emptyList();
-        List<Word> keywords = technologyToWordsMap.get(tech);
+        List<Pair<String,Double>> keywords = technologyToWordsMap.get(tech);
         return keywords.stream()
-                .limit(n).map(e->e.getWord()).collect(Collectors.toList());
+                .limit(n).map(e->e.getFirst()).collect(Collectors.toList());
     }
 
     @Override
@@ -74,7 +75,7 @@ public class KeywordSolution implements Solution {
             }
             AtomicDouble techScore = new AtomicDouble(0d);
             words.forEach(word -> {
-                techScore.addAndGet(word.getScore());
+                techScore.addAndGet(word.getSecond());
             });
             score.addAndGet(techScore.get() / words.size());
         });
@@ -84,23 +85,29 @@ public class KeywordSolution implements Solution {
 
     @Override
     public Solution mutate() {
-        Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
+        Map<String,List<Pair<String,Double>>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
-            SortedSet<Word> newWords = new TreeSet<>(words);
+            List<Pair<String,Double>> newWords = new ArrayList<>(words);
+            Set<String> alreadyContained = new HashSet<>();
+            newWords.forEach(pair->alreadyContained.add(pair.getFirst()));
             int rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
             // add random words
-            List<Word> allTechWords = ALL_WORD_MAP.get(tech);
+            List<Pair<String,Double>> allTechWords = ALL_WORD_MAP.get(tech);
             while(newWords.size()<wordsPerTechnology+rand) {
-                newWords.add(allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size())));
+                Pair<String,Double> newWord = allTechWords.get(random.nextInt(allTechWords.size()));
+                if(!alreadyContained.contains(newWord.getFirst())) {
+                    alreadyContained.add(newWord.getFirst());
+                    newWords.add(newWord);
+                };
             }
 
-            List<Word> sortedWordList = new ArrayList<>(newWords);
-            while(sortedWordList.size()>wordsPerTechnology) {
+            Collections.sort(newWords,(w1,w2)->w2.getSecond().compareTo(w1.getSecond()));
+            while(newWords.size()>wordsPerTechnology) {
                 // remove a word towards the end
-                int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(sortedWordList.size());
-                sortedWordList.remove(idxToRemove);
+                int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
+                newWords.remove(idxToRemove);
             }
-            newTechMap.put(tech,sortedWordList);
+            newTechMap.put(tech,newWords);
         });
         KeywordSolution solution =  new KeywordSolution(newTechMap,wordsPerTechnology);
         if(!KeywordSolutionCreator.validateSolution(solution,wordsPerTechnology)) {
@@ -111,13 +118,13 @@ public class KeywordSolution implements Solution {
 
     @Override
     public Solution crossover(Solution other) {
-        Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
+        Map<String,List<Pair<String,Double>>> newTechMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.keySet().forEach(tech->{
-            List<Word> otherWords = ((KeywordSolution)other).technologyToWordsMap.get(tech);
-            List<Word> myWords = technologyToWordsMap.get(tech);
-            SortedSet<Word> newSet = new TreeSet<>();
+            List<Pair<String,Double>> otherWords = ((KeywordSolution)other).technologyToWordsMap.get(tech);
+            List<Pair<String,Double>> myWords = technologyToWordsMap.get(tech);
+            List<Pair<String,Double>> newList = new ArrayList<>();
             if(random.nextBoolean()) {
-                List<Word> toUse;
+                List<Pair<String,Double>> toUse;
                 if(random.nextBoolean()) {
                     toUse = myWords;
                 }else {
@@ -125,13 +132,20 @@ public class KeywordSolution implements Solution {
                 }
                 newTechMap.put(tech, toUse);
             } else {
+                Set<String> alreadyContained = new HashSet<>();
                 myWords.forEach(word -> {
-                    newSet.add(word);
+                    if(!alreadyContained.contains(word.getFirst())) {
+                        alreadyContained.add(word.getFirst());
+                        newList.add(word);
+                    }
                 });
                 otherWords.forEach(word -> {
-                    newSet.add(word);
+                    if(!alreadyContained.contains(word.getFirst())) {
+                        alreadyContained.add(word.getFirst());
+                        newList.add(word);
+                    }
                 });
-                newTechMap.put(tech,newSet.stream().sequential().limit(wordsPerTechnology).collect(Collectors.toList()));
+                newTechMap.put(tech,newList.stream().sorted((w1,w2)->w2.getSecond().compareTo(w1.getSecond())).limit(wordsPerTechnology).collect(Collectors.toList()));
             }
         });
         KeywordSolution solution = new KeywordSolution(newTechMap,wordsPerTechnology);
