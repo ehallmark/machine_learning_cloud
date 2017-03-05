@@ -95,13 +95,18 @@ public class GeneticAlgorithm {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
-                        Solution child = solution.mutate();
-                        if(child==null) {
-                            System.out.println("Mutation Failed");
-                            return;
+                        try {
+                            Solution child = solution.mutate();
+                            if (child == null) {
+                                System.out.println("Mutation Failed");
+                                return;
+                            }
+                            children.add(child);
+                            mutationCounter.getAndIncrement();
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Mutation failed with exception");
                         }
-                        children.add(child);
-                        mutationCounter.getAndIncrement();
                     }
                 };
                 pool.execute(action);
@@ -119,13 +124,18 @@ public class GeneticAlgorithm {
                 RecursiveAction action = new RecursiveAction() {
                     @Override
                     protected void compute() {
-                        Solution child = x.crossover(y);
-                        if(child==null) {
-                            System.out.println("Crossover Failed");
-                            return;
+                        try {
+                            Solution child = x.crossover(y);
+                            if (child == null) {
+                                System.out.println("Crossover Failed");
+                                return;
+                            }
+                            children.add(child);
+                            crossoverCounter.getAndIncrement();
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            System.out.println("Crossover failed with exeception");
                         }
-                        children.add(child);
-                        crossoverCounter.getAndIncrement();
                     }
                 };
                 pool.execute(action);
