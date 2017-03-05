@@ -67,8 +67,12 @@ public class KeywordSolutionCreator implements SolutionCreator {
                                 wordSet.add(randomWord.getWord());
                             }
                         }
-                        randomTechToWordMap.put(tech, newSet);
-                        alreadyAddedMap.put(tech, wordSet);
+                        if(wordSet.size()==newSet.size()) {
+                            randomTechToWordMap.put(tech, newSet);
+                            alreadyAddedMap.put(tech, wordSet);
+                        } else {
+                            System.out.println("Wordset is not the same size as the new set");
+                        }
                     }
                     System.out.println("Finished "+tech+" solution ["+cnt.get()+"/"+techToWordMap.size()+"]");
                 }
@@ -84,7 +88,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         Collection<Solution> solutions = new HashSet<>(num);
         for(int i = 0; i < num; i++) {
             KeywordSolution solution = new KeywordSolution(randomTechToWordMapList.get(i),alreadyAddedMapList.get(i),wordsPerTech);
-            if(!validateSolution(solution,wordsPerTech)) {
+            if((!validateSolution(solution,wordsPerTech))) {
                 System.out.println("Invalid solution!");
                 continue;
             }
