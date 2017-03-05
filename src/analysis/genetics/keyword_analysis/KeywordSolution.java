@@ -73,7 +73,7 @@ public class KeywordSolution implements Solution {
         AtomicDouble score = new AtomicDouble(0d);
         technologyToWordsMap.forEach((tech,words)->{
             if(words.size()!=wordsPerTechnology) {
-                System.out.println("WARNING: TECHNOLOGY HAS INCORRECT WORD SIZE!!!!!!");
+                System.out.println("WARNING: TECHNOLOGY HAS INCORRECT WORD SIZE: "+wordsPerTechnology+" but is: "+words.size());
             }
             AtomicDouble techScore = new AtomicDouble(0d);
             words.forEach(word -> {

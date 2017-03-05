@@ -130,7 +130,7 @@ public class WordFrequencyCalculator {
                     }
                 }
                 stopWordPercentage /= wordSplit.length;
-                if (stopWordPercentage > 0.4 || z > 0.0 || z < -3.5) {
+                if (stopWordPercentage > 0.4 || z > 1.5 || z < -3.5) {
                     // probably a bad word?
                     shouldRemove=true;
                 }
