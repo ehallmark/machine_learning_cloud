@@ -19,7 +19,14 @@ public class Word implements Comparable<Word> {
         this.score=score;
     }
     public int compareTo(Word other) {
-        return Double.compare(other.score,score);
+        if (word.equals(other.getWord()))return 0;
+        else {
+            int doubleComp = Double.compare(other.score,score);
+            if(doubleComp==0){
+                return word.compareTo(other.getWord());
+            }
+            return doubleComp;
+        }
     }
 
     @Override
