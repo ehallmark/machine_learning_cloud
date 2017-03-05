@@ -18,6 +18,7 @@ public class ProbabilityHelper {
             e.printStackTrace();
             System.out.println("Max: "+max);
         }
+        return random.nextInt(max);
     }
 
     public static int getHighNumberWithMaxUpTo(int max){
