@@ -1,6 +1,7 @@
 package analysis.genetics;
 
 import analysis.genetics.keyword_analysis.ProbabilityHelper;
+import org.deeplearning4j.berkeley.Pair;
 import tools.SimpleTimer;
 
 import java.util.*;
@@ -46,7 +47,7 @@ public class GeneticAlgorithm {
                 AtomicInteger epochCounter = new AtomicInteger(0);
                 while(globalTimer<=timeLimit) {
                     timer.start();
-                    simulateEpoch(probMutation,probCrossover);
+                    Pair<Integer,Integer> counts = simulateEpoch(probMutation,probCrossover);
                     timer.finish();
                     clearScreen();
                     globalTimer+=timer.getElapsedTime();
@@ -54,6 +55,8 @@ public class GeneticAlgorithm {
                     System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
                     System.out.println("Starting Avg Score: "+startingScore);
                     System.out.println("Current Avg Score:  "+currentScore);
+                    System.out.println("Mutations this epoch:  "+counts.getFirst());
+                    System.out.println("Crossovers this epoch:  "+counts.getSecond());
                     if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
                     // listener
                     if(bestSolutionSoFar!=null&&listener!=null) {
@@ -78,7 +81,7 @@ public class GeneticAlgorithm {
         }
     }
 
-    private void simulateEpoch(double probMutation, double probCrossover) {
+    private Pair<Integer,Integer> simulateEpoch(double probMutation, double probCrossover) {
         assertValidProbability(probMutation);
         assertValidProbability(probCrossover);
 
@@ -154,6 +157,8 @@ public class GeneticAlgorithm {
         population.addAll(children);
         // evaluate
         calculateSolutionsAndKillOfTheWeak();
+
+        return new Pair<>(mutationCounter.get(),crossoverCounter.get());
     }
 
 
