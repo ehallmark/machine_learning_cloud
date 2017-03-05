@@ -72,6 +72,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                             alreadyAddedMap.put(tech, wordSet);
                         } else {
                             System.out.println("Wordset is not the same size as the new set");
+                            throw new RuntimeException("Invalid solution in solution creator");
                         }
                     }
                     System.out.println("Finished "+tech+" solution ["+cnt.get()+"/"+techToWordMap.size()+"]");
@@ -104,6 +105,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         solution.getTechnologyToWordsMap().forEach((tech,words)->{
             if(tech==null||words==null||words.size()!=wordsPerTech) {
                 val.set(false);
+                System.out.println("INVALID TECHNOLOGY: "+tech);
             }
         });
         return val.get();
