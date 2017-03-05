@@ -31,33 +31,33 @@ public class KeywordSolutionCreator implements SolutionCreator {
         for(int i = 0; i < num; i++) {
             randomTechToWordMapList.add(Collections.synchronizedMap(new HashMap<>(techToWordMap.size())));
         }
-        AtomicInteger cnt = new AtomicInteger(1);
         ForkJoinPool pool = new ForkJoinPool(numThreads);
-        techToWordMap.forEach((tech,words)->{
+        for(int solutionNum = 0; solutionNum < num; solutionNum++) {
+            final int finalSolutionNum = solutionNum;
             RecursiveAction action = new RecursiveAction() {
                 @Override
                 protected void compute() {
-                    System.out.println("Creating random "+tech+" solution ["+cnt.getAndIncrement()+"/"+techToWordMap.size()+"]");
-                    for(int solutionNum = 0; solutionNum < num; solutionNum++) {
-                        Map<String,List<WordFrequencyPair<String,Double>>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
+                    Map<String,List<WordFrequencyPair<String,Double>>> randomTechToWordMap = randomTechToWordMapList.get(finalSolutionNum);
+                    techToWordMap.forEach((tech,words)-> {
                         Set<String> alreadyContained = new HashSet<>();
-                        List<WordFrequencyPair<String,Double>> newSet = new ArrayList<>();
-                        while(newSet.size()<wordsPerTech) {
+                        List<WordFrequencyPair<String, Double>> newSet = new ArrayList<>();
+                        while (newSet.size() < wordsPerTech) {
                             int randIdx = random.nextInt(words.size());
-                            WordFrequencyPair<String,Double> randomWord = words.get(randIdx);
-                            if(!alreadyContained.contains(randomWord.getFirst())) {
+                            WordFrequencyPair<String, Double> randomWord = words.get(randIdx);
+                            if (!alreadyContained.contains(randomWord.getFirst())) {
                                 newSet.add(randomWord);
                                 alreadyContained.add(randomWord.getFirst());
                             }
                         }
-                        Collections.sort(newSet,Comparator.reverseOrder());
+                        Collections.sort(newSet, Comparator.reverseOrder());
                         randomTechToWordMap.put(tech, newSet);
-                    }
-                    System.out.println("Finished "+tech+" solution ["+cnt.get()+"/"+techToWordMap.size()+"]");
+                    });
                 }
             };
             pool.execute(action);
-        });
+            System.out.println("Finished ["+solutionNum+"/"+num+"]");
+        }
+
         pool.shutdown();
         try {
             pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);

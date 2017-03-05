@@ -14,7 +14,7 @@ import java.util.Map;
 public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
-        int populationSize = 10;
+        int populationSize = 100;
         int numThreads = Runtime.getRuntime().availableProcessors()*2;
         int numEpochs = 10*60*1000;
         double mutationRate = 0.7;
