@@ -40,7 +40,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
                         Map<String,List<Pair<String,Double>>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
                         Set<String> alreadyContained = new HashSet<>();
-                        List<Pair<String,Double> newSet = new ArrayList<>();
+                        List<Pair<String,Double>> newSet = new ArrayList<>();
                         while(newSet.size()<wordsPerTech) {
                             int randIdx = random.nextInt(words.size());
                             Pair<String,Double> randomWord = words.get(randIdx);
