@@ -166,12 +166,7 @@ public class KeywordSolution implements Solution {
                     });
                     newTechMap.put(tech, toUse);
                 } else {
-                    List<Word> wordList = newSet.stream().sequential().collect(Collectors.toList());
-                    for (int i = wordsPerTechnology; i < wordList.size(); i++) {
-                        Word word = wordList.get(i);
-                        alreadyAdded.remove(word.getWord());
-                    }
-                    newTechMap.put(tech, wordList.subList(0, wordsPerTechnology));
+                    newTechMap.put(tech,newSet.stream().sequential().limit(wordsPerTechnology).collect(Collectors.toList()));
                 }
             }
             alreadyAddedMap.put(tech,alreadyAdded);
