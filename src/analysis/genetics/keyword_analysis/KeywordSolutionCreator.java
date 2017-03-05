@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -66,10 +67,6 @@ public class KeywordSolutionCreator implements SolutionCreator {
                                 wordSet.add(randomWord.getWord());
                             }
                         }
-                        if(wordSet.size()!=wordsPerTech) {
-                            System.out.println("Solution Creator has wrong number of words per tech: "+wordSet.size());
-                            System.out.println("Total words per tech: "+words.size());
-                        }
                         randomTechToWordMap.put(tech, newSet);
                         alreadyAddedMap.put(tech, wordSet);
                     }
@@ -86,11 +83,25 @@ public class KeywordSolutionCreator implements SolutionCreator {
         }
         Collection<Solution> solutions = new HashSet<>(num);
         for(int i = 0; i < num; i++) {
-            Solution solution = new KeywordSolution(randomTechToWordMapList.get(i),alreadyAddedMapList.get(i),wordsPerTech);
+            KeywordSolution solution = new KeywordSolution(randomTechToWordMapList.get(i),alreadyAddedMapList.get(i),wordsPerTech);
+            if(!validateSolution(solution,wordsPerTech)) {
+                System.out.println("Invalid solution!");
+                continue;
+            }
             solution.calculateFitness();
             solutions.add(solution);
             System.out.println("Solution score: "+solution.fitness());
         }
         return solutions;
+    }
+
+    private static boolean validateSolution(KeywordSolution solution, int wordsPerTech) {
+        AtomicBoolean val = new AtomicBoolean(true);
+        solution.getTechnologyToWordsMap().forEach((tech,words)->{
+            if(tech==null||words==null||words.size()!=wordsPerTech) {
+                val.set(false);
+            }
+        });
+        return val.get();
     }
 }
