@@ -2,8 +2,6 @@ package analysis.tech_tagger;
 
 import analysis.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.ops.transforms.Transforms;
 import tools.MinHeap;
 import tools.PortfolioList;
 
@@ -36,19 +34,29 @@ public class TechTaggerNormalizer extends TechTagger {
         return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(item,technology)*tagger.getWeight()));
     }
 
+
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
+        return technologyHelper(item,type,n);
+    }
+
+    private List<Pair<String,Double>> technologyHelper(Object item, PortfolioList.Type type, int n) {
         AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Double> technologyScores = new HashMap<>();
         taggers.forEach(tagger->{
             int i = cnt.getAndIncrement();
-            List<Pair<String,Double>> data = tagger.getTechnologiesFor(item,type,sizes[i]);
+            List<Pair<String,Double>> data;
+            if(item instanceof String) {
+                 data = tagger.getTechnologiesFor((String)item,type,sizes[i]);
+            } else {
+                data = tagger.getTechnologiesFor((Collection<String>)item,type,sizes[i]);
+            }
             if(data!=null&&data.size()>=10) {
                 // normalize data
                 double mean = data.stream().map(pair->pair.getSecond()).collect(Collectors.averagingDouble(d->d));
                 double stddev = Math.sqrt(data.stream().map(pair->pair.getSecond()).collect(Collectors.summingDouble(d->Math.pow(d-mean,2.0)))/(data.size()-1));
                 if(stddev>0) {
-                    data.forEach(pair -> {
+                    for(Pair<String,Double> pair : data) {
                         double val = ((pair.getSecond() - mean) / stddev) * tagger.getWeight();
                         if(val>0) {
                             if (technologyScores.containsKey(pair.getFirst())) {
@@ -56,8 +64,10 @@ public class TechTaggerNormalizer extends TechTagger {
                             } else {
                                 technologyScores.put(pair.getFirst(), val);
                             }
+                        } else {
+                            break; // since everything is sorted
                         }
-                    });
+                    }
                 }
             }
         });
@@ -79,11 +89,13 @@ public class TechTaggerNormalizer extends TechTagger {
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
-        throw new RuntimeException("Not implementend yet (getTechnologyValueFor)");
+        return technologyHelper(items,type,n);
     }
 
     @Override
     public Collection<String> getAllTechnologies() {
-        throw new RuntimeException("Not implementend yet (getAllTechnologies)");
+        Set<String> toReturn = new HashSet<>();
+        taggers.forEach(tagger->toReturn.addAll(tagger.getAllTechnologies()));
+        return toReturn;
     }
 }
