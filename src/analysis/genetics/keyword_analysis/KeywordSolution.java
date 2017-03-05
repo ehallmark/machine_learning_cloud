@@ -91,12 +91,11 @@ public class KeywordSolution implements Solution {
         Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
             SortedSet<Word> newWords = new TreeSet<>(words);
-            if(newWords.size()!=words.size()) System.out.println("DUPLICATE WORDS FOUND!!!!");
             int rand = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
             // add random words
             Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
-            for (int i = 0; i < rand; i++) {
+            for (int i = 0; i < Math.max(rand,wordsPerTechnology-newWords.size()); i++) {
                 Word randomWord = allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size()));
                 if(!wordSet.contains(randomWord.getWord())) {
                     newWords.add(randomWord);
