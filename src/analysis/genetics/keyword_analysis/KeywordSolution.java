@@ -40,15 +40,13 @@ public class KeywordSolution implements Solution {
      Start of class
      */
     private Map<String,List<Word>> technologyToWordsMap;
-    private Map<String,Set<String>> techWordSets;
     private double fitness;
     private final int wordsPerTechnology;
     private double randFitness;
 
-    public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, Map<String,Set<String>> techWordSets, int wordsPerTechnology) {
+    public KeywordSolution(Map<String,List<Word>> technologyToWordsMap, int wordsPerTechnology) {
         this.technologyToWordsMap=technologyToWordsMap;
         this.wordsPerTechnology=wordsPerTechnology;
-        this.techWordSets = techWordSets;
     }
 
     public Map<String,List<Word>> getTechnologyToWordsMap() {
@@ -87,35 +85,24 @@ public class KeywordSolution implements Solution {
     @Override
     public Solution mutate() {
         Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
-        Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.forEach((tech,words)->{
             SortedSet<Word> newWords = new TreeSet<>(words);
-            int rand = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
+            int rand = ProbabilityHelper.getLowNumberWithMaxUpTo(newWords.size());
             // add random words
-            Set<String> wordSet = new HashSet<>(newWords.size());
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
-            int requirement = wordsPerTechnology-newWords.size();
-            int total =  Math.max(0,requirement)+rand;
-            for(int i = 0; i < total; i++) {
-                Word randomWord = allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size()));
-                if(!wordSet.contains(randomWord.getWord())) {
-                    newWords.add(randomWord);
-                    wordSet.add(randomWord.getWord());
-                } else if(newWords.size()<wordsPerTechnology && random.nextBoolean()) {
-                    i--;
-                }
+            while(newWords.size()<wordsPerTechnology+rand) {
+                newWords.add(allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size())));
             }
+
             List<Word> sortedWordList = new ArrayList<>(newWords);
             while(sortedWordList.size()>wordsPerTechnology) {
                 // remove a word towards the end
                 int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(sortedWordList.size());
-                wordSet.remove(sortedWordList.remove(idxToRemove).getWord());
+                sortedWordList.remove(idxToRemove);
             }
-
             newTechMap.put(tech,sortedWordList);
-            alreadyAddedMap.put(tech,wordSet);
         });
-        KeywordSolution solution =  new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        KeywordSolution solution =  new KeywordSolution(newTechMap,wordsPerTechnology);
         if(!KeywordSolutionCreator.validateSolution(solution,wordsPerTechnology)) {
             return null;
         }
@@ -125,55 +112,29 @@ public class KeywordSolution implements Solution {
     @Override
     public Solution crossover(Solution other) {
         Map<String,List<Word>> newTechMap = new HashMap<>(technologyToWordsMap.size());
-        Map<String,Set<String>> alreadyAddedMap = new HashMap<>(technologyToWordsMap.size());
         technologyToWordsMap.keySet().forEach(tech->{
             List<Word> otherWords = ((KeywordSolution)other).technologyToWordsMap.get(tech);
             List<Word> myWords = technologyToWordsMap.get(tech);
             SortedSet<Word> newSet = new TreeSet<>();
-            Set<String> alreadyAdded = new HashSet<>(wordsPerTechnology*2);
-            if(random.nextBoolean()&&random.nextBoolean()) {
+            if(random.nextBoolean()) {
                 List<Word> toUse;
                 if(random.nextBoolean()) {
                     toUse = myWords;
                 }else {
                     toUse=otherWords;
                 }
-                toUse.forEach(word->{
-                    alreadyAdded.add(word.getWord());
-                });
                 newTechMap.put(tech, toUse);
             } else {
-
                 myWords.forEach(word -> {
-                    if (!alreadyAdded.contains(word.getWord())) {
-                        alreadyAdded.add(word.getWord());
-                        newSet.add(word);
-                    }
+                    newSet.add(word);
                 });
                 otherWords.forEach(word -> {
-                    if (!alreadyAdded.contains(word.getWord())) {
-                        alreadyAdded.add(word.getWord());
-                        newSet.add(word);
-                    }
+                    newSet.add(word);
                 });
-                if (newSet.size() < wordsPerTechnology) {
-                    List<Word> toUse;
-                    if(random.nextBoolean()) {
-                        toUse = myWords;
-                    }else {
-                        toUse=otherWords;
-                    }
-                    toUse.forEach(word->{
-                        alreadyAdded.add(word.getWord());
-                    });
-                    newTechMap.put(tech, toUse);
-                } else {
-                    newTechMap.put(tech,newSet.stream().sequential().limit(wordsPerTechnology).collect(Collectors.toList()));
-                }
+                newTechMap.put(tech,newSet.stream().sequential().limit(wordsPerTechnology).collect(Collectors.toList()));
             }
-            alreadyAddedMap.put(tech,alreadyAdded);
         });
-        KeywordSolution solution =  new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        KeywordSolution solution = new KeywordSolution(newTechMap,wordsPerTechnology);
         if(!KeywordSolutionCreator.validateSolution(solution,wordsPerTechnology)) {
             return null;
         }
