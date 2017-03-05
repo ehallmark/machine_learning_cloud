@@ -1,5 +1,6 @@
 package analysis.genetics.keyword_analysis;
 
+import analysis.WordFrequencyPair;
 import analysis.genetics.Listener;
 import analysis.genetics.Solution;
 import org.deeplearning4j.berkeley.Pair;
@@ -16,7 +17,7 @@ public class KeywordListener implements Listener {
     @Override
     public void print(Solution solution) {
         KeywordSolution keywordSolution = (KeywordSolution)solution;
-        Map<String,List<Pair<String,Double>>> map = keywordSolution.getTechnologyToWordsMap();
+        Map<String,List<WordFrequencyPair<String,Double>>> map = keywordSolution.getTechnologyToWordsMap();
         map.keySet().stream().sorted().limit(25).forEach(tech->{
             System.out.println("Top keywords for "+tech+": "+String.join("; ",keywordSolution.topKeywordsFromTechnology(tech,5)));
         });
