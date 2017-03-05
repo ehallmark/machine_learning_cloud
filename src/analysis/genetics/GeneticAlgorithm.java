@@ -98,7 +98,7 @@ public class GeneticAlgorithm {
                         try {
                             Solution child = solution.mutate();
                             if (child == null) {
-                                System.out.println("Mutation Failed");
+                                //System.out.println("Mutation Failed");
                                 return;
                             }
                             children.add(child);
@@ -127,7 +127,7 @@ public class GeneticAlgorithm {
                         try {
                             Solution child = x.crossover(y);
                             if (child == null) {
-                                System.out.println("Crossover Failed");
+                                //System.out.println("Crossover Failed");
                                 return;
                             }
                             children.add(child);

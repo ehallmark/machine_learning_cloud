@@ -105,7 +105,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         solution.getTechnologyToWordsMap().forEach((tech,words)->{
             if(tech==null||words==null||words.size()!=wordsPerTech) {
                 val.set(false);
-                System.out.println("INVALID TECHNOLOGY: "+tech);
+                //System.out.println("INVALID TECHNOLOGY: "+tech);
             }
         });
         return val.get();
