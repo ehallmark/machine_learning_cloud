@@ -81,7 +81,7 @@ public class WordFrequencyCalculator {
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents, minimumPatentCount);
-            if(frequencyMap!=null) {
+            if(frequencyMap!=null&&frequencyMap.size()>KeywordSolution.WORDS_PER_TECH*5) {
                 techMap.put(tech, frequencyMap);
             }
         });
@@ -141,6 +141,7 @@ public class WordFrequencyCalculator {
                 if(map.containsKey(toRemove)) map.remove(toRemove);
             });
         });
+        System.out.println("Total valid technologies: "+techMap.size());
         Database.trySaveObject(globalMap,wordFrequencyMapFile);
         Database.trySaveObject(techMap,technologyToWordFrequencyMapFile);
     }

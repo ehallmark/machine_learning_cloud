@@ -25,7 +25,6 @@ public class KeywordSolution implements Solution {
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP=(Map<String,Map<String,Double>>) Database.tryLoadObject(WordFrequencyCalculator.technologyToWordFrequencyMapFile);
         ALL_WORD_MAP=new HashMap<>(TECHNOLOGY_TO_WORD_FREQUENCY_MAP.size());
         TECHNOLOGY_TO_WORD_FREQUENCY_MAP.forEach((tech,map)->{
-            if(map.size()<WORDS_PER_TECH*10)return;
             Map<String,Double> scores = new HashMap<>();
             map.keySet().forEach(word->{
                 scores.put(word,tfidfScore(word,map));
