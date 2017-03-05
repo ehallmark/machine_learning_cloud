@@ -84,9 +84,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
             if(tech==null||words==null||words.size()!=wordsPerTech) {
                 val.set(false);
                 //System.out.println("INVALID TECHNOLOGY: "+tech);
-            } else if (words.size()!=new TreeSet<>(words).size()) {
-                val.set(false);
-            }
+            } 
         });
         return val.get();
     }
