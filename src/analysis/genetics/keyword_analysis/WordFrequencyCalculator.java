@@ -117,15 +117,25 @@ public class WordFrequencyCalculator {
             double z = ((freq-mean)/stddev);
             // only allow < 1/2 stop words
             String[] wordSplit = word.split("_");
-            double stopWordPercentage = 0.0;
-            for(String inner : wordSplit) {
-                if(Constants.STOP_WORD_SET.contains(inner)) {
-                    stopWordPercentage+=1.0;
+            boolean shouldRemove=false;
+            // remove if stopword is a leading or trailing word
+            if(wordSplit.length>0&&(Constants.STOP_WORD_SET.contains(wordSplit[0])||Constants.STOP_WORD_SET.contains(wordSplit[wordSplit.length-1]))) {
+                shouldRemove=true;
+            }
+            if(!shouldRemove) {
+                double stopWordPercentage = 0.0;
+                for (String inner : wordSplit) {
+                    if (Constants.STOP_WORD_SET.contains(inner)) {
+                        stopWordPercentage += 1.0;
+                    }
+                }
+                stopWordPercentage /= wordSplit.length;
+                if (stopWordPercentage > 0.4 || z > 0.0 || z < -3.5) {
+                    // probably a bad word?
+                    shouldRemove=true;
                 }
             }
-            stopWordPercentage/=wordSplit.length;
-            if(stopWordPercentage > 0.4 || z > 0.0 || z < -3.5) {
-                // probably a bad word?
+            if(shouldRemove) {
                 wordsToRemove.add(word);
             }
         });
