@@ -100,7 +100,8 @@ public class KeywordSolution implements Solution {
                 if(!wordSet.contains(randomWord.getWord())) {
                     newWords.add(randomWord);
                     wordSet.add(randomWord.getWord());
-                    i++;
+                } else {
+                    i--;
                 }
             }
             List<Word> sortedWordList = new ArrayList<>(newWords);
