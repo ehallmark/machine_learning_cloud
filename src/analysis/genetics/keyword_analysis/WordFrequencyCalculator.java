@@ -110,11 +110,8 @@ public class WordFrequencyCalculator {
         globalMap.forEach((word,freq)->{
             vec.putScalar(idx.getAndIncrement(),freq);
         });
-        double stddev = Math.sqrt(vec.varNumber().doubleValue());
-        double mean = vec.meanNumber().doubleValue();
         Set<String> wordsToRemove = new HashSet<>();
         globalMap.forEach((word,freq)->{
-            double z = ((freq-mean)/stddev);
             // only allow < 1/2 stop words
             String[] wordSplit = word.split("_");
             boolean shouldRemove=false;
@@ -130,7 +127,7 @@ public class WordFrequencyCalculator {
                     }
                 }
                 stopWordPercentage /= wordSplit.length;
-                if (stopWordPercentage > 0.4 || z > 1.5 || z < -3.5) {
+                if (stopWordPercentage > 0.4) {
                     // probably a bad word?
                     shouldRemove=true;
                 }
