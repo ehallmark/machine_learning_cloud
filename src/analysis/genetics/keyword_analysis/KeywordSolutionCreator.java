@@ -38,7 +38,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
                     System.out.println("Creating random "+tech+" solution ["+cnt.getAndIncrement()+"/"+techToWordMap.size()+"]");
                     for(int solutionNum = 0; solutionNum < num; solutionNum++) {
                         Map<String,List<Word>> randomTechToWordMap = randomTechToWordMapList.get(solutionNum);
-                        SortedSet<Word> newSet = new ArrayList<>(wordsPerTech);
+                        SortedSet<Word> newSet = new TreeSet<>();
                         while(newSet.size()<wordsPerTech) {
                             int randIdx = random.nextInt(words.size());
                             Word randomWord = words.get(randIdx);
