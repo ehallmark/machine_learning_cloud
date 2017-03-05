@@ -92,7 +92,7 @@ public class KeywordSolution implements Solution {
             SortedSet<Word> newWords = new TreeSet<>(words);
             int rand = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
             // add random words
-            Set<String> wordSet = new HashSet<>(techWordSets.get(tech));
+            Set<String> wordSet = new HashSet<>(newWords.size());
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
             int total =  Math.max(0,wordsPerTechnology-newWords.size())+rand;
             for(int i = 0; i < total; i++) {
