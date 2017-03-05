@@ -12,11 +12,11 @@ import java.util.Map;
 public class TechnologyPredictionAlgorithm {
 
     public static void main(String[] args) {
-        int populationSize = 500;
+        int populationSize = 1000;
         int numThreads = Runtime.getRuntime().availableProcessors()*2;
         int numEpochs = 50000;
-        double mutationRate = 0.5;
-        double crossoverRate = 0.5;
+        double mutationRate = 0.7;
+        double crossoverRate = 0.8;
         Map<String,List<Word>> allWordsMap = KeywordSolution.getAllWordsMap();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(new KeywordSolutionCreator(allWordsMap,numThreads),populationSize, new KeywordListener(),numThreads);
         algorithm.simulate(numEpochs,mutationRate,crossoverRate);
