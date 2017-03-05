@@ -94,13 +94,16 @@ public class KeywordSolution implements Solution {
             // add random words
             Set<String> wordSet = new HashSet<>(newWords.size());
             List<Word> allTechWords = ALL_WORD_MAP.get(tech);
-            int total =  Math.max(0,wordsPerTechnology-newWords.size())+rand;
+            int requirement = wordsPerTechnology-newWords.size();
+            int total =  Math.max(0,requirement)+rand;
             for(int i = 0; i < total; i++) {
                 Word randomWord = allTechWords.get(ProbabilityHelper.getLowNumberWithMaxUpTo(allTechWords.size()));
                 if(!wordSet.contains(randomWord.getWord())) {
                     newWords.add(randomWord);
                     wordSet.add(randomWord.getWord());
-                } 
+                } else if(newWords.size()<wordsPerTechnology && random.nextBoolean()) {
+                    i--;
+                }
             }
             List<Word> sortedWordList = new ArrayList<>(newWords);
             while(sortedWordList.size()>wordsPerTechnology) {
