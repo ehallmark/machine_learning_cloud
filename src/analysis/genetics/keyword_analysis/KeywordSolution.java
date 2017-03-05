@@ -102,8 +102,8 @@ public class KeywordSolution implements Solution {
                     wordSet.add(randomWord.getWord());
                 }
             }
-            List<Word> sortedWordList = newWords.stream().sequential().collect(Collectors.toList());
-            while(newWords.size()>wordsPerTechnology) {
+            List<Word> sortedWordList = new ArrayList<>(newWords);
+            while(newWords.size()>wordsPerTechnology+1) {
                 // remove a word towards the end
                 int idxToRemove = ProbabilityHelper.getHighNumberWithMaxUpTo(newWords.size());
                 wordSet.remove(sortedWordList.remove(idxToRemove).getWord());
