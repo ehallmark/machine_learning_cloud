@@ -95,7 +95,7 @@ public class KeywordSolutionCreator implements SolutionCreator {
         return solutions;
     }
 
-    private static boolean validateSolution(KeywordSolution solution, int wordsPerTech) {
+    static boolean validateSolution(KeywordSolution solution, int wordsPerTech) {
         AtomicBoolean val = new AtomicBoolean(true);
         solution.getTechnologyToWordsMap().forEach((tech,words)->{
             if(tech==null||words==null||words.size()!=wordsPerTech) {

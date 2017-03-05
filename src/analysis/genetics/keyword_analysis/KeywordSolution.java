@@ -112,7 +112,11 @@ public class KeywordSolution implements Solution {
             newTechMap.put(tech,sortedWordList);
             alreadyAddedMap.put(tech,wordSet);
         });
-        return new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        KeywordSolution solution =  new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        if(!KeywordSolutionCreator.validateSolution(solution,wordsPerTechnology)) {
+            return null;
+        }
+        return solution;
     }
 
     @Override
@@ -166,7 +170,11 @@ public class KeywordSolution implements Solution {
             }
             alreadyAddedMap.put(tech,alreadyAdded);
         });
-        return new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        KeywordSolution solution =  new KeywordSolution(newTechMap,alreadyAddedMap,wordsPerTechnology);
+        if(!KeywordSolutionCreator.validateSolution(solution,wordsPerTechnology)) {
+            return null;
+        }
+        return solution;
     }
 
     @Override
