@@ -27,8 +27,8 @@ public class KeywordSolutionCreator implements SolutionCreator {
         List<Map<String,List<Word>>> randomTechToWordMapList = Collections.synchronizedList(new ArrayList<>(num));
         List<Map<String,Set<String>>> alreadyAddedMapList = Collections.synchronizedList(new ArrayList<>(num));
         for(int i = 0; i < num; i++) {
-            randomTechToWordMapList.add(new HashMap<>(techToWordMap.size()));
-            alreadyAddedMapList.add(new HashMap<>(techToWordMap.size()));
+            randomTechToWordMapList.add(Collections.synchronizedMap(new HashMap<>(techToWordMap.size())));
+            alreadyAddedMapList.add(Collections.synchronizedMap(new HashMap<>(techToWordMap.size())));
         }
         AtomicInteger cnt = new AtomicInteger(1);
         ForkJoinPool pool = new ForkJoinPool(numThreads);
@@ -65,6 +65,10 @@ public class KeywordSolutionCreator implements SolutionCreator {
                                 newSet.add(randomWord);
                                 wordSet.add(randomWord.getWord());
                             }
+                        }
+                        if(wordSet.size()!=wordsPerTech) {
+                            System.out.println("Solution Creator has wrong number of words per tech: "+wordSet.size());
+                            System.out.println("Total words per tech: "+words.size());
                         }
                         randomTechToWordMap.put(tech, newSet);
                         alreadyAddedMap.put(tech, wordSet);
