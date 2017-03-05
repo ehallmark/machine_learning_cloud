@@ -31,7 +31,6 @@ public class KeywordSolutionCreator implements SolutionCreator {
             alreadyAddedMapList.add(new HashMap<>(techToWordMap.size()));
         }
         AtomicInteger cnt = new AtomicInteger(1);
-        AtomicInteger size = new AtomicInteger(0);
         ForkJoinPool pool = new ForkJoinPool(numThreads);
         techToWordMap.forEach((tech,words)->{
             RecursiveAction action = new RecursiveAction() {
@@ -67,7 +66,6 @@ public class KeywordSolutionCreator implements SolutionCreator {
                                 wordSet.add(randomWord.getWord());
                             }
                         }
-                        size.getAndAdd(newSet.size());
                         randomTechToWordMap.put(tech, newSet);
                         alreadyAddedMap.put(tech, wordSet);
                     }
