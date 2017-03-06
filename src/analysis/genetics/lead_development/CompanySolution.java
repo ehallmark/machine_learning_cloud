@@ -2,16 +2,13 @@ package analysis.genetics.lead_development;
 
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
-import analysis.genetics.keyword_analysis.KeywordSolution;
 import analysis.genetics.keyword_analysis.ProbabilityHelper;
-import analysis.genetics.keyword_analysis.Word;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
 import seeding.Database;
 import value_estimation.PortfolioSizeEvaluator;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**

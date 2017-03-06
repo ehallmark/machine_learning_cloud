@@ -1,11 +1,13 @@
 package analysis.genetics.keyword_analysis;
 
+import analysis.WordFrequencyPair;
 import analysis.patent_view_api.PatentAPIHandler;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import tools.MinHeap;
 
 import java.io.File;
 import java.util.*;
@@ -16,8 +18,15 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class WordFrequencyCalculator {
-    static final File wordFrequencyMapFile = new File("global_word_frequency_map.jobj");
-    static final File technologyToWordFrequencyMapFile = new File("technology_to_word_frequency_map.jobj");
+    static final File technologyToTopKeyWordsMapFile = new File("technology_to_top_keyword_map.jobj");
+
+    static double tfidfScore(String word, Map<String,Double> tech, Map<String,Double> globalFrequencyMap) {
+        double score = 0.0;
+        if(tech.containsKey(word)&&globalFrequencyMap.containsKey(word)) {
+            score+=tech.get(word)*-Math.log(globalFrequencyMap.get(word));
+        }
+        return score;
+    }
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {
         // Get Data
@@ -72,16 +81,17 @@ public class WordFrequencyCalculator {
     }
 
     public static void main(String[] args) throws Exception {
+        int wordsPerTechnology = 100;
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
-        final int minimumPatentCount = 10;
+        final int minimumPatentCount = 8;
         gatherTechMap.forEach((tech,patents)->{
             if(patents.size()<10) return;
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents, minimumPatentCount);
-            if(frequencyMap!=null&&frequencyMap.size()>KeywordSolution.WORDS_PER_TECH*5) {
+            if(frequencyMap!=null&&frequencyMap.size()>wordsPerTechnology*5) {
                 techMap.put(tech, frequencyMap);
             }
         });
@@ -136,13 +146,27 @@ public class WordFrequencyCalculator {
                 wordsToRemove.add(word);
             }
         });
+
+        Map<String,List<WordFrequencyPair<String,Double>>> allWordMap = new HashMap<>();
         techMap.forEach((tech,map)->{
             wordsToRemove.forEach(toRemove->{
                 if(map.containsKey(toRemove)) map.remove(toRemove);
             });
         });
-        System.out.println("Total valid technologies: "+techMap.size());
-        Database.trySaveObject(globalMap,wordFrequencyMapFile);
-        Database.trySaveObject(techMap,technologyToWordFrequencyMapFile);
+
+        Map<String,List<String>> topTechMap  = new HashMap<>();
+        techMap.forEach((tech, map) -> {
+            Map<String, Double> scores = new HashMap<>();
+            map.keySet().forEach(word -> {
+                scores.put(word, tfidfScore(word, map, globalMap));
+            });
+            List<String> words = scores.entrySet().stream().map(e -> new WordFrequencyPair<>(e.getKey(), e.getValue())).sorted(Comparator.reverseOrder()).map(pair->pair.getFirst()).limit(wordsPerTechnology).collect(Collectors.toList());
+            topTechMap.put(tech, words);
+            System.out.println("Top words for "+tech+": "+String.join("; ",words.subList(0,10)));
+        });
+
+
+        System.out.println("Total valid technologies: "+topTechMap.size());
+        Database.trySaveObject(topTechMap,technologyToTopKeyWordsMapFile);
     }
 }

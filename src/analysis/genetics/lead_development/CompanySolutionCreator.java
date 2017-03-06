@@ -2,8 +2,6 @@ package analysis.genetics.lead_development;
 
 import analysis.genetics.Solution;
 import analysis.genetics.SolutionCreator;
-import analysis.genetics.keyword_analysis.KeywordSolution;
-import analysis.genetics.keyword_analysis.Word;
 import com.google.common.collect.Maps;
 import seeding.Database;
 
@@ -11,7 +9,6 @@ import java.util.*;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Evan on 2/19/2017.

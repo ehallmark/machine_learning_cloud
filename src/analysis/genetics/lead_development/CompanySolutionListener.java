@@ -2,8 +2,6 @@ package analysis.genetics.lead_development;
 
 import analysis.genetics.Listener;
 import analysis.genetics.Solution;
-import analysis.genetics.keyword_analysis.KeywordSolution;
-import analysis.genetics.keyword_analysis.Word;
 
 import java.util.List;
 import java.util.Map;
