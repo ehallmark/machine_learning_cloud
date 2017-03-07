@@ -95,7 +95,7 @@ public class TechTaggerUI {
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Start Search","Searching")).with(
                         h2("Tech Tagger"),
-                        label("To Search For").with(
+                        label("To Search For (separated by semi-colon or newline)").with(
                                 br(),
                                 textarea().withName("search_input")
                         ),br(),
@@ -201,7 +201,7 @@ public class TechTaggerUI {
                 if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
                 // split by line
                 Set<String> all_search_inputs = new HashSet<>();
-                String[] search_inputs = search_input_str.split("\\R");
+                String[] search_inputs = search_input_str.split(";|\\R");
                 AtomicReference<PortfolioList.Type> inputType = new AtomicReference<>();
                 Arrays.stream(search_inputs).forEach(search_input->{
                     PortfolioList.Type type=null;
