@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Evan on 3/8/2017.
@@ -131,6 +132,14 @@ public class SudokuSolver implements Solution{
     }
 
     public static void main(String[] args) {
+        for(int i = 0; i < 10; i++) {
+            System.out.println("Starting in "+(10-i)+" seconds...");
+            try {
+                TimeUnit.MILLISECONDS.sleep(1000);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
         int maxPopulationSize = 10;
         double probMutation = 0.1;
         double probCrossover = 0.1;
