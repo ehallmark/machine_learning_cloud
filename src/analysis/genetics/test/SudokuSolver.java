@@ -121,7 +121,7 @@ public class SudokuSolver implements Solution{
                 if (SudokuPuzzle.isFinalValue(i, j)) {
                     System.out.print(" [" + puzzle[i][j]+"]");
                 } else if(SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
-                    System.out.print(" " + puzzle[i][j]+"");
+                    System.out.print(" " + puzzle[i][j]+" ");
                 } else {
                     System.out.print(" *" + puzzle[i][j]+"*");
                 }
