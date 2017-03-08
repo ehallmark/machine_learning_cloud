@@ -132,8 +132,8 @@ public class SudokuSolver implements Solution{
     }
 
     public static void main(String[] args) {
-        for(int i = 0; i < 10; i++) {
-            System.out.println("Starting in "+(10-i)+" seconds...");
+        for(int i = 0; i < 20; i++) {
+            System.out.println("Starting in "+(20-i)+" seconds...");
             try {
                 TimeUnit.MILLISECONDS.sleep(1000);
             }catch(Exception e) {
