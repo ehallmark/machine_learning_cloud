@@ -79,7 +79,7 @@ public class SudokuPuzzle {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
                 if(puzzle[i][j]!=actual[i][j])
-                error+=10;
+                error+=3;
             }
         }
         return error;

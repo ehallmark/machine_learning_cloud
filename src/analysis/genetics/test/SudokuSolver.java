@@ -131,7 +131,7 @@ public class SudokuSolver implements Solution{
     }
 
     public static void main(String[] args) {
-        int maxPopulationSize = 30;
+        int maxPopulationSize = 10;
         double probMutation = 0.1;
         double probCrossover = 0.1;
         SolutionCreator creator = new SudokuCreator();
