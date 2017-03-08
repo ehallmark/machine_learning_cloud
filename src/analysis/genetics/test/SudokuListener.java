@@ -11,5 +11,8 @@ public class SudokuListener implements Listener {
     public void print(Solution _solution) {
         SudokuSolver solution = (SudokuSolver)_solution;
         solution.printPuzzle();
+        if(SudokuPuzzle.isValid(solution.puzzle)) {
+            System.out.println("SUDOKU IS SOLVED");
+        }
     }
 }
