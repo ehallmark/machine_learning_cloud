@@ -85,6 +85,10 @@ public class SudokuPuzzle {
         return error;
     }
 
+    static boolean isValidValue(int row, int col, int value) {
+        return actual[row][col]==value;
+    }
+
     static boolean isValidRow(int[] line) {
         if(line==null||(line.length!=9)) return false;
         Set<Integer> checker = new HashSet<>();
@@ -101,7 +105,6 @@ public class SudokuPuzzle {
 
     static boolean isValid(int[][] puzzle) {
         if(puzzle==null||puzzle.length!=9) return false;
-        int score = 0;
         for(int i = 0; i < 9; i++) {
             if(!isValidRow(puzzle[i])) return false;
             int[] col = new int[]{

@@ -116,10 +116,13 @@ public class SudokuSolver implements Solution{
     }
 
     public void printPuzzle() {
-
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j<9; j++) {
-                System.out.print(" "+puzzle[i][j]);
+                if(SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
+                    System.out.print(" *" + puzzle[i][j]+"*");
+                } else {
+                    System.out.print(" (" + puzzle[i][j]+")");
+                }
             }
             System.out.println();
         }
