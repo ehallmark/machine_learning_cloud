@@ -11,6 +11,7 @@ import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
+import org.apache.commons.lang3.concurrent.AtomicInitializer;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 import server.tools.BackButtonHandler;
@@ -26,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -93,9 +95,9 @@ public class TechTaggerUI {
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Start Search","Searching")).with(
                         h2("Tech Tagger"),
-                        label("To Search For").with(
+                        label("To Search For (separated by semi-colon or newline)").with(
                                 br(),
-                                input().withType("text").withName("search_input")
+                                textarea().withName("search_input")
                         ),br(),
                         label("CPC Model percentage").with(
                                 br(),
@@ -188,30 +190,44 @@ public class TechTaggerUI {
 
                 System.out.println("Handled navigator");
                 int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
-                double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",1.0));
-                double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",1.0));
+                double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",0.0));
+                double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
                 if(ai_percent<0)ai_percent=0;
                 if(cpc_percent<0)cpc_percent=0;
-                String search_input = params.get("search_input").value();
-                if(search_input==null||search_input.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
+                if(ai_percent+cpc_percent==0.0) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Must have at least one model above zero"));
+                }
+                String search_input_str = params.get("search_input").value();
+                if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
+                // split by line
+                Set<String> all_search_inputs = new HashSet<>();
+                String[] search_inputs = search_input_str.split(";|\\R");
+                AtomicReference<PortfolioList.Type> inputType = new AtomicReference<>();
+                Arrays.stream(search_inputs).forEach(search_input->{
+                    PortfolioList.Type type=null;
+                    String assigneeStr = AssigneeTrimmer.standardizedAssignee(search_input);
+                    String patentStr = search_input.replaceAll("[^0-9]", "");
+                    String cleanSearchInput=null;
+                    if (Database.isAssignee(assigneeStr)) {
+                        type = PortfolioList.Type.assignees;
+                        cleanSearchInput = assigneeStr;
+                    } else if (Database.isPatent(patentStr)) {
+                        type = PortfolioList.Type.patents;
+                        cleanSearchInput = patentStr;
+                    }
+                    if(cleanSearchInput!=null) {
+                        all_search_inputs.add(cleanSearchInput);
+                        inputType.set(type);
+                    }
+                });
 
-                PortfolioList.Type inputType;
-                String assigneeStr = AssigneeTrimmer.standardizedAssignee(search_input);
-                String patentStr = search_input.replaceAll("[^0-9]", "");
-                final String cleanSearchInput;
-                if (Database.isAssignee(assigneeStr)) {
-                    inputType = PortfolioList.Type.assignees;
-                    cleanSearchInput = assigneeStr;
-                } else if (Database.isPatent(patentStr)) {
-                    inputType = PortfolioList.Type.patents;
-                    cleanSearchInput = patentStr;
-                } else {
-                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + search_input));
+                if(all_search_inputs.isEmpty()) {
+                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find any search inputs"));
                 }
 
                 System.out.println("Starting similarity tagger");
                 TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER),Arrays.asList(cpc_percent,ai_percent));
-                List<Pair<String,Double>> results = tagger.getTechnologiesFor(cleanSearchInput, inputType, tag_limit);
+                List<Pair<String,Double>> results = tagger.getTechnologiesFor(all_search_inputs, inputType.get(), tag_limit);
 
                 TechnologySolution solution = new TechnologySolution(results);
 
