@@ -118,10 +118,12 @@ public class SudokuSolver implements Solution{
     public void printPuzzle() {
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j<9; j++) {
-                if(SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
-                    System.out.print(" *" + puzzle[i][j]+"*");
+                if (SudokuPuzzle.isFinalValue(i, j)) {
+                    System.out.print(" [" + puzzle[i][j]+"]");
+                } else if(SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
+                    System.out.print(" " + puzzle[i][j]+"");
                 } else {
-                    System.out.print(" (" + puzzle[i][j]+")");
+                    System.out.print(" *" + puzzle[i][j]+"*");
                 }
             }
             System.out.println();
@@ -129,8 +131,8 @@ public class SudokuSolver implements Solution{
     }
 
     public static void main(String[] args) {
-        int maxPopulationSize = 10;
-        double probMutation = 0.05;
+        int maxPopulationSize = 30;
+        double probMutation = 0.1;
         double probCrossover = 0.1;
         SolutionCreator creator = new SudokuCreator();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,maxPopulationSize,new SudokuListener(),10);

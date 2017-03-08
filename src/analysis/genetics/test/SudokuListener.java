@@ -17,7 +17,7 @@ public class SudokuListener implements Listener {
             System.out.println("SOLVED");
         }
         try {
-            TimeUnit.MILLISECONDS.sleep(200);
+            TimeUnit.MILLISECONDS.sleep(300);
         }catch(Exception e) {
             e.printStackTrace();
         }
