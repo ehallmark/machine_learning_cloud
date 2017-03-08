@@ -42,6 +42,38 @@ public class PatentAPIHandler {
         return results;
     }
 
+    public static Collection<String> requestPatentNumbersFromAssignee(String assignee) {
+        Collection<String> patents = new HashSet<>();
+        GetAssetsFromAssigneeQuery query = new GetAssetsFromAssigneeQuery(assignee, 1);
+        int totalResults;
+        List<Patent> results = null;
+        try {
+            PatentResponse response = requestPatents(query);
+            totalResults = response.getTotalPatentCount();
+            if (totalResults == 0) return new ArrayList<>();
+            results = new ArrayList<>(totalResults);
+            results.addAll(response.getPatents());
+        } catch (Exception e) {
+            e.printStackTrace();
+            totalResults = 0;
+        }
+        if (results != null) {
+            int page = 2;
+            while (results.size() < totalResults) {
+                query = new GetAssetsFromAssigneeQuery(assignee, page);
+                try {
+                    results.addAll(requestPatents(query).getPatents());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+                page++;
+            }
+            patents.addAll(results.stream().map(patent->patent.getPatentNumber()).collect(Collectors.toList()));
+        }
+        return patents;
+    }
+
     public static Collection<Patent> requestAllPatents(Collection<String> _patents) {
         List<String> patentList = new ArrayList<>(_patents);
         int batch = 500;

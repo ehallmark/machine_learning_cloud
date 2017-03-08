@@ -1,6 +1,7 @@
 package server;
 
 import analysis.SimilarPatentFinder;
+import analysis.patent_view_api.PatentAPIHandler;
 import analysis.tech_tagger.GatherTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
@@ -197,6 +198,7 @@ public class SimilarPatentServer {
 
             String[] assignees = assigneeStr.split("\\n");
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
+            boolean usePatentsView = extractBool(req,"use_patents_view");
             Tag table = table().with(
                     thead().with(
                             tr().with(
@@ -209,7 +211,8 @@ public class SimilarPatentServer {
                                     .filter(assignee->!(assignee==null||assignee.isEmpty()))
                                     .map(assignee->tr().with(
                                             td(assignee),
-                                            td(String.join(" ",Database.selectPatentNumbersFromAssignee(assignee))))
+                                            td(String.join(" ",usePatentsView ? PatentAPIHandler.requestPatentNumbersFromAssignee(assignee)
+                                            : Database.selectPatentNumbersFromAssignee(assignee))))
                                     ).collect(Collectors.toList())
 
                     )
@@ -869,6 +872,7 @@ public class SimilarPatentServer {
                                                 h4("Please place each assignee on a separate line"),
                                                 form().withId(ASSIGNEE_ASSETS_FORM_ID).with(
                                                         label("Assignees"),br(),textarea().withName("assignee"), br(),
+                                                        label("Use Patents View API?"),br(),input().withType("checkbox").withName("use_patents_view"), br(),
                                                         button("Search").withId(ASSIGNEE_ASSETS_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),
