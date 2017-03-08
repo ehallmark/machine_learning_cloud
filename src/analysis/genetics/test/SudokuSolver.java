@@ -130,11 +130,11 @@ public class SudokuSolver implements Solution{
 
     public static void main(String[] args) {
         int maxPopulationSize = 10;
-        double probMutation = 0.5;
-        double probCrossover = 0.5;
+        double probMutation = 0.05;
+        double probCrossover = 0.1;
         SolutionCreator creator = new SudokuCreator();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,maxPopulationSize,new SudokuListener(),10);
-        algorithm.simulate(10000,probMutation,probCrossover);
+        algorithm.simulate(100000,probMutation,probCrossover);
     }
 
 
