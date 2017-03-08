@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 2/25/2017.
  */
-public class CompanySolution implements Solution {
+public class  CompanySolution implements Solution {
     private double fitness;
     private List<Map.Entry<String,Double>>  companyScores;
     private List<Attribute> attributes;
