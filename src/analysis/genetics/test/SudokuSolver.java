@@ -88,7 +88,7 @@ public class SudokuSolver implements Solution{
         int[][] newGrid = SudokuCreator.copyOf(puzzle);
         for(int i = 0; i < 9; i++) {
             for(int j= 0; j < 9; j++) {
-                if(random.nextDouble()<0.1 && !SudokuPuzzle.isFinalValue(i,j)) {
+                if(!SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
                     newGrid[i][j]=1+random.nextInt(9);
                 }
             }
@@ -102,7 +102,7 @@ public class SudokuSolver implements Solution{
         int[][] newGrid = SudokuCreator.copyOf(puzzle);
         for(int i = 0; i < 9; i++) {
             for(int j = 0; j < 9; j++) {
-                if(random.nextBoolean()) {
+                if(!SudokuPuzzle.isValidValue(i,j,puzzle[i][j])) {
                     newGrid[i][j]=((SudokuSolver)other).puzzle[i][j];
                 }
             }
