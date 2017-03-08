@@ -21,6 +21,8 @@ public class GeneticAlgorithm {
     private Solution bestSolutionSoFar;
     private double currentScore;
     private Listener listener;
+    private AtomicInteger mutationCounter = new AtomicInteger(0);
+    private AtomicInteger crossoverCounter = new AtomicInteger(0);
 
     public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize, Listener listener, int numThreads) {
         this.maxPopulationSize=maxPopulationSize;
@@ -55,8 +57,8 @@ public class GeneticAlgorithm {
                     System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
                     System.out.println("Starting Avg Score: "+startingScore);
                     System.out.println("Current Avg Score:  "+currentScore);
-                    System.out.println("Mutations this epoch:  "+counts.getFirst());
-                    System.out.println("Crossovers this epoch:  "+counts.getSecond());
+                    System.out.println("Mutations so far:   "+mutationCounter.addAndGet(counts.getFirst()));
+                    System.out.println("Crossovers so far:  "+crossoverCounter.addAndGet(counts.getSecond()));
                     if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
                     // listener
                     if(bestSolutionSoFar!=null&&listener!=null) {

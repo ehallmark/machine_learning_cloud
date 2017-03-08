@@ -80,7 +80,7 @@ public class SudokuSolver implements Solution{
 
     @Override
     public void calculateFitness() {
-        fitness=scorePuzzle(puzzle);
+        fitness=scorePuzzle(puzzle)-SudokuPuzzle.error(puzzle);
     }
 
     @Override
