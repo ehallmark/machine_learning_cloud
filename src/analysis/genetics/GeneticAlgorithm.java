@@ -153,7 +153,9 @@ public class GeneticAlgorithm {
         } catch(Exception e) {
             e.printStackTrace();
         }
-
+        System.out.println();
+        System.out.println();
+        System.out.println();
         if(crossoverCounter.get()==0) System.out.println("Warning no crossovers");
         if(mutationCounter.get()==0) System.out.println("Warning no mutations");
         population.addAll(children);
