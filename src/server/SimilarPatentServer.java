@@ -2,8 +2,6 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import analysis.patent_view_api.PatentAPIHandler;
-import analysis.tech_tagger.GatherTagger;
-import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;

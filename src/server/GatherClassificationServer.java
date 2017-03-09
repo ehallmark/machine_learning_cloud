@@ -1,22 +1,14 @@
 package server;
 
-import analysis.SimilarPatentFinder;
-import analysis.tech_tagger.GatherTagger;
-import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import seeding.Constants;
-import seeding.Database;
 import server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
 import tools.PortfolioList;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 

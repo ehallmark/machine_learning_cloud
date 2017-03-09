@@ -1,6 +1,5 @@
 package server.tools;
 
-import analysis.tech_tagger.GatherTagger;
 import seeding.Database;
 import server.tools.excel.ExcelCell;
 import server.tools.excel.ExcelHandler;

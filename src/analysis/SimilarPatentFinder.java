@@ -6,6 +6,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import seeding.Constants;
 import seeding.Database;
 import server.tools.excel.ExcelWritable;
 import tools.*;
@@ -95,7 +96,7 @@ public class SimilarPatentFinder {
     public INDArray computeAvg() {
         if(avgVector!=null) return avgVector;
 
-        INDArray thisAvg = Nd4j.create(patentList.size(),patentList.stream().findFirst().get().getVector().columns());
+        INDArray thisAvg = Nd4j.create(patentList.size(), Constants.VECTOR_LENGTH);
         double totalWeight = 0.0;
         for(int i = 0; i < patentList.size(); i++) {
             Patent p = patentList.get(i);

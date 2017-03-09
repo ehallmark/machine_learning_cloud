@@ -1,7 +1,5 @@
 package analysis.tech_tagger;
 
-import com.google.common.util.concurrent.AtomicDouble;
-import com.googlecode.concurrenttrees.radix.RadixTree;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -10,13 +8,11 @@ import tools.MinHeap;
 import tools.PortfolioList;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 2/18/2017.
  */
-public class GatherTagger extends TechTagger {
+public class CPCTagger extends TechTagger {
     protected Map<String,INDArray> technologyMap;
     protected List<String> orderedTechnologies;
     protected static final Map<String,INDArray> DEFAULT_TECHNOLOGY_MAP;
@@ -27,11 +23,11 @@ public class GatherTagger extends TechTagger {
 
     }
 
-    public GatherTagger() {
+    public CPCTagger() {
         this(DEFAULT_TECHNOLOGY_MAP,DEFAULT_ORDERED_TECHNOLOGIES);
     }
 
-    protected GatherTagger(Map<String,INDArray> techMap, List<String> orderedTech) {
+    protected CPCTagger(Map<String,INDArray> techMap, List<String> orderedTech) {
         this.technologyMap=techMap;
         this.orderedTechnologies=orderedTech;
     }

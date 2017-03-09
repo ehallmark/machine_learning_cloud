@@ -1,16 +1,12 @@
 package server.tools;
 
-import analysis.tech_tagger.GatherTagger;
-import com.google.common.util.concurrent.AtomicDouble;
 import seeding.Database;
 import server.tools.excel.ExcelCell;
 import server.tools.excel.ExcelHandler;
 import server.tools.excel.ExcelWritable;
-import tools.AssigneeTrimmer;
 import tools.PortfolioList;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 11/19/16.

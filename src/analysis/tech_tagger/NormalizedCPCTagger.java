@@ -2,13 +2,10 @@ package analysis.tech_tagger;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.RealDistribution;
-import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.indexing.NDArrayIndex;
 import seeding.Database;
-import tools.MinHeap;
-import tools.PortfolioList;
 import value_estimation.ValueMapNormalizer;
 
 import java.io.File;
@@ -18,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by Evan on 2/18/2017.
  */
-public class NormalizedGatherTagger extends GatherTagger {
+public class NormalizedCPCTagger extends CPCTagger {
     protected static final Map<String,INDArray> normalizedMap;
     static final File normalizedMapFile = new File("normalized_gather_tech_map.jobj");
     static {
@@ -70,7 +67,7 @@ public class NormalizedGatherTagger extends GatherTagger {
             Database.trySaveObject(normalizedMap,normalizedMapFile);
         }
     }
-    public NormalizedGatherTagger() {
+    public NormalizedCPCTagger() {
         super(normalizedMap,DEFAULT_ORDERED_TECHNOLOGIES);
     }
 

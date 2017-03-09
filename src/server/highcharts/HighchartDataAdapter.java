@@ -1,15 +1,11 @@
 package server.highcharts;
 
-import analysis.tech_tagger.GatherTagger;
-import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
-import com.amazonaws.services.devicefarm.model.Run;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import com.googlecode.wickedcharts.highcharts.options.series.SimpleSeries;
 import seeding.Database;
 import server.SimilarPatentServer;
 import tools.PortfolioList;

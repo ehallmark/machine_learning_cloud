@@ -33,4 +33,8 @@ public class WordFrequencyPair<T,V extends Comparable<V>> implements Comparable<
     public int compareTo(WordFrequencyPair<T,V> other) {
         return getSecond().compareTo(other.getSecond());
     }
+
+    public Pair<T,V> toPair() {
+        return new Pair<>(first,second);
+    }
 }

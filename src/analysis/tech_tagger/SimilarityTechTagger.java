@@ -36,7 +36,7 @@ public class SimilarityTechTagger extends TechTagger {
         gatherTagger = new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
     }
 
-    public static SimilarityTechTagger getGatherTagger() {
+    public static SimilarityTechTagger getAIModelTagger() {
         return gatherTagger;
     }
 
