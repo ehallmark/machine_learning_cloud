@@ -3,10 +3,14 @@ package analysis.genetics.keyword_analysis;
 import analysis.WordFrequencyPair;
 import analysis.patent_view_api.PatentAPIHandler;
 import com.google.common.util.concurrent.AtomicDouble;
+import org.deeplearning4j.berkeley.Pair;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import server.SimilarPatentServer;
 import tools.MinHeap;
 
 import java.io.File;
@@ -167,6 +171,39 @@ public class WordFrequencyCalculator {
 
 
         System.out.println("Total valid technologies: "+topTechMap.size());
-        Database.trySaveObject(topTechMap,technologyToTopKeyWordsMapFile);
+
+        // take average of the vectors for each word in a keyphrase
+        System.out.println("Loading lookup table...");
+        SimilarPatentServer.loadLookupTable();
+        System.out.println("Finished loading.");
+        WeightLookupTable<VocabWord> lookupTable = SimilarPatentServer.getLookupTable();
+        // build Map<String,List<Pair<String,INDArray>>> techToKeywordVectorsMap
+        Map<String,List<INDArray>> techToKeywordVectorsMap = new HashMap<>();
+
+        topTechMap.forEach((tech,keyphrases)->{
+            List<INDArray> keywordsForTech = new ArrayList<>(keyphrases.size());
+            keyphrases.forEach(keyphrase->{
+                String[] split = keyphrase.split("_");
+                if(split!=null) {
+                    INDArray wVec = Nd4j.zeros(Constants.VECTOR_LENGTH);
+                    int count = 0;
+                    for(String word : split) {
+                        INDArray tmp = lookupTable.vector(word);
+                        if(tmp!=null) {
+                            count++;
+                            wVec.addi(tmp);
+                        }
+                    }
+                    if(count > 0) {
+                        wVec.divi(count);
+                        keywordsForTech.add(wVec);
+                    }
+                }
+            });
+            System.out.println("Found "+keywordsForTech.size()+" vectors in tech: "+tech);
+            techToKeywordVectorsMap.put(tech,keywordsForTech);
+        });
+
+        Database.trySaveObject(techToKeywordVectorsMap,technologyToTopKeyWordsMapFile);
     }
 }
