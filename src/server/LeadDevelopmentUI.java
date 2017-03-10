@@ -420,7 +420,7 @@ public class LeadDevelopmentUI {
         headers.add(th("Portfolio Size"));
         if(attrs.size()>1)headers.add(th("Overall Score"));
         attrs.forEach(attr->{
-            headers.add(th(attr.name));
+            headers.add(th(attr.humanName));
         });
         return div().with(
                 table().with(
