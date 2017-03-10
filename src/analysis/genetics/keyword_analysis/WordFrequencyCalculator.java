@@ -85,13 +85,13 @@ public class WordFrequencyCalculator {
     }
 
     public static void main(String[] args) throws Exception {
-        int wordsPerTechnology = 100;
+        int wordsPerTechnology = 250;
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
-        final int minimumPatentCount = 8;
+        final int minimumPatentCount = 6;
         gatherTechMap.forEach((tech,patents)->{
-            if(patents.size()<10) return;
+            if(patents.size()<minimumPatentCount) return;
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
             Map<String,Double> frequencyMap = computeGlobalWordFrequencyMap(patents, minimumPatentCount);
