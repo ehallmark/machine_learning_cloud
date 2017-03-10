@@ -1,6 +1,6 @@
 package server;
 
-import analysis.genetics.keyword_analysis.KeywordTechTagger;
+import analysis.genetics.keyword_analysis.GatherKeywordTechTagger;
 import analysis.tech_tagger.CPCTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
@@ -39,7 +39,7 @@ public class TechTaggerUI {
     static {
         CPC_TAGGER=new CPCTagger();
         SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
-        KEYWORD_TAGGER=new KeywordTechTagger();
+        KEYWORD_TAGGER=new GatherKeywordTechTagger();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {

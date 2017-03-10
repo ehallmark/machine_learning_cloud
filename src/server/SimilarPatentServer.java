@@ -12,6 +12,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
@@ -91,6 +92,10 @@ public class SimilarPatentServer {
             e.printStackTrace();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
+    }
+
+    public static VocabCache<VocabWord> getVocabCache() {
+        return paragraphVectors.getVocab();
     }
 
     static void loadValueModels() {

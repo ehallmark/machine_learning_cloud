@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 3/9/17.
  */
-public class KeywordTechTagger extends TechTagger {
+public class GatherKeywordTechTagger extends TechTagger {
     private static Map<String,List<INDArray>> technologyToKeywordMap;
     private static WeightLookupTable<VocabWord> lookupTable;
     static {
