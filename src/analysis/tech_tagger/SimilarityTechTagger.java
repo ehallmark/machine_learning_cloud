@@ -54,6 +54,11 @@ public class SimilarityTechTagger extends TechTagger {
     }
 
     @Override
+    public int size() {
+        return names.size();
+    }
+
+    @Override
     public double getTechnologyValueFor(String item, String technology) {
         int idx = names.indexOf(technology);
         if(idx>=0) {

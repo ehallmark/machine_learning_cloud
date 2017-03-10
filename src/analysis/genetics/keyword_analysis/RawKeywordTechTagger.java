@@ -32,6 +32,11 @@ public class RawKeywordTechTagger extends TechTagger {
     }
 
     @Override
+    public int size() {
+        return 100;
+    }
+
+    @Override
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
         return getTechnologiesFor(Arrays.asList(item),type,n);
     }
@@ -42,13 +47,15 @@ public class RawKeywordTechTagger extends TechTagger {
         int patentLimit = 30;
         List<String> patents = new ArrayList<>();
         if(type.equals(PortfolioList.Type.assignees)) {
+            System.out.println("IS ASSIGNEE");
             items.forEach(item->patents.addAll(Database.selectPatentNumbersFromAssignee(item)));
         } else {
+            System.out.println("IS ASSET");
             patents.addAll(items);
         }
         Set<String> toSearchIn = new HashSet<>(patentLimit);
         if(patents.size()>patentLimit) {
-            toSearchIn.add(patents.remove(random.nextInt(patents.size())));
+            for(int i = 0; i < patentLimit; i++) toSearchIn.add(patents.remove(random.nextInt(patents.size())));
         }
         Map<String,Double> frequencies = WordFrequencyCalculator.computeGlobalWordFrequencyMap(toSearchIn,0);
 

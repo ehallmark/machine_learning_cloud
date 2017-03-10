@@ -14,16 +14,18 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends TechTagger {
     private List<TechTagger> taggers;
-    private int[] sizes;
     private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(),SimilarityTechTagger.getAIModelTagger()),Arrays.asList(0.1,1.0));
 
     public TechTaggerNormalizer(List<TechTagger> taggers, List<Double> weights) {
         this.taggers=taggers;
-        sizes=new int[taggers.size()];
         for(int i = 0; i < taggers.size(); i++) {
             taggers.get(i).setWeight(weights.get(i));
-            sizes[i]=taggers.get(i).getAllTechnologies().size();
         }
+    }
+
+    @Override
+    public int size() {
+        return 0;
     }
 
     public static TechTagger getDefaultTechTagger() {
@@ -47,9 +49,9 @@ public class TechTaggerNormalizer extends TechTagger {
             int i = cnt.getAndIncrement();
             List<Pair<String,Double>> data;
             if(item instanceof String) {
-                 data = tagger.getTechnologiesFor((String)item,type,sizes[i]);
+                 data = tagger.getTechnologiesFor((String)item,type,tagger.size());
             } else {
-                data = tagger.getTechnologiesFor((Collection<String>)item,type,sizes[i]);
+                data = tagger.getTechnologiesFor((Collection<String>)item,type,tagger.size());
             }
             if(data!=null&&data.size()>=10) {
                 // normalize data

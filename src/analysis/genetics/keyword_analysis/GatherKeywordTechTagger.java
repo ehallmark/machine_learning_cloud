@@ -34,6 +34,12 @@ public class GatherKeywordTechTagger extends TechTagger {
         }
         lookupTable= SimilarPatentServer.getLookupTable();
     }
+
+    @Override
+    public int size() {
+        return technologyToKeywordMap.size();
+    }
+
     @Override
     public double getTechnologyValueFor(String item, String technology) {
         if(!technologyToKeywordMap.containsKey(technology)) {

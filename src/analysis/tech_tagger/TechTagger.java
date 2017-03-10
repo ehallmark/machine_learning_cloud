@@ -19,5 +19,5 @@ public abstract class TechTagger {
     public abstract List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n);
     public abstract List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n);
     public abstract  Collection<String> getAllTechnologies();
-
+    public abstract int size();
 }

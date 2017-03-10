@@ -49,6 +49,11 @@ public class CPCTagger extends TechTagger {
         }else return 0d;
     }
 
+    @Override
+    public int size() {
+        return orderedTechnologies.size();
+    }
+
     public List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
         List<INDArray> vectors = new ArrayList<>(items.size());
         items.forEach(item->{
