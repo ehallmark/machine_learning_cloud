@@ -44,7 +44,7 @@ public class RawKeywordTechTagger extends TechTagger {
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
         // patent limit = 30
-        int patentLimit = 30;
+        int patentLimit = 50;
         List<String> patents = new ArrayList<>();
         if(type.equals(PortfolioList.Type.assignees)) {
             System.out.println("IS ASSIGNEE");
