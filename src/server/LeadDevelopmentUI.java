@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import j2html.tags.EmptyTag;
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
@@ -241,7 +242,7 @@ public class LeadDevelopmentUI {
                 QueryParamsMap params;
 
                 // handle navigation
-                BackButtonHandler<CompanySolution> navigator;
+                BackButtonHandler<Pair<List<Attribute>,CompanySolution>> navigator;
                 if (req.session().attribute("navigator") == null) {
                     navigator = new BackButtonHandler<>();
                     req.session().attribute("navigator", navigator);
@@ -250,20 +251,20 @@ public class LeadDevelopmentUI {
                 }
 
                 if (SimilarPatentServer.extractBool(req, "goBack")) {
-                    CompanySolution tmp = navigator.goBack();
+                    Pair<List<Attribute>,CompanySolution> tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                     else {
                         // RETURN SOLUTION
                         System.out.println("Going back");
-                        return renderSolution(tmp);
+                        return renderSolution(tmp.getSecond(),tmp.getFirst());
                     }
                 } else if (SimilarPatentServer.extractBool(req, "goForward")) {
-                    CompanySolution tmp = navigator.goForward();
+                    Pair<List<Attribute>,CompanySolution> tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
                     else {
                         // RETURN SOLUTION
                         System.out.println("Going forward");
-                        return renderSolution(tmp);
+                        return renderSolution(tmp.getSecond(),tmp.getFirst());
                     }
                 } else {
                     params = req.queryMap();
@@ -365,9 +366,9 @@ public class LeadDevelopmentUI {
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
 
                 // add to request map
-                navigator.addRequest(solution);
+                navigator.addRequest(new Pair<>(attrsToUseList,solution));
 
-                return renderSolution(solution);
+                return renderSolution(solution,attrsToUseList);
 
 
             } catch(Exception e) {
@@ -376,11 +377,11 @@ public class LeadDevelopmentUI {
         });
     }
 
-    private static String renderSolution(CompanySolution solution) {
+    private static String renderSolution(CompanySolution solution, List<Attribute> attrs) {
         return new Gson().toJson(new SimpleAjaxMessage(div().with(
                 solution == null ? div().with(h4("No Solution Found.")) : div().with(
                         h4("Solution"),
-                        tableFromSolution(solution)
+                        tableFromSolution(solution,attrs)
                 )
         ).render()));
     }
@@ -413,21 +414,31 @@ public class LeadDevelopmentUI {
         return new CompanySolution(scores,attributes);
     }
 
-    static Tag tableFromSolution(CompanySolution solution) {
+    static Tag tableFromSolution(CompanySolution solution, List<Attribute> attrs) {
+        List<Tag> headers = new ArrayList<>();
+        headers.add(th("Company"));
+        headers.add(th("Portfolio Size"));
+        if(attrs.size()>1)headers.add(th("Overall Score"));
+        attrs.forEach(attr->{
+            headers.add(th(attr.name));
+        });
         return div().with(
                 table().with(
                     thead().with(
                             tr().with(
-                                    th("Company"),
-                                    th("Portfolio Size after 2006"),
-                                    th("Score")
+                                    headers
                             )
                     ),tbody().with(
-                            solution.getCompanyScores().stream().map(entry->tr().with(
-                                    td(entry.getKey()),
-                                    td(String.valueOf(Database.getAssetCountFor(entry.getKey()))),
-                                    td(entry.getValue().toString())
-                            )).collect(Collectors.toList())
+                            solution.getCompanyScores().stream().map(entry-> {
+                                List<Tag> values = new ArrayList<>();
+                                values.add(td(entry.getKey()));
+                                values.add(td(String.valueOf(Database.getAssetCountFor(entry.getKey()))));
+                                if(attrs.size()>1)values.add(td(entry.getValue().toString()));
+                                attrs.forEach(attr->{
+                                    values.add(td(String.valueOf(attr.scoreAssignee(entry.getKey()))));
+                                });
+                                return tr().with(values);
+                            }).collect(Collectors.toList())
                     )
                 )
 
