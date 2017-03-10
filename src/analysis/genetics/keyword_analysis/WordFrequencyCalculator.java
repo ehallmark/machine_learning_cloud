@@ -25,11 +25,11 @@ public class WordFrequencyCalculator {
     static final File technologyToTopKeyWordsMapFile = new File("technology_to_top_keyword_map.jobj");
 
     static double tfidfScore(String word, Map<String,Double> tech, Map<String,Double> globalFrequencyMap) {
-        double score = 0.0;
-        if(tech.containsKey(word)&&globalFrequencyMap.containsKey(word)) {
-            score+=tech.get(word)*-Math.log(globalFrequencyMap.get(word));
-        }
-        return score;
+        Double tf = tech.get(word);
+        if(tf==null)tf=0d;
+        Double idf = globalFrequencyMap.get(word);
+        if(idf==null) idf = 1d;
+        return tf*-Math.log(Math.E+idf);
     }
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {

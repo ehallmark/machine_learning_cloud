@@ -1,11 +1,13 @@
 package analysis.genetics.keyword_analysis;
 
+import analysis.WordFrequencyPair;
 import analysis.patent_view_api.Patent;
 import analysis.patent_view_api.PatentAPIHandler;
 import analysis.tech_tagger.TechTagger;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 import server.SimilarPatentServer;
+import tools.MinHeap;
 import tools.PortfolioList;
 
 import java.io.File;
@@ -16,26 +18,54 @@ import java.util.*;
  */
 public class RawKeywordTechTagger extends TechTagger {
     static File raw_keyword_map_file = new File("raw_keyword_to_document_frequency_map.jobj");
-
+    private static Random random = new Random(69);
+    private static Map<String,Double> globalFrequencies;
+    static {
+        if(raw_keyword_map_file.exists()) {
+            globalFrequencies=(Map<String,Double>)Database.tryLoadObject(raw_keyword_map_file);
+        }
+    }
 
     @Override
     public double getTechnologyValueFor(String item, String technology) {
-        return 0;
+        return 0d; // NOT POSSIBLE
     }
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return null;
+        return getTechnologiesFor(Arrays.asList(item),type,n);
     }
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
-        return null;
+        // patent limit = 30
+        int patentLimit = 30;
+        List<String> patents = new ArrayList<>();
+        if(type.equals(PortfolioList.Type.assignees)) {
+            items.forEach(item->patents.addAll(Database.selectPatentNumbersFromAssignee(item)));
+        } else {
+            patents.addAll(items);
+        }
+        Set<String> toSearchIn = new HashSet<>(patentLimit);
+        if(patents.size()>patentLimit) {
+            toSearchIn.add(patents.remove(random.nextInt(patents.size())));
+        }
+        Map<String,Double> frequencies = WordFrequencyCalculator.computeGlobalWordFrequencyMap(toSearchIn,0);
+
+        MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
+        frequencies.entrySet().forEach(entry->{
+            heap.add(new WordFrequencyPair<>(entry.getKey(),WordFrequencyCalculator.tfidfScore(entry.getKey(),frequencies,globalFrequencies)));
+        });
+        List<Pair<String,Double>> data = new ArrayList<>(n);
+        while(!heap.isEmpty()) {
+            data.add(0,heap.remove().toPair());
+        }
+        return data;
     }
 
     @Override
     public Collection<String> getAllTechnologies() {
-        return null;
+        return Collections.emptyList();
     }
 
 

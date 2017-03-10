@@ -1,6 +1,7 @@
 package server;
 
 import analysis.genetics.keyword_analysis.GatherKeywordTechTagger;
+import analysis.genetics.keyword_analysis.RawKeywordTechTagger;
 import analysis.tech_tagger.CPCTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
@@ -35,11 +36,13 @@ public class TechTaggerUI {
     private static final String MAIN_INPUT_ID = "main-input-id";
     private static final TechTagger CPC_TAGGER;
     private static final TechTagger SIMILARITY_TAGGER;
-    private static final TechTagger KEYWORD_TAGGER;
+    private static final TechTagger GATHER_KEYWORD_TAGGER;
+    private static final TechTagger RAW_KEYWORD_TAGGER;
     static {
         CPC_TAGGER=new CPCTagger();
         SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
-        KEYWORD_TAGGER=new GatherKeywordTechTagger();
+        GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
+        RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -102,9 +105,13 @@ public class TechTaggerUI {
                                 br(),
                                 input().withType("number").attr("step","0.1").withName("ai_percent").withValue("1.0")
                         ),br(),
-                        label("Keyword Model percentage").with(
+                        label("Gather Keyword Model percentage").with(
                                 br(),
-                                input().withType("number").attr("step","0.1").withName("keyword_percent").withValue("1.0")
+                                input().withType("number").attr("step","0.1").withName("gather_keyword_percent").withValue("1.0")
+                        ),br(),
+                        label("Global Keyword Model percentage").with(
+                                br(),
+                                input().withType("number").attr("step","0.1").withName("raw_keyword_percent").withValue("1.0")
                         ),br(),
                         label("Tag Limit").with(
                                 br(),
@@ -191,11 +198,13 @@ public class TechTaggerUI {
                 int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
                 double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",0.0));
                 double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
-                double keyword_percent = (SimilarPatentServer.extractDouble(params,"keyword_percent",0.0));
+                double gather_keyword_percent = (SimilarPatentServer.extractDouble(params,"gather_keyword_percent",0.0));
+                double raw_keyword_percent = (SimilarPatentServer.extractDouble(params,"raw_keyword_percent",0.0));
                 if(ai_percent<0)ai_percent=0;
                 if(cpc_percent<0)cpc_percent=0;
-                if(keyword_percent<0)keyword_percent=0;
-                if(ai_percent+cpc_percent+keyword_percent==0.0) {
+                if(raw_keyword_percent<0)raw_keyword_percent=0;
+                if(gather_keyword_percent<0)gather_keyword_percent=0;
+                if(ai_percent+cpc_percent+raw_keyword_percent+gather_keyword_percent==0.0) {
                     return new Gson().toJson(new SimpleAjaxMessage("Must have at least one model above zero"));
                 }
                 String search_input_str = params.get("search_input").value();
@@ -225,7 +234,7 @@ public class TechTaggerUI {
                 }
 
                 System.out.println("Starting similarity tagger");
-                TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER,KEYWORD_TAGGER),Arrays.asList(cpc_percent,ai_percent,keyword_percent));
+                TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER,GATHER_KEYWORD_TAGGER,RAW_KEYWORD_TAGGER),Arrays.asList(cpc_percent,ai_percent,gather_keyword_percent,raw_keyword_percent));
                 List<Pair<String,Double>> results = tagger.getTechnologiesFor(all_search_inputs, inputType.get(), tag_limit);
 
                 TechnologySolution solution = new TechnologySolution(results);
