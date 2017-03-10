@@ -28,8 +28,8 @@ public class WordFrequencyCalculator {
         Double tf = tech.get(word);
         if(tf==null)tf=0d;
         Double idf = globalFrequencyMap.get(word);
-        if(idf==null) idf = 1d;
-        return tf*-Math.log(Math.E+idf);
+        if(idf==null) idf = 0d;
+        return tf*(1.0-Math.pow(idf,0.3));
     }
 
     public static Map<String,Double> computeGlobalWordFrequencyMap(Collection<String> patentsToSearchIn, int minimum) {

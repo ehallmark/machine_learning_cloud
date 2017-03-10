@@ -65,7 +65,9 @@ public class RawKeywordTechTagger extends TechTagger {
         });
         List<Pair<String,Double>> data = new ArrayList<>(n);
         while(!heap.isEmpty()) {
-            data.add(0,heap.remove().toPair());
+            Pair<String,Double> pair = heap.remove().toPair();
+            System.out.println("Found: "+pair.getFirst());
+            data.add(0,pair);
         }
         return data;
     }
