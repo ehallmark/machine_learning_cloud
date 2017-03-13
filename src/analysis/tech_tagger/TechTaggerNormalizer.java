@@ -1,6 +1,7 @@
 package analysis.tech_tagger;
 
 import analysis.WordFrequencyPair;
+import analysis.genetics.keyword_analysis.GatherKeywordTechTagger;
 import org.deeplearning4j.berkeley.Pair;
 import tools.MinHeap;
 import tools.PortfolioList;
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends TechTagger {
     private List<TechTagger> taggers;
-    private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(),SimilarityTechTagger.getAIModelTagger()),Arrays.asList(0.1,1.0));
+    private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(),new GatherKeywordTechTagger(),SimilarityTechTagger.getAIModelTagger()),Arrays.asList(0.1,0.2,1.0));
 
     public TechTaggerNormalizer(List<TechTagger> taggers, List<Double> weights) {
         this.taggers=taggers;
@@ -31,6 +32,7 @@ public class TechTaggerNormalizer extends TechTagger {
     public static TechTagger getDefaultTechTagger() {
         return tagger;
     }
+
     @Override
     public double getTechnologyValueFor(String item, String technology) {
         return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(item,technology)*tagger.getWeight()));

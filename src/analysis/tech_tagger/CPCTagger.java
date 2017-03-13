@@ -15,16 +15,21 @@ import java.util.*;
 public class CPCTagger extends TechTagger {
     protected Map<String,INDArray> technologyMap;
     protected List<String> orderedTechnologies;
-    protected static final Map<String,INDArray> DEFAULT_TECHNOLOGY_MAP;
-    protected static final List<String> DEFAULT_ORDERED_TECHNOLOGIES;
-    static {
-        DEFAULT_TECHNOLOGY_MAP=(Map<String,INDArray>)Database.tryLoadObject(BuildCPCToGatherStatistics.techMapFile);
-        DEFAULT_ORDERED_TECHNOLOGIES=(List<String>)Database.tryLoadObject(BuildCPCToGatherStatistics.techListFile);
+    protected static Map<String,INDArray> DEFAULT_TECHNOLOGY_MAP;
+    protected static List<String> DEFAULT_ORDERED_TECHNOLOGIES;
 
+    private static Map<String,INDArray> loadTechMap() {
+        if(DEFAULT_TECHNOLOGY_MAP==null)DEFAULT_TECHNOLOGY_MAP=(Map<String,INDArray>)Database.tryLoadObject(BuildCPCToGatherStatistics.techMapFile);
+        return DEFAULT_TECHNOLOGY_MAP;
+    }
+
+    private static List<String> loadTechList() {
+        if(DEFAULT_ORDERED_TECHNOLOGIES==null)DEFAULT_ORDERED_TECHNOLOGIES=(List<String>)Database.tryLoadObject(BuildCPCToGatherStatistics.techListFile);
+        return DEFAULT_ORDERED_TECHNOLOGIES;
     }
 
     public CPCTagger() {
-        this(DEFAULT_TECHNOLOGY_MAP,DEFAULT_ORDERED_TECHNOLOGIES);
+        this(DEFAULT_TECHNOLOGY_MAP==null?loadTechMap():DEFAULT_TECHNOLOGY_MAP,DEFAULT_ORDERED_TECHNOLOGIES==null?loadTechList():DEFAULT_ORDERED_TECHNOLOGIES);
     }
 
     protected CPCTagger(Map<String,INDArray> techMap, List<String> orderedTech) {

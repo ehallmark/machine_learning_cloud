@@ -1,7 +1,7 @@
 package server.tools.excel;
 
-import analysis.tech_tagger.CPCTagger;
 import analysis.tech_tagger.TechTagger;
+import analysis.tech_tagger.TechTaggerNormalizer;
 import org.deeplearning4j.berkeley.Pair;
 import tools.PortfolioList;
 import value_estimation.ValueMapNormalizer;
@@ -23,7 +23,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected String technology;
     protected List<Pair<String,Double>> technologyList;
     protected PortfolioList.Type type;
-    private static final TechTagger tagger = new CPCTagger();
+    private static final TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
