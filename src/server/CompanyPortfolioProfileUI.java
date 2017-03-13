@@ -37,7 +37,7 @@ public class CompanyPortfolioProfileUI {
     private static final Map<String,List<String>> attributesMap;
     static {
         attributesMap=new HashMap<>();
-        List<String> valueAttrs = Arrays.asList("name","assignee","title","citationValue","technologyValue","assigneeValue","marketValue","claimValue","overallValue");
+        List<String> valueAttrs = Arrays.asList("name","assignee","title","overallValue");
         attributesMap.put("Portfolio Valuation",valueAttrs);
         List<String> similarPatentAttrs = Arrays.asList("name","similarity","assignee","title");
         attributesMap.put("Representative Patents",similarPatentAttrs);
@@ -48,6 +48,7 @@ public class CompanyPortfolioProfileUI {
         List<String> techAttrs = Arrays.asList("name","technology");
         attributesMap.put("Technology Distribution",techAttrs);
         attributesMap.put("Company Details", Collections.emptyList());
+        attributesMap.put("Recent Activity Timeline",Collections.emptyList());
         reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
@@ -347,7 +348,7 @@ public class CompanyPortfolioProfileUI {
                             int numTechnologies;
                             if (inputType.equals(PortfolioList.Type.assignees)) numTechnologies = 10;
                             else numTechnologies = 5;
-                            AbstractChart chart = new ColumnChart("Technology Distribution for " + portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType, numTechnologies), 0d, 100d, "%");
+                            AbstractChart chart = new PieChart("Technology Distribution for " + portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType, numTechnologies));
                             // test!
                             charts.add(chart);
                             break;
