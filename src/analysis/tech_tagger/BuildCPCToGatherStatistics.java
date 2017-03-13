@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class BuildCPCToGatherStatistics {
     static final File techListFile = new File("ordered_gather_cpc_to_tech_list.jobj");
     static final File techMapFile = new File("gather_cpc_to_tech_map.jobj");
-    static final int MIN_CLASS_CODE_LENGTH = 6;
+    static final int MIN_CLASS_CODE_LENGTH = 7;
     private static final double DECAY_RATE = 2d;
 
 
@@ -84,7 +84,7 @@ public class BuildCPCToGatherStatistics {
     public static void main(String[] args) throws Exception {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         List<String> orderedTechnologies = new ArrayList<>(gatherTechMap.keySet());
-        int minPatentSize = 9;
+        int minPatentSize = 10;
         // relevant cpc subgroup to patent map
         Collection<String> patentsToQuery = new HashSet<>();
         gatherTechMap.forEach((tech,patents)->{
@@ -149,8 +149,8 @@ public class BuildCPCToGatherStatistics {
         map.putAll(assigneeMap);
 
         // Adding CPCS to MAP
-        System.out.println("Added assignees; now adding CPCs");
-        map.putAll(classCodeToCondProbMap);
+        //System.out.println("Added assignees; now adding CPCs");
+        //map.putAll(classCodeToCondProbMap);
 
         Database.trySaveObject(map,techMapFile);
         // save ordered list too
