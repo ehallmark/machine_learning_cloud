@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class BuildCPCToGatherStatistics {
     static final File techListFile = new File("ordered_gather_tech_list.jobj");
     static final File techMapFile = new File("gather_tech_map.jobj");
-    static final int MIN_CLASS_CODE_LENGTH = 3;
+    static final int MIN_CLASS_CODE_LENGTH = 6;
     private static final double DECAY_RATE = 2d;
 
 
@@ -84,10 +84,12 @@ public class BuildCPCToGatherStatistics {
     public static void main(String[] args) throws Exception {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         List<String> orderedTechnologies = new ArrayList<>(gatherTechMap.keySet());
-
+        int minPatentSize = 9;
         // relevant cpc subgroup to patent map
         Collection<String> patentsToQuery = new HashSet<>();
-        gatherTechMap.forEach((tech,patents)->patentsToQuery.addAll(patents));
+        gatherTechMap.forEach((tech,patents)->{
+            if(patents.size()>=minPatentSize)patentsToQuery.addAll(patents);
+        });
 
         Collection<Patent> allPatents=PatentAPIHandler.requestAllPatents(patentsToQuery);
         System.out.println("Finished loading data");
