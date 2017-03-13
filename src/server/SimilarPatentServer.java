@@ -63,7 +63,7 @@ public class SimilarPatentServer {
     private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
     private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
 
-    private static final TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
+    private static TechTagger tagger;
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -78,6 +78,9 @@ public class SimilarPatentServer {
         return paragraphVectors.getLookupTable();
     }
 
+    public static TechTagger getTagger() {
+        return tagger;
+    }
     public static void loadLookupTable() throws IOException {
         if(paragraphVectors!=null)return;
         boolean testing = false;
@@ -115,6 +118,7 @@ public class SimilarPatentServer {
             globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
             classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
+            tagger = TechTaggerNormalizer.getDefaultTechTagger();
             // value model
             loadValueModels();
 

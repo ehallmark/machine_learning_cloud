@@ -3,6 +3,7 @@ package server.tools.excel;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
 import org.deeplearning4j.berkeley.Pair;
+import server.SimilarPatentServer;
 import tools.PortfolioList;
 import value_estimation.ValueMapNormalizer;
 
@@ -23,8 +24,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
     protected String technology;
     protected List<Pair<String,Double>> technologyList;
     protected PortfolioList.Type type;
-    private static final TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
-
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
     static {
@@ -104,7 +103,7 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
             }
         });
         if(params.contains("technology")) {
-            technologyList = tagger.getTechnologiesFor(name, type,5);
+            technologyList = SimilarPatentServer.getTagger().getTechnologiesFor(name, type,5);
             if(technologyList.isEmpty())technology="";
             else technology=technologyList.get(0).getFirst();
             attributeData.put("technology", new ExcelCell(ExcelHandler.getDefaultFormat(), technology, false));
