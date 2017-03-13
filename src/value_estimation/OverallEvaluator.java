@@ -21,8 +21,8 @@ public class OverallEvaluator extends Evaluator {
         List<Evaluator> evaluators = Arrays.asList(
                 new CitationEvaluator(),
                 new ClaimEvaluator(),
-                new AssetsSoldEvaluator(),
-                new AssetsPurchasedEvaluator(),
+                //new AssetsSoldEvaluator(),
+                //new AssetsPurchasedEvaluator(),
                 new MarketEvaluator(),
                 new TechnologyEvaluator()
         );
