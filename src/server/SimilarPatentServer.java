@@ -100,11 +100,7 @@ public class SimilarPatentServer {
 
     static void loadValueModels() {
         try {
-            modelMap.put("citationValue",new CitationEvaluator());
-            modelMap.put("technologyValue",new TechnologyEvaluator());
-            modelMap.put("claimValue",new ClaimEvaluator());
-            modelMap.put("marketValue",new MarketEvaluator());
-            modelMap.put("assigneeValue",new AssigneeEvaluator());
+            modelMap.put("overallValue",new OverallEvaluator());
             modelMap.put("assetsPurchased",new AssetsPurchasedEvaluator());
             modelMap.put("assetsSold",new AssetsSoldEvaluator());
             modelMap.put("largePortfolios",new PortfolioSizeEvaluator());
@@ -503,11 +499,11 @@ public class SimilarPatentServer {
                     labelsToExclude.addAll(Database.getGatherPatents());
                 }
 
-                PortfolioList portfolioList = runPatentFinderModel(title, firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
+                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
                 modelMap.forEach((key,model)->{
-                    if ((attributes.contains("overallValue")||attributes.contains(key)) && model != null) {
+                    if (attributes.contains(key) && model != null) {
                         evaluateModel(model,portfolioList.getPortfolio(),key);
                     }
                 });
@@ -516,7 +512,6 @@ public class SimilarPatentServer {
 
                 // Handle overall value
                 if(attributes.contains("overallValue")) {
-                    portfolioList.computeAvgValues();
                     comparator = ExcelWritable.valueComparator();
                 }
 
@@ -642,7 +637,7 @@ public class SimilarPatentServer {
         return patentFinders;
     }
 
-    static PortfolioList runPatentFinderModel(String name, SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
+    static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
     List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
             List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limit, badLabels, portfolioType);
@@ -651,10 +646,10 @@ public class SimilarPatentServer {
             throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(portfolioLists,badAssignees, name, portfolioType,limit);
+        return mergePatentLists(portfolioLists,badAssignees, portfolioType,limit);
     }
 
-    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, String name, PortfolioList.Type portfolioType, int limit) {
+    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int limit) {
         try {
             Map<String, ExcelWritable> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
@@ -678,7 +673,7 @@ public class SimilarPatentServer {
                         .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
                         .limit(limit)
                         .collect(Collectors.toList());
-                return new PortfolioList(merged,name,name,portfolioType);
+                return new PortfolioList(merged,portfolioType);
 
             } catch(Exception e) {
                 throw new RuntimeException("Error merging values in final stream.");

@@ -18,13 +18,10 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     private static final long serialVersionUID = 1L;
     private static Map<String,Double> colWidthsMap;
     private List<ExcelWritable> portfolio;
-    private String name1;
-    private String name2;
     private Type portfolioType;
     private double avgSimilarity;
     private List<String> attributes;
     public enum Type { patents, assignees, class_codes }
-
 
     static {
         colWidthsMap=new HashMap<>();
@@ -36,20 +33,18 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
     public static PortfolioList abstractPorfolioList(Collection<String> labels, PortfolioList.Type type) {
         switch(type) {
             case assignees: {
-                return new PortfolioList(labels.stream().map(label->new AbstractAssignee(label,0d,null)).collect(Collectors.toList()), null,null,type);
+                return new PortfolioList(labels.stream().map(label->new AbstractAssignee(label,0d,null)).collect(Collectors.toList()),type);
             } case class_codes: {
-                return new PortfolioList(labels.stream().map(label->new AbstractClassCode(label,0d,null)).collect(Collectors.toList()), null,null,type);
+                return new PortfolioList(labels.stream().map(label->new AbstractClassCode(label,0d,null)).collect(Collectors.toList()),type);
             } case patents: {
-                return new PortfolioList(labels.stream().map(label->new AbstractPatent(label,0d,null)).collect(Collectors.toList()), null,null,type);
+                return new PortfolioList(labels.stream().map(label->new AbstractPatent(label,0d,null)).collect(Collectors.toList()),type);
             }default: {
                 return null;
             }
         }
     }
     //
-    public PortfolioList(List<ExcelWritable> portfolioList, String name1, String name2, Type portfolioType) {
-        this.name1=name1;
-        this.name2=name2;
+    public PortfolioList(List<ExcelWritable> portfolioList, Type portfolioType) {
         this.portfolioType=portfolioType;
         this.portfolio=portfolioList;
     }
@@ -60,25 +55,9 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
 
     public List<String> getAttributes() { return attributes; }
 
-    public void flipAvgSimilarity() {
-        avgSimilarity=avgSimilarity*-1.0;
-    }
-
-    public double getAvgSimilarity() {
-        return avgSimilarity;
-    }
-
     @Override
     public int compareTo(PortfolioList o) {
         return Double.compare(o.avgSimilarity,avgSimilarity);
-    }
-
-    public String getName1() {
-        return name1;
-    }
-
-    public String getName2() {
-        return name2;
     }
 
     public List<ExcelWritable> getPortfolio() {
@@ -113,12 +92,6 @@ public class PortfolioList implements Serializable, Comparable<PortfolioList> {
             }
         }
         return sheetName;
-    }
-
-    public void computeAvgValues() {
-        portfolio.forEach(item->{
-            item.setValue("overallValue",item.getAvgValue());
-        });
     }
 
     public String getSheetTitle() { return getSheetName()+" ("+portfolio.size()+" results)"; }

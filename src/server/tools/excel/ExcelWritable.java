@@ -31,17 +31,13 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap=new HashMap<>();
         humanAttrToJavaAttrMap.put("Asset","name");
         humanAttrToJavaAttrMap.put("Similarity","similarity");
-        humanAttrToJavaAttrMap.put("Citation Value","citationValue");
         humanAttrToJavaAttrMap.put("Relevant Asset(s)","relevantAssetsList");
         humanAttrToJavaAttrMap.put("Relevant Asset Count","relevantAssetCount");
         humanAttrToJavaAttrMap.put("Total Asset Count","totalAssetCount");
         humanAttrToJavaAttrMap.put("Assignee","assignee");
         humanAttrToJavaAttrMap.put("Title","title");
-        humanAttrToJavaAttrMap.put("Claim Value","claimValue");
-        humanAttrToJavaAttrMap.put("Technology Value","technologyValue");
         humanAttrToJavaAttrMap.put("Primary Tag","primaryTag");
-        humanAttrToJavaAttrMap.put("Overall Value","overallValue");
-        humanAttrToJavaAttrMap.put("Assignee Value","assigneeValue");
+        humanAttrToJavaAttrMap.put("AI Value","overallValue");
         humanAttrToJavaAttrMap.put("Technology","technology");
         humanAttrToJavaAttrMap.put("Market Value","marketValue");
         humanAttrToJavaAttrMap.put("Assignee Entity Type","assigneeEntityType");

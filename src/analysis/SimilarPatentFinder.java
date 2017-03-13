@@ -27,22 +27,7 @@ public class SimilarPatentFinder {
     protected int id;
 
     private static Map<String,INDArray> globalCache = Collections.synchronizedMap(new HashMap<>());
-    private static Map<String,List<String>> patentWordsCache = Collections.synchronizedMap(new HashMap<>());
-    private static Map<String,INDArray> globalCandidateAvgCache = Collections.synchronizedMap(new HashMap<>());
-    private static Map<String,List<WordFrequencyPair<String,Float>>> patentKeywordCache = Collections.synchronizedMap(new HashMap<>());
-
     public void setName(String name) { this.name = name; }
-
-    public static Map<String,INDArray> getGlobalCache() {
-        return globalCache;
-    }
-
-    public static void clearCaches() {
-        patentKeywordCache.clear();
-        globalCandidateAvgCache.clear();
-        patentWordsCache.clear();
-        globalCache.clear();
-    }
 
     public SimilarPatentFinder(Collection<String> candidateSet, String name, WeightLookupTable<VocabWord> lookupTable) {
         // construct lists
@@ -118,7 +103,7 @@ public class SimilarPatentFinder {
 
     public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
         // Find the highest (pairwise) assets
-        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),name,other.getName(),portfolioType);
+        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
         INDArray otherAvg = other.computeAvg();
         return findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit,portfolioType);
     }
@@ -127,10 +112,10 @@ public class SimilarPatentFinder {
     public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit, PortfolioList.Type portfolioType)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
-        if(avgVector==null) return new PortfolioList(new ArrayList<>(),name,patentNumber,portfolioType);
+        if(avgVector==null) return new PortfolioList(new ArrayList<>(),portfolioType);
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
-        PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, name, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);
+        PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find "+list.getPortfolio().size()+" similar patents: "+time+" seconds");
@@ -150,7 +135,7 @@ public class SimilarPatentFinder {
         return avgVector;
     }
 
-    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String name1, String name2, double threshold, int limit, DistanceFunction dist, PortfolioList.Type portfolioType) {
+    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String referringName, double threshold, int limit, DistanceFunction dist, PortfolioList.Type portfolioType) {
         Patent.setBaseVector(baseVector);
         patentList.forEach(patent -> {
             if(patent!=null&&!labelsToExclude.contains(patent.getName())) {
@@ -164,19 +149,19 @@ public class SimilarPatentFinder {
             ExcelWritable clone = null;
             switch(portfolioType) {
                 case assignees: {
-                    clone=Patent.abstractAssignee(p,name2);
+                    clone=Patent.abstractAssignee(p,referringName);
                     break;
                 }case patents: {
-                    clone=Patent.abstractPatent(p,name2);
+                    clone=Patent.abstractPatent(p,referringName);
                     break;
                 } case class_codes: {
-                    clone=Patent.abstractClassCode(p,name2);
+                    clone=Patent.abstractClassCode(p,referringName);
                     break;
                 }
             }
             if(clone!=null)resultList.add(0, clone);
         }
-        PortfolioList results = new PortfolioList(resultList,name1,name2,portfolioType);
+        PortfolioList results = new PortfolioList(resultList,portfolioType);
         return results;
     }
 

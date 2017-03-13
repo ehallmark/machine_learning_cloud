@@ -376,7 +376,7 @@ public class CompanyPortfolioProfileUI {
                     System.out.println("Starting to run similar patent model...");
                     double threshold = 0.5;
                     while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
-                        portfolioList = SimilarPatentServer.runPatentFinderModel(reportType, firstFinder, secondFinders, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
+                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
                         threshold-=0.2;
                     }
                     System.out.println("Finished similar patent model.");
@@ -396,26 +396,18 @@ public class CompanyPortfolioProfileUI {
                         for (Map.Entry<String, Evaluator> e : SimilarPatentServer.modelMap.entrySet()) {
                             String key = e.getKey();
                             Evaluator model = e.getValue();
-                            if ((attributes.contains("overallValue") || attributes.contains(key)) && model != null) {
+                            if (attributes.contains(key) && model != null) {
                                 SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key);
                             }
                         }
-                        System.out.println("Starting overall value");
-                        if (attributes.contains("overallValue")) {
-                            portfolioList.computeAvgValues();
-                        }
-                        System.out.println("Finished overall value");
                         portfolioList.init(comparator, limit);
                     } else {
                         // faster to init results first
                         portfolioList.init(comparator, limit);
-                        if (attributes.contains("overallValue")) {
-                            portfolioList.computeAvgValues();
-                        }
                         for (Map.Entry<String, Evaluator> e : SimilarPatentServer.modelMap.entrySet()) {
                             String key = e.getKey();
                             Evaluator model = e.getValue();
-                            if ((attributes.contains("overallValue") || attributes.contains(key)) && model != null) {
+                            if (attributes.contains(key) && model != null) {
                                 SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key);
                             }
                         }
