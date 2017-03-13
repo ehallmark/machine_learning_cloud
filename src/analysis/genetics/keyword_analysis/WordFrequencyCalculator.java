@@ -85,7 +85,7 @@ public class WordFrequencyCalculator {
     }
 
     public static void main(String[] args) throws Exception {
-        int wordsPerTechnology = 100;
+        int wordsPerTechnology = 150;
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         Map<String,Map<String,Double>> techMap = new HashMap<>();
         Map<String,Double> globalMap = new HashMap<>();
