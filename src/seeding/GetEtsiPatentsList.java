@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/16/16.
  */
 public class GetEtsiPatentsList {
-    private static final File FULL_ETSI_FILE = new File("etsi_patents.xls");
-    private static final File ETSI_FILE_2G = new File("etsi_2g_filter.xls");
-    private static final File ETSI_FILE_3G = new File("etsi_3g_filter.xls");
-    private static final File ETSI_FILE_4G = new File("etsi_4g_filter.xls");
+    private static final File FULL_ETSI_FILE = new File("data/etsi_patents.xls");
+    private static final File ETSI_FILE_2G = new File("data/etsi_2g_filter.xls");
+    private static final File ETSI_FILE_3G = new File("data/etsi_3g_filter.xls");
+    private static final File ETSI_FILE_4G = new File("data/etsi_4g_filter.xls");
 
     public static String cleanETSIString(String unClean) {
         unClean=unClean.toUpperCase().replaceAll("\\."," ");

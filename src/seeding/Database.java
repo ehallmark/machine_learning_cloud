@@ -87,6 +87,7 @@ public class Database {
 
 	public static void trySaveObject(Object obj, File file) {
 		try {
+			file = new File("data/"+file.getName());
 			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 			oos.writeObject(obj);
 			oos.flush();
@@ -116,9 +117,9 @@ public class Database {
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
 		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
-		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("large_entity_patents_set.jobj")));
-		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("small_entity_patents_set.jobj")));
-		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("micro_entity_patents_set.jobj")));
+		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/large_entity_patents_set.jobj")));
+		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/small_entity_patents_set.jobj")));
+		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/micro_entity_patents_set.jobj")));
 		patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		// load dependent objects
 		if(allClassCodesFile.exists()) {
@@ -196,8 +197,8 @@ public class Database {
 		assigneeList=new ArrayList<>(allAssignees);
 
 
-		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("assignee_to_assets_sold_count_map.jobj"));
-		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("assignee_to_assets_purchased_count_map.jobj"));
+		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("data/assignee_to_assets_sold_count_map.jobj"));
+		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("data/assignee_to_assets_purchased_count_map.jobj"));
 
 	}
 
