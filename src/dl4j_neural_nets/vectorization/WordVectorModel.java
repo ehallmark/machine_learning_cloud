@@ -23,8 +23,8 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class WordVectorModel {
-    static File oldWordVectorFile = new File("claims.wordvectors");
-    public static File wordVectorFile = new File("claims_2.wordvectors");
+    static File oldWordVectorFile = new File("data/claims.wordvectors");
+    public static File wordVectorFile = new File("data/claims_2.wordvectors");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     private static Logger log = LoggerFactory.getLogger(WordVectorModel.class);
     static {

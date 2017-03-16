@@ -26,10 +26,10 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class ParagraphVectorModel {
-    public static File claimsParagraphVectorFile = new File("claims_skipgram.paragraphvectors");
-    public static File allParagraphsModelFile = new File("all_paragraphs.paragraphvectors");
-    public static File allSentencesModelFile = new File("all_sentences_skipgram.paragraphvectors");
-    public static File testParagraphsModelFile = new File("simple.pv");
+    public static File claimsParagraphVectorFile = new File("data/claims_skipgram.paragraphvectors");
+    public static File allParagraphsModelFile = new File("data/all_paragraphs.paragraphvectors");
+    public static File allSentencesModelFile = new File("data/all_sentences_skipgram.paragraphvectors");
+    public static File testParagraphsModelFile = new File("data/simple.pv");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class PhraseDeterminator {
     private SequenceIterator<VocabWord> iterator;
-    private static File file = new File("phrases_set.obj");
+    private static File file = new File("data/phrases_set.obj");
     private List<BiGram> topBigramList;
     private Set<String> phrases;
     private Map<String,BiGram> topPhraseMap;

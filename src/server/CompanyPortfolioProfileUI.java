@@ -161,7 +161,7 @@ public class CompanyPortfolioProfileUI {
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
 
-            String pathToImage = "images/brand.png";
+            String pathToImage = "data/images/brand.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();

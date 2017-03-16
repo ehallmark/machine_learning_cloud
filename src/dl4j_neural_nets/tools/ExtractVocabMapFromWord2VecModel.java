@@ -36,7 +36,7 @@ public class ExtractVocabMapFromWord2VecModel {
     }
 
     public static void main(String[] args) throws Exception{
-        File vocabFile = new File("my_custom_vocab_map_file.vocab");
+        File vocabFile = new File("data/my_custom_vocab_map_file.vocab");
         int epoch = 1;
         Word2Vec net = WordVectorModel.load(WordVectorModel.wordVectorFile.getAbsolutePath()+epoch);
         ExtractVocabMapFromWord2VecModel.saveAndExtract(net,vocabFile);
