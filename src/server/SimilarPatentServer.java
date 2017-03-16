@@ -91,8 +91,8 @@ public class SimilarPatentServer {
                 paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
             }
         } catch(Exception e) {
-            paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
             e.printStackTrace();
+            //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
     }
