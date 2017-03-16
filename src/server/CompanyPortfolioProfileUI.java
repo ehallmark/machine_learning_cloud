@@ -4,6 +4,7 @@ import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import j2html.tags.*;
+import seeding.Constants;
 import seeding.Database;
 import server.highcharts.*;
 import server.tools.AjaxChartMessage;
@@ -161,7 +162,7 @@ public class CompanyPortfolioProfileUI {
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
 
-            String pathToImage = "data/images/brand.png";
+            String pathToImage = Constants.DATA_FOLDER+"images/brand.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();

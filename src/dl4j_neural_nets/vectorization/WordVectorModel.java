@@ -13,6 +13,7 @@ import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import seeding.Constants;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,8 +24,8 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class WordVectorModel {
-    static File oldWordVectorFile = new File("data/claims.wordvectors");
-    public static File wordVectorFile = new File("data/claims_2.wordvectors");
+    static File oldWordVectorFile = new File(Constants.DATA_FOLDER+"claims.wordvectors");
+    public static File wordVectorFile = new File(Constants.DATA_FOLDER+"claims_2.wordvectors");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     private static Logger log = LoggerFactory.getLogger(WordVectorModel.class);
     static {

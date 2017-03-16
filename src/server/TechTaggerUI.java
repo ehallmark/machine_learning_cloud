@@ -9,6 +9,7 @@ import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
+import seeding.Constants;
 import seeding.Database;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
@@ -145,7 +146,7 @@ public class TechTaggerUI {
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
 
-            String pathToImage = "images/brand.png";
+            String pathToImage = Constants.DATA_FOLDER+"images/brand.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();

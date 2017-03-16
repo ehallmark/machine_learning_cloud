@@ -42,18 +42,18 @@ public class Database {
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static Map<String,LocalDate> patentToPubDateMap;
-	private static File patentToPubDateMapFile = new File("data/patent_to_pubdate_map_file.jobj");
-	private static File patentToClassificationMapFile = new File("data/patent_to_classification_map.jobj");
-	private static File classCodeToPatentMapFile = new File("data/class_code_to_patent_map.jobj");
-	private static File patentToInventionTitleMapFile = new File("data/patent_to_invention_title_map.jobj");
-	private static File patentToLatestAssigneeMapFile = new File("data/patent_to_assignee_map_latest.jobj");
-	private static File patentToOriginalAssigneeMapFile = new File("data/patent_to_original_assignee_map.jobj");
-	private static File assigneeToPatentsMapFile = new File("data/assignee_to_patents_map.jobj");
-	private static File expiredPatentSetFile = new File("data/expired_patents_set.jobj");
-	private static File lapsedPatentSetFile = new File("data/lapsed_patents_set.jobj");
-	private static File allClassCodesFile = new File("data/all_class_codes.jobj");
-	private static File valuablePatentsFile = new File("data/valuable_patents.jobj");
-	private static File classCodeToClassTitleMapFile = new File("data/class_code_to_class_title_map.jobj");
+	private static File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
+	private static File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
+	private static File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
+	private static File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
+	private static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
+	private static File patentToOriginalAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_original_assignee_map.jobj");
+	private static File assigneeToPatentsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_patents_map.jobj");
+	private static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
+	private static File lapsedPatentSetFile = new File(Constants.DATA_FOLDER+"lapsed_patents_set.jobj");
+	private static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
+	private static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
+	private static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=&tcpKeepAlive=true";
 	private static final String gatherDBUrl = "jdbc:postgresql://localhost/gather_production?user=postgres&password=&tcpKeepAlive=true";
@@ -63,7 +63,7 @@ public class Database {
 	private static final String selectGatherRatingsQuery = "select a.patent_rating,array_agg(p.number) as avg_patent_rating from assessments as a join patents as p on (p.id=a.patent_id) where patent_rating is not null and a.type = 'PublishedAssessment'  group by a.patent_rating";
 	private static final String selectGatherTechnologiesQuery = "select array_agg(distinct(number)), upper(name) from (select case when t.name like '%rs' then substring(t.name from 1 for char_length(t.name)-1) else replace(t.name,'-','') end as name, (string_to_array(regexp_replace(p.number,'[^0-9 ]',''),' '))[1] as number from patents as p join assessments as a on (p.id=a.patent_id) join assessment_technologies as at on (a.id=at.assessment_id) join technologies as t on (at.technology_id=t.id) where char_length(coalesce(t.name,'')) > 0 and (not upper(t.name)='AUDIT')) as temp group by upper(name)";
 	private static final Set<Integer> badCompDBTechnologyIds = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
-	private static final File gatherTechMapFile = new File("data/gather_technology_to_patent_map.jobj");
+	private static final File gatherTechMapFile = new File(Constants.DATA_FOLDER+"gather_technology_to_patent_map.jobj");
 	private static Map<String,Collection<String>> gatherTechMap;
 	private static List<String> assigneeList;
 	private static Set<String> gatherPatentSet;
@@ -72,7 +72,7 @@ public class Database {
 	public static Object tryLoadObject(File file) {
 		System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
-			if(!file.exists() && new File("data/"+file.getName()).exists()) file = new File("data/"+file.getName());
+			if(!file.exists() && new File(Constants.DATA_FOLDER+file.getName()).exists()) file = new File(Constants.DATA_FOLDER+file.getName());
 			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
@@ -87,7 +87,7 @@ public class Database {
 
 	public static void trySaveObject(Object obj, File file) {
 		try {
-			file = new File("data/"+file.getName());
+			file = new File(Constants.DATA_FOLDER+file.getName());
 			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 			oos.writeObject(obj);
 			oos.flush();
@@ -117,9 +117,9 @@ public class Database {
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
 		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
-		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/large_entity_patents_set.jobj")));
-		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/small_entity_patents_set.jobj")));
-		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File("data/micro_entity_patents_set.jobj")));
+		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
+		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
+		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
 		patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		// load dependent objects
 		if(allClassCodesFile.exists()) {
@@ -197,8 +197,8 @@ public class Database {
 		assigneeList=new ArrayList<>(allAssignees);
 
 
-		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("data/assignee_to_assets_sold_count_map.jobj"));
-		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File("data/assignee_to_assets_purchased_count_map.jobj"));
+		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
+		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
 
 	}
 

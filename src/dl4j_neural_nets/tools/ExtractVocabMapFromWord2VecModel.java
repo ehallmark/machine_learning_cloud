@@ -6,6 +6,7 @@ import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.models.word2vec.Word2Vec;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import seeding.Constants;
 
 import java.io.*;
 import java.util.HashMap;
@@ -36,7 +37,7 @@ public class ExtractVocabMapFromWord2VecModel {
     }
 
     public static void main(String[] args) throws Exception{
-        File vocabFile = new File("data/my_custom_vocab_map_file.vocab");
+        File vocabFile = new File(Constants.DATA_FOLDER+"my_custom_vocab_map_file.vocab");
         int epoch = 1;
         Word2Vec net = WordVectorModel.load(WordVectorModel.wordVectorFile.getAbsolutePath()+epoch);
         ExtractVocabMapFromWord2VecModel.saveAndExtract(net,vocabFile);
