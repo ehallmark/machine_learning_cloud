@@ -177,6 +177,7 @@ public class CompanyPortfolioProfileUI {
 
         post("/company_profile_report", (req, res) -> {
             res.type("application/json");
+            System.out.println("Received request...");
             try {
 
                 QueryParamsMap params;
@@ -470,5 +471,6 @@ public class CompanyPortfolioProfileUI {
     public static void main(String[] args) throws Exception {
         SimilarPatentServer.loadValueModels();
         setupServer();
+        System.out.println("Started server...");
     }
 }
