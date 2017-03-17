@@ -288,6 +288,7 @@ public class Database {
 	}
 
 	public static boolean isAssignee(String assignee) {
+		if(assignee.replaceAll("[0-9]","").trim().isEmpty()) return false;
 		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
 	}
 
