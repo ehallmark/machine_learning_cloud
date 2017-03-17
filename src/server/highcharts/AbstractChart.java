@@ -12,18 +12,13 @@ import java.util.List;
  */
 public abstract class AbstractChart {
     protected Options options;
-    public static final String defaultPointFormat = "{point.y:.1f}";
 
     public Options getOptions() {
         return options;
     }
 
-    protected void setupColumnAndBarAxes(String valueSuffix) {
-        setupColumnAndBarAxes(valueSuffix,defaultPointFormat);
-    }
 
-    protected void setupColumnAndBarAxes(String valueSuffix, String pointFormat) {
-        if(pointFormat==null)pointFormat=defaultPointFormat;
+    protected void setupColumnAndBarAxes(String valueSuffix, int decimals) {
         options.setxAxis(new Axis());
         options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
@@ -36,11 +31,10 @@ public abstract class AbstractChart {
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat(pointFormat+valueSuffix)
+                    .setFormat("{point.y:."+decimals+"f}"+valueSuffix)
                     .setY(-5)
             );
         }
-        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {series.name}: <b>"+pointFormat+valueSuffix+"</b><br/>"));
     }
 
     protected static void stripAxis(Axis axis) {
@@ -54,11 +48,12 @@ public abstract class AbstractChart {
                 .setTickWidth(0);
     }
 
-    protected AbstractChart(String title, List<Series<?>> data, SeriesType type) {
+    protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix) {
+        String formatStr = "point.y:."+decimals+"f";
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setPointFormat("{point.y:.2f}"))
+                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}: <b> {"+formatStr+"}"+valueSuffix+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()

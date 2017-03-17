@@ -259,7 +259,7 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets", "{point.y}");
+                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets", 0);
                             charts.add(chart);
                             break;
                         }
@@ -267,7 +267,7 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, HighchartDataAdapter.collectCompanyActivityData(cleanPortfolioString), AxisType.DATETIME);
+                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, HighchartDataAdapter.collectCompanyActivityData(cleanPortfolioString), AxisType.DATETIME, 0, " assets");
                             charts.add(lineChart);
                             break;
                         }
