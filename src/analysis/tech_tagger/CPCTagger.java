@@ -8,6 +8,7 @@ import tools.MinHeap;
 import tools.PortfolioList;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 2/18/2017.
@@ -37,22 +38,29 @@ public class CPCTagger extends TechTagger {
         this.orderedTechnologies=orderedTech;
     }
 
-
+    @Override
     public List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
         return topTechnologies(handlePortfolioType(item,type),n);
     }
 
-    public double getTechnologyValueFor(String item, String technology) {
+    @Override
+    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
         int idx = orderedTechnologies.indexOf(technology);
         if(idx>=0) {
-            INDArray array = technologyMap.get(item);
-            if(array!=null&&array.length()>idx) {
-                return array.getDouble(idx);
-            } else {
-                return 0d;
+            List<INDArray> vecs = items.stream()
+                    .map(item->technologyMap.get(item))
+                    .filter(vec->vec!=null)
+                    .collect(Collectors.toList());
+            if(vecs.size()>0) {
+                INDArray array = Nd4j.vstack(vecs).mean(0);
+                if(array.length()>idx) {
+                    return array.getDouble(idx);
+                }
             }
-        }else return 0d;
+        }
+        return 0d;
     }
+
 
     @Override
     public int size() {

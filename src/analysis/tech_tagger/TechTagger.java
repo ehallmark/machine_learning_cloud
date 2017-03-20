@@ -3,6 +3,7 @@ package analysis.tech_tagger;
 import org.deeplearning4j.berkeley.Pair;
 import tools.PortfolioList;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -15,8 +16,13 @@ public abstract class TechTagger {
         this.weight=weight;
     }
     public double getWeight() { return weight; }
-    public abstract double getTechnologyValueFor(String item, String technology);
-    public abstract List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n);
+    public double getTechnologyValueFor(String item, String technology, PortfolioList.Type type) {
+        return getTechnologyValueFor(Arrays.asList(item), technology, type);
+    }
+    public abstract double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type);
+    public List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
+        return getTechnologiesFor(Arrays.asList(item),type,n);
+    }
     public abstract List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n);
     public abstract  Collection<String> getAllTechnologies();
     public abstract int size();

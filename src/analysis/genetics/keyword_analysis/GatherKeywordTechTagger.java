@@ -39,21 +39,17 @@ public class GatherKeywordTechTagger extends TechTagger {
     public int size() {
         return technologyToKeywordMap.size();
     }
-
+    
     @Override
-    public double getTechnologyValueFor(String item, String technology) {
-        if(!technologyToKeywordMap.containsKey(technology)) {
+    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
+        if(!technologyToKeywordMap.containsKey(technology) || !type.equals(PortfolioList.Type.patents)) {
             return 1d;
         }
         List<INDArray> keywordVectorsForTech = technologyToKeywordMap.get(technology);
         int topN = keywordVectorsForTech.size()/10;
-        return scoreKeywordHeap(keywordVectorsForTech,requestVectorFromPatents(Arrays.asList(item)),topN);
+        return scoreKeywordHeap(keywordVectorsForTech,requestVectorFromPatents(items),topN);
     }
 
-    @Override
-    public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return getTechnologiesFor(Arrays.asList(item),type,n);
-    }
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {

@@ -13,10 +13,7 @@ import server.SimilarPatentServer;
 import tools.MinHeap;
 import tools.PortfolioList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -59,13 +56,17 @@ public class SimilarityTechTagger extends TechTagger {
     }
 
     @Override
-    public double getTechnologyValueFor(String item, String technology) {
+    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
         int idx = names.indexOf(technology);
         if(idx>=0) {
             INDArray vec = vectors.get(idx);
-            INDArray vec2 = lookupTable.vector(item);
-            if(vec2!=null) {
-                return 3.0+(2.0*Transforms.cosineSim(vec,vec2));
+            List<INDArray> others = items.stream()
+                    .map(item->lookupTable.vector(item)).filter(vec2->vec2!=null).collect(Collectors.toList());
+            if(others.size()>0) {
+                INDArray vec2 = Nd4j.vstack(others).mean(0);
+                if (vec2 != null) {
+                    return 3.0 + (2.0 * Transforms.cosineSim(vec, vec2));
+                }
             }
         }
         return 1d;
@@ -85,11 +86,6 @@ public class SimilarityTechTagger extends TechTagger {
             data.add(0,new Pair<>(pair.getFirst(),pair.getSecond()));
         }
         return data;
-    }
-
-    @Override
-    public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return technologiesFor(lookupTable.vector(item),n);
     }
 
     @Override

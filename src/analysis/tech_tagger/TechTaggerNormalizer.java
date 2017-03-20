@@ -34,10 +34,9 @@ public class TechTaggerNormalizer extends TechTagger {
     }
 
     @Override
-    public double getTechnologyValueFor(String item, String technology) {
-        return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(item,technology)*tagger.getWeight()));
+    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
+        return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(items,technology,type)*tagger.getWeight()));
     }
-
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
@@ -45,10 +44,8 @@ public class TechTaggerNormalizer extends TechTagger {
     }
 
     private List<Pair<String,Double>> technologyHelper(Object item, PortfolioList.Type type, int n) {
-        AtomicInteger cnt = new AtomicInteger(0);
         Map<String,Double> technologyScores = new HashMap<>();
         taggers.forEach(tagger->{
-            int i = cnt.getAndIncrement();
             List<Pair<String,Double>> data;
             if(item instanceof String) {
                  data = tagger.getTechnologiesFor((String)item,type,tagger.size());

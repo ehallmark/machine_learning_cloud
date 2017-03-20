@@ -27,18 +27,13 @@ public class RawKeywordTechTagger extends TechTagger {
     }
 
     @Override
-    public double getTechnologyValueFor(String item, String technology) {
+    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
         return 0d; // NOT POSSIBLE
     }
 
     @Override
     public int size() {
         return 100;
-    }
-
-    @Override
-    public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return getTechnologiesFor(Arrays.asList(item),type,n);
     }
 
     @Override
