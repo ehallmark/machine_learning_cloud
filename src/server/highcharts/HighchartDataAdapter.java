@@ -74,9 +74,10 @@ public class HighchartDataAdapter {
             series.setName(company);
             dates.forEach(date->{
                 List<String> set = new ArrayList<>(dateToPatentMap.get(date));
+                Collections.shuffle(set);
                 Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
                 if(set!=null) {
-                    point.setY(set.stream().limit(30).map(patent-> tagger.getTechnologyValueFor(patent, tech)).collect(Collectors.summingDouble(d->d)));
+                    point.setY(tagger.getTechnologyValueFor(set.stream().limit(100).collect(Collectors.toList()), tech, PortfolioList.Type.patents));
                 } else {
                     point.setY(0);
                 }

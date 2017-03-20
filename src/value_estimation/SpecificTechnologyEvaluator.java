@@ -1,6 +1,7 @@
 package value_estimation;
 
 import analysis.tech_tagger.TechTagger;
+import tools.PortfolioList;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,15 @@ public class SpecificTechnologyEvaluator extends Evaluator {
 
     @Override
     public double evaluate(String token) {
-        return tagger.getTechnologyValueFor(token,technology);
+        PortfolioList.Type quickType;
+        quickType= PortfolioList.Type.assignees;
+        if(token.length()==7) {
+            try {
+                Integer.valueOf(token);
+                quickType=PortfolioList.Type.patents;
+            } catch(Exception e) {
+            }
+        }
+        return tagger.getTechnologyValueFor(token,technology,quickType);
     }
 }

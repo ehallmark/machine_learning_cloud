@@ -39,7 +39,7 @@ public class GatherKeywordTechTagger extends TechTagger {
     public int size() {
         return technologyToKeywordMap.size();
     }
-    
+
     @Override
     public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
         if(!technologyToKeywordMap.containsKey(technology) || !type.equals(PortfolioList.Type.patents)) {
