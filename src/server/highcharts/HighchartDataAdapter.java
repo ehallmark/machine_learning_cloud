@@ -1,11 +1,13 @@
 package server.highcharts;
 
+import analysis.SimilarPatentFinder;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
 import tools.PortfolioList;
@@ -14,6 +16,7 @@ import value_estimation.Evaluator;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 2/14/17.
@@ -28,6 +31,61 @@ public class HighchartDataAdapter {
             e.printStackTrace();
         }
         tagger = TechTaggerNormalizer.getDefaultTechTagger();
+    }
+
+    public static List<Series<?>> collectTechnologyTimelineData(String company) {
+        List<Series<?>> data = new ArrayList<>();
+
+        Collection<String> patents = Database.selectPatentNumbersFromAssignee(company);
+        Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
+        patents.forEach(patent->{
+            LocalDate date = Database.getPubDateFor(patent);
+            if(date!=null) {
+                // groups by month
+                date = date.withDayOfMonth(1);
+                if(dateToPatentMap.containsKey(date)) {
+                    dateToPatentMap.get(date).add(patent);
+                } else {
+                    Set<String> set = new HashSet<>();
+                    set.add(patent);
+                    dateToPatentMap.put(date,set);
+                }
+            }
+        });
+
+        List<LocalDate> dates = new ArrayList<>(dateToPatentMap.keySet());
+        if (dates.isEmpty()) return new ArrayList<>();
+        LocalDate min = Collections.min(dates);
+        LocalDate max = Collections.max(dates);
+        dates.clear();
+
+        {
+            LocalDate date = min;
+            while (date.isBefore(max) || date.isEqual(max)) {
+                dates.add(date);
+                date = date.plusMonths(1);
+            }
+        }
+        // get pre tech from company
+        tagger.getTechnologiesFor(company, PortfolioList.Type.assignees,10).forEach(pair->{
+            String tech = pair.getFirst();
+            PointSeries series = new PointSeries();
+            series.setName(tech);
+            series.setName(company);
+            dates.forEach(date->{
+                List<String> set = new ArrayList<>(dateToPatentMap.get(date));
+                Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
+                if(set!=null) {
+                    point.setY(set.stream().limit(30).map(patent-> tagger.getTechnologyValueFor(patent, tech)).collect(Collectors.summingDouble(d->d)));
+                } else {
+                    point.setY(0);
+                }
+                series.addPoint(point);
+            });
+            data.add(series);
+        });
+
+        return data;
     }
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {

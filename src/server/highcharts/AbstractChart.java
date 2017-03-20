@@ -56,6 +56,8 @@ public abstract class AbstractChart {
                 .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}: <b> {"+formatStr+"}"+valueSuffix+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
+                .setyAxis(new Axis())
+                .setxAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
                         .setPoint(new PointOptions().setEvents(new Events()))));
    }

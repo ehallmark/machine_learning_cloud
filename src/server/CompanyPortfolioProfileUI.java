@@ -50,6 +50,7 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Technology Distribution",techAttrs);
         attributesMap.put("Company Details", Collections.emptyList());
         attributesMap.put("Recent Activity Timeline",Collections.emptyList());
+        attributesMap.put("Recent Technology Timeline",Collections.emptyList());
         reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
@@ -267,8 +268,16 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, HighchartDataAdapter.collectCompanyActivityData(cleanPortfolioString), AxisType.DATETIME, 0, " assets");
+                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, HighchartDataAdapter.collectCompanyActivityData(cleanPortfolioString), AxisType.DATETIME, 0, " assets", "Asset Count");
                             charts.add(lineChart);
+                            break;
+                        }
+                        case "Recent Technology Timeline": {
+                            if (inputType.equals(PortfolioList.Type.patents))
+                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
+                            portfolioList = null;
+                            PercentAreaChart chart = new PercentAreaChart("Recent Technology Timeline for " + portfolioString, HighchartDataAdapter.collectTechnologyTimelineData(cleanPortfolioString));
+                            charts.add(chart);
                             break;
                         }
                         case "Valuable Patents": {
