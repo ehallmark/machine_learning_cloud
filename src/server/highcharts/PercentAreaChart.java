@@ -13,13 +13,7 @@ public class PercentAreaChart extends AbstractChart {
     public PercentAreaChart(String title, List<Series<?>> data) {
         super(title, data, SeriesType.AREA, 1, "%");
         for(Series<?> series : options.getSeries()) {
-            series.setDataLabels(new DataLabels(true)
-                    .setRotation(0)
-                    .setColor(Color.black)
-                    .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat("<b>{point.name}</b>: {point.percentage:.1f}%")
-                    .setY(-5)
-            );
+            series.setDataLabels(new DataLabels(false));
         }
         options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}</b><br/>"));
         options.getPlotOptions().setArea(new PlotOptions().setStacking(Stacking.PERCENT).setLineWidth(1).setLineColor(Color.white)

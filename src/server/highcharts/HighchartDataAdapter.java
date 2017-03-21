@@ -67,11 +67,10 @@ public class HighchartDataAdapter {
             }
         }
         // get pre tech from company
-        tagger.getTechnologiesFor(company, PortfolioList.Type.assignees,10).forEach(pair->{
+        tagger.getTechnologiesFor(company, PortfolioList.Type.assignees,5).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
-            series.setName(company);
             dates.forEach(date->{
                 List<String> set = new ArrayList<>(dateToPatentMap.get(date));
                 Collections.shuffle(set);
