@@ -38,7 +38,6 @@ public abstract class ExcelWritable implements Comparable<ExcelWritable> {
         humanAttrToJavaAttrMap.put("Primary Tag","primaryTag");
         humanAttrToJavaAttrMap.put("AI Value","overallValue");
         humanAttrToJavaAttrMap.put("Technology","technology");
-        humanAttrToJavaAttrMap.put("Market Value","marketValue");
         humanAttrToJavaAttrMap.put("Assignee Entity Type","assigneeEntityType");
         humanAttrToJavaAttrMap.put("Large Portfolio Size","largePortfolios");
         humanAttrToJavaAttrMap.put("Small Portfolio Size","smallPortfolios");
