@@ -178,7 +178,7 @@ public class HighchartDataAdapter {
                 return similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
             }
         }),limit, (Runtime.getRuntime().availableProcessors()+1)/2),500,new CompanySolutionListener(),(Runtime.getRuntime().availableProcessors()+1)/2);
-        algorithm.simulate(5,0.5,0.5);
+        algorithm.simulate(5000,0.5,0.5);
         ((CompanySolution)(algorithm.getBestSolution())).getCompanyScores().forEach(e->{
             String tech = e.getKey();
             double prob = e.getValue();
