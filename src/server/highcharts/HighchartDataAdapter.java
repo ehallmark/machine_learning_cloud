@@ -1,6 +1,7 @@
 package server.highcharts;
 
 import analysis.SimilarPatentFinder;
+import analysis.WordFrequencyPair;
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.lead_development.*;
 import analysis.tech_tagger.SimilarityTechTagger;
@@ -15,6 +16,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
+import tools.MinHeap;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
 import value_estimation.SimilarityEvaluator;
@@ -181,22 +183,20 @@ public class HighchartDataAdapter {
         series.setName(portfolio);
         ValueAttribute buyerAttr = new ValueAttribute("buyerValue",1.0,buyerModel);
         Evaluator similarityEvaluator = new SimilarityEvaluator(portfolio,lookupTable,new SimilarPatentFinder(Database.possibleNamesForAssignee(portfolio),portfolio,lookupTable).computeAvg());
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(new Attribute(portfolio,1.0) {
-            @Override
-            public Attribute dup() {
-                return null;
+        MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
+        Database.getAssignees().forEach(assignee->{
+            if(!assignee.startsWith(portfolio)&&!portfolio.startsWith(assignee)) {
+                double score = similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
+                heap.add(new WordFrequencyPair<>(assignee,score));
             }
-
-            @Override
-            public double scoreAssignee(String assignee) {
-                if(assignee.startsWith(portfolio)) return Double.MIN_VALUE;
-                return similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
-            }
-        }),limit, (Runtime.getRuntime().availableProcessors()+1)/2),500,new CompanySolutionListener(),(Runtime.getRuntime().availableProcessors()+1)/2);
-        algorithm.simulate(5000,0.5,0.5);
-        ((CompanySolution)(algorithm.getBestSolution())).getCompanyScores().forEach(e->{
-            String tech = e.getKey();
-            double prob = e.getValue();
+        });
+        List<WordFrequencyPair<String,Double>> results = new ArrayList<>(limit);
+        while(!heap.isEmpty()) {
+            results.add(0,heap.remove());
+        }
+        results.forEach(e->{
+            String tech = e.getFirst();
+            double prob = e.getSecond();
             Point point = new Point(tech,prob);
             series.addPoint(point);
         });
