@@ -124,8 +124,13 @@ public class HighchartDataAdapter {
                 date = date.plusMonths(1);
             }
         }
+        if(dates.size()==0) {
+            return Collections.emptyList();
+        }
+
+        Map<String,Double> techScores = new HashMap<>();
         // get pre tech from company
-        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,30).forEach(pair->{
+        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,100).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
@@ -140,18 +145,20 @@ public class HighchartDataAdapter {
                 }
                 series.addPoint(point);
             });
-            if(dates.size()>0) {
-                double mean = series.getData().stream().collect(Collectors.averagingDouble(d -> d.getY().doubleValue()));
-                double stddev = Math.sqrt(series.getData().stream().collect(Collectors.averagingDouble(d-> d.getY().doubleValue()*d.getY().doubleValue()))/(series.getData().size()));
-                series.getData().forEach(p->{
-                    p.setY((p.getY().doubleValue()-mean)/stddev);
-                });
-                series.setData(series.getData().stream().sorted((p1,p2)->Double.compare(p2.getY().doubleValue(),p1.getY().doubleValue())).limit(10).collect(Collectors.toList()));
-                data.add(series);
-            }
+            data.add(series);
+            techScores.put(tech,series.getData().stream().collect(Collectors.averagingDouble(p->p.getY().doubleValue())));
         });
 
-        return data;
+        double mean = techScores.entrySet().stream().collect(Collectors.averagingDouble(d->d.getValue()));
+        double stddev = Math.sqrt(techScores.entrySet().stream().collect(Collectors.summingDouble(d-> Math.pow(d.getValue()-mean,2.0)))/(data.size()));
+        data.forEach(series->{
+            ((PointSeries)series).getData().forEach(p->{
+                p.setY((p.getY().doubleValue()-mean)/stddev);
+            });
+        });
+
+        Comparator<Series<?>> comp = (c1,c2) -> (techScores.get(c2).compareTo(techScores.get(c1)));
+        return data.stream().sorted(comp).limit(10).collect(Collectors.toList());
     }
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
