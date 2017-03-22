@@ -12,6 +12,7 @@ import tools.PortfolioList;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 3/10/17.
@@ -39,8 +40,8 @@ public class RawKeywordTechTagger extends TechTagger {
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
         // patent limit = 30
-        int patentLimit = 50;
-        List<String> patents = new ArrayList<>();
+        int maxPatentSampleSize = 50;
+        SortedSet<String> patents = new TreeSet<>(Comparator.reverseOrder());
         if(type.equals(PortfolioList.Type.assignees)) {
             System.out.println("IS ASSIGNEE");
             items.forEach(item->patents.addAll(Database.selectPatentNumbersFromAssignee(item)));
@@ -48,10 +49,8 @@ public class RawKeywordTechTagger extends TechTagger {
             System.out.println("IS ASSET");
             patents.addAll(items);
         }
-        Set<String> toSearchIn = new HashSet<>(patentLimit);
-        if(patents.size()>patentLimit) {
-            for(int i = 0; i < patentLimit; i++) toSearchIn.add(patents.remove(random.nextInt(patents.size())));
-        }
+        Set<String> toSearchIn = patents.stream().sequential().limit(maxPatentSampleSize).collect(Collectors.toSet());
+
         Map<String,Double> frequencies = WordFrequencyCalculator.computeGlobalWordFrequencyMap(toSearchIn,0);
 
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(n);
