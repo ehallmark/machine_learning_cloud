@@ -49,6 +49,7 @@ public abstract class AbstractChart {
     }
 
     protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix) {
+        System.out.println("Starting to build: "+type);
         String formatStr = "point.y:."+decimals+"f";
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
@@ -60,7 +61,7 @@ public abstract class AbstractChart {
                 .setxAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
                         .setPoint(new PointOptions().setEvents(new Events()))));
-   }
+    }
 
     @Override
     public String toString() {
