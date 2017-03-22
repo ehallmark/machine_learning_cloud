@@ -143,7 +143,7 @@ public class HighchartDataAdapter {
                 if(set!=null) {
                     point.setY(set.stream().limit(100).map(patent->tagger.getTechnologyValueFor(patent, tech, PortfolioList.Type.patents)).collect(Collectors.summingDouble(d->d)));
                 } else {
-                    point.setY(0);
+                    point.setY(0d);
                 }
                 series.addPoint(point);
             });
@@ -152,14 +152,14 @@ public class HighchartDataAdapter {
         });
 
         double mean = techScores.entrySet().stream().collect(Collectors.averagingDouble(d->d.getValue()));
-        double stddev = Math.sqrt(techScores.entrySet().stream().collect(Collectors.summingDouble(d-> Math.pow(d.getValue()-mean,2.0)))/(data.size()));
+        double stddev = Math.sqrt(techScores.entrySet().stream().collect(Collectors.summingDouble(d-> Math.pow(d.getValue()-mean,2.0)))/(techScores.size()));
         data.forEach(series->{
             ((PointSeries)series).getData().forEach(p->{
                 p.setY((p.getY().doubleValue()-mean)/stddev);
             });
         });
 
-        Comparator<Series<?>> comp = (c1,c2) -> (techScores.get(c2).compareTo(techScores.get(c1)));
+        Comparator<Series<?>> comp = (s1,s2) -> (techScores.get(s2.getName()).compareTo(techScores.get(s1.getName())));
         return data.stream().sorted(comp).limit(10).collect(Collectors.toList());
     }
 
