@@ -47,7 +47,7 @@ import static spark.Spark.post;
 public class LeadDevelopmentUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static final Map<String,Attribute> ATTRIBUTES = new HashMap<>();
+    public static final Map<String,Attribute> ATTRIBUTES = new HashMap<>();
     private static final List<String> TECHNOLOGIES;
     private static final TechTagger TECH_TAGGER;
 

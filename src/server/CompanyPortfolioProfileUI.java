@@ -54,6 +54,7 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Recent Activity Timeline",Collections.emptyList());
         attributesMap.put("Recent Technology Timeline",Collections.emptyList());
         attributesMap.put("Recent Value Timeline",Collections.emptyList());
+        attributesMap.put("Likely Asset Buyers",Collections.emptyList());
         reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
@@ -371,6 +372,18 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.assignees)) numTechnologies = 10;
                             else numTechnologies = 5;
                             AbstractChart chart = new PieChart("Technology Distribution for " + portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType, numTechnologies));
+                            // test!
+                            charts.add(chart);
+                            break;
+                        } case "Likely Asset Buyers": {
+                            // special model
+                            portfolioType = inputType;
+                            portfolioList = null;
+                            System.out.println("Using abstract portfolio type");
+                            int numBuyers;
+                            if (inputType.equals(PortfolioList.Type.assignees)) numBuyers = 10;
+                            else numBuyers = 5;
+                            AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, HighchartDataAdapter.collectLikelyAssetBuyersData(cleanPortfolioString, inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable()));
                             // test!
                             charts.add(chart);
                             break;

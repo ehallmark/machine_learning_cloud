@@ -1,17 +1,23 @@
 package server.highcharts;
 
 import analysis.SimilarPatentFinder;
+import analysis.genetics.GeneticAlgorithm;
+import analysis.genetics.lead_development.*;
+import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import org.deeplearning4j.models.embeddings.WeightLookupTable;
+import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
+import value_estimation.SimilarityEvaluator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -119,7 +125,7 @@ public class HighchartDataAdapter {
             }
         }
         // get pre tech from company
-        tagger.getTechnologiesFor(company, PortfolioList.Type.assignees,5).forEach(pair->{
+        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,5).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
@@ -144,9 +150,38 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(portfolio);
-        tagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
+        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(portfolio),inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
+            Point point = new Point(tech,prob);
+            series.addPoint(point);
+        });
+        data.add(series);
+        return data;
+    }
+
+    public static List<Series<?>> collectLikelyAssetBuyersData(String portfolio, PortfolioList.Type inputType, int limit, Evaluator buyerModel, WeightLookupTable<VocabWord> lookupTable) {
+        List<Series<?>> data = new ArrayList<>();
+        PointSeries series = new PointSeries();
+        series.setName(portfolio);
+        ValueAttribute buyerAttr = new ValueAttribute("buyerValue",1.0,buyerModel);
+        Evaluator similarityEvaluator = new SimilarityEvaluator(portfolio,lookupTable,new SimilarPatentFinder(Database.possibleNamesForAssignee(portfolio),portfolio,lookupTable).computeAvg());
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(new Attribute(portfolio,1.0) {
+            @Override
+            public Attribute dup() {
+                return null;
+            }
+
+            @Override
+            public double scoreAssignee(String assignee) {
+                if(assignee.startsWith(portfolio)) return Double.MIN_VALUE;
+                return similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
+            }
+        }),limit, (Runtime.getRuntime().availableProcessors()+1)/2),500,new CompanySolutionListener(),(Runtime.getRuntime().availableProcessors()+1)/2);
+        algorithm.simulate(5,0.5,0.5);
+        ((CompanySolution)(algorithm.getBestSolution())).getCompanyScores().forEach(e->{
+            String tech = e.getKey();
+            double prob = e.getValue();
             Point point = new Point(tech,prob);
             series.addPoint(point);
         });
