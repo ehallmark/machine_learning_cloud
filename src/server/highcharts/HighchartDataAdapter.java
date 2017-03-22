@@ -80,7 +80,7 @@ public class HighchartDataAdapter {
             Collections.shuffle(set);
             Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
             if(set!=null) {
-                point.setY(set.stream().map(patent->valueModel.evaluate(patent)).limit(30).collect(Collectors.summingDouble(d->d)));
+                point.setY(set.stream().limit(100).map(patent->valueModel.evaluate(patent)).collect(Collectors.averagingDouble(d->d)));
             } else {
                 point.setY(0);
             }
@@ -125,7 +125,7 @@ public class HighchartDataAdapter {
             }
         }
         // get pre tech from company
-        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,5).forEach(pair->{
+        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,30).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
@@ -134,13 +134,21 @@ public class HighchartDataAdapter {
                 Collections.shuffle(set);
                 Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
                 if(set!=null) {
-                    point.setY(set.stream().map(patent->tagger.getTechnologyValueFor(patent, tech, PortfolioList.Type.patents)).limit(30).collect(Collectors.summingDouble(d->d)));
+                    point.setY(set.stream().limit(100).map(patent->tagger.getTechnologyValueFor(patent, tech, PortfolioList.Type.patents)).collect(Collectors.summingDouble(d->d)));
                 } else {
                     point.setY(0);
                 }
                 series.addPoint(point);
             });
-            data.add(series);
+            if(dates.size()>0) {
+                double mean = series.getData().stream().collect(Collectors.averagingDouble(d -> d.getY().doubleValue()));
+                double stddev = Math.sqrt(series.getData().stream().collect(Collectors.averagingDouble(d-> d.getY().doubleValue()*d.getY().doubleValue()))/(series.getData().size()));
+                series.getData().forEach(p->{
+                    p.setY((p.getY().doubleValue()-mean)/stddev);
+                });
+                series.setData(series.getData().stream().sorted((p1,p2)->Double.compare(p2.getY().doubleValue(),p1.getY().doubleValue())).limit(10).collect(Collectors.toList()));
+                data.add(series);
+            }
         });
 
         return data;
