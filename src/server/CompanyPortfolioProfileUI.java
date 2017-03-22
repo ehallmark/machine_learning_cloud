@@ -15,6 +15,8 @@ import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
 import tools.PortfolioList;
 import value_estimation.Evaluator;
+import value_estimation.OverallEvaluator;
+import value_estimation.ValueMapNormalizer;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -51,6 +53,7 @@ public class CompanyPortfolioProfileUI {
         attributesMap.put("Company Details", Collections.emptyList());
         attributesMap.put("Recent Activity Timeline",Collections.emptyList());
         attributesMap.put("Recent Technology Timeline",Collections.emptyList());
+        attributesMap.put("Recent Value Timeline",Collections.emptyList());
         reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
@@ -277,6 +280,14 @@ public class CompanyPortfolioProfileUI {
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
                             PercentAreaChart chart = new PercentAreaChart("Recent Technology Timeline for " + portfolioString, HighchartDataAdapter.collectTechnologyTimelineData(cleanPortfolioString));
+                            charts.add(chart);
+                            break;
+                        }
+                        case "Recent Value Timeline": {
+                            if (inputType.equals(PortfolioList.Type.patents))
+                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
+                            portfolioList = null;
+                            LineChart chart = new LineChart("Recent Value Timeline for " + portfolioString, HighchartDataAdapter.collectValueTimelineData(cleanPortfolioString, SimilarPatentServer.modelMap.get("overallValue")), AxisType.DATETIME, "", "AI Value");
                             charts.add(chart);
                             break;
                         }

@@ -33,6 +33,58 @@ public class HighchartDataAdapter {
         tagger = TechTaggerNormalizer.getDefaultTechTagger();
     }
 
+    public static List<Series<?>> collectValueTimelineData(String company, Evaluator valueModel) {
+        List<Series<?>> data = new ArrayList<>();
+
+        Collection<String> patents = Database.selectPatentNumbersFromAssignee(company);
+        Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
+        patents.forEach(patent->{
+            LocalDate date = Database.getPubDateFor(patent);
+            if(date!=null) {
+                // groups by month
+                date = date.withDayOfMonth(1);
+                if(dateToPatentMap.containsKey(date)) {
+                    dateToPatentMap.get(date).add(patent);
+                } else {
+                    Set<String> set = new HashSet<>();
+                    set.add(patent);
+                    dateToPatentMap.put(date,set);
+                }
+            }
+        });
+
+        List<LocalDate> dates = new ArrayList<>(dateToPatentMap.keySet());
+        if (dates.isEmpty()) return new ArrayList<>();
+        LocalDate min = Collections.min(dates);
+        LocalDate max = Collections.max(dates);
+        dates.clear();
+
+        {
+            LocalDate date = min;
+            while (date.isBefore(max) || date.isEqual(max)) {
+                dates.add(date);
+                date = date.plusMonths(1);
+            }
+        }
+
+        PointSeries series = new PointSeries();
+        series.setName("AI Value");
+        dates.forEach(date->{
+            List<String> set = new ArrayList<>(dateToPatentMap.get(date));
+            Collections.shuffle(set);
+            Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
+            if(set!=null) {
+                point.setY(set.stream().map(patent->valueModel.evaluate(patent)).limit(30).collect(Collectors.summingDouble(d->d)));
+            } else {
+                point.setY(0);
+            }
+            series.addPoint(point);
+        });
+        data.add(series);
+
+        return data;
+    }
+
     public static List<Series<?>> collectTechnologyTimelineData(String company) {
         List<Series<?>> data = new ArrayList<>();
 
@@ -76,7 +128,7 @@ public class HighchartDataAdapter {
                 Collections.shuffle(set);
                 Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
                 if(set!=null) {
-                    point.setY(tagger.getTechnologyValueFor(set.stream().limit(100).collect(Collectors.toList()), tech, PortfolioList.Type.patents));
+                    point.setY(set.stream().map(patent->tagger.getTechnologyValueFor(patent, tech, PortfolioList.Type.patents)).limit(30).collect(Collectors.summingDouble(d->d)));
                 } else {
                     point.setY(0);
                 }
