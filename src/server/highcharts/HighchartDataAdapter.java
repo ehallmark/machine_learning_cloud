@@ -318,8 +318,16 @@ public class HighchartDataAdapter {
 
 
     public static INDArray softMax(INDArray in) {
-        INDArray shiftx = in.sub(in.max(1));
+        INDArray shiftx = in.dup();
+        INDArray max = shiftx.max(1);
+        for(int i = 0; i < shiftx.rows(); i++) {
+            shiftx.getRow(i).subi(max.getDouble(i));
+        }
         INDArray exps = Transforms.exp(shiftx,false);
-        return exps.divi(exps.sum(1));
+        INDArray sum =  exps.sum(1);
+        for(int i = 0; i < shiftx.rows(); i++) {
+            exps.getRow(i).divi(sum.getDouble(i));
+        }
+        return exps;
     }
 }
