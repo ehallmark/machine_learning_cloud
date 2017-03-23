@@ -14,6 +14,9 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.api.ops.impl.transforms.SoftMax;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 import server.SimilarPatentServer;
 import tools.MinHeap;
@@ -151,16 +154,25 @@ public class HighchartDataAdapter {
             techScores.put(tech,series.getData().stream().collect(Collectors.averagingDouble(p->p.getY().doubleValue())));
         });
 
-        double mean = techScores.entrySet().stream().collect(Collectors.averagingDouble(d->d.getValue()));
-        double stddev = Math.sqrt(techScores.entrySet().stream().collect(Collectors.summingDouble(d-> Math.pow(d.getValue()-mean,2.0)))/(techScores.size()));
-        data.forEach(series->{
-            ((PointSeries)series).getData().forEach(p->{
-                p.setY((p.getY().doubleValue()-mean)/stddev);
-            });
-        });
-
         Comparator<Series<?>> comp = (s1,s2) -> (techScores.get(s2.getName()).compareTo(techScores.get(s1.getName())));
-        return data.stream().sorted(comp).limit(10).collect(Collectors.toList());
+        List<Series<?>> cleanData = data.stream().sorted(comp).limit(10).collect(Collectors.toList());
+        INDArray allValues = Nd4j.create(dates.size(),cleanData.size());
+        for(int i = 0; i < cleanData.size(); i++) {
+            Series<?> series = cleanData.get(i);
+            List<Point> seriesList = ((PointSeries)series).getData();
+            for(int j = 0; j < seriesList.size(); j++) {
+                allValues.putScalar(j,i,seriesList.get(j).getY().doubleValue());
+            }
+        }
+        INDArray softmax = softMax(allValues);
+        for(int i = 0; i < cleanData.size(); i++) {
+            Series<?> series = cleanData.get(i);
+            List<Point> seriesList = ((PointSeries)series).getData();
+            for(int j = 0; j < seriesList.size(); j++) {
+                seriesList.get(j).setY(softmax.getDouble(j,i));
+            }
+        }
+        return cleanData;
     }
 
     public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
@@ -302,5 +314,12 @@ public class HighchartDataAdapter {
         });
         data.add(series);
         return data;
+    }
+
+
+    public static INDArray softMax(INDArray in) {
+        INDArray shiftx = in.sub(in.max(1));
+        INDArray exps = Transforms.exp(shiftx,false);
+        return exps.divi(exps.sum(1));
     }
 }
