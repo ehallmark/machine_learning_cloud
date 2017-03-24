@@ -246,6 +246,9 @@ public class SimilarPatentServer {
                             Arrays.stream(assets)
                                     .filter(assignee->!(assignee==null||assignee.isEmpty()))
                                     .map(item->{
+                                        System.out.println("Item length: "+item.length());
+                                        item = item.trim();
+                                        System.out.println("Item length after trim: "+item.length());
                                         final String prettyItem = item;
                                         if(portfolioType.equals(PortfolioList.Type.class_codes)) item=ClassCodeHandler.convertToLabelFormat(item);
                                         List<Pair<String,Double>> pairs = tagger.getTechnologiesFor(item,portfolioType,1);

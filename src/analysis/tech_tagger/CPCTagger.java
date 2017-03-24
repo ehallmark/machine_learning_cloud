@@ -39,11 +39,6 @@ public class CPCTagger extends TechTagger {
     }
 
     @Override
-    public List<Pair<String,Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return topTechnologies(handlePortfolioType(item,type),n);
-    }
-
-    @Override
     public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
         int idx = orderedTechnologies.indexOf(technology);
         if(idx>=0) {

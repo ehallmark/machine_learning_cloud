@@ -38,20 +38,12 @@ public class TechTaggerNormalizer extends TechTagger {
         return taggers.stream().collect(Collectors.averagingDouble(tagger->tagger.getTechnologyValueFor(items,technology,type)*tagger.getWeight()));
     }
 
-    @Override
-    public List<Pair<String, Double>> getTechnologiesFor(String item, PortfolioList.Type type, int n) {
-        return technologyHelper(item,type,n);
-    }
 
-    private List<Pair<String,Double>> technologyHelper(Object item, PortfolioList.Type type, int n) {
+    private List<Pair<String,Double>> technologyHelper(Collection<String> items, PortfolioList.Type type, int n) {
         Map<String,Double> technologyScores = new HashMap<>();
         taggers.forEach(tagger->{
-            List<Pair<String,Double>> data;
-            if(item instanceof String) {
-                 data = tagger.getTechnologiesFor((String)item,type,tagger.size());
-            } else {
-                data = tagger.getTechnologiesFor((Collection<String>)item,type,tagger.size());
-            }
+            List<Pair<String,Double>> data = tagger.getTechnologiesFor(items,type,tagger.size());
+
             if(data!=null&&data.size()>=10) {
                 // normalize data
                 double mean = data.stream().map(pair->pair.getSecond()).collect(Collectors.averagingDouble(d->d));
