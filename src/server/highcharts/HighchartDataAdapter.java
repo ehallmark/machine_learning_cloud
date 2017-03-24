@@ -179,7 +179,7 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(portfolio);
-        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(portfolio),inputType,limit).forEach(pair->{
+        tagger.getTechnologiesFor(inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio),inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
             Point point = new Point(tech,prob);
@@ -194,10 +194,10 @@ public class HighchartDataAdapter {
         PointSeries series = new PointSeries();
         series.setName(portfolio);
         ValueAttribute buyerAttr = new ValueAttribute("buyerValue",1.0,buyerModel);
-        Evaluator similarityEvaluator = new SimilarityEvaluator(portfolio,lookupTable,new SimilarPatentFinder(Database.possibleNamesForAssignee(portfolio),portfolio,lookupTable).computeAvg());
+        Evaluator similarityEvaluator = new SimilarityEvaluator(portfolio,lookupTable,new SimilarPatentFinder(inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio),portfolio,lookupTable).computeAvg());
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
         Database.getAssignees().forEach(assignee->{
-            if(!assignee.startsWith(portfolio)&&!portfolio.startsWith(assignee)) {
+            if(inputType.equals(PortfolioList.Type.patents)||(!assignee.startsWith(portfolio)&&!portfolio.startsWith(assignee))) {
                 double score = similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
                 heap.add(new WordFrequencyPair<>(assignee,score));
             }
