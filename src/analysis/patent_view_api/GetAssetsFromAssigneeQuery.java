@@ -1,9 +1,5 @@
 package analysis.patent_view_api;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.StringJoiner;
-
 /**
  * Created by Evan on 2/5/2017.
  */

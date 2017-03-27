@@ -197,7 +197,6 @@ public class PatentAPIHandler {
             PatentResponse response = gson.fromJson(json, PatentResponse.class);
 
             System.out.println("Total patent count: "+response.getTotalPatentCount()+" patents");
-            System.out.println("Total patent count: "+response.getTotalPatentCount()+" patents");
 
             return response;
         } catch (Exception ex) {

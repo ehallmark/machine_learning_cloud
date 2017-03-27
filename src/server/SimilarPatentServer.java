@@ -199,7 +199,7 @@ public class SimilarPatentServer {
             String assigneeStr = req.queryParams("assignee");
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
 
-            String[] assignees = assigneeStr.split("\\n");
+            String[] assignees = assigneeStr.split("\\s+");
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
             boolean usePatentsView = extractBool(req,"use_patents_view");
             Tag table = table().with(
@@ -232,7 +232,7 @@ public class SimilarPatentServer {
             String asset = req.queryParams("item");
             if(asset==null||asset.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
             PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(type);
-            String[] assets = asset.split("\\n");
+            String[] assets = asset.split(System.getProperty("line.separator"));
             if(assets==null||assets.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
             Tag table = table().with(
                     thead().with(
@@ -334,7 +334,7 @@ public class SimilarPatentServer {
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
-            String[] patents = patentStr.split("\\n");
+            String[] patents = patentStr.split("\\s+");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             Tag table = table().with(
                     thead().with(
@@ -363,7 +363,7 @@ public class SimilarPatentServer {
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
-            String[] patents = patentStr.split("\\n");
+            String[] patents = patentStr.split("\\s+");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
 
             AtomicInteger cnt = new AtomicInteger(0);
@@ -525,7 +525,7 @@ public class SimilarPatentServer {
                 {
                     String keywordsToRequire = extractString(req, "required_keywords", null);
                     if (keywordsToRequire != null) {
-                        String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                        String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z %\\n]", " ").split("\\n");
                         if (keywords.length > 0) {
                             Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getPortfolioAsStrings(), keywords);
                             portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
@@ -538,7 +538,7 @@ public class SimilarPatentServer {
                 {
                     String keywordsToAvoid = extractString(req, "avoided_keywords", null);
                     if (keywordsToAvoid != null) {
-                        String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z \\n%]", " ").split("\\n");
+                        String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z %\\n]", " ").split("\\n");
                         if (keywords.length > 0) {
                             Set<String> patents = Database.patentsWithKeywords(portfolioList.getPortfolioAsStrings(), keywords);
                             portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
