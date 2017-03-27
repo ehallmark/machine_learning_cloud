@@ -43,4 +43,5 @@ public class AllPatentQuery implements Query {
     public String toString() {
         return query;
     }
+
 }

@@ -5,8 +5,9 @@ package analysis.patent_view_api;
  */
 public class Assignee {
     private String assignee_organization;
-
+    private String assignee_type;
     public String getAssignee() {
         return assignee_organization;
     }
+    public String getAssigneeType() { return assignee_type; }
 }

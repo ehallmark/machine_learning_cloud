@@ -10,6 +10,7 @@ import seeding.Database;
 
 import java.io.*;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,38 @@ public class PatentAPIHandler {
             page++;
         }
         return results;
+    }
+
+    public static Collection<Patent> requestMonthlyPatents(LocalDate month) {
+        Collection<Patent> patents = new HashSet<>();
+        int totalResults;
+        List<Patent> results = null;
+        MonthlyPatentQuery query = new MonthlyPatentQuery(month,1);
+        try {
+            PatentResponse response = requestPatents(query);
+            totalResults = response.getTotalPatentCount();
+            if (totalResults == 0) return new ArrayList<>();
+            results = new ArrayList<>(totalResults);
+            results.addAll(response.getPatents());
+        } catch (Exception e) {
+            e.printStackTrace();
+            totalResults = 0;
+        }
+        if (results != null) {
+            int page = 2;
+            while (results.size() < totalResults) {
+                query = new MonthlyPatentQuery(month, page);
+                try {
+                    results.addAll(requestPatents(query).getPatents());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    break;
+                }
+                page++;
+            }
+            patents.addAll(results);
+        }
+        return patents;
     }
 
     public static Collection<String> requestPatentNumbersFromAssignee(String assignee) {
