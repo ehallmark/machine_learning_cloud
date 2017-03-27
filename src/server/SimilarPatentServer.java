@@ -172,7 +172,7 @@ public class SimilarPatentServer {
             String assigneeStr = req.queryParams("assignee");
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
 
-            String[] assignees = assigneeStr.split("\\n");
+            String[] assignees = assigneeStr.split(System.getProperty("line.separator"));
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
                 Tag table = table().with(
                         thead().with(
@@ -199,7 +199,7 @@ public class SimilarPatentServer {
             String assigneeStr = req.queryParams("assignee");
             if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
 
-            String[] assignees = assigneeStr.split("\\s+");
+            String[] assignees = assigneeStr.split(System.getProperty("line.separator"));
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
             boolean usePatentsView = extractBool(req,"use_patents_view");
             Tag table = table().with(
@@ -276,7 +276,7 @@ public class SimilarPatentServer {
             String etsiStr = req.queryParams("etsi_standard");
             if(etsiStr==null||etsiStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
 
-            String[] standards = etsiStr.split("\\n");
+            String[] standards = etsiStr.split(System.getProperty("line.separator"));
             if(standards==null||standards.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
             Tag table = table().with(
                     thead().with(
@@ -305,7 +305,7 @@ public class SimilarPatentServer {
             if(classCodeStr==null||classCodeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
             boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
-            String[] classCodes = classCodeStr.split("\\n");
+            String[] classCodes = classCodeStr.split(System.getProperty("line.separator"));
             if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
             Tag table = table().with(
                     thead().with(
@@ -334,7 +334,7 @@ public class SimilarPatentServer {
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             boolean includeSubclasses = extractBool(req, "includeSubclasses");
 
-            String[] patents = patentStr.split("\\s+");
+            String[] patents = patentStr.split(System.getProperty("line.separator"));
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             Tag table = table().with(
                     thead().with(
