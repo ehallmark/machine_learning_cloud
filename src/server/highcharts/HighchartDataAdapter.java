@@ -278,9 +278,13 @@ public class HighchartDataAdapter {
 
 
     public static List<Series<?>> collectCompanyActivityData(String company) {
-        List<Series<?>> data = new ArrayList<>();
-
         Collection<String> patents = Database.selectPatentNumbersFromAssignee(company);
+        return collectCompanyActivityData(patents,company);
+    }
+
+
+    public static List<Series<?>> collectCompanyActivityData(Collection<String> patents, String seriesName) {
+        List<Series<?>> data = new ArrayList<>();
         Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
@@ -311,12 +315,12 @@ public class HighchartDataAdapter {
             }
         }
         PointSeries series = new PointSeries();
-        series.setName(company);
+        series.setName(seriesName);
         dates.forEach(date->{
             Point point = new Point()
                     .setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY)
                     .setY(dateToPatentMap.containsKey(date)?dateToPatentMap.get(date).size():0);
-             series.addPoint(point);
+            series.addPoint(point);
         });
 
         data.add(series);
@@ -335,8 +339,8 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>(1);
         if(collection.isEmpty()) return Collections.emptyList();
         PointSeries series = new PointSeries();
+        series.setName(seriesName);
         evaluators.forEach(evaluator->{
-            series.setName(seriesName);
             AtomicDouble value = new AtomicDouble(0.0);
             AtomicInteger totalSize = new AtomicInteger(0);
             collection.forEach(c->{

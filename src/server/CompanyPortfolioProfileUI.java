@@ -3,6 +3,7 @@ package server;
 import analysis.SimilarPatentFinder;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
+import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.*;
 import seeding.Constants;
 import seeding.Database;
@@ -118,6 +119,10 @@ public class CompanyPortfolioProfileUI {
                                             );
                                         }).collect(Collectors.toList())
                                 ),br()
+                        )),br(),
+                        SimilarPatentServer.expandableDiv("Custom",true,div().with(
+                                h4("Patent List"),
+                                textarea().withName("patent_list"),br()
                         )),
                 br(),
                 button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
@@ -209,25 +214,36 @@ public class CompanyPortfolioProfileUI {
                     navigator.addRequest(new QueryParamsMap(req.raw()));
                 }
 
-
-                final String portfolioString = params.get("assignee").value();
-                if (portfolioString == null || portfolioString.trim().isEmpty()) {
-                    return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company or a Patent"));
-                }
-
+                List<String> INPUT_PATENTS = new ArrayList<>();
+                String ASSIGNEE = null;
                 PortfolioList.Type inputType;
-                String assigneeStr = AssigneeTrimmer.standardizedAssignee(portfolioString);
-                String patentStr = portfolioString.replaceAll("[^0-9]", "");
-                final String cleanPortfolioString;
-                if (Database.isAssignee(assigneeStr)) {
-                    inputType = PortfolioList.Type.assignees;
-                    cleanPortfolioString = assigneeStr;
-                } else if (Database.isPatent(patentStr)) {
-                    inputType = PortfolioList.Type.patents;
-                    cleanPortfolioString = patentStr;
+                String portfolioString = params.get("assignee").value();
+                if (portfolioString == null || portfolioString.trim().isEmpty()) {
+                    String patentsStr = params.get("patent_list").value();
+                    if(patentsStr!=null && patentsStr.trim().length()>0) {
+                        INPUT_PATENTS.addAll(Arrays.asList(patentsStr.split("\\s+")));
+                        inputType= PortfolioList.Type.patents;
+                        portfolioString = "Custom Asset List";
+                    } else {
+                        return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company or a Patent"));
+                    }
                 } else {
-                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + portfolioString));
+                    String assigneeStr = AssigneeTrimmer.standardizedAssignee(portfolioString);
+                    String patentStr = portfolioString.replaceAll("[^0-9]", "");
+                    if (Database.isAssignee(assigneeStr)) {
+                        inputType = PortfolioList.Type.assignees;
+                        ASSIGNEE = assigneeStr;
+                    } else if (Database.isPatent(patentStr)) {
+                        inputType = PortfolioList.Type.patents;
+                        INPUT_PATENTS.add(patentStr);
+                    } else {
+                        return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + portfolioString));
+                    }
                 }
+                if(INPUT_PATENTS.isEmpty()&&ASSIGNEE==null) {
+                    return new Gson().toJson(new SimpleAjaxMessage("No inputs found"));
+                }
+
 
                 String reportType = params.get("report_type").value();
                 if (reportType == null || reportType.trim().isEmpty())
@@ -266,62 +282,65 @@ public class CompanyPortfolioProfileUI {
                             if (inputType.equals(PortfolioList.Type.patents))
                                 return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(cleanPortfolioString), 0d, -1d, " assets", 0);
+                            ColumnChart chart = new ColumnChart("Company Details for " + portfolioString, HighchartDataAdapter.collectCompanyDetailsData(ASSIGNEE), 0d, -1d, " assets", 0);
                             charts.add(chart);
                             break;
                         }
                         case "Recent Activity Timeline": {
-                            if (inputType.equals(PortfolioList.Type.patents))
-                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
                             portfolioList = null;
-                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, HighchartDataAdapter.collectCompanyActivityData(cleanPortfolioString), AxisType.DATETIME, 0, " assets", "Asset Count");
+                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
+                                    HighchartDataAdapter.collectCompanyActivityData(INPUT_PATENTS,"Patents") :
+                                    HighchartDataAdapter.collectCompanyActivityData(ASSIGNEE);
+
+                            LineChart lineChart = new LineChart("Recent Activity Timeline for " + portfolioString, data, AxisType.DATETIME, 0, " assets", "Asset Count");
                             charts.add(lineChart);
                             break;
                         }
                         case "Recent Technology Timeline": {
-                            if (inputType.equals(PortfolioList.Type.patents))
-                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
+                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
+                                    HighchartDataAdapter.collectTechnologyTimelineData(INPUT_PATENTS) :
+                                    HighchartDataAdapter.collectTechnologyTimelineData(ASSIGNEE);
                             portfolioList = null;
-                            PercentAreaChart chart = new PercentAreaChart("Recent Technology Timeline for " + portfolioString, HighchartDataAdapter.collectTechnologyTimelineData(cleanPortfolioString));
+                            PercentAreaChart chart = new PercentAreaChart("Recent Technology Timeline for " + portfolioString, data);
                             charts.add(chart);
                             break;
                         }
                         case "Recent Value Timeline": {
-                            if (inputType.equals(PortfolioList.Type.patents))
-                                return new Gson().toJson(new SimpleAjaxMessage("Must search for a company to use this option"));
+                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
+                                    HighchartDataAdapter.collectValueTimelineData(INPUT_PATENTS, SimilarPatentServer.modelMap.get("overallValue")) :
+                                    HighchartDataAdapter.collectValueTimelineData (ASSIGNEE, SimilarPatentServer.modelMap.get("overallValue"));
                             portfolioList = null;
-                            LineChart chart = new LineChart("Recent Value Timeline for " + portfolioString, HighchartDataAdapter.collectValueTimelineData(cleanPortfolioString, SimilarPatentServer.modelMap.get("overallValue")), AxisType.DATETIME, "", "AI Value");
+                            LineChart chart = new LineChart("Recent Value Timeline for " + portfolioString, data, AxisType.DATETIME, "", "AI Value");
                             charts.add(chart);
                             break;
                         }
                         case "Valuable Patents": {
-                            if (inputType.equals(PortfolioList.Type.patents)) {
-                                // switch to Patent Valuation
-                                reportType = "Portfolio Valuation";
-                                retry = true;
-                                break;
-                            } else {
-                                portfolioType = PortfolioList.Type.patents;
-                                comparator = ExcelWritable.valueComparator();
-                                comparingByValue = true;
-                                portfolioList = PortfolioList.abstractPorfolioList(Database.selectPatentNumbersFromAssignee(cleanPortfolioString), portfolioType);
-                                break;
-                            }
+                            Collection<String> assets = inputType.equals(PortfolioList.Type.patents) ?
+                                    new HashSet<>(INPUT_PATENTS):
+                                    Database.selectPatentNumbersFromAssignee(ASSIGNEE);
+                            portfolioType = PortfolioList.Type.patents;
+                            comparator = ExcelWritable.valueComparator();
+                            comparingByValue = true;
+                            portfolioList = PortfolioList.abstractPorfolioList(assets, portfolioType);
+                            break;
                         }
                         case "Portfolio Valuation": {
+                            Set<String> badValueModels = new HashSet<>();
+                            badValueModels.add("smallPortfolios");
+                            List<Series<?>> data;
                             if (inputType.equals(PortfolioList.Type.assignees)) {
-                                assigneesToSearchFor = Database.possibleNamesForAssignee(cleanPortfolioString);
+                                assigneesToSearchFor = Database.possibleNamesForAssignee(ASSIGNEE);
+                                data = HighchartDataAdapter.collectAverageValueData(ASSIGNEE, inputType, SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             } else {
                                 //patents
-                                patentsToSearchFor = new HashSet<>(Arrays.asList(cleanPortfolioString));
+                                patentsToSearchFor = new HashSet<>(INPUT_PATENTS);
+                                data = HighchartDataAdapter.collectAverageValueData(INPUT_PATENTS, "Patents", SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             }
                             portfolioType = inputType;
                             comparator = ExcelWritable.valueComparator();
                             comparingByValue = true;
                             portfolioList = null;
-                            Set<String> badValueModels = new HashSet<>();
-                            badValueModels.add("smallPortfolios");
-                            AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, HighchartDataAdapter.collectAverageValueData(cleanPortfolioString, inputType, SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList())), 1.0, 5.0);
+                            AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, data, 1.0, 5.0);
                             // test!
                             charts.add(chart);
                             break;
@@ -334,8 +353,8 @@ public class CompanyPortfolioProfileUI {
                                 break;
                             } else {
                                 useSimilarPatentFinders = true;
-                                patentsToSearchIn = Database.selectPatentNumbersFromAssignee(cleanPortfolioString);
-                                assigneesToSearchFor = Database.possibleNamesForAssignee(cleanPortfolioString);
+                                patentsToSearchIn = Database.selectPatentNumbersFromAssignee(ASSIGNEE);
+                                assigneesToSearchFor = Database.possibleNamesForAssignee(ASSIGNEE);
                                 portfolioType = PortfolioList.Type.patents;
                                 allowResultsFromOtherCandidateSet = true;
                                 break;
@@ -345,10 +364,10 @@ public class CompanyPortfolioProfileUI {
                             searchEntireDatabase = true;
                             useSimilarPatentFinders = true;
                             if (inputType.equals(PortfolioList.Type.assignees)) {
-                                assigneesToSearchFor = Database.possibleNamesForAssignee(cleanPortfolioString);
+                                assigneesToSearchFor = Database.possibleNamesForAssignee(ASSIGNEE);
                             } else {
                                 //patents
-                                patentsToSearchFor = new HashSet<>(Arrays.asList(cleanPortfolioString));
+                                patentsToSearchFor = new HashSet<>(INPUT_PATENTS);
                             }
                             portfolioType = PortfolioList.Type.patents;
                             break;
@@ -357,23 +376,28 @@ public class CompanyPortfolioProfileUI {
                             searchEntireDatabase = true;
                             useSimilarPatentFinders = true;
                             if (inputType.equals(PortfolioList.Type.assignees)) {
-                                assigneesToSearchFor = Database.possibleNamesForAssignee(cleanPortfolioString);
+                                assigneesToSearchFor = Database.possibleNamesForAssignee(ASSIGNEE);
                             } else {
                                 //patents
-                                patentsToSearchFor = new HashSet<>(Arrays.asList(cleanPortfolioString));
+                                patentsToSearchFor = new HashSet<>(INPUT_PATENTS);
                             }
                             portfolioType = PortfolioList.Type.assignees;
                             break;
                         }
                         case "Technology Distribution": {
+                            int numTechnologies;
+                            if (inputType.equals(PortfolioList.Type.assignees)) numTechnologies = 10;
+                            else numTechnologies = 5;
+
+                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
+                                    HighchartDataAdapter.collectTechnologyData(INPUT_PATENTS, inputType, numTechnologies) :
+                                    HighchartDataAdapter.collectTechnologyData (ASSIGNEE, inputType, numTechnologies);
                             // special model
                             portfolioType = inputType;
                             portfolioList = null;
                             System.out.println("Using abstract portfolio type");
-                            int numTechnologies;
-                            if (inputType.equals(PortfolioList.Type.assignees)) numTechnologies = 10;
-                            else numTechnologies = 5;
-                            AbstractChart chart = new PieChart("Technology Distribution for " + portfolioString, HighchartDataAdapter.collectTechnologyData(cleanPortfolioString, inputType, numTechnologies));
+
+                            AbstractChart chart = new PieChart("Technology Distribution for " + portfolioString, data);
                             // test!
                             charts.add(chart);
                             break;
@@ -385,7 +409,12 @@ public class CompanyPortfolioProfileUI {
                             int numBuyers;
                             if (inputType.equals(PortfolioList.Type.assignees)) numBuyers = 10;
                             else numBuyers = 5;
-                            AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, HighchartDataAdapter.collectLikelyAssetBuyersData(cleanPortfolioString, inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable()));
+
+                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable()) :
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable());
+
+                            AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, data);
                             // test!
                             charts.add(chart);
                             break;
@@ -452,11 +481,11 @@ public class CompanyPortfolioProfileUI {
                     }
 
                     if (useSimilarPatentFinders) {
-                        BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(cleanPortfolioString, portfolioList), 0d, 100d, "%");
+                        BarChart barChart = new BarChart("Similarity to " + portfolioString, HighchartDataAdapter.collectSimilarityData(portfolioString, portfolioList), 0d, 100d, "%");
                         ajaxClickablePoints = true;
                         charts.add(barChart);
                     } else if (reportType.equals("Valuable Patents")) {
-                        BarChart barChart = new BarChart("Valuable Patents for " + portfolioString, HighchartDataAdapter.collectValueData(cleanPortfolioString, portfolioList), 1d, 5d);
+                        BarChart barChart = new BarChart("Valuable Patents for " + portfolioString, HighchartDataAdapter.collectValueData(portfolioString, portfolioList), 1d, 5d);
                         ajaxClickablePoints = true;
                         charts.add(barChart);
                     }
