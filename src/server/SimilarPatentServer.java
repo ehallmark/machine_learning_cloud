@@ -106,6 +106,8 @@ public class SimilarPatentServer {
             modelMap.put("overallValue",new OverallEvaluator());
             modelMap.put("assetsPurchased",new AssetsPurchasedEvaluator());
             modelMap.put("assetsSold",new AssetsSoldEvaluator());
+            modelMap.put("compDBAssetsPurchased",new AssetsPurchasedEvaluator());
+            modelMap.put("compDBAssetsSold",new AssetsSoldEvaluator());
             modelMap.put("largePortfolios",new PortfolioSizeEvaluator());
             modelMap.put("smallPortfolios",new SmallPortfolioSizeEvaluator());
         }catch(Exception e) {

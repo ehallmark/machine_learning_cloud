@@ -40,6 +40,8 @@ public class Database {
 	private static Set<String> microEntityPatents;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
+	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
+	private static Map<String,Integer> compDBAssigneeToAssetsPurchasedCountMap;
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static Map<String,LocalDate> patentToPubDateMap;
 	private static File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
@@ -199,6 +201,8 @@ public class Database {
 
 		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
 		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
+		compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
+		compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
 
 	}
 
@@ -233,9 +237,16 @@ public class Database {
 		return "";
 	}
 
-	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() { return assigneeToAssetsSoldCountMap; }
+	public static Connection getCompDBConnection() throws SQLException {
+		if(compDBConn==null)setupCompDBConn();
+		return compDBConn;
+	}
 
+	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() { return assigneeToAssetsSoldCountMap; }
 	public static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() { return assigneeToAssetsPurchasedCountMap; }
+
+	public static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() { return compDBAssigneeToAssetsSoldCountMap; }
+	public static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() { return compDBAssigneeToAssetsPurchasedCountMap; }
 
 	public static int numPatentsWithCpcClassifications() {
 		return patentToClassificationMap.size();
