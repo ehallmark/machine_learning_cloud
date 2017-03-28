@@ -211,8 +211,10 @@ public class CompanyPortfolioProfileUI {
 
 
                 final String portfolioString = params.get("assignee").value();
-                if (portfolioString == null || portfolioString.trim().isEmpty())
+                if (portfolioString == null || portfolioString.trim().isEmpty()) {
                     return new Gson().toJson(new SimpleAjaxMessage("Please enter a Company or a Patent"));
+                }
+
                 PortfolioList.Type inputType;
                 String assigneeStr = AssigneeTrimmer.standardizedAssignee(portfolioString);
                 String patentStr = portfolioString.replaceAll("[^0-9]", "");
