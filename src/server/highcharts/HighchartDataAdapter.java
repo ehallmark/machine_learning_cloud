@@ -44,10 +44,12 @@ public class HighchartDataAdapter {
         tagger = TechTaggerNormalizer.getDefaultTechTagger();
     }
 
-    public static List<Series<?>> collectValueTimelineData(String company, Evaluator valueModel) {
+    public static List<Series<?>> collectValueTimelineData(String assignee, Evaluator valueModel) {
+        return collectValueTimelineData(Database.selectPatentNumbersFromAssignee(assignee),valueModel);
+    }
+    public static List<Series<?>> collectValueTimelineData(Collection<String> patents, Evaluator valueModel) {
         List<Series<?>> data = new ArrayList<>();
 
-        Collection<String> patents = Database.selectPatentNumbersFromAssignee(company);
         Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
@@ -97,9 +99,10 @@ public class HighchartDataAdapter {
     }
 
     public static List<Series<?>> collectTechnologyTimelineData(String company) {
+        return collectTechnologyTimelineData(Database.selectPatentNumbersFromAssignee(company));
+    }
+    public static List<Series<?>> collectTechnologyTimelineData(Collection<String> patents) {
         List<Series<?>> data = new ArrayList<>();
-
-        Collection<String> patents = Database.selectPatentNumbersFromAssignee(company);
         Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
@@ -133,9 +136,16 @@ public class HighchartDataAdapter {
             return Collections.emptyList();
         }
 
+        final int sampleSize = 100;
+        Random rand = new Random(69);
         Map<String,Double> techScores = new HashMap<>();
+        List<String> patentList = new ArrayList<>(patents);
+        List<String> patentSample = new ArrayList<>(sampleSize);
+        while(patentList.size()>0&&patentSample.size()<sampleSize) {
+            patentSample.add(patentList.remove(rand.nextInt(patentList.size())));
+        }
         // get pre tech from company
-        tagger.getTechnologiesFor(Database.possibleNamesForAssignee(company), PortfolioList.Type.assignees,100).forEach(pair->{
+        tagger.getTechnologiesFor(patentSample, PortfolioList.Type.assignees,100).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
@@ -175,11 +185,11 @@ public class HighchartDataAdapter {
         return cleanData;
     }
 
-    public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
+    private static List<Series<?>> collectTechnologyData(Collection<String> portfolio, String seriesName, PortfolioList.Type inputType, int limit) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
-        series.setName(portfolio);
-        tagger.getTechnologiesFor(inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio),inputType,limit).forEach(pair->{
+        series.setName(seriesName);
+        tagger.getTechnologiesFor(portfolio,inputType,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
             Point point = new Point(tech,prob);
@@ -189,15 +199,36 @@ public class HighchartDataAdapter {
         return data;
     }
 
+    public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
+        if (inputType.equals(PortfolioList.Type.patents)) {
+            return collectTechnologyData(Arrays.asList(portfolio),portfolio,inputType,limit);
+        } else {
+            return collectTechnologyData(Database.possibleNamesForAssignee(portfolio),portfolio,inputType,limit);
+        }
+    }
+
+    public static List<Series<?>> collectTechnologyData(Collection<String> patents, PortfolioList.Type inputType, int limit) {
+        if (inputType.equals(PortfolioList.Type.patents)) {
+            return collectTechnologyData(patents,"Patents",inputType,limit);
+        } else {
+            return collectTechnologyData(patents,"Companies",inputType,limit);
+        }
+    }
+
     public static List<Series<?>> collectLikelyAssetBuyersData(String portfolio, PortfolioList.Type inputType, int limit, Evaluator buyerModel, WeightLookupTable<VocabWord> lookupTable) {
+        Collection<String> collection = inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio);
+        return collectLikelyAssetBuyersData(collection,portfolio,inputType,limit,buyerModel,lookupTable);
+    }
+
+    public static List<Series<?>> collectLikelyAssetBuyersData(Collection<String> collection, String seriesName, PortfolioList.Type inputType, int limit, Evaluator buyerModel, WeightLookupTable<VocabWord> lookupTable) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
-        series.setName(portfolio);
+        series.setName(seriesName);
         ValueAttribute buyerAttr = new ValueAttribute("buyerValue",1.0,buyerModel);
-        Evaluator similarityEvaluator = new SimilarityEvaluator(portfolio,lookupTable,new SimilarPatentFinder(inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio),portfolio,lookupTable).computeAvg());
+        Evaluator similarityEvaluator = new SimilarityEvaluator(seriesName,lookupTable,new SimilarPatentFinder(collection,seriesName,lookupTable).computeAvg());
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
         Database.getAssignees().forEach(assignee->{
-            if(inputType.equals(PortfolioList.Type.patents)||(!assignee.startsWith(portfolio)&&!portfolio.startsWith(assignee))) {
+            if(inputType.equals(PortfolioList.Type.patents)||(!assignee.startsWith(seriesName)&&!seriesName.startsWith(assignee))) {
                 double score = similarityEvaluator.evaluate(assignee)*buyerAttr.scoreAssignee(assignee);
                 heap.add(new WordFrequencyPair<>(assignee,score));
             }
@@ -294,14 +325,18 @@ public class HighchartDataAdapter {
     }
 
     public static List<Series<?>> collectAverageValueData(String portfolio, PortfolioList.Type inputType, List<Evaluator> evaluators) {
-        // Weighted avg by portfolio size
-        List<Series<?>> data = new ArrayList<>(1);
         Collection<String> collection = inputType.equals(PortfolioList.Type.assignees) ?
                 Database.possibleNamesForAssignee(portfolio) : new HashSet<>(Arrays.asList(portfolio));
+        return collectAverageValueData(collection,portfolio,evaluators);
+    }
+
+    public static List<Series<?>> collectAverageValueData(Collection<String> collection, String seriesName, List<Evaluator> evaluators) {
+        // Weighted avg by portfolio size
+        List<Series<?>> data = new ArrayList<>(1);
         if(collection.isEmpty()) return Collections.emptyList();
         PointSeries series = new PointSeries();
         evaluators.forEach(evaluator->{
-            series.setName(portfolio);
+            series.setName(seriesName);
             AtomicDouble value = new AtomicDouble(0.0);
             AtomicInteger totalSize = new AtomicInteger(0);
             collection.forEach(c->{
