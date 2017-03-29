@@ -1018,6 +1018,7 @@ public class SimilarPatentServer {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
+        Database.initializeDatabase();
         System.out.println("Starting to load lookup table...");
         loadLookupTable();
         System.out.println("Finished loading lookup table.");

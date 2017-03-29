@@ -99,7 +99,7 @@ public class Database {
 		}
 	}
 
-	static {
+	public static void initializeDatabase() {
 		if(gatherTechMapFile.exists()) {
 			gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
 		} else {
