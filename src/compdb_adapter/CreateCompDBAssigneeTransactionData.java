@@ -56,6 +56,7 @@ public class CreateCompDBAssigneeTransactionData {
                 newMap.put(assignee,v);
             }
         });
+        System.out.println("Size: "+newMap.size());
         Database.trySaveObject(newMap,toSave);
     }
 }
