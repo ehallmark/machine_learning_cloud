@@ -166,12 +166,25 @@ public class HighchartDataAdapter {
 
         Comparator<Series<?>> comp = (s1,s2) -> (techScores.get(s2.getName()).compareTo(techScores.get(s1.getName())));
         List<Series<?>> cleanData = data.stream().sorted(comp).limit(10).collect(Collectors.toList());
-        INDArray allValues = Nd4j.create(dates.size(),cleanData.size());
-        for(int i = 0; i < cleanData.size(); i++) {
+        applySoftMax(cleanData);
+        return cleanData;
+    }
+
+    private static void applySoftMax(List<Series<?>> cleanData) {
+        int dataPoints = cleanData.stream().map(series->series.getData().size()).max(Integer::compareTo).get();
+        int numSeries = cleanData.size();
+        INDArray allValues = Nd4j.create(dataPoints,numSeries);
+        for(int i = 0; i < numSeries; i++) {
             Series<?> series = cleanData.get(i);
             List<Point> seriesList = ((PointSeries)series).getData();
-            for(int j = 0; j < seriesList.size(); j++) {
-                allValues.putScalar(j,i,seriesList.get(j).getY().doubleValue());
+            for(int j = 0; j < dataPoints; j++) {
+                double val;
+                if(seriesList.size()>j) {
+                    val=seriesList.get(j).getY().doubleValue();
+                } else {
+                    val=0d;
+                }
+                allValues.putScalar(j, i, val);
             }
         }
         INDArray softmax = softMax(allValues);
@@ -182,7 +195,6 @@ public class HighchartDataAdapter {
                 seriesList.get(j).setY(softmax.getDouble(j,i));
             }
         }
-        return cleanData;
     }
 
     private static List<Series<?>> collectTechnologyData(Collection<String> portfolio, String seriesName, PortfolioList.Type inputType, int limit) {
@@ -196,6 +208,7 @@ public class HighchartDataAdapter {
             series.addPoint(point);
         });
         data.add(series);
+        applySoftMax(data);
         return data;
     }
 
@@ -244,6 +257,7 @@ public class HighchartDataAdapter {
             series.addPoint(point);
         });
         data.add(series);
+        applySoftMax(data);
         return data;
     }
 
