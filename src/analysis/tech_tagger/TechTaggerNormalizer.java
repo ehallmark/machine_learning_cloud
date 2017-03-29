@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends TechTagger {
     private List<TechTagger> taggers;
-    private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(),SimilarityTechTagger.getAIModelTagger()),Arrays.asList(0.1,1.0));
+    private static TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(),SimilarityTechTagger.getAIModelTagger(),new GatherKeywordTechTagger()),Arrays.asList(0.1,1.0,0.9));
 
     public TechTaggerNormalizer(List<TechTagger> taggers, List<Double> weights) {
         this.taggers=taggers;
