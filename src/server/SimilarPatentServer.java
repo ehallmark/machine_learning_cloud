@@ -1034,6 +1034,7 @@ public class SimilarPatentServer {
         System.out.println("Finished starting server.");
         System.out.println("Starting Tech Tagger UI Server...");
         TechTaggerUI.setupServer();
+        GatherClassificationServer.StartServer();
         System.out.println("Finished starting server.");
     }
 }

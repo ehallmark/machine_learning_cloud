@@ -21,7 +21,6 @@ public class GatherClassificationServer {
     private static TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
     public static void StartServer() throws Exception{
 
-        port(4567);
         before((request, response) -> {
             boolean authenticated = true;
 
@@ -63,6 +62,7 @@ public class GatherClassificationServer {
     }
 
     public static void main(String[] args) throws Exception {
+        port(4567);
         StartServer();
     }
 }
