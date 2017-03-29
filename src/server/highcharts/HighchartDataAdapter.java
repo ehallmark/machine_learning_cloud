@@ -166,11 +166,11 @@ public class HighchartDataAdapter {
 
         Comparator<Series<?>> comp = (s1,s2) -> (techScores.get(s2.getName()).compareTo(techScores.get(s1.getName())));
         List<Series<?>> cleanData = data.stream().sorted(comp).limit(10).collect(Collectors.toList());
-        applySoftMax(cleanData);
+        applySoftMaxToTimeSeries(cleanData);
         return cleanData;
     }
 
-    private static void applySoftMax(List<Series<?>> cleanData) {
+    private static void applySoftMaxToTimeSeries(List<Series<?>> cleanData) {
         int dataPoints = cleanData.stream().map(series->series.getData().size()).max(Integer::compareTo).get();
         int numSeries = cleanData.size();
         INDArray allValues = Nd4j.create(dataPoints,numSeries);
@@ -193,6 +193,34 @@ public class HighchartDataAdapter {
             List<Point> seriesList = ((PointSeries)series).getData();
             for(int j = 0; j < seriesList.size(); j++) {
                 seriesList.get(j).setY(softmax.getDouble(j,i));
+            }
+        }
+    }
+
+    private static void applySoftMax(List<Series<?>> cleanData) {
+        int dataPoints = cleanData.stream().map(series->series.getData().size()).max(Integer::compareTo).get();
+        int numSeries = cleanData.size();
+        INDArray allValues = Nd4j.create(dataPoints,numSeries);
+        for(int i = 0; i < numSeries; i++) {
+            Series<?> series = cleanData.get(i);
+            List<Point> seriesList = ((PointSeries)series).getData();
+            for(int j = 0; j < dataPoints; j++) {
+                double val;
+                if(seriesList.size()>j) {
+                    val=seriesList.get(j).getY().doubleValue();
+                } else {
+                    val=0d;
+                }
+                allValues.putScalar(j, i, val);
+            }
+        }
+        allValues = allValues.transpose();
+        INDArray softmax = softMax(allValues);
+        for(int i = 0; i < cleanData.size(); i++) {
+            Series<?> series = cleanData.get(i);
+            List<Point> seriesList = ((PointSeries)series).getData();
+            for(int j = 0; j < seriesList.size(); j++) {
+                seriesList.get(j).setY(softmax.getDouble(i,j));
             }
         }
     }
