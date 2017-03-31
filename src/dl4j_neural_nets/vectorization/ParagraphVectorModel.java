@@ -211,6 +211,48 @@ public class ParagraphVectorModel {
         WordVectorSerializer.writeParagraphVectors(net, allParagraphsModelFile.getAbsolutePath());
     }
 
+    public void trainAndSaveSparkParagraphVectorModel() throws Exception {
+        throw new RuntimeException("NOT YET IMPLEMENTED" );
+
+        /*
+        int numEpochs = 3;
+        int numThreads = 60;
+
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),numThreads/2);
+
+        net = new ParagraphVectors.Builder()
+                .seed(41)
+                .batchSize(1000)
+                .epochs(1) // hard coded to avoid learning rate from resetting
+                .windowSize(6)
+                .layerSize(300)
+                .sampling(0.00005)
+                .negativeSample(negativeSampling)
+                .learningRate(learningRate)
+                .useAdaGrad(true)
+                .resetModel(true)
+                .minWordFrequency(30)
+                .workers(numThreads/2)
+                .iterations(1)
+                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
+                .trainWordVectors(true)
+                .useHierarchicSoftmax(true)
+                .trainSequencesRepresentation(true)
+                .trainElementsRepresentation(true)
+                .elementsLearningAlgorithm(new SkipGram<>())
+                .sequenceLearningAlgorithm(new DBOW<>())
+                .tokenizerFactory(tokenizerFactory)
+                .setVectorsListeners(Arrays.asList(
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",100000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                ))
+                .iterate(sentenceIterator)
+                .build();
+
+        net.fit();
+        WordVectorSerializer.writeParagraphVectors(net, allParagraphsModelFile.getAbsolutePath());
+        */
+    }
+
     public static ParagraphVectors loadAllSentencesModel() throws IOException {
         // Write word vectors to file
         return WordVectorSerializer.readParagraphVectorsFromText(allSentencesModelFile.getAbsolutePath());
