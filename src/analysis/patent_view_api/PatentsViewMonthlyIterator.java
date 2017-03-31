@@ -1,88 +1,70 @@
 package analysis.patent_view_api;
 
 import org.apache.spark.api.java.JavaRDD;
+import org.deeplearning4j.text.documentiterator.LabelAwareIterator;
+import org.deeplearning4j.text.documentiterator.LabelledDocument;
+import org.deeplearning4j.text.documentiterator.LabelsSource;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
 /**
  * Created by Evan on 3/27/2017.
  */
-public class PatentsViewMonthlyIterator implements DataSetIterator {
+public class PatentsViewMonthlyIterator implements LabelAwareIterator {
+    private Queue<LabelledDocument> queue;
+    private Iterator<LocalDate> datesIter;
+    private List<LocalDate> dates;
+    private static List<LocalDate> ALL_MONTHS;
+    static {
+        ALL_MONTHS=new ArrayList<>();
+        LocalDate date = LocalDate.now().minusYears(20).withDayOfMonth(1);
+        LocalDate now = LocalDate.now();
+        while(date.isBefore(now)) {
+            ALL_MONTHS.add(date.plusYears(1));
+            date=date.plusYears(1);
+        }
+    }
+    public PatentsViewMonthlyIterator(List<LocalDate> dates) {
+        this.queue = new ArrayDeque<>();
+        this.dates=dates;
+        this.datesIter=dates.iterator();
+    }
     @Override
-    public DataSet next(int i) {
+    public boolean hasNextDocument() {
+        return hasNext();
+    }
+
+    @Override
+    public LabelledDocument nextDocument() {
         return null;
-    }
-
-    @Override
-    public int totalExamples() {
-        return 0;
-    }
-
-    @Override
-    public int inputColumns() {
-        return 0;
-    }
-
-    @Override
-    public int totalOutcomes() {
-        return 0;
-    }
-
-    @Override
-    public boolean resetSupported() {
-        return false;
-    }
-
-    @Override
-    public boolean asyncSupported() {
-        return false;
     }
 
     @Override
     public void reset() {
-
+        datesIter=dates.iterator();
     }
 
     @Override
-    public int batch() {
-        return 0;
-    }
-
-    @Override
-    public int cursor() {
-        return 0;
-    }
-
-    @Override
-    public int numExamples() {
-        return 0;
-    }
-
-    @Override
-    public void setPreProcessor(DataSetPreProcessor dataSetPreProcessor) {
-
-    }
-
-    @Override
-    public DataSetPreProcessor getPreProcessor() {
+    public LabelsSource getLabelsSource() {
         return null;
     }
 
     @Override
-    public List<String> getLabels() {
-        return null;
+    public void shutdown() {
+
     }
 
     @Override
     public boolean hasNext() {
-        return false;
+        return queue.size()>0||datesIter.hasNext();
     }
 
     @Override
-    public DataSet next() {
-        return null;
+    public LabelledDocument next() {
+        return queue.poll();
     }
 }
