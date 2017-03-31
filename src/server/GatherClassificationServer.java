@@ -42,7 +42,8 @@ public class GatherClassificationServer {
         res.type("application/json");
         if(req.queryParamsValues("patents[]")==null || req.queryParamsValues("patents[]").length==0)  return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
 
-        List<String> patents = Arrays.asList(req.queryParamsValues("patents[]"));
+        Set<String> patents = new HashSet<>(Arrays.asList(req.queryParamsValues("patents[]")));
+        patents.addAll(Arrays.asList(req.queryParams("patents").split("\\s+")));
         int tmp = 3;
         if(req.queryParams("limit")!=null && req.queryParams("limit").length()>0) {
             try {
