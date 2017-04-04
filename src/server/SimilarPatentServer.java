@@ -509,7 +509,7 @@ public class SimilarPatentServer {
                     labelsToExclude.addAll(Database.getGatherPatents());
                 }
 
-                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limitPerInput, threshold, labelsToExclude, badAssignees, portfolioType);
+                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limitPerInput, limit, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
                 modelMap.forEach((key,model)->{
@@ -647,19 +647,19 @@ public class SimilarPatentServer {
         return patentFinders;
     }
 
-    static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
+    static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limitPerInput, int totalLimit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
         List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
-            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limit, badLabels, portfolioType);
+            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limitPerInput, badLabels, portfolioType);
             portfolioLists.addAll(similar);
         } catch(Exception e) {
             throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(portfolioLists,badAssignees, portfolioType,limit);
+        return mergePatentLists(portfolioLists,badAssignees, portfolioType,totalLimit);
     }
 
-    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int limit) {
+    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int totalLimit) {
         try {
             Map<String, ExcelWritable> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
@@ -681,7 +681,7 @@ public class SimilarPatentServer {
                 List<ExcelWritable> merged = map.values().stream()
                         .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
                         .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
-                        .limit(limit)
+                        .limit(totalLimit)
                         .collect(Collectors.toList());
                 return new PortfolioList(merged,portfolioType);
 

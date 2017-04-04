@@ -443,7 +443,7 @@ public class CompanyPortfolioProfileUI {
                     System.out.println("Starting to run similar patent model...");
                     double threshold = 0.5;
                     while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
-                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
+                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, limit, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
                         threshold-=0.2;
                     }
                     System.out.println("Finished similar patent model.");
