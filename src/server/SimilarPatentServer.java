@@ -443,6 +443,7 @@ public class SimilarPatentServer {
                 preProcess(extractString(req, "class_codes", "").toUpperCase(), "\n", null).stream().map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchFor.add(cpc));
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
+                int limitPerInput = extractInt(req, "limitPerInput", 10);
                 PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
 
                 if(req.queryParamsValues("dataAttributes[]")==null) {
@@ -508,7 +509,7 @@ public class SimilarPatentServer {
                     labelsToExclude.addAll(Database.getGatherPatents());
                 }
 
-                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limit, threshold, labelsToExclude, badAssignees, portfolioType);
+                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limitPerInput, threshold, labelsToExclude, badAssignees, portfolioType);
                 if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
 
                 modelMap.forEach((key,model)->{
@@ -647,7 +648,7 @@ public class SimilarPatentServer {
     }
 
     static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
-    List<PortfolioList> portfolioLists = new ArrayList<>();
+        List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
             List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limit, badLabels, portfolioType);
             portfolioLists.addAll(similar);
@@ -831,6 +832,7 @@ public class SimilarPatentServer {
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
+                                                                label("Patent Limit Per Input"),br(),input().withType("text").withName("limitPerInput"), br(),
                                                                 label("Merge Search Input?"),br(),input().withType("checkbox").withName("merge_search_input"),br(),
                                                                 label("Remove Gather Assets?"),br(),input().withType("checkbox").withName("remove_gather_patents"),br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
