@@ -120,7 +120,9 @@ public class CompanyPortfolioProfileUI {
                                         }).collect(Collectors.toList())
                                 ),br()
                         )),br(),
-                        SimilarPatentServer.expandableDiv("Custom",true,div().with(
+                        SimilarPatentServer.expandableDiv("Custom Options",true,div().with(
+                                h4("Result Limit"),
+                                input().withType("number").withValue("10").withName("limit"),
                                 h4("Patent List"),
                                 textarea().withName("patent_list"),br()
                         )),
@@ -245,12 +247,19 @@ public class CompanyPortfolioProfileUI {
                 }
 
 
+
                 String reportType = params.get("report_type").value();
                 if (reportType == null || reportType.trim().isEmpty())
                     return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
                 List<AbstractChart> charts = new ArrayList<>();
-                int limit = 20;
+                String limitStr = params.get("limit").value();
+                int limit = 10;
+                try {
+                    limit = Integer.valueOf(limitStr);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
                 SimilarPatentFinder firstFinder;
                 boolean includeSubclasses = false;
                 boolean allowResultsFromOtherCandidateSet = false;
@@ -385,13 +394,9 @@ public class CompanyPortfolioProfileUI {
                             break;
                         }
                         case "Technology Distribution": {
-                            int numTechnologies;
-                            if (inputType.equals(PortfolioList.Type.assignees)) numTechnologies = 10;
-                            else numTechnologies = 5;
-
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectTechnologyData(INPUT_PATENTS, inputType, numTechnologies) :
-                                    HighchartDataAdapter.collectTechnologyData (ASSIGNEE, inputType, numTechnologies);
+                                    HighchartDataAdapter.collectTechnologyData(INPUT_PATENTS, inputType, limit) :
+                                    HighchartDataAdapter.collectTechnologyData (ASSIGNEE, inputType, limit);
                             // special model
                             portfolioType = inputType;
                             portfolioList = null;
@@ -406,13 +411,9 @@ public class CompanyPortfolioProfileUI {
                             portfolioType = inputType;
                             portfolioList = null;
                             System.out.println("Using abstract portfolio type");
-                            int numBuyers;
-                            if (inputType.equals(PortfolioList.Type.assignees)) numBuyers = 10;
-                            else numBuyers = 5;
-
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, numBuyers, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable()) :
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, numBuyers, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable());
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable()) :
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable());
 
                             AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, data);
                             // test!
