@@ -310,7 +310,7 @@ public class CompanyPortfolioProfileUI {
                                     HighchartDataAdapter.collectTechnologyTimelineData(INPUT_PATENTS) :
                                     HighchartDataAdapter.collectTechnologyTimelineData(ASSIGNEE);
                             portfolioList = null;
-                            PercentAreaChart chart = new PercentAreaChart("Recent Technology Timeline for " + portfolioString, data);
+                            LineChart chart = new LineChart("Recent Technology Timeline for " + portfolioString, data, AxisType.DATETIME, "", "AI Value");
                             charts.add(chart);
                             break;
                         }
