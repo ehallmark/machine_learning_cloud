@@ -411,8 +411,8 @@ public class CompanyPortfolioProfileUI {
                             else numBuyers = 5;
 
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable()) :
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, numBuyers, SimilarPatentServer.modelMap.get("assetsPurchased"),SimilarPatentServer.getLookupTable());
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, numBuyers, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable()) :
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, numBuyers, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable());
 
                             AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, data);
                             // test!
