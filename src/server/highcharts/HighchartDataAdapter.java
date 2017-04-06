@@ -154,7 +154,7 @@ public class HighchartDataAdapter {
                 Collections.shuffle(set);
                 Point point = new Point().setX(date.toEpochDay()*NUM_MILLISECONDS_IN_A_DAY);
                 if(set!=null) {
-                    point.setY(set.stream().limit(100).map(patent->tagger.getTechnologyValueFor(patent, tech, PortfolioList.Type.patents)).collect(Collectors.summingDouble(d->d)));
+                    point.setY(tagger.getTechnologyValueFor(set.stream().limit(100).collect(Collectors.toList()), tech, PortfolioList.Type.patents));
                 } else {
                     point.setY(0d);
                 }

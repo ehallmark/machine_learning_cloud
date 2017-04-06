@@ -11,6 +11,6 @@ import java.time.LocalDate;
 public class Test {
     public static void main(String[] args) {
         LocalDate month = LocalDate.now().minusYears(2);
-        System.out.println(String.join(" ",new Gson().toJson(PatentAPIHandler.requestMonthlyPatents(month))));
+        System.out.println(String.join("\n",PatentAPIHandler.requestPatentNumbersFromAssignee("Unwired Planet")));
     }
 }
