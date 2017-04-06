@@ -145,7 +145,7 @@ public class HighchartDataAdapter {
             patentSample.add(patentList.remove(rand.nextInt(patentList.size())));
         }
         // get pre tech from company
-        tagger.getTechnologiesFor(patentSample, PortfolioList.Type.assignees,100).forEach(pair->{
+        tagger.getTechnologiesFor(patentSample, PortfolioList.Type.patents,100).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
