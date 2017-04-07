@@ -54,8 +54,12 @@ public class HighchartDataAdapter {
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
             if(date!=null) {
-                // groups by month
-                date = date.withDayOfMonth(1);
+                // groups by semester
+                if(date.getMonthValue()>6) {
+                    date = date.withMonth(7).withDayOfMonth(1);
+                } else {
+                    date = date.withMonth(1).withDayOfMonth(1);
+                }
                 if(dateToPatentMap.containsKey(date)) {
                     dateToPatentMap.get(date).add(patent);
                 } else {
@@ -107,8 +111,12 @@ public class HighchartDataAdapter {
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
             if(date!=null) {
-                // groups by month
-                date = date.withDayOfMonth(1);
+                // groups by semester
+                if(date.getMonthValue()>6) {
+                    date = date.withMonth(7).withDayOfMonth(1);
+                } else {
+                    date = date.withMonth(1).withDayOfMonth(1);
+                }
                 if(dateToPatentMap.containsKey(date)) {
                     dateToPatentMap.get(date).add(patent);
                 } else {
