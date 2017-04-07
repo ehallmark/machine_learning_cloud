@@ -49,7 +49,7 @@ public class HighchartDataAdapter {
     }
     public static List<Series<?>> collectValueTimelineData(Collection<String> patents, Evaluator valueModel) {
         List<Series<?>> data = new ArrayList<>();
-
+        int numMonths = 6;
         Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
@@ -80,7 +80,7 @@ public class HighchartDataAdapter {
             LocalDate date = min;
             while (date.isBefore(max) || date.isEqual(max)) {
                 dates.add(date);
-                date = date.plusMonths(1);
+                date = date.plusMonths(numMonths);
             }
         }
 
@@ -107,6 +107,7 @@ public class HighchartDataAdapter {
     }
     public static List<Series<?>> collectTechnologyTimelineData(Collection<String> patents) {
         List<Series<?>> data = new ArrayList<>();
+        int numMonths = 6;
         Map<LocalDate,Set<String>> dateToPatentMap = new HashMap<>();
         patents.forEach(patent->{
             LocalDate date = Database.getPubDateFor(patent);
@@ -137,7 +138,7 @@ public class HighchartDataAdapter {
             LocalDate date = min;
             while (date.isBefore(max) || date.isEqual(max)) {
                 dates.add(date);
-                date = date.plusMonths(1);
+                date = date.plusMonths(numMonths);
             }
         }
         if(dates.size()==0) {
