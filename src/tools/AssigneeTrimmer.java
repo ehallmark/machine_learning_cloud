@@ -8,7 +8,7 @@ import java.util.*;
  * Created by Evan on 1/22/2017.
  */
 public class AssigneeTrimmer {
-    private static List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," CORPORATION"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
+    private static List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," LLP"," CO."," LIMITED"," CORPORATION"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
     private static Map<String,String> standardizedAssigneeMap = new HashMap<>();
 
     // ASSIGNEE NAME STANDARDIZATION MAP CREATION HERE
