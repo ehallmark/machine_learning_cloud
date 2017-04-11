@@ -103,7 +103,7 @@ public class GetEtsiPatentsList {
     }
 
 
-    public static List<String> getExcelList(File excelFile, int colIdx, int offset) throws Exception {
+    public static List<List<String>> getExcelLists(File excelFile, int offset, int... colIdxs) throws Exception {
         assert offset >= 0 : "Offset must be positive!";
         if(!excelFile.exists()) throw new RuntimeException("--- File does not exist: "+excelFile.getName()+" ---");
         else System.out.println("--- Reading: "+excelFile.getName()+" ---");
@@ -115,42 +115,68 @@ public class GetEtsiPatentsList {
             throw new RuntimeException("--- Try converting to Excel 97-2004 (.xls) format ---");
         }
         Sheet sheet = wb.getSheet(0);
-        List<String> list = new ArrayList<>();
+        List<List<String>> outerList = new ArrayList<>();
         for(int i = offset; i < sheet.getRows(); i++) {
             Cell[] row = sheet.getRow(i);
-            if(row.length < colIdx+1) continue;
-            if(row[colIdx]==null) continue;
-            Cell p = row[colIdx];
-            if(p.getContents()==null)continue;
-            String name = p.getContents().trim();
-            if(name.length()>0) {
-                list.add(name);
+            List<String> innerList = new ArrayList<>(colIdxs.length);
+            for(int colIdx : colIdxs) {
+                String name = "";
+                if (!(row.length < colIdx + 1) && !(row[colIdx] == null)) {
+                    Cell p = row[colIdx];
+                    if (p.getContents() == null) continue;
+                    name = p.getContents().trim();
+                }
+                innerList.add(name);
             }
+            outerList.add(innerList);
         }
-        return list;
+        return outerList;
     }
 
-    public static void loadAndPrintExcelReservoir(String filename, int colIdx, int offset) throws Exception {
-        List<String> list = getExcelList(new File(filename),colIdx,offset);
+    public static List<String> getExcelList(File excelFile, int offset, int colIdx, String delim) throws Exception {
+        return getExcelLists(excelFile,offset,colIdx).stream().map(list->String.join(delim,list)).collect(Collectors.toList());
+    }
 
-        StringJoiner sj = new StringJoiner(" ");
-
-        AtomicInteger cnt = new AtomicInteger(0);
-        list.forEach(p->{
-            sj.add(p.replaceFirst("US","").replaceAll(",","").replaceAll("\\.","").trim());
-            cnt.getAndIncrement();
-        });
-
-        System.out.println("Read from: "+filename);
-        System.out.println(sj.toString());
-        System.out.println("Total count: "+cnt.get());
-
+    public static List<String> getExcelList(File excelFile, int offset, int colIdx) throws Exception {
+        return getExcelList(excelFile,offset,colIdx,"");
     }
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        getExcelList(new File("Orange Patent List export.xls"),0,1).forEach(patent->{
-            System.out.println(patent.replaceFirst("US",""));
+        Map<String,Map<String,Set<String>>> map = new HashMap<>();
+        getExcelLists(new File("SIE_csv_data.xls"),1,10,17,1).forEach(list->{
+            if(list.size()>=3) {
+                String tech = list.get(0);
+                String targets = list.get(1);
+                String patent = list.get(2);
+                if (tech.length() > 0 && targets.length() > 0 && patent.length()>0) {
+                    for(String target : targets.split(";")) {
+                        target=target.trim();
+                        if(target.isEmpty()) continue;
+                        Map<String,Set<String>> techMap;
+                        if(map.containsKey(target)) {
+                            techMap=map.get(target);
+                        } else {
+                            techMap = new HashMap<>();
+                            map.put(target,techMap);
+                        }
+                        if(techMap.containsKey(tech)) {
+                            techMap.get(tech).add(patent);
+                        } else {
+                            Set<String> set = new HashSet<>();
+                            set.add(patent);
+                            techMap.put(tech,set);
+                        }
+                    }
+                }
+            }
+        });
+        map.forEach((assignee,techCounts)->{
+            int sum = techCounts.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
+            techCounts.forEach((tech,patents)->{
+                String patentsStr = String.join("; ",patents);
+                System.out.println(assignee+"\t"+tech+"\t"+patentsStr+"\t"+patents.size()+"\t"+sum);
+            });
         });
     }
 
