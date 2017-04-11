@@ -149,45 +149,8 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        Map<String,Collection<String>> map2G = get2GPatentMap();
-
-        Map<String,Collection<String>> map3G = get3GPatentMap();
-
-        Map<String,Collection<String>> map4G = get4GPatentMap();
-
-        BufferedWriter writer = new BufferedWriter(new FileWriter(new File("standards_by_tech.csv")));
-        // headers
-        writer.write("Standard,2G (GSM) Applicable,3G (UMTS) Applicable, 4G (LTE) Applicable,Declared US Assets\n");
-        writer.flush();
-        Set<String> allStandards = new HashSet<>();
-        allStandards.addAll(map2G.keySet());
-        allStandards.addAll(map3G.keySet());
-        allStandards.addAll(map4G.keySet());
-        allStandards.forEach(standard->{
-            try {
-                Set<String> patents = new HashSet<>();
-                boolean is2G = false;
-                boolean is3G = false;
-                boolean is4G = false;
-                if(map2G.containsKey(standard)) {
-                    is2G=true;
-                    patents.addAll(map2G.get(standard));
-                }
-                if(map3G.containsKey(standard)) {
-                    is3G=true;
-                    patents.addAll(map3G.get(standard));
-                }
-                if(map4G.containsKey(standard)) {
-                    is4G=true;
-                    patents.addAll(map4G.get(standard));
-                }
-                StringJoiner line = new StringJoiner(",", "", "\n");
-                line.add(standard).add(boolToString(is2G)).add(boolToString(is3G)).add(boolToString(is4G)).add(String.join(" ", patents));
-                writer.write(line.toString());
-                writer.flush();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
+        getExcelList(new File("Orange Patent List export.xls"),0,1).forEach(patent->{
+            System.out.println(patent.replaceFirst("US",""));
         });
     }
 
