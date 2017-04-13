@@ -7,6 +7,7 @@ import jxl.read.biff.BiffException;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -143,41 +144,52 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        Map<String,Map<String,Set<String>>> map = new HashMap<>();
-        getExcelLists(new File("SIE_csv_data.xls"),1,10,17,1).forEach(list->{
-            if(list.size()>=3) {
-                String tech = list.get(0);
-                String targets = list.get(1);
-                String patent = list.get(2);
-                if (tech.length() > 0 && targets.length() > 0 && patent.length()>0) {
-                    for(String target : targets.split(";")) {
-                        target=target.trim();
-                        if(target.isEmpty()) continue;
-                        Map<String,Set<String>> techMap;
-                        if(map.containsKey(target)) {
-                            techMap=map.get(target);
-                        } else {
-                            techMap = new HashMap<>();
-                            map.put(target,techMap);
-                        }
-                        if(techMap.containsKey(tech)) {
-                            techMap.get(tech).add(patent);
-                        } else {
-                            Set<String> set = new HashSet<>();
-                            set.add(patent);
-                            techMap.put(tech,set);
+        Set<String> MA_Assets = new HashSet<>();
+        Map<String,String> assetToFamNum = new HashMap<>();
+        Map<String,Set<String>> famToAssets = new HashMap<>();
+        Set<String> fallenOut = new HashSet<>();
+        getExcelLists(new File("SIE_csv_data.xls"),1,0,1,4,17).forEach(list->{
+            if(list.size()>=4) {
+                String fam = list.get(0);
+                String asset = list.get(1);
+                String rating = list.get(2);
+                String marketApplicability = list.get(3);
+                if (fam.length() > 0 && asset.length() > 0 && rating.length()>0) {
+                    assetToFamNum.put(asset,fam);
+                    if(famToAssets.containsKey(fam)) {
+                        famToAssets.get(fam).add(asset);
+                    } else {
+                        Set<String> set = new HashSet<>();
+                        set.add(asset);
+                        famToAssets.put(fam,set);
+                    }
+                    if(marketApplicability.length()>0) MA_Assets.add(asset);
+                    if(rating.equals("4")||rating.equals("5")) {
+                        if(marketApplicability.isEmpty()) {
+                            fallenOut.add(asset);
                         }
                     }
                 }
             }
         });
-        map.forEach((assignee,techCounts)->{
-            int sum = techCounts.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
-            techCounts.forEach((tech,patents)->{
-                String patentsStr = String.join("; ",patents);
-                System.out.println(assignee+"\t"+tech+"\t"+patentsStr+"\t"+patents.size()+"\t"+sum);
+        System.out.println("Size of MA_assets: "+MA_Assets.size());
+        System.out.println("Number of fallen out: "+fallenOut.size());
+        AtomicInteger cnt = new AtomicInteger(0);
+
+        fallenOut.forEach(asset->{
+            Set<String> family = famToAssets.get(assetToFamNum.get(asset));
+            AtomicBoolean bool = new AtomicBoolean(false);
+            family.forEach(fam->{
+               if(MA_Assets.contains(fam)) {
+                   bool.set(true);
+               }
             });
+            if(bool.get()) {
+                cnt.getAndIncrement();
+            }
         });
+
+        System.out.println("Number of assets removed due to family members: "+cnt.get());
     }
 
     private static String boolToString(boolean isTrue) {
