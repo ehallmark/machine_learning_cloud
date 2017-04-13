@@ -144,16 +144,16 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        Map<String, Set<Integer>> targetMap = new HashMap<>();
+        Map<String, Set<String>> targetMap = new HashMap<>();
         Map<String, String> assetToTechMap = new HashMap<>();
         AtomicInteger cnt = new AtomicInteger(0);
-        String TECHNOLOGY_TO_MATCH = null;
-        getExcelLists(new File("SIE_csv_data.xls"), 1, 1,11, 18).forEach(list -> {
+        String TECHNOLOGY_TO_MATCH = "User Interface";
+        getExcelLists(new File("SIE_csv_data.xls"), 1, 1,10, 17).forEach(list -> {
             if (list.size() >= 3) {
                 String asset = list.get(0);
                 String tech = list.get(1);
                 String targets = list.get(2);
-                if (asset.length() > 0 && tech.length() > 0 && targets.length() > 0 && (TECHNOLOGY_TO_MATCH==null||TECHNOLOGY_TO_MATCH.equals(tech))) {
+                if (asset.length() > 0 && tech.length() > 0 && targets.length() > 0 && (TECHNOLOGY_TO_MATCH==null||tech.startsWith(TECHNOLOGY_TO_MATCH))) {
                     int idx = cnt.getAndIncrement();
                     System.out.println(idx);
                     assetToTechMap.put(asset, tech);
@@ -161,10 +161,10 @@ public class GetEtsiPatentsList {
                     for (String target : targetList) {
                         target = target.trim();
                         if (targetMap.containsKey(target)) {
-                            targetMap.get(target).add(idx);
+                            targetMap.get(target).add(asset);
                         } else {
-                            Set<Integer> set = new HashSet<>();
-                            set.add(idx);
+                            Set<String> set = new HashSet<>();
+                            set.add(asset);
                             targetMap.put(target, set);
                         }
                     }
@@ -174,18 +174,22 @@ public class GetEtsiPatentsList {
         });
 
         int limit = 5;
-        BufferedWriter fw = new BufferedWriter(new FileWriter(new File("sie-euler-diagram.csv")));
-        targetMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().size(),e1.getValue().size())).limit(limit).forEach((e)->{
-            String target = e.getKey();
+        BufferedWriter fw = new BufferedWriter(new FileWriter(new File("sie-euler-diagram"+(TECHNOLOGY_TO_MATCH==null?"":TECHNOLOGY_TO_MATCH)+".csv")));
+
+        List<String> allTargets = new ArrayList<>(targetMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().size(),e1.getValue().size())).limit(limit)
+            .map(e->e.getKey()).collect(Collectors.toList()));
+        List<String> allPatents = new ArrayList<>(assetToTechMap.keySet());
+        for(String target : allTargets) {
+           fw.write(target+",");
+        }
+        fw.write("Asset\n");
+        fw.flush();
+        allPatents.forEach((patent)->{
             try {
-                for (int i = 0; i < cnt.get(); i++) {
-                    fw.write(("" + e.getValue().contains(i)).toUpperCase() + ",");
+                for(String target : allTargets) {
+                    fw.write(("" + targetMap.get(target).contains(patent)).toUpperCase() + ",");
                 }
-                if(TECHNOLOGY_TO_MATCH==null) {
-                    fw.write(target + "\n");
-                } else {
-                    fw.write(target + "," + TECHNOLOGY_TO_MATCH + "\n");
-                }
+                fw.write(patent+"\n");
                 fw.flush();
             } catch(Exception ex) {
                 ex.printStackTrace();
