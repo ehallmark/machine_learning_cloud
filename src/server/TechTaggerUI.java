@@ -40,7 +40,7 @@ public class TechTaggerUI {
     private static TechTagger SIMILARITY_TAGGER;
     private static TechTagger GATHER_KEYWORD_TAGGER;
     private static TechTagger RAW_KEYWORD_TAGGER;
-    private static TechTagger PAGE_RANK_SIMILARITY_TAGGER;
+    private static CitationPageRank PAGE_RANK_SIMILARITY_TAGGER;
     static {
         //CPC_TAGGER=new CPCTagger();
         //SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
@@ -121,9 +121,17 @@ public class TechTaggerUI {
                                 br(),
                                 input().withType("number").withValue("5").withName("tag_limit")
                         ),br(),
-                        label("Use Citation Model? (BETA)").with(
+                        label("Use Citation PageRank Model? (BETA)").with(
                                 br(),
                                 input().withType("checkbox").withName("useCitationModel")
+                        ),br(),
+                        label("PageRank Depth (BETA)").with(
+                                br(),
+                                input().withType("number").withName("pageRankDepth")
+                        ),br(),
+                        label("PageRank Epochs (BETA)").with(
+                                br(),
+                                input().withType("number").withName("pageRankEpochs")
                         ),br(),br(),
                         button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
 
@@ -208,6 +216,8 @@ public class TechTaggerUI {
                 double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
                 double gather_keyword_percent = (SimilarPatentServer.extractDouble(params,"gather_keyword_percent",0.0));
                 double raw_keyword_percent = (SimilarPatentServer.extractDouble(params,"raw_keyword_percent",0.0));
+                int pageRankDepth = (int)(SimilarPatentServer.extractDouble(params,"pageRankDepth",4d));
+                int pageRankEpochs = (int)(SimilarPatentServer.extractDouble(params,"pageRankEpochs",10d));
                 if(ai_percent<0)ai_percent=0;
                 if(cpc_percent<0)cpc_percent=0;
                 if(raw_keyword_percent<0)raw_keyword_percent=0;
@@ -245,6 +255,8 @@ public class TechTaggerUI {
                 List<Pair<String, Double>> results;
                 if(SimilarPatentServer.extractBool(req, "useCitationModel")) {
                     if(!inputType.get().equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Cannot search for assignees"));
+                    PAGE_RANK_SIMILARITY_TAGGER.setNumEpochs(pageRankEpochs);
+                    PAGE_RANK_SIMILARITY_TAGGER.setDepthOfSearch(pageRankDepth);
                     results=PAGE_RANK_SIMILARITY_TAGGER.getTechnologiesFor(all_search_inputs, PortfolioList.Type.patents,tag_limit);
                 } else {
                     TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER, RAW_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent, raw_keyword_percent));

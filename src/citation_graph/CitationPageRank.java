@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 public class CitationPageRank extends TechTagger {
     public static Map<String,Set<String>> patentToCitedPatentsMap;
     private static PageRank pageRank;
+    private int numEpochs;
+    private int depthOfSearch;
     static {
         patentToCitedPatentsMap=(Map<String,Set<String>>)tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
         pageRank=new PageRank(patentToCitedPatentsMap,0.85);
@@ -43,6 +45,8 @@ public class CitationPageRank extends TechTagger {
 
     public static PageRank getPageRankModel() { return pageRank; }
 
+    public void setNumEpochs(int numEpochs) { this.numEpochs=numEpochs; }
+    public void setDepthOfSearch(int depthOfSearch) { this.depthOfSearch=depthOfSearch; }
 
     @Override
     public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
@@ -51,7 +55,7 @@ public class CitationPageRank extends TechTagger {
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
-        return pageRank.findSimilarDocuments(items,n,10,3).stream().map(pair->new Pair<>(pair._1,pair._2.doubleValue())).collect(Collectors.toList());
+        return pageRank.findSimilarDocuments(items,n,numEpochs,depthOfSearch).stream().map(pair->new Pair<>(pair._1,pair._2.doubleValue())).collect(Collectors.toList());
     }
 
     @Override
