@@ -46,7 +46,7 @@ public class TechTaggerUI {
         //SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
         //GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
         //RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
-        //PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
+        PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -298,7 +298,7 @@ public class TechTaggerUI {
     public static void main(String[] args) throws Exception {
         SimilarPatentServer.loadValueModels();
         setupServer();
-        System.out.println("Finished Setting up LD Server.");
+        System.out.println("Finished Setting up TechTagger Server.");
     }
 
 
