@@ -6,6 +6,7 @@ import analysis.tech_tagger.CPCTagger;
 import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
+import citation_graph.CitationPageRank;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
@@ -39,11 +40,13 @@ public class TechTaggerUI {
     private static final TechTagger SIMILARITY_TAGGER;
     private static final TechTagger GATHER_KEYWORD_TAGGER;
     private static final TechTagger RAW_KEYWORD_TAGGER;
+    private static final TechTagger PAGE_RANK_SIMILARITY_TAGGER;
     static {
         CPC_TAGGER=new CPCTagger();
         SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
         GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
         RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
+        PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -117,6 +120,10 @@ public class TechTaggerUI {
                         label("Tag Limit").with(
                                 br(),
                                 input().withType("number").withValue("5").withName("tag_limit")
+                        ),br(),
+                        label("Use Citation Model? (BETA)").with(
+                                br(),
+                                input().withType("checkbox").withName("useCitationModel")
                         ),br(),br(),
                         button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
 
@@ -235,9 +242,15 @@ public class TechTaggerUI {
                 }
 
                 System.out.println("Starting similarity tagger");
-                TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER,SIMILARITY_TAGGER,GATHER_KEYWORD_TAGGER,RAW_KEYWORD_TAGGER),Arrays.asList(cpc_percent,ai_percent,gather_keyword_percent,raw_keyword_percent));
-                List<Pair<String,Double>> results = tagger.getTechnologiesFor(all_search_inputs, inputType.get(), tag_limit);
+                List<Pair<String, Double>> results;
+                if(SimilarPatentServer.extractBool(req, "useCitationModel")) {
+                    if(!inputType.get().equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Cannot search for assignees"));
+                    results=PAGE_RANK_SIMILARITY_TAGGER.getTechnologiesFor(all_search_inputs, PortfolioList.Type.patents,tag_limit);
+                } else {
+                    TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER, RAW_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent, raw_keyword_percent));
+                    results = tagger.getTechnologiesFor(all_search_inputs, inputType.get(), tag_limit);
 
+                }
                 TechnologySolution solution = new TechnologySolution(results);
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
