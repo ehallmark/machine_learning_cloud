@@ -51,8 +51,7 @@ public class CitationPageRank extends TechTagger {
 
     @Override
     public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
-        AtomicInteger idx = new AtomicInteger(1);
-        return pageRank.findSimilarDocuments(items,n,5,3).stream().map(label->new Pair<>(label,new Double(idx.getAndIncrement()))).collect(Collectors.toList());
+        return pageRank.findSimilarDocuments(items,n,10,3).stream().map(pair->new Pair<>(pair._1,pair._2.doubleValue())).collect(Collectors.toList());
     }
 
     @Override

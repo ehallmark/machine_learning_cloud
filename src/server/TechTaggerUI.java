@@ -36,17 +36,17 @@ import static spark.Spark.post;
 public class TechTaggerUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static final TechTagger CPC_TAGGER;
-    private static final TechTagger SIMILARITY_TAGGER;
-    private static final TechTagger GATHER_KEYWORD_TAGGER;
-    private static final TechTagger RAW_KEYWORD_TAGGER;
-    private static final TechTagger PAGE_RANK_SIMILARITY_TAGGER;
+    private static TechTagger CPC_TAGGER;
+    private static TechTagger SIMILARITY_TAGGER;
+    private static TechTagger GATHER_KEYWORD_TAGGER;
+    private static TechTagger RAW_KEYWORD_TAGGER;
+    private static TechTagger PAGE_RANK_SIMILARITY_TAGGER;
     static {
-        CPC_TAGGER=new CPCTagger();
-        SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
-        GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
-        RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
-        PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
+        //CPC_TAGGER=new CPCTagger();
+        //SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
+        //GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
+        //RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
+        //PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
