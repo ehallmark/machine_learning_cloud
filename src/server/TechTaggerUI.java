@@ -125,6 +125,10 @@ public class TechTaggerUI {
                                 br(),
                                 input().withType("checkbox").withName("useCitationModel")
                         ),br(),
+                        label("Time Limit in Seconds (BETA)").with(
+                                br(),
+                                input().withType("number").withName("timeoutSeconds")
+                        ),br(),
                         label("PageRank Depth (BETA)").with(
                                 br(),
                                 input().withType("number").withName("pageRankDepth")
@@ -218,6 +222,7 @@ public class TechTaggerUI {
                 double raw_keyword_percent = (SimilarPatentServer.extractDouble(params,"raw_keyword_percent",0.0));
                 int pageRankDepth = (int)(SimilarPatentServer.extractDouble(params,"pageRankDepth",4d));
                 int pageRankEpochs = (int)(SimilarPatentServer.extractDouble(params,"pageRankEpochs",10d));
+                int timeoutSeconds = (int)(SimilarPatentServer.extractDouble(params,"timeoutSeconds",10d));
                 if(ai_percent<0)ai_percent=0;
                 if(cpc_percent<0)cpc_percent=0;
                 if(raw_keyword_percent<0)raw_keyword_percent=0;
@@ -257,6 +262,7 @@ public class TechTaggerUI {
                     if(!inputType.get().equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Cannot search for assignees"));
                     PAGE_RANK_SIMILARITY_TAGGER.setNumEpochs(pageRankEpochs);
                     PAGE_RANK_SIMILARITY_TAGGER.setDepthOfSearch(pageRankDepth);
+                    PAGE_RANK_SIMILARITY_TAGGER.setTimeoutSeconds(timeoutSeconds);
                     results=PAGE_RANK_SIMILARITY_TAGGER.getTechnologiesFor(all_search_inputs, PortfolioList.Type.patents,tag_limit);
                 } else {
                     TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER, RAW_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent, raw_keyword_percent));
