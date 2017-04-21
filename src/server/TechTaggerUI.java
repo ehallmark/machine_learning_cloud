@@ -180,8 +180,8 @@ public class TechTaggerUI {
 
         post("/tech_tagger_report", (req, res) -> {
             res.type("application/json");
+            long time0 = System.currentTimeMillis();
             try {
-
                 System.out.println("Received request...");
                 QueryParamsMap params;
 
@@ -281,6 +281,9 @@ public class TechTaggerUI {
 
             } catch(Exception e) {
                 return new Gson().toJson(new SimpleAjaxMessage(e.getMessage()));
+            } finally {
+                long time1 = System.currentTimeMillis();
+                System.out.println("Time to complete: "+(time1-time0)/(1000)+" seconds.");
             }
         });
     }
