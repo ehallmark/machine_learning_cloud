@@ -260,9 +260,6 @@ public class TechTaggerUI {
                 List<Pair<String, Double>> results;
                 if(SimilarPatentServer.extractBool(req, "useCitationModel")) {
                     if(!inputType.get().equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Cannot search for assignees"));
-                    PAGE_RANK_SIMILARITY_TAGGER.setNumEpochs(pageRankEpochs);
-                    PAGE_RANK_SIMILARITY_TAGGER.setDepthOfSearch(pageRankDepth);
-                    PAGE_RANK_SIMILARITY_TAGGER.setTimeoutSeconds(timeoutSeconds);
                     results=PAGE_RANK_SIMILARITY_TAGGER.getTechnologiesFor(all_search_inputs, PortfolioList.Type.patents,tag_limit);
                 } else {
                     TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER, RAW_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent, raw_keyword_percent));
