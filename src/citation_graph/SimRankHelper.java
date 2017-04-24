@@ -10,7 +10,7 @@ import java.util.Set;
  * Created by ehallmark on 4/24/17.
  */
 public class SimRankHelper {
-    static File file = new File("sim_rank_table.jobj");
+    static File file = new File("data/sim_rank_table.jobj");
 
     // run sim rank algorithm
     public static void main(String[] args) {
