@@ -19,7 +19,7 @@ public class PageRankHelper {
         long t1 = System.currentTimeMillis();
         Map<String,Set<String>> patentToCitedPatentsMap = CitationPageRank.patentToCitedPatentsMap;
         PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
-        algorithm.solve(10);
+        algorithm.solve(20);
         algorithm.save(file);
         Map<String,Float> rankTable = RankGraph.loadRankTable(file);
         System.out.println("Rank Table size: "+rankTable.size());
