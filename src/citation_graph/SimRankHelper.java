@@ -17,7 +17,7 @@ public class SimRankHelper {
         long t1 = System.currentTimeMillis();
         Map<String,Set<String>> patentToCitedPatentsMap = CitationPageRank.patentToCitedPatentsMap;
         SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75);
-        algorithm.solve(10);
+        algorithm.solve(20);
         algorithm.save(file);
         Map<String,Float> rankTable = SimRank.loadRankTable(file);
         System.out.println("Rank Table size: "+rankTable.size());
