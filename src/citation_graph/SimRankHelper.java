@@ -23,7 +23,5 @@ public class SimRankHelper {
         System.out.println("Rank Table size: "+rankTable.size());
         long t2 = System.currentTimeMillis();
         System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
-
-
     }
 }
