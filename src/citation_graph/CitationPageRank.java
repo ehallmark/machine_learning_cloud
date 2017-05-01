@@ -1,6 +1,7 @@
 package citation_graph;
 
 import analysis.tech_tagger.TechTagger;
+import model.edges.Edge;
 import org.deeplearning4j.berkeley.Pair;
 import page_rank.RankGraph;
 import page_rank.SimRank;
@@ -18,11 +19,11 @@ import java.util.*;
  */
 public class CitationPageRank extends TechTagger {
     public static final Map<String,Set<String>> patentToCitedPatentsMap;
-    private static final Map<String,Float> rankTable;
+    private static final Map<Edge,Float> rankTable;
     static {
         patentToCitedPatentsMap=(Map<String,Set<String>>)tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
         if(SimRankHelper.file.exists()) {
-            rankTable = RankGraph.loadRankTable(SimRankHelper.file);
+            rankTable = new SimRank.Loader().loadRankTable(SimRankHelper.file);
         } else {
             System.out.println("WARNING: Rank table file does not exist");
             rankTable=null;

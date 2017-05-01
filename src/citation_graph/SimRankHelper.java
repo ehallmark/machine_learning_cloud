@@ -1,5 +1,6 @@
 package citation_graph;
 
+import model.edges.Edge;
 import page_rank.SimRank;
 
 import java.io.File;
@@ -19,7 +20,7 @@ public class SimRankHelper {
         SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75);
         algorithm.solve(20);
         algorithm.save(file);
-        Map<String,Float> rankTable = SimRank.loadRankTable(file);
+        Map<Edge,Float> rankTable = new SimRank.Loader().loadRankTable(file);
         System.out.println("Rank Table size: "+rankTable.size());
         long t2 = System.currentTimeMillis();
         System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");

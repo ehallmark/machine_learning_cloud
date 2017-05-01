@@ -21,7 +21,7 @@ public class PageRankHelper {
         PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
         algorithm.solve(20);
         algorithm.save(file);
-        Map<String,Float> rankTable = RankGraph.loadRankTable(file);
+        Map<String,Float> rankTable = new PageRank.Loader().loadRankTable(file);
         System.out.println("Rank Table size: "+rankTable.size());
         long t2 = System.currentTimeMillis();
         System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
