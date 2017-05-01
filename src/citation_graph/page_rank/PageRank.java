@@ -59,6 +59,7 @@ public class PageRank extends RankGraph<String> {
                 nodes.stream().forEach(node -> {
                     double rank = rankValue(node);
                     if (rank > 0) {
+                        System.out.println("Score for "+node.getLabel()+": "+rank);
                         rankTable.put(node.getLabel(), (float) rank);
                     }
                 });
