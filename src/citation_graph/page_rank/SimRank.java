@@ -36,7 +36,7 @@ public class SimRank extends RankGraph<Edge> {
         this.nodes=graph.getAllNodesList();
         AtomicInteger cnt = new AtomicInteger(0);
         labelToCitationLabelsMap.keySet().parallelStream().forEach(nodeLabel->{
-            System.out.println("Adding neighbors of: "+cnt.getAndIncrement());
+            if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
             Node node = graph.findNode(nodeLabel);
            addNeighborsToMap(node,node,0,jaccardDepth);
         });
@@ -47,7 +47,6 @@ public class SimRank extends RankGraph<Edge> {
         rankTable.put(new UndirectedEdge(thisNode,otherNode),thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
         if(currentIdx<maxIdx) {
             otherNode.getInBound().forEach(neighbor->{
-                System.out.print("-");
                 addNeighborsToMap(thisNode,neighbor,currentIdx+1,maxIdx);
             });
             System.out.println();
@@ -108,7 +107,7 @@ public class SimRank extends RankGraph<Edge> {
                             rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
                         }
                     }
-                    cnt.getAndIncrement();
+                    if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
                 });
                 return null;
             };
