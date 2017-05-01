@@ -1,10 +1,9 @@
 package citation_graph;
 
 import analysis.tech_tagger.TechTagger;
+import citation_graph.page_rank.SimRank;
 import model.edges.Edge;
 import org.deeplearning4j.berkeley.Pair;
-import page_rank.RankGraph;
-import page_rank.SimRank;
 import seeding.Constants;
 import tools.PortfolioList;
 

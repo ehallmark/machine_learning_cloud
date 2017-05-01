@@ -1,8 +1,6 @@
 package citation_graph;
 
-import page_rank.PageRank;
-import page_rank.RankGraph;
-import page_rank.SimRank;
+import citation_graph.page_rank.PageRank;
 
 import java.io.File;
 import java.util.Map;

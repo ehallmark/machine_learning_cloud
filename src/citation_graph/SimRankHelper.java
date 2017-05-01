@@ -1,7 +1,7 @@
 package citation_graph;
 
+import citation_graph.page_rank.SimRank;
 import model.edges.Edge;
-import page_rank.SimRank;
 
 import java.io.File;
 import java.util.Map;
