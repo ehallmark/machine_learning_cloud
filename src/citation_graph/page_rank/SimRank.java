@@ -81,12 +81,12 @@ public class SimRank extends RankGraph<Edge> {
     }
 
     protected double rankValue(Node n1, Node n2) {
-        if(n1.getInBound().size()==0||n2.getInBound().size()==0) return 0d;
         if(n1.equals(n2)) return 1d;
+        if(n1.getInBound().size()==0||n2.getInBound().size()==0) return 0d;
         return (damping / (n1.getInBound().size()*n2.getInBound().size())) *
                 n1.getInBound().stream().collect(Collectors
                         .summingDouble(fam1->n2.getInBound().stream().collect(Collectors.summingDouble(fam2->{
-                            Float famRank = rankTable.get(new UndirectedEdge(n1,n2));
+                            Float famRank = rankTable.get(new UndirectedEdge(fam1,fam2));
                             if(famRank==null) return 0f;
                             else return famRank;
                         }))));
@@ -101,12 +101,14 @@ public class SimRank extends RankGraph<Edge> {
                 rankTableKeysCopy.parallelStream().forEach(edge->{
                     Node n1 = edge.getNode1();
                     Node n2 = edge.getNode2();
-                    double newRank = rankValue(n1,n2);
-                    cnt.getAndIncrement();
-                    if(newRank>0) {
-                        System.out.println("Adding to TABLE: Point: "+cnt.get()+", Rank: "+newRank);
-                        rankTable.put(new UndirectedEdge(n1,n2),(float)newRank);
+                    if(!n1.equals(n2)) {
+                        double newRank = rankValue(n1, n2);
+                        if (newRank > 0) {
+                            System.out.println("Adding to TABLE: Point: " + cnt.get() + ", Rank: " + newRank);
+                            rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
+                        }
                     }
+                    cnt.getAndIncrement();
                 });
                 return null;
             };
