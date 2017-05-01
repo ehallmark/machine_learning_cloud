@@ -24,7 +24,7 @@ public class SimRank extends RankGraph<Edge> {
     }
 
     protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {
-        rankTable=new HashMap<>();
+        rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
         labelToCitationLabelsMap.forEach((label,citations)->{
             graph.addBinaryNode(label);

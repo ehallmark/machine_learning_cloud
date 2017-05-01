@@ -35,7 +35,7 @@ public class PageRank extends RankGraph<String> {
 
     @Override
     protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {
-        rankTable=new HashMap<>(labelToCitationLabelsMap.size()*labelToCitationLabelsMap.size());
+        rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
         labelToCitationLabelsMap.forEach((label,citations)->{
             graph.addBinaryNode(label);
