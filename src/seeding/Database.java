@@ -110,8 +110,24 @@ public class Database {
 		return allCompanies;
 	}
 
-	public static Collection<String> getJapaneseCompanies() {
+	public static Set<String> getJapaneseCompanies() {
 		return new HashSet<>(japaneseCompanies);
+	}
+
+	public static Set<String> loadJapaneseCompaniesSetFromDB() throws SQLException {
+		PreparedStatement ps = seedConn.prepareStatement("select distinct orgname from patent_grant_assignee where country='JP' and orgname is not null");
+		ResultSet rs = ps.executeQuery();
+		Set<String> japanese = new HashSet<>();
+		while(rs.next()) {
+			String assignee = rs.getString(1);
+			if(assignee!=null && assignee.trim().length()>0) {
+				String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
+				if(cleanAssignee!=null&&cleanAssignee.length()>0) {
+					japanese.add(cleanAssignee);
+				}
+			}
+		}
+		return japanese;
 	}
 
 	public static void initializeDatabase() {
@@ -220,7 +236,7 @@ public class Database {
 		compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
 
 		// japanese companies
-		japaneseCompanies = (Set<String>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"japanese_companies_set.jobj"));
+		japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
 	}
 
 	public static boolean hasClassifications(String pat) {
