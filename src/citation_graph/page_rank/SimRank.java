@@ -103,7 +103,6 @@ public class SimRank extends RankGraph<Edge> {
                     if(!n1.equals(n2)) {
                         double newRank = rankValue(n1, n2);
                         if (newRank > 0) {
-                            System.out.println("Adding to TABLE: Point: " + cnt.get() + ", Rank: " + newRank);
                             rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
                         }
                     }

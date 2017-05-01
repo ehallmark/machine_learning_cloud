@@ -7,6 +7,7 @@ import util.ObjectIO;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,11 +57,13 @@ public class PageRank extends RankGraph<String> {
         @Override
         public Function<Graph, Void> runAlgorithm() {
             return (graph) -> {
+                AtomicInteger cnt = new AtomicInteger(0);
                 nodes.stream().forEach(node -> {
                     double rank = rankValue(node);
                     if (rank > 0) {
                         rankTable.put(node.getLabel(), (float) rank);
                     }
+                    if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
                 });
                 return null;
             };
