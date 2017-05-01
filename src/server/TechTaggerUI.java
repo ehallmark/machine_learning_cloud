@@ -1,12 +1,8 @@
 package server;
 
-import analysis.genetics.keyword_analysis.GatherKeywordTechTagger;
-import analysis.genetics.keyword_analysis.RawKeywordTechTagger;
-import analysis.tech_tagger.CPCTagger;
-import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import analysis.tech_tagger.TechTaggerNormalizer;
-import citation_graph.CitationPageRank;
+import graphical_models.page_rank.CitationPageRank;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;

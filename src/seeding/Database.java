@@ -38,6 +38,7 @@ public class Database {
 	private static Set<String> smallEntityPatents;
 	private static Set<String> largeEntityPatents;
 	private static Set<String> microEntityPatents;
+	private static Set<String> japaneseCompanies;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
@@ -97,6 +98,20 @@ public class Database {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static boolean isJapaneseAssignee(String assignee) {
+		return japaneseCompanies.contains(assignee);
+	}
+
+	public static Collection<String> getNonJapaneseCompanies() {
+		Set<String> allCompanies = new HashSet<>(allAssignees);
+		allCompanies.removeAll(japaneseCompanies);
+		return allCompanies;
+	}
+
+	public static Collection<String> getJapaneseCompanies() {
+		return new HashSet<>(japaneseCompanies);
 	}
 
 	public static void initializeDatabase() {
@@ -204,6 +219,8 @@ public class Database {
 		compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
 		compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
 
+		// japanese companies
+		japaneseCompanies = (Set<String>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"japanese_companies_set.jobj"));
 	}
 
 	public static boolean hasClassifications(String pat) {

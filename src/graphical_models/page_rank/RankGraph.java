@@ -1,4 +1,4 @@
-package citation_graph.page_rank;
+package graphical_models.page_rank;
 
 import model.graphs.BayesianNet;
 import model.graphs.Graph;

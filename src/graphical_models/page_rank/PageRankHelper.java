@@ -1,6 +1,4 @@
-package citation_graph;
-
-import citation_graph.page_rank.PageRank;
+package graphical_models.page_rank;
 
 import java.io.File;
 import java.util.Map;

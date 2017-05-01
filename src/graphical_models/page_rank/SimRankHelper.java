@@ -1,6 +1,5 @@
-package citation_graph;
+package graphical_models.page_rank;
 
-import citation_graph.page_rank.SimRank;
 import model.edges.Edge;
 
 import java.io.File;
