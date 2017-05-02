@@ -105,7 +105,7 @@ public class SimRank extends RankGraph<Edge> {
                             rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
                         }
                     }
-                    if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
+                    if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
                 });
                 return null;
             };

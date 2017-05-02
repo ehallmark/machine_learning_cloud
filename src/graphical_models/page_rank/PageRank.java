@@ -63,7 +63,7 @@ public class PageRank extends RankGraph<String> {
                     if (rank > 0) {
                         rankTable.put(node.getLabel(), (float) rank);
                     }
-                    if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
+                    if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
                 });
                 return null;
             };
