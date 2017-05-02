@@ -57,6 +57,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEE_ASSETS_FORM_ID = "select-assignee-assets-form";
     private static final String PATENTS_FROM_ETSI_FORM_ID = "select-patents-from-etsi-form";
     private static final String CPC_FROM_ASSETS_FORM_ID = "select-cpc-from-assets-form";
+    private static final String TITLE_FROM_ASSETS_FORM_ID = "select-title-from-assets-form";
     private static final String CPC_TO_ASSETS_FORM_ID = "select-cpc-to-assets-form";
     private static final String CPC_FREQUENCY_FROM_ASSETS_FORM_ID = "select-cpc-frequency-from-assets-form";
     private static final String TECH_PREDICTION_FROM_ASSETS_FORM_ID = "tech-from-assets-form";
@@ -301,6 +302,8 @@ public class SimilarPatentServer {
         });
 
 
+
+
         post("/cpc_to_assets", (req, res) -> {
             res.type("application/json");
             String classCodeStr = req.queryParams("class_code");
@@ -322,6 +325,34 @@ public class SimilarPatentServer {
                                     .map(code->tr().with(
                                             td(code),
                                             td(String.join(" ",(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(ClassCodeHandler.convertToLabelFormat(code)):Database.selectPatentNumbersFromExactClassCode(ClassCodeHandler.convertToLabelFormat(code))))))
+                                    ).collect(Collectors.toList())
+
+                    )
+            );
+            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
+        });
+
+        post("/title_from_assets", (req, res) -> {
+            res.type("application/json");
+            String patentStr = req.queryParams("patent");
+            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+
+            String[] patents = patentStr.split(System.getProperty("line.separator"));
+            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
+            Tag table = table().with(
+                    thead().with(
+                            tr().with(
+                                    th("Asset"),
+                                    th("Title")
+                            )
+                    ),
+                    tbody().with(
+                            Arrays.stream(patents)
+                                    .filter(patent->!(patent==null||patent.isEmpty()))
+                                    .map(patent->tr().with(
+                                            td(patent),
+                                            td(String.join("; ",Database.assigneesFor(patent)))
+                                            )
                                     ).collect(Collectors.toList())
 
                     )
@@ -860,6 +891,7 @@ public class SimilarPatentServer {
                 formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
                 formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
                 formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
+                formScript(TITLE_FROM_ASSETS_FORM_ID, "/title_from_assets", "Search", true),
                 formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
                 formScript(TECH_PREDICTION_FROM_ASSETS_FORM_ID,"/tech_predictions", "Search", true),
                 formScript(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID,"/tech_predictions", "Search", true),
@@ -947,6 +979,16 @@ public class SimilarPatentServer {
                                                         button("Search").withId(TECH_PREDICTION_FROM_CPCS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
+                                ),tr().attr("style", "vertical-align: top;").with(
+                                        td().attr("style","width:33%; vertical-align: top;").with(
+                                                h3("Get Invention Title for patents"),
+                                                h4("Please place each patent on a separate line"),
+                                                form().withId(TITLE_FROM_ASSETS_FORM_ID).with(
+                                                        label("Patents"),br(),textarea().withName("patent"), br(),
+                                                        button("Search").withId(TITLE_FROM_ASSETS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        )
+
                                 )
                         )
                 ),
