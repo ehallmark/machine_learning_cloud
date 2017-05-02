@@ -337,7 +337,7 @@ public class SimilarPatentServer {
             String patentStr = req.queryParams("patent");
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
 
-            String[] patents = patentStr.split(System.getProperty("line.separator"));
+            String[] patents = patentStr.split("\\s+");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
             Tag table = table().with(
                     thead().with(
