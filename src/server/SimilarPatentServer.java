@@ -351,8 +351,7 @@ public class SimilarPatentServer {
                                     .filter(patent->!(patent==null||patent.isEmpty()))
                                     .map(patent->tr().with(
                                             td(patent),
-                                            td(String.join("; ",Database.assigneesFor(patent)))
-                                            )
+                                            td(Database.getInventionTitleFor(patent)))
                                     ).collect(Collectors.toList())
 
                     )
