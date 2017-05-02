@@ -49,7 +49,6 @@ public class SimRank extends RankGraph<Edge> {
             otherNode.getInBound().forEach(neighbor->{
                 addNeighborsToMap(thisNode,neighbor,currentIdx+1,maxIdx);
             });
-            System.out.println();
         }
     }
 
