@@ -35,7 +35,7 @@ public class SimRank extends RankGraph<Edge> {
         });
         this.nodes=graph.getAllNodesList();
         AtomicInteger cnt = new AtomicInteger(0);
-        labelToCitationLabelsMap.keySet().parallelStream().forEach(nodeLabel->{
+        labelToCitationLabelsMap.keySet().forEach(nodeLabel->{
             if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
             Node node = graph.findNode(nodeLabel);
            addNeighborsToMap(node,node,0,jaccardDepth);
