@@ -144,7 +144,7 @@ public class GetEtsiPatentsList {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
-        Map<String, Set<String>> targetMap = new HashMap<>();
+        /*Map<String, Set<String>> targetMap = new HashMap<>();
         Map<String, String> assetToTechMap = new HashMap<>();
         AtomicInteger cnt = new AtomicInteger(0);
         String TECHNOLOGY_TO_MATCH = "User Interface";
@@ -195,7 +195,12 @@ public class GetEtsiPatentsList {
                 ex.printStackTrace();
             }
         });
-        fw.close();
+        fw.close();*/
+        getExcelList(new File("Orange Patent List export.xls"),1,0).stream().map(item->{
+           return item.replaceFirst("US","");
+        }).filter(item->item.length()==7).forEach(item->{
+            System.out.println(item);
+        });
     }
 
     private static String boolToString(boolean isTrue) {

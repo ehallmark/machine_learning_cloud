@@ -17,7 +17,7 @@ import java.util.*;
  */
 public class CitationPageRank extends TechTagger {
     public static final Map<String,Set<String>> patentToCitedPatentsMap;
-    private static final Map<Edge,Float> rankTable;
+    private static final Map<Edge<String>,Float> rankTable;
     static {
         patentToCitedPatentsMap=(Map<String,Set<String>>)tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
         if(SimRankHelper.file.exists()) {

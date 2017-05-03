@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 4/20/17.
  */
-public class SimRank extends RankGraph<Edge> {
+public class SimRank extends RankGraph<Edge<String>> {
     private static final int jaccardDepth = 4;
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap, damping);
@@ -44,7 +44,7 @@ public class SimRank extends RankGraph<Edge> {
     }
 
     protected void addNeighborsToMap(Node thisNode, Node otherNode, int currentIdx, int maxIdx) {
-        rankTable.put(new UndirectedEdge(thisNode,otherNode),thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
+        rankTable.put(new UndirectedEdge<>(thisNode.getLabel(),otherNode.getLabel()),thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
         if(currentIdx<maxIdx) {
             otherNode.getInBound().forEach(neighbor->{
                 addNeighborsToMap(thisNode,neighbor,currentIdx+1,maxIdx);
@@ -57,23 +57,20 @@ public class SimRank extends RankGraph<Edge> {
         return new Algorithm();
     }
 
-    public List<Pair<String,Float>> findSimilarDocuments(Collection<String> nodeLabels, int limit) {
-        return findSimilarDocumentsFromRankTable(rankTable,nodeLabels,limit);
-    }
 
-    public static List<Pair<String,Float>> findSimilarDocumentsFromRankTable(Map<Edge,Float> rankTable, Collection<String> nodeLabels, int limit) {
+    public static List<Pair<String,Float>> findSimilarDocumentsFromRankTable(Map<Edge<String>,Float> rankTable, Collection<String> nodeLabels, int limit) {
         // greedily iterate through all values and sum ranks over nodelabels
         Map<String,Float> scoreMap = new HashMap<>();
         rankTable.entrySet().stream().filter(e->{
-            Edge edge = e.getKey();
-            if(nodeLabels.contains(edge.getNode1().getLabel())||nodeLabels.contains(edge.getNode2().getLabel())) {
+            Edge<String> edge = e.getKey();
+            if(nodeLabels.contains(edge.getNode1())||nodeLabels.contains(edge.getNode2())) {
                 return true;
             }
             return false;
         }).forEach(e->{
-            Edge edge = e.getKey();
-            scoreMap.put(edge.getNode1().getLabel(),e.getValue());
-            scoreMap.put(edge.getNode2().getLabel(),e.getValue());
+            Edge<String> edge = e.getKey();
+            scoreMap.put(edge.getNode1(),e.getValue());
+            scoreMap.put(edge.getNode2(),e.getValue());
         });
         return scoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit).map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
     }
@@ -95,10 +92,10 @@ public class SimRank extends RankGraph<Edge> {
         public Function<Graph, Void> runAlgorithm() {
             return (graph) -> {
                 AtomicInteger cnt = new AtomicInteger(0);
-                Collection<Edge> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
+                Collection<Edge<String>> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
                 rankTableKeysCopy.parallelStream().forEach(edge->{
-                    Node n1 = edge.getNode1();
-                    Node n2 = edge.getNode2();
+                    Node n1 = graph.findNode(edge.getNode1());
+                    Node n2 = graph.findNode(edge.getNode2());
                     if(!n1.equals(n2)) {
                         double newRank = rankValue(n1, n2);
                         if (newRank > 0) {
@@ -126,12 +123,13 @@ public class SimRank extends RankGraph<Edge> {
         double damping = 0.75;
         SimRank pr = new SimRank(test,damping);
         pr.solve(10);
+        pr.save(new File("testFile.jobj"));
         //System.out.println("Similar to n4: "+String.join("; ",pr.findSimilarDocuments(Arrays.asList("n4"),3,4,2)));
     }
 
     public static class Loader {
-        public Map<Edge,Float> loadRankTable(File file) {
-            return new ObjectIO<Map<Edge,Float>>().load(file);
+        public Map<Edge<String>,Float> loadRankTable(File file) {
+            return new ObjectIO<Map<Edge<String>,Float>>().load(file);
         }
     }
 }
