@@ -14,14 +14,17 @@ public class SimRankHelper {
 
     // run sim rank algorithm
     public static void main(String[] args) {
-        long t1 = System.currentTimeMillis();
         Map<String,Set<String>> patentToCitedPatentsMap = CitationPageRank.patentToCitedPatentsMap;
         SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75);
-        algorithm.solve(15);
-        algorithm.save(file);
-        Map<Edge,Float> rankTable = new SimRank.Loader().loadRankTable(file);
-        System.out.println("Rank Table size: "+rankTable.size());
-        long t2 = System.currentTimeMillis();
-        System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
+        int numEpochs = 20;
+        for(int i = 0; i < numEpochs; i++) {
+            long t1 = System.currentTimeMillis();
+            algorithm.solve(1);
+            algorithm.save(new File("data/sim_rank_table"+i+".jobj"));
+            long t2 = System.currentTimeMillis();
+            System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
+        }
+        //Map<Edge,Float> rankTable = new SimRank.Loader().loadRankTable(file);
+        //System.out.println("Rank Table size: "+rankTable.size());
     }
 }
