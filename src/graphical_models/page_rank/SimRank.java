@@ -94,9 +94,9 @@ public class SimRank extends RankGraph<Edge<String>> {
                 AtomicInteger cnt = new AtomicInteger(0);
                 Collection<Edge<String>> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
                 rankTableKeysCopy.parallelStream().forEach(edge->{
-                    Node n1 = graph.findNode(edge.getNode1());
-                    Node n2 = graph.findNode(edge.getNode2());
-                    if(!n1.equals(n2)) {
+                    if(!edge.getNode1().equals(edge.getNode2())) {
+                        Node n1 = graph.findNode(edge.getNode1());
+                        Node n2 = graph.findNode(edge.getNode2());
                         double newRank = rankValue(n1, n2);
                         if (newRank > 0) {
                             rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
