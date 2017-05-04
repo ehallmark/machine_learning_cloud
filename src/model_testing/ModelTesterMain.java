@@ -6,6 +6,7 @@ import analysis.tech_tagger.SimilarityTechTagger;
 import analysis.tech_tagger.TechTagger;
 import seeding.Database;
 import server.SimilarPatentServer;
+import tools.Emailer;
 
 import java.util.Collection;
 import java.util.Map;
@@ -46,7 +47,9 @@ public class ModelTesterMain {
     public static void testModel(String modelName, GatherTechnologyScorer scorer, Map<String,Collection<String>> testData, int numPredictions) {
         System.out.println("Starting to test Model: "+modelName);
         double modelAccuracy = scorer.accuracyOn(testData,numPredictions);
-        System.out.println("Accuracy for Model ("+modelName+")"+": "+modelAccuracy);
+        String result = "Accuracy for Model ("+modelName+")"+": "+modelAccuracy;
+        System.out.println(result);
+        new Emailer(result);
     }
 
 }
