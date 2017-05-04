@@ -17,7 +17,7 @@ public class SimRankHelper {
         Map<String,Set<String>> patentToCitedPatentsMap = CitationPageRank.patentToCitedPatentsMap;
         SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75);
         int numEpochs = 20;
-        int previousEpoch = 4;
+        int previousEpoch = 12;
         File previousModelFile = new File("data/sim_rank_table"+previousEpoch+".jobj");
         Map<Edge<String>,Float> previousRankTable = new SimRank.Loader().loadRankTable(previousModelFile);
         algorithm.rankTable=previousRankTable;
