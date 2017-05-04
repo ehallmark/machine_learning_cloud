@@ -29,6 +29,6 @@ public class TrainModelsWithLatestGatherData {
         CPCTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
 
 
-        
+
     }
 }

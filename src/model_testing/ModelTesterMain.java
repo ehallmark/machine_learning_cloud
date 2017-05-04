@@ -9,12 +9,14 @@ import server.SimilarPatentServer;
 import tools.Emailer;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by Evan on 5/4/2017.
  */
 public class ModelTesterMain {
+    static Map<String,Double> scoreMap = new HashMap<>();
 
     public static void main(String[] args) throws Exception {
         // tests models
@@ -43,6 +45,12 @@ public class ModelTesterMain {
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
             testModel("Gather Keyword Model (trained on whole data set so may be biased)",scorer,testData,numPredictions);
         }
+
+
+        // Report all scores
+        scoreMap.forEach((modelName,modelAccuracy) ->{
+            System.out.println("Accuracy for Model ("+modelName+")"+": "+modelAccuracy);
+        });
     }
 
     public static void testModel(String modelName, GatherTechnologyScorer scorer, Map<String,Collection<String>> testData, int numPredictions) {
@@ -50,7 +58,7 @@ public class ModelTesterMain {
         double modelAccuracy = scorer.accuracyOn(testData,numPredictions);
         String result = "Accuracy for Model ("+modelName+")"+": "+modelAccuracy;
         System.out.println(result);
-        new Emailer(result);
+        scoreMap.put(modelName,modelAccuracy);
     }
 
 }
