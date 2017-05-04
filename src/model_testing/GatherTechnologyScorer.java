@@ -1,12 +1,9 @@
 package model_testing;
 
 import analysis.tech_tagger.TechTagger;
-import org.deeplearning4j.berkeley.Pair;
 import tools.PortfolioList;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
