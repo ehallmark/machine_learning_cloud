@@ -42,8 +42,24 @@ public class SplitModelData {
         System.out.println("Num Technologies: "+train.size());
     }
 
+    public static Map<String,Collection<String>> getGatherTechnologyTrainingDataMap() {
+        return (Map<String,Collection<String>>)Database.tryLoadObject(trainFile);
+    }
+
+
+    public static Map<String,Collection<String>> getGatherTechnologyTestDataMap() {
+        return (Map<String,Collection<String>>)Database.tryLoadObject(testFile);
+    }
+
+
+    public static Map<String,Collection<String>> getGatherTechnologyValidationDataMap() {
+        return (Map<String,Collection<String>>)Database.tryLoadObject(validationFile);
+    }
+
     public static void main(String[] args) {
         Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
         splitData(gatherTechMap);
     }
+
+
 }

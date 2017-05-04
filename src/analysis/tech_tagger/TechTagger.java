@@ -6,6 +6,7 @@ import tools.PortfolioList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 2/20/17.
@@ -26,4 +27,5 @@ public abstract class TechTagger {
     public abstract List<Pair<String,Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n);
     public abstract  Collection<String> getAllTechnologies();
     public abstract int size();
+
 }

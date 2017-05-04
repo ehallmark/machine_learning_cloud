@@ -19,9 +19,6 @@ import java.util.stream.Collectors;
 public class BuildCPCToGatherStatistics {
     static final File techListFile = new File("ordered_gather_cpc_to_tech_list.jobj");
     static final File techMapFile = new File("gather_cpc_to_tech_map.jobj");
-    static final int MIN_CLASS_CODE_LENGTH = 7;
-    private static final double DECAY_RATE = 2d;
-
 
     // compute probability of T given C
     public static void handleCPCS(Collection<String> cpcGroup, List<String> orderedTechnologies, Map<String,Collection<String>> gatherTechMap, Map<String,Collection<String>> allCPCsToPatentsMap, Map<String,INDArray> classCodeToCondProbMap) {
@@ -48,8 +45,7 @@ public class BuildCPCToGatherStatistics {
         });
     }
 
-    private static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate) {
-        final int MIN_CLASS_SIZE = BuildCPCToGatherStatistics.MIN_CLASS_CODE_LENGTH;
+    public static INDArray predictTechnologiesVectorForPatent(List<String> technologies, Map<String,INDArray> classProbabilities,  String patent, double decayRate, int minCPCSize) {
         final int numTechnologies = technologies.size();
         Collection<String> classCodes = Database.classificationsFor(patent);
         AtomicDouble overallWeight = new AtomicDouble(0d);
@@ -60,7 +56,7 @@ public class BuildCPCToGatherStatistics {
                 // get parent classes and weight probabilities
                 double weight = 1.0;
                 double totalWeight = 0d;
-                while(cpc.length()>=MIN_CLASS_SIZE) {
+                while(cpc.length()>=minCPCSize) {
                     INDArray vec = classProbabilities.get(cpc);
                     if(vec!=null) {
                         vec.muli(weight);
@@ -80,82 +76,5 @@ public class BuildCPCToGatherStatistics {
         probVec.divi(overallWeight.get());
         return probVec;
     }
-
-    public static void main(String[] args) throws Exception {
-        Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
-        List<String> orderedTechnologies = new ArrayList<>(gatherTechMap.keySet());
-        int minPatentSize = 10;
-        // relevant cpc subgroup to patent map
-        Collection<String> patentsToQuery = new HashSet<>();
-        gatherTechMap.forEach((tech,patents)->{
-            if(patents.size()>=minPatentSize)patentsToQuery.addAll(patents);
-        });
-
-        Collection<Patent> allPatents=PatentAPIHandler.requestAllPatents(patentsToQuery);
-        System.out.println("Finished loading data");
-        Map<String,Collection<String>> allCPCsToPatentsMap = new HashMap<>();
-        allPatents.forEach(patent->{
-            patent.getClassCodes().forEach(cpc->{
-                if(cpc.getSubgroup()==null)return;
-                String cpcStr = ClassCodeHandler.convertToLabelFormat(cpc.getSubgroup()).trim();
-                while(cpcStr.length()>=MIN_CLASS_CODE_LENGTH) {
-                    if(allCPCsToPatentsMap.containsKey(cpcStr)) {
-                        allCPCsToPatentsMap.get(cpcStr).add(patent.getPatentNumber());
-                    } else {
-                        Set<String> set = new HashSet<>();
-                        set.add(patent.getPatentNumber());
-                        allCPCsToPatentsMap.put(cpcStr,set);
-                    }
-                    cpcStr=cpcStr.substring(0,cpcStr.length()-1).trim();
-                }
-            });
-        });
-        System.out.println("Finished adding cpcs to map");
-        Collection<String> allClassCodes = new HashSet<>(allCPCsToPatentsMap.keySet());
-
-        Map<String,INDArray> classCodeToCondProbMap = new HashMap<>();
-
-        handleCPCS(allClassCodes,orderedTechnologies,gatherTechMap,allCPCsToPatentsMap,classCodeToCondProbMap);
-
-        System.out.println("Finished handling cpcs...");
-
-        // get values for each patent and assignee
-        Collection<String> patents = Database.getCopyOfAllPatents();
-        Map<String,INDArray> map = new HashMap<>();
-        patents.forEach(patent->{
-           INDArray probVec = predictTechnologiesVectorForPatent(orderedTechnologies,classCodeToCondProbMap,patent,DECAY_RATE);
-           if(probVec!=null) {
-               map.put(patent,probVec);
-           }
-        });
-
-
-        // add assignees
-        Map<String,INDArray> assigneeMap = new HashMap<>();
-        Database.getAssignees().forEach(assignee->{
-           Collection<String> assigneePatents = new HashSet<>();
-           assigneePatents.addAll(Database.selectPatentNumbersFromAssignee(assignee));
-           if(assigneePatents.isEmpty()) return;
-           List<String> patentList=assigneePatents.stream().filter(patent->map.containsKey(patent)).collect(Collectors.toList());
-           if(patentList.isEmpty()) return;
-           INDArray avg = Nd4j.create(patentList.size(),orderedTechnologies.size());
-           for(int i = 0; i < patentList.size(); i++) {
-               avg.putRow(i,map.get(patentList.get(i)).dup());
-           }
-           assigneeMap.put(assignee,avg.mean(0));
-           System.out.println("Added probabilities for assignee: "+assignee);
-        });
-
-        map.putAll(assigneeMap);
-
-        // Adding CPCS to MAP
-        //System.out.println("Added assignees; now adding CPCs");
-        //map.putAll(classCodeToCondProbMap);
-
-        Database.trySaveObject(map,techMapFile);
-        // save ordered list too
-        Database.trySaveObject(orderedTechnologies,techListFile);
-    }
-
 
 }
