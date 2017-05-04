@@ -23,8 +23,8 @@ public class ModelTesterMain {
         Database.initializeDatabase();
         SimilarPatentServer.loadLookupTable();
         int numPredictions = 3;
-        Map<String,Collection<String>> trainData = (Map<String,Collection<String>>) Database.tryLoadObject(SplitModelData.trainFile);
-        Map<String,Collection<String>> testData = (Map<String,Collection<String>>) Database.tryLoadObject(SplitModelData.testFile);
+        Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
+        Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
         {
             // test paragraph vector basic similarity model
             TechTagger paragraphVectorTagger = new SimilarityTechTagger(trainData, SimilarPatentServer.getLookupTable());

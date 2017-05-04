@@ -1,9 +1,12 @@
 package model_testing;
 
 import analysis.tech_tagger.TechTagger;
+import org.deeplearning4j.berkeley.Pair;
 import tools.PortfolioList;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,10 +31,10 @@ public class GatherTechnologyScorer {
     }
 
     public static double scoreAssets(TechTagger model, String tech, Collection<String> assets, int numPredictions) {
-       return Double.valueOf(assets.stream().map(asset->model.getTechnologiesFor(asset, PortfolioList.Type.patents,numPredictions))
-                .filter(collection->collection.contains(tech)).count())/assets.size();
+       return ((double)(assets.stream().map(asset->{
+           Collection<String> predictions = model.getTechnologiesFor(asset, PortfolioList.Type.patents,numPredictions).stream().map(pair->pair.getFirst()).collect(Collectors.toSet());
+           System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
+           return predictions;
+       }).filter(collection->collection.contains(tech)).count()))/assets.size();
     }
-
-
-
 }
