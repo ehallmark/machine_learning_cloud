@@ -593,6 +593,9 @@ public class Database {
 	}
 
 	public static Map<String,Collection<String>> getGatherTechMap() {
+		if(gatherTechMap==null) {
+			gatherTechMap=(Map<String,Collection<String>>)Database.tryLoadObject(gatherTechMapFile);
+		}
 		return new HashMap<>(gatherTechMap);
 	}
 
