@@ -18,6 +18,7 @@ public class ModelTesterMain {
 
     public static void main(String[] args) throws Exception {
         // tests models
+        Database.initializeDatabase();
         SimilarPatentServer.loadLookupTable();
         int numPredictions = 3;
         Map<String,Collection<String>> trainData = (Map<String,Collection<String>>) Database.tryLoadObject(SplitModelData.trainFile);
