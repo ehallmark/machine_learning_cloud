@@ -39,6 +39,7 @@ public class SplitModelData {
         Database.trySaveObject(train,trainFile);
         Database.trySaveObject(test,testFile);
         Database.trySaveObject(val,validationFile);
+        System.out.println("Num Technologies: "+train.size());
     }
 
     public static void main(String[] args) {
