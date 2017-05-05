@@ -274,6 +274,7 @@ public class LeadDevelopmentUI {
                 System.out.println("Handled navigator");
                 long timeLimit = ((long)(SimilarPatentServer.extractDouble(params,"time_limit",5d)))*1000;
                 int resultLimit = (int)(SimilarPatentServer.extractDouble(params,"result_limit",30d));
+                boolean removeJapanese = (params.value("remove_japanese")!=null&&params.value("remove_japanese").startsWith("on"));
 
                 if(resultLimit<1) {
                     return new Gson().toJson(new SimpleAjaxMessage("Please enter a positive result limit"));
@@ -355,13 +356,17 @@ public class LeadDevelopmentUI {
                     }
                 }
 
+                if(removeJapanese) {
+
+                }
+
                 // make sure some attributes exist
                 if(attrsToUseList.isEmpty()) {
                     return new Gson().toJson(new SimpleAjaxMessage("No attributes found."));
                 }
 
                 System.out.println("Starting genetic solution");
-                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, resultLimit, timeLimit);
+                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, removeJapanese, resultLimit, timeLimit);
                 System.out.println("Finished");
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
@@ -386,9 +391,9 @@ public class LeadDevelopmentUI {
                 )
         ).render()));
     }
-    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, int limit, long timeLimit) {
+    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, boolean removeJapanese, int limit, long timeLimit) {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
-        CompanySolutionCreator creator = new CompanySolutionCreator(attributes,limit,numThreads);
+        CompanySolutionCreator creator = new CompanySolutionCreator(attributes,removeJapanese,limit,numThreads);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,100,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");
         algorithm.simulate(timeLimit,0.7,0.7);

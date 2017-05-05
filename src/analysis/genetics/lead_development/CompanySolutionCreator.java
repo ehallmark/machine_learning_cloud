@@ -17,8 +17,10 @@ public class CompanySolutionCreator implements SolutionCreator {
     private List<Attribute> attributes;
     private final int numThreads;
     private final int solutionSize;
-    public CompanySolutionCreator(List<Attribute> attributes, int solutionSize, int numThreads) {
+    private final boolean removeJapanese;
+    public CompanySolutionCreator(List<Attribute> attributes, boolean removeJapanese, int solutionSize, int numThreads) {
         this.attributes=attributes;
+        this.removeJapanese=removeJapanese;
         this.solutionSize=solutionSize;
         this.numThreads=numThreads;
     }
@@ -33,8 +35,12 @@ public class CompanySolutionCreator implements SolutionCreator {
                     List<Map.Entry<String, Double>> companyScores = new ArrayList<>(solutionSize);
                     for(int i = 0; i < solutionSize; i++) {
                         String randomAssignee = Database.getRandomAssignee();
-                        //System.out.println("Random assignee: "+randomAssignee);
-                        companyScores.add(Maps.immutableEntry(randomAssignee,CompanySolution.getScoreFromCompanyAndAttrs(randomAssignee,attributes)));
+                        if(removeJapanese && Database.isJapaneseAssignee(randomAssignee)) {
+                            i--;
+                        } else {
+                            //System.out.println("Random assignee: "+randomAssignee);
+                            companyScores.add(Maps.immutableEntry(randomAssignee, CompanySolution.getScoreFromCompanyAndAttrs(randomAssignee, attributes)));
+                        }
                     }
                     Solution solution = new CompanySolution(companyScores,attributes);
                     allSolutions.add(solution);

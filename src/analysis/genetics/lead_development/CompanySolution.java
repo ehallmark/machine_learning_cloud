@@ -117,7 +117,7 @@ public class  CompanySolution implements Solution {
     public static void main(String[] args) {
         // test
         Attribute attr = new ValueAttribute("Portfolio Size",1,new PortfolioSizeEvaluator());
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),10,10),10,new CompanySolutionListener(),10);
+        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),false,10,10),10,new CompanySolutionListener(),10);
         algorithm.simulate(10000,0.5,0.5);
     }
 }
