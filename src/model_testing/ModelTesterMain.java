@@ -22,30 +22,31 @@ public class ModelTesterMain {
         // tests models
         Database.initializeDatabase();
         SimilarPatentServer.loadLookupTable();
-        int numPredictions = 3;
+        int numPredictions = 5;
         Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
-        {
-            // test paragraph vector basic similarity model
-            TechTagger paragraphVectorTagger = new SimilarityTechTagger(trainData, SimilarPatentServer.getLookupTable());
-            GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
-            testModel("Paragraph Vector Simple Average",scorer,testData,numPredictions);
-        }
-        {
-            // test classification (cpc) based model
-            TechTagger cpcModel = new CPCTagger();
-            GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
-            testModel("CPC Model (trained on whole data set so may be biased)",scorer,testData,numPredictions);
-        }
+        // test classification (cpc) based model
+        TechTagger gatherKeywordModel = new GatherKeywordTechTagger();
+        // test classification (cpc) based model
+        TechTagger cpcModel = new CPCTagger();
+        // test paragraph vector basic similarity model
+        TechTagger paragraphVectorTagger = new SimilarityTechTagger(trainData, SimilarPatentServer.getLookupTable());
+        for(int i = 1; i <= numPredictions; i+=2) {
+            {
 
+                GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
+                testModel("Paragraph Vector Simple Average [n="+i+"]", scorer, testData, i);
+            }
+            {
+                GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
+                testModel("CPC Model [n="+i+"]", scorer, testData, i);
+            }
+            {
 
-        {
-            // test classification (cpc) based model
-            TechTagger gatherKeywordModel = new GatherKeywordTechTagger();
-            GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
-            testModel("Gather Keyword Model (trained on whole data set so may be biased)",scorer,testData,numPredictions);
+                GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
+                testModel("Gather Keyword Model [n="+i+"]", scorer, testData, i);
+            }
         }
-
 
         // Report all scores
         scoreMap.forEach((modelName,modelAccuracy) ->{
