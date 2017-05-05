@@ -144,6 +144,7 @@ public class CPCTagger extends TechTagger {
         });
 
         Collection<Patent> allPatents= PatentAPIHandler.requestAllPatents(patentsToQuery);
+        if(allPatents.isEmpty()) throw new RuntimeException("Unable to find any patents...");
         System.out.println("Finished loading data");
         Map<String,Collection<String>> allCPCsToPatentsMap = new HashMap<>();
         allPatents.forEach(patent->{

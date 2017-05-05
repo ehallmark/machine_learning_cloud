@@ -131,9 +131,9 @@ public class GatherKeywordTechTagger extends TechTagger {
             System.out.println("Starting tech: "+tech);
             patents=patents.stream().sorted(Comparator.reverseOrder()).collect(Collectors.toList());
             Map<String,Double> frequencyMap = WordFrequencyCalculator.computeGlobalWordFrequencyMap(patents, minimumPatentCount);
-            if(frequencyMap!=null&&frequencyMap.size()>wordsPerTechnology*5) {
+            //if(frequencyMap!=null&&frequencyMap.size()>wordsPerTechnology*5) {
                 techMap.put(tech, frequencyMap);
-            }
+            //}
         });
         AtomicDouble weights = new AtomicDouble(0d);
         techMap.forEach((tech,map)->{

@@ -15,14 +15,14 @@ import java.util.Map;
 public class TrainModelsWithLatestGatherData {
     public static void main(String[] args) throws Exception{
         Database.initializeDatabase();
-        SimilarPatentServer.loadLookupTable();
+//        SimilarPatentServer.loadLookupTable();
 
         Map<String,Collection<String>> trainingData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testingData = SplitModelData.getGatherTechnologyTestDataMap();
         Map<String,Collection<String>> validationData = SplitModelData.getGatherTechnologyValidationDataMap();
 
         // train gather keyword model
-        GatherKeywordTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
+//        GatherKeywordTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
 
 
         // train gather cpc model
