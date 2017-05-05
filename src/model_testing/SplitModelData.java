@@ -17,6 +17,7 @@ public class SplitModelData {
     public static final File validationFile = new File("data/gather_tech_validation_map.jobj");
 
     public static boolean isNumber(String s) {
+        if(s==null)return false;
         try {
             Integer.valueOf(s);
             return true;
