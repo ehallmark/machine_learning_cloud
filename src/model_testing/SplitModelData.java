@@ -5,6 +5,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 5/4/2017.
@@ -15,11 +16,21 @@ public class SplitModelData {
     public static final File testFile = new File("data/gather_tech_test_map.jobj");
     public static final File validationFile = new File("data/gather_tech_validation_map.jobj");
 
+    public static boolean isNumber(String s) {
+        try {
+            Integer.valueOf(s);
+            return true;
+        } catch(Exception nfe) {
+            return false;
+        }
+    }
+
     public static void splitData(Map<String,Collection<String>> data) {
         Map<String,Collection<String>> train = new HashMap<>();
         Map<String,Collection<String>> test = new HashMap<>();
         Map<String,Collection<String>> val = new HashMap<>();
         data.forEach((tech,assets)->{
+            assets = assets.stream().filter(p->(p.length()==7||p.length()==8)&&isNumber(p.substring(2))).collect(Collectors.toList());
             if(assets.size()<20) return;
             Set<String> trainSet = new HashSet<>();
             Set<String> testSet = new HashSet<>();
