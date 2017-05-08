@@ -121,11 +121,11 @@ public class LeadDevelopmentUI {
                         ),br(),
                         label("Remove Japanese Assignees?").with(
                                 br(),
-                                input().withType("checkbox").withValue("").withName("remove_japanese")
+                                input().withType("checkbox").withName("remove_japanese")
                         ),br(),
                         label("Only Include Japanese Assignees?").with(
                                 br(),
-                                input().withType("checkbox").withValue("").withName("only_japanese")
+                                input().withType("checkbox").withName("only_japanese")
                         ),br(),br(),
                         SimilarPatentServer.expandableDiv("Company Attributes",false,div().with(
                                 br(),br(),
