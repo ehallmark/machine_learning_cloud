@@ -7,4 +7,5 @@ import java.util.List;
  */
 public interface SolutionCreator {
     Collection<Solution> nextRandomSolutions(int n);
+
 }

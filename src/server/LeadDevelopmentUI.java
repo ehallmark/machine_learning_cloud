@@ -118,6 +118,14 @@ public class LeadDevelopmentUI {
                         label("Time Limit (Seconds)").with(
                                 br(),
                                 input().withType("number").withValue("5").withName("time_limit")
+                        ),br(),
+                        label("Remove Japanese Assignees?").with(
+                                br(),
+                                input().withType("checkbox").withValue("").withName("remove_japanese")
+                        ),br(),
+                        label("Only Include Japanese Assignees?").with(
+                                br(),
+                                input().withType("checkbox").withValue("").withName("only_japanese")
                         ),br(),br(),
                         SimilarPatentServer.expandableDiv("Company Attributes",false,div().with(
                                 br(),br(),
@@ -275,6 +283,18 @@ public class LeadDevelopmentUI {
                 long timeLimit = ((long)(SimilarPatentServer.extractDouble(params,"time_limit",5d)))*1000;
                 int resultLimit = (int)(SimilarPatentServer.extractDouble(params,"result_limit",30d));
                 boolean removeJapanese = (params.value("remove_japanese")!=null&&params.value("remove_japanese").startsWith("on"));
+                boolean onlyJapanese = (params.value("only_japanese")!=null&&params.value("only_japanese").startsWith("on"));
+
+                Set<String> assigneesToUse = Database.getAssignees();
+                if(removeJapanese&&onlyJapanese) {
+                    // should we search through the empty set? no...
+                    return new Gson().toJson(new SimpleAjaxMessage("Cannot both remove japanese assignees and only search for japanese assignees."));
+                } else if (removeJapanese) {
+                    assigneesToUse.removeAll(Database.getJapaneseCompanies());
+                } else if (onlyJapanese) {
+                    assigneesToUse.clear();
+                    assigneesToUse.addAll(Database.getJapaneseCompanies());
+                } // else don't do anything
 
                 if(resultLimit<1) {
                     return new Gson().toJson(new SimpleAjaxMessage("Please enter a positive result limit"));
@@ -356,17 +376,13 @@ public class LeadDevelopmentUI {
                     }
                 }
 
-                if(removeJapanese) {
-
-                }
-
                 // make sure some attributes exist
                 if(attrsToUseList.isEmpty()) {
                     return new Gson().toJson(new SimpleAjaxMessage("No attributes found."));
                 }
 
                 System.out.println("Starting genetic solution");
-                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, removeJapanese, resultLimit, timeLimit);
+                CompanySolution solution = runGeneticAlgorithm(attrsToUseList, new ArrayList<>(assigneesToUse), resultLimit, timeLimit);
                 System.out.println("Finished");
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
@@ -391,9 +407,9 @@ public class LeadDevelopmentUI {
                 )
         ).render()));
     }
-    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, boolean removeJapanese, int limit, long timeLimit) {
+    static CompanySolution runGeneticAlgorithm(List<Attribute> attributes, List<String> assigneeList, int limit, long timeLimit) {
         int numThreads = Math.max(1,Runtime.getRuntime().availableProcessors()/2);
-        CompanySolutionCreator creator = new CompanySolutionCreator(attributes,removeJapanese,limit,numThreads);
+        CompanySolutionCreator creator = new CompanySolutionCreator(attributes,assigneeList,limit,numThreads);
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,100,new CompanySolutionListener(),numThreads);
         System.out.println("Finished initializing genetic algorithm");
         algorithm.simulate(timeLimit,0.7,0.7);
@@ -417,7 +433,7 @@ public class LeadDevelopmentUI {
             WordFrequencyPair<String,Double> entry = heap.remove();
             scores.add(0, Maps.immutableEntry(entry.getFirst(),entry.getSecond()));
         }
-        return new CompanySolution(scores,attributes);
+        return new CompanySolution(creator,scores,attributes);
     }
 
     static Tag tableFromSolution(CompanySolution solution, List<Attribute> attrs) {

@@ -17,13 +17,20 @@ public class CompanySolutionCreator implements SolutionCreator {
     private List<Attribute> attributes;
     private final int numThreads;
     private final int solutionSize;
-    private final boolean removeJapanese;
-    public CompanySolutionCreator(List<Attribute> attributes, boolean removeJapanese, int solutionSize, int numThreads) {
+    private final List<String> assigneeList;
+    private final Random random;
+    public CompanySolutionCreator(List<Attribute> attributes, List<String> assigneeList, int solutionSize, int numThreads) {
         this.attributes=attributes;
-        this.removeJapanese=removeJapanese;
+        this.assigneeList=assigneeList;
         this.solutionSize=solutionSize;
         this.numThreads=numThreads;
+        this.random=new Random(69);
     }
+
+    public String getRandomAssignee() {
+        return assigneeList.get(random.nextInt(assigneeList.size()));
+    }
+
     @Override
     public Collection<Solution> nextRandomSolutions(int num) {
         List<Solution> allSolutions = Collections.synchronizedList(new ArrayList<>(solutionSize));
@@ -34,15 +41,11 @@ public class CompanySolutionCreator implements SolutionCreator {
                 protected void compute() {
                     List<Map.Entry<String, Double>> companyScores = new ArrayList<>(solutionSize);
                     for(int i = 0; i < solutionSize; i++) {
-                        String randomAssignee = Database.getRandomAssignee();
-                        if(removeJapanese && Database.isJapaneseAssignee(randomAssignee)) {
-                            i--;
-                        } else {
-                            //System.out.println("Random assignee: "+randomAssignee);
-                            companyScores.add(Maps.immutableEntry(randomAssignee, CompanySolution.getScoreFromCompanyAndAttrs(randomAssignee, attributes)));
-                        }
+                        String randomAssignee = getRandomAssignee();
+                        //System.out.println("Random assignee: "+randomAssignee);
+                        companyScores.add(Maps.immutableEntry(randomAssignee, CompanySolution.getScoreFromCompanyAndAttrs(randomAssignee, attributes)));
                     }
-                    Solution solution = new CompanySolution(companyScores,attributes);
+                    Solution solution = new CompanySolution(CompanySolutionCreator.this,companyScores,attributes);
                     allSolutions.add(solution);
                 }
             };

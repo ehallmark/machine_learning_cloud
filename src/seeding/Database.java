@@ -68,9 +68,7 @@ public class Database {
 	private static final Set<Integer> badCompDBTechnologyIds = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 	private static final File gatherTechMapFile = new File(Constants.DATA_FOLDER+"gather_technology_to_patent_map.jobj");
 	private static Map<String,Collection<String>> gatherTechMap;
-	private static List<String> assigneeList;
 	private static Set<String> gatherPatentSet;
-	private static Random random = new Random(22);
 
 	public static Object tryLoadObject(File file) {
 		System.out.println("Starting to load file: "+file.getName()+"...");
@@ -226,10 +224,6 @@ public class Database {
 			});
 			trySaveObject(valuablePatents,valuablePatentsFile);
 		}
-
-		assigneeList=new ArrayList<>(allAssignees);
-
-
 		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
 		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
 		compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
@@ -379,10 +373,6 @@ public class Database {
 			classifications.addAll(patentToClassificationMap.get(patent));
 		}
 		return classifications;
-	}
-
-	public static String getRandomAssignee() {
-		return assigneeList.get(random.nextInt(assigneeList.size()));
 	}
 
 	public static Set<String> subClassificationsForPatent(String patent) {

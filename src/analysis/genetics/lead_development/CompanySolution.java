@@ -2,6 +2,7 @@ package analysis.genetics.lead_development;
 
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
+import analysis.genetics.SolutionCreator;
 import analysis.genetics.keyword_analysis.ProbabilityHelper;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
@@ -19,15 +20,17 @@ public class  CompanySolution implements Solution {
     private List<Map.Entry<String,Double>>  companyScores;
     private List<Attribute> attributes;
     private Set<String> companyNames;
+    private CompanySolutionCreator creator;
 
-    public CompanySolution( List<Map.Entry<String,Double>>  companyScores, List<Attribute> attributes) {
-        this(companyScores,attributes,new HashSet<>());
+    public CompanySolution(CompanySolutionCreator creator, List<Map.Entry<String,Double>>  companyScores, List<Attribute> attributes) {
+        this(creator,companyScores,attributes,new HashSet<>());
     }
 
-    private CompanySolution(List<Map.Entry<String,Double>>  companyScores, List<Attribute> attributes, Set<String> companyNames) {
+    private CompanySolution(CompanySolutionCreator creator, List<Map.Entry<String,Double>>  companyScores, List<Attribute> attributes, Set<String> companyNames) {
         this.companyScores=companyScores;
         this.attributes=attributes;
         this.companyNames=companyNames;
+        this.creator=creator;
         fitness=companyScores.stream().collect(Collectors.averagingDouble(e->e.getValue()));
     }
 
@@ -55,12 +58,12 @@ public class  CompanySolution implements Solution {
         fillAssigneesBack(newScores,this.companyNames);
 
         Collections.sort(newScores,(e1,e2)->(e2.getValue().compareTo(e1.getValue())));
-        return new CompanySolution(newScores,attributes,companyNames);
+        return new CompanySolution(creator,newScores,attributes,companyNames);
     }
 
     private void fillAssigneesBack(List<Map.Entry<String,Double>> newScores, Set<String> alreadyIncludedSet) {
         while(newScores.size()<companyScores.size()) {
-            String randomAssignee = Database.getRandomAssignee();
+            String randomAssignee = creator.getRandomAssignee();
             if(!alreadyIncludedSet.contains(randomAssignee)) {
                 alreadyIncludedSet.add(randomAssignee);
                 double score = getScoreFromCompanyAndAttrs(randomAssignee,attributes);
@@ -91,7 +94,7 @@ public class  CompanySolution implements Solution {
         addToMap(other.companyScores,newScores,companyNames);
         fillAssigneesBack(newScores,companyNames);
         Collections.sort(newScores,(e1,e2)->(e2.getValue().compareTo(e1.getValue())));
-        return new CompanySolution(newScores,attributes,companyNames);
+        return new CompanySolution(creator,newScores,attributes,companyNames);
     }
     @Override
     public int compareTo(Solution o) {
@@ -117,7 +120,7 @@ public class  CompanySolution implements Solution {
     public static void main(String[] args) {
         // test
         Attribute attr = new ValueAttribute("Portfolio Size",1,new PortfolioSizeEvaluator());
-        GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),false,10,10),10,new CompanySolutionListener(),10);
-        algorithm.simulate(10000,0.5,0.5);
+        //GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),false,10,10),10,new CompanySolutionListener(),10);
+        //algorithm.simulate(10000,0.5,0.5);
     }
 }
