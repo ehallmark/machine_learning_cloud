@@ -15,7 +15,6 @@ import java.util.Map;
 public class TrainModelsWithLatestGatherData {
     public static void main(String[] args) throws Exception{
         Database.initializeDatabase();
-        SimilarPatentServer.loadLookupTable();
 
         Map<String,Collection<String>> trainingData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testingData = SplitModelData.getGatherTechnologyTestDataMap();

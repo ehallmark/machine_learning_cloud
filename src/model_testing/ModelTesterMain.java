@@ -21,8 +21,8 @@ public class ModelTesterMain {
     public static void main(String[] args) throws Exception {
         // tests models
         Database.initializeDatabase();
-        SimilarPatentServer.loadLookupTable();
         int numPredictions = 5;
+
         Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
         // test classification (cpc) based model

@@ -143,21 +143,19 @@ public class Database {
 		gatherTechMap.forEach((tech,patents)->{
 			gatherPatentSet.addAll(patents);
 		});
-		patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
-		patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
+
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
-		classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
-		patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
+
 		// load dependent objects
 		if(allClassCodesFile.exists()) {
 			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
 		} else {
 			allClassCodes = new HashSet<>();
-			patentToClassificationMap.values().forEach(classSet -> {
+			getPatentToClassificationMap().values().forEach(classSet -> {
 				classSet.forEach(cpcClass -> {
 					allClassCodes.add(cpcClass);
 				});
@@ -171,11 +169,11 @@ public class Database {
 			classCodesPrefixTrie.put(code,code);
 		});
 
-		classCodeToPatentMap = new HashMap<>();
 		if(classCodeToPatentMapFile.exists()) {
 			classCodeToPatentMap = (HashMap<String,Set<String>>)tryLoadObject(classCodeToPatentMapFile);
 		} else {
-			patentToClassificationMap.forEach((patent, classes) -> {
+			classCodeToPatentMap = new HashMap<>();
+			getPatentToClassificationMap().forEach((patent, classes) -> {
 				classes.forEach(klass -> {
 					if (classCodeToPatentMap.containsKey(klass)) {
 						classCodeToPatentMap.get(klass).add(patent);
@@ -189,19 +187,12 @@ public class Database {
 			trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
 		}
 
-		// ETSI
-		System.out.println("Handling ETSI patents...");
-		try {
-			etsiStandardToPatentsMap = GetEtsiPatentsList.getETSIPatentMap();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+
 		// assignee stuff
 		{
 			patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
-			patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
 			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
-			allAssignees=assigneeToPatentsMap.keySet();
+			allAssignees=new HashSet<>(assigneeToPatentsMap.keySet());
 			// prefix trie for assignees
 			System.out.println("Building assignee trie...");
 			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
@@ -216,18 +207,14 @@ public class Database {
 			System.out.println("Starting to build valuable patents...");
 			valuablePatents = new HashSet<>();
 			Set<String> allPatents = new HashSet<>();
-			allPatents.addAll(patentToInventionTitleMap.keySet());
-			allPatents.addAll(patentToPubDateMap.keySet());
-			allPatents.addAll(patentToOriginalAssigneeMap.keySet());
+			allPatents.addAll(getPatentToInventionTitleMap().keySet());
+			allPatents.addAll(getPatentToPubDateMap().keySet());
+			allPatents.addAll(getPatentToOriginalAssigneeMap().keySet());
 			allPatents.forEach(patent -> {
 				if (!(expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent))) valuablePatents.add(patent);
 			});
 			trySaveObject(valuablePatents,valuablePatentsFile);
 		}
-		assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
-		assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
-		compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
-		compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
 
 		// japanese companies
 		japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
@@ -246,6 +233,34 @@ public class Database {
 		gatherDBConn.setAutoCommit(false);
 	}
 
+	public static Map<String,Set<String>> getPatentToClassificationMap() {
+		if(patentToClassificationMap==null) {
+			patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
+		}
+		return patentToClassificationMap;
+	}
+
+	public static Map<String,LocalDate> getPatentToPubDateMap() {
+		if(patentToPubDateMap==null) {
+			patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
+		}
+		return patentToPubDateMap;
+	}
+
+	public static Map<String,List<String>> getPatentToOriginalAssigneeMap() {
+		if(patentToOriginalAssigneeMap==null) {
+			patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
+		}
+		return patentToOriginalAssigneeMap;
+	}
+
+	public static Map<String,String> getPatentToInventionTitleMap() {
+		if(patentToInventionTitleMap==null) {
+			patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
+		}
+		return patentToInventionTitleMap;
+	}
+
 	public static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
@@ -258,9 +273,16 @@ public class Database {
 		compDBConn.setAutoCommit(false);
 	}
 
+	public static Map<String,String> getClassCodeToClassTitleMap() {
+		if(classCodeToClassTitleMap==null) {
+			classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
+		}
+		return classCodeToClassTitleMap;
+	}
+
 	public static String getClassTitleFromClassCode(String formattedCode) {
 		formattedCode=formattedCode.toUpperCase().replaceAll(" ","");
-		if(classCodeToClassTitleMap.containsKey(formattedCode)) return classCodeToClassTitleMap.get(formattedCode);
+		if(getClassCodeToClassTitleMap().containsKey(formattedCode)) return classCodeToClassTitleMap.get(formattedCode);
 		return "";
 	}
 
@@ -269,11 +291,31 @@ public class Database {
 		return compDBConn;
 	}
 
-	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() { return assigneeToAssetsSoldCountMap; }
-	public static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() { return assigneeToAssetsPurchasedCountMap; }
+	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() {
+		if(assigneeToAssetsSoldCountMap==null) {
+			assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
+		}
+		return assigneeToAssetsSoldCountMap;
+	}
+	public static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() {
+		if(assigneeToAssetsPurchasedCountMap==null) {
+			assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
+		}
+		return assigneeToAssetsPurchasedCountMap;
+	}
 
-	public static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() { return compDBAssigneeToAssetsSoldCountMap; }
-	public static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() { return compDBAssigneeToAssetsPurchasedCountMap; }
+	public static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() {
+		if(compDBAssigneeToAssetsSoldCountMap==null) {
+			compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
+		}
+		return compDBAssigneeToAssetsSoldCountMap;
+	}
+	public static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() {
+		if(compDBAssigneeToAssetsPurchasedCountMap==null) {
+			compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
+		}
+		return compDBAssigneeToAssetsPurchasedCountMap;
+	}
 
 	public static int numPatentsWithCpcClassifications() {
 		return patentToClassificationMap.size();
@@ -294,7 +336,7 @@ public class Database {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			if(assigneeToAssetsSoldCountMap.containsKey(name)) {
+			if(getAssigneeToAssetsSoldCountMap().containsKey(name)) {
 				count.getAndAdd(assigneeToAssetsSoldCountMap.get(name));
 			}
 		});
@@ -305,7 +347,7 @@ public class Database {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			if(assigneeToAssetsPurchasedCountMap.containsKey(name)) {
+			if(getAssigneeToAssetsPurchasedCountMap().containsKey(name)) {
 				count.getAndAdd(assigneeToAssetsPurchasedCountMap.get(name));
 			}
 		});
@@ -424,8 +466,22 @@ public class Database {
 		return entityTypeToScoreMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).findFirst().get().getKey();
 	}
 
+	public static Map<String,Collection<String>> getEtsiStandardToPatentsMap() {
+		if(etsiStandardToPatentsMap==null) {
+			// ETSI
+			System.out.println("Handling ETSI patents...");
+			try {
+				etsiStandardToPatentsMap = GetEtsiPatentsList.getETSIPatentMap();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return etsiStandardToPatentsMap;
+	}
+
 	public static Collection<String> selectPatentNumbersFromETSIStandard(String etsiStandard) {
-		if(etsiStandardToPatentsMap.containsKey(etsiStandard)) {
+
+		if(getEtsiStandardToPatentsMap().containsKey(etsiStandard)) {
 			return new ArrayList<>(etsiStandardToPatentsMap.get(etsiStandard));
 		} else {
 			return Collections.emptySet();

@@ -25,11 +25,6 @@ public class SimilarityTechTagger extends TechTagger {
     WeightLookupTable<VocabWord> lookupTable;
     private static final SimilarityTechTagger gatherTagger;
     static {
-        try {
-            SimilarPatentServer.loadLookupTable();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
         gatherTagger = new SimilarityTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
     }
 

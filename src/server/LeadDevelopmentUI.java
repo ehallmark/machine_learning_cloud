@@ -52,11 +52,6 @@ public class LeadDevelopmentUI {
     private static final TechTagger TECH_TAGGER;
 
     static {
-        try {
-            SimilarPatentServer.loadLookupTable();
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
         TECH_TAGGER=TechTaggerNormalizer.getDefaultTechTagger();
         TECHNOLOGIES=new ArrayList<>();
         TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));

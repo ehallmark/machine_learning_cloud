@@ -31,11 +31,6 @@ public class GatherKeywordTechTagger extends TechTagger {
     private static WeightLookupTable<VocabWord> lookupTable;
     static {
         technologyToKeywordMap= (Map<String,List<INDArray>>)Database.tryLoadObject(WordFrequencyCalculator.technologyToTopKeyWordsMapFile);
-        try {
-            SimilarPatentServer.loadLookupTable();
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
         lookupTable= SimilarPatentServer.getLookupTable();
     }
 

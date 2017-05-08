@@ -36,11 +36,6 @@ public class HighchartDataAdapter {
     private static final TechTagger tagger;
     private static final int NUM_MILLISECONDS_IN_A_DAY = 86400000;
     static {
-        try {
-            SimilarPatentServer.loadLookupTable();
-        }catch(Exception e) {
-            e.printStackTrace();
-        }
         tagger = TechTaggerNormalizer.getDefaultTechTagger();
     }
 

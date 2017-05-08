@@ -76,13 +76,14 @@ public class SimilarPatentServer {
     }
 
     public static WeightLookupTable<VocabWord> getLookupTable() {
+        if(paragraphVectors==null) loadLookupTable();
         return paragraphVectors.getLookupTable();
     }
 
     public static TechTagger getTagger() {
         return tagger;
     }
-    public static void loadLookupTable() throws IOException {
+    public static void loadLookupTable() {
         if(paragraphVectors!=null)return;
         boolean testing = false;
         try {
