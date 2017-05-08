@@ -99,16 +99,24 @@ public class Database {
 	}
 
 	public static boolean isJapaneseAssignee(String assignee) {
+		if(japaneseCompanies==null) {
+			// japanese companies
+			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
+		}
 		return japaneseCompanies.contains(assignee);
 	}
 
 	public static Collection<String> getNonJapaneseCompanies() {
 		Set<String> allCompanies = new HashSet<>(allAssignees);
-		allCompanies.removeAll(japaneseCompanies);
+		allCompanies.removeAll(getJapaneseCompanies());
 		return allCompanies;
 	}
 
 	public static Set<String> getJapaneseCompanies() {
+		if(japaneseCompanies==null) {
+			// japanese companies
+			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
+		}
 		return new HashSet<>(japaneseCompanies);
 	}
 
@@ -215,9 +223,6 @@ public class Database {
 			});
 			trySaveObject(valuablePatents,valuablePatentsFile);
 		}
-
-		// japanese companies
-		japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
 	}
 
 	public static boolean hasClassifications(String pat) {
