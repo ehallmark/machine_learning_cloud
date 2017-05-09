@@ -5,7 +5,7 @@ import org.deeplearning4j.berkeley.Pair;
 import server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
-import ui_models.attributes.ClassificationAttr;
+import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.portfolios.PortfolioList;
 

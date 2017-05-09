@@ -2,7 +2,8 @@ package graphical_models.classification;
 
 import model.graphs.BayesianNet;
 import org.deeplearning4j.berkeley.Pair;
-import ui_models.portfolios.PortfolioList;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,26 +11,21 @@ import java.util.List;
 /**
  * Created by ehallmark on 5/1/17.
  */
-public class NaiveGatherClassifier {
+public class NaiveGatherClassifier extends ClassificationAttr{
     protected BayesianNet bayesianNet;
 
     @Override
-    public double getTechnologyValueFor(Collection<String> items, String technology, PortfolioList.Type type) {
-        return 0;
-    }
-
-    @Override
-    public List<Pair<String, Double>> getTechnologiesFor(Collection<String> items, PortfolioList.Type type, int n) {
+    public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         return null;
     }
 
     @Override
-    public Collection<String> getAllTechnologies() {
-        return null;
+    public int numClassifications() {
+        return 0;
     }
 
     @Override
-    public int size() {
-        return 0;
+    public Collection<String> getClassifications() {
+        return null;
     }
 }

@@ -6,7 +6,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
-import ui_models.attributes.ValueAttr;
+import tools.DateHelper;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -90,9 +90,9 @@ public class ClaimEvaluator extends ValueAttr {
 
         try {
             WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
-            addScoresToAssigneesFromPatents(assignees, pendencyModel, lookupTable);
-            addScoresToAssigneesFromPatents(assignees, indClaimLengthModel, lookupTable);
-            addScoresToAssigneesFromPatents(assignees, indClaimRatioModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, pendencyModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimLengthModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimRatioModel, lookupTable);
         } catch(Exception e) {
             e.printStackTrace();
         }

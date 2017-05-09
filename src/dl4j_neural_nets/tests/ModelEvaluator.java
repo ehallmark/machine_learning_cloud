@@ -1,7 +1,7 @@
 package dl4j_neural_nets.tests;
 
-import analysis.SimilarPatentFinder;
-import analysis.WordFrequencyPair;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
 import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.ParagraphVectorDataSetIterator;
 import org.apache.commons.io.FileUtils;
@@ -16,10 +16,8 @@ import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Database;
 import seeding.GetEtsiPatentsList;
 import tools.MinHeap;
-import tools.VectorHelper;
 
 import java.io.File;
 import java.util.*;
@@ -114,7 +112,7 @@ public class ModelEvaluator {
 
             List<INDArray> features = ((List<String>)patents).subList(0,splitIdx).stream().map(p->{
                 try {
-                    return SimilarPatentFinder.getVectorFromDB(p,lookupTable);
+                    return lookupTable.vector(p);
                 } catch(Exception e) {
                     e.printStackTrace();
                     return null;

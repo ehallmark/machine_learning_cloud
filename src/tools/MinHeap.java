@@ -5,8 +5,8 @@ package tools;
  * The BinaryHeap is an -generic- implementation of the PriorityQueue interface.
  * This is a binary min-heap implementation of the priority queue ADT.
  */
-import analysis.Patent;
-import analysis.WordFrequencyPair;
+import similarity_models.paragraph_vectors.Patent;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
 
 import java.util.Arrays;
 

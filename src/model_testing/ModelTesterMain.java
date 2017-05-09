@@ -1,8 +1,11 @@
 package model_testing;
 
-import ui_models.attributes.classification.GatherKeywordTechTagger;
+import ui_models.attributes.classification.CPCGatherTechTagger;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.classification.KeywordGatherTechTagger;
 import seeding.Database;
 import server.SimilarPatentServer;
+import ui_models.attributes.classification.SimilarityGatherTechTagger;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,11 +25,11 @@ public class ModelTesterMain {
         Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
         // test classification (cpc) based model
-        TechTagger gatherKeywordModel = new GatherKeywordTechTagger();
+        ClassificationAttr gatherKeywordModel = new KeywordGatherTechTagger();
         // test classification (cpc) based model
-        TechTagger cpcModel = new CPCTagger();
+        ClassificationAttr cpcModel = new CPCGatherTechTagger();
         // test paragraph vector basic similarity model
-        TechTagger paragraphVectorTagger = new SimilarityTechTagger(trainData, SimilarPatentServer.getLookupTable());
+        ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
         for(int i = 1; i <= numPredictions; i+=2) {
             {
 

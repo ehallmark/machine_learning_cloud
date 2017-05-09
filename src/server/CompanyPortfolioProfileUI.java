@@ -1,6 +1,6 @@
 package server;
 
-import analysis.SimilarPatentFinder;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
@@ -11,7 +11,7 @@ import highcharts.*;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
-import ui_models.attributes.ValueAttr;
+import ui_models.attributes.value.ValueAttr;
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
@@ -314,8 +314,8 @@ public class CompanyPortfolioProfileUI {
                         }
                         case "Recent Value Timeline": {
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectValueTimelineData(INPUT_PATENTS, SimilarPatentServer.modelMap.get("overallValue")) :
-                                    HighchartDataAdapter.collectValueTimelineData (ASSIGNEE, SimilarPatentServer.modelMap.get("overallValue"));
+                                    HighchartDataAdapter.collectValueTimelineData(INPUT_PATENTS, SimilarPatentServer.modelMap.get("pageRankValue")) :
+                                    HighchartDataAdapter.collectValueTimelineData (ASSIGNEE, SimilarPatentServer.modelMap.get("pageRankValue"));
                             portfolioList = null;
                             LineChart chart = new LineChart("Recent Value Timeline for " + portfolioString, data, AxisType.DATETIME, "", "AI Value");
                             charts.add(chart);

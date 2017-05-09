@@ -1,9 +1,9 @@
 package server;
 
-import analysis.WordFrequencyPair;
-import analysis.genetics.GeneticAlgorithm;
-import analysis.genetics.Solution;
-import analysis.genetics.lead_development.*;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
+import genetics.GeneticAlgorithm;
+import genetics.Solution;
+import genetics.lead_development.*;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
@@ -13,8 +13,8 @@ import seeding.Constants;
 import seeding.Database;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
-import ui_models.attributes.ClassificationAttr;
-import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;

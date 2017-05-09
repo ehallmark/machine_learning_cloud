@@ -1,7 +1,6 @@
 package ui_models.attributes.value;
 
 import seeding.Database;
-import ui_models.attributes.ValueAttr;
 
 import java.io.File;
 import java.util.*;
@@ -18,7 +17,7 @@ public class OverallEvaluator extends ValueAttr {
     }
 
     private static void runAndSaveOverallModel() {
-        List<Evaluator> evaluators = Arrays.asList(
+        List<ValueAttr> evaluators = Arrays.asList(
                 new CitationEvaluator(),
                 new ClaimEvaluator(),
                 //new AssetsSoldEvaluator(),

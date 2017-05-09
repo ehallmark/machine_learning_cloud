@@ -42,6 +42,7 @@ public abstract class Item implements Comparable<Item> {
         humanAttrToJavaAttrMap.put("Assignee Entity Type","assigneeEntityType");
         humanAttrToJavaAttrMap.put("Large Portfolio Size","largePortfolios");
         humanAttrToJavaAttrMap.put("Small Portfolio Size","smallPortfolios");
+        humanAttrToJavaAttrMap.put("Page Rank Value","pageRankValue");
         humanAttrToJavaAttrMap.put("Assets Sold","assetsSold");
         humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
         humanAttrToJavaAttrMap.put("CompDB Assets Sold","compDBAssetsSold");

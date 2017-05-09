@@ -1,7 +1,6 @@
 package ui_models.attributes.value;
 
 import seeding.Database;
-import ui_models.attributes.ValueAttr;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

@@ -50,7 +50,7 @@ public class AbstractPatent extends Item {
     }
 
     @Override
-    protected void init(Collection<String> params) {
+    public void init(Collection<String> params) {
         super.init(params);
         if(params.contains("assignee"))attributeData.put("assignee", new ExcelCell(ExcelHandler.getDefaultFormat(),assignee,false));
         if(params.contains("title"))attributeData.put("title", new ExcelCell(ExcelHandler.getDefaultFormat(),title,false));

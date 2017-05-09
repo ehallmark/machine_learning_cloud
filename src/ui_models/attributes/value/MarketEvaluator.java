@@ -4,7 +4,7 @@ import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import seeding.Database;
-import ui_models.attributes.ValueAttr;
+import tools.DateHelper;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -118,9 +118,9 @@ public class MarketEvaluator extends ValueAttr {
 
         try {
             WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
-            addScoresToAssigneesFromPatents(assignees, assetFamilyModel, lookupTable);
-            addScoresToAssigneesFromPatents(assignees, maintenanceFeeModel, lookupTable);
-            addScoresToAssigneesFromPatents(assignees, transactionModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, assetFamilyModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, maintenanceFeeModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, transactionModel, lookupTable);
         } catch(Exception e) {
             e.printStackTrace();
         }

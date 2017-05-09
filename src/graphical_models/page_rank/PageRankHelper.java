@@ -1,5 +1,7 @@
 package graphical_models.page_rank;
 
+import similarity_models.sim_rank.SimRankSimilarityModel;
+
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
@@ -8,12 +10,12 @@ import java.util.Set;
  * Created by ehallmark on 4/24/17.
  */
 public class PageRankHelper {
-    static File file = new File("data/page_rank_table.jobj");
+    public static final File file = new File("data/page_rank_table.jobj");
 
     // run sim rank algorithm
     public static void main(String[] args) {
         long t1 = System.currentTimeMillis();
-        Map<String,Set<String>> patentToCitedPatentsMap = CitationPageRank.patentToCitedPatentsMap;
+        Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.patentToCitedPatentsMap;
         PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
         algorithm.solve(50);
         algorithm.save(file);

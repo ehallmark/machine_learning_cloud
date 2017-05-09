@@ -1,5 +1,6 @@
 package model_testing;
 
+import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
@@ -10,8 +11,8 @@ import java.util.stream.Collectors;
  * Created by Evan on 5/4/2017.
  */
 public class GatherTechnologyScorer {
-    protected TechTagger model;
-    public GatherTechnologyScorer(TechTagger model) {
+    protected ClassificationAttr model;
+    public GatherTechnologyScorer(ClassificationAttr model) {
         this.model=model;
     }
 
@@ -26,9 +27,9 @@ public class GatherTechnologyScorer {
         return averageAccuracy;
     }
 
-    public static double scoreAssets(TechTagger model, String tech, Collection<String> assets, int numPredictions) {
+    public static double scoreAssets(ClassificationAttr model, String tech, Collection<String> assets, int numPredictions) {
        return ((double)(assets.stream().map(asset->{
-           Collection<String> predictions = model.getTechnologiesFor(asset, PortfolioList.Type.patents,numPredictions).stream().map(pair->pair.getFirst()).collect(Collectors.toSet());
+           Collection<String> predictions = model.attributesFor(PortfolioList.asList(asset, PortfolioList.Type.patents),numPredictions).stream().map(pair->pair.getFirst()).collect(Collectors.toSet());
            System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
            return predictions;
        }).filter(collection->collection.contains(tech)).count()))/assets.size();

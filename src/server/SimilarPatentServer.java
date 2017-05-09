@@ -1,7 +1,6 @@
 package server;
 
-import analysis.SimilarPatentFinder;
-import analysis.patent_view_api.PatentAPIHandler;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
@@ -16,8 +15,8 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
 import seeding.GetEtsiPatentsList;
-import ui_models.attributes.ClassificationAttr;
-import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.*;
 import ui_models.portfolios.items.AbstractAssignee;
@@ -31,7 +30,7 @@ import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
 import ui_models.portfolios.PortfolioList;
-
+import seeding.patent_view_api.PatentAPIHandler;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
@@ -106,6 +105,7 @@ public class SimilarPatentServer {
     static void loadValueModels() {
         try {
             modelMap.put("overallValue",new OverallEvaluator());
+            modelMap.put("pageRankValue",new PageRankEvaluator());
             modelMap.put("assetsPurchased",new AssetsPurchasedEvaluator());
             modelMap.put("assetsSold",new AssetsSoldEvaluator());
             modelMap.put("compDBAssetsPurchased",new AssetsPurchasedEvaluator());

@@ -18,7 +18,7 @@ public class ValueMapNormalizer {
     private DistributionType type;
 
     public enum DistributionType {
-        Normal, Exponentional
+        Normal, Exponentional, None
     }
 
     public ValueMapNormalizer(DistributionType type) {
@@ -28,7 +28,9 @@ public class ValueMapNormalizer {
     public Map<String,Double> normalizeAndMergeModels(Collection<Map<String,Double>> maps) {
         Map<String,Double> merged = new HashMap<>();
         maps.forEach(map->{
-            normalizeToRange(map);
+            if(!type.equals(DistributionType.None)) {
+                normalizeToRange(map);
+            }
             map.forEach((k,v)->{
                 if(merged.containsKey(k)) {
                     merged.put(k,merged.get(k)+v);
@@ -63,8 +65,9 @@ public class ValueMapNormalizer {
             case Exponentional: {
                 distribution=new ExponentialDistribution(mean);
                 break;
-            }default: {
-                distribution=new NormalDistribution(mean,stdDev);
+            }
+            default: {
+                throw new RuntimeException("No distribution specified");
             }
 
         }

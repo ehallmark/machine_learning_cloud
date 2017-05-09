@@ -4,7 +4,6 @@ import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import ui_models.attributes.ValueAttr;
 
 import java.util.ArrayList;
 import java.util.List;

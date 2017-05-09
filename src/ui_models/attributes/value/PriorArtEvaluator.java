@@ -1,6 +1,6 @@
 package ui_models.attributes.value;
 
-import analysis.SimilarPatentFinder;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
@@ -9,7 +9,6 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 import tools.DateHelper;
-import ui_models.attributes.ValueAttr;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

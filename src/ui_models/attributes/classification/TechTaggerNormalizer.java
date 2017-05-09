@@ -1,9 +1,8 @@
 package ui_models.attributes.classification;
 
-import analysis.WordFrequencyPair;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
 import tools.MinHeap;
-import ui_models.attributes.ClassificationAttr;
 import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.*;
@@ -14,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends ClassificationAttr {
     private List<ClassificationAttr> taggers;
-    private static ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(new CPCTagger(), SimilarityTechTagger.getAIModelTagger(),new GatherKeywordTechTagger()),Arrays.asList(0.1,1.0,0.9));
+    private static ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(new CPCGatherTechTagger(), SimilarityGatherTechTagger.getAIModelTagger(),new KeywordGatherTechTagger()),Arrays.asList(0.1,1.0,0.9));
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         this.taggers=taggers;

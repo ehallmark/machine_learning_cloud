@@ -1,10 +1,8 @@
 package ui_models.attributes.value;
 
 import org.deeplearning4j.berkeley.Pair;
-import ui_models.attributes.ClassificationAttr;
-import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.portfolios.AbstractPortfolio;
-import ui_models.portfolios.PortfolioList;
 
 import java.util.ArrayList;
 import java.util.List;

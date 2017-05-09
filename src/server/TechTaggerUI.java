@@ -1,6 +1,5 @@
 package server;
 
-import graphical_models.page_rank.CitationPageRank;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
@@ -10,10 +9,10 @@ import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
-import ui_models.attributes.ClassificationAttr;
-import ui_models.attributes.classification.CPCTagger;
-import ui_models.attributes.classification.GatherKeywordTechTagger;
-import ui_models.attributes.classification.SimilarityTechTagger;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.classification.CPCGatherTechTagger;
+import ui_models.attributes.classification.KeywordGatherTechTagger;
+import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.portfolios.PortfolioList;
 
@@ -40,9 +39,9 @@ public class TechTaggerUI {
     private static ClassificationAttr GATHER_KEYWORD_TAGGER;
     //private static ClassificationAttr RAW_KEYWORD_TAGGER;
     static {
-        CPC_TAGGER=new CPCTagger();
-        SIMILARITY_TAGGER= SimilarityTechTagger.getAIModelTagger();
-        GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
+        CPC_TAGGER=new CPCGatherTechTagger();
+        SIMILARITY_TAGGER= SimilarityGatherTechTagger.getAIModelTagger();
+        GATHER_KEYWORD_TAGGER=new KeywordGatherTechTagger();
         //RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
     }
 

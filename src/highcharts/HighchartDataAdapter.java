@@ -1,8 +1,8 @@
 package highcharts;
 
-import analysis.SimilarPatentFinder;
-import analysis.WordFrequencyPair;
-import analysis.genetics.lead_development.*;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
+import genetics.lead_development.*;
 import com.google.common.util.concurrent.AtomicDouble;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
@@ -14,8 +14,8 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 import tools.MinHeap;
-import ui_models.attributes.ClassificationAttr;
-import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.SimilarityEvaluator;
 import ui_models.portfolios.PortfolioList;

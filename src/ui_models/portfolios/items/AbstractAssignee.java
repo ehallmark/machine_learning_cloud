@@ -16,7 +16,7 @@ public class AbstractAssignee extends Item {
     }
 
     @Override
-    protected void init(Collection<String> params) {
+    public void init(Collection<String> params) {
         super.init(params);
         if(params.contains("assignee"))attributeData.put("assignee",new ExcelCell(ExcelHandler.getDefaultFormat(), name, false));
         if(params.contains("totalAssetCount"))attributeData.put("totalAssetCount", new ExcelCell(ExcelHandler.getDefaultFormat(), Database.getAssetCountFor(name), true));

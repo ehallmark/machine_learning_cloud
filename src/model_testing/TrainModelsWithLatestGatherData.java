@@ -1,6 +1,7 @@
 package model_testing;
 
-import ui_models.attributes.classification.GatherKeywordTechTagger;
+import ui_models.attributes.classification.CPCGatherTechTagger;
+import ui_models.attributes.classification.KeywordGatherTechTagger;
 import seeding.Database;
 
 import java.util.Collection;
@@ -18,11 +19,11 @@ public class TrainModelsWithLatestGatherData {
         Map<String,Collection<String>> validationData = SplitModelData.getGatherTechnologyValidationDataMap();
 
         // train gather keyword model
-        GatherKeywordTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
+        KeywordGatherTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
 
 
         // train gather cpc model
-        CPCTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
+        CPCGatherTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
 
     }
 }

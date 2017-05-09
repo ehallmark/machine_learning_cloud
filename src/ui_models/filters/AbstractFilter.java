@@ -7,5 +7,8 @@ import ui_models.portfolios.AbstractPortfolio;
  * Created by Evan on 5/9/2017.
  */
 public interface AbstractFilter {
+    enum Type {
+        PreFilter, PostFilter
+    }
     void filter(@NonNull AbstractPortfolio portfolio);
 }
