@@ -2,10 +2,8 @@ package analysis;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import server.tools.AbstractAssignee;
-import server.tools.AbstractClassCode;
-import server.tools.AbstractPatent;
-import server.tools.excel.ExcelWritable;
+import ui_models.portfolios.items.AbstractAssignee;
+import ui_models.portfolios.items.AbstractPatent;
 import tools.DistanceFunction;
 
 import java.io.Serializable;

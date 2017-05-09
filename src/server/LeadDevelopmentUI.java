@@ -1,40 +1,33 @@
 package server;
 
-import analysis.SimilarPatentFinder;
 import analysis.WordFrequencyPair;
 import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
 import analysis.genetics.lead_development.*;
-import analysis.tech_tagger.*;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
-import com.googlecode.wickedcharts.highcharts.options.AxisType;
-import j2html.tags.EmptyTag;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
-import server.highcharts.*;
-import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
-import server.tools.excel.ExcelWritable;
+import ui_models.attributes.ClassificationAttr;
+import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
 import tools.MinHeap;
-import tools.PortfolioList;
-import value_estimation.Evaluator;
-import value_estimation.SimilarityEvaluator;
-import value_estimation.SpecificTechnologyEvaluator;
+import ui_models.attributes.value.SimilarityEvaluator;
+import ui_models.attributes.value.SpecificTechnologyEvaluator;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -49,12 +42,12 @@ public class LeadDevelopmentUI {
     private static final String MAIN_INPUT_ID = "main-input-id";
     public static final Map<String,Attribute> ATTRIBUTES = new HashMap<>();
     private static final List<String> TECHNOLOGIES;
-    private static final TechTagger TECH_TAGGER;
+    private static final ClassificationAttr TECH_TAGGER;
 
     static {
-        TECH_TAGGER=TechTaggerNormalizer.getDefaultTechTagger();
+        TECH_TAGGER= TechTaggerNormalizer.getDefaultTechTagger();
         TECHNOLOGIES=new ArrayList<>();
-        TECH_TAGGER.getAllTechnologies().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
+        TECH_TAGGER.getClassifications().stream().sorted().forEach(tech->TECHNOLOGIES.add(tech));
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -213,7 +206,7 @@ public class LeadDevelopmentUI {
 
     static void loadData() {
         SimilarPatentServer.modelMap.forEach((name,model)->{
-            ATTRIBUTES.put(ExcelWritable.humanAttributeFor(name),new ValueAttribute(name,0d,model));
+            ATTRIBUTES.put(Item.humanAttributeFor(name),new ValueAttribute(name,0d,model));
         });
     }
 
@@ -323,7 +316,7 @@ public class LeadDevelopmentUI {
                         String technology = params.get("technology").value();
                         if(technology!=null&&technology.length()>0) {
                             System.out.println("Using technology: "+technology);
-                            Evaluator techModel = new SpecificTechnologyEvaluator(technology,TECH_TAGGER);
+                            ValueAttr techModel = new SpecificTechnologyEvaluator(technology,TECH_TAGGER);
                             attrsToUseList.add(new ValueAttribute(technology,technologyImportance,techModel));
                         }
                     }

@@ -1,7 +1,6 @@
 package model_testing;
 
-import analysis.tech_tagger.TechTagger;
-import tools.PortfolioList;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.Map;

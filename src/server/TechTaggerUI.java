@@ -1,7 +1,5 @@
 package server;
 
-import analysis.tech_tagger.TechTagger;
-import analysis.tech_tagger.TechTaggerNormalizer;
 import graphical_models.page_rank.CitationPageRank;
 import com.google.gson.Gson;
 import j2html.tags.Tag;
@@ -12,7 +10,12 @@ import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
-import tools.PortfolioList;
+import ui_models.attributes.ClassificationAttr;
+import ui_models.attributes.classification.CPCTagger;
+import ui_models.attributes.classification.GatherKeywordTechTagger;
+import ui_models.attributes.classification.SimilarityTechTagger;
+import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,17 +35,15 @@ import static spark.Spark.post;
 public class TechTaggerUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static TechTagger CPC_TAGGER;
-    private static TechTagger SIMILARITY_TAGGER;
-    private static TechTagger GATHER_KEYWORD_TAGGER;
-    private static TechTagger RAW_KEYWORD_TAGGER;
-    private static CitationPageRank PAGE_RANK_SIMILARITY_TAGGER;
+    private static ClassificationAttr CPC_TAGGER;
+    private static ClassificationAttr SIMILARITY_TAGGER;
+    private static ClassificationAttr GATHER_KEYWORD_TAGGER;
+    //private static ClassificationAttr RAW_KEYWORD_TAGGER;
     static {
-        //CPC_TAGGER=new CPCTagger();
-        //SIMILARITY_TAGGER=SimilarityTechTagger.getAIModelTagger();
-        //GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
+        CPC_TAGGER=new CPCTagger();
+        SIMILARITY_TAGGER= SimilarityTechTagger.getAIModelTagger();
+        GATHER_KEYWORD_TAGGER=new GatherKeywordTechTagger();
         //RAW_KEYWORD_TAGGER=new RawKeywordTechTagger();
-        PAGE_RANK_SIMILARITY_TAGGER= new CitationPageRank();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -116,22 +117,6 @@ public class TechTaggerUI {
                         label("Tag Limit").with(
                                 br(),
                                 input().withType("number").withValue("5").withName("tag_limit")
-                        ),br(),
-                        label("Use Citation PageRank Model? (BETA)").with(
-                                br(),
-                                input().withType("checkbox").withName("useCitationModel")
-                        ),br(),
-                        label("Time Limit in Seconds (BETA)").with(
-                                br(),
-                                input().withType("number").withName("timeoutSeconds")
-                        ),br(),
-                        label("PageRank Depth (BETA)").with(
-                                br(),
-                                input().withType("number").withName("pageRankDepth")
-                        ),br(),
-                        label("PageRank Epochs (BETA)").with(
-                                br(),
-                                input().withType("number").withName("pageRankEpochs")
                         ),br(),br(),
                         button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
 
@@ -215,15 +200,10 @@ public class TechTaggerUI {
                 double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",0.0));
                 double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
                 double gather_keyword_percent = (SimilarPatentServer.extractDouble(params,"gather_keyword_percent",0.0));
-                double raw_keyword_percent = (SimilarPatentServer.extractDouble(params,"raw_keyword_percent",0.0));
-                int pageRankDepth = (int)(SimilarPatentServer.extractDouble(params,"pageRankDepth",4d));
-                int pageRankEpochs = (int)(SimilarPatentServer.extractDouble(params,"pageRankEpochs",10d));
-                int timeoutSeconds = (int)(SimilarPatentServer.extractDouble(params,"timeoutSeconds",10d));
                 if(ai_percent<0)ai_percent=0;
                 if(cpc_percent<0)cpc_percent=0;
-                if(raw_keyword_percent<0)raw_keyword_percent=0;
                 if(gather_keyword_percent<0)gather_keyword_percent=0;
-                if(ai_percent+cpc_percent+raw_keyword_percent+gather_keyword_percent==0.0) {
+                if(ai_percent+cpc_percent+gather_keyword_percent==0.0) {
                     return new Gson().toJson(new SimpleAjaxMessage("Must have at least one model above zero"));
                 }
                 String search_input_str = params.get("search_input").value();
@@ -254,14 +234,9 @@ public class TechTaggerUI {
 
                 System.out.println("Starting similarity tagger");
                 List<Pair<String, Double>> results;
-                if(SimilarPatentServer.extractBool(req, "useCitationModel")) {
-                    if(!inputType.get().equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Cannot search for assignees"));
-                    results=PAGE_RANK_SIMILARITY_TAGGER.getTechnologiesFor(all_search_inputs, PortfolioList.Type.patents,tag_limit);
-                } else {
-                    TechTagger tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER, RAW_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent, raw_keyword_percent));
-                    results = tagger.getTechnologiesFor(all_search_inputs, inputType.get(), tag_limit);
 
-                }
+                ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent));
+                results = tagger.attributesFor(PortfolioList.abstractPorfolioList(all_search_inputs, inputType.get()), tag_limit);
                 TechnologySolution solution = new TechnologySolution(results);
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));

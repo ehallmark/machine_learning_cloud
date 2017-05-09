@@ -1,8 +1,7 @@
 package server.tools;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
-import com.googlecode.wickedcharts.highcharts.options.Options;
-import server.highcharts.AbstractChart;
+import highcharts.AbstractChart;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -1,13 +1,10 @@
 package analysis.genetics.lead_development;
 
-import analysis.genetics.GeneticAlgorithm;
 import analysis.genetics.Solution;
-import analysis.genetics.SolutionCreator;
 import analysis.genetics.keyword_analysis.ProbabilityHelper;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
-import seeding.Database;
-import value_estimation.PortfolioSizeEvaluator;
+import ui_models.attributes.value.PortfolioSizeEvaluator;
 
 import java.util.*;
 import java.util.stream.Collectors;

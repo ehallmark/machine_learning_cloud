@@ -1,13 +1,13 @@
 package server;
 
-import analysis.tech_tagger.TechTagger;
-import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
 import server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
-import tools.PortfolioList;
+import ui_models.attributes.ClassificationAttr;
+import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,7 +18,7 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
-    private static TechTagger tagger = TechTaggerNormalizer.getDefaultTechTagger();
+    private static ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
     public static void StartServer() throws Exception{
 
         before((request, response) -> {
@@ -54,7 +54,7 @@ public class GatherClassificationServer {
 
         // make sure patents exist
         // run model
-        List<Pair<String,Double>> topTags = tagger.getTechnologiesFor(patents, PortfolioList.Type.patents, tagLimit);
+        List<Pair<String,Double>> topTags = tagger.attributesFor(PortfolioList.abstractPorfolioList(patents, PortfolioList.Type.patents), tagLimit);
 
         // return results
         if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));

@@ -23,9 +23,9 @@ import java.util.stream.Collectors;
  * Created by Evan on 2/19/2017.
  */
 public class WordFrequencyCalculator {
-    static final File technologyToTopKeyWordsMapFile = new File("data/technology_to_top_keyword_map.jobj");
+    public static final File technologyToTopKeyWordsMapFile = new File("data/technology_to_top_keyword_map.jobj");
 
-    static double tfidfScore(String word, Map<String,Double> tech, Map<String,Double> globalFrequencyMap) {
+    public static double tfidfScore(String word, Map<String,Double> tech, Map<String,Double> globalFrequencyMap) {
         Double tf = tech.get(word);
         if(tf==null)tf=0d;
         Double idf = globalFrequencyMap.get(word);

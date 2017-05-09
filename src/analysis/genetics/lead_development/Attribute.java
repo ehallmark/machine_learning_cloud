@@ -1,6 +1,6 @@
 package analysis.genetics.lead_development;
 
-import server.tools.excel.ExcelWritable;
+import ui_models.portfolios.items.Item;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,7 +19,7 @@ public abstract class Attribute {
 
     protected Attribute(String name, double importance, int id) {
         this.name=name;
-        this.humanName= ExcelWritable.humanAttributeFor(name);
+        this.humanName= Item.humanAttributeFor(name);
         this.importance=importance;
         this.id=id;
     }

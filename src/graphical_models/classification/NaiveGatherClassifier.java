@@ -1,9 +1,8 @@
 package graphical_models.classification;
 
-import analysis.tech_tagger.TechTagger;
 import model.graphs.BayesianNet;
 import org.deeplearning4j.berkeley.Pair;
-import tools.PortfolioList;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
 /**
  * Created by ehallmark on 5/1/17.
  */
-public class NaiveGatherClassifier extends TechTagger {
+public class NaiveGatherClassifier {
     protected BayesianNet bayesianNet;
 
     @Override

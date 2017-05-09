@@ -7,17 +7,15 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.*;
 import seeding.Constants;
 import seeding.Database;
-import server.highcharts.*;
+import highcharts.*;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
-import server.tools.excel.ExcelWritable;
+import ui_models.attributes.ValueAttr;
+import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
-import tools.PortfolioList;
-import value_estimation.Evaluator;
-import value_estimation.OverallEvaluator;
-import value_estimation.ValueMapNormalizer;
+import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -270,7 +268,7 @@ public class CompanyPortfolioProfileUI {
                 Set<String> classCodesToSearchFor = Collections.emptySet();
                 Set<String> assigneesToSearchFor = Collections.emptySet();
                 boolean useSimilarPatentFinders = false;
-                Comparator<ExcelWritable> comparator = ExcelWritable.similarityComparator();
+                Comparator<Item> comparator = Item.similarityComparator();
                 boolean comparingByValue = false;
                 PortfolioList portfolioList = null;
                 boolean ajaxClickablePoints = false;
@@ -328,7 +326,7 @@ public class CompanyPortfolioProfileUI {
                                     new HashSet<>(INPUT_PATENTS):
                                     Database.selectPatentNumbersFromAssignee(ASSIGNEE);
                             portfolioType = PortfolioList.Type.patents;
-                            comparator = ExcelWritable.valueComparator();
+                            comparator = Item.valueComparator();
                             comparingByValue = true;
                             portfolioList = PortfolioList.abstractPorfolioList(assets, portfolioType);
                             break;
@@ -346,7 +344,7 @@ public class CompanyPortfolioProfileUI {
                                 data = HighchartDataAdapter.collectAverageValueData(INPUT_PATENTS, "Patents", SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             }
                             portfolioType = inputType;
-                            comparator = ExcelWritable.valueComparator();
+                            comparator = Item.valueComparator();
                             comparingByValue = true;
                             portfolioList = null;
                             AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, data, 1.0, 5.0);
@@ -461,22 +459,22 @@ public class CompanyPortfolioProfileUI {
 
                     // Handle overall value
                     if (comparingByValue) {
-                        for (Map.Entry<String, Evaluator> e : SimilarPatentServer.modelMap.entrySet()) {
+                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.modelMap.entrySet()) {
                             String key = e.getKey();
-                            Evaluator model = e.getValue();
+                            ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
-                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key);
+                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key, inputType);
                             }
                         }
                         portfolioList.init(comparator, limit);
                     } else {
                         // faster to init results first
                         portfolioList.init(comparator, limit);
-                        for (Map.Entry<String, Evaluator> e : SimilarPatentServer.modelMap.entrySet()) {
+                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.modelMap.entrySet()) {
                             String key = e.getKey();
-                            Evaluator model = e.getValue();
+                            ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
-                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key);
+                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key, inputType);
                             }
                         }
                     }
@@ -518,11 +516,11 @@ public class CompanyPortfolioProfileUI {
         });
     }
 
-    static Tag tableFromPatentList(List<ExcelWritable> items, List<String> attributes) {
+    static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
         return table().with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr->th(ExcelWritable.humanAttributeFor(attr))).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(Item.humanAttributeFor(attr))).collect(Collectors.toList())
                         )
                 ),tbody().with(
                         items.stream().map(item->tr().with(

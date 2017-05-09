@@ -1,18 +1,19 @@
 package analysis.genetics.lead_development;
 
-import value_estimation.Evaluator;
+import ui_models.attributes.ValueAttr;
+import ui_models.portfolios.PortfolioList;
 
 /**
  * Created by Evan on 2/25/2017.
  */
 public class ValueAttribute extends Attribute {
-    protected Evaluator model;
-    public ValueAttribute(String name, double importance, Evaluator model) {
+    protected ValueAttr model;
+    public ValueAttribute(String name, double importance, ValueAttr model) {
         super(name,importance);
         this.model=model;
     }
 
-    private ValueAttribute(String name, double importance, Evaluator model, int id) {
+    private ValueAttribute(String name, double importance, ValueAttr model, int id) {
         super(name,importance,id);
         this.model=model;
     }
@@ -24,6 +25,6 @@ public class ValueAttribute extends Attribute {
 
     @Override
     public double scoreAssignee(String assignee) {
-        return model.evaluate(assignee);
+        return model.attributesFor(PortfolioList.asList(assignee,PortfolioList.Type.assignees));
     }
 }

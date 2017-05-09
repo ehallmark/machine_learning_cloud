@@ -1,10 +1,9 @@
 package graphical_models.page_rank;
 
-import analysis.tech_tagger.TechTagger;
 import model.edges.Edge;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
-import tools.PortfolioList;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -15,7 +14,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 4/20/17.
  */
-public class CitationPageRank extends TechTagger {
+public class CitationPageRank {
     public static final Map<String,Set<String>> patentToCitedPatentsMap;
     private static final Map<Edge<String>,Float> rankTable;
     static {

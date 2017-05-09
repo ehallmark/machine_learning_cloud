@@ -2,8 +2,6 @@ package server;
 
 import analysis.SimilarPatentFinder;
 import analysis.patent_view_api.PatentAPIHandler;
-import analysis.tech_tagger.TechTagger;
-import analysis.tech_tagger.TechTaggerNormalizer;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
@@ -18,24 +16,26 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
 import seeding.GetEtsiPatentsList;
-import server.tools.AbstractAssignee;
-import server.tools.AbstractPatent;
+import ui_models.attributes.ClassificationAttr;
+import ui_models.attributes.ValueAttr;
+import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.attributes.value.*;
+import ui_models.portfolios.items.AbstractAssignee;
+import ui_models.portfolios.items.AbstractPatent;
 import server.tools.SimpleAjaxMessage;
-import server.tools.excel.ExcelHandler;
-import server.tools.excel.ExcelWritable;
+import excel.ExcelHandler;
+import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
-import tools.PortfolioList;
-import value_estimation.*;
+import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,13 +64,13 @@ public class SimilarPatentServer {
     private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
     private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
 
-    private static TechTagger tagger;
+    private static ClassificationAttr tagger;
 
     protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    static Map<String,Evaluator> modelMap = new HashMap<>();
+    static Map<String,ValueAttr> modelMap = new HashMap<>();
 
-    private static Map<String,String> humanParamMap = ExcelWritable.getHumanAttrToJavaAttrMap();
+    private static Map<String,String> humanParamMap = Item.getHumanAttrToJavaAttrMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -80,7 +80,7 @@ public class SimilarPatentServer {
         return paragraphVectors.getLookupTable();
     }
 
-    public static TechTagger getTagger() {
+    public static ClassificationAttr getTagger() {
         return tagger;
     }
     public static void loadLookupTable() {
@@ -131,9 +131,9 @@ public class SimilarPatentServer {
         }
     }
 
-    static void evaluateModel(Evaluator model, Collection<ExcelWritable> portfolio, String valueParamType) {
-        for (ExcelWritable item : portfolio) {
-            double score = model.evaluate(item.getName());
+    static void evaluateModel(ValueAttr model, Collection<Item> portfolio, String valueParamType, PortfolioList.Type type) {
+        for (Item item : portfolio) {
+            double score = model.attributesFor(PortfolioList.asList(item.getName(),type),1);
             item.setValue(valueParamType,score);
         }
     }
@@ -254,8 +254,7 @@ public class SimilarPatentServer {
                                         item = item.trim();
                                         System.out.println("Item length after trim: "+item.length());
                                         final String prettyItem = item;
-                                        if(portfolioType.equals(PortfolioList.Type.class_codes)) item=ClassCodeHandler.convertToLabelFormat(item);
-                                        List<Pair<String,Double>> pairs = tagger.getTechnologiesFor(item,portfolioType,1);
+                                        List<Pair<String,Double>> pairs = tagger.attributesFor(PortfolioList.asList(item,portfolioType),1);
                                         String val = "";
                                         double probability = 0.0;
                                         if(!pairs.isEmpty()) {
@@ -475,7 +474,7 @@ public class SimilarPatentServer {
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
                 int limitPerInput = extractInt(req, "limitPerInput", 10);
-                PortfolioList.Type portfolioType = searchType.equals("patents") ? PortfolioList.Type.patents : searchType.equals("assignees") ? PortfolioList.Type.assignees : PortfolioList.Type.class_codes;
+                PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
 
                 if(req.queryParamsValues("dataAttributes[]")==null) {
                     res.redirect("/candidate_set_models");
@@ -545,15 +544,15 @@ public class SimilarPatentServer {
 
                 modelMap.forEach((key,model)->{
                     if (attributes.contains(key) && model != null) {
-                        evaluateModel(model,portfolioList.getPortfolio(),key);
+                        evaluateModel(model,portfolioList.getPortfolio(),key,portfolioType);
                     }
                 });
 
-                Comparator<ExcelWritable> comparator = ExcelWritable.similarityComparator();
+                Comparator<Item> comparator = Item.similarityComparator();
 
                 // Handle overall value
                 if(attributes.contains("overallValue")) {
-                    comparator = ExcelWritable.valueComparator();
+                    comparator = Item.valueComparator();
                 }
 
                 {
@@ -561,7 +560,7 @@ public class SimilarPatentServer {
                     if (keywordsToRequire != null) {
                         String[] keywords = keywordsToRequire.toLowerCase().replaceAll("[^a-z %\\n]", " ").split("\\n");
                         if (keywords.length > 0) {
-                            Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                            Set<String> patents = Database.patentsWithAllKeywords(portfolioList.getTokens(), keywords);
                             portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
                                     .filter(patent -> patents.contains(patent.getName()))
                                     .collect(Collectors.toList())
@@ -574,7 +573,7 @@ public class SimilarPatentServer {
                     if (keywordsToAvoid != null) {
                         String[] keywords = keywordsToAvoid.toLowerCase().replaceAll("[^a-z %\\n]", " ").split("\\n");
                         if (keywords.length > 0) {
-                            Set<String> patents = Database.patentsWithKeywords(portfolioList.getPortfolioAsStrings(), keywords);
+                            Set<String> patents = Database.patentsWithKeywords(portfolioList.getTokens(), keywords);
                             portfolioList.setPortfolio(portfolioList.getPortfolio().stream()
                                     .filter(patent -> !patents.contains(patent.getName()))
                                     .collect(Collectors.toList())
@@ -692,7 +691,7 @@ public class SimilarPatentServer {
 
     private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int totalLimit) {
         try {
-            Map<String, ExcelWritable> map = new HashMap<>();
+            Map<String, Item> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
                 portfolioList.getPortfolio().forEach(item -> {
                     try {
@@ -709,7 +708,7 @@ public class SimilarPatentServer {
                 });
             });
             try {
-                List<ExcelWritable> merged = map.values().stream()
+                List<Item> merged = map.values().stream()
                         .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
                         .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
                         .limit(totalLimit)

@@ -1,10 +1,7 @@
 package model_testing;
 
-import analysis.genetics.keyword_analysis.GatherKeywordTechTagger;
-import analysis.tech_tagger.BuildCPCToGatherStatistics;
-import analysis.tech_tagger.CPCTagger;
+import ui_models.attributes.classification.GatherKeywordTechTagger;
 import seeding.Database;
-import server.SimilarPatentServer;
 
 import java.util.Collection;
 import java.util.Map;

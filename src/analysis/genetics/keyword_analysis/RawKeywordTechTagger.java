@@ -1,14 +1,10 @@
 package analysis.genetics.keyword_analysis;
 
 import analysis.WordFrequencyPair;
-import analysis.patent_view_api.Patent;
-import analysis.patent_view_api.PatentAPIHandler;
-import analysis.tech_tagger.TechTagger;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
-import server.SimilarPatentServer;
 import tools.MinHeap;
-import tools.PortfolioList;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.util.*;
@@ -17,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 3/10/17.
  */
-public class RawKeywordTechTagger extends TechTagger {
+public class RawKeywordTechTagger {
     static File raw_keyword_map_file = new File("raw_keyword_to_document_frequency_map.jobj");
     private static Random random = new Random(69);
     private static Map<String,Double> globalFrequencies;

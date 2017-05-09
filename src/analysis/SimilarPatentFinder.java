@@ -8,13 +8,12 @@ import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
-import server.tools.excel.ExcelWritable;
+import ui_models.portfolios.items.Item;
 import tools.*;
 
-import java.sql.SQLException;
 import java.util.*;
 
-import server.tools.AbstractPatent;
+import ui_models.portfolios.PortfolioList;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -143,10 +142,10 @@ public class SimilarPatentFinder {
                 if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
             }
         });
-        List<ExcelWritable> resultList = new ArrayList<>(limit);
+        List<Item> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
-            ExcelWritable clone = null;
+            Item clone = null;
             switch(portfolioType) {
                 case assignees: {
                     clone=Patent.abstractAssignee(p,referringName);
