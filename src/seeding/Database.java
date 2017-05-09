@@ -522,7 +522,7 @@ public class Database {
 	}
 
 	public static Collection<String> getValuablePatents() {
-		return new HashSet<>(valuablePatents);
+		return valuablePatents;
 	}
 
 	public static Collection<String> selectPatentNumbersFromAssignee(String assignee){

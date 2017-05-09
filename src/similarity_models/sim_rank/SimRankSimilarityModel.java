@@ -42,12 +42,12 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Override
-    public List<PortfolioList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
+    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
         return null;
     }
 
     @Override
-    public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType) {
+    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType) {
         return null;
     }
 

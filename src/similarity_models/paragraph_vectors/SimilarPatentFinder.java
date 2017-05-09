@@ -34,6 +34,7 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
     public SimilarPatentFinder(Collection<String> candidateSet, String name, WeightLookupTable<VocabWord> lookupTable) {
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
+        candidateSet=new HashSet<>(candidateSet);
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
         try {
@@ -92,7 +93,7 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
         return avgVector;
     }
 
-    public List<PortfolioList> similarFromCandidateSets(List<SimilarPatentFinder> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
+    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
         List<PortfolioList> list = new ArrayList<>(others.size());
         others.forEach(other->{
             list.add(similarFromCandidateSet(other, threshold, limit, badAssets, portfolioType));
@@ -100,11 +101,11 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
         return list;
     }
 
-    public PortfolioList similarFromCandidateSet(SimilarPatentFinder other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
+    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
         // Find the highest (pairwise) assets
-        if(other.getPatentList()==null||other.getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
-        INDArray otherAvg = other.computeAvg();
-        return findSimilarPatentsTo(other.name, otherAvg, badLabels, threshold, limit,portfolioType);
+        if(((SimilarPatentFinder)other).getPatentList()==null||((SimilarPatentFinder)other).getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
+        INDArray otherAvg = ((SimilarPatentFinder)other).computeAvg();
+        return findSimilarPatentsTo(((SimilarPatentFinder)other).name, otherAvg, badLabels, threshold, limit,portfolioType);
     }
 
     // returns null if patentNumber not found

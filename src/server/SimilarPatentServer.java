@@ -1,5 +1,6 @@
 package server;
 
+import similarity_models.AbstractSimilarityModel;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
@@ -50,7 +51,6 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     public static SimilarPatentFinder assigneeFinder;
-    public static SimilarPatentFinder classCodeFinder;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
     private static final String ASSIGNEE_ASSETS_FORM_ID = "select-assignee-assets-form";
@@ -121,7 +121,6 @@ public class SimilarPatentServer {
         try {
             globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
-            classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),"** ALL CLASS CODES **",paragraphVectors.lookupTable());
             tagger = TechTaggerNormalizer.getDefaultTechTagger();
             // value model
             loadValueModels();
@@ -634,8 +633,6 @@ public class SimilarPatentServer {
                 firstFinder = globalFinder;
             } else if (searchType.equals("assignees")) {
                 firstFinder = assigneeFinder;
-            } else if (searchType.equals("class_codes")) {
-                firstFinder = classCodeFinder;
             } else {
                 return null;
             }
@@ -677,7 +674,7 @@ public class SimilarPatentServer {
         return patentFinders;
     }
 
-    static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<SimilarPatentFinder> secondFinders, int limitPerInput, int totalLimit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
+    static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, List<? extends AbstractSimilarityModel> secondFinders, int limitPerInput, int totalLimit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
         List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
             List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limitPerInput, badLabels, portfolioType);
