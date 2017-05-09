@@ -198,7 +198,6 @@ public class Database {
 
 		// assignee stuff
 		{
-			patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
 			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 			allAssignees=new HashSet<>(assigneeToPatentsMap.keySet());
 			// prefix trie for assignees
@@ -243,6 +242,13 @@ public class Database {
 			patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		}
 		return patentToClassificationMap;
+	}
+
+	public static Map<String,List<String>> getPatentToLatestAssigneeMap() {
+		if(patentToLatestAssigneeMap==null) {
+			patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
+		}
+		return patentToLatestAssigneeMap;
 	}
 
 	public static Map<String,LocalDate> getPatentToPubDateMap() {
@@ -342,7 +348,7 @@ public class Database {
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
 			if(getAssigneeToAssetsSoldCountMap().containsKey(name)) {
-				count.getAndAdd(assigneeToAssetsSoldCountMap.get(name));
+				count.getAndAdd(getAssigneeToAssetsSoldCountMap().get(name));
 			}
 		});
 		return count.get();
@@ -353,7 +359,7 @@ public class Database {
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
 			if(getAssigneeToAssetsPurchasedCountMap().containsKey(name)) {
-				count.getAndAdd(assigneeToAssetsPurchasedCountMap.get(name));
+				count.getAndAdd(getAssigneeToAssetsPurchasedCountMap().get(name));
 			}
 		});
 		return count.get();
@@ -378,11 +384,11 @@ public class Database {
 	}
 
 	public static LocalDate getPubDateFor(String patent) {
-		return patentToPubDateMap.get(patent);
+		return getPatentToPubDateMap().get(patent);
 	}
 
 	public static String getInventionTitleFor(String patent) {
-		if(patentToInventionTitleMap.containsKey(patent)) {
+		if(getPatentToInventionTitleMap().containsKey(patent)) {
 			return patentToInventionTitleMap.get(patent);
 		} else {
 			return "";
@@ -416,7 +422,7 @@ public class Database {
 
 	public static Set<String> classificationsFor(String patent) {
 		Set<String> classifications = new HashSet<>();
-		if(patentToClassificationMap.containsKey(patent)) {
+		if(getPatentToClassificationMap().containsKey(patent)) {
 			classifications.addAll(patentToClassificationMap.get(patent));
 		}
 		return classifications;
@@ -513,9 +519,9 @@ public class Database {
 
 	public static Set<String> assigneesFor(String patent) {
 		Set<String> assignees = new HashSet<>();
-		if(patentToLatestAssigneeMap.containsKey(patent)) {
+		if(getPatentToLatestAssigneeMap().containsKey(patent)) {
 			assignees.addAll(patentToLatestAssigneeMap.get(patent));
-		} else if (patentToOriginalAssigneeMap.containsKey(patent)) {
+		} else if (getPatentToOriginalAssigneeMap().containsKey(patent)) {
 			assignees.addAll(patentToOriginalAssigneeMap.get(patent));
 		}
 		return assignees;
