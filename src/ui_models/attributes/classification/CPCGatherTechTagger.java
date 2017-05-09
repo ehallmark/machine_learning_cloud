@@ -171,4 +171,8 @@ public class CPCGatherTechTagger extends ClassificationAttr {
         return new CPCGatherTechTagger();
     }
 
+    public static void main(String[] args) {
+        System.out.println(loadTechList());
+    }
+
 }
