@@ -680,6 +680,8 @@ public class SimilarPatentServer {
             List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limitPerInput, badLabels, portfolioType);
             portfolioLists.addAll(similar);
         } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("... while running patent finder model.");
             throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
@@ -687,37 +689,24 @@ public class SimilarPatentServer {
     }
 
     private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int totalLimit) {
-        try {
             Map<String, Item> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
                 portfolioList.getPortfolio().forEach(item -> {
-                    try {
-                        if (item.getName() == null || item.getName().length() == 0) return;
-                        if (map.containsKey(item.getName())) {
-                            map.get(item.getName()).appendTags(item.getTags());
-                            map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
-                        } else {
-                            map.put(item.getName(), item);
-                        }
-                    } catch(Exception e) {
-                        throw new RuntimeException("Error on item: "+item.getName());
+                    if (item.getName() == null || item.getName().length() == 0) return;
+                    if (map.containsKey(item.getName())) {
+                        map.get(item.getName()).appendTags(item.getTags());
+                        map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
+                    } else {
+                        map.put(item.getName(), item);
                     }
                 });
             });
-            try {
-                List<Item> merged = map.values().stream()
-                        .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
-                        .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
-                        .limit(totalLimit)
-                        .collect(Collectors.toList());
-                return new PortfolioList(merged,portfolioType);
-
-            } catch(Exception e) {
-                throw new RuntimeException("Error merging values in final stream.");
-            }
-        } catch(Exception e) {
-            throw new RuntimeException("Error merging patent lists: "+e.getMessage());
-        }
+            List<Item> merged = map.values().stream()
+                    .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
+                    .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
+                    .limit(totalLimit)
+                    .collect(Collectors.toList());
+            return new PortfolioList(merged,portfolioType);
     }
 
     private static List<String> preProcess(String toSplit, String delim, String toReplace) {
