@@ -77,7 +77,7 @@ public class Database {
 			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
-			System.out.println("Sucessfully loaded "+file.getName()+".");
+			System.out.println("Successfully loaded "+file.getName()+".");
 			return toReturn;
 		} catch(Exception e) {
 			e.printStackTrace();

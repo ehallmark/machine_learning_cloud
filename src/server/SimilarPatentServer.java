@@ -20,6 +20,7 @@ import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.*;
+import ui_models.filters.*;
 import ui_models.portfolios.items.AbstractAssignee;
 import ui_models.portfolios.items.AbstractPatent;
 import server.tools.SimpleAjaxMessage;
@@ -538,8 +539,19 @@ public class SimilarPatentServer {
                     labelsToExclude.addAll(Database.getGatherPatents());
                 }
 
-                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, limitPerInput, limit, threshold, labelsToExclude, badAssignees, portfolioType);
-                if (assigneePortfolioLimit > 0) portfolioList.filterPortfolioSize(assigneePortfolioLimit);
+                Collection<? extends AbstractFilter> preFilters = Arrays.asList(
+                        new ThresholdFilter(threshold),
+                        new AssigneeFilter(badAssignees),
+                        new LabelFilter(labelsToExclude)
+                );
+
+                PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, portfolioType, limit, preFilters);
+
+                // Post filters
+                if (assigneePortfolioLimit > 0) {
+                    PortfolioSizeFilter filter = new PortfolioSizeFilter(assigneePortfolioLimit);
+                    portfolioList.applyFilter(filter);
+                }
 
                 modelMap.forEach((key,model)->{
                     if (attributes.contains(key) && model != null) {
@@ -674,10 +686,10 @@ public class SimilarPatentServer {
         return patentFinders;
     }
 
-    static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, List<? extends AbstractSimilarityModel> secondFinders, int limitPerInput, int totalLimit, double threshold, Collection<String> badLabels, Collection<String> badAssignees, PortfolioList.Type portfolioType) {
+    public static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<? extends AbstractSimilarityModel> secondFinders, PortfolioList.Type portfolioType, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
         List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
-            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, threshold, limitPerInput, badLabels, portfolioType);
+            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, portfolioType, resultLimit/secondFinders.size(), preFilters);
             portfolioLists.addAll(similar);
         } catch(Exception e) {
             e.printStackTrace();
@@ -685,28 +697,32 @@ public class SimilarPatentServer {
             throw new RuntimeException(e.getMessage());
         }
         System.out.println("SIMILAR PATENTS FOUND!!!");
-        return mergePatentLists(portfolioLists,badAssignees, portfolioType,totalLimit);
+        return mergePatentLists(portfolioLists, portfolioType, resultLimit);
     }
 
-    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, Collection<String> assigneeFilter, PortfolioList.Type portfolioType, int totalLimit) {
+    private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, PortfolioList.Type portfolioType, int totalLimit) {
             Map<String, Item> map = new HashMap<>();
             portfolioLists.forEach(portfolioList -> {
                 portfolioList.getPortfolio().forEach(item -> {
                     if (item.getName() == null || item.getName().length() == 0) return;
-                    if (map.containsKey(item.getName())) {
-                        map.get(item.getName()).appendTags(item.getTags());
-                        map.get(item.getName()).setSimilarity(Math.max(item.getSimilarity(), map.get(item.getName()).getSimilarity()));
+                    Item itemInMap = map.get(item.getName());
+                    if (itemInMap!=null) {
+                        itemInMap.appendTags(item.getTags());
+                        itemInMap.setSimilarity(Math.max(item.getSimilarity(), itemInMap.getSimilarity()));
                     } else {
                         map.put(item.getName(), item);
                     }
                 });
             });
-            List<Item> merged = map.values().stream()
-                    .filter(p -> !(((p instanceof AbstractAssignee) && assigneeFilter.contains(p.getName())) || ((p instanceof AbstractPatent) && assigneeFilter.contains(((AbstractPatent) p).getAssignee()))))
-                    .sorted((o, o2) -> Double.compare(o2.getSimilarity(), o.getSimilarity()))
-                    .limit(totalLimit)
-                    .collect(Collectors.toList());
-            return new PortfolioList(merged,portfolioType);
+            try {
+                List<Item> merged = map.values().stream().sorted(Comparator.reverseOrder()).limit(totalLimit).collect(Collectors.toList());
+                PortfolioList portfolio = new PortfolioList(merged,portfolioType);
+                return portfolio;
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("While merging");
+                throw new RuntimeException("while merging");
+            }
     }
 
     private static List<String> preProcess(String toSplit, String delim, String toReplace) {

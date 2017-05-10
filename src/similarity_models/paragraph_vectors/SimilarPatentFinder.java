@@ -10,6 +10,7 @@ import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Constants;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
+import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.items.Item;
 import tools.*;
 
@@ -93,41 +94,57 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
         return avgVector;
     }
 
-    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
+    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters) {
         List<PortfolioList> list = new ArrayList<>(others.size());
         others.forEach(other->{
-            list.add(similarFromCandidateSet(other, threshold, limit, badAssets, portfolioType));
+            list.add(similarFromCandidateSet(other, portfolioType, limit, filters));
         });
         return list;
     }
 
-    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType)  {
+    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters)  {
         // Find the highest (pairwise) assets
         if(((SimilarPatentFinder)other).getPatentList()==null||((SimilarPatentFinder)other).getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
         INDArray otherAvg = ((SimilarPatentFinder)other).computeAvg();
-        return findSimilarPatentsTo(((SimilarPatentFinder)other).name, otherAvg, badLabels, threshold, limit,portfolioType);
+        return findSimilarPatentsTo(((SimilarPatentFinder)other).name, otherAvg,limit,portfolioType,filters);
     }
 
     // returns null if patentNumber not found
-    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit, PortfolioList.Type portfolioType)  {
+    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
         if(avgVector==null) return new PortfolioList(new ArrayList<>(),portfolioType);
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
-        PortfolioList list = similarPatentsHelper(patentList,avgVector,labelsToExclude, patentNumber,threshold,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType);
+        PortfolioList list = similarPatentsHelper(patentList,avgVector, patentNumber,limit,(v1, v2)->Transforms.cosineSim(v1,v2),portfolioType, filters);
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find "+list.getPortfolio().size()+" similar patents: "+time+" seconds");
         return list;
     }
 
-    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, Collection<String> labelsToExclude, String referringName, double threshold, int limit, DistanceFunction dist, PortfolioList.Type portfolioType) {
+    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, String referringName, int limit, DistanceFunction dist, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters) {
         Patent.setBaseVector(baseVector);
         patentList.forEach(patent -> {
-            if(patent!=null&&!labelsToExclude.contains(patent.getName())) {
+            if(patent!=null) {
                 patent.calculateSimilarityToTarget(dist);
-                if(patent.getSimilarityToTarget() >= threshold)heap.add(patent);
+                // apply item filters
+                Item clone;
+                switch(portfolioType) {
+                    case assignees: {
+                        clone=Patent.abstractAssignee(patent,referringName);
+                        break;
+                    }case patents: {
+                        clone=Patent.abstractPatent(patent,referringName);
+                        break;
+                    }default: {
+                        clone=null;
+                        break;
+                    }
+                }
+                if(clone!=null) {
+                    if (filters.stream().allMatch(filter -> filter.shouldKeepItem(clone))) heap.add(patent);
+                }
             }
         });
         List<Item> resultList = new ArrayList<>(limit);

@@ -1,6 +1,7 @@
 package ui_models.portfolios;
 
 import seeding.Database;
+import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.items.AbstractAssignee;
 import ui_models.portfolios.items.AbstractPatent;
 import excel.ExcelHandler;
@@ -101,17 +102,8 @@ public class PortfolioList implements AbstractPortfolio, Comparable<PortfolioLis
         return portfolio.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
-    public void filterPortfolioSize(int limit) {
-        portfolio=portfolio.stream()
-                .filter(obj->{
-                    if(obj instanceof AbstractPatent) {
-                        return Database.getAssetCountFor(((AbstractPatent)obj).getAssignee()) <= limit;
-                    } else if (obj instanceof AbstractAssignee) {
-                        return Database.getAssetCountFor(obj.getName()) <= limit;
-                    } else {
-                        return Database.selectPatentNumbersFromClassAndSubclassCodes(obj.getName()).size() <= limit;
-                    }
-                }).collect(Collectors.toList());
+    public void applyFilter(AbstractFilter filter) {
+        portfolio=portfolio.stream().filter(obj->filter.shouldKeepItem(obj)).collect(Collectors.toList());
     }
 
     public void init(Comparator<Item> comparator, int limit) {

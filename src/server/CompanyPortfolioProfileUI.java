@@ -12,6 +12,9 @@ import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import ui_models.attributes.value.ValueAttr;
+import ui_models.filters.AbstractFilter;
+import ui_models.filters.LabelFilter;
+import ui_models.filters.ThresholdFilter;
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
@@ -441,8 +444,12 @@ public class CompanyPortfolioProfileUI {
 
                     System.out.println("Starting to run similar patent model...");
                     double threshold = 0.5;
+                    Collection<AbstractFilter> filters = Arrays.asList(
+                            new LabelFilter(labelsToExclude),
+                            new ThresholdFilter(threshold)
+                    );
                     while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
-                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, limit, limit, threshold, labelsToExclude, new HashSet<>(), portfolioType);
+                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, portfolioType, limit, filters);
                         threshold-=0.2;
                     }
                     System.out.println("Finished similar patent model.");

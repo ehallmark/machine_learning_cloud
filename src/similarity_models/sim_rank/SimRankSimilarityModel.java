@@ -9,13 +9,16 @@ import seeding.Constants;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
+import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.AbstractPatent;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 4/20/17.
@@ -34,25 +37,21 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
 
-    private List<Pair<String, Double>> similarHelper(Collection<String> items, PortfolioList.Type type, int n) {
-        List<util.Pair<String,Float>> data = SimRank.findSimilarDocumentsFromRankTable(rankTable,items,n);
+    private List<Pair<String, Double>> similarHelper(String patent, int n) {
+        List<util.Pair<String,Float>> data = SimRank.findSimilarDocumentsFromRankTable(rankTable,Arrays.asList(patent),n);
         List<Pair<String,Double>> toReturn = new ArrayList<>(n);
         data.forEach(p->toReturn.add(new Pair<>(p._1,p._2.doubleValue())));
         return toReturn;
     }
 
     @Override
-    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, double threshold, int limit, Collection<String> badAssets, PortfolioList.Type portfolioType) {
-        return null;
+    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters) {
+        if(portfolioType.equals(PortfolioList.Type.patents)) {
+            return new PortfolioList(similarHelper(patentNumber,limit).stream().map(pair->new AbstractPatent(pair.getFirst(),pair.getSecond(),patentNumber)).collect(Collectors.toList()), portfolioType);
+        } else {
+            throw new UnsupportedOperationException("SimRank only works on patents.");
+        }
     }
 
-    @Override
-    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, double threshold, int limit, Collection<String> badLabels, PortfolioList.Type portfolioType) {
-        return null;
-    }
 
-    @Override
-    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, Collection<String> labelsToExclude, double threshold, int limit, PortfolioList.Type portfolioType) {
-        return null;
-    }
 }
