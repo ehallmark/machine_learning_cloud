@@ -1,10 +1,12 @@
 package graphical_models.classification;
 
 import com.google.common.collect.Maps;
+import model.functions.inference_methods.BeliefPropagation;
 import model.graphs.BayesianNet;
 import model.graphs.CliqueTree;
 import model.graphs.Graph;
 import model.learning.algorithms.BayesianLearningAlgorithm;
+import model.learning.algorithms.ExpectationMaximizationAlgorithm;
 import model.nodes.FactorNode;
 import model.nodes.Node;
 import model_testing.SplitModelData;
@@ -70,12 +72,16 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
 
             technologies.forEach(tech->{
-                classes.forEach(clazz->{
-                    Map<String,Integer> assignment = new HashMap<>();
-                    assignment.put("Technology",orderedTechnologies.indexOf(tech));
-                    assignment.put("CPC",orderedClassifications.indexOf(clazz));
-                    assignments.add(assignment);
-                });
+                Map<String, Integer> assignment = new HashMap<>();
+                if(classes.isEmpty()) {
+                    assignment.put("Technology", orderedTechnologies.indexOf(tech));
+                } else {
+                    classes.forEach(clazz -> {
+                        assignment.put("Technology", orderedTechnologies.indexOf(tech));
+                        assignment.put("CPC", orderedClassifications.indexOf(clazz));
+                    });
+                }
+                assignments.add(assignment);
             });
         });
         return assignments;
@@ -114,12 +120,12 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add nodes
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
-        graph.addFactorNode(null,techNode);
-        graph.connectNodes(techNode,cpcNode);
-        graph.addFactorNode(null,techNode,cpcNode);
+        graph.addFactorNode(null,cpcNode);
+        graph.connectNodes(cpcNode,techNode);
+        graph.addFactorNode(null,cpcNode,techNode);
 
         // learn
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,1d),1);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,5d, new BeliefPropagation()),10);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
