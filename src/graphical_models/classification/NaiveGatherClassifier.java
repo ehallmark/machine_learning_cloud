@@ -122,9 +122,9 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
 
         // peek
-        graph.getFactorNodes().forEach(factor->{
-            System.out.println(factor.toString());
-        });
+        //graph.getFactorNodes().forEach(factor->{
+        //    System.out.println(factor.toString());
+        //});
 
         CliqueTree cliqueTree = graph.createCliqueTree();
         Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
