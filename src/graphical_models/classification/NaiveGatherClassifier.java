@@ -131,7 +131,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //graph.addFactorNode(null,cpcNode);
 
         // learn
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,0d, new BeliefPropagation()),5000);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()),5000);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
