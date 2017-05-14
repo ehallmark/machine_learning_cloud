@@ -124,8 +124,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
         graph.addFactorNode(null,cpcNode);
-        graph.connectNodes(cpcNode,techNode);
-        graph.addFactorNode(null,cpcNode,techNode);
+        graph.connectNodes(techNode,cpcNode);
+        graph.addFactorNode(null,techNode,cpcNode);
 
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,5d),10);
