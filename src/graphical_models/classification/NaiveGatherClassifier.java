@@ -135,19 +135,19 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //});
 
         Map<String,Integer> example = new HashMap<>();
-        CliqueTree cliqueTree = graph.createCliqueTree();
-       // example.put("Technology",5);
+        example.put("CPC", cpcIdx);
+        // example.put("Technology",5);
 
-        int cpcIdx = 5;
-        example.put("CPC",cpcIdx);
-        cliqueTree.setCurrentAssignment(example);
-        graph.setCurrentAssignment(example);
-        FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
-        int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
-        String tech = orderedTechnologies.get(techIdx);
-        System.out.println("CPC: "+cpcTitle.get(orderedClassifications.get(cpcIdx)));
-        System.out.println("Tech: "+tech);
-
-        System.out.println("Results: "+results.toString());
+        for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
+            CliqueTree cliqueTree = graph.createCliqueTree();
+            cliqueTree.setCurrentAssignment(example);
+            graph.setCurrentAssignment(example);
+            FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
+            int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
+            String tech = orderedTechnologies.get(techIdx);
+            System.out.println("CPC: " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
+            System.out.println("Tech: " + tech);
+        }
+        //System.out.println("Results: "+results.toString());
     }
 }
