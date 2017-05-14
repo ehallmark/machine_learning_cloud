@@ -75,16 +75,14 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
 
             technologies.forEach(tech->{
-                Map<String, Integer> assignment = new HashMap<>();
-                if(classes.isEmpty()) {
-                    assignment.put("Technology", orderedTechnologies.indexOf(tech));
-                } else {
+                if(!classes.isEmpty()) {
                     classes.forEach(clazz -> {
+                        Map<String, Integer> assignment = new HashMap<>();
                         assignment.put("Technology", orderedTechnologies.indexOf(tech));
                         assignment.put("CPC", orderedClassifications.indexOf(clazz));
+                        assignments.add(assignment);
                     });
                 }
-                assignments.add(assignment);
             });
         });
         return assignments;
