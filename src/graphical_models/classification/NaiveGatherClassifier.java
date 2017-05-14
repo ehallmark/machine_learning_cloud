@@ -122,8 +122,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add nodes
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
-        graph.addFactorNode(null,techNode);
-        graph.connectNodes(techNode,cpcNode);
+        graph.addFactorNode(null,cpcNode);
+        graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,techNode,cpcNode);
 
         // learn
@@ -145,7 +145,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
             int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
             String tech = orderedTechnologies.get(techIdx);
-            System.out.println("CPC: " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
+            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + tech);
         }
         //System.out.println("Results: "+results.toString());
