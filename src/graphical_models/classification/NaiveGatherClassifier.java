@@ -15,6 +15,7 @@ import model.nodes.Node;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
+import tools.ClassCodeHandler;
 import ui_models.attributes.classification.CPCGatherTechTagger;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.classification.helper.BuildCPCToGatherStatistics;
@@ -129,6 +130,9 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // learn
         graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,5d, new BeliefPropagation()),10);
 
+        graph.getDistributions().forEach(distribution -> {
+            distribution.updateFactorWeights();
+        });
         // peek
         //graph.getFactorNodes().forEach(factor->{
         //    System.out.println(factor.toString());
@@ -145,7 +149,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
             int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
             String tech = orderedTechnologies.get(techIdx);
-            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
+            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(ClassCodeHandler.convertToHumanFormat(orderedClassifications.get(cpcIdx))));
             System.out.println("Tech: " + tech);
         }
         //System.out.println("Results: "+results.toString());
