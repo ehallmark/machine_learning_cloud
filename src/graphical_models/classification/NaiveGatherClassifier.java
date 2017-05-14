@@ -134,12 +134,12 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //    System.out.println(factor.toString());
         //});
 
-        Map<String,Integer> example = new HashMap<>();
-        example.put("CPC", cpcIdx);
         // example.put("Technology",5);
 
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
             CliqueTree cliqueTree = graph.createCliqueTree();
+            Map<String,Integer> example = new HashMap<>();
+            example.put("CPC", cpcIdx);
             cliqueTree.setCurrentAssignment(example);
             graph.setCurrentAssignment(example);
             FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
