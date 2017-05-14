@@ -115,7 +115,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
-        Graph graph = new MarkovNet();
+        Graph graph = new BayesianNet();
 
         // set data
         graph.setTrainingData(assignments);
@@ -123,6 +123,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add nodes
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
+        graph.addFactorNode(null,cpcNode);
         graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,cpcNode,techNode);
 
