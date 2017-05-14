@@ -124,18 +124,13 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add nodes
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
-        //graph.addFactorNode(null,cpcNode);
+        graph.addFactorNode(null,cpcNode);
         graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,techNode,cpcNode);
         //graph.addFactorNode(null,cpcNode);
 
         // learn
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()) {
-            protected Map<String, Integer> handleAssignment(Map<String, Integer> assignment, Graph graph) {
-
-                return super.handleAssignment(assignment,graph);
-            }
-        },5000);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()),1);
 
         graph.getDistributions().forEach(distribution -> distribution.updateFactorWeights());
         System.out.println("HANDLE ASSIGNMENT: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
