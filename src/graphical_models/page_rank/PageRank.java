@@ -55,23 +55,21 @@ public class PageRank extends RankGraph<String> {
 
     public class Algorithm implements LearningAlgorithm {
         @Override
-        public Function<Graph, Void> runAlgorithm() {
-            return (graph) -> {
-                AtomicInteger cnt = new AtomicInteger(0);
-                nodes.stream().forEach(node -> {
-                    double rank = rankValue(node);
-                    if (rank > 0) {
-                        rankTable.put(node.getLabel(), (float) rank);
-                    }
-                    if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
-                });
-                return null;
-            };
+        public boolean runAlgorithm() {
+            AtomicInteger cnt = new AtomicInteger(0);
+            nodes.stream().forEach(node -> {
+                double rank = rankValue(node);
+                if (rank > 0) {
+                    rankTable.put(node.getLabel(), (float) rank);
+                }
+                if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
+            });
+             return false;
         }
 
         @Override
-        public Function<Graph, Double> computeCurrentScore() {
-            return (graph)->0d;
+        public double computeCurrentScore() {
+            return 0d;
         }
     }
 

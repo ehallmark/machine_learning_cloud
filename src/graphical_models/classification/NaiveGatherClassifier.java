@@ -1,6 +1,8 @@
 package graphical_models.classification;
 
+import com.google.common.collect.Maps;
 import model.graphs.BayesianNet;
+import model.graphs.CliqueTree;
 import model.graphs.Graph;
 import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.nodes.FactorNode;
@@ -121,7 +123,12 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
 
-        
+        CliqueTree cliqueTree = graph.createCliqueTree();
+        Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
 
+        System.out.println("Results: ");
+        results.forEach((k,v)->{
+            System.out.println("  "+k+": "+v.toString());
+        });
     }
 }
