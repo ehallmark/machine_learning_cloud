@@ -115,6 +115,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
+        System.out.println("Num assignments: "+assignments.size());
         Graph graph = new BayesianNet();
 
         // set data
@@ -150,6 +151,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             String tech = orderedTechnologies.get(techIdx);
             System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + tech);
+            System.out.println("Num assignments: "+assignments.size());
+
         }
         //System.out.println("Results: "+results.toString());
     }
