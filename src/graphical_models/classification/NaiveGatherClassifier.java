@@ -135,6 +135,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         Map<String,Integer> example = new HashMap<>();
         CliqueTree cliqueTree = graph.createCliqueTree();
+        example.put("Technology",5);
         example.put("CPC",5);
         cliqueTree.setCurrentAssignment(example);
         graph.setCurrentAssignment(example);
