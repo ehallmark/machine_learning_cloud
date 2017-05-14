@@ -5,8 +5,10 @@ import model.functions.inference_methods.BeliefPropagation;
 import model.graphs.BayesianNet;
 import model.graphs.CliqueTree;
 import model.graphs.Graph;
+import model.graphs.MarkovNet;
 import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.learning.algorithms.ExpectationMaximizationAlgorithm;
+import model.learning.algorithms.MarkovLearningAlgorithm;
 import model.nodes.FactorNode;
 import model.nodes.Node;
 import model_testing.SplitModelData;
@@ -112,7 +114,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
-        Graph graph = new BayesianNet();
+        Graph graph = new MarkovNet();
 
         // set data
         graph.setTrainingData(assignments);
@@ -120,12 +122,11 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add nodes
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(), MathHelper.defaultValues(orderedTechnologies.size()));
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
-        graph.addFactorNode(null,cpcNode);
         graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,cpcNode,techNode);
 
         // learn
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,5d, new BeliefPropagation()),10);
+        graph.applyLearningAlgorithm(new MarkovLearningAlgorithm(graph,5d, new BeliefPropagation()),10);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
