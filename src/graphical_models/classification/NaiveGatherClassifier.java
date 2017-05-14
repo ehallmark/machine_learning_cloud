@@ -73,7 +73,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
                 classes.forEach(clazz->{
                     Map<String,Integer> assignment = new HashMap<>();
                     assignment.put("Technology",orderedTechnologies.indexOf(tech));
-                    assignment.put("CPC",orderedClassifications.indexOf(tech));
+                    assignment.put("CPC",orderedClassifications.indexOf(clazz));
                     assignments.add(assignment);
                 });
             });
@@ -120,6 +120,11 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
+
+        // peek
+        graph.getFactorNodes().forEach(factor->{
+            System.out.println(factor.toString());
+        });
 
         CliqueTree cliqueTree = graph.createCliqueTree();
         Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
