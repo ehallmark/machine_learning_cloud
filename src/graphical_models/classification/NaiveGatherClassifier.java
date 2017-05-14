@@ -14,6 +14,7 @@ import model.nodes.FactorNode;
 import model.nodes.Node;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import tools.ClassCodeHandler;
 import ui_models.attributes.classification.CPCGatherTechTagger;
@@ -133,7 +134,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()),1);
 
         graph.getDistributions().forEach(distribution -> distribution.updateFactorWeights());
-        System.out.println("HANDLE ASSIGNMENT: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
+        System.out.println("SUM: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
+        System.out.println("SUM STD: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d-> Nd4j.create(d.getWeights()).stdNumber().doubleValue())));
 
         if(true) return;
         // peek
