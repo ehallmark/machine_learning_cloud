@@ -130,8 +130,6 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,5d),10);
 
-        System.out.println(techNode.getFactors().get(0).sumOut(new String[]{"CPC"}));
-
         // peek
         //graph.getFactorNodes().forEach(factor->{
         //    System.out.println(factor.toString());
@@ -143,8 +141,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         example.put("Technology",4);
         cliqueTree.setCurrentAssignment(example);
 
-        //FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
+        FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
 
-        //System.out.println("Results: "+results.toString());
+        System.out.println("Results: "+results.toString());
     }
 }
