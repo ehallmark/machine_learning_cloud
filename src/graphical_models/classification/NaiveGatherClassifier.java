@@ -132,6 +132,9 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //    System.out.println(factor.toString());
         //});
 
+        Map<String,Integer> example = new HashMap<>();
+        example.put("CPC",5);
+        graph.setCurrentAssignment(example);
         FactorNode results = graph.variableElimination(new String[]{"Technology"});
 
         System.out.println("Results: "+results.toString());
