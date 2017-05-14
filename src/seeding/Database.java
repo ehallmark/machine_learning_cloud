@@ -287,9 +287,6 @@ public class Database {
 	public static Map<String,String> getClassCodeToClassTitleMap() {
 		if(classCodeToClassTitleMap==null) {
 			classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
-			classCodeToClassTitleMap.forEach((k,v)->{
-				System.out.println(k+": "+v);
-			});
 		}
 		return classCodeToClassTitleMap;
 	}

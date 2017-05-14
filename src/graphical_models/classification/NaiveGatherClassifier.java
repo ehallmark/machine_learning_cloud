@@ -111,7 +111,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
         List<String> orderedTechnologies = new ArrayList<>(gatherTraining.keySet());
         List<String> orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
-        Map<String,String> cpcTitle = Database.getClassCodeToClassTitleMap();
+        Map<String,String> cpcTitle = Database.getClassCodeToClassTitleMap().entrySet().stream().collect(Collectors.toMap(e->ClassCodeHandler.convertToLabelFormat(e.getKey()),e->e.getValue()));
 
         List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
