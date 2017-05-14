@@ -126,6 +126,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //graph.addFactorNode(null,cpcNode);
         graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,techNode,cpcNode);
+        graph.addFactorNode(null,techNode);
+        graph.addFactorNode(null,cpcNode);
 
         // learn
         graph.applyLearningAlgorithm(new MarkovLearningAlgorithm(graph,5d, new BeliefPropagation()),5000);
