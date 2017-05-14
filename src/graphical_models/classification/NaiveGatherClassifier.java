@@ -139,7 +139,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         example.put("CPC",5);
         cliqueTree.setCurrentAssignment(example);
         graph.setCurrentAssignment(example);
-        FactorNode results = graph.variableElimination(new String[]{"Technology"});//Arrays.asList("Technology")).get("Technology");
+        FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
 
         System.out.println("Results: "+results.toString());
     }
