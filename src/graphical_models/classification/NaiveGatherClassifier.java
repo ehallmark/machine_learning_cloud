@@ -119,7 +119,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         graph.addFactorNode(null,cpcNode,techNode);
 
         // learn
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,1d),1);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
