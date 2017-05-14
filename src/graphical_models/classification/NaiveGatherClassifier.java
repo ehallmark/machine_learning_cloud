@@ -136,6 +136,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         graph.getDistributions().forEach(distribution -> distribution.updateFactorWeights());
         System.out.println("SUM: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
         System.out.println("SUM STD: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d-> Nd4j.create(d.getWeights()).stdNumber().doubleValue())));
+        System.out.println("MIN: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d-> Nd4j.create(d.getWeights()).minNumber().doubleValue())));
+        System.out.println("MAX: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d-> Nd4j.create(d.getWeights()).maxNumber().doubleValue())));
 
         if(true) return;
         // peek
