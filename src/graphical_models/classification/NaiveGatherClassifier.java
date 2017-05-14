@@ -146,7 +146,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
             int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
             String tech = orderedTechnologies.get(techIdx);
-            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(ClassCodeHandler.convertToHumanFormat(orderedClassifications.get(cpcIdx))));
+            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + tech);
         }
         //System.out.println("Results: "+results.toString());
