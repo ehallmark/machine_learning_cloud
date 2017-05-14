@@ -132,10 +132,12 @@ public class SimilarPatentServer {
     }
 
     static void evaluateModel(ValueAttr model, Collection<Item> portfolio, String valueParamType, PortfolioList.Type type) {
+        System.out.println("Starting to evaluate model: "+valueParamType);
         for (Item item : portfolio) {
             double score = model.attributesFor(PortfolioList.asList(item.getName(),type),1);
             item.setValue(valueParamType,score);
         }
+        System.out.println("Finished "+valueParamType);
     }
 
     static String getAndRemoveMessage(Session session) {
@@ -559,8 +561,13 @@ public class SimilarPatentServer {
                 System.out.println("Starting model map");
 
                 modelMap.forEach((key,model)->{
-                    if (attributes.contains(key) && model != null) {
-                        evaluateModel(model,portfolioList.getPortfolio(),key,portfolioType);
+                    try {
+                        if (attributes.contains(key) && model != null) {
+                            evaluateModel(model, portfolioList.getPortfolio(), key, portfolioType);
+                        }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Exception with: "+key);
                     }
                 });
 
