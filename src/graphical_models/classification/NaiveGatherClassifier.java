@@ -2,6 +2,7 @@ package graphical_models.classification;
 
 import com.google.common.collect.Maps;
 import model.functions.inference_methods.BeliefPropagation;
+import model.functions.inference_methods.SamplingMethod;
 import model.graphs.BayesianNet;
 import model.graphs.CliqueTree;
 import model.graphs.Graph;
@@ -126,7 +127,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         graph.addFactorNode(null,cpcNode,techNode);
 
         // learn
-        graph.applyLearningAlgorithm(new MarkovLearningAlgorithm(graph,5d, new BeliefPropagation()),10);
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,5d),10);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
