@@ -127,11 +127,16 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //graph.addFactorNode(null,cpcNode);
         graph.connectNodes(cpcNode,techNode);
         graph.addFactorNode(null,techNode,cpcNode);
-        graph.addFactorNode(null,cpcNode);
+        FactorNode factor= graph.addFactorNode(null,cpcNode);
         //graph.addFactorNode(null,cpcNode);
 
         // learn
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()),5000);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()) {
+            protected Map<String, Integer> handleAssignment(Map<String, Integer> assignment, Graph graph) {
+                System.out.println("HANDLE ASSIGNMENT: "+factor.sumOut(new String[]{"CPC"}));
+                return super.handleAssignment(assignment,graph);
+            }
+        },5000);
 
         // peek
         //graph.getFactorNodes().forEach(factor->{
