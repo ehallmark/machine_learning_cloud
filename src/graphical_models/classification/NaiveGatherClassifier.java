@@ -126,12 +126,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         //    System.out.println(factor.toString());
         //});
 
-        CliqueTree cliqueTree = graph.createCliqueTree();
-        Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
+        FactorNode results = graph.variableElimination(new String[]{"Technology"});
 
-        System.out.println("Results: ");
-        results.forEach((k,v)->{
-            System.out.println("  "+k+": "+v.toString());
-        });
+        System.out.println("Results: "+results.toString());
     }
 }
