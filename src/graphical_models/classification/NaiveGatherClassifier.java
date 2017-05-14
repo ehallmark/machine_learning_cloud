@@ -132,11 +132,15 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // learn
         graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,1d, new BeliefPropagation()) {
             protected Map<String, Integer> handleAssignment(Map<String, Integer> assignment, Graph graph) {
-                System.out.println("HANDLE ASSIGNMENT: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
+
                 return super.handleAssignment(assignment,graph);
             }
         },5000);
 
+        graph.getDistributions().forEach(distribution -> distribution.updateFactorWeights());
+        System.out.println("HANDLE ASSIGNMENT: "+graph.getFactorNodes().stream().filter(d->d.getWeights()!=null).collect(Collectors.summingDouble(d->MathHelper.sum(d.getWeights()))));
+
+        if(true) return;
         // peek
         //graph.getFactorNodes().forEach(factor->{
         //    System.out.println(factor.toString());
