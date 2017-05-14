@@ -67,7 +67,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Map<String,Collection<String>> patentsToTech = invert(gatherTraining);
         patentsToTech.forEach((patent,technologies)->{
             // classes
-            Collection<String> classes = patentToClassificationMap.get(patent);
+            Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
 
             technologies.forEach(tech->{
                 Map<String,Integer> assignment = new HashMap<>();
