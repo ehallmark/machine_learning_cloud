@@ -110,6 +110,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
         List<String> orderedTechnologies = new ArrayList<>(gatherTraining.keySet());
         List<String> orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
+        Map<String,String> cpcTitle = Database.getClassCodeToClassTitleMap();
 
         List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
@@ -136,10 +137,16 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Map<String,Integer> example = new HashMap<>();
         CliqueTree cliqueTree = graph.createCliqueTree();
        // example.put("Technology",5);
-        example.put("CPC",5);
+
+        int cpcIdx = 5;
+        example.put("CPC",cpcIdx);
         cliqueTree.setCurrentAssignment(example);
         graph.setCurrentAssignment(example);
         FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
+        int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
+        String tech = orderedTechnologies.get(techIdx);
+        System.out.println("CPC: "+cpcTitle.get(orderedClassifications.get(cpcIdx)));
+        System.out.println("Tech: "+tech);
 
         System.out.println("Results: "+results.toString());
     }
