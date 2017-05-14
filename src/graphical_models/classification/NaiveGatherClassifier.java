@@ -137,7 +137,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Map<String,Integer> example = new HashMap<>();
         example.put("CPC",5);
         graph.setCurrentAssignment(example);
-        FactorNode results = graph.variableElimination(new String[]{"Technology"});
+
+        FactorNode results = graph.createCliqueTree().runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
 
         System.out.println("Results: "+results.toString());
     }
