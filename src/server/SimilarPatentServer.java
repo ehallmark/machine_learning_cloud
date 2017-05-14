@@ -547,17 +547,24 @@ public class SimilarPatentServer {
 
                 PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, portfolioType, limit, preFilters);
 
+
+                System.out.println("Finished portoflio list");
+
                 // Post filters
                 if (assigneePortfolioLimit > 0) {
                     PortfolioSizeFilter filter = new PortfolioSizeFilter(assigneePortfolioLimit);
                     portfolioList.applyFilter(filter);
                 }
 
+                System.out.println("Starting model map");
+
                 modelMap.forEach((key,model)->{
                     if (attributes.contains(key) && model != null) {
                         evaluateModel(model,portfolioList.getPortfolio(),key,portfolioType);
                     }
                 });
+
+                System.out.println("Finished model map");
 
                 Comparator<Item> comparator = Item.similarityComparator();
 
@@ -592,7 +599,9 @@ public class SimilarPatentServer {
                         }
                     }
                 }
+                System.out.println("Init portfolio");
                 portfolioList.init(comparator,limit);
+                System.out.println("Finished init portfolio");
 
                 boolean includeCoverPage = extractBool(req,"include_cover_page");
 
@@ -609,6 +618,7 @@ public class SimilarPatentServer {
                 String SAMEmail = extractContactInformation(req, "email2", Constants.DEFAULT_SAM_EMAIL);
                 String[] EMData = new String[]{EMLabel, EMName, EMTitle, EMPhone, EMEmail};
                 String[] SAMData = new String[]{SAMLabel, SAMName, SAMTitle, SAMPhone, SAMEmail};
+                System.out.println("Writing spreadsheet");
                 try {
                     ExcelHandler.writeDefaultSpreadSheetToRaw(raw, highlightAssignees, title, clientName, EMData, SAMData, attributes, includeCoverPage, portfolioList);
                 } catch (Exception e) {
