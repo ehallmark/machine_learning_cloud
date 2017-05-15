@@ -13,7 +13,6 @@ import java.util.Map;
 public class CompDBAssetsPurchasedEvaluator extends ValueAttr {
     public CompDBAssetsPurchasedEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"CompDB Assets Purchased Value");
-        setModel();
     }
 
     @Override

@@ -27,8 +27,6 @@ public class AssigneeEvaluator extends ValueAttr {
 
     public AssigneeEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Assignee Value");
-        setModel();
-
     }
 
     @Override

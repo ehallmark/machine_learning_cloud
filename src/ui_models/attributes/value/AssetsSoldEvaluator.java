@@ -10,7 +10,6 @@ import java.util.*;
 public class AssetsSoldEvaluator extends ValueAttr {
     public AssetsSoldEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Assets Sold Value");
-        setModel();
     }
 
     @Override

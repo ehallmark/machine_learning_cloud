@@ -25,7 +25,6 @@ public class TechnologyEvaluator extends ValueAttr {
     static final File file = new File("classification_value_model.jobj");
     public TechnologyEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Technology Value");
-        setModel();
     }
 
     @Override

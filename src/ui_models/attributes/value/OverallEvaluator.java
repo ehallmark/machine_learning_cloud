@@ -16,6 +16,11 @@ public class OverallEvaluator extends ValueAttr {
         model=(Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
     }
 
+    @Override
+    public void setModel() {
+        // do nothing
+    }
+
     private static void runAndSaveOverallModel() {
         List<ValueAttr> evaluators = Arrays.asList(
                 new CitationEvaluator(),

@@ -32,7 +32,6 @@ public class ClaimEvaluator extends ValueAttr {
 
     public ClaimEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Claim Value");
-        setModel();
 
     }
 
