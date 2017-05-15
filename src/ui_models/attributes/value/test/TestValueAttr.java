@@ -14,7 +14,8 @@ public class TestValueAttr {
         ValueAttr attr = new PageRankEvaluator();
         Collection<String> patents = Database.getValuablePatents();
         patents.forEach(patent->{
-            System.out.println("Patent "+patent+": "+attr.evaluate(patent));
+            System.out.print("Patent "+patent+": ");
+            System.out.println(attr.evaluate(patent));
         });
     }
 }
