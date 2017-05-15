@@ -32,7 +32,7 @@ public class SplitModelData {
         Map<String,Collection<String>> val = new HashMap<>();
         data.forEach((tech,assets)->{
             assets = assets.stream().filter(p->(p.length()==7||p.length()==8)&&isNumber(p.substring(2))).collect(Collectors.toList());
-            if(assets.size()<20) return;
+            if(assets.size()<5) return;
             Set<String> trainSet = new HashSet<>();
             Set<String> testSet = new HashSet<>();
             Set<String> valSet = new HashSet<>();
