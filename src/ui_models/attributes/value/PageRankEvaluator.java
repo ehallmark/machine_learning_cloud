@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
+        setModel();
     }
 
     @Override
@@ -25,8 +26,7 @@ public class PageRankEvaluator extends ValueAttr {
         Map<String,Double> doubleMap = new HashMap<>(map.size());
         map.forEach((k,v)->{
             if(Database.isPatent(k)) {
-                throw new RuntimeException("HAHAHAHAHA");
-                //doubleMap.put(k, v.doubleValue());
+                doubleMap.put(k, v.doubleValue());
             }
         });
         doubleMap.forEach((k,v)->{
