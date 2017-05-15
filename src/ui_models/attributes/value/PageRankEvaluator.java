@@ -25,7 +25,8 @@ public class PageRankEvaluator extends ValueAttr {
         Map<String,Double> doubleMap = new HashMap<>(map.size());
         map.forEach((k,v)->{
             if(Database.isPatent(k)) {
-                doubleMap.put(k, v.doubleValue());
+                throw new RuntimeException("HAHAHAHAHA");
+                //doubleMap.put(k, v.doubleValue());
             }
         });
         doubleMap.forEach((k,v)->{
