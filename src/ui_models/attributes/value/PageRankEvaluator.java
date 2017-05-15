@@ -2,8 +2,10 @@ package ui_models.attributes.value;
 
 import graphical_models.page_rank.PageRank;
 import graphical_models.page_rank.PageRankHelper;
+import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +20,18 @@ public class PageRankEvaluator extends ValueAttr {
 
     @Override
     protected List<Map<String, Double>> loadModels() {
-        return Arrays.asList(new PageRank.Loader().loadRankTable(PageRankHelper.file).entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().doubleValue())));
+        return Arrays.asList(new HashMap<>(new PageRank.Loader().loadRankTable(PageRankHelper.file).entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e->e.getValue().doubleValue()))));
+    }
+
+    // Returns value between 0 and 1
+    @Override
+    public Double attributesFor(AbstractPortfolio portfolio, int n) {
+        return portfolio.getTokens().stream().collect(Collectors.averagingDouble(token->{
+            if(model.containsKey(token)) {
+                return model.get(token);
+            } else {
+                return 0d;
+            }
+        }));
     }
 }
