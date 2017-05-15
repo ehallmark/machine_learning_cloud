@@ -11,6 +11,7 @@ import java.util.Collection;
  */
 public class TestValueAttr {
     public static void main(String[] args) {
+        Database.initializeDatabase();
         ValueAttr attr = new PageRankEvaluator();
         Collection<String> patents = Database.getValuablePatents();
         patents.forEach(patent->{
