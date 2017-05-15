@@ -13,6 +13,6 @@ import java.util.stream.Collectors;
 public class PrintGatherTechnologiesWithAssets {
     public static void main(String[] args) {
         Map<String,Collection<String>> gatherTechnologies = SplitModelData.getGatherTechnologyTrainingDataMap();
-        System.out.println(String.join("\n",gatherTechnologies.entrySet().stream().map(e->"\""+e.getKey()+"\","+e.getValue()).collect(Collectors.toList())));
+        System.out.println(String.join("\n",gatherTechnologies.entrySet().stream().flatMap(e->e.getValue().stream().map(val->"\""+e.getKey()+"\","+val)).collect(Collectors.toList())));
     }
 }
