@@ -1,5 +1,6 @@
-package seeding.patent_view_api;
+package seeding;
 
+import model_testing.SplitModelData;
 import seeding.Constants;
 import seeding.Database;
 
@@ -12,7 +13,7 @@ import java.util.*;
  */
 public class PrintGatherTechnologies {
     public static void main(String[] args) {
-        Set<String> gatherTechnologies = ((Map<String, Collection<String>>)Database.getGatherTechMap()).keySet();
+        Set<String> gatherTechnologies = ((Map<String, Collection<String>>) SplitModelData.getGatherTechnologyTrainingDataMap()).keySet();
         System.out.println(String.join("\n",gatherTechnologies));
     }
 }
