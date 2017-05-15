@@ -2,6 +2,7 @@ package ui_models.attributes.value;
 
 import graphical_models.page_rank.PageRank;
 import graphical_models.page_rank.PageRankHelper;
+import seeding.Database;
 import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.Arrays;
@@ -20,11 +21,17 @@ public class PageRankEvaluator extends ValueAttr {
 
     @Override
     protected List<Map<String, Double>> loadModels() {
-        Map<String,Float> map = new HashMap<>(new PageRank.Loader().loadRankTable(PageRankHelper.file));
+        Map<String,Float> map = new PageRank.Loader().loadRankTable(PageRankHelper.file);
+        Map<String,Double> doubleMap = new HashMap<>(map.size());
         map.forEach((k,v)->{
+            if(Database.isPatent(k)) {
+                doubleMap.put(k, v.doubleValue());
+            }
+        });
+        doubleMap.forEach((k,v)->{
             System.out.println(k+": "+v);
         });
-        return Arrays.asList(new HashMap<>(map.entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e->e.getValue().doubleValue()))));
+        return Arrays.asList(doubleMap);
     }
 
     // Returns value between 0 and 1
