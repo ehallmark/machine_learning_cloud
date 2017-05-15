@@ -15,12 +15,16 @@ import java.util.stream.Collectors;
  */
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None, "Page Rank");
+        super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
     }
 
     @Override
     protected List<Map<String, Double>> loadModels() {
-        return Arrays.asList(new HashMap<>(new PageRank.Loader().loadRankTable(PageRankHelper.file).entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e->e.getValue().doubleValue()))));
+        Map<String,Float> map = new HashMap<>(new PageRank.Loader().loadRankTable(PageRankHelper.file));
+        map.forEach((k,v)->{
+            System.out.println(k+": "+v);
+        });
+        return Arrays.asList(new HashMap<>(map.entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e->e.getValue().doubleValue()))));
     }
 
     // Returns value between 0 and 1
