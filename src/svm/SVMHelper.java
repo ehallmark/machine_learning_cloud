@@ -1,14 +1,34 @@
 package svm;
 
+import graphical_models.classification.NaiveGatherClassifier;
+import org.deeplearning4j.berkeley.Pair;
+import server.SimilarPatentServer;
 import svm.libsvm.*;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 5/4/17.
  */
 public class SVMHelper {
     public static void main(String [] args) {
+        // svm parameters
+        svm_parameter param = new svm_parameter();
+        param.probability = 1;
+        param.gamma = 0.5;
+        param.nu = 0.5;
+        param.C = 100;
+        param.svm_type = svm_parameter.C_SVC;
+        param.kernel_type = svm_parameter.SIGMOID;
+        param.cache_size = 20000;
+        param.eps = 0.001;
+
+
         final int trainingSize = 1000;
         final int testSize = 10;
 
@@ -37,19 +57,41 @@ public class SVMHelper {
                 ytest[i] = new double[]{0};
             }
         }
-        svm_model m = svmTrain(xtrain,ytrain);
+        svm_model m = svmTrain(xtrain,ytrain,param);
 
         double[] ypred = svmPredict(xtest, m);
 
         for (int i = 0; i < xtest.length; i++){
-            System.out.println("(Actual:" + ytest[i][0] + " Prediction:" + ypred[i] + ")");
+            System.out.println("(Actual:" + Arrays.toString(ytest[i]) + " Prediction:" + ypred[i] + ")");
         }
 
     }
 
 
+    // helper for gather data
+    public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies) {
+        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> SimilarPatentServer.getLookupTable().vector(e.getKey())!=null).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+        int N = invertedGatherMap.size();
+        double[][] x = new double[N][];
+        double[][] y = new double[N][];
 
-    static svm_model svmTrain(double[][] xtrain, double[][] ytrain) {
+        AtomicInteger idx = new AtomicInteger(0);
+        invertedGatherMap.forEach((patent,techs)->{
+            int i = idx.getAndIncrement();
+            x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
+            y[i] = new double[technologies.size()];
+            Arrays.fill(y[i],0d);
+            techs.forEach(tech->{
+                y[i][technologies.indexOf(tech)]=1.0d;
+            });
+        });
+
+        return new Pair<>(x,y);
+    }
+
+
+
+    static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {
         svm_problem prob = new svm_problem();
         int recordCount = xtrain.length;
         int featureCount = xtrain[0].length;
@@ -68,16 +110,6 @@ public class SVMHelper {
             }
             prob.y[i] = ytrain[i][0];
         }
-
-        svm_parameter param = new svm_parameter();
-        param.probability = 1;
-        param.gamma = 0.5;
-        param.nu = 0.5;
-        param.C = 100;
-        param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.SIGMOID;
-        param.cache_size = 20000;
-        param.eps = 0.001;
 
         svm_model model = svm.svm_train(prob, param);
 
