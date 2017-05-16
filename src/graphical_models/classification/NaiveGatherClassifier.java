@@ -143,7 +143,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         System.out.println("Finished adding nodes.");
 
         // learn
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),10);
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
 
 
         // peek
