@@ -76,18 +76,15 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             // classes
             Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
 
-            technologies.forEach(tech->{
-                if(!classes.isEmpty()) {
-                    classes.forEach(clazz -> {
-                        Map<String, Integer> assignment = new HashMap<>();
-                        orderedTechnologies.forEach(tech2->{
-                            if(tech.equals(tech2))assignment.put(tech2, 0);
-                            else assignment.put(tech2,1);
-                        });
-                        assignment.put("CPC", orderedClassifications.indexOf(clazz));
-                        assignments.add(assignment);
-                    });
-                }
+
+            Map<String,Integer> assignment = new HashMap<>(orderedClassifications.size()+orderedTechnologies.size());
+            orderedClassifications.forEach(cpc->{
+                if(classes.contains(cpc)) assignment.put(cpc,1);
+                else assignment.put(cpc,0);
+            });
+            orderedTechnologies.forEach(tech->{
+                if(technologies.contains(tech)) assignment.put(tech,1);
+                else assignment.put(tech,0);
             });
         });
         return assignments;
@@ -125,16 +122,23 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // set data
         graph.setTrainingData(assignments);
 
-        // add nodes
-        Node cpcNode = graph.addNode("CPC",orderedClassifications.size(), MathHelper.defaultValues(orderedClassifications.size()));
-        graph.addFactorNode(null,cpcNode);
+        System.out.println("Starting to create nodes.");
+
+        // add node
+        List<Node> cpcNodes = new ArrayList<>(orderedClassifications.size());
+        orderedClassifications.forEach(clazz->{
+            Node cpcNode = graph.addBinaryNode(clazz);
+            cpcNodes.add(cpcNode);
+        });
         orderedTechnologies.forEach(technology->{
             Node techNode = graph.addBinaryNode(technology);
-            graph.connectNodes(cpcNode,techNode);
-            graph.addFactorNode(null,techNode,cpcNode);
+            cpcNodes.forEach(cpcNode->{
+                graph.connectNodes(cpcNode,techNode);
+                graph.addFactorNode(null,techNode,cpcNode);
+            });
         });
 
-        //graph.addFactorNode(null,cpcNode);
+        System.out.println("Finished adding nodes.");
 
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),10);
@@ -149,15 +153,21 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
             CliqueTree cliqueTree = graph.createCliqueTree();
+            String clazz = orderedClassifications.get(cpcIdx);
             Map<String,Integer> example = new HashMap<>();
-            example.put("CPC", cpcIdx);
+            orderedClassifications.forEach(c->{
+               if(c.equals(clazz)) example.put(clazz,1);
+               else example.put(clazz,0);
+            });
             cliqueTree.setCurrentAssignment(example);
             graph.setCurrentAssignment(example);
-            FactorNode results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology")).get("Technology");
-            int techIdx = MathHelper.indexOfMaxValue(results.getWeights());
-            String tech = orderedTechnologies.get(techIdx);
+            String prediction = cliqueTree.runBeliefPropagation(orderedTechnologies).entrySet().stream()
+                    .map(e->{
+                        double value = MathHelper.expectedValue(e.getValue().getWeights(),new double[]{0d,1d});
+                        return new Pair<>(e.getKey(),value);
+                    }).max((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).get().getFirst();
             System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
-            System.out.println("Tech: " + tech);
+            System.out.println("Tech: " + prediction);
             System.out.println("Num assignments: "+assignments.size());
 
         }
