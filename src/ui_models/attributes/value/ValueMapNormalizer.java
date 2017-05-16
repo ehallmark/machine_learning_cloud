@@ -4,6 +4,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.distribution.UniformRealDistribution;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -18,7 +19,7 @@ public class ValueMapNormalizer {
     private DistributionType type;
 
     public enum DistributionType {
-        Normal, Exponentional, None
+        Normal, Exponentional, None, Uniform
     }
 
     public ValueMapNormalizer(DistributionType type) {
@@ -56,6 +57,8 @@ public class ValueMapNormalizer {
         INDArray array = Nd4j.create(ArrayUtils.toPrimitive(values.toArray(new Double[values.size()])));
         double stdDev = Math.sqrt(array.varNumber().doubleValue());
         double mean = array.meanNumber().doubleValue();
+        double max = array.maxNumber().doubleValue();
+        double min = array.minNumber().doubleValue();
 
         AbstractRealDistribution distribution;
         switch(type) {
@@ -64,6 +67,10 @@ public class ValueMapNormalizer {
             } break;
             case Exponentional: {
                 distribution=new ExponentialDistribution(mean);
+                break;
+            } case Uniform: {
+                if(min>=max) throw new RuntimeException("Unable to create uniform distribution");
+                distribution= new UniformRealDistribution(min,max);
                 break;
             }
             default: {

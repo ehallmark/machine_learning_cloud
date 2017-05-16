@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None, "Page Rank");
+        super(ValueMapNormalizer.DistributionType.Uniform, "Page Rank");
     }
 
     @Override
@@ -30,16 +30,5 @@ public class PageRankEvaluator extends ValueAttr {
         });
         return Arrays.asList(doubleMap);
     }
-
-    // Returns value between 0 and 1
-    @Override
-    public Double attributesFor(AbstractPortfolio portfolio, int n) {
-        return portfolio.getTokens().stream().collect(Collectors.averagingDouble(token->{
-            if(model.containsKey(token)) {
-                return model.get(token);
-            } else {
-                return 0d;
-            }
-        }));
-    }
+    
 }
