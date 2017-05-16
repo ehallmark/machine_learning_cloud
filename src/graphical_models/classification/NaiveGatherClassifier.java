@@ -76,7 +76,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             // classes
             Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
 
-
+            // create assignment
             Map<String,Integer> assignment = new HashMap<>(orderedClassifications.size()+orderedTechnologies.size());
             orderedClassifications.forEach(cpc->{
                 if(classes.contains(cpc)) assignment.put(cpc,1);
@@ -86,6 +86,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
                 if(technologies.contains(tech)) assignment.put(tech,1);
                 else assignment.put(tech,0);
             });
+
+            assignments.add(assignment);
         });
         return assignments;
     }
