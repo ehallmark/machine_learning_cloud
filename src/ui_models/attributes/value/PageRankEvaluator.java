@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
+        super(ValueMapNormalizer.DistributionType.None, "Page Rank");
     }
 
     @Override
