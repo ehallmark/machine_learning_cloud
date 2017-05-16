@@ -5,10 +5,7 @@ import org.deeplearning4j.berkeley.Pair;
 import server.SimilarPatentServer;
 import svm.libsvm.*;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -16,6 +13,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 5/4/17.
  */
 public class SVMHelper {
+    private static final Random rand = new Random(69);
     public static void main(String [] args) {
         // svm parameters
         svm_parameter param = new svm_parameter();
@@ -70,7 +68,7 @@ public class SVMHelper {
 
     // helper for gather data
     public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies) {
-        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> SimilarPatentServer.getLookupTable().vector(e.getKey())!=null).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&&SimilarPatentServer.getLookupTable().vector(e.getKey())!=null).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
         int N = invertedGatherMap.size();
         double[][] x = new double[N][];
         double[][] y = new double[N][];
@@ -79,11 +77,9 @@ public class SVMHelper {
         invertedGatherMap.forEach((patent,techs)->{
             int i = idx.getAndIncrement();
             x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
-            y[i] = new double[technologies.size()];
-            Arrays.fill(y[i],0d);
-            techs.forEach(tech->{
-                y[i][technologies.indexOf(tech)]=1.0d;
-            });
+            List<String> techList = new ArrayList<>(techs);
+            Collections.shuffle(techList);
+            y[i] = new double[]{technologies.indexOf(techList.get(rand.nextInt(techList.size())))};
         });
 
         return new Pair<>(x,y);
