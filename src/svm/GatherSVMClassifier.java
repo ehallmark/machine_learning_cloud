@@ -2,6 +2,7 @@ package svm;
 
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
+import server.SimilarPatentServer;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
 import ui_models.attributes.classification.ClassificationAttr;
@@ -30,7 +31,8 @@ public class GatherSVMClassifier extends ClassificationAttr {
 
     public static void main(String[] args) {
         // build gather svm
-// svm parameters
+
+        // svm parameters
         svm_parameter param = new svm_parameter();
         param.probability = 1;
         param.gamma = 0.5;
