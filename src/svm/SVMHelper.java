@@ -22,7 +22,7 @@ public class SVMHelper {
         param.nu = 0.5;
         param.C = 100;
         param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.SIGMOID;
+        param.kernel_type = svm_parameter.LINEAR;
         param.cache_size = 20000;
         param.eps = 0.001;
 
@@ -132,7 +132,7 @@ public class SVMHelper {
 
             double[] prob_estimates = new double[model.nr_class];
             yPred[k] = svm.svm_predict_probability(model, nodes, prob_estimates);
-            System.out.println("Estimates: "+Arrays.toString(prob_estimates)+", Prediction:" + yPred[k] + ")");
+            //System.out.println("Estimates: "+Arrays.toString(prob_estimates)+", Prediction:" + yPred[k] + ")");
         }
 
         return yPred;
