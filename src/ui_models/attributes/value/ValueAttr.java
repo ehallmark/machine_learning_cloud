@@ -53,12 +53,9 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
     }
 
     public double evaluate(String token) {
-        System.out.println("Evaluating "+token+"...");
         if(Database.isAssignee(token)) {
-            System.out.println("Is assignee");
             return attributesFor(PortfolioList.asList(token,PortfolioList.Type.assignees),1);
         } else {
-            System.out.println("Is patent");
             return attributesFor(PortfolioList.asList(token, PortfolioList.Type.patents),1);
         }
     }
