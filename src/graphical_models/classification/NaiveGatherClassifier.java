@@ -136,6 +136,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             Node techNode = graph.addBinaryNode(technology);
             cpcNodes.forEach(cpcNode->{
                 graph.connectNodes(cpcNode,techNode);
+                graph.addFactorNode(null,techNode);
                 graph.addFactorNode(null,techNode,cpcNode);
             });
         });
