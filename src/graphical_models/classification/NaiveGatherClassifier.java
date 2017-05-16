@@ -81,8 +81,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
                     classes.forEach(clazz -> {
                         Map<String, Integer> assignment = new HashMap<>();
                         orderedTechnologies.forEach(tech2->{
-                            if(tech.equals(tech2))assignment.put(tech, 0);
-                            else assignment.put(tech,1);
+                            if(tech.equals(tech2))assignment.put(tech2, 0);
+                            else assignment.put(tech2,1);
                         });
                         assignment.put("CPC", orderedClassifications.indexOf(clazz));
                         assignments.add(assignment);
