@@ -34,13 +34,7 @@ public class PageRankEvaluator extends ValueAttr {
     // Returns value between 0 and 1
     @Override
     public Double attributesFor(AbstractPortfolio portfolio, int n) {
-        System.out.println("Model: "+model);
-        System.out.println("Portfolio size: "+portfolio.getTokens().size());
-        for (String s : portfolio.getTokens()) {
-            System.out.println("Token: "+s);
-        }
         return portfolio.getTokens().stream().collect(Collectors.averagingDouble(token->{
-            System.out.println("Token 2: "+token);
             if(model.containsKey(token)) {
                 return model.get(token);
             } else {
