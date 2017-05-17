@@ -21,6 +21,7 @@ import ui_models.portfolios.AbstractPortfolio;
 import util.MathHelper;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -28,20 +29,65 @@ import java.util.stream.Collectors;
  */
 public class NaiveGatherClassifier extends ClassificationAttr{
     protected BayesianNet bayesianNet;
+    protected List<String> orderedTechnologies;
+    protected List<String> orderedClassifications;
+    public NaiveGatherClassifier() {
+        Map<String,Collection<String>> gatherTraining = SplitModelData.getGatherTechnologyTrainingDataMap();
+        Map<String,Set<String>> patentToClassificationMap = Database.getPatentToClassificationMap();
+        Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
+        orderedTechnologies = new ArrayList<>(gatherTraining.keySet());
+        orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
+
+        List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
+
+        System.out.println("Num assignments: "+assignments.size());
+        bayesianNet = new BayesianNet();
+
+        // set data
+        bayesianNet.setTrainingData(assignments);
+
+        System.out.println("Starting to create nodes.");
+
+        // add node
+        Node cpcNode = bayesianNet.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
+        Node techNode = bayesianNet.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
+        bayesianNet.connectNodes(cpcNode,techNode);
+        bayesianNet.addFactorNode(null,cpcNode);
+        bayesianNet.addFactorNode(null,techNode,cpcNode);
+
+        System.out.println("Finished adding nodes.");
+
+        // learn
+        bayesianNet.applyLearningAlgorithm(new BayesianLearningAlgorithm(bayesianNet,20d),1);
+
+    }
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
-        return null;
+        Set<String> classifications = new HashSet<>();
+        portfolio.getTokens().forEach(token->classifications.addAll(Database.classificationsFor(token)));
+        return classifications.stream().map(clazz->{
+            Map<String,Integer> assignment = new HashMap<>();
+            assignment.put("CPC",orderedClassifications.indexOf(clazz));
+            CliqueTree cliqueTree = bayesianNet.createCliqueTree();
+            cliqueTree.setCurrentAssignment(assignment);
+            Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
+            double[] weights = results.get("Technology").getWeights();
+            int maxIdx = MathHelper.indexOfMaxValue(weights);
+            double maxValue = weights[maxIdx];
+            return new Pair<>(orderedTechnologies.get(maxIdx),maxValue);
+        }).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond())).entrySet().stream().collect(Collectors.groupingBy(e->e.getKey(),Collectors.summingDouble(e->e.getValue()))).entrySet()
+                .stream().map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
     }
 
     @Override
     public int numClassifications() {
-        return 0;
+        return orderedTechnologies.size();
     }
 
     @Override
     public Collection<String> getClassifications() {
-        return null;
+        return new HashSet<>(orderedTechnologies);
     }
 
 
@@ -103,42 +149,10 @@ public class NaiveGatherClassifier extends ClassificationAttr{
     }
 
     public static void main(String[] args) {
-        Map<String,Collection<String>> gatherTraining = SplitModelData.getGatherTechnologyTrainingDataMap();
-        Map<String,Set<String>> patentToClassificationMap = Database.getPatentToClassificationMap();
-        Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
-        List<String> orderedTechnologies = new ArrayList<>(gatherTraining.keySet());
-        List<String> orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
         Map<String,String> cpcTitle = Database.getClassCodeToClassTitleMap().entrySet().stream().collect(Collectors.toMap(e->ClassCodeHandler.convertToLabelFormat(e.getKey()),e->e.getValue()));
-
-        List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
-
-        System.out.println("Num assignments: "+assignments.size());
-        Graph graph = new BayesianNet();
-
-        // set data
-        graph.setTrainingData(assignments);
-
-        System.out.println("Starting to create nodes.");
-
-        // add node
-        Node cpcNode = graph.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
-        Node techNode = graph.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
-        graph.connectNodes(cpcNode,techNode);
-        graph.addFactorNode(null,cpcNode);
-        graph.addFactorNode(null,techNode,cpcNode);
-
-        System.out.println("Finished adding nodes.");
-
-        // learn
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
-
-        // peek
-        //graph.getFactorNodes().forEach(factor->{
-        //    System.out.println(factor.toString());
-        //});
-
-        // example.put("Technology",5);
-
+        NaiveGatherClassifier classifier = new NaiveGatherClassifier();
+        List<String> orderedClassifications = classifier.orderedClassifications;
+        Graph graph = classifier.bayesianNet;
         boolean beliefProp=true;
 
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
@@ -163,7 +177,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
                 result=chain.next();
             }
 
-            String prediction = orderedTechnologies.get(MathHelper.indexOfMaxValue(result.get("Technology").getWeights()));
+            String prediction = classifier.orderedTechnologies.get(MathHelper.indexOfMaxValue(result.get("Technology").getWeights()));
             System.out.println();
             System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + prediction);
