@@ -73,14 +73,14 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             // classes
             Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
             classes.forEach(cpc->{
-                // create assignment
-                Map<String,Integer> assignment = new HashMap<>(orderedClassifications.size()+orderedTechnologies.size());
-                assignment.put("CPC",orderedClassifications.indexOf(cpc));
-                orderedTechnologies.forEach(tech->{
-                    if(technologies.contains(tech)) assignment.put(tech,1);
-                    else assignment.put(tech,0);
+                technologies.forEach(tech->{
+                    // create assignment
+                    Map<String,Integer> assignment = new HashMap<>(orderedClassifications.size()+orderedTechnologies.size());
+                    assignment.put("CPC",orderedClassifications.indexOf(cpc));
+                    assignment.put("Technology",orderedTechnologies.indexOf(tech));
+                    assignments.add(assignment);
+
                 });
-                assignments.add(assignment);
             });
         });
         return assignments;
@@ -122,18 +122,16 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         // add node
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
-        orderedTechnologies.forEach(technology->{
-            Node techNode = graph.addBinaryNode(technology);
-            graph.connectNodes(techNode,cpcNode);
-            graph.addFactorNode(null,techNode);
-            graph.addFactorNode(null,cpcNode,techNode);
-        });
+        Node techNode = graph.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
+        graph.connectNodes(techNode,cpcNode);
+        graph.addFactorNode(null,techNode);
+        graph.addFactorNode(null,cpcNode,techNode);
 
         System.out.println("Finished adding nodes.");
 
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
-        
+
         // peek
         //graph.getFactorNodes().forEach(factor->{
         //    System.out.println(factor.toString());
@@ -165,16 +163,10 @@ public class NaiveGatherClassifier extends ClassificationAttr{
                 result=chain.next();
             }
 
-            String prediction = result.entrySet().stream()
-                    .filter(e->!e.getKey().equals("CPC"))
-                    .map(e->{
-                        double value = MathHelper.expectedValue(e.getValue().getWeights(),new double[]{0d,1d});
-                        return new Pair<>(e.getKey(),value);
-                    }).max((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).get().getFirst();
+            String prediction = orderedTechnologies.get(MathHelper.indexOfMaxValue(result.get("Technology").getWeights()));
+            System.out.println();
             System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + prediction);
-            System.out.println("Num assignments: "+assignments.size());
-
         }
         //System.out.println("Results: "+results.toString());
     }
