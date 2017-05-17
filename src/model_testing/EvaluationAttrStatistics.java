@@ -3,6 +3,7 @@ package model_testing;
 import org.apache.commons.lang3.ArrayUtils;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import seeding.Database;
 import ui_models.attributes.value.PageRankEvaluator;
 import ui_models.attributes.value.ValueAttr;
 
@@ -15,6 +16,7 @@ import java.util.Map;
  */
 public class EvaluationAttrStatistics {
     public static void main(String[] args) {
+        Database.initializeDatabase();
         ValueAttr attr = new PageRankEvaluator();
         Map<String,Double> model = attr.getModel();
         List<String> keys = new ArrayList<>(model.keySet());
