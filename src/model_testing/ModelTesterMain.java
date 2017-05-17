@@ -1,5 +1,6 @@
 package model_testing;
 
+import graphical_models.classification.NaiveGatherClassifier;
 import svm.GatherSVMClassifier;
 import ui_models.attributes.classification.CPCGatherTechTagger;
 import ui_models.attributes.classification.ClassificationAttr;
@@ -32,6 +33,7 @@ public class ModelTesterMain {
         // test paragraph vector basic similarity model
         ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
         ClassificationAttr svmTagger = GatherSVMClassifier.load();
+        ClassificationAttr bayesTagger = new NaiveGatherClassifier();
         for(int i = 1; i <= numPredictions; i+=2) {
             {
 
@@ -51,6 +53,10 @@ public class ModelTesterMain {
 
                 GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
                 testModel("Gather SVM Model [n="+i+"]", scorer, testData, i);
+            }
+            {
+                GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
+                testModel("Gather Bayesian Modele [n="+i+"]", scorer, testData, i);
             }
         }
 
