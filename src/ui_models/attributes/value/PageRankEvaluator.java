@@ -3,6 +3,7 @@ package ui_models.attributes.value;
 import graphical_models.page_rank.PageRank;
 import graphical_models.page_rank.PageRankHelper;
 import seeding.Database;
+import tools.DateHelper;
 import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
+        DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), model);
     }
 
     @Override

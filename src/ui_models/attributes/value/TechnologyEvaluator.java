@@ -97,7 +97,7 @@ public class TechnologyEvaluator extends ValueAttr {
             model.put(patent.getName(),totalScore);
         });
 
-        DateHelper.addScoresToAssigneesFromPatents(assignees,model,lookupTable);
+        DateHelper.addScoresToAssigneesFromPatents(assignees,model);
 
         System.out.println("Removing class codes to save space");
         // for now remove class codes

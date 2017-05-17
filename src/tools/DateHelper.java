@@ -30,28 +30,21 @@ public class DateHelper {
         return groupedDateToPatentMap;
     }
 
-    public static void addScoresToAssigneesFromPatents(Collection<String> assignees, Map<String,Double> model, WeightLookupTable<VocabWord> lookupTable) {
+    public static void addScoresToAssigneesFromPatents(Collection<String> assignees, Map<String,Double> model) {
         System.out.println("Adding scores to assignees...");
         assignees.forEach(assignee->{
             Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
             double score = 0.0;
-            double toDivide = 0.0;
-            INDArray assigneeVec = lookupTable.vector(assignee);
-            if(assigneeVec!=null) {
-                for (String patent : assigneePatents) {
-                    if(!model.containsKey(patent)) continue;
-                    INDArray patentVec = lookupTable.vector(patent);
-                    if (patentVec != null) {
-                        double weight = Math.max(0.2, Transforms.cosineSim(patentVec, assigneeVec));
-                        score += model.get(patent) * weight;
-                        toDivide += weight;
-                    }
-                }
+            int toDivide = 0;
+            for (String patent : assigneePatents) {
+                if(!model.containsKey(patent)) continue;
+                score += model.get(patent);
+                toDivide += 1;
             }
             if(toDivide>0) {
                 score = score/toDivide;
-            } else score=0.0;
-            model.put(assignee,score);
+                model.put(assignee,score);
+            }
         });
         System.out.println("Finished assignees.");
     }

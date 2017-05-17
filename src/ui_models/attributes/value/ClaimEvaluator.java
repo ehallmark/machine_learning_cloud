@@ -88,10 +88,9 @@ public class ClaimEvaluator extends ValueAttr {
 
 
         try {
-            WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
-            DateHelper.addScoresToAssigneesFromPatents(assignees, pendencyModel, lookupTable);
-            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimLengthModel, lookupTable);
-            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimRatioModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, pendencyModel);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimLengthModel);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimRatioModel);
         } catch(Exception e) {
             e.printStackTrace();
         }

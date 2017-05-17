@@ -88,7 +88,7 @@ public class CitationEvaluator extends ValueAttr {
 
         });
         try {
-            DateHelper.addScoresToAssigneesFromPatents(assignees, model, ParagraphVectorModel.loadParagraphsModel().getLookupTable());
+            DateHelper.addScoresToAssigneesFromPatents(assignees, model);
         } catch(Exception e) {
             e.printStackTrace();
         }

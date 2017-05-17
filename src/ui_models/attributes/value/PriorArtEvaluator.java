@@ -88,7 +88,7 @@ public class PriorArtEvaluator extends ValueAttr {
             System.out.println("Score for patent "+patent.getName()+": "+totalScore);
             model.put(patent.getName(),totalScore);
         });
-        DateHelper.addScoresToAssigneesFromPatents(assignees,model,lookupTable);
+        DateHelper.addScoresToAssigneesFromPatents(assignees,model);
         System.out.println("Finished evaluator...");
         return model;
     }

@@ -116,9 +116,9 @@ public class MarketEvaluator extends ValueAttr {
 
         try {
             WeightLookupTable<VocabWord> lookupTable = ParagraphVectorModel.loadParagraphsModel().getLookupTable();
-            DateHelper.addScoresToAssigneesFromPatents(assignees, assetFamilyModel, lookupTable);
-            DateHelper.addScoresToAssigneesFromPatents(assignees, maintenanceFeeModel, lookupTable);
-            DateHelper.addScoresToAssigneesFromPatents(assignees, transactionModel, lookupTable);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, assetFamilyModel);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, maintenanceFeeModel);
+            DateHelper.addScoresToAssigneesFromPatents(assignees, transactionModel);
         } catch(Exception e) {
             e.printStackTrace();
         }
