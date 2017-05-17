@@ -67,7 +67,7 @@ public class PageRank extends RankGraph<String> {
                 if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far. Score="+(delta.get()/cnt.get()));
             });
             currentScore = delta.get()/nodes.size();
-            return currentScore  < 0.000001/nodes.size();
+            return currentScore  < 0.0000001/nodes.size();
         }
 
         @Override
