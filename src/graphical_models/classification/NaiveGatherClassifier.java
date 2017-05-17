@@ -142,23 +142,32 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         // example.put("Technology",5);
 
+        boolean beliefProp=true;
+
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
             System.out.println("Starting to classify...");
             Map<String,Integer> example = new HashMap<>();
             example.put("CPC",cpcIdx);
             graph.setCurrentAssignment(example);
 
-            Iterator<Map<String,FactorNode>> chain = new MetropolisHastingsChain(graph,example);
-            for(int i = 0; i < 100; i++) {
-                chain.next();
-                System.out.print("-");
+            Map<String,FactorNode> result;
+            if(beliefProp) {
+                CliqueTree cTree = graph.createCliqueTree();
+                cTree.setCurrentAssignment(example);
+                result = cTree.runBeliefPropagation(orderedTechnologies);
+            } else {
+                Iterator<Map<String, FactorNode>> chain = new MetropolisHastingsChain(graph, example);
+                for (int i = 0; i < 100; i++) {
+                    chain.next();
+                    System.out.print("-");
+                }
+                System.out.println();
+                System.out.println("Finished burn in");
+                result=chain.next();
             }
-            System.out.println();
-            System.out.println("Finished burn in");
 
-            Map<String,FactorNode> result = chain.next();
-            graph.setCurrentAssignment(example);
             String prediction = result.entrySet().stream()
+                    .filter(e->!e.getKey().equals("CPC"))
                     .map(e->{
                         double value = MathHelper.expectedValue(e.getValue().getWeights(),new double[]{0d,1d});
                         return new Pair<>(e.getKey(),value);
