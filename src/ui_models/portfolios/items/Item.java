@@ -27,31 +27,51 @@ public abstract class Item implements Comparable<Item> {
     protected PortfolioList.Type type;
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
+    protected static Map<String,String> humanFilterToJavaFilterMap;
+    protected static Map<String,String> javaFilterToHumanFilterMap;
     static {
-        humanAttrToJavaAttrMap=new HashMap<>();
-        humanAttrToJavaAttrMap.put("Asset","name");
-        humanAttrToJavaAttrMap.put("Similarity","similarity");
-        humanAttrToJavaAttrMap.put("Relevant Asset(s)","relevantAssetsList");
-        humanAttrToJavaAttrMap.put("Relevant Asset Count","relevantAssetCount");
-        humanAttrToJavaAttrMap.put("Total Asset Count","totalAssetCount");
-        humanAttrToJavaAttrMap.put("Assignee","assignee");
-        humanAttrToJavaAttrMap.put("Title","title");
-        humanAttrToJavaAttrMap.put("Primary Tag","primaryTag");
-        humanAttrToJavaAttrMap.put("AI Value","overallValue");
-        humanAttrToJavaAttrMap.put("Technology","technology");
-        humanAttrToJavaAttrMap.put("Assignee Entity Type","assigneeEntityType");
-        humanAttrToJavaAttrMap.put("Large Portfolio Size","largePortfolios");
-        humanAttrToJavaAttrMap.put("Small Portfolio Size","smallPortfolios");
-        humanAttrToJavaAttrMap.put("Page Rank Value","pageRankValue");
-        humanAttrToJavaAttrMap.put("Assets Sold","assetsSold");
-        humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
-        humanAttrToJavaAttrMap.put("CompDB Assets Sold","compDBAssetsSold");
-        humanAttrToJavaAttrMap.put("CompDB Assets Purchased", "compDBAssetsPurchased");
+        { // Attrs
+            humanAttrToJavaAttrMap = new HashMap<>();
+            humanAttrToJavaAttrMap.put("Asset", "name");
+            humanAttrToJavaAttrMap.put("Similarity", "similarity");
+            humanAttrToJavaAttrMap.put("Relevant Asset(s)", "relevantAssetsList");
+            humanAttrToJavaAttrMap.put("Relevant Asset Count", "relevantAssetCount");
+            humanAttrToJavaAttrMap.put("Total Asset Count", "totalAssetCount");
+            humanAttrToJavaAttrMap.put("Assignee", "assignee");
+            humanAttrToJavaAttrMap.put("Title", "title");
+            humanAttrToJavaAttrMap.put("Primary Tag", "primaryTag");
+            humanAttrToJavaAttrMap.put("AI Value", "overallValue");
+            humanAttrToJavaAttrMap.put("Technology", "technology");
+            humanAttrToJavaAttrMap.put("Assignee Entity Type", "assigneeEntityType");
+            humanAttrToJavaAttrMap.put("Large Portfolio Size", "largePortfolios");
+            humanAttrToJavaAttrMap.put("Small Portfolio Size", "smallPortfolios");
+            humanAttrToJavaAttrMap.put("Page Rank Value", "pageRankValue");
+            humanAttrToJavaAttrMap.put("Assets Sold", "assetsSold");
+            humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
+            humanAttrToJavaAttrMap.put("CompDB Assets Sold", "compDBAssetsSold");
+            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", "compDBAssetsPurchased");
 
 
-        // inverted version to get human readables back
-        javaAttrToHumanAttrMap= new HashMap<>();
-        humanAttrToJavaAttrMap.forEach((k,v)->javaAttrToHumanAttrMap.put(v,k));
+            // inverted version to get human readables back
+            javaAttrToHumanAttrMap = new HashMap<>();
+            humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
+        }
+
+        {
+            // filters
+            humanFilterToJavaFilterMap= new HashMap<>();
+            humanFilterToJavaFilterMap.put("Portfolio Size Less Than","portfolioSizeLessThan");
+            humanFilterToJavaFilterMap.put("Portfolio Size Greater Than","portfolioSizeGreaterThan");
+            humanFilterToJavaFilterMap.put("Similarity Threshold","similarityThreshold");
+            humanFilterToJavaFilterMap.put("Value Threshold","valueThreshold");
+            humanFilterToJavaFilterMap.put("Only Japanese Assignees","japaneseOnly");
+            humanFilterToJavaFilterMap.put("Exclude Japanese Assignees","removeJapanese");
+
+
+            // inverted version to get human readables back
+            javaFilterToHumanFilterMap = new HashMap<>();
+            humanFilterToJavaFilterMap.forEach((k, v) -> javaFilterToHumanFilterMap.put(v, k));
+        }
     }
 
     public static final Comparator<Item> similarityComparator() { return (o1, o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
@@ -68,6 +88,10 @@ public abstract class Item implements Comparable<Item> {
 
     public static Map<String,String> getHumanAttrToJavaAttrMap() {
         return Collections.unmodifiableMap(humanAttrToJavaAttrMap);
+    }
+
+    public static Map<String,String> getHumanFilterToJavaFilterMap() {
+        return Collections.unmodifiableMap(humanFilterToJavaFilterMap);
     }
 
     protected Item(String name, double similarity, String referringName, PortfolioList.Type type) {

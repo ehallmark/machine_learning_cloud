@@ -13,6 +13,8 @@ public class PortfolioSizeFilter implements AbstractFilter {
     public PortfolioSizeFilter(int limit) { this.limit=limit; }
     @Override
     public boolean shouldKeepItem(Item obj) {
+        if(limit <= 0) return true;
+
         if(obj instanceof AbstractPatent) {
             return Database.getAssetCountFor(((AbstractPatent)obj).getAssignee()) <= limit;
         } else if (obj instanceof AbstractAssignee) {

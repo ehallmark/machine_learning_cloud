@@ -53,16 +53,7 @@ public class SimilarPatentServer {
     public static SimilarPatentFinder globalFinder;
     public static SimilarPatentFinder assigneeFinder;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
-    private static final String ASSIGNEE_ASSET_COUNT_FORM_ID = "select-assignee-asset-count-form";
-    private static final String ASSIGNEE_ASSETS_FORM_ID = "select-assignee-assets-form";
-    private static final String PATENTS_FROM_ETSI_FORM_ID = "select-patents-from-etsi-form";
-    private static final String CPC_FROM_ASSETS_FORM_ID = "select-cpc-from-assets-form";
-    private static final String TITLE_FROM_ASSETS_FORM_ID = "select-title-from-assets-form";
-    private static final String CPC_TO_ASSETS_FORM_ID = "select-cpc-to-assets-form";
-    private static final String CPC_FREQUENCY_FROM_ASSETS_FORM_ID = "select-cpc-frequency-from-assets-form";
-    private static final String TECH_PREDICTION_FROM_ASSETS_FORM_ID = "tech-from-assets-form";
-    private static final String TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID = "tech-from-assignees-form";
-    private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
+
 
     private static ClassificationAttr tagger;
 
@@ -71,6 +62,7 @@ public class SimilarPatentServer {
     static Map<String,ValueAttr> modelMap = new HashMap<>();
 
     private static Map<String,String> humanParamMap = Item.getHumanAttrToJavaAttrMap();
+    private static Map<String,String> humanFilterMap = Item.getHumanFilterToJavaFilterMap();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
@@ -169,286 +161,8 @@ public class SimilarPatentServer {
         port(4568);
         // GET METHODS
         get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
-        get("/patent_toolbox", (req, res) -> templateWrapper(res, div().with(patentToolboxForm(), hr()), getAndRemoveMessage(req.session())));
         get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
 
-        // POST METHODS
-        post("/assignee_asset_count", (req, res) -> {
-            res.type("application/json");
-            String assigneeStr = req.queryParams("assignee");
-            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-
-            String[] assignees = assigneeStr.split(System.getProperty("line.separator"));
-            if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-                Tag table = table().with(
-                        thead().with(
-                                tr().with(
-                                        th("Assignee"),
-                                        th("Approx. Asset Count")
-                                )
-                        ),
-                        tbody().with(
-                                Arrays.stream(assignees)
-                                        .filter(assignee->!(assignee==null||assignee.isEmpty()))
-                                        .map(assignee->tr().with(
-                                            td(assignee),
-                                            td(String.valueOf(Database.getAssetCountFor(assignee))))
-                                ).collect(Collectors.toList())
-
-                        )
-                );
-                return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/assignee_assets", (req, res) -> {
-            res.type("application/json");
-            String assigneeStr = req.queryParams("assignee");
-            if(assigneeStr==null||assigneeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-
-            String[] assignees = assigneeStr.split(System.getProperty("line.separator"));
-            if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-            boolean usePatentsView = extractBool(req,"use_patents_view");
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Assignee"),
-                                    th("Assets")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(assignees)
-                                    .filter(assignee->!(assignee==null||assignee.isEmpty()))
-                                    .map(assignee->tr().with(
-                                            td(assignee),
-                                            td(String.join(" ",usePatentsView ? PatentAPIHandler.requestPatentNumbersFromAssignee(assignee)
-                                            : Database.selectPatentNumbersFromAssignee(assignee))))
-                                    ).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/tech_predictions", (req, res) -> {
-            res.type("application/json");
-            String type = req.queryParams("report_type");
-            if(type==null||!Arrays.asList("patents","assignees","class_codes").contains(type)) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unknown report type"));
-            }
-            String asset = req.queryParams("item");
-            if(asset==null||asset.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
-            PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(type);
-            String[] assets = asset.split(System.getProperty("line.separator"));
-            if(assets==null||assets.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one input"));
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th(type.substring(0,1).toUpperCase()+type.substring(1).replaceAll("_"," ")),
-                                    th("Probability"),
-                                    th("Technology")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(assets)
-                                    .filter(assignee->!(assignee==null||assignee.isEmpty()))
-                                    .map(item->{
-                                        System.out.println("Item length: "+item.length());
-                                        item = item.trim();
-                                        System.out.println("Item length after trim: "+item.length());
-                                        final String prettyItem = item;
-                                        List<Pair<String,Double>> pairs = tagger.attributesFor(PortfolioList.asList(item,portfolioType),1);
-                                        String val = "";
-                                        double probability = 0.0;
-                                        if(!pairs.isEmpty()) {
-                                            Pair<String,Double> pair = pairs.get(0);
-                                            val+=pair.getFirst();
-                                            probability+=pair.getSecond();
-                                        }
-                                        return tr().with(
-                                                td(prettyItem),
-                                                td(String.valueOf(probability)),
-                                                td(val)
-                                        );
-                                    }).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/etsi_standards", (req, res) -> {
-            res.type("application/json");
-            String etsiStr = req.queryParams("etsi_standard");
-            if(etsiStr==null||etsiStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
-
-            String[] standards = etsiStr.split(System.getProperty("line.separator"));
-            if(standards==null||standards.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one ETSI Standard"));
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("ETSI Standard"),
-                                    th("Assets")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(standards)
-                                    .filter(standard->!(standard==null||standard.isEmpty()))
-                                    .map(standard->tr().with(
-                                            td(standard),
-                                            td(String.join(" ",Database.selectPatentNumbersFromETSIStandard(GetEtsiPatentsList.cleanETSIString(standard)))))
-                                    ).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-
-
-
-        post("/cpc_to_assets", (req, res) -> {
-            res.type("application/json");
-            String classCodeStr = req.queryParams("class_code");
-            if(classCodeStr==null||classCodeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
-            boolean includeSubclasses = extractBool(req, "includeSubclasses");
-
-            String[] classCodes = classCodeStr.split(System.getProperty("line.separator"));
-            if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Class Code"),
-                                    th("Assets")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(classCodes)
-                                    .filter(code->!(code==null||code.isEmpty()))
-                                    .map(code->tr().with(
-                                            td(code),
-                                            td(String.join(" ",(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(ClassCodeHandler.convertToLabelFormat(code)):Database.selectPatentNumbersFromExactClassCode(ClassCodeHandler.convertToLabelFormat(code))))))
-                                    ).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/title_from_assets", (req, res) -> {
-            res.type("application/json");
-            String patentStr = req.queryParams("patent");
-            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-
-            String[] patents = patentStr.split("\\s+");
-            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Asset"),
-                                    th("Title")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(patents)
-                                    .filter(patent->!(patent==null||patent.isEmpty()))
-                                    .map(patent->tr().with(
-                                            td(patent),
-                                            td(Database.getInventionTitleFor(patent)))
-                                    ).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-
-        post("/cpc_from_assets", (req, res) -> {
-            res.type("application/json");
-            String patentStr = req.queryParams("patent");
-            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            boolean includeSubclasses = extractBool(req, "includeSubclasses");
-
-            String[] patents = patentStr.split(System.getProperty("line.separator"));
-            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Asset"),
-                                    th("Classifications")
-                            )
-                    ),
-                    tbody().with(
-                            Arrays.stream(patents)
-                                    .filter(patent->!(patent==null||patent.isEmpty()))
-                                    .map(patent->tr().with(
-                                            td(patent),
-                                            td(String.join("; ",(includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]",""))).stream()
-                                                    .map(cpc->ClassCodeHandler.convertToHumanFormat(cpc)).collect(Collectors.toList()))))
-                                    ).collect(Collectors.toList())
-
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
-
-        post("/cpc_frequencies_from_assets", (req, res) -> {
-            res.type("application/json");
-            String patentStr = req.queryParams("patent");
-            if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            boolean includeSubclasses = extractBool(req, "includeSubclasses");
-
-            String[] patents = patentStr.split("\\s+");
-            if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-
-            AtomicInteger cnt = new AtomicInteger(0);
-            Map<String,Double> classScoreMap = new HashMap<>();
-            Arrays.stream(patents).forEach(patent->{
-                if(patent==null||patent.trim().isEmpty()) return;
-                Collection<String> data = (includeSubclasses?Database.subClassificationsForPatent(patent.replaceAll("[^0-9]","")):Database.classificationsFor(patent.replaceAll("[^0-9]","")));
-                if(data.isEmpty()) return;
-                data.stream()
-                        .forEach(cpc->{
-                            if(classScoreMap.containsKey(cpc)) {
-                                classScoreMap.put(cpc,classScoreMap.get(cpc)+1.0);
-                            } else {
-                                classScoreMap.put(cpc,1.0);
-                            }
-                        });
-                cnt.getAndIncrement();
-            });
-
-            Map<String,Double> globalFrequencyMap = new HashMap<>();
-            Map<String,Double> ratioMap = new HashMap<>();
-            // standardize numbers
-            Set<String> keys = new HashSet<>(classScoreMap.keySet());
-            keys.forEach(key->{
-                classScoreMap.put(key,classScoreMap.get(key)/cnt.get());
-                globalFrequencyMap.put(key,new Double(Database.selectPatentNumbersFromExactClassCode(key).size())/Database.numPatentsWithCpcClassifications());
-                ratioMap.put(key,classScoreMap.get(key)*Math.log(1.0+globalFrequencyMap.get(key)));
-            });
-
-            Tag table = table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Class Code"),
-                                    th("Frequency in Portfolio"),
-                                    th("Global Frequency"),
-                                    th("Frequency Score (f_p*log(1+f_g))")
-                            )
-                    ),
-                    tbody().with(
-                            ratioMap.entrySet().stream()
-                                    .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
-                                    .map(e->tr().with(
-                                            td(ClassCodeHandler.convertToHumanFormat(e.getKey())),
-                                            td(classScoreMap.get(e.getKey()).toString()),
-                                            td(globalFrequencyMap.get(e.getKey()).toString()),
-                                            td(e.getValue().toString())
-                                    )).collect(Collectors.toList())
-                    )
-            );
-            return new Gson().toJson(new SimpleAjaxMessage(table.render()));
-        });
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -475,7 +189,6 @@ public class SimilarPatentServer {
                 preProcess(extractString(req, "class_codes", "").toUpperCase(), "\n", null).stream().map(classCode -> ClassCodeHandler.convertToLabelFormat(classCode)).forEach(cpc -> classCodesToSearchFor.add(cpc));
                 String searchType = extractString(req, "search_type", "patents");
                 int limit = extractInt(req, "limit", 10);
-                int limitPerInput = extractInt(req, "limitPerInput", 10);
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
 
                 if(req.queryParamsValues("dataAttributes[]")==null) {
@@ -547,16 +260,20 @@ public class SimilarPatentServer {
                         new LabelFilter(labelsToExclude)
                 );
 
+                System.out.println("Running model");
                 PortfolioList portfolioList = runPatentFinderModel(firstFinder, secondFinders, portfolioType, limit, preFilters);
 
+                Collection<? extends AbstractFilter> postFilters = Arrays.asList(
+                        new PortfolioSizeFilter(assigneePortfolioLimit)
+                );
 
-                System.out.println("Finished portoflio list");
+                System.out.println("Starting post filters");
 
                 // Post filters
-                if (assigneePortfolioLimit > 0) {
-                    PortfolioSizeFilter filter = new PortfolioSizeFilter(assigneePortfolioLimit);
+                postFilters.forEach(filter->{
                     portfolioList.applyFilter(filter);
-                }
+                });
+
 
                 System.out.println("Starting model map");
 
@@ -878,10 +595,13 @@ public class SimilarPatentServer {
                                                                 humanParamMap.entrySet().stream().map(e-> {
                                                                     return div().with(label(e.getKey()),input().withType("checkbox").withName("dataAttributes[]").withValue(e.getValue()).attr("checked","checked"));
                                                                 }).collect(Collectors.toList()))
+                                                        ),hr(),expandableDiv("Filters",h3("Select applicable Filters"),div().with(
+                                                                humanFilterMap.entrySet().stream().map(e-> {
+                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("filters[]").withValue(e.getValue()));
+                                                                }).collect(Collectors.toList()))
                                                         ),hr(),expandableDiv("Advanced Options",
                                                                 h3("Advanced Options"),
                                                                 label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                                label("Patent Limit Per Input"),br(),input().withType("text").withName("limitPerInput"), br(),
                                                                 label("Merge Search Input?"),br(),input().withType("checkbox").withName("merge_search_input"),br(),
                                                                 label("Remove Gather Assets?"),br(),input().withType("checkbox").withName("remove_gather_patents"),br(),
                                                                 label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
@@ -902,118 +622,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag patentToolboxForm() {
-        return div().with(
-                formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
-                formScript(ASSIGNEE_ASSETS_FORM_ID, "/assignee_assets", "Search", true),
-                formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
-                formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
-                formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
-                formScript(TITLE_FROM_ASSETS_FORM_ID, "/title_from_assets", "Search", true),
-                formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
-                formScript(TECH_PREDICTION_FROM_ASSETS_FORM_ID,"/tech_predictions", "Search", true),
-                formScript(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID,"/tech_predictions", "Search", true),
-                formScript(TECH_PREDICTION_FROM_CPCS_FORM_ID,"/tech_predictions", "Search", true),
-                p("(Warning: Data only available from 2007 and onwards)"),
-                table().with(
-                        tbody().with(
-                                tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Asset Count for Assignees (Approximation Only)"),
-                                                h4("Please place each assignee on a separate line"),
-                                                form().withId(ASSIGNEE_ASSET_COUNT_FORM_ID).with(
-                                                        label("Assignees"),br(),textarea().withName("assignee"), br(),
-                                                        button("Search").withId(ASSIGNEE_ASSET_COUNT_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Current Assets for Assignees (Approximation Only)"),
-                                                h4("Please place each assignee on a separate line"),
-                                                form().withId(ASSIGNEE_ASSETS_FORM_ID).with(
-                                                        label("Assignees"),br(),textarea().withName("assignee"), br(),
-                                                        label("Use Patents View API?"),br(),input().withType("checkbox").withName("use_patents_view"), br(),
-                                                        button("Search").withId(ASSIGNEE_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Current Assets for ETSI Standard (Approximation Only)"),
-                                                h4("Please place each ETSI Standard on a separate line"),
-                                                form().withId(PATENTS_FROM_ETSI_FORM_ID).with(
-                                                        label("ETSI Standards"),br(),textarea().withName("etsi_standard"), br(),
-                                                        button("Search").withId(PATENTS_FROM_ETSI_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
-                                ),tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get patents from CPC (Approximation Only)"),
-                                                h4("Please place each CPC code on a separate line"),
-                                                form().withId(CPC_TO_ASSETS_FORM_ID).with(
-                                                        label("CPC Class Codes"),br(),textarea().withName("class_code"), br(),
-                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
-                                                        button("Search").withId(CPC_TO_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get CPC for patents (Approximation Only)"),
-                                                h4("Please place each patent on a separate line"),
-                                                form().withId(CPC_FROM_ASSETS_FORM_ID).with(
-                                                        label("Patents"),br(),textarea().withName("patent"), br(),
-                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
-                                                        button("Search").withId(CPC_FROM_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get CPC frequencies for patents (Approximation Only)"),
-                                                h4("Please place each patent on a separate line"),
-                                                form().withId(CPC_FREQUENCY_FROM_ASSETS_FORM_ID).with(
-                                                        label("Patents"),br(),textarea().withName("patent"), br(),
-                                                        label("Include CPC Subclasses?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
-                                                        button("Search").withId(CPC_FREQUENCY_FROM_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
-                                ),tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Technology from Patents (Approximation Only)"),
-                                                h4("Please place each Patent on a separate line"),
-                                                form().withId(TECH_PREDICTION_FROM_ASSETS_FORM_ID).with(
-                                                        input().withType("hidden").withName("report_type").withValue("patents"),
-                                                        label("Patents"),br(),textarea().withName("item"), br(),
-                                                        button("Search").withId(TECH_PREDICTION_FROM_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Technology from Assignees (Approximation Only)"),
-                                                h4("Please place each Assignee on a separate line"),
-                                                form().withId(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID).with(
-                                                        input().withType("hidden").withName("report_type").withValue("assignees"),
-                                                        label("Assignees"),br(),textarea().withName("item"), br(),
-                                                        button("Search").withId(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Technology from CPC Codes (Approximation Only)"),
-                                                h4("Please place each CPC Code on a separate line"),
-                                                form().withId(TECH_PREDICTION_FROM_CPCS_FORM_ID).with(
-                                                        input().withType("hidden").withName("report_type").withValue("class_codes"),
-                                                        label("CPC Codes"),br(),textarea().withName("item"), br(),
-                                                        button("Search").withId(TECH_PREDICTION_FROM_CPCS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
-                                ),tr().attr("style", "vertical-align: top;").with(
-                                        td().attr("style","width:33%; vertical-align: top;").with(
-                                                h3("Get Invention Title for patents"),
-                                                h4("Please place each patent on a separate line"),
-                                                form().withId(TITLE_FROM_ASSETS_FORM_ID).with(
-                                                        label("Patents"),br(),textarea().withName("patent"), br(),
-                                                        button("Search").withId(TITLE_FROM_ASSETS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        )
 
-                                )
-                        )
-                ),
-                br(),
-                br()
-        );
-    }
 
     static String extractString(Request req, String param, String defaultVal) {
         if(req.queryParams(param)!=null&&req.queryParams(param).trim().length()>0) {
@@ -1089,14 +698,11 @@ public class SimilarPatentServer {
         System.out.println("Finished loading base finder.");
         System.out.println("Starting server...");
         server();
-        System.out.println("Finished starting server.");
         LeadDevelopmentUI.setupServer();
-        System.out.println("Starting Company Profile UI Server...");
         CompanyPortfolioProfileUI.setupServer();
-        System.out.println("Finished starting server.");
-        System.out.println("Starting Tech Tagger UI Server...");
         TechTaggerUI.setupServer();
         GatherClassificationServer.StartServer();
+        PatentToolsServer.setup();
         System.out.println("Finished starting server.");
     }
 }
