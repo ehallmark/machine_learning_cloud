@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class PageRankEvaluator extends ValueAttr {
     public PageRankEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Uniform, "Page Rank");
+        super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
         DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), model);
     }
 
