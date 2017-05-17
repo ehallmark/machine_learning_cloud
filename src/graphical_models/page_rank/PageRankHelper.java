@@ -17,7 +17,7 @@ public class PageRankHelper {
         long t1 = System.currentTimeMillis();
         Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.patentToCitedPatentsMap;
         PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
-        algorithm.solve(50);
+        algorithm.solve(100);
         algorithm.save(file);
         Map<String,Float> rankTable = new PageRank.Loader().loadRankTable(file);
         System.out.println("Rank Table size: "+rankTable.size());

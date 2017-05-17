@@ -1,5 +1,6 @@
 package graphical_models.page_rank;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import model.graphs.Graph;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
@@ -15,6 +16,8 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 4/21/17.
  */
 public class PageRank extends RankGraph<String> {
+    protected double currentScore;
+
     public PageRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap, damping);
     }
@@ -25,11 +28,10 @@ public class PageRank extends RankGraph<String> {
     }
 
     protected double rankValue(Node node) {
-        return (1d-damping)/nodes.size() + damping * node.getInBound().stream().collect(Collectors.summingDouble(neighbor->{
+        return (1d-damping)/nodes.size() + damping * node.getNeighbors().stream().collect(Collectors.summingDouble(neighbor->{
             Float rank = rankTable.get(neighbor.getLabel());
-            if(rank==null)rank=0f;
-            if(neighbor.getInBound().size()>0) {
-                return (double)rank/neighbor.getInBound().size();
+            if(neighbor.getNeighbors().size()>0) {
+                return (double)rank/neighbor.getNeighbors().size();
             } else return 0d;
         }));
     }
@@ -46,9 +48,6 @@ public class PageRank extends RankGraph<String> {
             });
         });
         nodes=graph.getAllNodesList();
-        nodes.forEach(node->{
-            rankTable.put(node.getLabel(),1f/nodes.size());
-        });
         System.out.println("Done.");
     }
 
@@ -57,19 +56,21 @@ public class PageRank extends RankGraph<String> {
         @Override
         public boolean runAlgorithm() {
             AtomicInteger cnt = new AtomicInteger(0);
+            AtomicDouble delta = new AtomicDouble(0d);
             nodes.stream().forEach(node -> {
                 double rank = rankValue(node);
-                if (rank > 0) {
-                    rankTable.put(node.getLabel(), (float) rank);
-                }
-                if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
+                double prior = rankTable.get(node.getLabel());
+                rankTable.put(node.getLabel(), (float) rank);
+                delta.getAndAdd(Math.abs(rank-prior));
+                if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far. Score="+(delta.get()/cnt.get()));
             });
-             return false;
+            currentScore = delta.get()/nodes.size();
+            return currentScore  < 0.000001;
         }
 
         @Override
         public double computeCurrentScore() {
-            return 0d;
+            return currentScore;
         }
     }
 
