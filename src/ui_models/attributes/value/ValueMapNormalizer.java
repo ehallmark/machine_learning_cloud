@@ -55,7 +55,7 @@ public class ValueMapNormalizer {
         double stdDev = Math.sqrt(array.varNumber().doubleValue());
         double mean = array.meanNumber().doubleValue();
         double max = array.maxNumber().doubleValue();
-        double min = 0d;
+        double min = array.minNumber().doubleValue();
 
         AbstractRealDistribution distribution;
         switch(type) {
