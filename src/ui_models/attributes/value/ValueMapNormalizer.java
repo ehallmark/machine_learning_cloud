@@ -67,7 +67,7 @@ public class ValueMapNormalizer {
                 break;
             } case Uniform: {
                 if(min>=max) throw new RuntimeException("Unable to create uniform distribution");
-                distribution= new BetaDistribution(1,3);
+                distribution= new UniformRealDistribution(min,max);
                 break;
             }
             default: {
