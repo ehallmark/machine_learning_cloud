@@ -1,10 +1,7 @@
 package ui_models.attributes.value;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.apache.commons.math3.distribution.*;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 
@@ -70,7 +67,7 @@ public class ValueMapNormalizer {
                 break;
             } case Uniform: {
                 if(min>=max) throw new RuntimeException("Unable to create uniform distribution");
-                distribution= new UniformRealDistribution(min,max);
+                distribution= new BetaDistribution(1,3);
                 break;
             }
             default: {
