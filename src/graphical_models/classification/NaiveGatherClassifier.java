@@ -122,19 +122,18 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         // add node
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
-        graph.addFactorNode(null,cpcNode);
         orderedTechnologies.forEach(technology->{
             Node techNode = graph.addBinaryNode(technology);
-            graph.connectNodes(cpcNode,techNode);
-            graph.addFactorNode(null,techNode,cpcNode);
+            graph.connectNodes(techNode,cpcNode);
+            graph.addFactorNode(null,techNode);
+            graph.addFactorNode(null,cpcNode,techNode);
         });
 
         System.out.println("Finished adding nodes.");
 
         // learn
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,20d),1);
-
-
+        
         // peek
         //graph.getFactorNodes().forEach(factor->{
         //    System.out.println(factor.toString());
