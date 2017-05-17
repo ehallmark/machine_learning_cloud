@@ -117,6 +117,7 @@ public class LeadDevelopmentUI {
                         ),br(),br(),
                         SimilarPatentServer.expandableDiv("Company Attributes",false,div().with(
                                 br(),br(),
+                                p("(Note: A positive Relative Importance looks to maximize the attribute value, while a negative Relative Importance looks to minimize the attribute value."),
                                 table().with(
                                         thead().with(
                                                 tr().with(
@@ -304,8 +305,8 @@ public class LeadDevelopmentUI {
                 ATTRIBUTES.forEach((name,attr)->{
                     Attribute newAttr = attr.dup();
                     newAttr.importance=SimilarPatentServer.extractDouble(params,"importance-"+attr.getId(),0d);
-                    if(newAttr.importance>0) {
-                        System.out.println("Using attr: "+name);
+                    if(newAttr.importance!=0) {
+                        System.out.println("Using attr "+name+" with weight: "+newAttr.importance);
                         attrsToUseList.add(newAttr);
                     }
                 });
