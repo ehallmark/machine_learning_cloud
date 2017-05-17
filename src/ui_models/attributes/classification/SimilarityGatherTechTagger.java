@@ -1,5 +1,6 @@
 package ui_models.attributes.classification;
 
+import model_testing.SplitModelData;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -27,7 +28,7 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
     WeightLookupTable<VocabWord> lookupTable;
     private static final SimilarityGatherTechTagger gatherTagger;
     static {
-        gatherTagger = new SimilarityGatherTechTagger(Database.getGatherTechMap(),SimilarPatentServer.getLookupTable());
+        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getGatherTechnologyTrainingDataMap(),SimilarPatentServer.getLookupTable());
     }
 
     public static SimilarityGatherTechTagger getAIModelTagger() {

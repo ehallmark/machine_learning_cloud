@@ -163,9 +163,10 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
             Iterator<Map<String,FactorNode>> chain = new MetropolisHastingsChain(graph,example);
             for(int i = 0; i < 100; i++) {
-                System.out.print("-");
                 chain.next();
+                System.out.print("-");
             }
+            System.out.println();
             System.out.println("Finished burn in");
 
             Map<String,FactorNode> result = chain.next();
