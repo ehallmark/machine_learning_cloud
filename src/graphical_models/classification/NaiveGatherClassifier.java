@@ -151,7 +151,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             if(beliefProp) {
                 CliqueTree cTree = graph.createCliqueTree();
                 cTree.setCurrentAssignment(example);
-                result = cTree.runBeliefPropagation(orderedTechnologies);
+                result = cTree.runBeliefPropagation(Arrays.asList("Technology"));
             } else {
                 Iterator<Map<String, FactorNode>> chain = new MetropolisHastingsChain(graph, example);
                 for (int i = 0; i < 100; i++) {
