@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import lombok.Getter;
 import seeding.Database;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.portfolios.AbstractPortfolio;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
  */
 public abstract class ValueAttr implements AbstractAttribute<Double> {
     // Instance class
+    @Getter
     protected Map<String,Double> model;
     protected String modelName;
     protected ValueMapNormalizer.DistributionType distributionType;

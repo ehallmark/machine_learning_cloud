@@ -30,5 +30,5 @@ public class PageRankEvaluator extends ValueAttr {
         });
         return Arrays.asList(doubleMap);
     }
-    
+
 }
