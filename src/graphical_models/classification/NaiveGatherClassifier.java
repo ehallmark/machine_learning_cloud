@@ -3,10 +3,7 @@ package graphical_models.classification;
 import com.google.common.collect.Maps;
 import model.functions.inference_methods.BeliefPropagation;
 import model.functions.inference_methods.SamplingMethod;
-import model.graphs.BayesianNet;
-import model.graphs.CliqueTree;
-import model.graphs.Graph;
-import model.graphs.MarkovNet;
+import model.graphs.*;
 import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.learning.algorithms.ExpectationMaximizationAlgorithm;
 import model.learning.algorithms.MarkovLearningAlgorithm;
@@ -155,16 +152,25 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // example.put("Technology",5);
 
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
-            CliqueTree cliqueTree = graph.createCliqueTree();
+            System.out.println("Starting to classify...");
             String clazz = orderedClassifications.get(cpcIdx);
             Map<String,Integer> example = new HashMap<>();
             orderedClassifications.forEach(c->{
                if(c.equals(clazz)) example.put(clazz,1);
                else example.put(clazz,0);
             });
-            cliqueTree.setCurrentAssignment(example);
             graph.setCurrentAssignment(example);
-            String prediction = cliqueTree.runBeliefPropagation(orderedTechnologies).entrySet().stream()
+
+            Iterator<Map<String,FactorNode>> chain = new MetropolisHastingsChain(graph,example);
+            for(int i = 0; i < 100; i++) {
+                System.out.print("-");
+                chain.next();
+            }
+            System.out.println("Finished burn in");
+
+            Map<String,FactorNode> result = chain.next();
+            graph.setCurrentAssignment(example);
+            String prediction = result.entrySet().stream()
                     .map(e->{
                         double value = MathHelper.expectedValue(e.getValue().getWeights(),new double[]{0d,1d});
                         return new Pair<>(e.getKey(),value);
