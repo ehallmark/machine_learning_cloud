@@ -124,18 +124,12 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         System.out.println("Starting to create nodes.");
 
         // add node
-        List<Node> cpcNodes = new ArrayList<>(orderedClassifications.size());
-        orderedClassifications.forEach(clazz->{
-            Node cpcNode = graph.addBinaryNode(clazz);
-            cpcNodes.add(cpcNode);
-        });
+        Node cpcNode = graph.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
+        graph.addFactorNode(null,cpcNode);
         orderedTechnologies.forEach(technology->{
             Node techNode = graph.addBinaryNode(technology);
-            cpcNodes.forEach(cpcNode->{
-                graph.connectNodes(cpcNode,techNode);
-                graph.addFactorNode(null,techNode);
-                graph.addFactorNode(null,techNode,cpcNode);
-            });
+            graph.connectNodes(cpcNode,techNode);
+            graph.addFactorNode(null,techNode,cpcNode);
         });
 
         System.out.println("Finished adding nodes.");
@@ -153,12 +147,8 @@ public class NaiveGatherClassifier extends ClassificationAttr{
 
         for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
             System.out.println("Starting to classify...");
-            String clazz = orderedClassifications.get(cpcIdx);
             Map<String,Integer> example = new HashMap<>();
-            orderedClassifications.forEach(c->{
-               if(c.equals(clazz)) example.put(clazz,1);
-               else example.put(clazz,0);
-            });
+            example.put("CPC",cpcIdx);
             graph.setCurrentAssignment(example);
 
             Iterator<Map<String,FactorNode>> chain = new MetropolisHastingsChain(graph,example);
