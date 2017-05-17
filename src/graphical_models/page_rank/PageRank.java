@@ -30,6 +30,7 @@ public class PageRank extends RankGraph<String> {
     protected double rankValue(Node node) {
         return (1d-damping)/nodes.size() + damping * node.getNeighbors().stream().collect(Collectors.summingDouble(neighbor->{
             Float rank = rankTable.get(neighbor.getLabel());
+            if(rank==null) return 0d;
             if(neighbor.getNeighbors().size()>0) {
                 return (double)rank/neighbor.getNeighbors().size();
             } else return 0d;
@@ -41,13 +42,14 @@ public class PageRank extends RankGraph<String> {
         rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
         labelToCitationLabelsMap.forEach((label,citations)->{
-            graph.addBinaryNode(label);
+            Node labelNode = graph.addBinaryNode(label);
             citations.forEach(citation->{
-                graph.addBinaryNode(citation);
-                graph.connectNodes(label, citation);
+                Node citationNode = graph.addBinaryNode(citation);
+                graph.connectNodes(labelNode,citationNode);
             });
         });
         nodes=graph.getAllNodesList();
+        this.nodes.forEach(node->rankTable.put(node.getLabel(),1f/nodes.size()));
         System.out.println("Done.");
     }
 
