@@ -123,9 +123,9 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         // add node
         Node cpcNode = graph.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
         Node techNode = graph.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
-        graph.connectNodes(techNode,cpcNode);
-        graph.addFactorNode(null,techNode);
-        graph.addFactorNode(null,cpcNode,techNode);
+        graph.connectNodes(cpcNode,techNode);
+        graph.addFactorNode(null,cpcNode);
+        graph.addFactorNode(null,techNode,cpcNode);
 
         System.out.println("Finished adding nodes.");
 
