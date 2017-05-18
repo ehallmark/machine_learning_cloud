@@ -203,25 +203,9 @@ public class ValuationServer {
                 String search_input_str = params.get("search_input").value();
                 if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
                 // split by line
-                Set<String> all_search_inputs = new HashSet<>();
-                String[] search_inputs = search_input_str.split(";|\\R");
-                Arrays.stream(search_inputs).forEach(search_input->{
-                    String assigneeStr = AssigneeTrimmer.standardizedAssignee(search_input);
-                    String patentStr = search_input.replaceAll("[^0-9]", "");
-                    String cleanSearchInput=null;
-                    if (Database.isAssignee(assigneeStr)) {
-                        cleanSearchInput = assigneeStr;
-                    } else {
-                        cleanSearchInput = patentStr;
-                    }
-                    all_search_inputs.add(cleanSearchInput);
-                });
+                String[] search_inputs = search_input_str.split("\n");
 
-                if(all_search_inputs.isEmpty()) {
-                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find any search inputs"));
-                }
-
-                ValueSolution solution = solve(attrsToUseList,all_search_inputs);
+                ValueSolution solution = solve(attrsToUseList,Arrays.asList(search_inputs));
                 System.out.println("Solution size: "+solution.scores.size());
                 solution.scores.forEach((p)-> System.out.println(p.getFirst()+": "+p.getSecond()));
 
