@@ -222,6 +222,8 @@ public class ValuationServer {
                 }
 
                 ValueSolution solution = solve(attrsToUseList,all_search_inputs);
+                System.out.println("Solution size: "+solution.scores.size());
+                solution.scores.forEach((p)-> System.out.println(p.getFirst()+": "+p.getSecond()));
 
                 // add to request map
                 navigator.addRequest(solution);
