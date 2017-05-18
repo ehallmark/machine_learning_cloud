@@ -69,6 +69,7 @@ public class Database {
 	private static final File gatherTechMapFile = new File(Constants.DATA_FOLDER+"gather_technology_to_patent_map.jobj");
 	private static Map<String,Collection<String>> gatherTechMap;
 	private static Set<String> gatherPatentSet;
+	private static volatile boolean init=false;
 
 	public static Object tryLoadObject(File file) {
 		System.out.println("Starting to load file: "+file.getName()+"...");
@@ -137,6 +138,8 @@ public class Database {
 	}
 
 	public static void initializeDatabase() {
+		if(init==true)return;
+		init=true;
 		if(gatherTechMapFile.exists()) {
 			gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
 		} else {
@@ -225,12 +228,19 @@ public class Database {
 	}
 
 	public static boolean hasClassifications(String pat) {
-		return patentToClassificationMap.containsKey(pat);
+		return getPatentToClassificationMap().containsKey(pat);
 	}
 
-	public static Set<String> getClassCodes() { return new HashSet<>(allClassCodes); }
+	public static Set<String> getClassCodes() {
+		if(allClassCodes==null) initializeDatabase();
+		return new HashSet<>(allClassCodes);
+	}
 
-	public static Set<String> getAssignees() {return new HashSet<>(allAssignees);}
+
+	public static Set<String> getAssignees() {
+		if(allAssignees==null) initializeDatabase();
+		return new HashSet<>(allAssignees);
+	}
 
 	public static void setupGatherConn() throws SQLException {
 		gatherDBConn = DriverManager.getConnection(gatherDBUrl);
