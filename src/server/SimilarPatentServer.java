@@ -100,8 +100,12 @@ public class SimilarPatentServer {
             try {
                 modelMap.put("overallValue", new OverallEvaluator());
                 modelMap.put("pageRankValue", new PageRankEvaluator());
+                modelMap.put("marketValue",new MarketEvaluator());
+                modelMap.put("citationValue", new CitationEvaluator());
+                modelMap.put("claimValue",new ClaimEvaluator());
                 modelMap.put("assetsPurchased", new AssetsPurchasedEvaluator());
                 modelMap.put("assetsSold", new AssetsSoldEvaluator());
+                modelMap.put("technologyValue",new TechnologyEvaluator());
                 modelMap.put("compDBAssetsPurchased", new AssetsPurchasedEvaluator());
                 modelMap.put("compDBAssetsSold", new AssetsSoldEvaluator());
                 modelMap.put("largePortfolios", new PortfolioSizeEvaluator());
