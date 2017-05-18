@@ -538,6 +538,7 @@ public class Database {
 	}
 
 	public static Collection<String> getValuablePatents() {
+		if(valuablePatents==null) initializeDatabase();
 		return valuablePatents;
 	}
 
