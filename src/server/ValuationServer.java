@@ -203,7 +203,7 @@ public class ValuationServer {
                 String search_input_str = params.get("search_input").value();
                 if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
                 // split by line
-                String[] search_inputs = search_input_str.split("\n");
+                String[] search_inputs = search_input_str.split("\\r?\\n");
 
                 ValueSolution solution = solve(attrsToUseList,Arrays.asList(search_inputs));
                 System.out.println("Solution size: "+solution.scores.size());
