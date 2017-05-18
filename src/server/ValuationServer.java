@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import genetics.lead_development.Attribute;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
@@ -14,6 +15,7 @@ import ui_models.attributes.classification.CPCGatherTechTagger;
 import ui_models.attributes.classification.KeywordGatherTechTagger;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.attributes.value.ValueAttr;
 import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
@@ -31,21 +33,18 @@ import static spark.Spark.post;
 /**
  * Created by Evan on 2/12/2017.
  */
-public class TechTaggerUI {
+public class ValuationServer {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static ClassificationAttr CPC_TAGGER;
-    private static ClassificationAttr SIMILARITY_TAGGER;
-    private static ClassificationAttr GATHER_KEYWORD_TAGGER;
+    public static final Map<String,ValueAttr> ATTRIBUTES = new HashMap<>();
     static {
-        CPC_TAGGER=new CPCGatherTechTagger();
-        SIMILARITY_TAGGER= SimilarityGatherTechTagger.getAIModelTagger();
-        GATHER_KEYWORD_TAGGER=new KeywordGatherTechTagger();
+        SimilarPatentServer.loadValueModels();
+        SimilarPatentServer.modelMap.forEach((name,model)->ATTRIBUTES.put(name,model));
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
-                + "var url = '/tech_tagger_report'; "
+                + "var url = '/valuation_report'; "
                 + "var tempScrollTop = $(window).scrollTop();"
                 //+ "window.onerror = function(errorMsg, url, lineNumber) {"
                 //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
@@ -90,32 +89,30 @@ public class TechTaggerUI {
     static Tag generateReportsForm() {
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Start Search","Searching")).with(
-                        h2("Tech Tagger"),
-                        label("To Search For (separated by semi-colon or newline)").with(
-                                br(),
-                                textarea().withName("search_input")
-                        ),br(),
-                        label("CPC Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("cpc_percent").withValue("1.0")
-                        ),br(),
-                        label("AI Model Percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("ai_percent").withValue("1.0")
-                        ),br(),
-                        label("Gather Keyword Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("gather_keyword_percent").withValue("1.0")
-                        ),br(),
-                        label("Global Keyword Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("raw_keyword_percent").withValue("1.0")
-                        ),br(),
-                        label("Tag Limit").with(
-                                br(),
-                                input().withType("number").withValue("5").withName("tag_limit")
-                        ),br(),br(),
-                        button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
+                    h2("Asset Valuation"),
+                    label("To Search For (separated by semi-colon or newline)").with(
+                            br(),
+                            textarea().withName("search_input")
+                    ),br(),
+                    div().with(
+                            p("(Note: A positive Relative Importance looks to maximize the attribute value, while a negative Relative Importance looks to minimize the attribute value."),
+                            table().with(
+                                    thead().with(
+                                            tr().with(
+                                                    th("Attributes").attr("style","text-align: left;"),
+                                                    th("Relative Importance").attr("style","text-align: left;")
+                                            )
+                                    ),tbody().with(
+                                            ATTRIBUTES.entrySet().stream().sorted((e1,e2)->e1.getKey().compareTo(e2.getKey())).map(e->label().with(tr().with(
+                                                    td(e.getKey()),td().with(input().withType("number").withName("importance-"+e.getKey()).withValue("0"))
+                                                    ))
+                                            ).collect(Collectors.toList())
+
+                                    )
+                            )
+                    ),
+                    br(),br(),
+                    button("Start Search").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),hr()
 
                 ),
                 br(),
@@ -127,8 +124,8 @@ public class TechTaggerUI {
         return div().with(
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                            input().withName("goBack").withValue("on").withType("hidden"), br(),
-                            button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                        input().withName("goBack").withValue("on").withType("hidden"), br(),
+                        button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                 ),
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward","Forward","Going forward"))
                         .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
@@ -153,10 +150,10 @@ public class TechTaggerUI {
             return response.body();
         });
 
-        get("/tech_tagger", (req, res) -> SimilarPatentServer.templateWrapper(res, generateReportsForm(), SimilarPatentServer.getAndRemoveMessage(req.session())));
+        get("/asset_valuation", (req, res) -> SimilarPatentServer.templateWrapper(res, generateReportsForm(), SimilarPatentServer.getAndRemoveMessage(req.session())));
 
 
-        post("/tech_tagger_report", (req, res) -> {
+        post("/valuation_report", (req, res) -> {
             res.type("application/json");
             long time0 = System.currentTimeMillis();
             try {
@@ -164,7 +161,7 @@ public class TechTaggerUI {
                 QueryParamsMap params;
 
                 // handle navigation
-                BackButtonHandler<TechnologySolution> navigator;
+                BackButtonHandler<ValueSolution> navigator;
                 if (req.session().attribute("navigator") == null) {
                     navigator = new BackButtonHandler<>();
                     req.session().attribute("navigator", navigator);
@@ -173,7 +170,7 @@ public class TechTaggerUI {
                 }
 
                 if (SimilarPatentServer.extractBool(req, "goBack")) {
-                    TechnologySolution tmp = navigator.goBack();
+                    ValueSolution tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                     else {
                         // RETURN SOLUTION
@@ -181,7 +178,7 @@ public class TechTaggerUI {
                         return renderSolution(tmp);
                     }
                 } else if (SimilarPatentServer.extractBool(req, "goForward")) {
-                    TechnologySolution tmp = navigator.goForward();
+                    ValueSolution tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
                     else {
                         // RETURN SOLUTION
@@ -193,50 +190,38 @@ public class TechTaggerUI {
                 }
 
                 System.out.println("Handled navigator");
-                int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
-                double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",0.0));
-                double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
-                double gather_keyword_percent = (SimilarPatentServer.extractDouble(params,"gather_keyword_percent",0.0));
-                if(ai_percent<0)ai_percent=0;
-                if(cpc_percent<0)cpc_percent=0;
-                if(gather_keyword_percent<0)gather_keyword_percent=0;
-                if(ai_percent+cpc_percent+gather_keyword_percent==0.0) {
-                    return new Gson().toJson(new SimpleAjaxMessage("Must have at least one model above zero"));
-                }
+
+                List<Pair<ValueAttr,Double>> attrsToUseList = new ArrayList<>(ATTRIBUTES.size());
+                ATTRIBUTES.forEach((name,model)->{
+                    double importance = SimilarPatentServer.extractDouble(params,"importance-"+name,0d);
+                    if(importance!=0) {
+                        System.out.println("Using attr " + name + " with weight: " + importance);
+                        attrsToUseList.add(new Pair<>(model,importance));
+                    }
+                });
+
                 String search_input_str = params.get("search_input").value();
                 if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
                 // split by line
                 Set<String> all_search_inputs = new HashSet<>();
                 String[] search_inputs = search_input_str.split(";|\\R");
-                AtomicReference<PortfolioList.Type> inputType = new AtomicReference<>();
                 Arrays.stream(search_inputs).forEach(search_input->{
-                    PortfolioList.Type type=null;
                     String assigneeStr = AssigneeTrimmer.standardizedAssignee(search_input);
                     String patentStr = search_input.replaceAll("[^0-9]", "");
                     String cleanSearchInput=null;
                     if (Database.isAssignee(assigneeStr)) {
-                        type = PortfolioList.Type.assignees;
                         cleanSearchInput = assigneeStr;
                     } else {
-                        type = PortfolioList.Type.patents;
                         cleanSearchInput = patentStr;
                     }
                     all_search_inputs.add(cleanSearchInput);
-                    inputType.set(type);
                 });
 
                 if(all_search_inputs.isEmpty()) {
                     return new Gson().toJson(new SimpleAjaxMessage("Unable to find any search inputs"));
                 }
 
-                System.out.println("Starting similarity tagger");
-                List<Pair<String, Double>> results;
-
-                ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent));
-                results = tagger.attributesFor(PortfolioList.abstractPorfolioList(all_search_inputs, inputType.get()), tag_limit);
-                TechnologySolution solution = new TechnologySolution(results);
-
-                if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
+                ValueSolution solution = solve(attrsToUseList,all_search_inputs);
 
                 // add to request map
                 navigator.addRequest(solution);
@@ -253,7 +238,13 @@ public class TechTaggerUI {
         });
     }
 
-    private static String renderSolution(TechnologySolution solution) {
+    private static ValueSolution solve(List<Pair<ValueAttr,Double>> modelsWithImportance, Collection<String> searchInputs) {
+        return new ValueSolution(searchInputs.stream().map(input->{
+            return new Pair<>(input,modelsWithImportance.stream().collect(Collectors.summingDouble(pair->pair.getSecond()*pair.getFirst().evaluate(input))));
+        }).collect(Collectors.toList()));
+    }
+
+    private static String renderSolution(ValueSolution solution) {
         return new Gson().toJson(new SimpleAjaxMessage(div().with(
                 solution == null ? div().with(h4("No Solution Found.")) : div().with(
                         h4("Solution"),
@@ -262,36 +253,35 @@ public class TechTaggerUI {
         ).render()));
     }
 
-    static Tag tableFromSolution(TechnologySolution solution) {
+    static Tag tableFromSolution(ValueSolution solution) {
         return div().with(
                 table().with(
-                    thead().with(
-                            tr().with(
-                                    th("Technology"),
-                                    th("Score")
-                            )
-                    ),tbody().with(
-                            solution.scores.stream().map(entry->tr().with(
-                                    td(entry.getFirst()),
-                                    td(entry.getSecond().toString())
-                            )).collect(Collectors.toList())
-                    )
+                        thead().with(
+                                tr().with(
+                                        th("Asset"),
+                                        th("Value")
+                                )
+                        ),tbody().with(
+                                solution.scores.stream().map(entry->tr().with(
+                                        td(entry.getFirst()),
+                                        td(entry.getSecond().toString())
+                                )).collect(Collectors.toList())
+                        )
                 )
 
         );
     }
 
     public static void main(String[] args) throws Exception {
-        SimilarPatentServer.loadValueModels();
         setupServer();
-        System.out.println("Finished Setting up TechTagger Server.");
+        System.out.println("Finished Setting up Value Server.");
     }
 
 
 }
-class TechnologySolution {
+class ValueSolution {
     List<Pair<String,Double>> scores;
-    public TechnologySolution(List<Pair<String,Double>> scores) {
+    public ValueSolution(List<Pair<String,Double>> scores) {
         this.scores=scores;
     }
 }

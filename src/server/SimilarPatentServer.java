@@ -96,17 +96,19 @@ public class SimilarPatentServer {
     }
 
     static void loadValueModels() {
-        try {
-            modelMap.put("overallValue",new OverallEvaluator());
-            modelMap.put("pageRankValue",new PageRankEvaluator());
-            modelMap.put("assetsPurchased",new AssetsPurchasedEvaluator());
-            modelMap.put("assetsSold",new AssetsSoldEvaluator());
-            modelMap.put("compDBAssetsPurchased",new AssetsPurchasedEvaluator());
-            modelMap.put("compDBAssetsSold",new AssetsSoldEvaluator());
-            modelMap.put("largePortfolios",new PortfolioSizeEvaluator());
-            modelMap.put("smallPortfolios",new SmallPortfolioSizeEvaluator());
-        }catch(Exception e) {
-            e.printStackTrace();
+        if(modelMap.isEmpty()) {
+            try {
+                modelMap.put("overallValue", new OverallEvaluator());
+                modelMap.put("pageRankValue", new PageRankEvaluator());
+                modelMap.put("assetsPurchased", new AssetsPurchasedEvaluator());
+                modelMap.put("assetsSold", new AssetsSoldEvaluator());
+                modelMap.put("compDBAssetsPurchased", new AssetsPurchasedEvaluator());
+                modelMap.put("compDBAssetsSold", new AssetsSoldEvaluator());
+                modelMap.put("largePortfolios", new PortfolioSizeEvaluator());
+                modelMap.put("smallPortfolios", new SmallPortfolioSizeEvaluator());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -150,6 +152,9 @@ public class SimilarPatentServer {
                 ),
                 h3().with(
                         a("Tech Tagger").withHref("/tech_tagger")
+                ),
+                h3().with(
+                        a("Asset Valuation").withHref("/asset_valuation")
                 ),
                 h3().with(
                         a("Additional Patent Tools").withHref("/patent_toolbox")
