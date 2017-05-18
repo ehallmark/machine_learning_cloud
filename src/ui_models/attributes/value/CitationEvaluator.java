@@ -3,6 +3,7 @@ package ui_models.attributes.value;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import seeding.Database;
 import tools.DateHelper;
+import ui_models.attributes.classification.helper.BuildCPCToGatherStatistics;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -28,7 +29,7 @@ public class CitationEvaluator extends ValueAttr {
 
     private static Map<String,Double> runModel(){
         System.out.println("Starting to load citation evaluator...");
-        List<String> patents = new ArrayList<>(Database.getValuablePatents());
+        List<String> patents = new ArrayList<>(((Map<String,Set<String>>) Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"))).keySet());
         Collection<String> assignees = Database.getAssignees();
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
         Map<String,Set<String>> patentToCitationsMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
