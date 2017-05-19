@@ -1,5 +1,6 @@
 package model_testing;
 
+import graphical_models.classification.NaiveGatherClassifier;
 import ui_models.attributes.classification.CPCGatherTechTagger;
 import ui_models.attributes.classification.KeywordGatherTechTagger;
 import seeding.Database;
@@ -24,6 +25,10 @@ public class TrainModelsWithLatestGatherData {
 
         // train gather cpc model
         CPCGatherTechTagger.trainAndSaveLatestModel(trainingData,testingData,validationData);
+
+
+        // train naive bayesian model
+        NaiveGatherClassifier.main(new String[]{});
 
     }
 }
