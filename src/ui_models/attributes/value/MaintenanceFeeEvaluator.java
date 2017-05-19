@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class MaintenanceFeeEvaluator extends ValueAttr {
     public MaintenanceFeeEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None,"Maintenance Fee Value");
+        super(ValueMapNormalizer.DistributionType.Uniform,"Maintenance Fee Value");
     }
 
     @Override

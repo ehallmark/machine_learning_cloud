@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class AssetFamilyEvaluator extends ValueAttr {
     public AssetFamilyEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None,"Asset Family Value");
+        super(ValueMapNormalizer.DistributionType.Uniform,"Asset Family Value");
     }
 
     @Override

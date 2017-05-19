@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class PendencyEvaluator extends ValueAttr {
     public PendencyEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None,"Pendency Value");
+        super(ValueMapNormalizer.DistributionType.Uniform,"Pendency Value");
     }
 
     @Override

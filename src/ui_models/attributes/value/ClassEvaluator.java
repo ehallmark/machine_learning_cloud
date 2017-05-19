@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class ClassEvaluator extends ValueAttr {
     public ClassEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None,"Classification Value");
+        super(ValueMapNormalizer.DistributionType.Uniform,"Classification Value");
     }
 
     @Override

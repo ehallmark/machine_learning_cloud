@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class TransactionEvaluator extends ValueAttr {
     public TransactionEvaluator() {
-        super(ValueMapNormalizer.DistributionType.None,"Transaction Value");
+        super(ValueMapNormalizer.DistributionType.Uniform,"Transaction Value");
     }
 
     @Override
