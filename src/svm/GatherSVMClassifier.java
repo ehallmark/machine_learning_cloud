@@ -113,17 +113,12 @@ public class GatherSVMClassifier extends ClassificationAttr {
         System.out.println("Training svm model...");
         svm_model m = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
 
-        System.out.println("Testing svm model...");
-        Pair<double[][],double[][]> testing = SVMHelper.mapToSVMData(SplitModelData.getGatherTechnologyTestDataMap(),orderedTechnologies);
-        double[] ypred = SVMHelper.svmPredict(testing.getFirst(), m);
-        for (int i = 0; i < testing.getFirst().length; i++){
-            System.out.println("(Actual:" + orderedTechnologies.get((int) testing.getSecond()[i][0]) + " Prediction:" + orderedTechnologies.get((int) ypred[i]) + ")");
-        }
-
         // Save Model
         Database.trySaveObject(m,modelFile);
 
         // Save Technology Ordering
         Database.trySaveObject(orderedTechnologies,techFile);
+
+        
     }
 }
