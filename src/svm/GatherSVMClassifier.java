@@ -45,11 +45,16 @@ public class GatherSVMClassifier extends ClassificationAttr {
         return portfolio.getTokens().stream().map(token->{
             INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
             if(vector!=null) {
-                double[] results = SVMHelper.svmPredict(new double[][]{vector.data().asDouble()},model);
-                return orderedTechnologies.get((int) results[0]);
+                double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];
+                List<Pair<String,Double>> maxResults = new ArrayList<>();
+                for(int i = 0; i < results.length; i++) {
+                    maxResults.add(new Pair<>(orderedTechnologies.get(i),results[i]));
+                }
+                return maxResults.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
             } else return null;
-        }).filter(d->d!=null).collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
-                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).collect(Collectors.toList());
+        }).filter(d->d!=null).flatMap(list->list.stream()).collect(Collectors.groupingBy(p->p.getFirst(), Collectors.summingDouble(p->p.getSecond()))).entrySet().stream()
+                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
+                .collect(Collectors.toList());
     }
 
     @Override

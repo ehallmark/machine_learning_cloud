@@ -62,6 +62,29 @@ public class SVMHelper {
         return model;
     }
 
+    static double[][] svmPredictionDistribution(double[][]xtest, svm_model model) {
+        double[][] estimates = new double[xtest.length][];
+
+        for(int k = 0; k < xtest.length; k++) {
+
+            double[] fVector = xtest[k];
+
+            svm_node[] nodes = new svm_node[fVector.length];
+            for (int i = 0; i < fVector.length; i++) {
+                svm_node node = new svm_node();
+                node.index = i;
+                node.value = fVector[i];
+                nodes[i] = node;
+            }
+
+            double[] prob_estimates = new double[model.nr_class];
+            svm.svm_predict_probability(model, nodes, prob_estimates);
+            estimates[k]=prob_estimates;
+        }
+
+        return estimates;
+    }
+
     static double[] svmPredict(double[][] xtest, svm_model model)
     {
 
