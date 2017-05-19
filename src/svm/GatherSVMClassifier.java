@@ -42,7 +42,7 @@ public class GatherSVMClassifier extends ClassificationAttr {
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
-        return portfolio.getTokens().stream().map(token->{
+        /*return portfolio.getTokens().stream().map(token->{
             INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
             if(vector!=null) {
                 int techIdx = (int) (SVMHelper.svmPredict(new double[][]{vector.data().asDouble()},model)[0]);
@@ -50,20 +50,20 @@ public class GatherSVMClassifier extends ClassificationAttr {
             } else return null;
         }).filter(d->d!=null).collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
                 .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
-                .collect(Collectors.toList());
-        /*return portfolio.getTokens().stream().map(token->{
+                .collect(Collectors.toList()); */
+        return portfolio.getTokens().stream().map(token->{
             INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
             if(vector!=null) {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];
                 List<Pair<String,Double>> maxResults = new ArrayList<>();
                 for(int i = 0; i < results.length; i++) {
-                    maxResults.add(new Pair<>(orderedTechnologies.get(i),results[i]));
+                    maxResults.add(new Pair<>(orderedTechnologies.get(model.label[i]),results[i]));
                 }
                 return maxResults.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
             } else return null;
         }).filter(d->d!=null).flatMap(list->list.stream()).collect(Collectors.groupingBy(p->p.getFirst(), Collectors.summingDouble(p->p.getSecond()))).entrySet().stream()
                 .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
-                .collect(Collectors.toList());*/
+                .collect(Collectors.toList());
     }
 
     @Override

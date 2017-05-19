@@ -13,23 +13,21 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 5/4/17.
  */
 public class SVMHelper {
-    private static final Random rand = new Random(69);
-
 
     // helper for gather data
     public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies) {
         Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&&SimilarPatentServer.getLookupTable().vector(e.getKey())!=null).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
-        int N = invertedGatherMap.size();
+        int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
         double[][] x = new double[N][];
         double[][] y = new double[N][];
 
         AtomicInteger idx = new AtomicInteger(0);
         invertedGatherMap.forEach((patent,techs)->{
-            int i = idx.getAndIncrement();
-            x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
-            List<String> techList = new ArrayList<>(techs);
-            Collections.shuffle(techList);
-            y[i] = new double[]{technologies.indexOf(techList.get(rand.nextInt(techList.size())))};
+            techs.forEach(tech->{
+                int i = idx.getAndIncrement();
+                x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
+                y[i] = new double[]{technologies.indexOf(tech)};
+            });
         });
 
         return new Pair<>(x,y);
