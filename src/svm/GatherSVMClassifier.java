@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class GatherSVMClassifier extends ClassificationAttr {
     protected static svm_model MODEL;
     protected static List<String> ORDERED_TECHNOLOGIES;
+    protected static GatherSVMClassifier classifier;
 
     protected svm_model model;
     protected List<String> orderedTechnologies;
@@ -30,6 +31,13 @@ public class GatherSVMClassifier extends ClassificationAttr {
     public GatherSVMClassifier(svm_model model, List<String> orderedTechnologies) {
         this.model=model;
         this.orderedTechnologies=orderedTechnologies;
+    }
+
+    public static GatherSVMClassifier get() {
+        if(classifier==null) {
+            classifier=load();
+        }
+        return classifier;
     }
 
     @Override
