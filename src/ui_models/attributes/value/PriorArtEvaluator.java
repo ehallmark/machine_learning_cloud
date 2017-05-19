@@ -23,14 +23,14 @@ import java.util.*;
 public class PriorArtEvaluator extends ValueAttr {
     static final File file = new File("prior_art_value_model.jobj");
 
-    private PriorArtEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Prior Art Value");
-        throw new RuntimeException("This model is now merged into technology value...");
+    public PriorArtEvaluator() {
+        super(ValueMapNormalizer.DistributionType.None,"Prior Art Value");
+        //throw new RuntimeException("This model is now merged into technology value...");
     }
 
     @Override
     protected List<Map<String,Double>> loadModels() {
-        throw new RuntimeException("This model is now merged into technology value...");
+        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
     }
 
     private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){

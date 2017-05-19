@@ -54,6 +54,14 @@ public abstract class Item implements Comparable<Item> {
             humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", "compDBAssetsSold");
             humanAttrToJavaAttrMap.put("CompDB Assets Purchased", "compDBAssetsPurchased");
+            humanAttrToJavaAttrMap.put("Transaction Value","transactionValue");
+            humanAttrToJavaAttrMap.put("Claim Length Value","claimLengthValue");
+            humanAttrToJavaAttrMap.put("Claim Ratio Value","claimRatioValue");
+            humanAttrToJavaAttrMap.put("Pendency Value","pendencyValue");
+            humanAttrToJavaAttrMap.put("Prior Art Value","priorArtValue");
+            humanAttrToJavaAttrMap.put("Classification Value","classValue");
+            humanAttrToJavaAttrMap.put("Maintenance Fee Value","maintenanceFeeValue");
+            humanAttrToJavaAttrMap.put("Asset Family Value","assetFamilyValue");
 
 
             // inverted version to get human readables back

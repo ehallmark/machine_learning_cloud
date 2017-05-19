@@ -92,6 +92,7 @@ public class SimilarPatentServer {
     }
 
     public static VocabCache<VocabWord> getVocabCache() {
+        if(paragraphVectors==null)loadLookupTable();
         return paragraphVectors.getVocab();
     }
 
@@ -110,6 +111,15 @@ public class SimilarPatentServer {
                 modelMap.put("compDBAssetsSold", new AssetsSoldEvaluator());
                 modelMap.put("largePortfolios", new PortfolioSizeEvaluator());
                 modelMap.put("smallPortfolios", new SmallPortfolioSizeEvaluator());
+                modelMap.put("transactionValue",new TransactionEvaluator());
+                modelMap.put("assetFamilyValue", new AssetFamilyEvaluator());
+                modelMap.put("pendencyValue",new PendencyEvaluator());
+                modelMap.put("claimRatioValue",new ClaimRatioEvaluator());
+                modelMap.put("classValue",new ClassEvaluator());
+                modelMap.put("priorArtValue", new PriorArtEvaluator());
+                modelMap.put("maintenanceFeeValue",new MaintenanceFeeEvaluator());
+                modelMap.put("claimLengthValue", new ClaimLengthEvaluator());
+                
             } catch (Exception e) {
                 e.printStackTrace();
             }
