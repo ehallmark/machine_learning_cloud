@@ -3,6 +3,7 @@ package graphical_models.classification;
 import com.google.common.collect.Maps;
 import model.functions.inference_methods.BeliefPropagation;
 import model.functions.inference_methods.SamplingMethod;
+import model.functions.normalization.DivideByPartition;
 import model.graphs.*;
 import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.learning.algorithms.ExpectationMaximizationAlgorithm;
@@ -79,7 +80,25 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         Set<String> classifications = new HashSet<>();
         portfolio.getTokens().forEach(token->classifications.addAll(Database.classificationsFor(token)));
-        return classifications.stream().map(clazz->{
+        double[] observation = new double[orderedClassifications.size()];
+        Arrays.fill(observation,0d);
+        classifications.forEach(clazz->{
+           int idx = orderedClassifications.indexOf(clazz);
+           if(idx>=0) {
+               observation[idx]++;
+           }
+        });
+        FactorNode observedFactor = new FactorNode(observation,new String[]{"CPC"},new int[]{orderedClassifications.size()},bayesianNet.findNode("CPC").getValueMap());
+        observedFactor.reNormalize(new DivideByPartition());
+        FactorNode condTechFactor = bayesianNet.findNode("Technology").getFactors().get(0);
+        FactorNode result = observedFactor.multiply(condTechFactor).sumOut(new String[]{"CPC"});
+        result.reNormalize(new DivideByPartition());
+        List<Pair<String,Double>> values = new ArrayList<>();
+        for(int i = 0; i < result.getWeights().length; i++) {
+            values.add(new Pair<>(orderedTechnologies.get(i),result.getWeights()[i]));
+        }
+        return values.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
+        /*return classifications.stream().map(clazz->{
             Map<String,Integer> assignment = new HashMap<>();
             int classIdx = orderedClassifications.indexOf(clazz);
             if(classIdx>=0) {
@@ -94,6 +113,7 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
             } else return null;
         }).filter(p->p!=null).collect(Collectors.groupingBy(e->e.getFirst(),Collectors.summingDouble(e->e.getSecond()))).entrySet()
                 .stream().map(e->new Pair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
+         */
     }
 
     @Override
