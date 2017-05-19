@@ -33,7 +33,7 @@ public class ModelTesterMain {
         // test paragraph vector basic similarity model
         ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
         ClassificationAttr svmTagger = GatherSVMClassifier.load();
-        ClassificationAttr bayesTagger = new NaiveGatherClassifier();
+        ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
         for(int i = 1; i <= numPredictions; i+=2) {
             {
 

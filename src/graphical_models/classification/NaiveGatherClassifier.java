@@ -20,6 +20,8 @@ import ui_models.attributes.classification.helper.BuildCPCToGatherStatistics;
 import ui_models.portfolios.AbstractPortfolio;
 import util.MathHelper;
 
+import java.io.File;
+import java.io.Serializable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -27,11 +29,22 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 5/1/17.
  */
-public class NaiveGatherClassifier extends ClassificationAttr{
+public class NaiveGatherClassifier extends ClassificationAttr implements Serializable{
+    static final File file = new File("gather_bayesian_classifier.jobj");
+    private static NaiveGatherClassifier defaultClassifier;
+
     protected BayesianNet bayesianNet;
     protected List<String> orderedTechnologies;
     protected List<String> orderedClassifications;
-    public NaiveGatherClassifier() {
+
+    public static NaiveGatherClassifier get() {
+        if(defaultClassifier==null) {
+            defaultClassifier=(NaiveGatherClassifier)Database.tryLoadObject(file);
+        }
+        return defaultClassifier;
+    }
+
+    private NaiveGatherClassifier() {
         Map<String,Collection<String>> gatherTraining = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Set<String>> patentToClassificationMap = Database.getPatentToClassificationMap();
         Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
@@ -155,7 +168,7 @@ public class NaiveGatherClassifier extends ClassificationAttr{
         Graph graph = classifier.bayesianNet;
         boolean beliefProp=true;
 
-        for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
+        /*for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
             System.out.println("Starting to classify...");
             Map<String,Integer> example = new HashMap<>();
             example.put("CPC",cpcIdx);
@@ -181,7 +194,11 @@ public class NaiveGatherClassifier extends ClassificationAttr{
             System.out.println();
             System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
             System.out.println("Tech: " + prediction);
-        }
+        }*/
         //System.out.println("Results: "+results.toString());
+
+        // save
+        Database.trySaveObject(classifier,file);
+
     }
 }

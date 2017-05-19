@@ -119,7 +119,7 @@ public class SimilarPatentServer {
                 modelMap.put("priorArtValue", new PriorArtEvaluator());
                 modelMap.put("maintenanceFeeValue",new MaintenanceFeeEvaluator());
                 modelMap.put("claimLengthValue", new ClaimLengthEvaluator());
-                
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
