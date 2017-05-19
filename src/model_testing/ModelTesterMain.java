@@ -27,32 +27,30 @@ public class ModelTesterMain {
         Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
 
-        int test = 3;
         for(int i = 1; i <= numPredictions; i+=2) {
-            if(test==0){
-                ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
-                GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
-                testModel("Paragraph Vector Simple Average [n="+i+"]", scorer, testData, i);
-            } else if(test==1)
-            {
-                ClassificationAttr cpcModel = new CPCGatherTechTagger();
-                GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
-                testModel("CPC Model [n="+i+"]", scorer, testData, i);
-            } else if(test==2)
-            {
-                ClassificationAttr gatherKeywordModel = new KeywordGatherTechTagger();
-                GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
-                testModel("Gather Keyword Model [n="+i+"]", scorer, testData, i);
-            } else if(test==3)
-            {
-                ClassificationAttr svmTagger = GatherSVMClassifier.get();
-                GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
-                testModel("Gather SVM Model [n="+i+"]", scorer, testData, i);
-            } else if(test==4)
-            {
-                ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
-                GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
-                testModel("Gather Bayesian Modele [n="+i+"]", scorer, testData, i);
+            for(String arg : args) {
+                int test = Integer.valueOf(arg);
+                if (test == 0) {
+                    ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
+                    testModel("Paragraph Vector Simple Average [n=" + i + "]", scorer, testData, i);
+                } else if (test == 1) {
+                    ClassificationAttr cpcModel = new CPCGatherTechTagger();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
+                    testModel("CPC Model [n=" + i + "]", scorer, testData, i);
+                } else if (test == 2) {
+                    ClassificationAttr gatherKeywordModel = new KeywordGatherTechTagger();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
+                    testModel("Gather Keyword Model [n=" + i + "]", scorer, testData, i);
+                } else if (test == 3) {
+                    ClassificationAttr svmTagger = GatherSVMClassifier.get();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
+                    testModel("Gather SVM Model [n=" + i + "]", scorer, testData, i);
+                } else if (test == 4) {
+                    ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
+                    testModel("Gather Bayesian Modele [n=" + i + "]", scorer, testData, i);
+                }
             }
         }
 
