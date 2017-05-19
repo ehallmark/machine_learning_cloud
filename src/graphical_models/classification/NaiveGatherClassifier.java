@@ -89,7 +89,7 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
             int maxIdx = MathHelper.indexOfMaxValue(weights);
             double maxValue = weights[maxIdx];
             return new Pair<>(orderedTechnologies.get(maxIdx),maxValue);
-        }).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond())).entrySet().stream().collect(Collectors.groupingBy(e->e.getKey(),Collectors.summingDouble(e->e.getValue()))).entrySet()
+        }).collect(Collectors.groupingBy(e->e.getFirst(),Collectors.summingDouble(e->e.getSecond()))).entrySet()
                 .stream().map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
     }
 
