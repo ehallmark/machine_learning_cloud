@@ -49,7 +49,7 @@ public class ModelTesterMain {
                 } else if (test == 4) {
                     ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
-                    testModel("Gather Bayesian Modele [n=" + i + "]", scorer, testData, i);
+                    testModel("Gather Bayesian Model [n=" + i + "]", scorer, testData, i);
                 }
             }
         }
@@ -68,6 +68,7 @@ public class ModelTesterMain {
             System.out.println(result);
             scoreMap.put(modelName, modelAccuracy);
         } catch(Exception e) {
+            e.printStackTrace();
             System.out.println("Error on: "+modelName+" ["+numPredictions+"]");
         }
     }

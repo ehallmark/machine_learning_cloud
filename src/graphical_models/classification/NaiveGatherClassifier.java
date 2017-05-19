@@ -162,43 +162,8 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
     }
 
     public static void main(String[] args) {
-        Map<String,String> cpcTitle = Database.getClassCodeToClassTitleMap().entrySet().stream().collect(Collectors.toMap(e->ClassCodeHandler.convertToLabelFormat(e.getKey()),e->e.getValue()));
         NaiveGatherClassifier classifier = new NaiveGatherClassifier();
-        List<String> orderedClassifications = classifier.orderedClassifications;
-        Graph graph = classifier.bayesianNet;
-        boolean beliefProp=true;
-
-        /*for(int cpcIdx = 0; cpcIdx < orderedClassifications.size(); cpcIdx++) {
-            System.out.println("Starting to classify...");
-            Map<String,Integer> example = new HashMap<>();
-            example.put("CPC",cpcIdx);
-            graph.setCurrentAssignment(example);
-
-            Map<String,FactorNode> result;
-            if(beliefProp) {
-                CliqueTree cTree = graph.createCliqueTree();
-                cTree.setCurrentAssignment(example);
-                result = cTree.runBeliefPropagation(Arrays.asList("Technology"));
-            } else {
-                Iterator<Map<String, FactorNode>> chain = new MetropolisHastingsChain(graph, example);
-                for (int i = 0; i < 100; i++) {
-                    chain.next();
-                    System.out.print("-");
-                }
-                System.out.println();
-                System.out.println("Finished burn in");
-                result=chain.next();
-            }
-
-            String prediction = classifier.orderedTechnologies.get(MathHelper.indexOfMaxValue(result.get("Technology").getWeights()));
-            System.out.println();
-            System.out.println("CPC "+orderedClassifications.get(cpcIdx)+": " + cpcTitle.get(orderedClassifications.get(cpcIdx)));
-            System.out.println("Tech: " + prediction);
-        }*/
-        //System.out.println("Results: "+results.toString());
-
         // save
         Database.trySaveObject(classifier,file);
-
     }
 }
