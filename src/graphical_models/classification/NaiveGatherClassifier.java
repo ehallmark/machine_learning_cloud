@@ -81,15 +81,18 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
         portfolio.getTokens().forEach(token->classifications.addAll(Database.classificationsFor(token)));
         return classifications.stream().map(clazz->{
             Map<String,Integer> assignment = new HashMap<>();
-            assignment.put("CPC",orderedClassifications.indexOf(clazz));
-            CliqueTree cliqueTree = bayesianNet.createCliqueTree();
-            cliqueTree.setCurrentAssignment(assignment);
-            Map<String,FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
-            double[] weights = results.get("Technology").getWeights();
-            int maxIdx = MathHelper.indexOfMaxValue(weights);
-            double maxValue = weights[maxIdx];
-            return new Pair<>(orderedTechnologies.get(maxIdx),maxValue);
-        }).collect(Collectors.groupingBy(e->e.getFirst(),Collectors.summingDouble(e->e.getSecond()))).entrySet()
+            int classIdx = orderedClassifications.indexOf(clazz);
+            if(classIdx>=0) {
+                assignment.put("CPC", classIdx);
+                CliqueTree cliqueTree = bayesianNet.createCliqueTree();
+                cliqueTree.setCurrentAssignment(assignment);
+                Map<String, FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
+                double[] weights = results.get("Technology").getWeights();
+                int maxIdx = MathHelper.indexOfMaxValue(weights);
+                double maxValue = weights[maxIdx];
+                return new Pair<>(orderedTechnologies.get(maxIdx), maxValue);
+            } else return null;
+        }).filter(p->p!=null).collect(Collectors.groupingBy(e->e.getFirst(),Collectors.summingDouble(e->e.getSecond()))).entrySet()
                 .stream().map(e->new Pair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }
 
