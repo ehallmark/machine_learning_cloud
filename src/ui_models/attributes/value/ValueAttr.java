@@ -49,7 +49,7 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
             if(model.containsKey(token)) {
                 return model.get(token);
             } else {
-                return ValueMapNormalizer.DEFAULT_START;
+                return (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
             }
         }));
     }
