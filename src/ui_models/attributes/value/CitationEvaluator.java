@@ -16,7 +16,7 @@ import java.util.*;
  * Created by Evan on 1/27/2017.
  */
 public class CitationEvaluator extends ValueAttr {
-    static final File file = new File("citation_value_model.jobj");
+    static final File file = new File("data/citation_value_model.jobj");
 
     public CitationEvaluator() {
         super(ValueMapNormalizer.DistributionType.Normal,"Citation Value");
@@ -101,10 +101,6 @@ public class CitationEvaluator extends ValueAttr {
         System.out.println("Starting to run model.");
         Map<String,Double> map = runModel();
         System.out.println("Finished... Now writing model to file...");
-        ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-        oos.writeObject(map);
-        oos.flush();
-        oos.close();
-        System.out.println("Finished successfully.");
+        Database.trySaveObject(map,file);
     }
 }
