@@ -4,6 +4,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 3/10/17.
@@ -24,21 +25,33 @@ public class OverallEvaluator extends ValueAttr {
     private static void runAndSaveOverallModel() {
         List<ValueAttr> evaluators = Arrays.asList(
                 new CitationEvaluator(),
-                new ClaimEvaluator(),
-                //new AssetsSoldEvaluator(),
-                //new AssetsPurchasedEvaluator(),
-                new MarketEvaluator(),
-                new TechnologyEvaluator()
+                new ClaimRatioEvaluator(),
+                new ClassEvaluator(),
+                new PageRankEvaluator()
         );
 
-        List<Map<String,Double>> allModels = new ArrayList<>();
-        evaluators.forEach(evaluator->{
-           allModels.addAll(evaluator.loadModels());
+        List<Double> weights = Arrays.asList(10d,9d,19d,4d);
+
+        Map<String,Double> mergedModel = new HashMap<>();
+
+        Database.getAssignees().forEach(assignee->{
+            mergedModel.put(assignee,average(assignee,evaluators,weights));
+        });
+        Database.getValuablePatents().forEach(asset->{
+            mergedModel.put(asset,average(asset,evaluators,weights));
         });
 
-        Map<String,Double> mergedModel =new ValueMapNormalizer(ValueMapNormalizer.DistributionType.Normal).normalizeAndMergeModels(allModels);
-
         Database.trySaveObject(mergedModel,mergedValueModelFile);
+    }
+
+    private static double average(String item, List<ValueAttr> values, List<Double> weights) {
+        if(values.size()!=weights.size()) throw new RuntimeException("Invalid weights size");
+        double weightSum = weights.stream().collect(Collectors.summingDouble(d->d));
+        double score = 0d;
+        for(int i = 0; i < values.size(); i++) {
+            score += (values.get(i).evaluate(item)) * (weights.get(i)/weightSum);
+        }
+        return score;
     }
 
     @Override
