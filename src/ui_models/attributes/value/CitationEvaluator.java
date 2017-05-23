@@ -40,6 +40,7 @@ public class CitationEvaluator extends ValueAttr {
         Map<String,Double> oldScores = new HashMap<>();
         LocalDate earliestDate = LocalDate.now().minusYears(20);
         double beginningTrendValue = (new Double(earliestDate.getYear())+new Double(earliestDate.getMonthValue()-1)/12.0);
+        // Get score estimate
         patents.forEach(patent->{
             double score = 0.0;
             if(patentToReferencedByMap.containsKey(patent)) {

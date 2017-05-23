@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 3/10/17.
  */
 public class OverallEvaluator extends ValueAttr {
-    private static final File mergedValueModelFile = new File("merged_value_model_map.jobj");
+    private static final File mergedValueModelFile = new File("data/merged_value_model_map.jobj");
 
     public OverallEvaluator() {
         super(null, "AI Value");
