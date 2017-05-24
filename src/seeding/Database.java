@@ -99,7 +99,7 @@ public class Database {
 		}
 	}
 
-	public static boolean isJapaneseAssignee(String assignee) {
+	public synchronized static boolean isJapaneseAssignee(String assignee) {
 		if(japaneseCompanies==null) {
 			// japanese companies
 			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
@@ -107,13 +107,13 @@ public class Database {
 		return japaneseCompanies.contains(assignee);
 	}
 
-	public static Collection<String> getNonJapaneseCompanies() {
+	public synchronized static Collection<String> getNonJapaneseCompanies() {
 		Set<String> allCompanies = new HashSet<>(allAssignees);
 		allCompanies.removeAll(getJapaneseCompanies());
 		return allCompanies;
 	}
 
-	public static Set<String> getJapaneseCompanies() {
+	public synchronized static Set<String> getJapaneseCompanies() {
 		if(japaneseCompanies==null) {
 			// japanese companies
 			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
@@ -121,7 +121,7 @@ public class Database {
 		return new HashSet<>(japaneseCompanies);
 	}
 
-	public static Set<String> loadJapaneseCompaniesSetFromDB() throws SQLException {
+	public synchronized static Set<String> loadJapaneseCompaniesSetFromDB() throws SQLException {
 		PreparedStatement ps = seedConn.prepareStatement("select distinct orgname from patent_grant_assignee where country='JP' and orgname is not null");
 		ResultSet rs = ps.executeQuery();
 		Set<String> japanese = new HashSet<>();
@@ -137,7 +137,7 @@ public class Database {
 		return japanese;
 	}
 
-	public static void initializeDatabase() {
+	public synchronized static void initializeDatabase() {
 		if(init==true)return;
 		init=true;
 		if(gatherTechMapFile.exists()) {
@@ -227,122 +227,122 @@ public class Database {
 		}
 	}
 
-	public static boolean hasClassifications(String pat) {
+	public synchronized static boolean hasClassifications(String pat) {
 		return getPatentToClassificationMap().containsKey(pat);
 	}
 
-	public static Set<String> getClassCodes() {
+	public synchronized static Set<String> getClassCodes() {
 		if(allClassCodes==null) initializeDatabase();
 		return new HashSet<>(allClassCodes);
 	}
 
 
-	public static Set<String> getAssignees() {
+	public synchronized static Set<String> getAssignees() {
 		if(allAssignees==null) initializeDatabase();
 		return new HashSet<>(allAssignees);
 	}
 
-	public static void setupGatherConn() throws SQLException {
+	public synchronized static void setupGatherConn() throws SQLException {
 		gatherDBConn = DriverManager.getConnection(gatherDBUrl);
 		gatherDBConn.setAutoCommit(false);
 	}
 
-	public static Map<String,Set<String>> getPatentToClassificationMap() {
+	public synchronized static Map<String,Set<String>> getPatentToClassificationMap() {
 		if(patentToClassificationMap==null) {
 			patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		}
 		return patentToClassificationMap;
 	}
 
-	public static Map<String,List<String>> getPatentToLatestAssigneeMap() {
+	public synchronized static Map<String,List<String>> getPatentToLatestAssigneeMap() {
 		if(patentToLatestAssigneeMap==null) {
 			patentToLatestAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToLatestAssigneeMapFile));
 		}
 		return patentToLatestAssigneeMap;
 	}
 
-	public static Map<String,LocalDate> getPatentToPubDateMap() {
+	public synchronized static Map<String,LocalDate> getPatentToPubDateMap() {
 		if(patentToPubDateMap==null) {
 			patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		}
 		return patentToPubDateMap;
 	}
 
-	public static Map<String,List<String>> getPatentToOriginalAssigneeMap() {
+	public synchronized static Map<String,List<String>> getPatentToOriginalAssigneeMap() {
 		if(patentToOriginalAssigneeMap==null) {
 			patentToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(patentToOriginalAssigneeMapFile));
 		}
 		return patentToOriginalAssigneeMap;
 	}
 
-	public static Map<String,String> getPatentToInventionTitleMap() {
+	public synchronized static Map<String,String> getPatentToInventionTitleMap() {
 		if(patentToInventionTitleMap==null) {
 			patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
 		}
 		return patentToInventionTitleMap;
 	}
 
-	public static void setupSeedConn() throws SQLException {
+	public synchronized static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
 			seedConn.setAutoCommit(false);
 		}
 	}
 
-	public static void setupCompDBConn() throws SQLException {
+	public synchronized static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
 		compDBConn.setAutoCommit(false);
 	}
 
-	public static Map<String,String> getClassCodeToClassTitleMap() {
+	public synchronized static Map<String,String> getClassCodeToClassTitleMap() {
 		if(classCodeToClassTitleMap==null) {
 			classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 		}
 		return classCodeToClassTitleMap;
 	}
 
-	public static String getClassTitleFromClassCode(String formattedCode) {
+	public synchronized static String getClassTitleFromClassCode(String formattedCode) {
 		formattedCode=formattedCode.toUpperCase().replaceAll(" ","");
 		if(getClassCodeToClassTitleMap().containsKey(formattedCode)) return classCodeToClassTitleMap.get(formattedCode);
 		return "";
 	}
 
-	public static Connection getCompDBConnection() throws SQLException {
+	public synchronized static Connection getCompDBConnection() throws SQLException {
 		if(compDBConn==null)setupCompDBConn();
 		return compDBConn;
 	}
 
-	public static Map<String,Integer> getAssigneeToAssetsSoldCountMap() {
+	public synchronized static Map<String,Integer> getAssigneeToAssetsSoldCountMap() {
 		if(assigneeToAssetsSoldCountMap==null) {
 			assigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_sold_count_map.jobj"));
 		}
 		return assigneeToAssetsSoldCountMap;
 	}
-	public static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() {
+	public synchronized static Map<String,Integer> getAssigneeToAssetsPurchasedCountMap() {
 		if(assigneeToAssetsPurchasedCountMap==null) {
 			assigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"assignee_to_assets_purchased_count_map.jobj"));
 		}
 		return assigneeToAssetsPurchasedCountMap;
 	}
 
-	public static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() {
+	public synchronized static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() {
 		if(compDBAssigneeToAssetsSoldCountMap==null) {
 			compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
 		}
 		return compDBAssigneeToAssetsSoldCountMap;
 	}
-	public static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() {
+	public synchronized static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() {
 		if(compDBAssigneeToAssetsPurchasedCountMap==null) {
 			compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
 		}
 		return compDBAssigneeToAssetsPurchasedCountMap;
 	}
 
-	public static int numPatentsWithCpcClassifications() {
+	public synchronized static int numPatentsWithCpcClassifications() {
 		return patentToClassificationMap.size();
 	}
 
-	public static int getAssetCountFor(String assignee) {
+	public synchronized static int getAssetCountFor(String assignee) {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
@@ -353,7 +353,7 @@ public class Database {
 		return count.get();
 	}
 
-	public static int getAssetsSoldCountFor(String assignee) {
+	public synchronized static int getAssetsSoldCountFor(String assignee) {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
@@ -364,7 +364,7 @@ public class Database {
 		return count.get();
 	}
 
-	public static int getAssetsPurchasedCountFor(String assignee) {
+	public synchronized static int getAssetsPurchasedCountFor(String assignee) {
 		AtomicInteger count = new AtomicInteger(0);
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
@@ -375,7 +375,7 @@ public class Database {
 		return count.get();
 	}
 
-	public static int getExactAssetCountFor(String assignee) {
+	public synchronized static int getExactAssetCountFor(String assignee) {
 		if(assigneeToPatentsMap.containsKey(assignee)) {
 			return assigneeToPatentsMap.get(assignee).size();
 		} else {
@@ -383,21 +383,21 @@ public class Database {
 		}
 	}
 
-	public static boolean isPatent(String patent) {
+	public synchronized static boolean isPatent(String patent) {
 		if(patent.length()<7||patent.length()>8)return false;
 		return lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)||valuablePatents.contains(patent);
 	}
 
-	public static boolean isAssignee(String assignee) {
+	public synchronized static boolean isAssignee(String assignee) {
 		if(assignee.replaceAll("[0-9]","").trim().isEmpty()) return false;
 		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
 	}
 
-	public static LocalDate getPubDateFor(String patent) {
+	public synchronized static LocalDate getPubDateFor(String patent) {
 		return getPatentToPubDateMap().get(patent);
 	}
 
-	public static String getInventionTitleFor(String patent) {
+	public synchronized static String getInventionTitleFor(String patent) {
 		if(getPatentToInventionTitleMap().containsKey(patent)) {
 			return patentToInventionTitleMap.get(patent);
 		} else {
@@ -405,7 +405,7 @@ public class Database {
 		}
 	}
 
-	public static Set<String> possibleNamesForAssignee(String base) {
+	public synchronized static Set<String> possibleNamesForAssignee(String base) {
 		if(base==null||base.isEmpty()) return new HashSet<>();
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
 		if(cleanBase.isEmpty()) return new HashSet<>();
@@ -415,7 +415,7 @@ public class Database {
 		return possible;
 	}
 
-	public static Set<String> subClassificationsForClass(String formattedCPC) {
+	public synchronized static Set<String> subClassificationsForClass(String formattedCPC) {
 		if(formattedCPC==null||formattedCPC.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
 		classCodesPrefixTrie.getValuesForKeysStartingWith(formattedCPC).forEach(a->possible.add(a));
@@ -430,7 +430,7 @@ public class Database {
 		return everything;
 	}
 
-	public static Set<String> classificationsFor(String patent) {
+	public synchronized static Set<String> classificationsFor(String patent) {
 		Set<String> classifications = new HashSet<>();
 		if(getPatentToClassificationMap().containsKey(patent)) {
 			classifications.addAll(patentToClassificationMap.get(patent));
@@ -438,7 +438,7 @@ public class Database {
 		return classifications;
 	}
 
-	public static Set<String> subClassificationsForPatent(String patent) {
+	public synchronized static Set<String> subClassificationsForPatent(String patent) {
 		Set<String> classifications = new HashSet<>();
 		classificationsFor(patent).forEach(clazz->{
 			classifications.add(clazz);
@@ -447,14 +447,14 @@ public class Database {
 		return classifications;
 	}
 
-	public static String entityTypeForPatent(String patent) {
+	public synchronized static String entityTypeForPatent(String patent) {
 		if(patent==null) throw new NullPointerException("patent");
 		if(microEntityPatents.contains(patent)) return "Micro";
 		if(smallEntityPatents.contains(patent)) return "Small";
 		if(largeEntityPatents.contains(patent)) return "Large";
 		return "Unknown";
 	}
-	public static String assigneeEntityType(String assignee) {
+	public synchronized static String assigneeEntityType(String assignee) {
 		int sampleSize = 100;
 		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
 		Map<String,AtomicInteger> entityTypeToScoreMap = new HashMap<>();
@@ -487,7 +487,7 @@ public class Database {
 		return entityTypeToScoreMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).findFirst().get().getKey();
 	}
 
-	public static Map<String,Collection<String>> getEtsiStandardToPatentsMap() {
+	public synchronized static Map<String,Collection<String>> getEtsiStandardToPatentsMap() {
 		if(etsiStandardToPatentsMap==null) {
 			// ETSI
 			System.out.println("Handling ETSI patents...");
@@ -500,7 +500,7 @@ public class Database {
 		return etsiStandardToPatentsMap;
 	}
 
-	public static Collection<String> selectPatentNumbersFromETSIStandard(String etsiStandard) {
+	public synchronized static Collection<String> selectPatentNumbersFromETSIStandard(String etsiStandard) {
 
 		if(getEtsiStandardToPatentsMap().containsKey(etsiStandard)) {
 			return new ArrayList<>(etsiStandardToPatentsMap.get(etsiStandard));
@@ -509,7 +509,7 @@ public class Database {
 		}
 	}
 
-	public static Set<String> selectPatentNumbersFromClassAndSubclassCodes(String cpcCode) {
+	public synchronized static Set<String> selectPatentNumbersFromClassAndSubclassCodes(String cpcCode) {
 		Set<String> set = new HashSet<>();
 		subClassificationsForClass(cpcCode).forEach(subClass->{
 			if (classCodeToPatentMap.containsKey(subClass)) {
@@ -519,7 +519,7 @@ public class Database {
 		return set;
 	}
 
-	public static Set<String> selectPatentNumbersFromExactClassCode(String cpcCode) {
+	public synchronized static Set<String> selectPatentNumbersFromExactClassCode(String cpcCode) {
 		Set<String> set = new HashSet<>();
 		if (classCodeToPatentMap.containsKey(cpcCode)) {
 			set.addAll(classCodeToPatentMap.get(cpcCode));
@@ -527,7 +527,7 @@ public class Database {
 		return set;
 	}
 
-	public static Set<String> assigneesFor(String patent) {
+	public synchronized static Set<String> assigneesFor(String patent) {
 		Set<String> assignees = new HashSet<>();
 		if(getPatentToLatestAssigneeMap().containsKey(patent)) {
 			assignees.addAll(patentToLatestAssigneeMap.get(patent));
@@ -537,12 +537,12 @@ public class Database {
 		return assignees;
 	}
 
-	public static Collection<String> getValuablePatents() {
+	public synchronized static Collection<String> getValuablePatents() {
 		if(valuablePatents==null) initializeDatabase();
 		return valuablePatents;
 	}
 
-	public static Collection<String> selectPatentNumbersFromAssignee(String assignee){
+	public synchronized static Collection<String> selectPatentNumbersFromAssignee(String assignee){
 		Set<String> patents = new HashSet<>();
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
@@ -551,7 +551,7 @@ public class Database {
 		return patents;
 	}
 
-	public static Set<String> patentsWithKeywords(List<String> patents, String[] keywords) throws SQLException {
+	public synchronized static Set<String> patentsWithKeywords(List<String> patents, String[] keywords) throws SQLException {
 		Set<String> validPatents = new HashSet<>();
 		List<String> cleanKeywords = Arrays.stream(keywords).filter(keyword->keyword!=null&&keyword.trim().length()>0).map(keyword->keyword.trim().toLowerCase()).collect(Collectors.toList());
 		PreparedStatement ps = seedConn.prepareStatement("SELECT distinct pub_doc_number FROM paragraph_tokens WHERE pub_doc_number=ANY(?) and tokens && ?");
@@ -568,7 +568,7 @@ public class Database {
 		return validPatents;
 	}
 
-	public static Set<String> patentsWithAllKeywords(List<String> patents, String[] keywords) throws SQLException {
+	public synchronized static Set<String> patentsWithAllKeywords(List<String> patents, String[] keywords) throws SQLException {
 		Set<String> validPatents = new HashSet<>();
 		List<String> cleanKeywords = Arrays.stream(keywords).filter(keyword->keyword!=null&&keyword.trim().length()>0).map(keyword->keyword.trim().toLowerCase()).collect(Collectors.toList());
 		PreparedStatement ps = seedConn.prepareStatement("SELECT pub_doc_number FROM paragraph_tokens WHERE pub_doc_number=ANY(?) and tokens @> ?");
@@ -584,15 +584,15 @@ public class Database {
 		return validPatents;
 	}
 
-	public static Collection<String> getGatherPatents() {
+	public synchronized static Collection<String> getGatherPatents() {
 		return new ArrayList<>(gatherPatentSet);
 	}
 
-	public static boolean isExpired(String patent) {
+	public synchronized static boolean isExpired(String patent) {
 		return expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent);
 	}
 
-	public static void close(){
+	public synchronized static void close(){
 		try {
 			if(seedConn!=null && !seedConn.isClosed())seedConn.close();
 			if(compDBConn!=null && !compDBConn.isClosed())compDBConn.close();
@@ -602,7 +602,7 @@ public class Database {
 		}
 	}
 
-	private static Array getCompDBPatents() throws SQLException {
+	private synchronized static Array getCompDBPatents() throws SQLException {
 		Set<String> pubDocNums = new HashSet<>();
 		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
 		ps.setArray(1, compDBConn.createArrayOf("int4",badCompDBTechnologyIds.toArray()));
@@ -630,7 +630,7 @@ public class Database {
 	}
 
 
-	private static Map<Integer,String> compdbTechnologyMap() throws SQLException {
+	private synchronized static Map<Integer,String> compdbTechnologyMap() throws SQLException {
 		PreparedStatement ps = compDBConn.prepareStatement("select distinct id,name from technologies");
 		ResultSet rs = ps.executeQuery();
 		Map<Integer,String> map = new HashMap<>();
@@ -642,7 +642,7 @@ public class Database {
 		return map;
 	}
 
-	private static Map<String,Collection<String>> loadGatherTechMap() throws SQLException {
+	private synchronized static Map<String,Collection<String>> loadGatherTechMap() throws SQLException {
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
 		Map<String, Collection<String>> techToPatentMap = new HashMap<>();
@@ -660,14 +660,14 @@ public class Database {
 		return techToPatentMap;
 	}
 
-	public static Map<String,Collection<String>> getGatherTechMap() {
+	public synchronized static Map<String,Collection<String>> getGatherTechMap() {
 		if(gatherTechMap==null) {
 			gatherTechMap=(Map<String,Collection<String>>)Database.tryLoadObject(gatherTechMapFile);
 		}
 		return new HashMap<>(gatherTechMap);
 	}
 
-	public static org.deeplearning4j.berkeley.Pair<Map<String,List<String>>,Map<String,List<String>>> getGatherTechTestAndTrain() throws SQLException {
+	public synchronized static org.deeplearning4j.berkeley.Pair<Map<String,List<String>>,Map<String,List<String>>> getGatherTechTestAndTrain() throws SQLException {
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
 		Random random = new Random(41);
@@ -700,7 +700,7 @@ public class Database {
 		return new org.deeplearning4j.berkeley.Pair<>(trainTechToPatentMap,testTechToPatentMap);
 	}
 
-	public static Map<String,List<String>> getGatherRatingsMap() throws SQLException {
+	public synchronized static Map<String,List<String>> getGatherRatingsMap() throws SQLException {
 		Database.setupGatherConn();
 		Database.setupSeedConn();
 		Map<String, List<String>> map = new HashMap<>();
@@ -714,7 +714,7 @@ public class Database {
 		return map;
 	}
 
-	public static Map<String, List<String>> getCompDBMap() throws SQLException {
+	public synchronized static Map<String, List<String>> getCompDBMap() throws SQLException {
 		Database.setupCompDBConn();
 		Database.setupSeedConn();
 		Map<String, List<String>> patentToTechnologyHash = new HashMap<>();
