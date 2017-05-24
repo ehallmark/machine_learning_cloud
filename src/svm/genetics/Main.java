@@ -31,6 +31,7 @@ public class Main {
         System.out.println("Building svm data...");
         Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies);
 
+        System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new SVMSolutionCreator(training,gatherValidationMap,orderedTechnologies);
         Listener listener = new SVMSolutionListener();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,populationSize,listener,numThreads);

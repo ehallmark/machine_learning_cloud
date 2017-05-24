@@ -22,11 +22,14 @@ public class SVMHelper {
         double[][] y = new double[N][];
 
         AtomicInteger idx = new AtomicInteger(0);
-        invertedGatherMap.forEach((patent,techs)->{
+        invertedGatherMap.entrySet().parallelStream().forEach(e->{
+            String patent = e.getKey();
+            Collection<String> techs = e.getValue();
             techs.forEach(tech->{
                 int i = idx.getAndIncrement();
                 x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
                 y[i] = new double[]{technologies.indexOf(tech)};
+                System.out.println("Idx: "+i);
             });
         });
 
