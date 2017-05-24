@@ -20,7 +20,7 @@ public class Main {
         double probMutation = 0.5;
         double probCrossover = 0.5;
         int populationSize = 20;
-        int numThreads = 50;
+        int numThreads = 20;
         long timeLimit =60 * 60 * 1000; // run for 5 minutes
 
         // get data
