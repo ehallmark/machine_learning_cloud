@@ -20,8 +20,8 @@ public class Main {
         double probMutation = 0.7;
         double probCrossover = 0.7;
         int populationSize = 50;
-        int numThreads = 20;
-        long timeLimit =60 * 60 * 1000; // run for 5 minutes
+        int numThreads = 40;
+        long timeLimit = 90 * 60 * 1000; // run for 5 minutes
 
         // get data
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getGatherTechnologyTrainingDataMap();

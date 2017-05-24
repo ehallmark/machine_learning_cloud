@@ -18,10 +18,12 @@ public class SVMSolutionListener implements Listener{
         svm_parameter param = solution.getParam();
         System.out.println("---------------------------");
         System.out.println("Score: "+solution.fitness());
-        System.out.println("         C: "+param.C);
-        System.out.println("     Gamma:"+param.gamma);
-        System.out.println("        Nu: "+param.nu);
-        System.out.println("  SVM type: "+param.svm_type);
+        System.out.println("          C: "+param.C);
+        System.out.println("      Gamma:"+param.gamma);
+        System.out.println("         Nu: "+param.nu);
+        System.out.println("     Kernel: "+param.kernel_type);
+        System.out.println("          p: "+param.p);
+        System.out.println("  Shrinking: "+param.shrinking);
         System.out.println("---------------------------");
     }
 }
