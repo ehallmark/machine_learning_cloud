@@ -54,12 +54,16 @@ public class SVMSolution implements Solution {
         p.probability = 1;
         p.svm_type = svm_parameter.C_SVC;
         p.cache_size = 20000;
-        p.eps = 0.001;
+        p.eps = 0.01;
         p.kernel_type=0; // linear
+
         // randomly mutate
-        if(rand.nextBoolean())p.gamma = rand.nextDouble();
-        if(rand.nextBoolean())p.nu = rand.nextDouble();
-        if(rand.nextBoolean())p.C = 10+rand.nextInt(500);
+        p.p= rand.nextBoolean() ? param.p : rand.nextDouble()/5d;
+        p.gamma = rand.nextBoolean() ? param.gamma : rand.nextDouble()/150d;
+        p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
+        p.C = rand.nextBoolean() ? param.C : rand.nextDouble() * 100d;
+        p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
+
         //if(rand.nextBoolean()&&rand.nextBoolean())p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
@@ -71,14 +75,17 @@ public class SVMSolution implements Solution {
         svm_parameter otherParam = other.getParam();
         // constants
         p.probability = 1;
-        p.svm_type = svm_parameter.C_SVC;
-        p.cache_size = 20000;
-        p.eps = 0.001;
         p.kernel_type=0; // linear
+        p.cache_size = 20000;
+        p.eps = 0.01;
+        p.svm_type = svm_parameter.C_SVC;
+
         // randomly cross over
+        p.p= rand.nextBoolean() ? param.p : otherParam.p;
         p.gamma = rand.nextBoolean() ? param.gamma : otherParam.gamma;
         p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
         p.C = rand.nextBoolean() ? param.C : otherParam.C;
+        p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
