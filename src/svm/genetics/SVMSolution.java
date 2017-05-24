@@ -55,11 +55,12 @@ public class SVMSolution implements Solution {
         p.svm_type = svm_parameter.C_SVC;
         p.cache_size = 20000;
         p.eps = 0.001;
+        p.kernel_type=0; // linear
         // randomly mutate
         if(rand.nextBoolean())p.gamma = rand.nextDouble();
         if(rand.nextBoolean())p.nu = rand.nextDouble();
         if(rand.nextBoolean())p.C = 10+rand.nextInt(500);
-        if(rand.nextBoolean()&&rand.nextBoolean())p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
+        //if(rand.nextBoolean()&&rand.nextBoolean())p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
 
@@ -73,11 +74,12 @@ public class SVMSolution implements Solution {
         p.svm_type = svm_parameter.C_SVC;
         p.cache_size = 20000;
         p.eps = 0.001;
+        p.kernel_type=0; // linear
         // randomly cross over
         p.gamma = rand.nextBoolean() ? param.gamma : otherParam.gamma;
         p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
         p.C = rand.nextBoolean() ? param.C : otherParam.C;
-        p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
+        //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
 
