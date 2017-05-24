@@ -35,7 +35,7 @@ public class SVMHelper {
 
 
 
-    static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {
+    public static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {
         svm_problem prob = new svm_problem();
         int recordCount = xtrain.length;
         int featureCount = xtrain[0].length;
@@ -60,7 +60,7 @@ public class SVMHelper {
         return model;
     }
 
-    static double[][] svmPredictionDistribution(double[][]xtest, svm_model model) {
+    public static double[][] svmPredictionDistribution(double[][]xtest, svm_model model) {
         double[][] estimates = new double[xtest.length][];
 
         for(int k = 0; k < xtest.length; k++) {
@@ -83,7 +83,7 @@ public class SVMHelper {
         return estimates;
     }
 
-    static double[] svmPredict(double[][] xtest, svm_model model)
+    public static double[] svmPredict(double[][] xtest, svm_model model)
     {
 
         double[] yPred = new double[xtest.length];
