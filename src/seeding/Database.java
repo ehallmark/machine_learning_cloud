@@ -7,6 +7,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFa
 import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
 import com.googlecode.concurrenttrees.suffix.SuffixTree;
 import edu.stanford.nlp.util.Pair;
+import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.AssigneeTrimmer;
 import tools.ClassCodeHandler;
@@ -30,7 +31,9 @@ public class Database {
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
+	@Getter
 	private static Set<String> expiredPatentSet;
+	@Getter
 	private static Set<String> lapsedPatentSet;
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;

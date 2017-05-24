@@ -1,6 +1,7 @@
 package ui_models.attributes.value;
 
 import seeding.Database;
+import tools.DateHelper;
 
 import java.io.File;
 import java.util.*;
@@ -34,12 +35,17 @@ public class OverallEvaluator extends ValueAttr {
 
         Map<String,Double> mergedModel = new HashMap<>();
 
-        Database.getAssignees().forEach(assignee->{
-            mergedModel.put(assignee,average(assignee,evaluators,weights));
-        });
         Database.getValuablePatents().forEach(asset->{
             mergedModel.put(asset,average(asset,evaluators,weights));
         });
+        Database.getExpiredPatentSet().forEach(asset->{
+            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
+        });
+        Database.getLapsedPatentSet().forEach(asset->{
+            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
+        });
+
+        DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), mergedModel);
 
         Database.trySaveObject(mergedModel,mergedValueModelFile);
     }
