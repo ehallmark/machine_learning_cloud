@@ -1300,8 +1300,8 @@ public class svm {
 	{
 		public void print(String s)
 		{
-			System.out.print(s);
-			System.out.flush();
+			//System.out.print(s);
+			//System.out.flush();
 		}
 	};
 
