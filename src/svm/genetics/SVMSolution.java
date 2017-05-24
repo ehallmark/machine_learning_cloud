@@ -31,6 +31,7 @@ public class SVMSolution implements Solution {
         this.validationData=validationData;
         this.technologies=technologies;
         this.fitness=0d;
+        System.out.println("Training solution...");
         this.model = SVMHelper.svmTrain(trainingData.getFirst(),trainingData.getSecond(),param);
     }
 
