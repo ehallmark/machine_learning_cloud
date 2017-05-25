@@ -23,7 +23,7 @@ public class GatherTechnologyScorer {
             String tech = e.getKey();
             Collection<String> assets = e.getValue();
             double accuracy = scoreAssets(model,tech,assets,numPredictions);
-            System.out.println("Accuracy for "+tech+": "+accuracy);
+            //System.out.println("Accuracy for "+tech+": "+accuracy);
             return accuracy;
         }));
         return averageAccuracy;

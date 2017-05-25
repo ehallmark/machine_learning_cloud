@@ -52,17 +52,20 @@ public class SVMSolution implements Solution {
         svm_parameter p = new svm_parameter();
         // constants
         p.probability = 1;
-        p.svm_type = svm_parameter.C_SVC;
         p.cache_size = 20000;
-        p.eps = 0.01;
+        p.svm_type = svm_parameter.C_SVC;
+        p.shrinking=0;
+        p.kernel_type=3;
+        double delta = 0.75;
 
         // randomly mutate
-        p.p= rand.nextBoolean() ? param.p : rand.nextDouble()/5d;
-        p.gamma = rand.nextBoolean() ? param.gamma : rand.nextDouble()/150d;
-        p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
-        p.C = rand.nextBoolean() ? param.C : rand.nextDouble() * 100d;
-        p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
-        if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
+        p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble()/5d + (1d-delta)*param.p;
+        p.gamma = rand.nextBoolean() ? param.gamma : delta*rand.nextDouble()/150d + (1d-delta)*param.gamma;
+        //p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
+        p.C = rand.nextBoolean() ? param.C : delta*rand.nextDouble() * 100d + (1d-delta)*param.C;
+        p.coef0 = rand.nextBoolean() ? param.coef0 : delta*(rand.nextDouble()*10d-5d) + (1d-delta)*param.coef0;
+        //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
+        //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
 
@@ -74,16 +77,18 @@ public class SVMSolution implements Solution {
         // constants
         p.probability = 1;
         p.cache_size = 20000;
-        p.eps = 0.01;
         p.svm_type = svm_parameter.C_SVC;
+        p.shrinking=0;
+        p.kernel_type=3;
 
         // randomly cross over
-        p.p= rand.nextBoolean() ? param.p : otherParam.p;
-        p.gamma = rand.nextBoolean() ? param.gamma : otherParam.gamma;
-        p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
-        p.C = rand.nextBoolean() ? param.C : otherParam.C;
-        p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
-        p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
+        p.p= rand.nextBoolean() ? (param.p+otherParam.p)/2d : rand.nextBoolean() ? param.p : otherParam.p;
+        p.gamma = rand.nextBoolean() ? (param.gamma+otherParam.gamma)/2d : rand.nextBoolean() ? param.gamma : otherParam.gamma;
+        //p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
+        p.C = rand.nextBoolean() ? (param.C+otherParam.C)/2d : rand.nextBoolean() ? param.C : otherParam.C;
+        p.coef0 = rand.nextBoolean() ? (param.coef0+otherParam.coef0)/2d : rand.nextBoolean() ? param.coef0 : otherParam.coef0;
+        //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
+        //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
         return new SVMSolution(p,trainingData,validationData,technologies);
     }
 

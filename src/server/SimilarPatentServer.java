@@ -723,6 +723,7 @@ public class SimilarPatentServer {
         TechTaggerUI.setupServer();
         GatherClassificationServer.StartServer();
         PatentToolsServer.setup();
+        ValuationServer.setupServer();
         System.out.println("Finished starting server.");
     }
 }

@@ -37,15 +37,17 @@ public class SVMSolutionCreator implements SolutionCreator {
         svm_parameter param = new svm_parameter();
         param.probability = 1;
         param.cache_size = 20000;
-        param.eps = 0.01;
         param.svm_type = svm_parameter.C_SVC;
-
+        param.shrinking=0;
+        param.kernel_type=3;
+        param.coef0=(rand.nextDouble()*10d-5d);
         param.gamma = rand.nextDouble()/150d;
-        param.nu = rand.nextDouble();
+        //param.nu = rand.nextDouble();
         param.C = rand.nextDouble() * 100;
+        param.eps = 0.01 * rand.nextDouble();
         param.p=rand.nextDouble()*0.5;
-        param.shrinking=rand.nextBoolean()?0:1;
-        param.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
+        //param.shrinking=rand.nextBoolean()?0:1;
+        //param.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
 
         return param;
     }
