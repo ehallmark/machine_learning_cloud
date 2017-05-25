@@ -121,6 +121,5 @@ public class GatherSVMClassifier extends ClassificationAttr {
         // Save Technology Ordering
         Database.trySaveObject(orderedTechnologies,techFile);
 
-
     }
 }
