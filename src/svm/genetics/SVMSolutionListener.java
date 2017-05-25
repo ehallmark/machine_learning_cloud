@@ -21,10 +21,10 @@ public class SVMSolutionListener implements Listener{
         System.out.println("          C: "+param.C);
         System.out.println("      Gamma:"+param.gamma);
         //System.out.println("         Nu: "+param.nu);
-        //System.out.println("     Kernel: "+param.kernel_type);
+        System.out.println("     Kernel: "+param.kernel_type);
         System.out.println("          p: "+param.p);
         System.out.println("      coef0: "+param.coef0);
-        //System.out.println("  Shrinking: "+param.shrinking);
+        System.out.println("  Shrinking: "+param.shrinking);
         System.out.println("        eps: "+param.eps);
         System.out.println("---------------------------");
     }
