@@ -60,17 +60,16 @@ public class SVMSolution implements Solution {
         p.kernel_type=3;
         p.eps = 0.001;
         p.p=0.5;
+        p.C = 70d;
 
         double delta = rand.nextDouble();
-
         // randomly mutate
         //p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble() + (1d-delta)*param.p;
-        p.gamma = rand.nextBoolean() ? param.gamma : delta*((rand.nextDouble()-0.5)*0.005) + (1d-delta)*param.gamma;
-        delta=rand.nextDouble();
+        p.gamma = Math.max(0.00001d,delta*((rand.nextDouble()-0.5)*0.005) + (1d-delta)*param.gamma);
+        //delta=rand.nextDouble();
         //p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
-        p.C = rand.nextBoolean() ? param.C : delta*((rand.nextDouble() * 50d)+50d) + (1d-delta)*param.C;
         delta=rand.nextDouble();
-        p.coef0 = rand.nextBoolean() ? param.coef0 : delta*(rand.nextDouble()*2d-1d) + (1d-delta)*param.coef0;
+        p.coef0 = delta*(rand.nextDouble()*2d-1d) + (1d-delta)*param.coef0;
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
@@ -90,14 +89,15 @@ public class SVMSolution implements Solution {
         p.kernel_type=3;
         p.eps = 0.001;
         p.p=0.5;
+        p.C = 70d;
 
         double delta = rand.nextDouble();
         // randomly cross over
         //p.p= rand.nextBoolean() ? (param.p+otherParam.p)/2d : rand.nextBoolean() ? param.p : otherParam.p;
         p.gamma = param.gamma * delta + otherParam.gamma*(1d-delta);
         //p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
-        delta = rand.nextDouble();
-        p.C = delta*param.C + (1d-delta)*otherParam.C;
+        //delta = rand.nextDouble();
+        //p.C = delta*param.C + (1d-delta)*otherParam.C;
         delta = rand.nextDouble();
         p.coef0 = delta * param.coef0 + (1d-delta)*otherParam.coef0;
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
