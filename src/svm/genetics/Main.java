@@ -21,7 +21,7 @@ public class Main {
         double probCrossover = 0.7;
         int populationSize = 50;
         int numThreads = 40;
-        long timeLimit = 120 * 60 * 1000; 
+        long timeLimit = 120 * 60 * 1000;
 
         // get data
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getGatherTechnologyTrainingDataMap();

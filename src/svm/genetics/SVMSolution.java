@@ -59,11 +59,12 @@ public class SVMSolution implements Solution {
         double delta = 0.75;
 
         // randomly mutate
-        p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble()/5d + (1d-delta)*param.p;
-        p.gamma = rand.nextBoolean() ? param.gamma : delta*rand.nextDouble()/150d + (1d-delta)*param.gamma;
+        p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble() + (1d-delta)*param.p;
+        p.gamma = rand.nextBoolean() ? param.gamma : delta*rand.nextDouble()/50d + (1d-delta)*param.gamma;
         //p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
-        p.C = rand.nextBoolean() ? param.C : delta*rand.nextDouble() * 100d + (1d-delta)*param.C;
+        p.C = rand.nextBoolean() ? param.C : delta*rand.nextDouble() * 300d + (1d-delta)*param.C;
         p.coef0 = rand.nextBoolean() ? param.coef0 : delta*(rand.nextDouble()*10d-5d) + (1d-delta)*param.coef0;
+        p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
         return new SVMSolution(p,trainingData,validationData,technologies);
@@ -87,6 +88,7 @@ public class SVMSolution implements Solution {
         //p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
         p.C = rand.nextBoolean() ? (param.C+otherParam.C)/2d : rand.nextBoolean() ? param.C : otherParam.C;
         p.coef0 = rand.nextBoolean() ? (param.coef0+otherParam.coef0)/2d : rand.nextBoolean() ? param.coef0 : otherParam.coef0;
+        p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
         return new SVMSolution(p,trainingData,validationData,technologies);
