@@ -95,13 +95,15 @@ public class GatherSVMClassifier extends ClassificationAttr {
         // svm parameters
         svm_parameter param = new svm_parameter();
         param.probability = 1;
-        param.gamma = 0.5;
-        param.nu = 0.5;
-        param.C = 100;
+        param.gamma = 0.01;
+        param.C = 70d;
         param.svm_type = svm_parameter.C_SVC;
-        param.kernel_type = svm_parameter.LINEAR;
+        param.kernel_type = svm_parameter.SIGMOID;
         param.cache_size = 20000;
-        param.eps = 0.001;
+        param.eps = 0.00001;
+        param.shrinking=0;
+        param.coef0=-0.3;
+        param.p=0.5;
 
 
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getGatherTechnologyTrainingDataMap();
