@@ -22,7 +22,7 @@ public class SVMSolution implements Solution {
     private Pair<double[][],double[][]> trainingData;
     private Map<String,Collection<String>> validationData;
     private svm_model model;
-    private double fitness;
+    private Double fitness;
     private List<String> technologies;
     private static final Random rand = new Random(782);
     public SVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
@@ -30,21 +30,23 @@ public class SVMSolution implements Solution {
         this.trainingData=trainingData;
         this.validationData=validationData;
         this.technologies=technologies;
-        this.fitness=0d;
+        this.fitness=null;
         //System.out.println("Training solution...");
         this.model = SVMHelper.svmTrain(trainingData.getFirst(),trainingData.getSecond(),param);
     }
 
     @Override
     public double fitness() {
-        return fitness;
+        return fitness==null?0d:fitness;
     }
 
     @Override
     public void calculateFitness() {
-        ClassificationAttr svmTagger = new GatherSVMClassifier(model,technologies);
-        GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
-        fitness = scorer.accuracyOn(validationData,5);
+        if(fitness == null) {
+            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies);
+            GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
+            fitness = scorer.accuracyOn(validationData, 5);
+        }
     }
 
     @Override

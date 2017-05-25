@@ -17,10 +17,10 @@ import java.util.Map;
  */
 public class Main {
     public static void main(String[] args) {
-        double probMutation = 0.7;
-        double probCrossover = 0.7;
-        int populationSize = 50;
-        int numThreads = 40;
+        double probMutation = 0.5;
+        double probCrossover = 0.5;
+        int populationSize = 100;
+        int numThreads = 20;
         long timeLimit = 120 * 60 * 1000;
 
         // get data
