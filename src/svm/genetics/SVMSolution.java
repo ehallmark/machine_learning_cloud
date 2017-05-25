@@ -44,7 +44,7 @@ public class SVMSolution implements Solution {
     public void calculateFitness() {
         ClassificationAttr svmTagger = new GatherSVMClassifier(model,technologies);
         GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
-        fitness = (scorer.accuracyOn(validationData, 1)+scorer.accuracyOn(validationData,3));
+        fitness = scorer.accuracyOn(validationData,5);
     }
 
     @Override
@@ -63,12 +63,12 @@ public class SVMSolution implements Solution {
 
         // randomly mutate
         //p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble() + (1d-delta)*param.p;
-        p.gamma = rand.nextBoolean() ? param.gamma : delta*rand.nextDouble()/50d + (1d-delta)*param.gamma;
+        p.gamma = rand.nextBoolean() ? param.gamma : delta*((rand.nextDouble()-0.5)*0.005) + (1d-delta)*param.gamma;
         delta=rand.nextDouble();
         //p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
-        p.C = rand.nextBoolean() ? param.C : delta*rand.nextDouble() * 300d + (1d-delta)*param.C;
+        p.C = rand.nextBoolean() ? param.C : delta*((rand.nextDouble() * 50d)+50d) + (1d-delta)*param.C;
         delta=rand.nextDouble();
-        p.coef0 = rand.nextBoolean() ? param.coef0 : delta*(rand.nextDouble()*10d-5d) + (1d-delta)*param.coef0;
+        p.coef0 = rand.nextBoolean() ? param.coef0 : delta*(rand.nextDouble()*2d-1d) + (1d-delta)*param.coef0;
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);

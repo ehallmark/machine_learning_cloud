@@ -43,10 +43,10 @@ public class SVMSolutionCreator implements SolutionCreator {
         param.eps = 0.001;
         param.p=0.5;
 
-        param.coef0=(rand.nextDouble()*10d-5d);
-        param.gamma = rand.nextDouble()/50d;
+        param.coef0=(rand.nextDouble()*2d-1d);
+        param.gamma = 0.01 + (rand.nextDouble()-0.5)*0.005;
         //param.nu = rand.nextDouble();
-        param.C = rand.nextDouble() * 300;
+        param.C = (rand.nextDouble() * 50d)+50d;
         //param.eps = 0.01 * rand.nextDouble();
         //param.p=rand.nextDouble();
         //param.shrinking=rand.nextBoolean()?0:1;
