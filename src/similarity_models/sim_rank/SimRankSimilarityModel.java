@@ -57,9 +57,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
                     .map(pair->new AbstractPatent(pair.getFirst(),pair.getSecond(),patentNumber))
                     .filter(p->filters.stream().allMatch(filter -> filter.shouldKeepItem(p)))
                     .collect(Collectors.toList()), portfolioType);
-        } else {
-            throw new UnsupportedOperationException("SimRank only works on patents.");
-        }
+        } else return new PortfolioList(Collections.emptyList(),portfolioType);
     }
 
     @Override
@@ -70,7 +68,9 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     @Override
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters) {
         SimRankSimilarityModel otherModel = (SimRankSimilarityModel)other;
-        if(!portfolioType.equals(PortfolioList.Type.patents)) throw new RuntimeException("This model only works with patents");
+        if(!portfolioType.equals(PortfolioList.Type.patents)) {
+            return new PortfolioList(Collections.emptyList(), portfolioType)
+        };
         return otherModel.portfolio.stream().map(item->{
             return findSimilarPatentsTo(item,null,limit,portfolioType,filters);
         }).reduce((p1,p2)->{
