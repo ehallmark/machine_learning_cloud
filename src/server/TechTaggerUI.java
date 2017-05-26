@@ -34,13 +34,9 @@ import static spark.Spark.post;
 public class TechTaggerUI {
     private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static final String MAIN_INPUT_ID = "main-input-id";
-    private static ClassificationAttr CPC_TAGGER;
-    private static ClassificationAttr SIMILARITY_TAGGER;
-    private static ClassificationAttr GATHER_KEYWORD_TAGGER;
+    private static ClassificationAttr TAGGER;
     static {
-        CPC_TAGGER=new CPCGatherTechTagger();
-        SIMILARITY_TAGGER= SimilarityGatherTechTagger.getAIModelTagger();
-        GATHER_KEYWORD_TAGGER=new KeywordGatherTechTagger();
+        TAGGER=TechTaggerNormalizer.getDefaultTechTagger();
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
@@ -94,22 +90,6 @@ public class TechTaggerUI {
                         label("To Search For (separated by semi-colon or newline)").with(
                                 br(),
                                 textarea().withName("search_input")
-                        ),br(),
-                        label("CPC Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("cpc_percent").withValue("1.0")
-                        ),br(),
-                        label("AI Model Percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("ai_percent").withValue("1.0")
-                        ),br(),
-                        label("Gather Keyword Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("gather_keyword_percent").withValue("1.0")
-                        ),br(),
-                        label("Global Keyword Model percentage").with(
-                                br(),
-                                input().withType("number").attr("step","0.1").withName("raw_keyword_percent").withValue("1.0")
                         ),br(),
                         label("Tag Limit").with(
                                 br(),
@@ -194,15 +174,7 @@ public class TechTaggerUI {
 
                 System.out.println("Handled navigator");
                 int tag_limit = (int)(SimilarPatentServer.extractDouble(params,"tag_limit",30d));
-                double cpc_percent = (SimilarPatentServer.extractDouble(params,"cpc_percent",0.0));
-                double ai_percent = (SimilarPatentServer.extractDouble(params,"ai_percent",0.0));
-                double gather_keyword_percent = (SimilarPatentServer.extractDouble(params,"gather_keyword_percent",0.0));
-                if(ai_percent<0)ai_percent=0;
-                if(cpc_percent<0)cpc_percent=0;
-                if(gather_keyword_percent<0)gather_keyword_percent=0;
-                if(ai_percent+cpc_percent+gather_keyword_percent==0.0) {
-                    return new Gson().toJson(new SimpleAjaxMessage("Must have at least one model above zero"));
-                }
+
                 String search_input_str = params.get("search_input").value();
                 if(search_input_str==null||search_input_str.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please provide search input."));
                 // split by line
@@ -232,8 +204,7 @@ public class TechTaggerUI {
                 System.out.println("Starting similarity tagger");
                 List<Pair<String, Double>> results;
 
-                ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(CPC_TAGGER, SIMILARITY_TAGGER, GATHER_KEYWORD_TAGGER), Arrays.asList(cpc_percent, ai_percent, gather_keyword_percent));
-                results = tagger.attributesFor(PortfolioList.abstractPorfolioList(all_search_inputs, inputType.get()), tag_limit);
+                results = TAGGER.attributesFor(PortfolioList.abstractPorfolioList(all_search_inputs, inputType.get()), tag_limit);
                 TechnologySolution solution = new TechnologySolution(results);
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));
