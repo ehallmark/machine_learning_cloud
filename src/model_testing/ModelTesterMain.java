@@ -35,7 +35,7 @@ public class ModelTesterMain {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
                     testModel("Paragraph Vector Simple Average [n=" + i + "]", scorer, testData, i);
                 } else if (test == 1) {
-                    ClassificationAttr cpcModel = new CPCGatherTechTagger();
+                    ClassificationAttr cpcModel = CPCGatherTechTagger.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
                     testModel("CPC Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == 2) {

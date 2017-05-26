@@ -35,17 +35,17 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
         return gatherTagger;
     }
 
-    private SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
-            this.vectors = new ArrayList<>(nameToInputMap.size());
-            this.names = new ArrayList<>(nameToInputMap.size());
-            this.lookupTable = lookupTable;
-            nameToInputMap.forEach((name,inputs)->{
-                List<INDArray> vecs = inputs.stream().map(input->lookupTable.vector(input)).filter(input->input!=null).collect(Collectors.toList());
-                if(vecs.size()>0) {
-                    vectors.add(Nd4j.vstack(vecs).mean(0));
-                    names.add(name);
-                }
-            });
+    public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
+        this.vectors = new ArrayList<>(nameToInputMap.size());
+        this.names = new ArrayList<>(nameToInputMap.size());
+        this.lookupTable = lookupTable;
+        nameToInputMap.forEach((name,inputs)->{
+            List<INDArray> vecs = inputs.stream().map(input->lookupTable.vector(input)).filter(input->input!=null).collect(Collectors.toList());
+            if(vecs.size()>0) {
+                vectors.add(Nd4j.vstack(vecs).mean(0));
+                names.add(name);
+            }
+        });
     }
 
     public int numClassifications() {
