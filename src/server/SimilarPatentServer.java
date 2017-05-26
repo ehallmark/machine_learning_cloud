@@ -2,11 +2,9 @@ package server;
 
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
-import com.google.gson.Gson;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
-import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -15,15 +13,12 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
-import seeding.GetEtsiPatentsList;
+import similarity_models.sim_rank.SimRankSimilarityModel;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.*;
 import ui_models.filters.*;
-import ui_models.portfolios.items.AbstractAssignee;
-import ui_models.portfolios.items.AbstractPatent;
-import server.tools.SimpleAjaxMessage;
 import excel.ExcelHandler;
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
@@ -32,14 +27,13 @@ import spark.Response;
 import spark.Session;
 import tools.ClassCodeHandler;
 import ui_models.portfolios.PortfolioList;
-import seeding.patent_view_api.PatentAPIHandler;
+
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -50,8 +44,8 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    public static SimilarPatentFinder globalFinder;
-    public static SimilarPatentFinder assigneeFinder;
+    public static AbstractSimilarityModel globalFinder;
+    public static AbstractSimilarityModel assigneeFinder;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
 
 
@@ -101,25 +95,25 @@ public class SimilarPatentServer {
             try {
                 modelMap.put("overallValue", new OverallEvaluator());
                 modelMap.put("pageRankValue", new PageRankEvaluator());
-                modelMap.put("marketValue",new MarketEvaluator());
+             //   modelMap.put("marketValue",new MarketEvaluator());
                 modelMap.put("citationValue", new CitationEvaluator());
-                modelMap.put("claimValue",new ClaimEvaluator());
+             //   modelMap.put("claimValue",new ClaimEvaluator());
                 modelMap.put("assetsPurchased", new AssetsPurchasedEvaluator());
                 modelMap.put("assetsSold", new AssetsSoldEvaluator());
-                modelMap.put("technologyValue",new TechnologyEvaluator());
+             //   modelMap.put("technologyValue",new TechnologyEvaluator());
                 modelMap.put("compDBAssetsPurchased", new AssetsPurchasedEvaluator());
                 modelMap.put("compDBAssetsSold", new AssetsSoldEvaluator());
                 modelMap.put("largePortfolios", new PortfolioSizeEvaluator());
                 modelMap.put("smallPortfolios", new SmallPortfolioSizeEvaluator());
-                modelMap.put("transactionValue",new TransactionEvaluator());
-                modelMap.put("assetFamilyValue", new AssetFamilyEvaluator());
-                modelMap.put("pendencyValue",new PendencyEvaluator());
+              //  modelMap.put("transactionValue",new TransactionEvaluator());
+              //  modelMap.put("assetFamilyValue", new AssetFamilyEvaluator());
+              //  modelMap.put("pendencyValue",new PendencyEvaluator());
                 modelMap.put("claimRatioValue",new ClaimRatioEvaluator());
                 modelMap.put("classValue",new ClassEvaluator());
-                modelMap.put("priorArtValue", new PriorArtEvaluator());
-                modelMap.put("maintenanceFeeValue",new MaintenanceFeeEvaluator());
-                modelMap.put("claimLengthValue", new ClaimLengthEvaluator());
-                modelMap.put("meansPresentRatioValue", new MeansPresentRatioEvaluator());
+              //  modelMap.put("priorArtValue", new PriorArtEvaluator());
+               // modelMap.put("maintenanceFeeValue",new MaintenanceFeeEvaluator());
+              //  modelMap.put("claimLengthValue", new ClaimLengthEvaluator());
+               // modelMap.put("meansPresentRatioValue", new MeansPresentRatioEvaluator());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -234,18 +228,20 @@ public class SimilarPatentServer {
                 List<String> customAssigneeList = preProcess(extractString(req, "custom_assignee_list", "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
                 Set<String> labelsToExclude = new HashSet<>();
 
+                String modelType = extractString(req,"similarity_model","0");
 
-                SimilarPatentFinder firstFinder = getFirstPatentFinder(labelsToExclude,customAssigneeList,patentsToSearchIn,classCodesToSearchIn,searchEntireDatabase,includeSubclasses,allowResultsFromOtherCandidateSet,searchType,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
 
-                if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
+                AbstractSimilarityModel firstFinder = getFirstPatentFinder(modelType,labelsToExclude,customAssigneeList,patentsToSearchIn,classCodesToSearchIn,searchEntireDatabase,includeSubclasses,allowResultsFromOtherCandidateSet,searchType,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
+
+                if (firstFinder == null || firstFinder.numItems() == 0) {
                     res.redirect("/candidate_set_models");
                     req.session().attribute("message", "Unable to find any results to search in.");
                     return null;
                 }
 
-                List<SimilarPatentFinder> secondFinders = getSecondPatentFinder(mergeSearchInput,wordsToSearchFor,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
+                List<AbstractSimilarityModel> secondFinders = getSecondPatentFinder(modelType,mergeSearchInput,wordsToSearchFor,patentsToSearchFor,assigneesToSearchFor,classCodesToSearchFor);
 
-                if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
+                if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.numItems())) == 0) {
                     res.redirect("/candidate_set_models");
                     req.session().attribute("message", "Unable to find any of the search inputs.");
                     return null;
@@ -379,71 +375,82 @@ public class SimilarPatentServer {
 
     }
 
-    static SimilarPatentFinder getFirstPatentFinder(Set<String> labelsToExclude, Collection<String> customAssigneeList, Collection<String> patentsToSearchIn, Collection<String> classCodesToSearchIn, boolean searchEntireDatabase, boolean includeSubclasses, boolean allowResultsFromOtherCandidateSet, String searchType, Collection<String> patentsToSearchFor, Collection<String> assigneesToSearchFor, Collection<String> classCodesToSearchFor) {
-        SimilarPatentFinder firstFinder;
-        if (!allowResultsFromOtherCandidateSet) {
-            if(searchType.equals("class_codes")){
-                classCodesToSearchFor.forEach(code->labelsToExclude.add(code));
+    static AbstractSimilarityModel getFirstPatentFinder(String modelType, Set<String> labelsToExclude, Collection<String> customAssigneeList, Collection<String> patentsToSearchIn, Collection<String> classCodesToSearchIn, boolean searchEntireDatabase, boolean includeSubclasses, boolean allowResultsFromOtherCandidateSet, String searchType, Collection<String> patentsToSearchFor, Collection<String> assigneesToSearchFor, Collection<String> classCodesToSearchFor) {
+        AbstractSimilarityModel firstFinder;
+        if(modelType.equals("0")) {
+            if (!allowResultsFromOtherCandidateSet) {
+                if (searchType.equals("class_codes")) {
+                    classCodesToSearchFor.forEach(code -> labelsToExclude.add(code));
+                }
+                if (searchType.equals("assignees")) {
+                    assigneesToSearchFor.forEach(assignee -> {
+                        labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
+                    });
+                }
+                labelsToExclude.addAll(patentsToSearchFor);
             }
-            if(searchType.equals("assignees")) {
-                assigneesToSearchFor.forEach(assignee -> {
-                    labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
-                });
-            }
-            labelsToExclude.addAll(patentsToSearchFor);
-        }
 
-        // get first finder
-        if (searchEntireDatabase) {
-            if (searchType.equals("patents")) {
-                firstFinder = globalFinder;
-            } else if (searchType.equals("assignees")) {
-                firstFinder = assigneeFinder;
+            // get first finder
+            if (searchEntireDatabase) {
+                if (searchType.equals("patents")) {
+                    firstFinder = globalFinder;
+                } else if (searchType.equals("assignees")) {
+                    firstFinder = assigneeFinder;
+                } else {
+                    return null;
+                }
             } else {
-                return null;
+                // dependent on searchType
+                if (searchType.equals("patents")) {
+                    customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
+                    firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
+                } else if (searchType.equals("assignees")) {
+                    Collection<String> assigneesToSearchIn = new HashSet<>();
+                    customAssigneeList.forEach(assignee -> {
+                        assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
+                    });
+                    classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
+                    patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
+                    firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
+                } else if (searchType.equals("class_codes")) {
+                    customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    patentsToSearchIn.forEach(patent -> classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
+                    firstFinder = new SimilarPatentFinder(classCodesToSearchIn, null, paragraphVectors.getLookupTable());
+                } else {
+                    return null;
+                }
             }
-        } else {
-            // dependent on searchType
-            if (searchType.equals("patents")) {
-                customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(cpc):Database.selectPatentNumbersFromExactClassCode(cpc)));
-                firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
-            } else if (searchType.equals("assignees")) {
-                Collection<String> assigneesToSearchIn = new HashSet<>();
-                customAssigneeList.forEach(assignee -> {
-                    assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee));
-                });
-                classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses?Database.selectPatentNumbersFromClassAndSubclassCodes(cpc):Database.selectPatentNumbersFromExactClassCode(cpc)));
-                patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
-                firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
-            } else if (searchType.equals("class_codes")) {
-                customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                patentsToSearchIn.forEach(patent -> classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
-                firstFinder = new SimilarPatentFinder(classCodesToSearchIn, null, paragraphVectors.getLookupTable());
-            } else {
-                return null;
-            }
-        }
+        } else if(modelType.equals("1")) {
+            customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+            classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
+            firstFinder = new SimRankSimilarityModel(null,patentsToSearchIn);
+
+        } else firstFinder=null;
         return firstFinder;
     }
 
-    static List<SimilarPatentFinder> getSecondPatentFinder(boolean mergeSearchInput, Collection<String>... toSearchFor) {
-        List<SimilarPatentFinder> patentFinders = new ArrayList<>();
+    static List<AbstractSimilarityModel> getSecondPatentFinder(String modelType, boolean mergeSearchInput, Collection<String>... toSearchFor) {
+        List<AbstractSimilarityModel> patentFinders = new ArrayList<>();
         Set<String> stuffToSearchFor = new HashSet<>();
         Arrays.stream(toSearchFor).forEach(collection->stuffToSearchFor.addAll(collection));
 
-        if(mergeSearchInput) {
-            patentFinders.add(new SimilarPatentFinder(stuffToSearchFor,null,paragraphVectors.getLookupTable()));
-        } else {
-            stuffToSearchFor.forEach(patent -> patentFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+        if(modelType.equals("0")) {
+            if (mergeSearchInput) {
+                patentFinders.add(new SimilarPatentFinder(stuffToSearchFor, null, paragraphVectors.getLookupTable()));
+            } else {
+                stuffToSearchFor.forEach(patent -> patentFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+            }
+        } else if (modelType.equals("1")) {
+            patentFinders.add(new SimRankSimilarityModel(null,stuffToSearchFor));
         }
         return patentFinders;
     }
 
-    public static PortfolioList runPatentFinderModel(SimilarPatentFinder firstFinder, List<? extends AbstractSimilarityModel> secondFinders, PortfolioList.Type portfolioType, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
+    public static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, List<? extends AbstractSimilarityModel> secondFinders, PortfolioList.Type portfolioType, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
         List<PortfolioList> portfolioLists = new ArrayList<>();
         try {
-            List<PortfolioList> similar = firstFinder.similarFromCandidateSets(secondFinders, portfolioType, resultLimit/secondFinders.size(), preFilters);
+            List<PortfolioList> similar = similarFromCandidateSets(firstFinder, secondFinders, portfolioType, resultLimit/secondFinders.size(), preFilters);
             portfolioLists.addAll(similar);
         } catch(Exception e) {
             e.printStackTrace();
@@ -454,29 +461,16 @@ public class SimilarPatentServer {
         return mergePatentLists(portfolioLists, portfolioType, resultLimit);
     }
 
+    public static List<PortfolioList> similarFromCandidateSets(AbstractSimilarityModel model, List<? extends AbstractSimilarityModel> others, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters) {
+        List<PortfolioList> list = new ArrayList<>(others.size());
+        others.forEach(other->{
+            list.add(model.similarFromCandidateSet(other, portfolioType, limit, filters));
+        });
+        return list;
+    }
+
     private static PortfolioList mergePatentLists(List<PortfolioList> portfolioLists, PortfolioList.Type portfolioType, int totalLimit) {
-            Map<String, Item> map = new HashMap<>();
-            portfolioLists.forEach(portfolioList -> {
-                portfolioList.getPortfolio().forEach(item -> {
-                    if (item.getName() == null || item.getName().length() == 0) return;
-                    Item itemInMap = map.get(item.getName());
-                    if (itemInMap!=null) {
-                        itemInMap.appendTags(item.getTags());
-                        itemInMap.setSimilarity(Math.max(item.getSimilarity(), itemInMap.getSimilarity()));
-                    } else {
-                        map.put(item.getName(), item);
-                    }
-                });
-            });
-            try {
-                List<Item> merged = map.values().stream().sorted(Comparator.reverseOrder()).limit(totalLimit).collect(Collectors.toList());
-                PortfolioList portfolio = new PortfolioList(merged,portfolioType);
-                return portfolio;
-            } catch(Exception e) {
-                e.printStackTrace();
-                System.out.println("While merging");
-                throw new RuntimeException("while merging");
-            }
+        return portfolioLists.stream().reduce((p1,p2)->p1.merge(p2,totalLimit)).orElse(new PortfolioList(Collections.emptyList(),portfolioType));
     }
 
     private static List<String> preProcess(String toSplit, String delim, String toReplace) {
@@ -584,6 +578,11 @@ public class SimilarPatentServer {
                                         td().attr("style","width:33%; vertical-align: top;").with(
                                                 h2("Knowledge Base"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
+                                                        h4("Similarity Model (NEW)"),select().withName("similarity_model").with(
+                                                                option().withValue("0").attr("selected","true").withText("PVecSim"),
+                                                                option().withValue("1").withText("SimRank"),
+                                                                option().withValue("2").withText("CPC-Sim")
+                                                        ),h4("With relevance to"),
                                                         expandableDiv("Main Options", h3("Main options"),
                                                             h4("Search for results in"),
                                                             label("Entire Database"),input().withType("checkbox").withName("search_all"),

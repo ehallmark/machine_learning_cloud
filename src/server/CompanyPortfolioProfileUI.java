@@ -1,5 +1,6 @@
 package server;
 
+import similarity_models.AbstractSimilarityModel;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
@@ -122,6 +123,11 @@ public class CompanyPortfolioProfileUI {
                                 ),br()
                         )),br(),
                         SimilarPatentServer.expandableDiv("Custom Options",true,div().with(
+                                h4("Similarity Model (NEW)"),select().withName("similarity_model").with(
+                                        option().withValue("0").attr("selected","true").withText("PVecSim"),
+                                        option().withValue("1").withText("SimRank"),
+                                        option().withValue("2").withText("CPC-Sim")
+                                ),
                                 h4("Result Limit"),
                                 input().withType("number").withValue("10").withName("limit"),
                                 h4("Patent List"),
@@ -253,6 +259,9 @@ public class CompanyPortfolioProfileUI {
                 if (reportType == null || reportType.trim().isEmpty())
                     return new Gson().toJson(new SimpleAjaxMessage("Please enter a Report Type"));
 
+                String modelType = params.get("similarity_model").value();
+                if(modelType==null) modelType="0";
+
                 List<AbstractChart> charts = new ArrayList<>();
                 String limitStr = params.get("limit").value();
                 int limit = 10;
@@ -261,7 +270,7 @@ public class CompanyPortfolioProfileUI {
                 } catch(Exception e) {
                     e.printStackTrace();
                 }
-                SimilarPatentFinder firstFinder;
+                AbstractSimilarityModel firstFinder;
                 boolean includeSubclasses = false;
                 boolean allowResultsFromOtherCandidateSet = false;
                 boolean searchEntireDatabase = false;
@@ -430,15 +439,15 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Starting to retrieve portfolio list...");
                 if (useSimilarPatentFinders) {
                     System.out.println("Using similar patent finders");
-                    firstFinder = SimilarPatentServer.getFirstPatentFinder(labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, portfolioType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                    firstFinder = SimilarPatentServer.getFirstPatentFinder(modelType,labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, portfolioType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
-                    if (firstFinder == null || firstFinder.getPatentList().size() == 0) {
+                    if (firstFinder == null || firstFinder.numItems() == 0) {
                         return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
                     }
 
-                    List<SimilarPatentFinder> secondFinders = SimilarPatentServer.getSecondPatentFinder(mergeSearchInput, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                    List<AbstractSimilarityModel> secondFinders = SimilarPatentServer.getSecondPatentFinder(modelType,mergeSearchInput, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
 
-                    if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.getPatentList().size())) == 0) {
+                    if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.numItems())) == 0) {
                         return new Gson().toJson(new SimpleAjaxMessage("Unable to find any of the search inputs."));
                     }
 

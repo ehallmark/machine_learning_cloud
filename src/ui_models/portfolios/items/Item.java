@@ -46,23 +46,23 @@ public abstract class Item implements Comparable<Item> {
             humanAttrToJavaAttrMap.put("Large Portfolio Size", "largePortfolios");
             humanAttrToJavaAttrMap.put("Small Portfolio Size", "smallPortfolios");
             humanAttrToJavaAttrMap.put("Page Rank Value", "pageRankValue");
-            humanAttrToJavaAttrMap.put("Claim Value","claimValue");
+            //humanAttrToJavaAttrMap.put("Claim Value","claimValue");
             humanAttrToJavaAttrMap.put("Citation Value","citationValue");
-            humanAttrToJavaAttrMap.put("Technology Value","technologyValue");
-            humanAttrToJavaAttrMap.put("Market Value","marketValue");
+            //humanAttrToJavaAttrMap.put("Technology Value","technologyValue");
+            //humanAttrToJavaAttrMap.put("Market Value","marketValue");
             humanAttrToJavaAttrMap.put("Assets Sold", "assetsSold");
             humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", "compDBAssetsSold");
             humanAttrToJavaAttrMap.put("CompDB Assets Purchased", "compDBAssetsPurchased");
-            humanAttrToJavaAttrMap.put("Transaction Value","transactionValue");
-            humanAttrToJavaAttrMap.put("Claim Length Value","claimLengthValue");
+            //humanAttrToJavaAttrMap.put("Transaction Value","transactionValue");
+            //humanAttrToJavaAttrMap.put("Claim Length Value","claimLengthValue");
             humanAttrToJavaAttrMap.put("Claim Ratio Value","claimRatioValue");
             humanAttrToJavaAttrMap.put("Pendency Value","pendencyValue");
-            humanAttrToJavaAttrMap.put("Prior Art Value","priorArtValue");
+            //humanAttrToJavaAttrMap.put("Prior Art Value","priorArtValue");
             humanAttrToJavaAttrMap.put("Classification Value","classValue");
-            humanAttrToJavaAttrMap.put("Maintenance Fee Value","maintenanceFeeValue");
-            humanAttrToJavaAttrMap.put("Asset Family Value","assetFamilyValue");
-            humanAttrToJavaAttrMap.put("Means Present Ratio Value","meansPresentRatioValue");
+            //humanAttrToJavaAttrMap.put("Maintenance Fee Value","maintenanceFeeValue");
+            //humanAttrToJavaAttrMap.put("Asset Family Value","assetFamilyValue");
+            //humanAttrToJavaAttrMap.put("Means Present Ratio Value","meansPresentRatioValue");
 
 
             // inverted version to get human readables back

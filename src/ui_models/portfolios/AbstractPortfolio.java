@@ -7,4 +7,5 @@ import java.util.Collection;
  */
 public interface AbstractPortfolio {
     Collection<String> getTokens();
+    AbstractPortfolio merge(AbstractPortfolio other, int limit);
 }

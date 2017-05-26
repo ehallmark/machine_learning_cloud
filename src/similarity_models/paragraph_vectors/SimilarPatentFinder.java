@@ -94,19 +94,11 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
         return avgVector;
     }
 
-    public List<PortfolioList> similarFromCandidateSets(List<? extends AbstractSimilarityModel> others, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters) {
-        List<PortfolioList> list = new ArrayList<>(others.size());
-        others.forEach(other->{
-            list.add(similarFromCandidateSet(other, portfolioType, limit, filters));
-        });
-        return list;
-    }
-
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters)  {
         // Find the highest (pairwise) assets
         if(((SimilarPatentFinder)other).getPatentList()==null||((SimilarPatentFinder)other).getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
         INDArray otherAvg = ((SimilarPatentFinder)other).computeAvg();
-        return findSimilarPatentsTo(((SimilarPatentFinder)other).name, otherAvg,limit,portfolioType,filters);
+        return findSimilarPatentsTo(other.getName(), otherAvg,limit,portfolioType,filters);
     }
 
     // returns null if patentNumber not found
@@ -121,6 +113,11 @@ public class SimilarPatentFinder implements AbstractSimilarityModel {
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find "+list.getPortfolio().size()+" similar patents: "+time+" seconds");
         return list;
+    }
+
+    @Override
+    public int numItems() {
+        return patentList==null?0:patentList.size();
     }
 
     private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, String referringName, int limit, DistanceFunction dist, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters) {

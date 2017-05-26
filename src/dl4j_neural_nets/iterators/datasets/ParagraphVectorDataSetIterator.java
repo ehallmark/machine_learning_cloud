@@ -1,6 +1,5 @@
 package dl4j_neural_nets.iterators.datasets;
 
-import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;

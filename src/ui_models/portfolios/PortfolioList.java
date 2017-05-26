@@ -92,6 +92,26 @@ public class PortfolioList implements AbstractPortfolio, Comparable<PortfolioLis
         return sheetName;
     }
 
+    @Override
+    public PortfolioList merge(AbstractPortfolio other, int totalLimit) {
+        Map<String, Item> map = new HashMap<>();
+        Arrays.asList(this,(PortfolioList)other).forEach(portfolioList->{
+            portfolioList.getPortfolio().forEach(item -> {
+                if (item.getName() == null || item.getName().length() == 0) return;
+                Item itemInMap = map.get(item.getName());
+                if (itemInMap!=null) {
+                    itemInMap.appendTags(item.getTags());
+                    itemInMap.setSimilarity(Math.max(item.getSimilarity(), itemInMap.getSimilarity()));
+                } else {
+                    map.put(item.getName(), item);
+                }
+            });
+        });
+        List<Item> merged = map.values().stream().sorted(Comparator.reverseOrder()).limit(totalLimit).collect(Collectors.toList());
+        PortfolioList portfolio = new PortfolioList(merged,portfolioType);
+        return portfolio;
+    }
+
     public String getSheetTitle() { return getSheetName()+" ("+portfolio.size()+" results)"; }
 
     public void setPortfolio(List<Item> portfolio) {

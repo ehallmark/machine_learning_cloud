@@ -1,6 +1,5 @@
 package dl4j_neural_nets.tests;
 
-import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.ParagraphVectorDataSetIterator;

@@ -13,4 +13,10 @@ import java.util.List;
 public interface AbstractSimilarityModel {
 
     PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters);
+
+    int numItems();
+
+    PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters);
+
+    String getName();
 }
