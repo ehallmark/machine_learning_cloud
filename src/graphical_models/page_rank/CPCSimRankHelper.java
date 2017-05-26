@@ -21,13 +21,13 @@ public class CPCSimRankHelper {
         SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75, new MarkovNet()); // Markov Net to avoid directionality
         int numEpochs = 20;
         int previousEpoch = 0;
-        File previousModelFile = new File("data/sim_rank_table"+previousEpoch+".jobj");
+        File previousModelFile = new File("data/cpc_sim_rank_table"+previousEpoch+".jobj");
         Map<Edge<String>,Float> previousRankTable = previousModelFile.exists() ? new SimRank.Loader().loadRankTable(previousModelFile) : Collections.synchronizedMap(new HashMap<>());
         algorithm.rankTable=previousRankTable;
         for(int i = previousEpoch+1; i < numEpochs; i++) {
             long t1 = System.currentTimeMillis();
             algorithm.solve(1);
-            algorithm.save(new File("data/sim_rank_table"+i+".jobj"));
+            algorithm.save(new File("data/cpc_sim_rank_table"+i+".jobj"));
             long t2 = System.currentTimeMillis();
             System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
         }
