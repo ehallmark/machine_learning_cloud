@@ -1,13 +1,8 @@
 package model_testing;
 
-import ui_models.attributes.classification.NaiveGatherClassifier;
-import ui_models.attributes.classification.GatherSVMClassifier;
-import ui_models.attributes.classification.CPCGatherTechTagger;
-import ui_models.attributes.classification.ClassificationAttr;
-import ui_models.attributes.classification.KeywordGatherTechTagger;
+import ui_models.attributes.classification.*;
 import seeding.Database;
 import server.SimilarPatentServer;
-import ui_models.attributes.classification.SimilarityGatherTechTagger;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,8 +22,8 @@ public class ModelTesterMain {
         Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
         Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
 
-        for(int i = 1; i <= numPredictions; i+=2) {
-            for(String arg : args) {
+        for(String arg : args) {
+            for(int i = 1; i <= numPredictions; i+=2) {
                 int test = Integer.valueOf(arg);
                 if (test == 0) {
                     ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentServer.getLookupTable());
@@ -50,6 +45,10 @@ public class ModelTesterMain {
                     ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
                     testModel("Gather Bayesian Model [n=" + i + "]", scorer, testData, i);
+                } else if(test==5) {
+                    ClassificationAttr defaultTagger = TechTaggerNormalizer.getDefaultTechTagger();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(defaultTagger);
+                    testModel("Combined Model [n=" + i + "]", scorer, testData, i);
                 }
             }
         }
