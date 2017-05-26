@@ -12,15 +12,14 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class TechTaggerNormalizer extends ClassificationAttr {
+public class TechTaggerNormalizer implements ClassificationAttr {
     private List<ClassificationAttr> taggers;
+    private List<Double> weights;
     private static ClassificationAttr tagger = new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),Arrays.asList(0.1,0.5,0.3,0.1));
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         this.taggers=taggers;
-        for(int i = 0; i < taggers.size(); i++) {
-            taggers.get(i).setWeight(weights.get(i));
-        }
+        this.weights=weights;
     }
 
     public int numClassifications() {
