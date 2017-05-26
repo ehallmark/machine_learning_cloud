@@ -20,7 +20,11 @@ import java.util.stream.Collectors;
 public class SimRank extends RankGraph<Edge<String>> {
     private static final int jaccardDepth = 4;
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
-        super(labelToCitationLabelsMap, damping);
+        super(labelToCitationLabelsMap,damping);
+    }
+
+    public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping, Graph graph) {
+        super(labelToCitationLabelsMap, damping, graph);
     }
 
     protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {

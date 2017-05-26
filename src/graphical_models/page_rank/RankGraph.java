@@ -18,13 +18,17 @@ public abstract class RankGraph<K> {
     protected double damping;
     protected Map<K,Float> rankTable;
 
-    protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
+    protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping, Graph graph) {
         System.out.println("Initializing RankGraph of type: "+this.getClass().getName());
         if(damping<0||damping>1) throw new RuntimeException("Illegal damping constant");
-        this.graph=new BayesianNet();
+        this.graph=graph;
         this.damping=damping;
         this.initGraph(labelToCitationLabelsMap);
         System.out.println("Finished "+this.getClass().getName());
+    }
+    // default
+    protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
+        this(labelToCitationLabelsMap,damping,new BayesianNet());
     }
 
     protected abstract void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap);
