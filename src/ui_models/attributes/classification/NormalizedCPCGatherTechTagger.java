@@ -70,7 +70,7 @@ public class NormalizedCPCGatherTechTagger extends CPCGatherTechTagger {
             Database.trySaveObject(normalizedMap,normalizedMapFile);
         }
     }
-    public NormalizedCPCGatherTechTagger() {
+    private NormalizedCPCGatherTechTagger() {
         super(normalizedMap,DEFAULT_ORDERED_TECHNOLOGIES);
     }
 

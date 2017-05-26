@@ -1,18 +1,17 @@
-package svm;
+package ui_models.attributes.classification;
 
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
+import svm.SVMHelper;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
-import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.portfolios.AbstractPortfolio;
 
 import java.io.File;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**

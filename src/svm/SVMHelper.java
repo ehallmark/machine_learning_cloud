@@ -1,6 +1,6 @@
 package svm;
 
-import graphical_models.classification.NaiveGatherClassifier;
+import ui_models.attributes.classification.NaiveGatherClassifier;
 import org.deeplearning4j.berkeley.Pair;
 import server.SimilarPatentServer;
 import svm.libsvm.*;

@@ -3,7 +3,7 @@ package svm.genetics;
 import genetics.Solution;
 import model_testing.GatherTechnologyScorer;
 import org.deeplearning4j.berkeley.Pair;
-import svm.GatherSVMClassifier;
+import ui_models.attributes.classification.GatherSVMClassifier;
 import svm.SVMHelper;
 import svm.libsvm.svm_parameter;
 import svm.libsvm.svm_model;

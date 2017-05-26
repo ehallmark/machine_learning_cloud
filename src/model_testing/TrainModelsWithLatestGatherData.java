@@ -1,7 +1,7 @@
 package model_testing;
 
-import graphical_models.classification.NaiveGatherClassifier;
-import svm.GatherSVMClassifier;
+import ui_models.attributes.classification.NaiveGatherClassifier;
+import ui_models.attributes.classification.GatherSVMClassifier;
 import ui_models.attributes.classification.CPCGatherTechTagger;
 import ui_models.attributes.classification.KeywordGatherTechTagger;
 import seeding.Database;

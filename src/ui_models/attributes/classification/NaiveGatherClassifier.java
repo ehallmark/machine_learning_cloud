@@ -1,30 +1,19 @@
-package graphical_models.classification;
+package ui_models.attributes.classification;
 
-import com.google.common.collect.Maps;
-import model.functions.inference_methods.BeliefPropagation;
-import model.functions.inference_methods.SamplingMethod;
 import model.functions.normalization.DivideByPartition;
 import model.graphs.*;
 import model.learning.algorithms.BayesianLearningAlgorithm;
-import model.learning.algorithms.ExpectationMaximizationAlgorithm;
-import model.learning.algorithms.MarkovLearningAlgorithm;
 import model.nodes.FactorNode;
 import model.nodes.Node;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
-import tools.ClassCodeHandler;
-import ui_models.attributes.classification.CPCGatherTechTagger;
-import ui_models.attributes.classification.ClassificationAttr;
-import ui_models.attributes.classification.helper.BuildCPCToGatherStatistics;
 import ui_models.portfolios.AbstractPortfolio;
 import util.MathHelper;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**

@@ -24,7 +24,9 @@ public class CPCGatherTechTagger extends ClassificationAttr {
     protected static Map<String, INDArray> DEFAULT_TECHNOLOGY_MAP;
     protected static List<String> DEFAULT_ORDERED_TECHNOLOGIES;
     protected static final int MIN_CLASS_CODE_LENGTH = 7;
+    protected static final CPCGatherTechTagger model = new CPCGatherTechTagger();
 
+    public static CPCGatherTechTagger get() { return model; }
     private static Map<String, INDArray> loadTechMap() {
         if (DEFAULT_TECHNOLOGY_MAP == null)
             DEFAULT_TECHNOLOGY_MAP = (Map<String, INDArray>) Database.tryLoadObject(BuildCPCToGatherStatistics.techMapFile);
@@ -37,7 +39,7 @@ public class CPCGatherTechTagger extends ClassificationAttr {
         return DEFAULT_ORDERED_TECHNOLOGIES;
     }
 
-    public CPCGatherTechTagger() {
+    private CPCGatherTechTagger() {
         this(DEFAULT_TECHNOLOGY_MAP == null ? loadTechMap() : DEFAULT_TECHNOLOGY_MAP, DEFAULT_ORDERED_TECHNOLOGIES == null ? loadTechList() : DEFAULT_ORDERED_TECHNOLOGIES);
     }
 

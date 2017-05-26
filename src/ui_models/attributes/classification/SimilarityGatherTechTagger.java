@@ -35,7 +35,7 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
         return gatherTagger;
     }
 
-    public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
+    private SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
             this.vectors = new ArrayList<>(nameToInputMap.size());
             this.names = new ArrayList<>(nameToInputMap.size());
             this.lookupTable = lookupTable;

@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends ClassificationAttr {
     private List<ClassificationAttr> taggers;
-    private static ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(new CPCGatherTechTagger(), SimilarityGatherTechTagger.getAIModelTagger(),new KeywordGatherTechTagger()),Arrays.asList(0.1,1.0,0.9));
+    private static ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get()),Arrays.asList(0.1,0.5,0.3,0.1));
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         this.taggers=taggers;
