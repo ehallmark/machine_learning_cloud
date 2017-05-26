@@ -69,8 +69,8 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters) {
         SimRankSimilarityModel otherModel = (SimRankSimilarityModel)other;
         if(!portfolioType.equals(PortfolioList.Type.patents)) {
-            return new PortfolioList(Collections.emptyList(), portfolioType)
-        };
+            return new PortfolioList(Collections.emptyList(), portfolioType);
+        }
         return otherModel.portfolio.stream().map(item->{
             return findSimilarPatentsTo(item,null,limit,portfolioType,filters);
         }).reduce((p1,p2)->{

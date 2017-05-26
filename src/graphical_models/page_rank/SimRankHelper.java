@@ -11,7 +11,7 @@ import java.util.Set;
  * Created by ehallmark on 4/24/17.
  */
 public class SimRankHelper {
-    public static final File file = new File("data/sim_rank_table.jobj");
+    public static final File file = new File("data/sim_rank_table19.jobj");
 
     // run sim rank algorithm
     public static void main(String[] args) {
