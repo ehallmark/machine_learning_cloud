@@ -46,6 +46,7 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     public static AbstractSimilarityModel globalFinder;
     public static AbstractSimilarityModel assigneeFinder;
+    public static AbstractSimilarityModel globalSimRankModel;
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
 
 
@@ -125,6 +126,7 @@ public class SimilarPatentServer {
         try {
             globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
             assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
+            globalSimRankModel = new SimRankSimilarityModel("** ALL SimRank PATENTS **",Database.getCopyOfAllPatents());
             tagger = TechTaggerNormalizer.getDefaultTechTagger();
             // value model
             loadValueModels();
@@ -377,29 +379,36 @@ public class SimilarPatentServer {
 
     static AbstractSimilarityModel getFirstPatentFinder(String modelType, Set<String> labelsToExclude, Collection<String> customAssigneeList, Collection<String> patentsToSearchIn, Collection<String> classCodesToSearchIn, boolean searchEntireDatabase, boolean includeSubclasses, boolean allowResultsFromOtherCandidateSet, String searchType, Collection<String> patentsToSearchFor, Collection<String> assigneesToSearchFor, Collection<String> classCodesToSearchFor) {
         AbstractSimilarityModel firstFinder;
-        if(modelType.equals("0")) {
-            if (!allowResultsFromOtherCandidateSet) {
-                if (searchType.equals("class_codes")) {
-                    classCodesToSearchFor.forEach(code -> labelsToExclude.add(code));
-                }
-                if (searchType.equals("assignees")) {
-                    assigneesToSearchFor.forEach(assignee -> {
-                        labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
-                    });
-                }
-                labelsToExclude.addAll(patentsToSearchFor);
-            }
-
-            // get first finder
-            if (searchEntireDatabase) {
+        // get first finder
+        if (searchEntireDatabase) {
+            if(modelType.equals("0")) {
                 if (searchType.equals("patents")) {
                     firstFinder = globalFinder;
                 } else if (searchType.equals("assignees")) {
                     firstFinder = assigneeFinder;
                 } else {
-                    return null;
+                    firstFinder = null;
                 }
+            } else if(modelType.equals("1")){
+                firstFinder = globalSimRankModel;
             } else {
+                firstFinder = null;
+            }
+        } else {
+            if (modelType.equals("0")) {
+                if (!allowResultsFromOtherCandidateSet) {
+                    if (searchType.equals("class_codes")) {
+                        classCodesToSearchFor.forEach(code -> labelsToExclude.add(code));
+                    }
+                    if (searchType.equals("assignees")) {
+                        assigneesToSearchFor.forEach(assignee -> {
+                            labelsToExclude.addAll(Database.possibleNamesForAssignee(assignee));
+                        });
+                    }
+                    labelsToExclude.addAll(patentsToSearchFor);
+                }
+
+
                 // dependent on searchType
                 if (searchType.equals("patents")) {
                     customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
@@ -420,13 +429,14 @@ public class SimilarPatentServer {
                 } else {
                     return null;
                 }
-            }
-        } else if(modelType.equals("1")) {
-            customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-            classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
-            firstFinder = new SimRankSimilarityModel(null,patentsToSearchIn);
 
-        } else firstFinder=null;
+            } else if (modelType.equals("1")) {
+                customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
+                firstFinder = new SimRankSimilarityModel(null, patentsToSearchIn);
+
+            } else firstFinder = null;
+        }
         return firstFinder;
     }
 
