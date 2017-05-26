@@ -15,7 +15,7 @@ public class PageRankHelper {
     // run sim rank algorithm
     public static void main(String[] args) {
         long t1 = System.currentTimeMillis();
-        Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.patentToCitedPatentsMap;
+        Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.getPatentToCitedPatentsMap();
         PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
         algorithm.solve(100);
         algorithm.save(file);

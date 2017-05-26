@@ -6,10 +6,7 @@ import similarity_models.sim_rank.CPCSimRankSimilarityModel;
 import similarity_models.sim_rank.SimRankSimilarityModel;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by ehallmark on 4/24/17.
@@ -37,11 +34,27 @@ public class CPCSimRankHelper {
         //System.out.println("Rank Table size: "+rankTable.size());
     }
 
-    private static Map<String,Set<String>> getPatentToCitedPatentsFromCPC(Map<String,Set<String>> input) {
+    private static Map<String,Set<String>> getPatentToCitedPatentsFromCPC(Map<String,Set<String>> classToPatentsMap) {
+        System.out.println("Converting class to patent map into patent to patent citations...");
         Map<String,Set<String>> patentToCitedPatents = new HashMap<>();
-
-
-
+        classToPatentsMap.forEach((cpc,patents)->{
+            List<String> patentList = new ArrayList<>(patents);
+            for(int i = 0; i < patentList.size(); i++) {
+                String patent1 = patentList.get(i);
+                Set<String> pSet;
+                if(patentToCitedPatents.containsKey(patent1)) {
+                    pSet = patentToCitedPatents.get(patent1);
+                } else {
+                    pSet = new HashSet<>();
+                    patentToCitedPatents.put(patent1,pSet);
+                }
+                for(int j = i+1; j < patentList.size(); j++) {
+                    String patent2 = patentList.get(j);
+                    pSet.add(patent2);
+                }
+            }
+        });
+        System.out.println("Finished.");
         return patentToCitedPatents;
     }
 }
