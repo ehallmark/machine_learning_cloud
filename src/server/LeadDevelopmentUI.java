@@ -117,7 +117,7 @@ public class LeadDevelopmentUI {
                         ),br(),br(),
                         SimilarPatentServer.expandableDiv("Company Attributes",false,div().with(
                                 br(),br(),
-                                p("(Note: A positive Relative Importance looks to maximize the attribute value, while a negative Relative Importance looks to minimize the attribute value."),
+                                p("(Note: A positive Relative Importance looks to maximize the attribute value, while a negative Relative Importance looks to minimize the attribute value.)"),
                                 table().with(
                                         thead().with(
                                                 tr().with(

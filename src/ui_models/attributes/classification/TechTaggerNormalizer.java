@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
 import tools.MinHeap;
+import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
 import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer extends ClassificationAttr {
     private List<ClassificationAttr> taggers;
-    private static ClassificationAttr tagger = new TechTaggerNormalizer(Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get()),Arrays.asList(0.1,0.5,0.3,0.1));
+    private static ClassificationAttr tagger = new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),Arrays.asList(0.1,0.5,0.3,0.1));
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         this.taggers=taggers;

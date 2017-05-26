@@ -60,17 +60,20 @@ public class ModelTesterMain {
         });
     }
 
-    public static void testModel(String modelName, GatherTechnologyScorer scorer, Map<String,Collection<String>> testData, int numPredictions) {
+    public static double testModel(String modelName, GatherTechnologyScorer scorer, Map<String,Collection<String>> testData, int numPredictions) {
         try {
             System.out.println("Starting to test Model: " + modelName);
             double modelAccuracy = scorer.accuracyOn(testData, numPredictions);
             String result = "Accuracy for Model (" + modelName + ")" + ": " + modelAccuracy;
             System.out.println(result);
             scoreMap.put(modelName, modelAccuracy);
+            return modelAccuracy;
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Error on: "+modelName+" ["+numPredictions+"]");
+            return Double.MIN_VALUE;
         }
+
     }
 
 }

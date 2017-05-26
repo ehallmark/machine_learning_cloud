@@ -3,14 +3,9 @@ package seeding;
 import com.googlecode.concurrenttrees.radix.ConcurrentRadixTree;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
-import com.googlecode.concurrenttrees.radix.node.concrete.DefaultCharArrayNodeFactory;
-import com.googlecode.concurrenttrees.suffix.ConcurrentSuffixTree;
-import com.googlecode.concurrenttrees.suffix.SuffixTree;
-import edu.stanford.nlp.util.Pair;
+
 import lombok.Getter;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import tools.AssigneeTrimmer;
-import tools.ClassCodeHandler;
 
 import java.io.*;
 import java.sql.*;
