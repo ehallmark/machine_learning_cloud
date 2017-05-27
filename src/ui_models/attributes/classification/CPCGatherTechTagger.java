@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 2/18/2017.
  */
-public class CPCGatherTechTagger extends ClassificationAttr {
+public class CPCGatherTechTagger implements ClassificationAttr {
     protected Map<String, INDArray> technologyMap;
     protected List<String> orderedTechnologies;
     protected static Map<String, INDArray> DEFAULT_TECHNOLOGY_MAP;

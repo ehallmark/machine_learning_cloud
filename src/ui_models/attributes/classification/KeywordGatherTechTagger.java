@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 3/9/17.
  */
-public class KeywordGatherTechTagger extends ClassificationAttr{
+public class KeywordGatherTechTagger implements ClassificationAttr{
     private static Map<String,List<INDArray>> technologyToKeywordMap;
     private static WeightLookupTable<VocabWord> lookupTable;
     static {

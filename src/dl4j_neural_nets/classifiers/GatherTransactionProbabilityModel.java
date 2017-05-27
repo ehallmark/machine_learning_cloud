@@ -14,6 +14,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.util.ModelSerializer;
+import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import seeding.Constants;
@@ -76,9 +77,9 @@ public class GatherTransactionProbabilityModel {
                 .l2(0.0001).regularization(true)
                 .learningRate(0.01)
                 .list()
-                .layer(0, new DenseLayer.Builder().activation("sigmoid").nIn(vectorSize).nOut(hiddenLayerSize).build())
-                .layer(1, new DenseLayer.Builder().activation("sigmoid").nIn(hiddenLayerSize).nOut(hiddenLayerSize).build())
-                .layer(2, new OutputLayer.Builder().activation("softmax").lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nIn(hiddenLayerSize).nOut(numOutputs).build())
+                .layer(0, new DenseLayer.Builder().activation(Activation.SIGMOID).nIn(vectorSize).nOut(hiddenLayerSize).build())
+                .layer(1, new DenseLayer.Builder().activation(Activation.SIGMOID).nIn(hiddenLayerSize).nOut(hiddenLayerSize).build())
+                .layer(2, new OutputLayer.Builder().activation(Activation.SOFTMAX).lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).nIn(hiddenLayerSize).nOut(numOutputs).build())
                 .pretrain(false).backprop(true).build();
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();

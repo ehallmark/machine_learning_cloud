@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class SimilarityGatherTechTagger extends ClassificationAttr {
+public class SimilarityGatherTechTagger implements ClassificationAttr {
     List<INDArray> vectors;
     List<String> names;
     WeightLookupTable<VocabWord> lookupTable;

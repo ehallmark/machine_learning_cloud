@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 5/1/17.
  */
-public class NaiveGatherClassifier extends ClassificationAttr implements Serializable{
+public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     static final File file = new File("gather_bayesian_classifier.jobj");
     private static NaiveGatherClassifier defaultClassifier;
 

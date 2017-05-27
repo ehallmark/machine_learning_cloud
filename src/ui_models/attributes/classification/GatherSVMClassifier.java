@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 5/16/2017.
  */
-public class GatherSVMClassifier extends ClassificationAttr {
+public class GatherSVMClassifier implements ClassificationAttr {
     protected static svm_model MODEL;
     protected static List<String> ORDERED_TECHNOLOGIES;
     protected static GatherSVMClassifier classifier;
