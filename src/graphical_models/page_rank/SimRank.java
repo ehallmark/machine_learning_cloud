@@ -42,7 +42,7 @@ public class SimRank extends RankGraph<Edge<String>> {
         labelToCitationLabelsMap.keySet().forEach(nodeLabel->{
             if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
             Node node = graph.findNode(nodeLabel);
-           addNeighborsToMap(node,node,0,jaccardDepth);
+            addNeighborsToMap(node,node,0,jaccardDepth);
         });
         System.out.println("Done.");
     }
