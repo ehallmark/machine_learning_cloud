@@ -4,15 +4,13 @@ import ui_models.attributes.classification.*;
 import seeding.Database;
 import server.SimilarPatentServer;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Evan on 5/4/2017.
  */
 public class ModelTesterMain {
-    static Map<String,Double> scoreMap = new HashMap<>();
+    static SortedMap<String,Double> scoreMap = new TreeMap<>();
 
     public static void main(String[] args) throws Exception {
         // tests models
