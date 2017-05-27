@@ -4,6 +4,8 @@ import model.edges.Edge;
 import similarity_models.sim_rank.SimRankSimilarityModel;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,7 +22,7 @@ public class SimRankHelper {
         int numEpochs = 20;
         int previousEpoch = 0;
         File previousModelFile = new File("data/sim_rank_table"+previousEpoch+".jobj");
-        Map<Edge<String>,Float> previousRankTable = new SimRank.Loader().loadRankTable(previousModelFile);
+        Map<Edge<String>,Float> previousRankTable = previousModelFile.exists() ? new SimRank.Loader().loadRankTable(previousModelFile) : Collections.synchronizedMap(new HashMap<>());
         algorithm.rankTable=previousRankTable;
         for(int i = previousEpoch+1; i < numEpochs; i++) {
             long t1 = System.currentTimeMillis();
