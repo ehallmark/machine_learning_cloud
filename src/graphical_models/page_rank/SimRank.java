@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 4/20/17.
  */
 public class SimRank extends RankGraph<Edge<String>> {
-    private final int jaccardDepth = 2;
+    private final int jaccardDepth = 3;
 
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap,damping);
@@ -91,10 +91,19 @@ public class SimRank extends RankGraph<Edge<String>> {
 
     protected double rankValue(Node n1, Node n2) {
         if(n1.equals(n2)) return 1d;
-        if(n1.getInBound().size()==0||n2.getInBound().size()==0) return 0d;
-        return (damping / (n1.getInBound().size()*n2.getInBound().size())) *
+        Collection<Node> neighbors1;
+        Collection<Node> neighbors2;
+        if(graph instanceof BayesianNet) {
+            neighbors1=n1.getInBound();
+            neighbors2=n2.getInBound();
+        } else {
+            neighbors1=n1.getNeighbors();
+            neighbors2=n2.getNeighbors();
+        }
+        if(neighbors1.size()==0||neighbors2.size()==0) return 0d;
+        return (damping / (neighbors1.size()*neighbors2.size())) *
                 n1.getInBound().stream().collect(Collectors
-                        .summingDouble(fam1->n2.getInBound().stream().collect(Collectors.summingDouble(fam2->{
+                        .summingDouble(fam1->neighbors2.stream().collect(Collectors.summingDouble(fam2->{
                             Float famRank = rankTable.get(new UndirectedEdge(fam1,fam2));
                             if(famRank==null) return 0f;
                             else return famRank;
