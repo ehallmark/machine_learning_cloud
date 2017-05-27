@@ -103,7 +103,7 @@ public class SimRank extends RankGraph<Edge<String>> {
         }
         if(neighbors1.size()==0||neighbors2.size()==0) return 0d;
         return (damping / (neighbors1.size()*neighbors2.size())) *
-                n1.getInBound().stream().collect(Collectors
+                neighbors1.stream().collect(Collectors
                         .summingDouble(fam1->neighbors2.stream().collect(Collectors.summingDouble(fam2->{
                             Float famRank = rankTable.get(new UndirectedEdge<>(fam1.getLabel(),fam2.getLabel()));
                             if(famRank==null) return 0f;
