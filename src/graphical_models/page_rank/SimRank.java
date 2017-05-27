@@ -48,7 +48,6 @@ public class SimRank extends RankGraph<Edge<String>> {
 
     protected void addNeighborsToMap(Node thisNode, Node otherNode, int currentIdx, int maxIdx) {
         Edge<String> edge = new UndirectedEdge<>(thisNode.getLabel(),otherNode.getLabel());
-        if(rankTable.containsKey(edge)) return;
         rankTable.put(edge,thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
         if(currentIdx<maxIdx) {
             Collection<Node> neighbors;
