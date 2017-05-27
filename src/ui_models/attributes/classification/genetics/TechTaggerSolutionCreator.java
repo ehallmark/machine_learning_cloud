@@ -15,6 +15,8 @@ public class TechTaggerSolutionCreator implements SolutionCreator {
     private static final Random rand = new Random(69);
     @Getter
     private static final List<ClassificationAttr> taggers = Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get());
+    @Getter
+    private static final List<Double> weights = Arrays.asList(0.7,0.95,0.03,0.23);
     public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData) {
         this.validationData=validationData;
     }
