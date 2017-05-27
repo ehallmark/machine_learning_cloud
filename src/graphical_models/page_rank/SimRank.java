@@ -19,7 +19,8 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 4/20/17.
  */
 public class SimRank extends RankGraph<Edge<String>> {
-    private static final int jaccardDepth = 4;
+    private final int jaccardDepth = 2;
+
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap,damping);
     }
