@@ -392,7 +392,7 @@ public class HighchartDataAdapter {
                 totalSize.addAndGet(size);
                 value.addAndGet(evaluator.evaluate(c)*size);
             });
-            Point point = new Point(evaluator.getModelName(),value.get()/totalSize.get());
+            Point point = new Point(evaluator.getModelName(),value.get());
             series.addPoint(point);
         });
         data.add(series);
