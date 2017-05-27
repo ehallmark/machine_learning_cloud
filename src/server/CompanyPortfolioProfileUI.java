@@ -500,7 +500,7 @@ public class CompanyPortfolioProfileUI {
                         ajaxClickablePoints = true;
                         charts.add(barChart);
                     } else if (reportType.equals("Valuable Patents")) {
-                        BarChart barChart = new BarChart("Valuable Patents for " + portfolioString, HighchartDataAdapter.collectValueData(portfolioString, portfolioList), 1d, 5d);
+                        BarChart barChart = new BarChart("Valuable Patents for " + portfolioString, HighchartDataAdapter.collectValueData(portfolioString, portfolioList), 0d, 100d, "%");
                         ajaxClickablePoints = true;
                         charts.add(barChart);
                     }
