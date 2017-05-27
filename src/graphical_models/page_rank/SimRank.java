@@ -104,7 +104,7 @@ public class SimRank extends RankGraph<Edge<String>> {
         return (damping / (neighbors1.size()*neighbors2.size())) *
                 n1.getInBound().stream().collect(Collectors
                         .summingDouble(fam1->neighbors2.stream().collect(Collectors.summingDouble(fam2->{
-                            Float famRank = rankTable.get(new UndirectedEdge(fam1,fam2));
+                            Float famRank = rankTable.get(new UndirectedEdge<>(fam1.getLabel(),fam2.getLabel()));
                             if(famRank==null) return 0f;
                             else return famRank;
                         }))));
@@ -121,7 +121,7 @@ public class SimRank extends RankGraph<Edge<String>> {
                     Node n2 = graph.findNode(edge.getNode2());
                     double newRank = rankValue(n1, n2);
                     if (newRank > 0) {
-                        rankTable.put(new UndirectedEdge(n1, n2), (float) newRank);
+                        rankTable.put(new UndirectedEdge<>(n1.getLabel(), n2.getLabel()), (float) newRank);
                     }
                 }
                 if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
