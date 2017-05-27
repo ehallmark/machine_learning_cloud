@@ -14,6 +14,7 @@ import util.MathHelper;
 import java.io.File;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -69,14 +70,20 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         Set<String> classifications = new HashSet<>();
         portfolio.getTokens().forEach(token->classifications.addAll(Database.classificationsFor(token)));
+        if(classifications.isEmpty()) return Collections.emptyList();
+
         double[] observation = new double[orderedClassifications.size()];
         Arrays.fill(observation,0d);
+        AtomicBoolean found = new AtomicBoolean(false);
         classifications.forEach(clazz->{
            int idx = orderedClassifications.indexOf(clazz);
            if(idx>=0) {
                observation[idx]++;
+               found.set(true);
            }
         });
+        if(!found.get()) return Collections.emptyList();
+
         FactorNode observedFactor = new FactorNode(observation,new String[]{"CPC"},new int[]{orderedClassifications.size()},bayesianNet.findNode("CPC").getValueMap());
         observedFactor.reNormalize(new DivideByPartition());
         FactorNode condTechFactor = bayesianNet.findNode("Technology").getFactors().get(0);
