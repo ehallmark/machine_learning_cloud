@@ -27,10 +27,6 @@ public class SimRank extends RankGraph<Edge<String>> {
         super(labelToCitationLabelsMap,damping);
     }
 
-    public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping, Graph graph) {
-        super(labelToCitationLabelsMap, damping, graph);
-    }
-
     protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {
         rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");

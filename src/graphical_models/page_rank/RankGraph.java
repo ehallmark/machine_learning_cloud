@@ -2,6 +2,7 @@ package graphical_models.page_rank;
 
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
+import model.graphs.MarkovNet;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
 import util.ObjectIO;
@@ -28,7 +29,7 @@ public abstract class RankGraph<K> {
     }
     // default
     protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
-        this(labelToCitationLabelsMap,damping,new BayesianNet());
+        this(labelToCitationLabelsMap,damping,new MarkovNet());
     }
 
     protected abstract void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap);
