@@ -2,6 +2,7 @@ package graphical_models.page_rank;
 
 import model.edges.Edge;
 import model.edges.UndirectedEdge;
+import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
@@ -48,10 +49,18 @@ public class SimRank extends RankGraph<Edge<String>> {
     }
 
     protected void addNeighborsToMap(Node thisNode, Node otherNode, int currentIdx, int maxIdx) {
-        rankTable.put(new UndirectedEdge<>(thisNode.getLabel(),otherNode.getLabel()),thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
+        Edge<String> edge = new UndirectedEdge<>(thisNode.getLabel(),otherNode.getLabel());
+        if(rankTable.containsKey(edge)) return;
+        rankTable.put(edge,thisNode.getLabel().equals(otherNode.getLabel())?1f:0f);
         if(currentIdx<maxIdx) {
-            otherNode.getInBound().forEach(neighbor->{
-                addNeighborsToMap(thisNode,neighbor,currentIdx+1,maxIdx);
+            Collection<Node> neighbors;
+            if(graph instanceof BayesianNet) {
+                neighbors=otherNode.getInBound();
+            } else {
+                neighbors=otherNode.getNeighbors();
+            }
+            neighbors.forEach(neighbor -> {
+                addNeighborsToMap(thisNode, neighbor, currentIdx + 1, maxIdx);
             });
         }
     }
