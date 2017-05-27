@@ -21,7 +21,7 @@ public class CPCSimRankHelper {
         int numEpochs = 20;
         int previousEpoch = 0;
         File previousModelFile = new File("data/cpc_sim_rank_table"+previousEpoch+".jobj");
-        Map<Edge<String>,Float> previousRankTable = previousModelFile.exists() ? new SimRank.Loader().loadRankTable(previousModelFile) : Collections.synchronizedMap(new HashMap<>());
+        Map<Edge<String>,Float> previousRankTable = Collections.synchronizedMap(previousModelFile.exists() ? new SimRank.Loader().loadRankTable(previousModelFile) : new HashMap<>());
         algorithm.rankTable=previousRankTable;
         for(int i = previousEpoch+1; i < numEpochs; i++) {
             long t1 = System.currentTimeMillis();

@@ -1,5 +1,6 @@
 package graphical_models.page_rank;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import model.edges.Edge;
 import model.edges.UndirectedEdge;
 import model.graphs.BayesianNet;
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  */
 public class SimRank extends RankGraph<Edge<String>> {
     private final int jaccardDepth = 2;
+    private static double currentScore = 0d;
 
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap,damping);
@@ -41,9 +43,8 @@ public class SimRank extends RankGraph<Edge<String>> {
         });
         this.nodes=graph.getAllNodesList();
         AtomicInteger cnt = new AtomicInteger(0);
-        labelToCitationLabelsMap.keySet().forEach(nodeLabel->{
+        this.nodes.parallelStream().forEach(node->{
             if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
-            Node node = graph.findNode(nodeLabel);
             addNeighborsToMap(node,node,0,jaccardDepth);
         });
         System.out.println("Done.");
@@ -115,23 +116,29 @@ public class SimRank extends RankGraph<Edge<String>> {
         public boolean runAlgorithm() {
             AtomicInteger cnt = new AtomicInteger(0);
             Collection<Edge<String>> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
+            AtomicDouble delta = new AtomicDouble(0d);
             rankTableKeysCopy.parallelStream().forEach(edge->{
                 if(!edge.getNode1().equals(edge.getNode2())) {
                     Node n1 = graph.findNode(edge.getNode1());
                     Node n2 = graph.findNode(edge.getNode2());
                     double newRank = rankValue(n1, n2);
+                    if(rankTable.containsKey(edge)) {
+                        double prevRank = rankTable.get(edge);
+                        delta.getAndAdd(Math.abs(prevRank-newRank));
+                    }
                     if (newRank > 0) {
-                        rankTable.put(new UndirectedEdge<>(n1.getLabel(), n2.getLabel()), (float) newRank);
+                        rankTable.put(edge, (float) newRank);
                     }
                 }
                 if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
             });
-            return false;
+            currentScore = delta.get()/nodes.size();
+            return currentScore  < 0.0000001/nodes.size();
         }
 
         @Override
         public double computeCurrentScore() {
-            return 0d;
+            return currentScore;
         }
     }
 
