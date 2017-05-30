@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class SimRank extends RankGraph<Edge<String>> {
     private final int jaccardDepth = 2;
-    private static double currentScore = 0d;
+    private static double currentScore = Double.MAX_VALUE;
 
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
         super(labelToCitationLabelsMap,damping);
@@ -112,14 +112,17 @@ public class SimRank extends RankGraph<Edge<String>> {
             AtomicInteger cnt = new AtomicInteger(0);
             Collection<Edge<String>> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
             AtomicDouble delta = new AtomicDouble(0d);
+            AtomicInteger deltaCount = new AtomicInteger(0);
             rankTableKeysCopy.parallelStream().forEach(edge->{
                 if(!edge.getNode1().equals(edge.getNode2())) {
                     Node n1 = graph.findNode(edge.getNode1());
                     Node n2 = graph.findNode(edge.getNode2());
                     double newRank = rankValue(n1, n2);
+                    System.out.println("Rank ["+n1.getLabel()+","+n2.getLabel()+"]: "+newRank);
                     if(rankTable.containsKey(edge)) {
                         double prevRank = rankTable.get(edge);
                         delta.getAndAdd(Math.abs(prevRank-newRank));
+                        deltaCount.getAndIncrement();
                     }
                     if (newRank > 0) {
                         rankTable.put(edge, (float) newRank);
@@ -127,7 +130,7 @@ public class SimRank extends RankGraph<Edge<String>> {
                 }
                 if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
             });
-            currentScore = delta.get()/nodes.size();
+            if(deltaCount.get()>0)currentScore = delta.get()/deltaCount.get();
             return currentScore  < 0.0000001/nodes.size();
         }
 
