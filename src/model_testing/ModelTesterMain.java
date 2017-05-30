@@ -17,8 +17,8 @@ public class ModelTesterMain {
         Database.initializeDatabase();
         int numPredictions = 5;
 
-        Map<String,Collection<String>> trainData = SplitModelData.getGatherTechnologyTrainingDataMap();
-        Map<String,Collection<String>> testData = SplitModelData.getGatherTechnologyTestDataMap();
+        Map<String,Collection<String>> trainData = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+        Map<String,Collection<String>> testData = SplitModelData.getBroadDataMap(SplitModelData.testFile);
 
         for(String arg : args) {
             for(int i = 1; i <= numPredictions; i+=2) {

@@ -28,7 +28,7 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     WeightLookupTable<VocabWord> lookupTable;
     private static final SimilarityGatherTechTagger gatherTagger;
     static {
-        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getGatherTechnologyTrainingDataMap(),SimilarPatentServer.getLookupTable());
+        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getBroadDataMap(SplitModelData.trainFile),SimilarPatentServer.getLookupTable());
     }
 
     public static SimilarityGatherTechTagger getAIModelTagger() {

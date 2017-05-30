@@ -14,7 +14,14 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer implements ClassificationAttr {
     private List<Pair<ClassificationAttr,Double>> taggerPairs;
-    private static ClassificationAttr tagger = new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),Arrays.asList(0.1,0.5,0.3,0.1));
+
+    @Override
+    public void train(Map<String, Collection<String>> trainingData) {
+        // Do nothing
+        throw new UnsupportedOperationException("Model not trainable");
+    }
+
+    private static ClassificationAttr tagger = new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),TechTaggerSolutionCreator.getWeights());
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         if(taggers.size()!=weights.size()) throw new RuntimeException("Illegal arguments in techtaggernormalizer");

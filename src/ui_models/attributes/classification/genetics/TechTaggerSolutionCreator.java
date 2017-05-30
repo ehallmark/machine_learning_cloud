@@ -10,30 +10,36 @@ import java.util.*;
 /**
  * Created by Evan on 5/24/2017.
  */
-public class TechTaggerSolutionCreator implements SolutionCreator {
+public class TechTaggerSolutionCreator implements SolutionCreator<TechTaggerSolution> {
     private Map<String,Collection<String>> validationData;
     private static final Random rand = new Random(69);
     @Getter
     private static final List<ClassificationAttr> taggers = Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get());
     @Getter
     private static final List<Double> weights = Arrays.asList(0.7,0.95,0.03,0.23);
+    private List<ClassificationAttr> mTaggers;
     public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData) {
+        this(validationData,taggers);
+    }
+
+    public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData, List<ClassificationAttr> taggers) {
+        this.mTaggers=taggers;
         this.validationData=validationData;
     }
 
     @Override
-    public Collection<Solution> nextRandomSolutions(int n) {
-        List<Solution> list = new ArrayList<>(n);
+    public Collection<TechTaggerSolution> nextRandomSolutions(int n) {
+        List<TechTaggerSolution> list = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            list.add(new TechTaggerSolution(taggers,randomParameter(),validationData));
+            list.add(new TechTaggerSolution(mTaggers,randomParameter(),validationData));
         }
         return list;
     }
 
 
     public List<Double> randomParameter() {
-        List<Double> weights = new ArrayList<>(taggers.size());
-        for(int i = 0; i < taggers.size(); i++) {
+        List<Double> weights = new ArrayList<>(mTaggers.size());
+        for(int i = 0; i < mTaggers.size(); i++) {
             weights.add(rand.nextDouble());
         }
         return weights;

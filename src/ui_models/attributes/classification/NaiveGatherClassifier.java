@@ -27,6 +27,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     protected BayesianNet bayesianNet;
     protected List<String> orderedTechnologies;
     protected List<String> orderedClassifications;
+    protected double alpha;
 
     public static NaiveGatherClassifier get() {
         if(defaultClassifier==null) {
@@ -35,17 +36,15 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         return defaultClassifier;
     }
 
-    private NaiveGatherClassifier() {
-        Map<String,Collection<String>> gatherTraining = SplitModelData.getGatherTechnologyTrainingDataMap();
+    @Override
+    public void train(Map<String, Collection<String>> trainingData) {
         Map<String,Set<String>> patentToClassificationMap = Database.getPatentToClassificationMap();
-        Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(gatherTraining,patentToClassificationMap);
-        orderedTechnologies = new ArrayList<>(gatherTraining.keySet());
+        Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(trainingData,patentToClassificationMap);
+        orderedTechnologies = new ArrayList<>(trainingData.keySet());
         orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
-
-        List<Map<String,Integer>> assignments = getAssignments(gatherTraining,orderedTechnologies,patentToClassificationMap,orderedClassifications);
-
-        System.out.println("Num assignments: "+assignments.size());
         bayesianNet = new BayesianNet();
+
+        List<Map<String,Integer>> assignments = getAssignments(trainingData,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 
         // set data
         bayesianNet.setTrainingData(assignments);
@@ -62,8 +61,12 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         System.out.println("Finished adding nodes.");
 
         // learn
-        bayesianNet.applyLearningAlgorithm(new BayesianLearningAlgorithm(bayesianNet,20d),1);
+        bayesianNet.applyLearningAlgorithm(new BayesianLearningAlgorithm(bayesianNet,alpha),1);
+        System.out.println("Num assignments: "+assignments.size());
+    }
 
+    private NaiveGatherClassifier(double alpha) {
+        this.alpha=alpha;
     }
 
     @Override
@@ -181,7 +184,9 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     }
 
     public static void main(String[] args) {
-        NaiveGatherClassifier classifier = new NaiveGatherClassifier();
+        double alpha = 20d;
+        NaiveGatherClassifier classifier = new NaiveGatherClassifier(alpha);
+        classifier.train(SplitModelData.getBroadDataMap(SplitModelData.trainFile));
         // save
         Database.trySaveObject(classifier,file);
     }

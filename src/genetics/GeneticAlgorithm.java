@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 2/19/2017.
  */
-public class GeneticAlgorithm {
-    private List<Solution> population;
+public class GeneticAlgorithm<T extends Solution> {
+    private List<T> population;
     private int maxPopulationSize;
     private static Random random = new Random(69);
     private final double startingScore;
     private final int numThreads;
-    private Solution bestSolutionSoFar;
+    private T bestSolutionSoFar;
     private double currentScore;
     private Listener listener;
     private AtomicInteger mutationCounter = new AtomicInteger(0);
     private AtomicInteger crossoverCounter = new AtomicInteger(0);
 
-    public GeneticAlgorithm(SolutionCreator creator, int maxPopulationSize, Listener listener, int numThreads) {
+    public GeneticAlgorithm(SolutionCreator<T> creator, int maxPopulationSize, Listener listener, int numThreads) {
         this.maxPopulationSize=maxPopulationSize;
         this.numThreads=numThreads;
         this.listener=listener;
@@ -34,7 +34,7 @@ public class GeneticAlgorithm {
         startingScore=currentScore;
     }
 
-    public Solution getBestSolution() {
+    public T getBestSolution() {
         return bestSolutionSoFar;
     }
 
@@ -92,7 +92,7 @@ public class GeneticAlgorithm {
 
         ForkJoinPool pool = new ForkJoinPool(numThreads);
 
-        Collection<Solution> children = Collections.synchronizedList(new ArrayList<>());
+        Collection<T> children = Collections.synchronizedList(new ArrayList<>());
         // mutate
         for(int i = 0; i < population.size(); i++) {
             if(random.nextDouble()<probMutation/Math.log(Math.E+mutationCounter.get())) {
@@ -106,7 +106,7 @@ public class GeneticAlgorithm {
                                 //System.out.println("Mutation Failed");
                                 return;
                             }
-                            children.add(child);
+                            children.add((T)child);
                             mutationCounter.getAndIncrement();
                         } catch(Exception e) {
                             e.printStackTrace();
@@ -135,7 +135,7 @@ public class GeneticAlgorithm {
                                 //System.out.println("Crossover Failed");
                                 return;
                             }
-                            children.add(child);
+                            children.add((T)child);
                             crossoverCounter.getAndIncrement();
                         } catch(Exception e) {
                             e.printStackTrace();
@@ -192,7 +192,7 @@ public class GeneticAlgorithm {
 
     private void setBestSolution() {
         if(!population.isEmpty()) {
-            Solution currentBestSolution = population.get(0);
+            T currentBestSolution = population.get(0);
             if(bestSolutionSoFar==null||(bestSolutionSoFar.fitness()<currentBestSolution.fitness())) bestSolutionSoFar=currentBestSolution;
         }
     }

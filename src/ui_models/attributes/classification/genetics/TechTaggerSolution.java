@@ -19,6 +19,7 @@ import java.util.*;
 public class TechTaggerSolution implements Solution {
     private Map<String,Collection<String>> validationData;
     private Double fitness;
+    @Getter
     private List<ClassificationAttr> taggers;
     @Getter
     private List<Double> weights;
