@@ -31,7 +31,7 @@ public class GatherTechnologyScorer {
     public static double scoreAssets(ClassificationAttr model, String tech, Collection<String> assets, int numPredictions) {
         if(assets.isEmpty()) return 0d;
         return ((double)(assets.stream().map(asset->{
-            Collection<String> predictions = model.attributesFor(PortfolioList.asList(asset, PortfolioList.Type.patents),numPredictions).stream().map(pair->pair.getFirst()).collect(Collectors.toSet());
+            Collection<String> predictions = model.attributesFor(PortfolioList.asList(asset, PortfolioList.Type.patents),numPredictions).stream().limit(numPredictions).map(pair->pair.getFirst()).collect(Collectors.toSet());
             if(predictions==null||predictions.isEmpty()) return Collections.emptyList();
             //System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
             return predictions;
