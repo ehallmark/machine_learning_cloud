@@ -8,6 +8,7 @@ import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.classification.broad_technology.BroadTechnologySolution;
 import ui_models.attributes.classification.broad_technology.BroadTechnologySolutionCreator;
+import ui_models.attributes.classification.broad_technology.BroadTechnologySolutionListener;
 import ui_models.attributes.classification.genetics.TechTaggerSolution;
 import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
 import ui_models.attributes.classification.genetics.TechTaggerSolutionListener;
@@ -54,7 +55,7 @@ public class GatherClassificationOptimizer {
         // Genetic Algorithm to find better broad technologies
         System.out.println("Starting genetic algorithm...");
         SolutionCreator<BroadTechnologySolution> creator = new BroadTechnologySolutionCreator(broadTechMap,models,this);
-        Listener listener = new TechTaggerSolutionListener();
+        BroadTechnologySolutionListener listener = new BroadTechnologySolutionListener();
         GeneticAlgorithm<BroadTechnologySolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
         System.out.println("Finished optimizing hyper parameters.");
