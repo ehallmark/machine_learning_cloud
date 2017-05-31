@@ -5,10 +5,7 @@ import seeding.Database;
 import similarity_models.sim_rank.SimRankSimilarityModel;
 
 import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by ehallmark on 4/24/17.
@@ -18,9 +15,8 @@ public class SimRankHelper {
 
     // run sim rank algorithm
     public static void main(String[] args) {
-        Database.initializeDatabase();
         Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.getPatentToCitedPatentsMap();
-        SimRank algorithm = new SimRank(patentToCitedPatentsMap, Database.getCopyOfAllPatents(),0.75);
+        SimRank algorithm = new SimRank(patentToCitedPatentsMap, new ArrayList<>(patentToCitedPatentsMap.keySet()),0.75);
         int numEpochs = 20;
         int previousEpoch = 0;
         File previousModelFile = new File("data/sim_rank_table"+previousEpoch+".jobj");

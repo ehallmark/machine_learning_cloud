@@ -17,9 +17,8 @@ public class CPCSimRankHelper {
 
     // run sim rank algorithm
     public static void main(String[] args) {
-        Database.initializeDatabase();
         Map<String,Set<String>> cpcToPatentsMap = CPCSimRankSimilarityModel.classificationToPatentMap;
-        SimRank algorithm = new SimRank(cpcToPatentsMap, Database.getCopyOfAllPatents(),0.75);
+        SimRank algorithm = new SimRank(cpcToPatentsMap, new ArrayList<>(Database.getPatentToClassificationMap().keySet()),0.75);
         int numEpochs = 20;
         int previousEpoch = 0;
         File previousModelFile = new File("data/cpc_sim_rank_table"+previousEpoch+".jobj");
