@@ -30,7 +30,7 @@ public class BroadTechnologySolution implements Solution {
 
     @Override
     public double fitness() {
-        return fitness==null?Double.MAX_VALUE:fitness;
+        return fitness==null?0d:fitness;
     }
 
     @Override

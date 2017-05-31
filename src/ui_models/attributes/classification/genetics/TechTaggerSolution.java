@@ -33,7 +33,7 @@ public class TechTaggerSolution implements Solution {
 
     @Override
     public double fitness() {
-        return fitness==null?Double.MIN_VALUE:fitness;
+        return fitness==null?0d:fitness;
     }
 
     @Override

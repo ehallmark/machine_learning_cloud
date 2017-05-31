@@ -23,8 +23,10 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 5/1/17.
  */
 public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
+    private static final long serialVersionUID = 1l;
     static final File file = new File("gather_bayesian_classifier.jobj");
     private static NaiveGatherClassifier defaultClassifier;
+    private static final double defaultAlpha = 20d;
 
     protected BayesianNet bayesianNet;
     protected List<String> orderedTechnologies;
@@ -64,6 +66,9 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     public static NaiveGatherClassifier get() {
         if(defaultClassifier==null) {
             defaultClassifier=(NaiveGatherClassifier)Database.tryLoadObject(file);
+            if(defaultClassifier==null) {
+                return new NaiveGatherClassifier(defaultAlpha);
+            }
         }
         return defaultClassifier;
     }
