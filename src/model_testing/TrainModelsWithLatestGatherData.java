@@ -67,7 +67,7 @@ public class TrainModelsWithLatestGatherData {
 
 
 
-    private static void writeToCSV(Map<String,String> techMap,File file) {
+    public static void writeToCSV(Map<String,String> techMap,File file) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
 
