@@ -42,11 +42,11 @@ public class GatherClassificationOptimizer {
     public List<ClassificationAttr> duplicateAndTrainModels(List<ClassificationAttr> models, Map<String,String> broadTechMap) {
         Map<String,Collection<String>> broadTrainingData = SplitModelData.regroupData(rawTrainingData,broadTechMap);
         List<ClassificationAttr> toReturn = new ArrayList<>(models.size());
-        models.forEach(model->{
+        for(ClassificationAttr model : models) {
             ClassificationAttr newModel = model.untrainedDuplicate();
             newModel.train(broadTrainingData);
             toReturn.add(newModel);
-        });
+        }
         return toReturn;
     }
 
