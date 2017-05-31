@@ -27,6 +27,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
     protected static svm_model MODEL;
     protected static List<String> ORDERED_TECHNOLOGIES;
     protected static GatherSVMClassifier classifier;
+    private static final int timeLimit = 1*60*1000;
 
     protected svm_model model;
     protected svm_parameter param;
@@ -97,7 +98,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
         SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies);
         Listener listener = new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
-        algorithm.simulate(20*60*1000,0.5,0.5);
+        algorithm.simulate(timeLimit,0.5,0.5);
         return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies);
     }
 

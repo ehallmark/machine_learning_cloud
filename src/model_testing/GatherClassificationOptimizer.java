@@ -24,7 +24,7 @@ public class GatherClassificationOptimizer {
     private int numThreads = 20;
     private double probMutation = 0.5;
     private double probCrossover = 0.5;
-    private long timeLimit = 20 * 60 * 1000;
+    private long timeLimit = 1 * 60 * 1000;
     @Getter
     private final Map<String,Collection<String>> rawTrainingData;
     @Getter
@@ -43,6 +43,7 @@ public class GatherClassificationOptimizer {
         Map<String,Collection<String>> broadTrainingData = SplitModelData.regroupData(rawTrainingData,broadTechMap);
         List<ClassificationAttr> toReturn = new ArrayList<>(models.size());
         for(ClassificationAttr model : models) {
+            System.out.println("Duplicating model");
             ClassificationAttr newModel = model.untrainedDuplicate();
             newModel.train(broadTrainingData);
             toReturn.add(newModel);

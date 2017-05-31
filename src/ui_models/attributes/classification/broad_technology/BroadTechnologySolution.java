@@ -19,13 +19,14 @@ public class BroadTechnologySolution implements Solution {
     private Map<String,String> broadTechMap;
     @Getter
     private List<ClassificationAttr> models;
-    private Double fitness = null;
+    private Double fitness;
     private GatherClassificationOptimizer optimizer;
 
     public BroadTechnologySolution(Map<String,String> broadTechMap, List<ClassificationAttr> models, GatherClassificationOptimizer optimizer) {
         this.broadTechMap=broadTechMap;
         this.models=models;
         this.optimizer=optimizer;
+        this.fitness=null;
     }
 
     @Override
