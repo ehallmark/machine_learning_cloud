@@ -68,7 +68,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         if(defaultClassifier==null) {
             defaultClassifier=(NaiveGatherClassifier)Database.tryLoadObject(file);
             if(defaultClassifier==null) {
-                return new NaiveGatherClassifier(defaultAlpha);
+                defaultClassifier=new NaiveGatherClassifier(defaultAlpha);
             }
         }
         return defaultClassifier;
