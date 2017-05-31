@@ -9,6 +9,8 @@ import model_testing.GatherTechnologyScorer;
 import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import ui_models.portfolios.AbstractPortfolio;
 import util.MathHelper;
@@ -89,8 +91,8 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         bayesianNet.setTrainingData(assignments);
 
         // add node
-        Node cpcNode = bayesianNet.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
-        Node techNode = bayesianNet.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
+        Node cpcNode = bayesianNet.addNode("CPC",orderedClassifications.size(),Nd4j.create(orderedClassifications.size()));
+        Node techNode = bayesianNet.addNode("Technology",orderedTechnologies.size(),Nd4j.create(orderedTechnologies.size()));
         bayesianNet.connectNodes(cpcNode,techNode);
         bayesianNet.addFactorNode(null,cpcNode);
         bayesianNet.addFactorNode(null,techNode,cpcNode);
@@ -122,14 +124,15 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         });
         if(!found.get()) return Collections.emptyList();
 
-        FactorNode observedFactor = new FactorNode(observation,new String[]{"CPC"},new int[]{orderedClassifications.size()},bayesianNet.findNode("CPC").getValueMap());
+        FactorNode observedFactor = new FactorNode(Nd4j.create(observation),new String[]{"CPC"},new int[]{orderedClassifications.size()},bayesianNet.findNode("CPC").getValueMap());
         observedFactor.reNormalize(new DivideByPartition());
         FactorNode condTechFactor = bayesianNet.findNode("Technology").getFactors().get(0);
         FactorNode result = observedFactor.multiply(condTechFactor).sumOut(new String[]{"CPC"});
         result.reNormalize(new DivideByPartition());
         List<Pair<String,Double>> values = new ArrayList<>();
-        for(int i = 0; i < result.getWeights().length; i++) {
-            values.add(new Pair<>(orderedTechnologies.get(i),result.getWeights()[i]));
+        double[] array = result.getWeights().data().asDouble();
+        for(int i = 0; i < array.length; i++) {
+            values.add(new Pair<>(orderedTechnologies.get(i),array[i]));
         }
         return values.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
     }

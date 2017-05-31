@@ -33,7 +33,7 @@ public class GatherTechnologyScorer {
         return ((double)(assets.stream().map(asset->{
             Collection<String> predictions = model.attributesFor(PortfolioList.asList(asset, PortfolioList.Type.patents),numPredictions).stream().limit(numPredictions).map(pair->pair.getFirst()).collect(Collectors.toSet());
             if(predictions==null||predictions.isEmpty()) return Collections.emptyList();
-            System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
+            //System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
             return predictions;
         }).filter(collection->collection.contains(tech)).count()))/assets.size();
     }
