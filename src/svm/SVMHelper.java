@@ -29,7 +29,6 @@ public class SVMHelper {
                 int i = idx.getAndIncrement();
                 x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
                 y[i] = new double[]{technologies.indexOf(tech)};
-                System.out.println("Idx: "+i);
             });
         });
 
@@ -160,9 +159,9 @@ public class SVMHelper {
 
         double[] ypred = svmPredict(xtest, m);
 
-        for (int i = 0; i < xtest.length; i++){
-            System.out.println("(Actual:" + Arrays.toString(ytest[i]) + " Prediction:" + ypred[i] + ")");
-        }
+        //for (int i = 0; i < xtest.length; i++){
+          //  System.out.println("(Actual:" + Arrays.toString(ytest[i]) + " Prediction:" + ypred[i] + ")");
+        //}
 
     }
 }

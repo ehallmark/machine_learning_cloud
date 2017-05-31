@@ -43,7 +43,6 @@ public class GatherClassificationOptimizer {
         Map<String,Collection<String>> broadTrainingData = SplitModelData.regroupData(rawTrainingData,broadTechMap);
         List<ClassificationAttr> toReturn = new ArrayList<>(models.size());
         for(ClassificationAttr model : models) {
-            System.out.println("Duplicating model");
             ClassificationAttr newModel = model.untrainedDuplicate();
             newModel.train(broadTrainingData);
             toReturn.add(newModel);
@@ -56,7 +55,7 @@ public class GatherClassificationOptimizer {
         // Genetic Algorithm to find better broad technologies
         System.out.println("Starting genetic algorithm...");
         SolutionCreator<BroadTechnologySolution> creator = new BroadTechnologySolutionCreator(broadTechMap,models,this);
-        BroadTechnologySolutionListener listener = new BroadTechnologySolutionListener();
+        BroadTechnologySolutionListener listener = null;// new BroadTechnologySolutionListener();
         GeneticAlgorithm<BroadTechnologySolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
         System.out.println("Finished optimizing hyper parameters.");
@@ -80,7 +79,7 @@ public class GatherClassificationOptimizer {
         // Genetic Algorithm to find better combination
         System.out.println("Starting genetic algorithm...");
         SolutionCreator<TechTaggerSolution> creator = new TechTaggerSolutionCreator(broadValidation2Data,models);
-        Listener listener = new TechTaggerSolutionListener();
+        Listener listener = null;//new TechTaggerSolutionListener();
         GeneticAlgorithm<TechTaggerSolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
         System.out.println("Finished optimizing hyper parameters.");
