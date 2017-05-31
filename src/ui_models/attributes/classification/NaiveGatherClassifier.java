@@ -51,6 +51,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
             double score = scorer.accuracyOn(validationData,3);
             if(score > bestScoreSoFar) {
                 bestModel = solution;
+                bestScoreSoFar=score;
             }
         }
         System.out.println("Best Alpha: "+bestModel.alpha);

@@ -58,7 +58,7 @@ public class GatherClassificationOptimizer {
         BroadTechnologySolutionListener listener = null;// new BroadTechnologySolutionListener();
         GeneticAlgorithm<BroadTechnologySolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
-        System.out.println("Finished optimizing hyper parameters.");
+        System.out.println("Finished optimizing broad technologies.");
         // Update models list from best solution and return better broad tech map
         BroadTechnologySolution bestSolution = algorithm.getBestSolution();
         models.clear();
@@ -74,7 +74,7 @@ public class GatherClassificationOptimizer {
         // Optimize parameters for each model
         for(int i = 0; i < models.size(); i++) {
             models.set(i,models.get(i).optimizeHyperParameters(broadTrainingData,broadValidation2Data));
-            models.get(i).train(rawTrainingData);
+            models.get(i).train(broadTrainingData);
         }
 
         // Genetic Algorithm to find better combination
