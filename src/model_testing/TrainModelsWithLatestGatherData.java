@@ -44,15 +44,17 @@ public class TrainModelsWithLatestGatherData {
             ClassificationAttr optimizedCombinedModel = optimizer.optimizeHyperParameters(models,gatherTechToBroadTechMap);
             // Test
             Map<String,Collection<String>> newGroupedTestData = SplitModelData.regroupData(rawTestingData,gatherTechToBroadTechMap);
+            System.out.println("Testing data size: "+newGroupedTestData.size());
             System.out.println("Testing Models:");
             optimizer.testModel(models,newGroupedTestData);
-            System.out.println("Testing Combined Mdoel: ");
+            System.out.println("Testing Combined Model: ");
             double accuracy = optimizer.testModel(Arrays.asList(optimizedCombinedModel),newGroupedTestData);
             long t2 = System.currentTimeMillis();
             System.out.println("Time to complete: "+ new Double(t2-t1)/(1000 * 60) + " minutes");
             System.out.println("Current accuracy: "+accuracy);
             System.out.println("Best accuracy: "+bestAccuracy);
             if(accuracy>bestAccuracy) {
+                bestAccuracy=accuracy;
                 System.out.println("Found better model! Saving results now...");
                 for(ClassificationAttr model : models) {
                     model.save();

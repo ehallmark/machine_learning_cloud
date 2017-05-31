@@ -40,7 +40,7 @@ public class TechTaggerSolution implements Solution {
     public void calculateFitness() {
         if(fitness == null) {
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(new TechTaggerNormalizer(taggers,weights));
-            fitness = scorer.accuracyOn(validationData, 5);
+            fitness = scorer.accuracyOn(validationData, 3);
         }
     }
 

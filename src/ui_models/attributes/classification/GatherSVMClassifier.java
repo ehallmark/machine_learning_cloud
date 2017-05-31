@@ -27,7 +27,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
     protected static svm_model MODEL;
     protected static List<String> ORDERED_TECHNOLOGIES;
     protected static GatherSVMClassifier classifier;
-    private static final int timeLimit = 1*60*1000;
+    private static final int timeLimit = 10*60*1000;
 
     protected svm_model model;
     protected svm_parameter param;
