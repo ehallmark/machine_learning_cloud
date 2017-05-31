@@ -24,9 +24,9 @@ public class Main {
         long timeLimit = 120 * 60 * 1000;
 
         // get data
-        Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getGatherTechnologyTrainingDataMap();
+        Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
-        Map<String,Collection<String>> gatherValidationMap = SplitModelData.getGatherTechnologyValidationDataMap();
+        Map<String,Collection<String>> gatherValidationMap = SplitModelData.getBroadDataMap(SplitModelData.validation1File);
 
         System.out.println("Building svm data...");
         Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies);

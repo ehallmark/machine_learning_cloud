@@ -12,7 +12,9 @@ import java.util.Map;
  */
 public interface ClassificationAttr extends AbstractAttribute<List<Pair<String,Double>>> {
     void train(Map<String,Collection<String>> trainingData);
-    void optimizeHyperParameters(Map<String,Collection<String>> trainingData, Map<String,Collection<String>> validationData);
+    ClassificationAttr optimizeHyperParameters(Map<String,Collection<String>> trainingData, Map<String,Collection<String>> validationData);
     int numClassifications();
     Collection<String> getClassifications();
+    void save();
+    ClassificationAttr untrainedDuplicate();
 }

@@ -32,18 +32,14 @@ public class ModelTesterMain {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
                     testModel("CPC Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == 2) {
-                    ClassificationAttr gatherKeywordModel = new KeywordGatherTechTagger();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(gatherKeywordModel);
-                    testModel("Gather Keyword Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 3) {
                     ClassificationAttr svmTagger = GatherSVMClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
                     testModel("Gather SVM Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 4) {
+                } else if (test == 3) {
                     ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
                     testModel("Gather Bayesian Model [n=" + i + "]", scorer, testData, i);
-                } else if(test==5) {
+                } else if (test == 4) {
                     ClassificationAttr defaultTagger = TechTaggerNormalizer.getDefaultTechTagger();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(defaultTagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);
@@ -68,7 +64,7 @@ public class ModelTesterMain {
         } catch(Exception e) {
             e.printStackTrace();
             System.out.println("Error on: "+modelName+" ["+numPredictions+"]");
-            return Double.MIN_VALUE;
+            return 0d;
         }
 
     }

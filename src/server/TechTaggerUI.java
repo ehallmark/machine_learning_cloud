@@ -10,9 +10,6 @@ import server.tools.SimpleAjaxMessage;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
 import ui_models.attributes.classification.ClassificationAttr;
-import ui_models.attributes.classification.CPCGatherTechTagger;
-import ui_models.attributes.classification.KeywordGatherTechTagger;
-import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.portfolios.PortfolioList;
 

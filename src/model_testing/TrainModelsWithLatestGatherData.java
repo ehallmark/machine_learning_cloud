@@ -3,6 +3,9 @@ package model_testing;
 import ui_models.attributes.classification.*;
 import seeding.Database;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 
 /**
@@ -23,32 +26,63 @@ public class TrainModelsWithLatestGatherData {
         List<ClassificationAttr> models = new ArrayList<>();
         // Add classification models
         models.add(CPCGatherTechTagger.get());
-        models.add(SimilarityGatherTechTagger.getAIModelTagger());
         models.add(NaiveGatherClassifier.get());
         models.add(GatherSVMClassifier.get());
 
 
-        int numEpochs = 30;
+        int numEpochs = 50;
 
-        GatherClassificationOptimizer optimizer = new GatherClassificationOptimizer();
+        GatherClassificationOptimizer optimizer = new GatherClassificationOptimizer(rawTrainingData,rawValidation1Data,rawValidation2Data);
+        double bestAccuracy = 0d;
         for(int i = 0; i < numEpochs; i++) {
-            // Train on data
-            optimizer.trainModels(models,SplitModelData.regroupData(rawTrainingData,gatherTechToBroadTechMap));
-            // Optimize Structure
-            gatherTechToBroadTechMap = optimizer.optimizeBroadTechnologies(models,rawValidation1Data,gatherTechToBroadTechMap);
-            // Retrain on Data
-            optimizer.trainModels(models,SplitModelData.regroupData(rawTrainingData,gatherTechToBroadTechMap));
-            // Optimize HyperParameters
-            ClassificationAttr optimizedCombinedModel = optimizer.optimizeHyperParameters(models,SplitModelData.regroupData(rawTestingData,gatherTechToBroadTechMap),SplitModelData.regroupData(rawValidation2Data,gatherTechToBroadTechMap));
+            System.out.println("Starting epoch: "+i);
+            long t1 = System.currentTimeMillis();
+            // Optimize Structure (i.e gatherTechToBroadTechMap)
+            gatherTechToBroadTechMap = optimizer.optimizeBroadTechnologies(models,gatherTechToBroadTechMap);
+
+            // Optimize HyperParameters (i.e alpha of Dirichlet dist.)
+            ClassificationAttr optimizedCombinedModel = optimizer.optimizeHyperParameters(models,gatherTechToBroadTechMap);
             // Test
             Map<String,Collection<String>> newGroupedTestData = SplitModelData.regroupData(rawTestingData,gatherTechToBroadTechMap);
             System.out.println("Testing Models:");
             optimizer.testModel(models,newGroupedTestData);
             System.out.println("Testing Combined Mdoel: ");
-            optimizer.testModel(Arrays.asList(optimizedCombinedModel),newGroupedTestData);
+            double accuracy = optimizer.testModel(Arrays.asList(optimizedCombinedModel),newGroupedTestData);
+            long t2 = System.currentTimeMillis();
+            System.out.println("Time to complete: "+ new Double(t2-t1)/(1000 * 60) + " minutes");
+            System.out.println("Current accuracy: "+accuracy);
+            System.out.println("Best accuracy: "+bestAccuracy);
+            if(accuracy>bestAccuracy) {
+                System.out.println("Found better model! Saving results now...");
+                for(ClassificationAttr model : models) {
+                    model.save();
+                }
+                SplitModelData.saveBroadTechMap(gatherTechToBroadTechMap);
+                writeToCSV(gatherTechToBroadTechMap,new File("data/ai_grouped_gather_technologies.csv"));
+            }
         }
     }
 
 
 
+    private static void writeToCSV(Map<String,String> techMap,File file) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+
+            techMap.entrySet().stream().sorted((e1,e2)->e1.getValue().compareTo(e2.getValue())).forEach(e->{
+                String broad = e.getValue();
+                String specific = e.getKey();
+                try {
+                    writer.write("\"" + broad + "\",\"" + specific + "\"\n");
+                } catch(Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+            writer.flush();
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package ui_models.attributes.classification.broad_technology;
 
 import genetics.SolutionCreator;
+import model_testing.GatherClassificationOptimizer;
 import ui_models.attributes.classification.ClassificationAttr;
 
 import java.util.*;
@@ -10,37 +11,37 @@ import java.util.*;
  */
 public class BroadTechnologySolutionCreator implements SolutionCreator<BroadTechnologySolution> {
     private final List<ClassificationAttr> models;
-    private final Map<String,Collection<String>> validationData;
+    private final GatherClassificationOptimizer optimizer;
     private final Map<String,String> startingBroadMap;
-    private final List<String> broadTechnologies;
+    private final List<String> rawTechnologies;
     private static final Random rand = new Random(69);
 
-    public BroadTechnologySolutionCreator(Map<String,String> startingBroadMap, List<ClassificationAttr> models, Map<String,Collection<String>> validationData) {
+    public BroadTechnologySolutionCreator(Map<String,String> startingBroadMap, List<ClassificationAttr> models, GatherClassificationOptimizer optimizer) {
         this.startingBroadMap=startingBroadMap;
         this.models=models;
-        this.validationData=validationData;
-        this.broadTechnologies=new ArrayList<>(startingBroadMap.keySet());
+        this.optimizer=optimizer;
+        this.rawTechnologies=new ArrayList<>(startingBroadMap.keySet());
     }
 
     @Override
     public Collection<BroadTechnologySolution> nextRandomSolutions(int n) {
         List<BroadTechnologySolution> solutions = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            solutions.add(new BroadTechnologySolution(randomMapMutation(),models,validationData));
+            solutions.add(new BroadTechnologySolution(randomMapMutation(),models,optimizer));
         }
         return solutions;
     }
 
     private Map<String,String> randomMapMutation() {
-        return randomMapMutation(startingBroadMap,broadTechnologies);
+        return randomMapMutation(startingBroadMap,rawTechnologies);
     }
 
-    public static Map<String,String> randomMapMutation(Map<String,String> startingBroadMap, List<String> broadTechnologies) {
+    public static Map<String,String> randomMapMutation(Map<String,String> startingBroadMap, List<String> rawTechnologies) {
         int n = startingBroadMap.size()/100 + rand.nextInt(startingBroadMap.size()/2);
         Map<String,String> mutation = new HashMap<>(startingBroadMap);
         for(int i = 0; i < n; i++) {
-            String techToMove = broadTechnologies.get(rand.nextInt(broadTechnologies.size()));
-            String techToReceive = broadTechnologies.get(rand.nextInt(broadTechnologies.size()));
+            String techToMove = rawTechnologies.get(rand.nextInt(rawTechnologies.size()));
+            String techToReceive = rawTechnologies.get(rand.nextInt(rawTechnologies.size()));
             mutation.put(techToReceive, mutation.get(techToMove));
         }
         return mutation;

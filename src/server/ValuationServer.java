@@ -1,29 +1,19 @@
 package server;
 
 import com.google.gson.Gson;
-import genetics.lead_development.Attribute;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
-import seeding.Database;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import spark.QueryParamsMap;
-import tools.AssigneeTrimmer;
-import ui_models.attributes.classification.ClassificationAttr;
-import ui_models.attributes.classification.CPCGatherTechTagger;
-import ui_models.attributes.classification.KeywordGatherTechTagger;
-import ui_models.attributes.classification.SimilarityGatherTechTagger;
-import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.ValueAttr;
-import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;

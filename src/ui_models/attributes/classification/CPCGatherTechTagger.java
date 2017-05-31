@@ -52,7 +52,27 @@ public class CPCGatherTechTagger implements ClassificationAttr {
         return orderedTechnologies.size();
     }
 
+    @Override
+    public void save() {
+        throw new UnsupportedOperationException("Not yet Implemented: CPCGatherTechTagger currently not trainable");
+    }
+
     public Collection<String> getClassifications() { return new ArrayList<>(orderedTechnologies); }
+
+    @Override
+    public void train(Map<String, Collection<String>> trainingData) {
+        throw new UnsupportedOperationException("Not yet Implemented: CPCGatherTechTagger currently not trainable");
+    }
+
+    @Override
+    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
+        throw new UnsupportedOperationException("Not yet Implemented: CPCGatherTechTagger currently not trainable");
+    }
+
+    @Override
+    public ClassificationAttr untrainedDuplicate() {
+        throw new UnsupportedOperationException("Not yet Implemented: CPCGatherTechTagger currently not trainable");
+    }
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int n) {

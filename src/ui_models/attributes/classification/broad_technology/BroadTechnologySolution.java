@@ -1,7 +1,10 @@
 package ui_models.attributes.classification.broad_technology;
 
 import genetics.Solution;
+import lombok.Getter;
+import model_testing.GatherClassificationOptimizer;
 import model_testing.GatherTechnologyScorer;
+import model_testing.SplitModelData;
 import ui_models.attributes.classification.ClassificationAttr;
 
 import java.util.*;
@@ -12,25 +15,32 @@ import java.util.stream.Collectors;
  */
 public class BroadTechnologySolution implements Solution {
     private static Random rand = new Random(59);
+    @Getter
     private Map<String,String> broadTechMap;
+    @Getter
     private List<ClassificationAttr> models;
-    private double fitness = Double.MAX_VALUE;
-    private Map<String,Collection<String>> validationData;
+    private Double fitness = null;
+    private GatherClassificationOptimizer optimizer;
 
-    public BroadTechnologySolution(Map<String,String> broadTechMap, List<ClassificationAttr> models, Map<String,Collection<String>> validationData) {
+    public BroadTechnologySolution(Map<String,String> broadTechMap, List<ClassificationAttr> models, GatherClassificationOptimizer optimizer) {
         this.broadTechMap=broadTechMap;
         this.models=models;
-        this.validationData=validationData;
+        this.optimizer=optimizer;
     }
 
     @Override
     public double fitness() {
-        return fitness;
+        return fitness==null?Double.MAX_VALUE:fitness;
     }
 
     @Override
     public void calculateFitness() {
-        if(fitness < Double.MAX_VALUE) return; // already calculated
+        if(fitness != null) return; // already calculated
+        // train new models
+        models = optimizer.duplicateAndTrainModels(models,broadTechMap);
+        Map<String,Collection<String>> validationData = SplitModelData.regroupData(optimizer.getRawValidation1Data(),broadTechMap);
+
+        // calculate fitness
         fitness = models.stream()
                 .collect(Collectors.averagingDouble(model-> model.getClassifications().stream().collect(Collectors.averagingDouble(tech->{
                     double accuracy = 0d;
@@ -44,7 +54,7 @@ public class BroadTechnologySolution implements Solution {
 
     @Override
     public Solution mutate() {
-        return new BroadTechnologySolution(BroadTechnologySolutionCreator.randomMapMutation(broadTechMap,new ArrayList<>(broadTechMap.keySet())),models,validationData);
+        return new BroadTechnologySolution(BroadTechnologySolutionCreator.randomMapMutation(broadTechMap,new ArrayList<>(broadTechMap.keySet())),models,optimizer);
     }
 
     @Override
@@ -57,7 +67,7 @@ public class BroadTechnologySolution implements Solution {
             if(!other.broadTechMap.containsKey(key)) return broadTechMap.get(key);
             return rand.nextBoolean() ? broadTechMap.get(key) : other.broadTechMap.get(key);
         }));
-        return new BroadTechnologySolution(newMap,models,validationData);
+        return new BroadTechnologySolution(newMap,models,optimizer);
     }
 
     @Override

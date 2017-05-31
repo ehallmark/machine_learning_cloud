@@ -1,11 +1,17 @@
 package ui_models.attributes.classification;
 
+import genetics.GeneticAlgorithm;
+import genetics.Listener;
+import genetics.SolutionCreator;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
 import svm.SVMHelper;
+import svm.genetics.SVMSolution;
+import svm.genetics.SVMSolutionCreator;
+import svm.genetics.SVMSolutionListener;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
 import ui_models.portfolios.AbstractPortfolio;
@@ -23,13 +29,29 @@ public class GatherSVMClassifier implements ClassificationAttr {
     protected static GatherSVMClassifier classifier;
 
     protected svm_model model;
+    protected svm_parameter param;
     protected List<String> orderedTechnologies;
     private static final File techFile = new File("data/ordered_gather_technologies_svm.jobj");
     private static final File modelFile = new File("data/gather_svm_classification_model.jobj");
 
+    // trainable version
+    public GatherSVMClassifier(svm_parameter param) {
+        this.param=param;
+    }
+    // pretrained model
     public GatherSVMClassifier(svm_model model, List<String> orderedTechnologies) {
         this.model=model;
         this.orderedTechnologies=orderedTechnologies;
+        this.param=model.param;
+    }
+
+    @Override
+    public void save() {
+        // Save Model
+        Database.trySaveObject(model,modelFile);
+
+        // Save Technology Ordering
+        Database.trySaveObject(orderedTechnologies,techFile);
     }
 
     public static GatherSVMClassifier get() {
@@ -41,15 +63,6 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
-        /*return portfolio.getTokens().stream().map(token->{
-            INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
-            if(vector!=null) {
-                int techIdx = (int) (SVMHelper.svmPredict(new double[][]{vector.data().asDouble()},model)[0]);
-                return orderedTechnologies.get(techIdx);
-            } else return null;
-        }).filter(d->d!=null).collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
-                .map(e->new Pair<>(e.getKey(),e.getValue().doubleValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit)
-                .collect(Collectors.toList()); */
         return portfolio.getTokens().stream().map(token->{
             INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
             if(vector!=null) {
@@ -66,6 +79,29 @@ public class GatherSVMClassifier implements ClassificationAttr {
     }
 
     @Override
+    public void train(Map<String, Collection<String>> trainingData) {
+        System.out.println("Building svm data...");
+        this.orderedTechnologies=new ArrayList<>(trainingData.keySet());
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies);
+
+        System.out.println("Training svm model...");
+        model = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
+    }
+
+    @Override
+    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
+        System.out.println("Building svm data...");
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,orderedTechnologies);
+
+        System.out.println("Starting genetic algorithm...");
+        SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies);
+        Listener listener = new SVMSolutionListener();
+        GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
+        algorithm.simulate(20*60*1000,0.5,0.5);
+        return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies);
+    }
+
+    @Override
     public int numClassifications() {
         return orderedTechnologies.size();
     }
@@ -75,6 +111,10 @@ public class GatherSVMClassifier implements ClassificationAttr {
         return new HashSet<>(orderedTechnologies);
     }
 
+    @Override
+    public ClassificationAttr untrainedDuplicate() {
+        return new GatherSVMClassifier(param);
+    }
 
     public static GatherSVMClassifier load() {
         if(MODEL==null) {
@@ -86,7 +126,6 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
         return new GatherSVMClassifier(MODEL,ORDERED_TECHNOLOGIES);
     }
-
 
     public static void main(String[] args) {
         // build gather svm
@@ -105,7 +144,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
         param.p=0.5;
 
 
-        Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getGatherTechnologyTrainingDataMap();
+        Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
 
         System.out.println("Building svm data...");

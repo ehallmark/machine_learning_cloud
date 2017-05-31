@@ -5,6 +5,8 @@ import model.graphs.*;
 import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.nodes.FactorNode;
 import model.nodes.Node;
+import model_testing.GatherTechnologyScorer;
+import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
@@ -28,6 +30,36 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     protected List<String> orderedTechnologies;
     protected List<String> orderedClassifications;
     protected double alpha;
+
+
+    @Override
+    public void save() {
+        Database.trySaveObject(this,file);
+    }
+
+    @Override
+    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
+        NaiveGatherClassifier bestModel = this;
+        GatherTechnologyScorer current = new GatherTechnologyScorer(this);
+        double bestScoreSoFar = current.accuracyOn(validationData,3);
+        for(int i = 0; i < 5; i++) {
+            NaiveGatherClassifier solution = new NaiveGatherClassifier(alpha*Math.exp(2.5-i));
+            solution.train(trainingData);
+            GatherTechnologyScorer scorer = new GatherTechnologyScorer(solution);
+            double score = scorer.accuracyOn(validationData,3);
+            if(score > bestScoreSoFar) {
+                bestModel = solution;
+            }
+        }
+        System.out.println("Best Alpha: "+bestModel.alpha);
+        System.out.println("  Score: "+bestScoreSoFar);
+        return bestModel;
+    }
+
+    @Override
+    public ClassificationAttr untrainedDuplicate() {
+        return new NaiveGatherClassifier(alpha);
+    }
 
     public static NaiveGatherClassifier get() {
         if(defaultClassifier==null) {
@@ -97,22 +129,6 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
             values.add(new Pair<>(orderedTechnologies.get(i),result.getWeights()[i]));
         }
         return values.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
-        /*return classifications.stream().map(clazz->{
-            Map<String,Integer> assignment = new HashMap<>();
-            int classIdx = orderedClassifications.indexOf(clazz);
-            if(classIdx>=0) {
-                assignment.put("CPC", classIdx);
-                CliqueTree cliqueTree = bayesianNet.createCliqueTree();
-                cliqueTree.setCurrentAssignment(assignment);
-                Map<String, FactorNode> results = cliqueTree.runBeliefPropagation(Arrays.asList("Technology"));
-                double[] weights = results.get("Technology").getWeights();
-                int maxIdx = MathHelper.indexOfMaxValue(weights);
-                double maxValue = weights[maxIdx];
-                return new Pair<>(orderedTechnologies.get(maxIdx), maxValue);
-            } else return null;
-        }).filter(p->p!=null).collect(Collectors.groupingBy(e->e.getFirst(),Collectors.summingDouble(e->e.getSecond()))).entrySet()
-                .stream().map(e->new Pair<>(e.getKey(),e.getValue())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
-         */
     }
 
     @Override

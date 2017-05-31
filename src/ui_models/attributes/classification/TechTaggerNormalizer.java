@@ -16,6 +16,21 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     private List<Pair<ClassificationAttr,Double>> taggerPairs;
 
     @Override
+    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
+        throw new UnsupportedOperationException("Model not trainable");
+    }
+
+    @Override
+    public void save() {
+        throw new UnsupportedOperationException("Model not saveable");
+    }
+
+    @Override
+    public ClassificationAttr untrainedDuplicate() {
+        throw new UnsupportedOperationException("Model not trainable");
+    }
+
+    @Override
     public void train(Map<String, Collection<String>> trainingData) {
         // Do nothing
         throw new UnsupportedOperationException("Model not trainable");

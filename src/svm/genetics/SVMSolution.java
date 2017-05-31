@@ -1,6 +1,7 @@
 package svm.genetics;
 
 import genetics.Solution;
+import lombok.Getter;
 import model_testing.GatherTechnologyScorer;
 import org.deeplearning4j.berkeley.Pair;
 import ui_models.attributes.classification.GatherSVMClassifier;
@@ -21,6 +22,7 @@ public class SVMSolution implements Solution {
     private svm_parameter param;
     private Pair<double[][],double[][]> trainingData;
     private Map<String,Collection<String>> validationData;
+    @Getter
     private svm_model model;
     private Double fitness;
     private List<String> technologies;
@@ -45,7 +47,7 @@ public class SVMSolution implements Solution {
         if(fitness == null) {
             ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies);
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
-            fitness = scorer.accuracyOn(validationData, 5);
+            fitness = scorer.accuracyOn(validationData, 3);
         }
     }
 
@@ -65,8 +67,9 @@ public class SVMSolution implements Solution {
         double delta = rand.nextDouble();
         // randomly mutate
         //p.p= rand.nextBoolean() ? param.p : delta*rand.nextDouble() + (1d-delta)*param.p;
-        p.gamma = Math.max(0.00001d,delta*((rand.nextDouble()-0.5)*0.005) + (1d-delta)*param.gamma);
-        //delta=rand.nextDouble();
+        p.gamma = Math.min(0.9999,Math.max(0.00001d,delta*(0.25+(rand.nextDouble()-0.5)*0.5) + (1d-delta)*param.gamma));
+        delta=rand.nextDouble();
+        p.C = delta*(rand.nextInt(200)) + (1d-delta)*param.C;
         //p.nu = rand.nextBoolean() ? param.nu : rand.nextDouble();
         delta=rand.nextDouble();
         p.coef0 = delta*(rand.nextDouble()*2d-1d) + (1d-delta)*param.coef0;
@@ -96,8 +99,8 @@ public class SVMSolution implements Solution {
         //p.p= rand.nextBoolean() ? (param.p+otherParam.p)/2d : rand.nextBoolean() ? param.p : otherParam.p;
         p.gamma = param.gamma * delta + otherParam.gamma*(1d-delta);
         //p.nu = rand.nextBoolean() ? param.nu : otherParam.nu;
-        //delta = rand.nextDouble();
-        //p.C = delta*param.C + (1d-delta)*otherParam.C;
+        delta = rand.nextDouble();
+        p.C = delta*param.C + (1d-delta)*otherParam.C;
         delta = rand.nextDouble();
         p.coef0 = delta * param.coef0 + (1d-delta)*otherParam.coef0;
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;

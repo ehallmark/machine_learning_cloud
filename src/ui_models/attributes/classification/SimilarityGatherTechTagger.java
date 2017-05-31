@@ -23,9 +23,10 @@ import java.util.stream.Collectors;
  * Created by Evan on 3/4/2017.
  */
 public class SimilarityGatherTechTagger implements ClassificationAttr {
-    List<INDArray> vectors;
-    List<String> names;
-    WeightLookupTable<VocabWord> lookupTable;
+    private List<INDArray> vectors;
+    private List<String> names;
+    private WeightLookupTable<VocabWord> lookupTable;
+    private Map<String,Collection<String>> nameToInputMap;
     private static final SimilarityGatherTechTagger gatherTagger;
     static {
         gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getBroadDataMap(SplitModelData.trainFile),SimilarPatentServer.getLookupTable());
@@ -36,16 +37,32 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     }
 
     public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
-        this.vectors = new ArrayList<>(nameToInputMap.size());
-        this.names = new ArrayList<>(nameToInputMap.size());
         this.lookupTable = lookupTable;
-        nameToInputMap.forEach((name,inputs)->{
-            List<INDArray> vecs = inputs.stream().map(input->lookupTable.vector(input)).filter(input->input!=null).collect(Collectors.toList());
-            if(vecs.size()>0) {
+        train(nameToInputMap);
+    }
+
+    @Override
+    public void save() {
+        // do nothing
+    }
+
+    @Override
+    public void train(Map<String, Collection<String>> trainingData) {
+        this.nameToInputMap = trainingData;
+        this.vectors = new ArrayList<>(trainingData.size());
+        this.names = new ArrayList<>(trainingData.size());
+        trainingData.forEach((name, inputs) -> {
+            List<INDArray> vecs = inputs.stream().map(input -> lookupTable.vector(input)).filter(input -> input != null).collect(Collectors.toList());
+            if (vecs.size() > 0) {
                 vectors.add(Nd4j.vstack(vecs).mean(0));
                 names.add(name);
             }
         });
+    }
+
+    @Override
+    public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
+        return this;
     }
 
     public int numClassifications() {
@@ -53,6 +70,11 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     }
 
     public Collection<String> getClassifications() { return new ArrayList<>(names); }
+
+    @Override
+    public ClassificationAttr untrainedDuplicate() {
+        return new SimilarityGatherTechTagger(nameToInputMap,lookupTable);
+    }
 
     private List<Pair<String,Double>> technologiesFor(INDArray vec, int n) {
         if(vec==null)return new ArrayList<>();
