@@ -87,16 +87,12 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         // set data
         bayesianNet.setTrainingData(assignments);
 
-        System.out.println("Starting to create nodes.");
-
         // add node
         Node cpcNode = bayesianNet.addNode("CPC",orderedClassifications.size(),MathHelper.defaultValues(orderedClassifications.size()));
         Node techNode = bayesianNet.addNode("Technology",orderedTechnologies.size(),MathHelper.defaultValues(orderedTechnologies.size()));
         bayesianNet.connectNodes(cpcNode,techNode);
         bayesianNet.addFactorNode(null,cpcNode);
         bayesianNet.addFactorNode(null,techNode,cpcNode);
-
-        System.out.println("Finished adding nodes.");
 
         // learn
         bayesianNet.applyLearningAlgorithm(new BayesianLearningAlgorithm(bayesianNet,alpha),1);
@@ -110,7 +106,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         Set<String> classifications = new HashSet<>();
-        portfolio.getTokens().forEach(token->classifications.addAll(Database.classificationsFor(token)));
+        portfolio.getTokens().forEach(token->classifications.addAll(Database.subClassificationsForPatent(token)));
         if(classifications.isEmpty()) return Collections.emptyList();
 
         double[] observation = new double[orderedClassifications.size()];
