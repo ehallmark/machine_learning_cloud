@@ -13,7 +13,7 @@ import java.util.*;
  */
 public class PrintGatherTechnologies {
     public static void main(String[] args) {
-        Set<String> gatherTechnologies = ((Map<String, Collection<String>>) SplitModelData.getGatherTechnologyTrainingDataMap()).keySet();
+        Collection<String> gatherTechnologies = SplitModelData.getBroadDataMap(SplitModelData.trainFile).keySet();
         System.out.println(String.join("\n",gatherTechnologies));
     }
 }
