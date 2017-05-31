@@ -96,7 +96,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
         System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies);
-        Listener listener = new SVMSolutionListener();
+        Listener listener = null;// new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
         algorithm.simulate(timeLimit,0.5,0.5);
         return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies);
