@@ -13,13 +13,20 @@ import java.util.*;
 public class TechTaggerSolutionCreator implements SolutionCreator<TechTaggerSolution> {
     private Map<String,Collection<String>> validationData;
     private static final Random rand = new Random(69);
-    @Getter
-    private static final List<ClassificationAttr> taggers = Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get());
+    private static List<ClassificationAttr> taggers;
+
+    public static List<ClassificationAttr> getTaggers() {
+        if(taggers==null) {
+            taggers = Arrays.asList(CPCGatherTechTagger.get(), NaiveGatherClassifier.get(), SimilarityGatherTechTagger.getAIModelTagger(), GatherSVMClassifier.get());
+        }
+        return taggers;
+    }
+
     @Getter
     private static final List<Double> weights = Arrays.asList(0.7,0.95,0.03,0.23);
     private List<ClassificationAttr> mTaggers;
     public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData) {
-        this(validationData,taggers);
+        this(validationData,getTaggers());
     }
 
     public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData, List<ClassificationAttr> taggers) {
