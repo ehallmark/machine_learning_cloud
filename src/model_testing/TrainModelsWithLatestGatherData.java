@@ -25,20 +25,25 @@ public class TrainModelsWithLatestGatherData {
 
         List<ClassificationAttr> models = new ArrayList<>();
         // Add classification models
-        //models.add(SimilarityGatherTechTagger.getAIModelTagger());
+        models.add(SimilarityGatherTechTagger.getAIModelTagger());
         models.add(NaiveGatherClassifier.get());
-        //models.add(GatherSVMClassifier.get());
+        models.add(GatherSVMClassifier.get());
 
 
         int numEpochs = 50;
+
+        boolean optimizeModelStructure = false;
 
         GatherClassificationOptimizer optimizer = new GatherClassificationOptimizer(rawTrainingData,rawValidation1Data,rawValidation2Data);
         double bestAccuracy = 0d;
         for(int i = 0; i < numEpochs; i++) {
             System.out.println("Starting epoch: "+i);
             long t1 = System.currentTimeMillis();
-            // Optimize Structure (i.e gatherTechToBroadTechMap)
-            gatherTechToBroadTechMap = optimizer.optimizeBroadTechnologies(models,gatherTechToBroadTechMap);
+            if(optimizeModelStructure) {
+                System.out.println("Optimizing Model Structure");
+                // Optimize Structure (i.e gatherTechToBroadTechMap)
+                gatherTechToBroadTechMap = optimizer.optimizeBroadTechnologies(models,gatherTechToBroadTechMap);
+            }
 
             // Optimize HyperParameters (i.e alpha of Dirichlet dist.)
             ClassificationAttr optimizedCombinedModel = optimizer.optimizeHyperParameters(models,gatherTechToBroadTechMap);
