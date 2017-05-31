@@ -39,11 +39,11 @@ public class SimRank extends RankGraph<Edge<String>> {
         });
         this.nodes=graph.getAllNodesList();
         AtomicInteger cnt = new AtomicInteger(0);
-        importantLabels.forEach(nodeLabel->{
-            Node node = graph.findNode(nodeLabel);
+        (importantLabels!=null?importantLabels.stream().map(label->graph.findNode(label)):this.nodes.stream()).forEach(node->{
             if(node!=null) {
-                if (cnt.getAndIncrement() % 10000 == 0)
+                if (cnt.getAndIncrement() % 10000 == 0) {
                     System.out.println("Added neighbors of " + cnt.get() + " patents so far");
+                }
                 addNeighborsToMap(node, node, 0, jaccardDepth);
             }
         });

@@ -19,7 +19,7 @@ public class PageRank extends RankGraph<String> {
     protected double currentScore;
 
     public PageRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
-        super(labelToCitationLabelsMap, damping);
+        super(labelToCitationLabelsMap, null,damping);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class PageRank extends RankGraph<String> {
     }
 
     @Override
-    protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {
+    protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> labels) {
         rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
         labelToCitationLabelsMap.forEach((label,citations)->{
