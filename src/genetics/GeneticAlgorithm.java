@@ -47,23 +47,37 @@ public class GeneticAlgorithm<T extends Solution> {
                 SimpleTimer timer = new SimpleTimer();
                 double globalTimer = 0d;
                 AtomicInteger epochCounter = new AtomicInteger(0);
+                Double lastCurrentScore = null;
+                Double lastLastCurrentScore = null;
                 while(globalTimer<=timeLimit) {
                     timer.start();
                     Pair<Integer,Integer> counts = simulateEpoch(probMutation,probCrossover);
                     timer.finish();
-                    clearScreen();
                     globalTimer+=timer.getElapsedTime();
-                    System.out.println("EPOCH ["+epochCounter.getAndIncrement()+"]");
-                    System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
-                    System.out.println("Starting Avg Score: "+startingScore);
-                    System.out.println("Current Avg Score:  "+currentScore);
-                    System.out.println("Mutations so far:   "+mutationCounter.addAndGet(counts.getFirst()));
-                    System.out.println("Crossovers so far:  "+crossoverCounter.addAndGet(counts.getSecond()));
-                    if(bestSolutionSoFar!=null)System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
+
+                    if(bestSolutionSoFar!=null) {
+                        System.out.println("Best Solution:      "+bestSolutionSoFar.fitness());
+                    }
                     // listener
                     if(bestSolutionSoFar!=null&&listener!=null) {
+                        System.out.println("EPOCH ["+epochCounter.getAndIncrement()+"]");
+                        System.out.println("Total time elapsed: "+globalTimer/1000+ " seconds");
+                        System.out.println("Starting Avg Score: "+startingScore);
+                        System.out.println("Current Avg Score:  "+currentScore);
+                        System.out.println("Mutations so far:   "+mutationCounter.addAndGet(counts.getFirst()));
+                        System.out.println("Crossovers so far:  "+crossoverCounter.addAndGet(counts.getSecond()));
                         listener.print(bestSolutionSoFar);
+                        clearScreen();
                     }
+
+                    double epsilon = 0.0000001;
+
+                    if(lastCurrentScore!=null&&lastLastCurrentScore!=null&&Math.abs(lastCurrentScore-currentScore)<epsilon&&Math.abs(lastLastCurrentScore-currentScore)<epsilon) {
+                        System.out.println("Converged!");
+                        break;
+                    }
+                    lastLastCurrentScore=lastCurrentScore;
+                    lastCurrentScore=currentScore;
                 }
             }
         };
