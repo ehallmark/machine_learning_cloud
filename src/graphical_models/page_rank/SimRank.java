@@ -23,11 +23,11 @@ public class SimRank extends RankGraph<Edge<String>> {
     private final int jaccardDepth = 2;
     private static double currentScore = Double.MAX_VALUE;
 
-    public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, double damping) {
-        super(labelToCitationLabelsMap,damping);
+    public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels, double damping) {
+        super(labelToCitationLabelsMap,importantLabels,damping);
     }
 
-    protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap) {
+    protected void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels) {
         rankTable=new HashMap<>(labelToCitationLabelsMap.size());
         System.out.println("Adding initial nodes...");
         labelToCitationLabelsMap.forEach((label,citations)->{
@@ -39,9 +39,13 @@ public class SimRank extends RankGraph<Edge<String>> {
         });
         this.nodes=graph.getAllNodesList();
         AtomicInteger cnt = new AtomicInteger(0);
-        this.nodes.forEach(node->{
-            if(cnt.getAndIncrement()%10000==0) System.out.println("Added neighbors of "+cnt.get()+" patents so far");
-            addNeighborsToMap(node,node,0,jaccardDepth);
+        importantLabels.forEach(nodeLabel->{
+            Node node = graph.findNode(nodeLabel);
+            if(node!=null) {
+                if (cnt.getAndIncrement() % 10000 == 0)
+                    System.out.println("Added neighbors of " + cnt.get() + " patents so far");
+                addNeighborsToMap(node, node, 0, jaccardDepth);
+            }
         });
         System.out.println("Done.");
     }
@@ -147,7 +151,7 @@ public class SimRank extends RankGraph<Edge<String>> {
         test.put("n3",Collections.emptyList());
         test.put("n4",Arrays.asList("n1","n2"));
         double damping = 0.75;
-        SimRank pr = new SimRank(test,damping);
+        SimRank pr = new SimRank(test,null,damping);
         pr.solve(10);
         pr.save(new File("testFile.jobj"));
         //System.out.println("Similar to n4: "+String.join("; ",pr.findSimilarDocuments(Arrays.asList("n4"),3,4,2)));

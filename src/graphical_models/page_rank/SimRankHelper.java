@@ -1,6 +1,7 @@
 package graphical_models.page_rank;
 
 import model.edges.Edge;
+import seeding.Database;
 import similarity_models.sim_rank.SimRankSimilarityModel;
 
 import java.io.File;
@@ -18,7 +19,7 @@ public class SimRankHelper {
     // run sim rank algorithm
     public static void main(String[] args) {
         Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.getPatentToCitedPatentsMap();
-        SimRank algorithm = new SimRank(patentToCitedPatentsMap,0.75);
+        SimRank algorithm = new SimRank(patentToCitedPatentsMap, Database.getCopyOfAllPatents(),0.75);
         int numEpochs = 20;
         int previousEpoch = 0;
         File previousModelFile = new File("data/sim_rank_table"+previousEpoch+".jobj");
