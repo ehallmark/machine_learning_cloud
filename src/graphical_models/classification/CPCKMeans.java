@@ -43,6 +43,7 @@ public class CPCKMeans {
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
+        kmeans.setEqual(true);
         kmeans.run();
 
         int[] assignments = kmeans.getAssignments();
