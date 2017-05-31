@@ -36,7 +36,7 @@ public class TechTaggerNormalizer implements ClassificationAttr {
         throw new UnsupportedOperationException("Model not trainable");
     }
 
-    private static ClassificationAttr tagger = new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),TechTaggerSolutionCreator.getWeights());
+    private static ClassificationAttr tagger;
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         if(taggers.size()!=weights.size()) throw new RuntimeException("Illegal arguments in techtaggernormalizer");
@@ -53,6 +53,9 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     public Collection<String> getClassifications() { return taggerPairs.stream().min(Comparator.comparingInt(t->t.getFirst().numClassifications())).get().getFirst().getClassifications(); }
 
     public static ClassificationAttr getDefaultTechTagger() {
+        if(tagger==null) {
+            tagger=new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),TechTaggerSolutionCreator.getWeights());
+        }
         return tagger;
     }
 
