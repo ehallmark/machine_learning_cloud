@@ -34,14 +34,14 @@ public class CPCKMeans {
         int n = specificTech.size();
         double[][] points = new double[n][];
         for(int i = 0; i < n; i++) {
-            points[i]=vectorForPatents(specificData.get(specificTech.get(i)),classifications);
+            points[i]=classVectorForPatents(specificData.get(specificTech.get(i)),classifications);
         }
 
         // create centroids
         int k = broadData.size();
         double[][] centroids = new double[k][];
         for(int i = 0; i < k; i++) {
-            centroids[i]=vectorForPatents(broadData.get(broadTech.get(i)),classifications);
+            centroids[i]=classVectorForPatents(broadData.get(broadTech.get(i)),classifications);
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
@@ -64,6 +64,15 @@ public class CPCKMeans {
     }
 
 
+    public static double[] classVectorForPatents(Collection<String> patents, List<String> classifications) {
+        double[] vec = new double[classifications.size()];
+        Arrays.fill(vec,0d);
+        Collection<String> thisCPC = patents.stream().flatMap(patent->Database.classificationsFor(patent).stream()).collect(Collectors.toList());
+        thisCPC.forEach(cpc->{
+           vec[classifications.indexOf(cpc)]+=1d/thisCPC.size();
+        });
+        return vec;
+    }
     public static double[] vectorForPatents(Collection<String> patents, List<String> classifications) {
         double[] vec = new SimilarPatentFinder(patents,null, SimilarPatentServer.getLookupTable()).computeAvg().data().asDouble();
         return vec;
