@@ -39,7 +39,7 @@ public class CPCKMeans {
         int k = broadData.size();
         double[][] centroids = new double[k][];
         for(int i = 0; i < k; i++) {
-            points[i]=vectorForPatents(broadData.get(broadTech.get(i)),classifications);
+            centroids[i]=vectorForPatents(broadData.get(broadTech.get(i)),classifications);
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
