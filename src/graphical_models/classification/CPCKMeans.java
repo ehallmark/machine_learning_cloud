@@ -16,12 +16,11 @@ import java.util.stream.Collectors;
 public class CPCKMeans {
     public static void main(String[] args) {
         Database.initializeDatabase();
-        Map<String,String> broadTechMap = SplitModelData.gatherToBroadTechMap;
         Map<String,Collection<String>> specificData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
         Map<String,Collection<String>> broadData = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
 
         List<String> specificTech = new ArrayList<>(specificData.keySet());
-        List<String> broadTech = new ArrayList<>(new HashSet<>(broadTechMap.values()));
+        List<String> broadTech = new ArrayList<>(broadData.keySet());
 
         // get patents
         List<String> patents = specificData.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
@@ -48,7 +47,7 @@ public class CPCKMeans {
 
         int[] assignments = kmeans.getAssignments();
 
-        Map<String,String> newTechMap = new HashMap<>(broadTechMap.size());
+        Map<String,String> newTechMap = new HashMap<>(broadData.size());
 
         for(int i = 0; i < n; i++) {
             newTechMap.put(specificTech.get(i),broadTech.get(assignments[i]));
