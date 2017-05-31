@@ -45,7 +45,7 @@ public class CPCKMeans {
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
-        kmeans.setEqual(true);
+        kmeans.setEqual(false);
         kmeans.run();
 
         int[] assignments = kmeans.getAssignments();
@@ -73,7 +73,7 @@ public class CPCKMeans {
         });
         return vec;
     }
-    public static double[] vectorForPatents(Collection<String> patents, List<String> classifications) {
+    public static double[] vectorForPatents(Collection<String> patents) {
         double[] vec = new SimilarPatentFinder(patents,null, SimilarPatentServer.getLookupTable()).computeAvg().data().asDouble();
         return vec;
     }

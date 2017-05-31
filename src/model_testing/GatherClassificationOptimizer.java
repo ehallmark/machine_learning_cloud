@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 5/30/17.
  */
 public class GatherClassificationOptimizer {
-    private int populationSize = 30;
-    private int numThreads = 20;
+    private int populationSize = 10;
+    private int numThreads = 10;
     private double probMutation = 0.5;
     private double probCrossover = 0.5;
     private long timeLimit = 1 * 60 * 1000;
