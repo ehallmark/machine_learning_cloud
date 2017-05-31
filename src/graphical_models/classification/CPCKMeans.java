@@ -50,7 +50,10 @@ public class CPCKMeans {
         Map<String,String> newTechMap = new HashMap<>(broadData.size());
 
         for(int i = 0; i < n; i++) {
-            newTechMap.put(specificTech.get(i),broadTech.get(assignments[i]));
+            String specific = specificTech.get(i);
+            String broad = broadTech.get(assignments[i]);
+            newTechMap.put(specific,broad);
+            System.out.println(specific+": "+broad);
         }
 
         TrainModelsWithLatestGatherData.writeToCSV(newTechMap,new File("data/ai_grouped_gather_technologies.csv"));
