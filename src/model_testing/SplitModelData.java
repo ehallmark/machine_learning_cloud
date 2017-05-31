@@ -74,7 +74,7 @@ public class SplitModelData {
         Map<String,Collection<String>> test = new HashMap<>();
         Map<String,Collection<String>> val1 = new HashMap<>();
         Map<String,Collection<String>> val2 = new HashMap<>();
-        data = regroupData(data);
+        //data = regroupData(data);
         data.forEach((tech,assets)->{
             assets = assets.stream().filter(p->(p.length()==7||p.length()==8)&&isNumber(p.substring(2))).collect(Collectors.toList());
             if(assets.size()<5) return;
