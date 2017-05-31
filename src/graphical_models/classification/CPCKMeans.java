@@ -20,7 +20,7 @@ public class CPCKMeans {
         Map<String,Collection<String>> specificData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
         Map<String,Collection<String>> broadData = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
 
-        List<String> specificTech = new ArrayList<>(broadTechMap.keySet());
+        List<String> specificTech = new ArrayList<>(specificData.keySet());
         List<String> broadTech = new ArrayList<>(new HashSet<>(broadTechMap.values()));
 
         // get patents
