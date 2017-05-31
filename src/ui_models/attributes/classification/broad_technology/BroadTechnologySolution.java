@@ -42,13 +42,10 @@ public class BroadTechnologySolution implements Solution {
 
         // calculate fitness
         fitness = models.stream()
-                .collect(Collectors.averagingDouble(model-> model.getClassifications().stream().collect(Collectors.averagingDouble(tech->{
-                    double accuracy = 0d;
-                    if(validationData.containsKey(tech)) {
-                        accuracy += GatherTechnologyScorer.scoreAssets(model, tech, validationData.get(tech), 3);
-                    }
-                    return accuracy;
-                }))
+                .collect(Collectors.averagingDouble(model-> {
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(model);
+                    return scorer.accuracyOn(validationData,3);
+                }
         ));
     }
 

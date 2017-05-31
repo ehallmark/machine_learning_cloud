@@ -19,7 +19,7 @@ public class GatherTechnologyScorer {
 
     public double accuracyOn(Map<String,Collection<String>> testSet,int numPredictions) {
         if(testSet.isEmpty()) return 1d;
-        double averageAccuracy = testSet.entrySet().stream().collect(Collectors.averagingDouble(e->{
+        double averageAccuracy = testSet.entrySet().stream().collect(Collectors.summingDouble(e->{
             String tech = e.getKey();
             Collection<String> assets = e.getValue();
             double accuracy = scoreAssets(model,tech,assets,numPredictions);
