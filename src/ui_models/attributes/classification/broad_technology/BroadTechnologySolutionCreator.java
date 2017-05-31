@@ -37,7 +37,7 @@ public class BroadTechnologySolutionCreator implements SolutionCreator<BroadTech
     }
 
     public static Map<String,String> randomMapMutation(Map<String,String> startingBroadMap, List<String> rawTechnologies) {
-        int n = startingBroadMap.size()/100 + rand.nextInt(startingBroadMap.size()/2);
+        int n = 1;
         Map<String,String> mutation = new HashMap<>(startingBroadMap);
         for(int i = 0; i < n; i++) {
             String techToMove = rawTechnologies.get(rand.nextInt(rawTechnologies.size()));

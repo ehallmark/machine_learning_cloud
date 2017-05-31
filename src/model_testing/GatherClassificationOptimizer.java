@@ -24,7 +24,7 @@ public class GatherClassificationOptimizer {
     private int numThreads = 20;
     private double probMutation = 0.5;
     private double probCrossover = 0.5;
-    private long timeLimit = 10 * 60 * 1000;
+    private long timeLimit = 1 * 60 * 1000;
     @Getter
     private final Map<String,Collection<String>> rawTrainingData;
     @Getter
@@ -55,7 +55,7 @@ public class GatherClassificationOptimizer {
         // Genetic Algorithm to find better broad technologies
         System.out.println("Starting genetic algorithm...");
         SolutionCreator<BroadTechnologySolution> creator = new BroadTechnologySolutionCreator(broadTechMap,models,this);
-        BroadTechnologySolutionListener listener = null;// new BroadTechnologySolutionListener();
+        BroadTechnologySolutionListener listener = new BroadTechnologySolutionListener();
         GeneticAlgorithm<BroadTechnologySolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
         System.out.println("Finished optimizing broad technologies.");
@@ -74,13 +74,12 @@ public class GatherClassificationOptimizer {
         // Optimize parameters for each model
         for(int i = 0; i < models.size(); i++) {
             models.set(i,models.get(i).optimizeHyperParameters(broadTrainingData,broadValidation2Data));
-            models.get(i).train(broadTrainingData);
         }
 
         // Genetic Algorithm to find better combination
         System.out.println("Starting genetic algorithm...");
         SolutionCreator<TechTaggerSolution> creator = new TechTaggerSolutionCreator(broadValidation2Data,models);
-        Listener listener = null;//new TechTaggerSolutionListener();
+        Listener listener = new TechTaggerSolutionListener();
         GeneticAlgorithm<TechTaggerSolution> algorithm = new GeneticAlgorithm<>(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);
         System.out.println("Finished optimizing hyper parameters.");
