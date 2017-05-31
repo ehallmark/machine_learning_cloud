@@ -4,6 +4,8 @@ import ca.pjer.ekmeans.EKmeans;
 import model_testing.SplitModelData;
 import model_testing.TrainModelsWithLatestGatherData;
 import seeding.Database;
+import server.SimilarPatentServer;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 
 import java.io.File;
 import java.text.MessageFormat;
@@ -63,12 +65,7 @@ public class CPCKMeans {
 
 
     public static double[] vectorForPatents(Collection<String> patents, List<String> classifications) {
-        double[] vec = new double[classifications.size()];
-        Arrays.fill(vec,0d);
-        Collection<String> thisCPC = patents.stream().flatMap(patent->Database.classificationsFor(patent).stream()).collect(Collectors.toList());
-        thisCPC.forEach(cpc->{
-           vec[classifications.indexOf(cpc)]+=1d/thisCPC.size();
-        });
+        double[] vec = new SimilarPatentFinder(patents,null, SimilarPatentServer.getLookupTable()).computeAvg().data().asDouble();
         return vec;
     }
 }
