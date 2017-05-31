@@ -39,7 +39,7 @@ public class CPCKMeans {
         // create centroids
         int k = broadData.size();
         double[][] centroids = new double[k][];
-        for(int i = 0; i < n; i++) {
+        for(int i = 0; i < k; i++) {
             points[i]=vectorForPatents(broadData.get(broadTech.get(i)),classifications);
         }
 
