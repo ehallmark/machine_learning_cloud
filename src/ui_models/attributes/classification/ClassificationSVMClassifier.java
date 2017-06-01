@@ -4,6 +4,7 @@ import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
 import graphical_models.classification.CPCKMeans;
+import lombok.Getter;
 import model_testing.GatherTechnologyScorer;
 import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
@@ -38,6 +39,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     private static final File classFile = new File("data/ordered_gather_classifications_cpc_svm.jobj");
     private static final File modelFile = new File("data/gather_cpc_svm_classification_model.jobj");
 
+    @Getter
     protected List<String> orderedClassifications;
     // trainable version
     public ClassificationSVMClassifier(svm_parameter param) {

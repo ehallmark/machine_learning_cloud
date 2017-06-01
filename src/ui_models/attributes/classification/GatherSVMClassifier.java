@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import lombok.Getter;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -31,6 +32,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     protected svm_model model;
     protected svm_parameter param;
+    @Getter
     protected List<String> orderedTechnologies;
     private static final File techFile = new File("data/ordered_gather_technologies_svm.jobj");
     private static final File modelFile = new File("data/gather_svm_classification_model.jobj");

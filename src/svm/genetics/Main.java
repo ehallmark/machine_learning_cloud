@@ -6,6 +6,8 @@ import genetics.SolutionCreator;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import svm.SVMHelper;
+import ui_models.attributes.classification.ClassificationSVMClassifier;
+import ui_models.attributes.classification.SimilarityGatherTechTagger;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,14 +27,13 @@ public class Main {
 
         // get data
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
-        List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
         Map<String,Collection<String>> gatherValidationMap = SplitModelData.getBroadDataMap(SplitModelData.validation1File);
-
+        ClassificationSVMClassifier classifier = ClassificationSVMClassifier.get();
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies);
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications());
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new SVMSolutionCreator(training,gatherValidationMap,orderedTechnologies);
+        SolutionCreator creator = new CPCSVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications());
         Listener listener = new SVMSolutionListener();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);

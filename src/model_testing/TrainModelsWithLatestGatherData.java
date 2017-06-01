@@ -50,7 +50,6 @@ public class TrainModelsWithLatestGatherData {
             ClassificationAttr optimizedCombinedModel = optimizer.optimizeHyperParameters(models,gatherTechToBroadTechMap);
             // Test
             Map<String,Collection<String>> newGroupedTestData = SplitModelData.regroupData(rawTestingData,gatherTechToBroadTechMap);
-            System.out.println("Testing data size: "+newGroupedTestData.size());
             System.out.println("Testing Models:");
             optimizer.testModel(models,newGroupedTestData);
             System.out.println("Testing Combined Model: ");

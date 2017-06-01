@@ -66,8 +66,8 @@ public class CPCSVMSolution extends SVMSolution {
         delta=rand.nextDouble();
         p.coef0 = delta*(rand.nextDouble()*2d-1d) + (1d-delta)*param.coef0;
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
-        //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
-        //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
+        p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
+        if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
         return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
     }
 
@@ -96,8 +96,8 @@ public class CPCSVMSolution extends SVMSolution {
         delta = rand.nextDouble();
         p.coef0 = delta * param.coef0 + (1d-delta)*otherParam.coef0;
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
-        //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
-        //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
+        p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
+        p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
         return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
     }
 
