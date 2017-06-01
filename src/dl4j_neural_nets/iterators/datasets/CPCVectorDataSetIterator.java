@@ -39,7 +39,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     }
 
     private void setupIterator() {
-        Collections.shuffle(patents);
+        Collections.shuffle(patents,random);
         nextDataSet=null;
         patentIterator=patents.iterator();
     }

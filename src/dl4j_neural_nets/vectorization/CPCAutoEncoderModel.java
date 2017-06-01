@@ -23,6 +23,7 @@ import org.nd4j.linalg.dataset.DataSet;
 import seeding.Database;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,9 +33,12 @@ import java.util.stream.Collectors;
 public class CPCAutoEncoderModel {
     public static void main(String[] args) {
         // Fetch pre data
+        int sampleSize = 500;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
+        Collections.shuffle(patents);
+        patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
         // Get Classifications
         List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
