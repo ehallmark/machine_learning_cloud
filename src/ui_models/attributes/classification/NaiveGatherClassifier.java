@@ -72,6 +72,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
             if(defaultClassifier==null) {
                 defaultClassifier=new NaiveGatherClassifier(defaultAlpha);
                 defaultClassifier.train(SplitModelData.getBroadDataMap(SplitModelData.trainFile));
+                defaultClassifier.save();
             }
         }
         return defaultClassifier;
