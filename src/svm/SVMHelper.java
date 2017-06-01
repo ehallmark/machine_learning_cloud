@@ -37,7 +37,7 @@ public class SVMHelper {
         return new Pair<>(x,y);
     }
 
-    public static Pair<double[][],double[][]> mapToCPCSVMData(Map<String,Collection<String>> gatherMap, List<String> classifications, List<String> technologies) {
+    public static Pair<double[][],double[][]> mapToCPCSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, List<String> classifications) {
         Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&& Database.classificationsFor(e.getKey()).size()>0).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
         int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
         double[][] x = new double[N][];
