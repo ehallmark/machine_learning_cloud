@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import graphical_models.classification.CPCKMeans;
 import model_testing.GatherTechnologyScorer;
 import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
@@ -17,6 +18,7 @@ import svm.genetics.SVMSolutionCreator;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
 import ui_models.portfolios.AbstractPortfolio;
+import util.MathHelper;
 
 import java.io.File;
 import java.util.*;
@@ -68,9 +70,9 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         return portfolio.getTokens().stream().map(token->{
-            INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
-            if(vector!=null) {
-                double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];
+            double[] vector = CPCKMeans.classVectorForPatents(Arrays.asList(token),orderedClassifications);
+            if(vector!=null && Arrays.stream(vector).sum()>0d) {
+                double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector},model)[0];
                 List<Pair<String,Double>> maxResults = new ArrayList<>();
                 for(int i = 0; i < results.length; i++) {
                     maxResults.add(new Pair<>(orderedTechnologies.get(model.label[i]),results[i]));
@@ -86,7 +88,12 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     public void train(Map<String, Collection<String>> trainingData) {
         System.out.println("Building svm data...");
         this.orderedTechnologies=new ArrayList<>(trainingData.keySet());
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies);
+        // get patents
+        List<String> patents = trainingData.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
+        // get classifications
+        this.orderedClassifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
+
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,this.orderedTechnologies,orderedClassifications);
 
         System.out.println("Training svm model...");
         model = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -95,16 +102,10 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,orderedTechnologies);
-
-        // get patents
-        List<String> patents = trainingData.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
-
-        // get classifications
-        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,orderedTechnologies,orderedClassifications);
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new CPCSVMSolutionCreator(training,validationData,orderedTechnologies,classifications);
+        SolutionCreator creator = new CPCSVMSolutionCreator(training,validationData,orderedTechnologies,orderedClassifications);
         Listener listener = null;// new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
         algorithm.simulate(timeLimit,0.5,0.5);
@@ -141,6 +142,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     }
 
     public static void main(String[] args) {
+        Database.initializeDatabase();
         // build gather svm
 
         // svm parameters
