@@ -75,8 +75,12 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector},model)[0];
                 List<Pair<String,Double>> maxResults = new ArrayList<>();
                 for(int i = 0; i < results.length; i++) {
-                    maxResults.add(new Pair<>(orderedTechnologies.get(model.label[i]),results[i]));
+                    int labelIdx = model.label[i];
+                    if(labelIdx>=0) {
+                        maxResults.add(new Pair<>(orderedTechnologies.get(labelIdx), results[i]));
+                    }
                 }
+                if(maxResults.isEmpty()) return null;
                 return maxResults.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(limit).collect(Collectors.toList());
             } else return null;
         }).filter(d->d!=null).flatMap(list->list.stream()).collect(Collectors.groupingBy(p->p.getFirst(), Collectors.summingDouble(p->p.getSecond()))).entrySet().stream()
@@ -180,6 +184,8 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
 
         // Save Technology Ordering
         Database.trySaveObject(orderedTechnologies,techFile);
+
+        Database.trySaveObject(classifications, classFile);
 
         ModelTesterMain.testModel("SVM CPC Model [n=3] ",new GatherTechnologyScorer(new ClassificationSVMClassifier(m,orderedTechnologies,classifications)),SplitModelData.getBroadDataMap(SplitModelData.testFile),3);
     }
