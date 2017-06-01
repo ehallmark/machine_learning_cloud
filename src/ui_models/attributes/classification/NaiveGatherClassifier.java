@@ -212,5 +212,9 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         classifier.train(SplitModelData.getBroadDataMap(SplitModelData.trainFile));
         // save
         Database.trySaveObject(classifier,file);
+
+        classifier = get();
+        System.out.println("Num tech: "+classifier.orderedTechnologies.size());
+
     }
 }
