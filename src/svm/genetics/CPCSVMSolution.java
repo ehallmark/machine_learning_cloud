@@ -4,11 +4,12 @@ import genetics.Solution;
 import lombok.Getter;
 import model_testing.GatherTechnologyScorer;
 import org.deeplearning4j.berkeley.Pair;
-import ui_models.attributes.classification.GatherSVMClassifier;
 import svm.SVMHelper;
-import svm.libsvm.svm_parameter;
 import svm.libsvm.svm_model;
+import svm.libsvm.svm_parameter;
 import ui_models.attributes.classification.ClassificationAttr;
+import ui_models.attributes.classification.ClassificationSVMClassifier;
+import ui_models.attributes.classification.GatherSVMClassifier;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,21 +19,12 @@ import java.util.Random;
 /**
  * Created by Evan on 5/24/2017.
  */
-public class SVMSolution implements Solution {
-    protected svm_parameter param;
-    protected Pair<double[][],double[][]> trainingData;
-    protected Map<String,Collection<String>> validationData;
-    @Getter
-    protected svm_model model;
-    protected Double fitness;
-    protected List<String> technologies;
+public class CPCSVMSolution extends SVMSolution {
     private static final Random rand = new Random(782);
-    public SVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
-        this.param=param;
-        this.trainingData=trainingData;
-        this.validationData=validationData;
-        this.technologies=technologies;
-        this.fitness=null;
+    private List<String> classifications;
+    public CPCSVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications) {
+        super(param,trainingData,validationData,technologies);
+        this.classifications=classifications;
         //System.out.println("Training solution...");
         this.model = SVMHelper.svmTrain(trainingData.getFirst(),trainingData.getSecond(),param);
     }
@@ -45,7 +37,7 @@ public class SVMSolution implements Solution {
     @Override
     public void calculateFitness() {
         if(fitness == null) {
-            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies);
+            ClassificationAttr svmTagger = new ClassificationSVMClassifier(model, technologies, classifications);
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
             fitness = scorer.accuracyOn(validationData, 3);
         }
@@ -76,13 +68,13 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
-        return new SVMSolution(p,trainingData,validationData,technologies);
+        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
     }
 
     @Override
     public Solution crossover(Solution other_) {
         svm_parameter p = new svm_parameter();
-        SVMSolution other = (SVMSolution)other_;
+        CPCSVMSolution other = (CPCSVMSolution)other_;
         svm_parameter otherParam = other.getParam();
         // constants
         p.probability = 1;
@@ -106,7 +98,7 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
-        return new SVMSolution(p,trainingData,validationData,technologies);
+        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
     }
 
     public svm_parameter getParam() {

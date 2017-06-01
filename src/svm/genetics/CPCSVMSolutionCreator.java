@@ -3,31 +3,26 @@ package svm.genetics;
 import genetics.Solution;
 import genetics.SolutionCreator;
 import org.deeplearning4j.berkeley.Pair;
+import svm.libsvm.svm_parameter;
 
 import java.util.*;
-
-import svm.libsvm.svm_parameter;
 
 /**
  * Created by Evan on 5/24/2017.
  */
-public class SVMSolutionCreator implements SolutionCreator {
-    protected Pair<double[][],double[][]> trainingData;
-    protected Map<String,Collection<String>> validationData;
-    protected List<String> technologies;
+public class CPCSVMSolutionCreator extends SVMSolutionCreator {
     private static final Random rand = new Random(69);
-
-    public SVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
-        this.trainingData=trainingData;
-        this.validationData=validationData;
-        this.technologies=technologies;
+    private List<String> classifications;
+    public CPCSVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications) {
+        super(trainingData,validationData,technologies);
+        this.classifications=classifications;
     }
 
     @Override
     public Collection<Solution> nextRandomSolutions(int n) {
         List<Solution> list = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            list.add(new SVMSolution(randomParameter(),trainingData,validationData,technologies));
+            list.add(new CPCSVMSolution(randomParameter(),trainingData,validationData,technologies,classifications));
         }
         return list;
     }

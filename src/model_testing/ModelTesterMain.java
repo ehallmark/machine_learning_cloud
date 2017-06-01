@@ -40,6 +40,10 @@ public class ModelTesterMain {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
                     testModel("Gather Bayesian Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == 4) {
+                    ClassificationAttr classSVMTagger = ClassificationSVMClassifier.get();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(classSVMTagger);
+                    testModel("CPC SVM Model [n=" + i + "]", scorer, testData, i);
+                } else if (test == 5) {
                     ClassificationAttr defaultTagger = TechTaggerNormalizer.getDefaultTechTagger();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(defaultTagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);

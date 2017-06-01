@@ -28,6 +28,7 @@ public class TrainModelsWithLatestGatherData {
         models.add(SimilarityGatherTechTagger.getAIModelTagger());
         models.add(NaiveGatherClassifier.get());
         models.add(GatherSVMClassifier.get());
+        models.add(ClassificationSVMClassifier.get());
 
 
         int numEpochs = 50;

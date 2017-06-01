@@ -69,7 +69,10 @@ public class CPCKMeans {
         Arrays.fill(vec,0d);
         Collection<String> thisCPC = patents.stream().flatMap(patent->Database.classificationsFor(patent).stream()).collect(Collectors.toList());
         thisCPC.forEach(cpc->{
-           vec[classifications.indexOf(cpc)]+=1d/thisCPC.size();
+            int idx = classifications.indexOf(cpc);
+            if(idx>=0) {
+                vec[idx] += 1d / thisCPC.size();
+            }
         });
         return vec;
     }

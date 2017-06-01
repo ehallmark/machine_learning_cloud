@@ -3,15 +3,17 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import model_testing.GatherTechnologyScorer;
+import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
 import svm.SVMHelper;
+import svm.genetics.CPCSVMSolutionCreator;
 import svm.genetics.SVMSolution;
 import svm.genetics.SVMSolutionCreator;
-import svm.genetics.SVMSolutionListener;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
 import ui_models.portfolios.AbstractPortfolio;
@@ -23,27 +25,26 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 5/16/2017.
  */
-public class GatherSVMClassifier implements ClassificationAttr {
+public class ClassificationSVMClassifier extends GatherSVMClassifier {
     private static svm_model MODEL;
     private static List<String> ORDERED_TECHNOLOGIES;
-    private static GatherSVMClassifier classifier;
+    private static List<String> ORDERED_CLASSIFICATIONS;
+    private static ClassificationSVMClassifier classifier;
     private static final int timeLimit = 10*60*1000;
 
-    protected svm_model model;
-    protected svm_parameter param;
-    protected List<String> orderedTechnologies;
-    private static final File techFile = new File("data/ordered_gather_technologies_svm.jobj");
-    private static final File modelFile = new File("data/gather_svm_classification_model.jobj");
+    private static final File techFile = new File("data/ordered_gather_technologies_cpc_svm.jobj");
+    private static final File classFile = new File("data/ordered_gather_classifications_cpc_svm.jobj");
+    private static final File modelFile = new File("data/gather_cpc_svm_classification_model.jobj");
 
+    protected List<String> orderedClassifications;
     // trainable version
-    public GatherSVMClassifier(svm_parameter param) {
-        this.param=param;
+    public ClassificationSVMClassifier(svm_parameter param) {
+        super(param);
     }
     // pretrained model
-    public GatherSVMClassifier(svm_model model, List<String> orderedTechnologies) {
-        this.model=model;
-        this.orderedTechnologies=orderedTechnologies;
-        this.param=model.param;
+    public ClassificationSVMClassifier(svm_model model, List<String> orderedTechnologies, List<String> orderedClassifications) {
+        super(model,orderedTechnologies);
+        this.orderedClassifications=orderedClassifications;
     }
 
     @Override
@@ -53,9 +54,11 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
         // Save Technology Ordering
         Database.trySaveObject(orderedTechnologies,techFile);
+
+        Database.trySaveObject(orderedClassifications,classFile);
     }
 
-    public static GatherSVMClassifier get() {
+    public static ClassificationSVMClassifier get() {
         if(classifier==null) {
             classifier=load();
         }
@@ -94,12 +97,18 @@ public class GatherSVMClassifier implements ClassificationAttr {
         System.out.println("Building svm data...");
         Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,orderedTechnologies);
 
+        // get patents
+        List<String> patents = trainingData.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
+
+        // get classifications
+        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
+
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies);
+        SolutionCreator creator = new CPCSVMSolutionCreator(training,validationData,orderedTechnologies,classifications);
         Listener listener = null;// new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
         algorithm.simulate(timeLimit,0.5,0.5);
-        return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies);
+        return new ClassificationSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies,orderedClassifications);
     }
 
     @Override
@@ -114,18 +123,21 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     @Override
     public ClassificationAttr untrainedDuplicate() {
-        return new GatherSVMClassifier(param);
+        return new ClassificationSVMClassifier(param);
     }
 
-    public static GatherSVMClassifier load() {
+    public static ClassificationSVMClassifier load() {
         if(MODEL==null) {
             MODEL=(svm_model) Database.tryLoadObject(modelFile);
         }
         if(ORDERED_TECHNOLOGIES==null) {
             ORDERED_TECHNOLOGIES=(List<String>) Database.tryLoadObject(techFile);
         }
+        if(ORDERED_CLASSIFICATIONS==null) {
+            ORDERED_CLASSIFICATIONS=(List<String>) Database.tryLoadObject(classFile);
+        }
 
-        return new GatherSVMClassifier(MODEL,ORDERED_TECHNOLOGIES);
+        return new ClassificationSVMClassifier(MODEL,ORDERED_TECHNOLOGIES,ORDERED_CLASSIFICATIONS);
     }
 
     public static void main(String[] args) {
@@ -148,8 +160,15 @@ public class GatherSVMClassifier implements ClassificationAttr {
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
 
+        // get patents
+        List<String> patents = gatherTrainingMap.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
+
+        // get classifications
+        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
+
+
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,orderedTechnologies);
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,orderedTechnologies,classifications);
 
         System.out.println("Training svm model...");
         svm_model m = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -160,5 +179,6 @@ public class GatherSVMClassifier implements ClassificationAttr {
         // Save Technology Ordering
         Database.trySaveObject(orderedTechnologies,techFile);
 
+        ModelTesterMain.testModel("SVM CPC Model [n=3] ",new GatherTechnologyScorer(new ClassificationSVMClassifier(m,orderedTechnologies,classifications)),SplitModelData.getBroadDataMap(SplitModelData.testFile),3);
     }
 }

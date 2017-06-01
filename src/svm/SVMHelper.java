@@ -1,5 +1,7 @@
 package svm;
 
+import graphical_models.classification.CPCKMeans;
+import seeding.Database;
 import ui_models.attributes.classification.NaiveGatherClassifier;
 import org.deeplearning4j.berkeley.Pair;
 import server.SimilarPatentServer;
@@ -35,6 +37,25 @@ public class SVMHelper {
         return new Pair<>(x,y);
     }
 
+    public static Pair<double[][],double[][]> mapToCPCSVMData(Map<String,Collection<String>> gatherMap, List<String> classifications, List<String> technologies) {
+        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&& Database.classificationsFor(e.getKey()).size()>0).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
+        int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
+        double[][] x = new double[N][];
+        double[][] y = new double[N][];
+
+        AtomicInteger idx = new AtomicInteger(0);
+        invertedGatherMap.entrySet().parallelStream().forEach(e->{
+            String patent = e.getKey();
+            Collection<String> techs = e.getValue();
+            techs.forEach(tech->{
+                int i = idx.getAndIncrement();
+                x[i] = CPCKMeans.classVectorForPatents(Arrays.asList(patent),classifications);
+                y[i] = new double[]{technologies.indexOf(tech)};
+            });
+        });
+
+        return new Pair<>(x,y);
+    }
 
 
     public static svm_model svmTrain(double[][] xtrain, double[][] ytrain, svm_parameter param) {
