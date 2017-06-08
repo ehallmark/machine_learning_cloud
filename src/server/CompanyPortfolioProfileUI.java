@@ -11,6 +11,7 @@ import highcharts.*;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import ui_models.attributes.value.ValueAttr;
 import ui_models.filters.AbstractFilter;
 import ui_models.filters.LabelFilter;
@@ -421,8 +422,8 @@ public class CompanyPortfolioProfileUI {
                             portfolioList = null;
                             System.out.println("Using abstract portfolio type");
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable()) :
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentServer.getLookupTable());
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"), SimilarPatentFinder.getLookupTable()) :
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentFinder.getLookupTable());
 
                             AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, data);
                             // test!

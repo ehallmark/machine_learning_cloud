@@ -1,6 +1,7 @@
 package ui_models.attributes.classification;
 
 import model_testing.SplitModelData;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
@@ -25,18 +26,18 @@ import java.util.stream.Collectors;
 public class SimilarityGatherTechTagger implements ClassificationAttr {
     private List<INDArray> vectors;
     private List<String> names;
-    private WeightLookupTable<VocabWord> lookupTable;
+    private Map<String,INDArray> lookupTable;
     private Map<String,Collection<String>> nameToInputMap;
     private static final SimilarityGatherTechTagger gatherTagger;
     static {
-        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getBroadDataMap(SplitModelData.trainFile),SimilarPatentServer.getLookupTable());
+        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getBroadDataMap(SplitModelData.trainFile), SimilarPatentFinder.getLookupTable());
     }
 
     public static SimilarityGatherTechTagger getAIModelTagger() {
         return gatherTagger;
     }
 
-    public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, WeightLookupTable<VocabWord> lookupTable) {
+    public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, Map<String,INDArray> lookupTable) {
         this.lookupTable = lookupTable;
         train(nameToInputMap);
     }
@@ -52,7 +53,7 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
         this.vectors = new ArrayList<>(trainingData.size());
         this.names = new ArrayList<>(trainingData.size());
         trainingData.forEach((name, inputs) -> {
-            List<INDArray> vecs = inputs.stream().map(input -> lookupTable.vector(input)).filter(input -> input != null).collect(Collectors.toList());
+            List<INDArray> vecs = inputs.stream().map(input -> lookupTable.get(input)).filter(input -> input != null).collect(Collectors.toList());
             if (vecs.size() > 0) {
                 vectors.add(Nd4j.vstack(vecs).mean(0));
                 names.add(name);
@@ -94,7 +95,7 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int n) {
-        List<INDArray> vecs = portfolio.getTokens().stream().map(input->lookupTable.vector(input)).filter(input->input!=null).collect(Collectors.toList());
+        List<INDArray> vecs = portfolio.getTokens().stream().map(input->lookupTable.get(input)).filter(input->input!=null).collect(Collectors.toList());
         if(vecs.size()>0) {
             return technologiesFor(Nd4j.vstack(vecs).mean(0),n);
         } else {

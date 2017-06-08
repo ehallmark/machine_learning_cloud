@@ -258,7 +258,7 @@ public class HighchartDataAdapter {
         }
     }
 
-    public static List<Series<?>> collectLikelyAssetBuyersData(String portfolio, PortfolioList.Type inputType, int limit, ValueAttr buyerModel, WeightLookupTable<VocabWord> lookupTable) {
+    public static List<Series<?>> collectLikelyAssetBuyersData(String portfolio, PortfolioList.Type inputType, int limit, ValueAttr buyerModel, Map<String,INDArray> lookupTable) {
         Collection<String> collection = inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio);
         return collectLikelyAssetBuyersData(collection,portfolio,inputType,limit,buyerModel,lookupTable);
     }

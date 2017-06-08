@@ -9,6 +9,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import server.SimilarPatentServer;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import svm.SVMHelper;
 import svm.genetics.SVMSolution;
 import svm.genetics.SVMSolutionCreator;
@@ -66,8 +67,9 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
+        Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
         return portfolio.getTokens().stream().map(token->{
-            INDArray vector = SimilarPatentServer.getLookupTable().vector(token);
+            INDArray vector = lookupTable.get(token);
             if(vector!=null) {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];
                 List<Pair<String,Double>> maxResults = new ArrayList<>();

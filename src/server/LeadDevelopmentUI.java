@@ -1,5 +1,6 @@
 package server;
 
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import genetics.GeneticAlgorithm;
 import genetics.Solution;
@@ -345,9 +346,10 @@ public class LeadDevelopmentUI {
                             } else {
                                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find " + param));
                             }
-                            INDArray vec = SimilarPatentServer.getLookupTable().vector(cleanParam);
+                            Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
+                            INDArray vec = lookupTable.get(cleanParam);
                             if (vec != null) {
-                                SimilarityEvaluator evaluator = new SimilarityEvaluator(name, SimilarPatentServer.getLookupTable(), vec);
+                                SimilarityEvaluator evaluator = new SimilarityEvaluator(name, lookupTable, vec);
                                 attrsToUseList.add(new ValueAttribute(name+" - "+param, importance, evaluator));
                                 noAIInputFound=false;
                             }
