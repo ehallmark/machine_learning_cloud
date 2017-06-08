@@ -1,6 +1,7 @@
 package dl4j_neural_nets.vectorization;
 
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
+import graphical_models.classification.CPCKMeans;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -18,10 +19,12 @@ import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.deeplearning4j.spark.api.TrainingMaster;
 import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
+import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.DataSet;
 import seeding.Database;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +34,31 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 6/1/17.
  */
 public class CPCAutoEncoderModel {
+    public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
+    public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
+    private static MultiLayerNetwork MODEL;
+    private static List<String> CLASSIFICATIONS;
+
+    public static MultiLayerNetwork getModel() {
+        if(MODEL==null) {
+            try {
+                System.out.println("Loading auto-encoder");
+                MODEL = ModelSerializer.restoreMultiLayerNetwork(modelFile, true);
+            } catch (Exception e) {
+                System.out.println("Unable to load auto encoder");
+                e.printStackTrace();
+            }
+        }
+        return MODEL;
+    }
+
+    public static List<String> getOrderedClassifications() {
+        if(CLASSIFICATIONS==null) {
+            CLASSIFICATIONS=(List<String>) Database.tryLoadObject(classificationsFile);
+        }
+        return CLASSIFICATIONS;
+    }
+
     public static void main(String[] args) {
         // Fetch pre data
         int sampleSize = 500;
@@ -48,9 +76,10 @@ public class CPCAutoEncoderModel {
         final int nEpochs = 100;
         final int vectorSize = 300;
         final int numInputs = classifications.size();
+        final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
 
         // Get Iterator
-        CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize);
+        CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
 
         // Config
         System.out.println("Build model....");
@@ -85,5 +114,18 @@ public class CPCAutoEncoderModel {
             System.out.println("Starting epoch: "+(epoch+1));
             network.fit(iterator);
         }
+
+        System.out.println("Saving model...");
+        try {
+            ModelSerializer.writeModel(network, modelFile, true);
+            System.out.println("Saved.");
+        } catch(Exception e) {
+            System.out.println("Unable to save file.");
+            e.printStackTrace();
+        }
+
+        System.out.println("Saving cpc list");
+        Database.trySaveObject(classifications,classificationsFile);
+        System.out.println("Saved.");
     }
 }

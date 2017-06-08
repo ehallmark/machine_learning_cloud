@@ -263,12 +263,12 @@ public class HighchartDataAdapter {
         return collectLikelyAssetBuyersData(collection,portfolio,inputType,limit,buyerModel,lookupTable);
     }
 
-    public static List<Series<?>> collectLikelyAssetBuyersData(Collection<String> collection, String seriesName, PortfolioList.Type inputType, int limit, ValueAttr buyerModel, WeightLookupTable<VocabWord> lookupTable) {
+    public static List<Series<?>> collectLikelyAssetBuyersData(Collection<String> collection, String seriesName, PortfolioList.Type inputType, int limit, ValueAttr buyerModel, Map<String,INDArray> lookupTable) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(seriesName);
         ValueAttribute buyerAttr = new ValueAttribute("buyerValue",1.0,buyerModel);
-        ValueAttr similarityEvaluator = new SimilarityEvaluator(seriesName,lookupTable,new SimilarPatentFinder(collection,seriesName,lookupTable).computeAvg());
+        ValueAttr similarityEvaluator = new SimilarityEvaluator(seriesName,lookupTable,new SimilarPatentFinder(collection,seriesName).computeAvg());
         MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
         Database.getAssignees().forEach(assignee->{
             if(inputType.equals(PortfolioList.Type.patents)||(!assignee.startsWith(seriesName)&&!seriesName.startsWith(assignee))) {

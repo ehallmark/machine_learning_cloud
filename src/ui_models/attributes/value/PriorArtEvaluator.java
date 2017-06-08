@@ -33,7 +33,7 @@ public class PriorArtEvaluator extends ValueAttr {
         return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
     }
 
-    private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
+    private static Map<String,Double> runModel(){
         final int WINDOW_SIZE = 24;
         System.out.println("Starting to load prior art evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj")));
@@ -49,7 +49,7 @@ public class PriorArtEvaluator extends ValueAttr {
             System.out.println("Computing vector for: "+date);
             Set<String> patentSet = groupedDateToPatentMap.get(date);
             datesToIndex.add(date);
-            monthVectors.add(new SimilarPatentFinder(patentSet,null,paragraphVectors.getLookupTable()).computeAvg());
+            monthVectors.add(new SimilarPatentFinder(patentSet,null).computeAvg());
         });
 
         sortedDates.forEach(date->{
@@ -66,8 +66,7 @@ public class PriorArtEvaluator extends ValueAttr {
         });
 
         Collection<String> assignees = Database.getAssignees();
-        WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
-        SimilarPatentFinder patentFinder = new SimilarPatentFinder(Database.getValuablePatents(),null,lookupTable);
+        SimilarPatentFinder patentFinder = new SimilarPatentFinder(Database.getValuablePatents(),null);
         // compute scores for each patent
         Map<String,Double> model = new HashMap<>();
         patentFinder.getPatentList().forEach(patent->{
@@ -94,10 +93,8 @@ public class PriorArtEvaluator extends ValueAttr {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting to load lookupTable...");
-        ParagraphVectors paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         System.out.println("Finished.");
-        Map<String,Double> map = runModel(paragraphVectors);
+        Map<String,Double> map = runModel();
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
         oos.writeObject(map);
         oos.flush();

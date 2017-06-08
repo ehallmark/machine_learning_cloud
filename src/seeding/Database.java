@@ -550,6 +550,15 @@ public class Database {
 		return patents;
 	}
 
+	public synchronized static Collection<String> selectPatentNumbersFromExactAssignee(String assignee){
+		Set<String> patents = new HashSet<>();
+		if(assigneeToPatentsMap.containsKey(assignee)) {
+			patents.addAll(assigneeToPatentsMap.get(assignee));
+		}
+		return patents;
+	}
+
+
 	public synchronized static Set<String> patentsWithKeywords(List<String> patents, String[] keywords) throws SQLException {
 		Set<String> validPatents = new HashSet<>();
 		List<String> cleanKeywords = Arrays.stream(keywords).filter(keyword->keyword!=null&&keyword.trim().length()>0).map(keyword->keyword.trim().toLowerCase()).collect(Collectors.toList());

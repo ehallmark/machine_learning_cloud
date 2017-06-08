@@ -1,19 +1,14 @@
 package dl4j_neural_nets.iterators.datasets;
 
 import graphical_models.classification.CPCKMeans;
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
-import seeding.Database;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 12/14/16.
@@ -27,14 +22,16 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     private Iterator<String> patentIterator;
     private int batchSize;
     private DataSet nextDataSet;
+    private int cpcDepth;
 
     // Concatenates vectors for all provided weight lookup tables
-    public CPCVectorDataSetIterator(List<String> patents, List<String> orderedClassifications, int batchSize) {
+    public CPCVectorDataSetIterator(List<String> patents, List<String> orderedClassifications, int batchSize, int cpcDepth) {
         this.numOutputs=orderedClassifications.size();
         this.numInputs=orderedClassifications.size();
         this.patents=patents;
         this.orderedClassifications=orderedClassifications;
         this.batchSize=batchSize;
+        this.cpcDepth=cpcDepth;
         setupIterator();
     }
 
@@ -112,7 +109,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
         INDArray inputs = Nd4j.create(batchSize,numInputs);
         AtomicInteger i = new AtomicInteger(0);
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
-            inputs.putRow(i.get()-1, Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patentIterator.next()),orderedClassifications)));
+            inputs.putRow(i.get()-1, Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patentIterator.next()),orderedClassifications,cpcDepth)));
         }
         if(i.get()>0) {
             while (i.getAndIncrement() < batchSize) {

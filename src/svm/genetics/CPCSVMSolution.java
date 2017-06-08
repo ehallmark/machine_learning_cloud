@@ -22,9 +22,11 @@ import java.util.Random;
 public class CPCSVMSolution extends SVMSolution {
     private static final Random rand = new Random(782);
     private List<String> classifications;
-    public CPCSVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications) {
+    private int cpcDepth;
+    public CPCSVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications, int cpcDepth) {
         super(param,trainingData,validationData,technologies);
         this.classifications=classifications;
+        this.cpcDepth=cpcDepth;
         //System.out.println("Training solution...");
         this.model = SVMHelper.svmTrain(trainingData.getFirst(),trainingData.getSecond(),param);
     }
@@ -37,7 +39,7 @@ public class CPCSVMSolution extends SVMSolution {
     @Override
     public void calculateFitness() {
         if(fitness == null) {
-            ClassificationAttr svmTagger = new ClassificationSVMClassifier(model, technologies, classifications);
+            ClassificationAttr svmTagger = new ClassificationSVMClassifier(model, technologies, classifications,cpcDepth);
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
             fitness = scorer.accuracyOn(validationData, 3);
         }
@@ -68,7 +70,7 @@ public class CPCSVMSolution extends SVMSolution {
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
-        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
+        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications,cpcDepth);
     }
 
     @Override
@@ -98,7 +100,7 @@ public class CPCSVMSolution extends SVMSolution {
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
         p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
-        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications);
+        return new CPCSVMSolution(p,trainingData,validationData,technologies,classifications,cpcDepth);
     }
 
     public svm_parameter getParam() {

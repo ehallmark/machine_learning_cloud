@@ -41,12 +41,14 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
 
     @Getter
     protected List<String> orderedClassifications;
+    protected int cpcDepth;
+
     // trainable version
-    public ClassificationSVMClassifier(svm_parameter param) {
+    public ClassificationSVMClassifier(svm_parameter param, int cpcDepth) {
         super(param);
     }
     // pretrained model
-    public ClassificationSVMClassifier(svm_model model, List<String> orderedTechnologies, List<String> orderedClassifications) {
+    public ClassificationSVMClassifier(svm_model model, List<String> orderedTechnologies, List<String> orderedClassifications, int cpcDepth) {
         super(model,orderedTechnologies);
         this.orderedClassifications=orderedClassifications;
     }
@@ -72,7 +74,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     @Override
     public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
         return portfolio.getTokens().stream().map(token->{
-            double[] vector = CPCKMeans.classVectorForPatents(Arrays.asList(token),orderedClassifications);
+            double[] vector = CPCKMeans.classVectorForPatents(Arrays.asList(token),orderedClassifications,limit);
             if(vector!=null && Arrays.stream(vector).sum()>0d) {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector},model)[0];
                 List<Pair<String,Double>> maxResults = new ArrayList<>();
@@ -99,7 +101,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
         // get classifications
         this.orderedClassifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
 
-        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,this.orderedTechnologies,orderedClassifications);
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,this.orderedTechnologies,orderedClassifications,cpcDepth);
 
         System.out.println("Training svm model...");
         model = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -108,14 +110,14 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,orderedTechnologies,orderedClassifications);
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(trainingData,orderedTechnologies,orderedClassifications,cpcDepth);
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new CPCSVMSolutionCreator(training,validationData,orderedTechnologies,orderedClassifications);
+        SolutionCreator creator = new CPCSVMSolutionCreator(training,validationData,orderedTechnologies,orderedClassifications,cpcDepth);
         Listener listener = null;// new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
         algorithm.simulate(timeLimit,0.5,0.5);
-        return new ClassificationSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies,orderedClassifications);
+        return new ClassificationSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies,orderedClassifications,cpcDepth);
     }
 
     @Override
@@ -130,7 +132,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
 
     @Override
     public ClassificationAttr untrainedDuplicate() {
-        return new ClassificationSVMClassifier(param);
+        return new ClassificationSVMClassifier(param,cpcDepth);
     }
 
     public static ClassificationSVMClassifier load() {
@@ -144,7 +146,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
             ORDERED_CLASSIFICATIONS=(List<String>) Database.tryLoadObject(classFile);
         }
 
-        return new ClassificationSVMClassifier(MODEL,ORDERED_TECHNOLOGIES,ORDERED_CLASSIFICATIONS);
+        return new ClassificationSVMClassifier(MODEL,ORDERED_TECHNOLOGIES,ORDERED_CLASSIFICATIONS,CPCKMeans.DEFAULT_CPC_DEPTH);
     }
 
     public static void main(String[] args) {
@@ -164,6 +166,7 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
         param.coef0=-0.3;
         param.p=0.5;
 
+        int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
 
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
@@ -172,11 +175,10 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
         List<String> patents = gatherTrainingMap.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
 
         // get classifications
-        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
-
+        List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth);
 
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,orderedTechnologies,classifications);
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,orderedTechnologies,classifications,cpcDepth);
 
         System.out.println("Training svm model...");
         svm_model m = SVMHelper.svmTrain(training.getFirst(),training.getSecond(),param);
@@ -189,6 +191,6 @@ public class ClassificationSVMClassifier extends GatherSVMClassifier {
 
         Database.trySaveObject(classifications, classFile);
 
-        ModelTesterMain.testModel("SVM CPC Model [n=3] ",new GatherTechnologyScorer(new ClassificationSVMClassifier(m,orderedTechnologies,classifications)),SplitModelData.getBroadDataMap(SplitModelData.testFile),3);
+        ModelTesterMain.testModel("SVM CPC Model [n=3] ",new GatherTechnologyScorer(new ClassificationSVMClassifier(m,orderedTechnologies,classifications,cpcDepth)),SplitModelData.getBroadDataMap(SplitModelData.testFile),3);
     }
 }

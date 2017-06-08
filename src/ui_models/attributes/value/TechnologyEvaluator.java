@@ -33,20 +33,19 @@ public class TechnologyEvaluator extends ValueAttr {
                 (Map<String,Double>)Database.tryLoadObject(PriorArtEvaluator.file));
     }
 
-    private static Map<String,Double> runModel(ParagraphVectors paragraphVectors){
+    private static Map<String,Double> runModel(){
         System.out.println("Starting to load classification evaluator...");
         Map<LocalDate,Set<String>> dateToPatentsMap = Collections.synchronizedMap(DateHelper.groupMapByMonth((Map<LocalDate,Set<String>>)Database.tryLoadObject(new File("pubdate_to_patent_map.jobj"))));
         SortedSet<LocalDate> sortedDates = new TreeSet<>(dateToPatentsMap.keySet());
         Collection<String> assignees = Database.getAssignees();
-        WeightLookupTable<VocabWord> lookupTable = paragraphVectors.getLookupTable();
-        SimilarPatentFinder classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null,lookupTable);
+        SimilarPatentFinder classCodeFinder = new SimilarPatentFinder(Database.getClassCodes(),null);
 
         List<INDArray> data = Collections.synchronizedList(new ArrayList<>());
 
         for(LocalDate date : sortedDates) {
             System.out.println("Starting date: "+date);
             List<String> patentSample = new ArrayList<>(dateToPatentsMap.get(date));
-            SimilarPatentFinder sampleFinder = new SimilarPatentFinder(patentSample,null,lookupTable);
+            SimilarPatentFinder sampleFinder = new SimilarPatentFinder(patentSample,null);
             INDArray avg = sampleFinder.computeAvg();
             if(avg!=null) {
                 data.add(avg);
@@ -71,7 +70,7 @@ public class TechnologyEvaluator extends ValueAttr {
         });
 
         System.out.println("Now calculating scores for patents...");
-        SimilarPatentFinder patentFinder = new SimilarPatentFinder(Database.getValuablePatents(),null,lookupTable);
+        SimilarPatentFinder patentFinder = new SimilarPatentFinder(Database.getValuablePatents(),null);
         // compute scores for each patent
         patentFinder.getPatentList().forEach(patent->{
             double totalScore = 0.0;
@@ -110,10 +109,8 @@ public class TechnologyEvaluator extends ValueAttr {
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting to load lookupTable...");
-        ParagraphVectors paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         System.out.println("Finished.");
-        Map<String,Double> map = runModel(paragraphVectors);
+        Map<String,Double> map = runModel();
         ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
         oos.writeObject(map);
         oos.flush();

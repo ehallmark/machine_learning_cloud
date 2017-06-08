@@ -1,7 +1,6 @@
 package server;
 
 import similarity_models.AbstractSimilarityModel;
-import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import com.google.gson.Gson;
 import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;

@@ -13,16 +13,18 @@ import java.util.*;
 public class CPCSVMSolutionCreator extends SVMSolutionCreator {
     private static final Random rand = new Random(69);
     private List<String> classifications;
-    public CPCSVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications) {
+    private int cpcDepth;
+    public CPCSVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, List<String> classifications, int cpcDepth) {
         super(trainingData,validationData,technologies);
         this.classifications=classifications;
+        this.cpcDepth=cpcDepth;
     }
 
     @Override
     public Collection<Solution> nextRandomSolutions(int n) {
         List<Solution> list = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            list.add(new CPCSVMSolution(randomParameter(),trainingData,validationData,technologies,classifications));
+            list.add(new CPCSVMSolution(randomParameter(),trainingData,validationData,technologies,classifications,cpcDepth));
         }
         return list;
     }

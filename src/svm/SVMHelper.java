@@ -37,7 +37,7 @@ public class SVMHelper {
         return new Pair<>(x,y);
     }
 
-    public static Pair<double[][],double[][]> mapToCPCSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, List<String> classifications) {
+    public static Pair<double[][],double[][]> mapToCPCSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, List<String> classifications, int cpcDepth) {
         Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&& Database.classificationsFor(e.getKey()).size()>0).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
         int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
         double[][] x = new double[N][];
@@ -49,7 +49,7 @@ public class SVMHelper {
             Collection<String> techs = e.getValue();
             techs.forEach(tech->{
                 int i = idx.getAndIncrement();
-                x[i] = CPCKMeans.classVectorForPatents(Arrays.asList(patent),classifications);
+                x[i] = CPCKMeans.classVectorForPatents(Arrays.asList(patent),classifications, cpcDepth);
                 y[i] = new double[]{technologies.indexOf(tech)};
             });
         });

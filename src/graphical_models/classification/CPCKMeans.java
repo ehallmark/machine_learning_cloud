@@ -4,11 +4,8 @@ import ca.pjer.ekmeans.EKmeans;
 import model_testing.SplitModelData;
 import model_testing.TrainModelsWithLatestGatherData;
 import seeding.Database;
-import server.SimilarPatentServer;
-import similarity_models.paragraph_vectors.SimilarPatentFinder;
 
 import java.io.File;
-import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,6 +13,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 5/31/17.
  */
 public class CPCKMeans {
+    public static final int DEFAULT_CPC_DEPTH = 7;
     public static void main(String[] args) {
         Database.initializeDatabase();
         Map<String,Collection<String>> specificData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
@@ -28,20 +26,20 @@ public class CPCKMeans {
         List<String> patents = specificData.entrySet().stream().flatMap(e->e.getValue().stream()).distinct().filter(p->Database.classificationsFor(p).size()>0).collect(Collectors.toList());
 
         // get classifications
-        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
-
+        int cpcDepth = DEFAULT_CPC_DEPTH;
+        List<String> classifications = getClassifications(patents,cpcDepth);
         // create data
         int n = specificTech.size();
         double[][] points = new double[n][];
         for(int i = 0; i < n; i++) {
-            points[i]=classVectorForPatents(specificData.get(specificTech.get(i)),classifications);
+            points[i]=classVectorForPatents(specificData.get(specificTech.get(i)),classifications, DEFAULT_CPC_DEPTH);
         }
 
         // create centroids
         int k = broadData.size();
         double[][] centroids = new double[k][];
         for(int i = 0; i < k; i++) {
-            centroids[i]=classVectorForPatents(broadData.get(broadTech.get(i)),classifications);
+            centroids[i]=classVectorForPatents(broadData.get(broadTech.get(i)),classifications, DEFAULT_CPC_DEPTH);
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
@@ -63,21 +61,20 @@ public class CPCKMeans {
 
     }
 
-
-    public static double[] classVectorForPatents(Collection<String> patents, List<String> classifications) {
+    public static double[] classVectorForPatents(Collection<String> patents, List<String> classifications, int cpcDepth) {
         double[] vec = new double[classifications.size()];
-        Arrays.fill(vec,0d);
-        Collection<String> thisCPC = patents.stream().flatMap(patent->Database.classificationsFor(patent).stream()).collect(Collectors.toList());
-        thisCPC.forEach(cpc->{
+        Arrays.fill(vec, 0d);
+        Collection<String> thisCPC = getClassifications(patents,cpcDepth);
+        thisCPC.forEach(cpc -> {
             int idx = classifications.indexOf(cpc);
-            if(idx>=0) {
+            if (idx >= 0) {
                 vec[idx] += 1d / thisCPC.size();
             }
         });
         return vec;
     }
-    public static double[] vectorForPatents(Collection<String> patents) {
-        double[] vec = new SimilarPatentFinder(patents,null, SimilarPatentServer.getLookupTable()).computeAvg().data().asDouble();
-        return vec;
+
+    public static List<String> getClassifications(Collection<String> patents, int cpcDepth) {
+        return patents.stream().flatMap(p-> Database.classificationsFor(p).stream().map(cpc->cpc.substring(0,Math.min(cpcDepth,cpc.length())).trim())).distinct().collect(Collectors.toList());
     }
 }

@@ -3,12 +3,8 @@ package server;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import dl4j_neural_nets.tools.MyPreprocessor;
-import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import j2html.tags.Tag;
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
-import org.deeplearning4j.models.word2vec.VocabWord;
-import org.deeplearning4j.models.word2vec.wordstore.VocabCache;
+
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
@@ -52,7 +48,6 @@ public class SimilarPatentServer {
 
     private static ClassificationAttr tagger;
 
-    protected static ParagraphVectors paragraphVectors;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> modelMap = new HashMap<>();
 
@@ -62,33 +57,8 @@ public class SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-    public static WeightLookupTable<VocabWord> getLookupTable() {
-        if(paragraphVectors==null) loadLookupTable();
-        return paragraphVectors.getLookupTable();
-    }
-
     public static ClassificationAttr getTagger() {
         return tagger;
-    }
-    public static void loadLookupTable() {
-        if(paragraphVectors!=null)return;
-        boolean testing = false;
-        try {
-            if(testing==true) {
-                paragraphVectors = ParagraphVectorModel.loadTestParagraphsModel();
-            } else {
-                paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
-            }
-        } catch(Exception e) {
-            e.printStackTrace();
-            //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
-            System.out.println("DEFAULTING TO OLDER MODEL");
-        }
-    }
-
-    public static VocabCache<VocabWord> getVocabCache() {
-        if(paragraphVectors==null)loadLookupTable();
-        return paragraphVectors.getVocab();
     }
 
     static void loadValueModels() {
@@ -124,9 +94,9 @@ public class SimilarPatentServer {
 
     private static void loadBaseFinder() {
         try {
-            globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **",paragraphVectors.lookupTable());
-            assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **",paragraphVectors.lookupTable());
-            globalSimRankModel = new SimRankSimilarityModel("** ALL SimRank PATENTS **",Database.getCopyOfAllPatents());
+            globalFinder =  new SimilarPatentFinder(Database.getValuablePatents(),"** ALL PATENTS **");
+            assigneeFinder = new SimilarPatentFinder(Database.getAssignees(),"** ALL ASSIGNEES **");
+            globalSimRankModel = new SimRankSimilarityModel("** ALL SimRank PATENTS **",Database.getValuablePatents());
             tagger = TechTaggerNormalizer.getDefaultTechTagger();
             // value model
             loadValueModels();
@@ -413,7 +383,7 @@ public class SimilarPatentServer {
                 if (searchType.equals("patents")) {
                     customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
                     classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
-                    firstFinder = new SimilarPatentFinder(patentsToSearchIn, null, paragraphVectors.getLookupTable());
+                    firstFinder = new SimilarPatentFinder(patentsToSearchIn, null);
                 } else if (searchType.equals("assignees")) {
                     Collection<String> assigneesToSearchIn = new HashSet<>();
                     customAssigneeList.forEach(assignee -> {
@@ -421,11 +391,11 @@ public class SimilarPatentServer {
                     });
                     classCodesToSearchIn.forEach(cpc -> patentsToSearchIn.addAll(includeSubclasses ? Database.selectPatentNumbersFromClassAndSubclassCodes(cpc) : Database.selectPatentNumbersFromExactClassCode(cpc)));
                     patentsToSearchIn.forEach(patent -> Database.assigneesFor(patent).forEach(assignee -> assigneesToSearchIn.addAll(Database.possibleNamesForAssignee(assignee))));
-                    firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null, paragraphVectors.getLookupTable());
+                    firstFinder = new SimilarPatentFinder(assigneesToSearchIn, null);
                 } else if (searchType.equals("class_codes")) {
                     customAssigneeList.forEach(assignee -> patentsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
                     patentsToSearchIn.forEach(patent -> classCodesToSearchIn.addAll(Database.classificationsFor(patent)));
-                    firstFinder = new SimilarPatentFinder(classCodesToSearchIn, null, paragraphVectors.getLookupTable());
+                    firstFinder = new SimilarPatentFinder(classCodesToSearchIn, null);
                 } else {
                     return null;
                 }
@@ -447,9 +417,9 @@ public class SimilarPatentServer {
 
         if(modelType.equals("0")) {
             if (mergeSearchInput) {
-                patentFinders.add(new SimilarPatentFinder(stuffToSearchFor, null, paragraphVectors.getLookupTable()));
+                patentFinders.add(new SimilarPatentFinder(stuffToSearchFor, null));
             } else {
-                stuffToSearchFor.forEach(patent -> patentFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent, paragraphVectors.getLookupTable())));
+                stuffToSearchFor.forEach(patent -> patentFinders.add(new SimilarPatentFinder(Arrays.asList(patent), patent)));
             }
         } else if (modelType.equals("1")) {
             patentFinders.add(new SimRankSimilarityModel(null,stuffToSearchFor));
@@ -719,9 +689,6 @@ public class SimilarPatentServer {
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
         Database.initializeDatabase();
-        System.out.println("Starting to load lookup table...");
-        loadLookupTable();
-        System.out.println("Finished loading lookup table.");
         System.out.println("Starting to load base finder...");
         loadBaseFinder();
         System.out.println("Finished loading base finder.");

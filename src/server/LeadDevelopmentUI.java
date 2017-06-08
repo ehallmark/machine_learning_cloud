@@ -332,9 +332,6 @@ public class LeadDevelopmentUI {
                         double importance = SimilarPatentServer.extractDouble(params,"importance-custom-"+i,0d);
                         if(importance>0) {
                             shouldUseAIModel=true;
-                            if (SimilarPatentServer.getLookupTable() == null) {
-                                return new Gson().toJson(new SimpleAjaxMessage("No lookup table found for AI Model..."));
-                            }
                             String param = params.get("custom-" + i).value();
                             if (param == null || param.length() == 0) continue;
 

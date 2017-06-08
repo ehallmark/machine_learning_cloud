@@ -3,6 +3,7 @@ package svm.genetics;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import graphical_models.classification.CPCKMeans;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import svm.SVMHelper;
@@ -29,11 +30,12 @@ public class Main {
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         Map<String,Collection<String>> gatherValidationMap = SplitModelData.getBroadDataMap(SplitModelData.validation1File);
         ClassificationSVMClassifier classifier = ClassificationSVMClassifier.get();
+        int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         System.out.println("Building svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications());
+        Pair<double[][],double[][]> training = SVMHelper.mapToCPCSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications(),cpcDepth);
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new CPCSVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications());
+        SolutionCreator creator = new CPCSVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies(),classifier.getOrderedClassifications(),cpcDepth);
         Listener listener = new SVMSolutionListener();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);

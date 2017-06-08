@@ -15,8 +15,8 @@ import java.util.Map;
 public class SimilarityEvaluator extends ValueAttr{
     private static final String MODEL_PREFIX = "Similarity to ";
     private INDArray vector;
-    private WeightLookupTable<VocabWord> lookupTable;
-    public SimilarityEvaluator(String name, WeightLookupTable<VocabWord> lookupTable, INDArray avgVector) {
+    private Map<String,INDArray> lookupTable;
+    public SimilarityEvaluator(String name, Map<String,INDArray> lookupTable, INDArray avgVector) {
         super(ValueMapNormalizer.DistributionType.Normal,MODEL_PREFIX+name);
         this.vector= avgVector;
         this.lookupTable=lookupTable;
@@ -36,7 +36,7 @@ public class SimilarityEvaluator extends ValueAttr{
     @Override
     public double evaluate(String token) {
         double sim;
-        INDArray vector2 = lookupTable.vector(token);
+        INDArray vector2 = lookupTable.get(token);
         if(vector2!=null&&vector!=null) {
             sim = Transforms.cosineSim(vector,vector2);
         } else sim = -1d;
