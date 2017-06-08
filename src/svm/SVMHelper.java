@@ -1,7 +1,9 @@
 package svm;
 
 import graphical_models.classification.CPCKMeans;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import ui_models.attributes.classification.NaiveGatherClassifier;
 import org.deeplearning4j.berkeley.Pair;
 import server.SimilarPatentServer;
@@ -17,8 +19,10 @@ import java.util.stream.Collectors;
 public class SVMHelper {
 
     // helper for gather data
-    public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies) {
-        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream().filter(e-> e.getValue().size()>0&&SimilarPatentServer.getLookupTable().vector(e.getKey())!=null).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+    public static Pair<double[][],double[][]> mapToSVMData(Map<String,Collection<String>> gatherMap, List<String> technologies, Map<String,INDArray> lookupTable) {
+        Map<String,Collection<String>> invertedGatherMap = NaiveGatherClassifier.invert(gatherMap).entrySet().stream()
+                .filter(e-> e.getValue().size()>0&&lookupTable.get(e.getKey())!=null)
+                .collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
         int N = invertedGatherMap.entrySet().stream().collect(Collectors.summingInt(e->e.getValue().size()));
         double[][] x = new double[N][];
         double[][] y = new double[N][];
@@ -29,7 +33,7 @@ public class SVMHelper {
             Collection<String> techs = e.getValue();
             techs.forEach(tech->{
                 int i = idx.getAndIncrement();
-                x[i] = SimilarPatentServer.getLookupTable().vector(patent).data().asDouble();
+                x[i] = lookupTable.get(patent).data().asDouble();
                 y[i] = new double[]{technologies.indexOf(tech)};
             });
         });

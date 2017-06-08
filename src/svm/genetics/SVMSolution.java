@@ -10,6 +10,7 @@ import svm.libsvm.svm_parameter;
 import svm.libsvm.svm_model;
 import ui_models.attributes.classification.ClassificationAttr;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +26,12 @@ public class SVMSolution implements Solution {
     @Getter
     protected svm_model model;
     protected Double fitness;
+    protected File modelFile;
     protected List<String> technologies;
     private static final Random rand = new Random(782);
-    public SVMSolution(svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
+    public SVMSolution(File modelFile, svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
         this.param=param;
+        this.modelFile=modelFile;
         this.trainingData=trainingData;
         this.validationData=validationData;
         this.technologies=technologies;
@@ -45,7 +48,7 @@ public class SVMSolution implements Solution {
     @Override
     public void calculateFitness() {
         if(fitness == null) {
-            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies);
+            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies, modelFile);
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
             fitness = scorer.accuracyOn(validationData, 3);
         }
@@ -76,7 +79,7 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
-        return new SVMSolution(p,trainingData,validationData,technologies);
+        return new SVMSolution(modelFile,p,trainingData,validationData,technologies);
     }
 
     @Override
@@ -106,7 +109,7 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
-        return new SVMSolution(p,trainingData,validationData,technologies);
+        return new SVMSolution(modelFile,p,trainingData,validationData,technologies);
     }
 
     public svm_parameter getParam() {

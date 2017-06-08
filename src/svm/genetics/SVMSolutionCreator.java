@@ -27,7 +27,7 @@ public class SVMSolutionCreator implements SolutionCreator {
     public Collection<Solution> nextRandomSolutions(int n) {
         List<Solution> list = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            list.add(new SVMSolution(randomParameter(),trainingData,validationData,technologies));
+            list.add(new SVMSolution(null,randomParameter(),trainingData,validationData,technologies));
         }
         return list;
     }
