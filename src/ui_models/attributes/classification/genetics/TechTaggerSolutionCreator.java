@@ -18,9 +18,9 @@ public class TechTaggerSolutionCreator implements SolutionCreator<TechTaggerSolu
     public static List<ClassificationAttr> getTaggers() {
         if(taggers==null) {
             taggers = Arrays.asList(
-                    CPCGatherTechTagger.get(),
                     NaiveGatherClassifier.get(),
-                    SimilarityGatherTechTagger.getAIModelTagger(),
+                    SimilarityGatherTechTagger.getParagraphVectorModel(),
+                    SimilarityGatherTechTagger.getCPCModel(),
                     GatherSVMClassifier.getCPCModel(),
                     GatherSVMClassifier.getParagraphVectorModel()
             );

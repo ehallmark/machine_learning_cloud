@@ -1,14 +1,9 @@
 package ui_models.attributes.value;
 
-import dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import seeding.Database;
 import tools.DateHelper;
-import ui_models.attributes.classification.helper.BuildCPCToGatherStatistics;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDate;
 import java.util.*;
 

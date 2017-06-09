@@ -6,14 +6,11 @@ import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.nodes.FactorNode;
 import model.nodes.Node;
 import model_testing.GatherTechnologyScorer;
-import model_testing.ModelTesterMain;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
-import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import ui_models.portfolios.AbstractPortfolio;
-import util.MathHelper;
 
 import java.io.File;
 import java.io.Serializable;

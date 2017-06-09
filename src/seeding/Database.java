@@ -67,6 +67,8 @@ public class Database {
 	private static final Set<Integer> badCompDBTechnologyIds = new HashSet<>(Arrays.asList(136,182,301,316,519,527));
 	private static final File gatherTechMapFile = new File(Constants.DATA_FOLDER+"gather_technology_to_patent_map.jobj");
 	private static Map<String,Collection<String>> gatherTechMap;
+	private static final File gatherValueMapFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_bool_map.jobj");
+	private static Map<String,Boolean> gatherValueMap;
 	private static Set<String> gatherPatentSet;
 	private static volatile boolean init=false;
 
@@ -139,6 +141,8 @@ public class Database {
 	public synchronized static void initializeDatabase() {
 		if(init==true)return;
 		init=true;
+
+		// gather tech
 		if(gatherTechMapFile.exists()) {
 			gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
 		} else {
@@ -153,6 +157,18 @@ public class Database {
 		gatherTechMap.forEach((tech,patents)->{
 			gatherPatentSet.addAll(patents);
 		});
+
+		// gather value
+		if(gatherValueMapFile.exists()) {
+			gatherValueMap = (Map<String, Boolean>) Database.tryLoadObject(gatherValueMapFile);
+		} else {
+			try {
+				gatherValueMap = loadGatherValueMap();
+				Database.trySaveObject(gatherValueMap,gatherValueMapFile);
+			} catch(SQLException sql) {
+				sql.printStackTrace();
+			}
+		}
 
 		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
@@ -675,47 +691,25 @@ public class Database {
 		return new HashMap<>(gatherTechMap);
 	}
 
-	public synchronized static org.deeplearning4j.berkeley.Pair<Map<String,List<String>>,Map<String,List<String>>> getGatherTechTestAndTrain() throws SQLException {
-		Database.setupGatherConn();
-		//Database.setupSeedConn();
-		Random random = new Random(41);
-		Map<String, List<String>> testTechToPatentMap = new HashMap<>();
-		Map<String, List<String>> trainTechToPatentMap = new HashMap<>();
-		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherTechnologiesQuery);
-		ps.setFetchSize(10);
-		//ps.setArray(1, gatherDBConn.createArrayOf("int4",badTech.toArray()));
-		ResultSet rs = ps.executeQuery();
-		while (rs.next()) {
-			List<String> patents = Arrays.asList((String[])rs.getArray(1).getArray());
-			Collections.shuffle(patents,random);
-			if(patents.size() >=2) {
-				String label = rs.getString(2);
-				List<String> testPatents = new ArrayList<>(patents.size()/2+1);
-				List<String> trainPatents = new ArrayList<>(patents.size()/2+1);
-				for(int i = 0; i < patents.size(); i++) {
-					if(i%2==0) {
-						testPatents.add(patents.get(i));
-					} else {
-						trainPatents.add(patents.get(i));
-					}
-				}
-				testTechToPatentMap.put(label, testPatents);
-				trainTechToPatentMap.put(label, trainPatents);
-			}
+	public synchronized static Map<String,Boolean> getGatherValueMap() {
+		if(gatherValueMap==null) {
+			gatherValueMap=(Map<String,Boolean>)Database.tryLoadObject(gatherValueMapFile);
 		}
-		ps.close();
-		Database.close();
-		return new org.deeplearning4j.berkeley.Pair<>(trainTechToPatentMap,testTechToPatentMap);
+		return new HashMap<>(gatherValueMap);
 	}
 
-	public synchronized static Map<String,List<String>> getGatherRatingsMap() throws SQLException {
+	public synchronized static Map<String,Boolean> loadGatherValueMap() throws SQLException {
 		Database.setupGatherConn();
 		Database.setupSeedConn();
-		Map<String, List<String>> map = new HashMap<>();
+		Map<String, Boolean> map = new HashMap<>();
 		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherRatingsQuery);
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
-			map.put(String.valueOf(rs.getInt(1)),Arrays.asList((String[])rs.getArray(2).getArray()));
+			String[] patents = (String[])rs.getArray(2).getArray();
+			Boolean value = rs.getInt(1) >= 4;
+			Arrays.stream(patents).forEach(patent->{
+				map.put(patent,value);
+			});
 		}
 		ps.close();
 		Database.close();

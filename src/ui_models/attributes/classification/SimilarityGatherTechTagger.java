@@ -1,6 +1,7 @@
 package ui_models.attributes.classification;
 
 import model_testing.SplitModelData;
+import similarity_models.cpc_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
@@ -28,13 +29,20 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private List<String> names;
     private Map<String,INDArray> lookupTable;
     private Map<String,Collection<String>> nameToInputMap;
-    private static final SimilarityGatherTechTagger gatherTagger;
+    private static final SimilarityGatherTechTagger pVectorModel;
+    private static final SimilarityGatherTechTagger cpcModel;
     static {
-        gatherTagger = new SimilarityGatherTechTagger(SplitModelData.getBroadDataMap(SplitModelData.trainFile), SimilarPatentFinder.getLookupTable());
+        Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+        cpcModel = new SimilarityGatherTechTagger(data, CPCSimilarityFinder.getLookupTable());
+        pVectorModel = new SimilarityGatherTechTagger(data, SimilarPatentFinder.getLookupTable());
     }
 
-    public static SimilarityGatherTechTagger getAIModelTagger() {
-        return gatherTagger;
+    public static SimilarityGatherTechTagger getCPCModel() {
+        return cpcModel;
+    }
+
+    public static SimilarityGatherTechTagger getParagraphVectorModel() {
+        return pVectorModel;
     }
 
     public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, Map<String,INDArray> lookupTable) {

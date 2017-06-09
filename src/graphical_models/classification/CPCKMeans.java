@@ -1,8 +1,8 @@
 package graphical_models.classification;
 
 import ca.pjer.ekmeans.EKmeans;
+import model_testing.GatherClassificationOptimizer;
 import model_testing.SplitModelData;
-import model_testing.TrainModelsWithLatestGatherData;
 import seeding.Database;
 
 import java.io.File;
@@ -57,7 +57,7 @@ public class CPCKMeans {
             System.out.println(specific+": "+broad);
         }
 
-        TrainModelsWithLatestGatherData.writeToCSV(newTechMap,new File("data/ai_grouped_gather_technologies.csv"));
+        GatherClassificationOptimizer.writeToCSV(newTechMap,new File("data/ai_grouped_gather_technologies.csv"));
 
     }
 

@@ -12,45 +12,39 @@ import java.util.*;
 /**
  * Created by Evan on 5/4/2017.
  */
-public class ModelTesterMain {
+public class TestSpecificModels {
     static SortedMap<String,Double> scoreMap = new TreeMap<>();
 
     public static void main(String[] args) throws Exception {
         // tests models
         Database.initializeDatabase();
         int numPredictions = 5;
-
-        Map<String,Collection<String>> trainData = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         Map<String,Collection<String>> testData = SplitModelData.getBroadDataMap(SplitModelData.testFile);
-
         for(String arg : args) {
             for(int i = 1; i <= numPredictions; i+=2) {
+                int testIdx=0;
                 int test = Integer.valueOf(arg);
-                if (test == 0) {
-                    ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, SimilarPatentFinder.getLookupTable());
+                if (test == (testIdx++)) {
+                    ClassificationAttr paragraphVectorTagger = SimilarityGatherTechTagger.getParagraphVectorModel();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
                     testModel("Paragraph Vector Simple Average [n=" + i + "]", scorer, testData, i);
-                } else if (test == 1) {
-                    ClassificationAttr paragraphVectorTagger = new SimilarityGatherTechTagger(trainData, CPCSimilarityFinder.getLookupTable());
+                } else if (test == (testIdx++)) {
+                    ClassificationAttr paragraphVectorTagger = SimilarityGatherTechTagger.getCPCModel();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
                     testModel("CPC Similarity Vector Simple Average [n=" + i + "]", scorer, testData, i);
-                } else if (test == 2) {
-                    ClassificationAttr cpcModel = CPCGatherTechTagger.get();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(cpcModel);
-                    testModel("CPC Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 3) {
+                } else if (test == (testIdx++)) {
                     ClassificationAttr svmTagger = GatherSVMClassifier.getParagraphVectorModel();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
                     testModel("Gather SVM P-Vector Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 4) {
+                } else if (test == (testIdx++)) {
                     ClassificationAttr svmTagger = GatherSVMClassifier.getCPCModel();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
                     testModel("Gather SVM CPC Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 5) {
+                } else if (test == (testIdx++)) {
                     ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
                     testModel("Gather Bayesian CPC Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == 6) {
+                } else if (test == (testIdx++)) {
                     ClassificationAttr defaultTagger = TechTaggerNormalizer.getDefaultTechTagger();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(defaultTagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);
