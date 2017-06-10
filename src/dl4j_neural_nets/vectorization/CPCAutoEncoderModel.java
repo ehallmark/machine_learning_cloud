@@ -86,7 +86,7 @@ public class CPCAutoEncoderModel {
         final int vectorSize = 300;
         final int numInputs = classifications.size();
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int printIterations = 1;
+        int printIterations = 100;
 
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
