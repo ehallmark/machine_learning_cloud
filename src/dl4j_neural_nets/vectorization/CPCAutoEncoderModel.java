@@ -99,16 +99,22 @@ public class CPCAutoEncoderModel {
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(69)
-                .iterations(1)
-                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
+                .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                .learningRate(1e-2)
+                .updater(Updater.RMSPROP).rmsDecay(0.95)
+                .weightInit(WeightInit.XAVIER)
+                .regularization(true).l2(1e-4)
                 .list()
-                .layer(0, new RBM.Builder().nIn(numInputs).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(1, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
-                .layer(2, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
-                .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(numInputs/2).nOut(numInputs).build())
-                .pretrain(false)
-                .backprop(true)
-                .build();
+                .layer(0, new VariationalAutoencoder.Builder()
+                        .activation(Activation.LEAKYRELU)
+                        .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
+                        .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
+                        .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
+                        .nIn(numInputs)                       //Input size: 28x28
+                        .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
+                        .build())
+                .pretrain(true).backprop(false).build();
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
