@@ -104,10 +104,10 @@ public class CPCAutoEncoderModel {
                 .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list()
                 .layer(0, new RBM.Builder().nIn(numInputs).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(4, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
-                .layer(5, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
-                .layer(6, new RBM.Builder().nIn(numInputs/2).nOut(numInputs).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(9, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(1000).nOut(numInputs).build())
+                .layer(1, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
+                .layer(2, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
+                .layer(3, new RBM.Builder().nIn(numInputs/2).nOut(numInputs).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(1000).nOut(numInputs).build())
                 .pretrain(true).backprop(true)
                 .build();
 
