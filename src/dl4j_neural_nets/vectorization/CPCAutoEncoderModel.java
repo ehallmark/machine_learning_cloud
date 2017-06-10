@@ -12,6 +12,8 @@ import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -25,6 +27,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
@@ -83,10 +86,11 @@ public class CPCAutoEncoderModel {
         // Hyper Parameters
         int batchSize = 10;
         final int nEpochs = 100;
-        final int vectorSize = 2;
         final int numInputs = classifications.size();
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 100;
+        final int vectorSize = numInputs/4;
+
 
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
@@ -96,34 +100,21 @@ public class CPCAutoEncoderModel {
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(69)
-                .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(1e-2)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
-                .weightInit(WeightInit.XAVIER)
-                .regularization(true).l2(1e-4)
-                .gradientNormalizationThreshold(1.0)
-                .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
-                .miniBatch(true)
+                .iterations(1)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.RELU)
-                        .pzxActivationFunction(Activation.IDENTITY)
-                        //.dropOut(0.5)
-                        .encoderLayerSizes(classifications.size()/2)
-                        .decoderLayerSizes(classifications.size()/2)
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
-                        .nIn(numInputs)                       //Input size: 28x28
-                        .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
-                        .build())
-                .pretrain(true).backprop(false).build();
+                .layer(0, new RBM.Builder().nIn(numInputs).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(4, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
+                .layer(5, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
+                .layer(6, new RBM.Builder().nIn(numInputs/2).nOut(numInputs).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(9, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(1000).nOut(numInputs).build())
+                .pretrain(true).backprop(true)
+                .build();
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
        // network.setListeners(new CustomAutoEncoderListener(printIterations));
-        //Get the variational autoencoder layer
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
 
 
         INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
@@ -136,8 +127,7 @@ public class CPCAutoEncoderModel {
             network.fit(iterator);
             System.out.println("*** Completed epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray latentValues = autoencoder.activate(testMatrix, false);
-                INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
+                INDArray reconstruction = network.activate(testMatrix,false);
 
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
