@@ -22,11 +22,15 @@ import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +72,10 @@ public class CPCAutoEncoderModel {
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
+
+        List<String> testSet = new ArrayList<>();
+        patents.subList(patents.size()/2,patents.size());
+        patents=patents.subList(0,patents.size()/2);
 
         // Get Classifications
         List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
@@ -111,11 +119,40 @@ public class CPCAutoEncoderModel {
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.setListeners(new CustomAutoEncoderListener(printIterations));
+        //Get the variational autoencoder layer
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
 
-        for(int epoch = 0; epoch < nEpochs; epoch++) {
-            System.out.println("Starting epoch: "+(epoch+1));
-            network.fit(iterator);
+
+        INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
+        for(int i = 0; i <testSet.size(); i++) {
+            testMatrix.putRow(i,Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(testSet.get(i)),classifications,cpcDepth)));
         }
+
+        double bestErrorSoFar = 2.0d;
+        for( int i=0; i<nEpochs; i++ ) {
+            network.fit(iterator);
+            System.out.println("*** Completed epoch {"+i+"} ***");
+            double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
+                INDArray latentValues = autoencoder.activate(testMatrix, false);
+                INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
+
+                double error = 0d;
+                for (int r = 0; r < testMatrix.rows(); r++) {
+                    double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
+                    if(Double.isNaN(sim)) sim=-1d;
+                    error += 1.0 - sim;
+                }
+                error /= testMatrix.rows();
+                return error;
+            }));
+            System.out.println("Current model error: "+overallError);
+            if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
+            System.out.println("Best Error So Far: "+bestErrorSoFar);
+            iterator.reset();
+
+        }
+        System.out.println("****************Model finished********************");
 
         System.out.println("Saving model...");
         try {
