@@ -83,7 +83,7 @@ public class CPCAutoEncoderModel {
         // Hyper Parameters
         int batchSize = 10;
         final int nEpochs = 100;
-        final int vectorSize = 300;
+        final int vectorSize = 2;
         final int numInputs = classifications.size();
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 100;
