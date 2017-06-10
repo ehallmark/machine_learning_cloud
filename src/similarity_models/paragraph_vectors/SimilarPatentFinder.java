@@ -37,7 +37,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         return paragraphVectors.getLookupTable();
     }
 
-    public static void loadLookupTable() {
+    private static void loadLookupTable() {
         if(paragraphVectors!=null)return;
         boolean testing = false;
         try {
@@ -51,11 +51,6 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
             //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
             System.out.println("DEFAULTING TO OLDER MODEL");
         }
-    }
-
-    public static VocabCache<VocabWord> getVocabCache() {
-        if(paragraphVectors==null)loadLookupTable();
-        return paragraphVectors.getVocab();
     }
 
     public SimilarPatentFinder(Collection<String> candidateSet, String name) {
