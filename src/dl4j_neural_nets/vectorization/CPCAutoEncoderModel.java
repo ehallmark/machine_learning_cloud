@@ -1,6 +1,7 @@
 package dl4j_neural_nets.vectorization;
 
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
+import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
@@ -77,6 +78,7 @@ public class CPCAutoEncoderModel {
         final int vectorSize = 300;
         final int numInputs = classifications.size();
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
+        int printIterations = 1;
 
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
@@ -108,7 +110,7 @@ public class CPCAutoEncoderModel {
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
-        network.setListeners(new ScoreIterationListener(10));
+        network.setListeners(new CustomAutoEncoderListener(printIterations));
 
         for(int epoch = 0; epoch < nEpochs; epoch++) {
             System.out.println("Starting epoch: "+(epoch+1));
