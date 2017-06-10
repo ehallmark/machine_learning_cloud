@@ -438,6 +438,7 @@ public class Database {
 	}
 
 	public static Collection<String> getCopyOfAllPatents() {
+		if(valuablePatents==null||lapsedPatentSet==null||expiredPatentSet==null) initializeDatabase();
 		Set<String> everything = new HashSet<>(valuablePatents.size()+lapsedPatentSet.size()+expiredPatentSet.size());
 		everything.addAll(valuablePatents);
 		everything.addAll(expiredPatentSet);
