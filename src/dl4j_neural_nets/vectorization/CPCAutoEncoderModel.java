@@ -76,21 +76,19 @@ public class CPCAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
+        int batchSize = 10;
+        final int nEpochs = 100;
+        final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
+        int printIterations = 100;
+
         // Split data
         List<String> testSet = patents.subList(patents.size()/2,patents.size());
         patents=patents.subList(0,patents.size()/2);
 
         // Get Classifications
-        List<String> classifications = patents.stream().flatMap(p-> Database.classificationsFor(p).stream()).distinct().collect(Collectors.toList());
-
-        // Hyper Parameters
-        int batchSize = 10;
-        final int nEpochs = 100;
+        List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth);
         final int numInputs = classifications.size();
-        final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int printIterations = 100;
         final int vectorSize = numInputs/4;
-
 
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
