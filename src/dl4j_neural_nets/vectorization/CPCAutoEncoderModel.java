@@ -109,8 +109,8 @@ public class CPCAutoEncoderModel {
                         .activation(Activation.RELU)
                         .pzxActivationFunction(Activation.IDENTITY)
                         //.dropOut(0.5)
-                        .encoderLayerSizes(500)
-                        .decoderLayerSizes(500)
+                        .encoderLayerSizes(classifications.size()/2)
+                        .decoderLayerSizes(classifications.size()/2)
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
                         .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
