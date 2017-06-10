@@ -129,21 +129,22 @@ public class CPCAutoEncoderModel {
             testMatrix.putRow(i,Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(testSet.get(i)),classifications,cpcDepth)));
         }
 
+        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
+                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
+
+        System.out.println("Train model....");
         double bestErrorSoFar = 2.0d;
         for( int i=0; i<nEpochs; i++ ) {
-            while(iterator.hasNext()) {
-                network.fit(iterator.next());
-            }
+            network.fit(iterator);
             iterator.reset();
+            AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Completed epoch {"+i+"} ***");
-            AtomicInteger numErrors= new AtomicInteger(0);
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray reconstruction = network.activateSelectedLayers(0,numLayers-1,testMatrix);
+                INDArray latentValues = autoencoder.activate(testMatrix, false);
+                INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
 
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
-                   // System.out.println("Actual: "+testMatrix.getRow(r));
-                   // System.out.println("Reconstruction: "+reconstruction.getRow(r));
                     double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
                     if(Double.isNaN(sim)) {
                         numErrors.getAndIncrement();
