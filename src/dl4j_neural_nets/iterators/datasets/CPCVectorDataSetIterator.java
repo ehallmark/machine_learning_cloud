@@ -48,7 +48,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public int totalExamples() {
-        patents.size();
+       return patents.size();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public int numExamples() {
-        patents.size();
+        return patents.size();
     }
 
     @Override
