@@ -73,8 +73,8 @@ public class CPCAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        List<String> testSet = new ArrayList<>();
-        patents.subList(patents.size()/2,patents.size());
+        // Split data
+        List<String> testSet = patents.subList(patents.size()/2,patents.size());
         patents=patents.subList(0,patents.size()/2);
 
         // Get Classifications
