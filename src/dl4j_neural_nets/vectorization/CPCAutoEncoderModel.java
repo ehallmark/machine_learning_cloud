@@ -107,7 +107,8 @@ public class CPCAutoEncoderModel {
                 .layer(1, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
                 .layer(2, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
                 .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(numInputs/2).nOut(numInputs).build())
-                .pretrain(true).backprop(true)
+                .pretrain(false)
+                .backprop(true)
                 .build();
 
         // Build and train network
