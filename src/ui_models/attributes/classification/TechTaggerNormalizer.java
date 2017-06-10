@@ -22,7 +22,8 @@ public class TechTaggerNormalizer implements ClassificationAttr {
 
     @Override
     public void save() {
-        throw new UnsupportedOperationException("Model not savable");
+
+
     }
 
     @Override
