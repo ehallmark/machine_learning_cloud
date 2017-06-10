@@ -106,8 +106,7 @@ public class CPCAutoEncoderModel {
                 .layer(0, new RBM.Builder().nIn(numInputs).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
                 .layer(1, new RBM.Builder().nIn(numInputs/2).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
                 .layer(2, new RBM.Builder().nIn(vectorSize).nOut(numInputs/2).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
-                .layer(3, new RBM.Builder().nIn(numInputs/2).nOut(numInputs).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(4, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(1000).nOut(numInputs).build())
+                .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(numInputs/2).nOut(numInputs).build())
                 .pretrain(true).backprop(true)
                 .build();
 
@@ -124,7 +123,10 @@ public class CPCAutoEncoderModel {
 
         double bestErrorSoFar = 2.0d;
         for( int i=0; i<nEpochs; i++ ) {
-            network.fit(iterator);
+            while(iterator.hasNext()) {
+                network.fit(iterator.next());
+            }
+            iterator.reset();
             System.out.println("*** Completed epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
                 INDArray reconstruction = network.activate(testMatrix,false);
@@ -143,7 +145,6 @@ public class CPCAutoEncoderModel {
             System.out.println("Current model error: "+overallError);
             if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
             System.out.println("Best Error So Far: "+bestErrorSoFar);
-            iterator.reset();
 
         }
         System.out.println("****************Model finished********************");
