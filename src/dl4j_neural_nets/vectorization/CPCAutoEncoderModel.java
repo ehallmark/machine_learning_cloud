@@ -1,5 +1,6 @@
 package dl4j_neural_nets.vectorization;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
@@ -36,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -134,6 +136,7 @@ public class CPCAutoEncoderModel {
             }
             iterator.reset();
             System.out.println("*** Completed epoch {"+i+"} ***");
+            AtomicInteger numErrors= new AtomicInteger(0);
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
                 INDArray reconstruction = network.activateSelectedLayers(0,numLayers-1,testMatrix);
 
@@ -142,13 +145,17 @@ public class CPCAutoEncoderModel {
                    // System.out.println("Actual: "+testMatrix.getRow(r));
                    // System.out.println("Reconstruction: "+reconstruction.getRow(r));
                     double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
-                    if(Double.isNaN(sim)) sim=-1d;
+                    if(Double.isNaN(sim)) {
+                        numErrors.getAndIncrement();
+                        sim=-1d;
+                    }
                     error += 1.0 - sim;
                 }
                 error /= testMatrix.rows();
                 return error;
             }));
             System.out.println("Current model error: "+overallError);
+            System.out.println("Num errors: "+numErrors.get());
             if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
             System.out.println("Best Error So Far: "+bestErrorSoFar);
 
