@@ -66,7 +66,7 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 500;
+        int sampleSize = 100000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
