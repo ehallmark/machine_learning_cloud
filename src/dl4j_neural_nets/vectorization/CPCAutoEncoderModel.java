@@ -90,6 +90,7 @@ public class CPCAutoEncoderModel {
 
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
+        iterator.reset();
 
         // Config
         System.out.println("Build model....");
@@ -139,6 +140,8 @@ public class CPCAutoEncoderModel {
 
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
+                    System.out.println("Actual: "+testMatrix.getRow(r));
+                    System.out.println("Reconstruction: "+reconstruction.getRow(r));
                     double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
                     if(Double.isNaN(sim)) sim=-1d;
                     error += 1.0 - sim;

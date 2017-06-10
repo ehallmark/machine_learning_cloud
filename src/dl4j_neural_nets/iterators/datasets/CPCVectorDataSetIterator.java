@@ -48,7 +48,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public int totalExamples() {
-        throw new UnsupportedOperationException();
+        patents.size();
     }
 
     @Override
@@ -86,7 +86,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public int numExamples() {
-        throw new UnsupportedOperationException();
+        patents.size();
     }
 
     @Override
@@ -112,11 +112,6 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
             inputs.putRow(i.get()-1, Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patentIterator.next()),orderedClassifications,cpcDepth)));
         }
         if(i.get()>0) {
-            while (i.getAndIncrement() < batchSize) {
-                inputs.putRow(i.get() - 1, Nd4j.zeros(orderedClassifications.size()));
-            }
-            nextDataSet = new DataSet(inputs, inputs);
-        } else {
             nextDataSet=null;
         }
         return nextDataSet!=null;
