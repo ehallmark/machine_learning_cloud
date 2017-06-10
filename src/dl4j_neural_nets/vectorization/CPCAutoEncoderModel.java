@@ -129,7 +129,7 @@ public class CPCAutoEncoderModel {
             iterator.reset();
             System.out.println("*** Completed epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray reconstruction = network.activateSelectedLayers(0,numLayers,testMatrix);
+                INDArray reconstruction = network.activateSelectedLayers(0,numLayers-1,testMatrix);
 
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
