@@ -115,7 +115,7 @@ public class GatherClassificationOptimizer {
         //models.add(SimilarityGatherTechTagger.getCPCModel());
         models.add(NaiveGatherClassifier.get());
         //models.add(GatherSVMClassifier.getCPCModel());
-        models.add(GatherSVMClassifier.getParagraphVectorModel());
+        //models.add(GatherSVMClassifier.getParagraphVectorModel());
 
 
         int numEpochs = 50;
