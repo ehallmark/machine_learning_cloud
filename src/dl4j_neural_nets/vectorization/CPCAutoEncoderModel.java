@@ -79,6 +79,7 @@ public class CPCAutoEncoderModel {
         int batchSize = 10;
         final int nEpochs = 100;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
+        int numLayers = 4;
         int printIterations = 100;
 
         // Split data
@@ -128,7 +129,7 @@ public class CPCAutoEncoderModel {
             iterator.reset();
             System.out.println("*** Completed epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray reconstruction = network.activate(testMatrix,false);
+                INDArray reconstruction = network.activateSelectedLayers(0,numLayers,testMatrix);
 
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
