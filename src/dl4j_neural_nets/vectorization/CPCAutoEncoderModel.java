@@ -119,7 +119,7 @@ public class CPCAutoEncoderModel {
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
-        network.setListeners(new CustomAutoEncoderListener(printIterations));
+       // network.setListeners(new CustomAutoEncoderListener(printIterations));
         //Get the variational autoencoder layer
         org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
                 = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
