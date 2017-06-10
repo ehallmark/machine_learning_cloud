@@ -29,19 +29,24 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private List<String> names;
     private Map<String,INDArray> lookupTable;
     private Map<String,Collection<String>> nameToInputMap;
-    private static final SimilarityGatherTechTagger pVectorModel;
-    private static final SimilarityGatherTechTagger cpcModel;
+    private static SimilarityGatherTechTagger pVectorModel;
+    private static SimilarityGatherTechTagger cpcModel;
     static {
-        Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
-        cpcModel = new SimilarityGatherTechTagger(data, CPCSimilarityFinder.getLookupTable());
-        pVectorModel = new SimilarityGatherTechTagger(data, SimilarPatentFinder.getLookupTable());
     }
 
     public static SimilarityGatherTechTagger getCPCModel() {
+        if(cpcModel==null) {
+            Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+            cpcModel = new SimilarityGatherTechTagger(data, CPCSimilarityFinder.getLookupTable());
+        }
         return cpcModel;
     }
 
     public static SimilarityGatherTechTagger getParagraphVectorModel() {
+        if(pVectorModel==null) {
+            Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+            pVectorModel = new SimilarityGatherTechTagger(data, SimilarPatentFinder.getLookupTable());
+        }
         return pVectorModel;
     }
 
