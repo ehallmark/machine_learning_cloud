@@ -108,7 +108,7 @@ public class CPCAutoEncoderModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.RELU)
+                        .activation(Activation.SIGMOID)
                         .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
                         .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
