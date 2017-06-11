@@ -85,7 +85,7 @@ public class CPCVariationalAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 500;
+        int batchSize = 100;
         final int nEpochs = 100;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;
@@ -114,8 +114,8 @@ public class CPCVariationalAutoEncoderModel {
                 .seed(69)
                 .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(1e-2)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
+                .learningRate(0.001)
+                .updater(Updater.ADAGRAD)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
