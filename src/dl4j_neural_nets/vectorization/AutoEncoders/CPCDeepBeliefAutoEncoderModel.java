@@ -1,9 +1,9 @@
 package dl4j_neural_nets.vectorization.AutoEncoders;
 
+import dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
-import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -14,7 +14,6 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
@@ -59,10 +58,6 @@ public class CPCDeepBeliefAutoEncoderModel {
     }
 
     public static void main(String[] args) {
-        Nd4jEnvironment.getEnvironment().setBlasThreads(10);
-        Nd4jEnvironment.getEnvironment().setNumCores(20);
-        Nd4jEnvironment.getEnvironment().setOmpThreads(10);
-
         // Fetch pre data
         int sampleSize = 1000000;
         int numTests = 10000;
@@ -75,7 +70,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         int batchSize = 10;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int printIterations = 1000;
+        int printIterations = 10000;
 
         // Split data
         List<String> testSet = patents.subList(0,numTests);
@@ -92,7 +87,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),10);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),70);
         iterator.reset();
 
         // Config

@@ -85,7 +85,7 @@ public class CPCVariationalAutoEncoderModel {
         int batchSize = 10;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int printIterations = 100000;
+        int printIterations = 10000;
 
         // Split data
         List<String> testSet = patents.subList(0,numTests);
