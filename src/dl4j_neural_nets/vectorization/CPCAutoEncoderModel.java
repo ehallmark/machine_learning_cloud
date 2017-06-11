@@ -93,6 +93,9 @@ public class CPCAutoEncoderModel {
         final int numInputs = classifications.size();
         final int vectorSize = numInputs/4;
 
+        System.out.println("Num Inputs: "+numInputs);
+        System.out.println("Vector Size: "+vectorSize);
+
         // Get Iterator
         CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
         iterator.reset();
