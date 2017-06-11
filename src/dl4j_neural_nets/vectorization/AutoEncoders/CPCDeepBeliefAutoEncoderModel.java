@@ -82,8 +82,8 @@ public class CPCDeepBeliefAutoEncoderModel {
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
-        final int vectorSize = Constants.VECTOR_LENGTH;
-        final int hiddenLayerSize = 600;
+        final int vectorSize = numInputs/4;
+        final int hiddenLayerSize = numInputs/2;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
