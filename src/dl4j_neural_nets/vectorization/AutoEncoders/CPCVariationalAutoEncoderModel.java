@@ -73,10 +73,6 @@ public class CPCVariationalAutoEncoderModel {
     }
 
     public static void main(String[] args) {
-        Nd4jEnvironment.getEnvironment().setBlasThreads(10);
-        Nd4jEnvironment.getEnvironment().setNumCores(20);
-        Nd4jEnvironment.getEnvironment().setOmpThreads(10);
-
         // Fetch pre data
         int sampleSize = 1000000;
         int numTests = 10000;
@@ -106,7 +102,7 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),10);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),50);
         iterator.reset();
 
         // Config
