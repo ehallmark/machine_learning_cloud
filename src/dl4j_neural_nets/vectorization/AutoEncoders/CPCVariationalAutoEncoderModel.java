@@ -84,7 +84,7 @@ public class CPCVariationalAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 50;
+        int batchSize = 500;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;
@@ -104,7 +104,7 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),4);
+        DataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
         iterator.reset();
 
         // Config
