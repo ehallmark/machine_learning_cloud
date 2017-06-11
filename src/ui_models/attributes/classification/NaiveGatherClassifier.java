@@ -208,8 +208,8 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         NaiveGatherClassifier classifier = new NaiveGatherClassifier(alpha);
         classifier.train(SplitModelData.getBroadDataMap(SplitModelData.trainFile));
         // save
-        Database.trySaveObject(classifier,file);
-
+        classifier.save();
+        
         classifier = get();
         System.out.println("Num tech: "+classifier.orderedTechnologies.size());
 
