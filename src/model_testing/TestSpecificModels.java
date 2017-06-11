@@ -1,11 +1,7 @@
 package model_testing;
 
-import dl4j_neural_nets.vectorization.CPCAutoEncoderModel;
-import similarity_models.cpc_vectors.CPCSimilarityFinder;
-import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import ui_models.attributes.classification.*;
 import seeding.Database;
-import server.SimilarPatentServer;
 
 import java.util.*;
 

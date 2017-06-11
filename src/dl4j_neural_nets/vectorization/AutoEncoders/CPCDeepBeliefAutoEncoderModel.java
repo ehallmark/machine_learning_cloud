@@ -1,34 +1,20 @@
-package dl4j_neural_nets.vectorization;
+package dl4j_neural_nets.vectorization.AutoEncoders;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
-import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.spark.api.TrainingMaster;
-import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
-import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 
@@ -43,7 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 6/1/17.
  */
-public class CPCAutoEncoderModel {
+public class CPCDeepBeliefAutoEncoderModel {
     public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
     public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
     private static MultiLayerNetwork MODEL;
@@ -79,7 +65,7 @@ public class CPCAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 10;
+        int batchSize = 500;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;

@@ -1,22 +1,13 @@
 package similarity_models.cpc_vectors;
 
-import dl4j_neural_nets.vectorization.CPCAutoEncoderModel;
+import dl4j_neural_nets.vectorization.AutoEncoders.CPCVariationalAutoEncoderModel;
 import graphical_models.classification.CPCKMeans;
-import lombok.Getter;
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
-import server.SimilarPatentServer;
-import similarity_models.AbstractSimilarityModel;
 import similarity_models.BaseSimilarityModel;
-import similarity_models.paragraph_vectors.Patent;
-import tools.MinHeap;
-import ui_models.filters.AbstractFilter;
-import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +33,9 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         Database.initializeDatabase();
 
         int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        List<String> orderedClassifications = CPCAutoEncoderModel.getOrderedClassifications();
+        List<String> orderedClassifications = CPCVariationalAutoEncoderModel.getOrderedClassifications();
 
-        MultiLayerNetwork model = CPCAutoEncoderModel.getModel();
+        MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
 
         Map<String,INDArray> toSave = new HashMap<>();
 
