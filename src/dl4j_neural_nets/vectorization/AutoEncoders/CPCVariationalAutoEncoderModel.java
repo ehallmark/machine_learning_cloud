@@ -79,13 +79,14 @@ public class CPCVariationalAutoEncoderModel {
         // Fetch pre data
         int sampleSize = 5000000;
         int numTests = 50000;
+        Nd4jEnvironment.getEnvironment().setBlasThreads(20);
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 50;
+        int batchSize = 500;
         final int nEpochs = 100;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;
@@ -97,8 +98,8 @@ public class CPCVariationalAutoEncoderModel {
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
-        final int vectorSize = numInputs/10;
-        final int hiddenLayerSize = numInputs/4;
+        final int vectorSize = numInputs/2;
+        final int hiddenLayerSize = (3*numInputs)/4;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
@@ -114,9 +115,8 @@ public class CPCVariationalAutoEncoderModel {
                 .seed(69)
                 .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.001)
-                .updater(Updater.NESTEROVS)
-                .momentum(0.7)
+                .learningRate(0.01)
+                .updater(Updater.ADAGRAD)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
