@@ -112,7 +112,7 @@ public class CPCAutoEncoderModel {
                         .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
                         .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
                         .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
                         .build())
@@ -139,23 +139,23 @@ public class CPCAutoEncoderModel {
             iterator.reset();
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");
-            double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
-                INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
-                System.out.println("Reconstruction: "+reconstruction.getRow(0));
-                System.out.println("Should be: "+testMatrix.getRow(0));
-                double error = 0d;
-                for (int r = 0; r < testMatrix.rows(); r++) {
-                    double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
-                    if(Double.isNaN(sim)) {
-                        numErrors.getAndIncrement();
-                        sim=-1d;
-                    }
-                    error += 1.0 - sim;
+            INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
+            INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
+
+            System.out.println("Reconstruction: "+reconstruction.getRow(0));
+            System.out.println("Should be: "+testMatrix.getRow(0));
+            double error = 0d;
+            for (int r = 0; r < testMatrix.rows(); r++) {
+                double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
+                if(Double.isNaN(sim)) {
+                    numErrors.getAndIncrement();
+                    sim=-1d;
                 }
-                error /= testMatrix.rows();
-                return error;
-            }));
+                error += 1.0 - sim;
+            }
+            error /= testMatrix.rows();
+            double overallError = error;
+
             System.out.println("Current model error: "+overallError);
             System.out.println("Num errors: "+numErrors.get());
             if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
