@@ -71,7 +71,7 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 1000;
+        int sampleSize = 100000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -81,7 +81,6 @@ public class CPCAutoEncoderModel {
         int batchSize = 10;
         final int nEpochs = 100;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int numLayers = 4;
         int printIterations = 100;
 
         // Split data
