@@ -97,6 +97,7 @@ public class CPCVariationalAutoEncoderModel {
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
         final int vectorSize = numInputs/4;
+        final int hiddenLayerSize = numInputs/2;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
@@ -119,8 +120,8 @@ public class CPCVariationalAutoEncoderModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.RELU)
-                        .encoderLayerSizes(numInputs/2) // encoder layers
-                        .decoderLayerSizes(numInputs/2)  // decoder layers
+                        .encoderLayerSizes(hiddenLayerSize) // encoder layers
+                        .decoderLayerSizes(hiddenLayerSize)  // decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
