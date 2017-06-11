@@ -71,7 +71,7 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 100000;
+        int sampleSize = 1000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -138,7 +138,7 @@ public class CPCAutoEncoderModel {
             network.fit(iterator);
             iterator.reset();
             AtomicInteger numErrors = new AtomicInteger(0);
-            System.out.println("*** Completed epoch {"+i+"} ***");
+            System.out.println("*** Starting epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
                 INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
                 INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
