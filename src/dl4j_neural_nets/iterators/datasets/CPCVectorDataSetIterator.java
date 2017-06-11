@@ -65,7 +65,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     }
 
     public boolean asyncSupported() {
-        return true;
+        return false;
     }
 
     @Override
