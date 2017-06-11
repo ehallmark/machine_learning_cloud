@@ -71,7 +71,7 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 1000;
+        int sampleSize = 100000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -108,7 +108,7 @@ public class CPCAutoEncoderModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.SIGMOID)
+                        .activation(Activation.RELU)
                         .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
                         .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
@@ -142,8 +142,8 @@ public class CPCAutoEncoderModel {
             INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
             INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
 
-            System.out.println("Reconstruction: "+reconstruction.getRow(0));
-            System.out.println("Should be: "+testMatrix.getRow(0));
+            //System.out.println("Reconstruction: "+reconstruction.getRow(0));
+            //System.out.println("Should be: "+testMatrix.getRow(0));
             double error = 0d;
             for (int r = 0; r < testMatrix.rows(); r++) {
                 double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
