@@ -72,7 +72,7 @@ public class CPCKMeans {
                 vec[idx] += 1d / thisCPC.size();
             }
         });
-        System.out.println(Arrays.toString(vec));
+       // System.out.println(Arrays.toString(vec));
         return vec;
     }
 

@@ -101,6 +101,7 @@ public class CPCAutoEncoderModel {
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(69)
+                .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(1e-2)
                 .updater(Updater.RMSPROP).rmsDecay(0.95)
@@ -108,7 +109,7 @@ public class CPCAutoEncoderModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
+                        .activation(Activation.SIGMOID)
                         .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
                         .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
@@ -140,7 +141,7 @@ public class CPCAutoEncoderModel {
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Completed epoch {"+i+"} ***");
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
-                INDArray latentValues = autoencoder.activate(testMatrix, false);
+                INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
                 INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
 
                 double error = 0d;
