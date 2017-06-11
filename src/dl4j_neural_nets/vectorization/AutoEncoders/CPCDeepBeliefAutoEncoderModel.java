@@ -12,6 +12,7 @@ import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDist
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.parallelism.ParallelWrapper;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -32,8 +33,8 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 6/1/17.
  */
 public class CPCDeepBeliefAutoEncoderModel {
-    public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
-    public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
+    public static final File modelFile = new File("data/cpc_dbn_auto_encoder_model.jobj");
+    public static final File classificationsFile = new File("data/cpc_dbn_auto_encoder_classifications_list.jobj");
     private static MultiLayerNetwork MODEL;
     private static List<String> CLASSIFICATIONS;
 
@@ -87,7 +88,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),70);
+        DataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
         iterator.reset();
 
         // Config
@@ -117,6 +118,14 @@ public class CPCDeepBeliefAutoEncoderModel {
         network.init();
         network.setListeners(new CustomAutoEncoderListener(printIterations));
 
+        ParallelWrapper wrapper = new ParallelWrapper.Builder(network)
+                .prefetchBuffer(24)
+                .workers(10)
+                .averagingFrequency(5)
+                //.reportScoreAfterAveraging(true)
+                .useLegacyAveraging(true)
+                .build();
+
 
         INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
         for(int i = 0; i <testSet.size(); i++) {
@@ -131,7 +140,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         Double startingError = null;
         List<Double> errorsList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
-            network.fit(iterator);
+            wrapper.fit(iterator);
 
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");

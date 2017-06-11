@@ -9,11 +9,13 @@ import org.apache.spark.api.java.JavaRDD;
 import dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
+import org.deeplearning4j.models.sequencevectors.transformers.impl.iterables.ParallelTransformerIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.parallelism.*;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
@@ -131,6 +133,7 @@ public class CPCVariationalAutoEncoderModel {
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
         network.setListeners(new CustomAutoEncoderListener(printIterations));
+
 
 
         INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
