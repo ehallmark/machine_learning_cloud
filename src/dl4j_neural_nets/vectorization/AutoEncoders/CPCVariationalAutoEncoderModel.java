@@ -96,8 +96,8 @@ public class CPCVariationalAutoEncoderModel {
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
-        final int vectorSize = numInputs/6;
-        final int hiddenLayerSize = numInputs/3;
+        final int vectorSize = numInputs/2;
+        final int hiddenLayerSize = numInputs/10;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
