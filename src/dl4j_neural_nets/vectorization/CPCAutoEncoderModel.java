@@ -71,7 +71,7 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 10000;
+        int sampleSize = 100000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -134,6 +134,8 @@ public class CPCAutoEncoderModel {
 
         System.out.println("Train model....");
         double bestErrorSoFar = 2.0d;
+        Double startingError = null;
+        List<Double> errorsList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
             network.fit(iterator);
             iterator.reset();
@@ -155,10 +157,14 @@ public class CPCAutoEncoderModel {
             }
             error /= testMatrix.rows();
             double overallError = error;
+            errorsList.add(overallError);
+            if(startingError==null) startingError=overallError;
 
             System.out.println("Current model error: "+overallError);
             System.out.println("Num errors: "+numErrors.get());
             if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
+            System.out.println("Starting error: "+startingError);
+            System.out.println("Avg Error: "+errorsList.stream().collect(Collectors.averagingDouble(d->d)));
             System.out.println("Best Error So Far: "+bestErrorSoFar);
 
         }
