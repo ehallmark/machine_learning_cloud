@@ -71,7 +71,8 @@ public class CPCAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 100000;
+        int sampleSize = 1000000;
+        int numTests = 10000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -84,8 +85,8 @@ public class CPCAutoEncoderModel {
         int printIterations = 100;
 
         // Split data
-        List<String> testSet = patents.subList(patents.size()/2,patents.size());
-        patents=patents.subList(0,patents.size()/2);
+        List<String> testSet = patents.subList(0,numTests);
+        patents=patents.subList(numTests,patents.size());
 
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
@@ -109,8 +110,8 @@ public class CPCAutoEncoderModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.RELU)
-                        .encoderLayerSizes(numInputs/2, numInputs/2)        //2 encoder layers
-                        .decoderLayerSizes(numInputs/2, numInputs/2)        //2 decoder layers
+                        .encoderLayerSizes(numInputs/2, numInputs/2, numInputs/2)        //2 encoder layers
+                        .decoderLayerSizes(numInputs/2, numInputs/2, numInputs/2)        //2 decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
@@ -141,7 +142,7 @@ public class CPCAutoEncoderModel {
             iterator.reset();
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");
-            INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
+            INDArray latentValues = autoencoder.activate(testMatrix, false);
             INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
 
             //System.out.println("Reconstruction: "+reconstruction.getRow(0));
