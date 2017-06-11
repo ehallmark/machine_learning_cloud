@@ -6,6 +6,7 @@ import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -25,8 +26,10 @@ import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
 import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
@@ -70,6 +73,10 @@ public class CPCVariationalAutoEncoderModel {
     }
 
     public static void main(String[] args) {
+        Nd4jEnvironment.getEnvironment().setBlasThreads(10);
+        Nd4jEnvironment.getEnvironment().setNumCores(20);
+        Nd4jEnvironment.getEnvironment().setOmpThreads(10);
+
         // Fetch pre data
         int sampleSize = 1000000;
         int numTests = 10000;
@@ -95,9 +102,11 @@ public class CPCVariationalAutoEncoderModel {
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
+        System.out.println("Num Examples: "+patents.size());
+        System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),10);
         iterator.reset();
 
         // Config

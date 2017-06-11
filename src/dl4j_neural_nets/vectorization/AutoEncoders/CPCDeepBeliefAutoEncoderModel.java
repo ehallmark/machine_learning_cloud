@@ -3,6 +3,7 @@ package dl4j_neural_nets.vectorization.AutoEncoders;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
+import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
@@ -13,7 +14,9 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
@@ -56,6 +59,10 @@ public class CPCDeepBeliefAutoEncoderModel {
     }
 
     public static void main(String[] args) {
+        Nd4jEnvironment.getEnvironment().setBlasThreads(10);
+        Nd4jEnvironment.getEnvironment().setNumCores(20);
+        Nd4jEnvironment.getEnvironment().setOmpThreads(10);
+
         // Fetch pre data
         int sampleSize = 1000000;
         int numTests = 10000;
@@ -65,7 +72,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 500;
+        int batchSize = 10;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;
@@ -81,9 +88,11 @@ public class CPCDeepBeliefAutoEncoderModel {
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
+        System.out.println("Num Examples: "+patents.size());
+        System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        CPCVectorDataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),10);
         iterator.reset();
 
         // Config
