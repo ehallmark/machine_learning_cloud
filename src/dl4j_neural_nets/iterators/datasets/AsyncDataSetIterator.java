@@ -1,12 +1,13 @@
-package dl4j_neural_nets.iterators.sequences;
+package dl4j_neural_nets.iterators.datasets;
 
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
-import org.deeplearning4j.models.sequencevectors.sequence.SequenceElement;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.DataSetPreProcessor;
+import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
@@ -15,24 +16,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Created by Evan on 1/15/2017.
  */
-public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
-    private SequenceIterator<VocabWord> iterator;
-    private LinkedList<Sequence<VocabWord>> queue = new LinkedList<>();
+public class AsyncDataSetIterator implements DataSetIterator {
+    private DataSetIterator iterator;
+    private LinkedList<DataSet> queue = new LinkedList<>();
     private List<RecursiveAction> threads = new ArrayList<>();
     private int numThreads;
     private final int seekDistance = 50;
     private AtomicBoolean noMoreSequences = new AtomicBoolean(false);
-    public AsyncSequenceIterator(SequenceIterator<VocabWord> iterator, int numThreads) {
+    public AsyncDataSetIterator(DataSetIterator iterator, int numThreads) {
         this.iterator=iterator;
         this.numThreads=numThreads;
         startThreads();
     }
 
     @Override
-    public Sequence<VocabWord> nextSequence() {
-        synchronized (queue) {
-            return queue.removeFirst();
-        }
+    public DataSet next() {
+        return next(iterator.batch());
     }
 
     private void startThreads() {
@@ -42,17 +41,17 @@ public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
                 protected void compute() {
                     int counter = 0;
                     while (counter < seekDistance) {
-                        Sequence<VocabWord> sequence;
+                        DataSet dataSet;
                         synchronized (iterator) {
-                            boolean hasMoreSequences = iterator.hasMoreSequences();
+                            boolean hasMoreSequences = iterator.hasNext();
                             if(!hasMoreSequences) {
                                 noMoreSequences.set(true);
                                 break;
                             }
-                            sequence=iterator.nextSequence();
+                            dataSet=iterator.next();
                         }
                         synchronized (queue) {
-                            queue.add(sequence);
+                            queue.add(dataSet);
                         }
                         counter++;
                     }
@@ -62,6 +61,39 @@ public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
             threads.add(thread);
         }
     }
+
+    @Override
+    public DataSet next(int i) {
+        synchronized (queue) {
+            return queue.removeFirst();
+        }
+    }
+
+    @Override
+    public int totalExamples() {
+        return iterator.totalExamples();
+    }
+
+    @Override
+    public int inputColumns() {
+        return iterator.inputColumns();
+    }
+
+    @Override
+    public int totalOutcomes() {
+        return iterator.totalOutcomes();
+    }
+
+    @Override
+    public boolean resetSupported() {
+        return iterator.resetSupported();
+    }
+
+    @Override
+    public boolean asyncSupported() {
+        return iterator.asyncSupported();
+    }
+
     @Override
     public void reset() {
         noMoreSequences.set(false);
@@ -72,7 +104,37 @@ public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
     }
 
     @Override
-    public boolean hasMoreSequences() {
+    public int batch() {
+        return iterator.batch();
+    }
+
+    @Override
+    public int cursor() {
+        return iterator.cursor();
+    }
+
+    @Override
+    public int numExamples() {
+        return iterator.numExamples();
+    }
+
+    @Override
+    public void setPreProcessor(DataSetPreProcessor dataSetPreProcessor) {
+        iterator.setPreProcessor(dataSetPreProcessor);
+    }
+
+    @Override
+    public DataSetPreProcessor getPreProcessor() {
+        return iterator.getPreProcessor();
+    }
+
+    @Override
+    public List<String> getLabels() {
+        return iterator.getLabels();
+    }
+
+    @Override
+    public boolean hasNext() {
         boolean isEmpty;
         synchronized (queue) {
             if(!queue.isEmpty()) return true;
@@ -89,13 +151,12 @@ public class AsyncSequenceIterator implements SequenceIterator<VocabWord> {
                 }
             }
             if(!noMoreSequences.get()) startThreads();
-            return hasMoreSequences();
+            return hasNext();
         }
         synchronized (queue) {
             isEmpty = queue.isEmpty();
         }
         return !isEmpty;
     }
-
 
 }

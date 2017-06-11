@@ -6,7 +6,7 @@ import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaRDD;
-import org.deeplearning4j.datasets.iterator.AsyncDataSetIterator;
+import dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
