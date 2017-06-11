@@ -102,7 +102,7 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),50);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),70);
         iterator.reset();
 
         // Config

@@ -51,7 +51,6 @@ public class AsyncDataSetIterator implements DataSetIterator {
                             dataSet=iterator.next();
                         }
                         synchronized (queue) {
-                            System.out.print("-");
                             queue.add(dataSet);
                         }
                         counter++;
