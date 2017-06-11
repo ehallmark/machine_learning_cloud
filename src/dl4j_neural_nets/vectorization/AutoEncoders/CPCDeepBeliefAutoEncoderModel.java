@@ -129,9 +129,6 @@ public class CPCDeepBeliefAutoEncoderModel {
             testMatrix.putRow(i,Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(testSet.get(i)),classifications,cpcDepth)));
         }
 
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
-
         System.out.println("Train model....");
         double bestErrorSoFar = 2.0d;
         Double startingError = null;
@@ -141,8 +138,7 @@ public class CPCDeepBeliefAutoEncoderModel {
 
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");
-            INDArray latentValues = autoencoder.activate(testMatrix, false);
-            INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
+            INDArray reconstruction = network.activateSelectedLayers(0,network.getnLayers()-1,testMatrix);
 
             //System.out.println("Reconstruction: "+reconstruction.getRow(0));
             //System.out.println("Should be: "+testMatrix.getRow(0));
