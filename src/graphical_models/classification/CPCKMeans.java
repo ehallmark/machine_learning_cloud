@@ -8,6 +8,7 @@ import seeding.Database;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 5/31/17.
@@ -27,7 +28,7 @@ public class CPCKMeans {
 
         // get classifications
         int cpcDepth = DEFAULT_CPC_DEPTH;
-        List<String> classifications = getClassifications(patents,cpcDepth);
+        List<String> classifications = getClassifications(patents,cpcDepth,true);
         // create data
         int n = specificTech.size();
         double[][] points = new double[n][];
@@ -64,17 +65,20 @@ public class CPCKMeans {
     public static double[] classVectorForPatents(Collection<String> patents, List<String> classifications, int cpcDepth) {
         double[] vec = new double[classifications.size()];
         Arrays.fill(vec, 0d);
-        Collection<String> thisCPC = getClassifications(patents,cpcDepth);
+        Collection<String> thisCPC = getClassifications(patents,cpcDepth,false);
         thisCPC.forEach(cpc -> {
             int idx = classifications.indexOf(cpc);
             if (idx >= 0) {
                 vec[idx] += 1d / thisCPC.size();
             }
         });
+        System.out.println(Arrays.toString(vec));
         return vec;
     }
 
-    public static List<String> getClassifications(Collection<String> patents, int cpcDepth) {
-        return patents.stream().flatMap(p-> Database.classificationsFor(p).stream().map(cpc->cpc.substring(0,Math.min(cpcDepth,cpc.length())).trim())).distinct().collect(Collectors.toList());
+    public static List<String> getClassifications(Collection<String> patents, int cpcDepth, boolean distinct) {
+        Stream<String> classStream = patents.stream().flatMap(p-> Database.classificationsFor(p).stream().map(cpc->cpc.substring(0,Math.min(cpcDepth,cpc.length())).trim()));
+        if(distinct) classStream = classStream.distinct();
+        return classStream.collect(Collectors.toList());
     }
 }

@@ -89,7 +89,7 @@ public class CPCAutoEncoderModel {
         patents=patents.subList(0,patents.size()/2);
 
         // Get Classifications
-        List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth);
+        List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
         final int vectorSize = numInputs/4;
 
