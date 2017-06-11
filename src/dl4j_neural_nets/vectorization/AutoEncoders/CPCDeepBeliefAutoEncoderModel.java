@@ -120,8 +120,8 @@ public class CPCDeepBeliefAutoEncoderModel {
 
         ParallelWrapper wrapper = new ParallelWrapper.Builder(network)
                 .prefetchBuffer(24)
-                .workers(10)
-                .averagingFrequency(5)
+                .workers(20)
+                .averagingFrequency(10)
                 //.reportScoreAfterAveraging(true)
                 .useLegacyAveraging(true)
                 .build();
