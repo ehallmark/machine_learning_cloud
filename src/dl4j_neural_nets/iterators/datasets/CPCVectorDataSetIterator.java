@@ -14,7 +14,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by ehallmark on 12/14/16.
  */
 public class CPCVectorDataSetIterator implements DataSetIterator {
-    private static Random random = new Random(41);
     private int numInputs;
     private int numOutputs;
     private List<String> orderedClassifications;
@@ -36,7 +35,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     }
 
     private void setupIterator() {
-        Collections.shuffle(patents,random);
+        Collections.shuffle(patents);
         nextDataSet=null;
         patentIterator=patents.iterator();
     }
@@ -111,8 +110,10 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
             inputs.putRow(i.get()-1, Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patentIterator.next()),orderedClassifications,cpcDepth)));
         }
-        if(i.get()>0) {
+        if(batchSize-i.get()>0) { // ran out of patents
             nextDataSet=null;
+        } else {
+            nextDataSet=new DataSet(inputs,inputs);
         }
         return nextDataSet!=null;
     }
