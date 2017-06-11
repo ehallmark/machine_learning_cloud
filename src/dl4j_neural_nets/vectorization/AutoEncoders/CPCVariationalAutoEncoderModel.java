@@ -84,7 +84,7 @@ public class CPCVariationalAutoEncoderModel {
         Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
-        int batchSize = 10;
+        int batchSize = 1000;
         final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 10000;
@@ -104,7 +104,7 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Num Tests: "+testSet.size());
 
         // Get Iterator
-        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),70);
+        DataSetIterator iterator = new AsyncDataSetIterator(new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth),30);
         iterator.reset();
 
         // Config
@@ -123,7 +123,7 @@ public class CPCVariationalAutoEncoderModel {
                         .encoderLayerSizes(numInputs/2) // encoder layers
                         .decoderLayerSizes(numInputs/2)  // decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
+                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
                         .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
                         .build())
