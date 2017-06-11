@@ -1,36 +1,21 @@
 package dl4j_neural_nets.vectorization.AutoEncoders;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.iterables.ParallelTransformerIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.GradientNormalization;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.Updater;
-import org.deeplearning4j.parallelism.*;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
 import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
 import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.spark.api.TrainingMaster;
-import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
-import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -49,7 +34,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 6/1/17.
  */
-public class CPCVariationalAutoEncoderModel {
+public class CPCDeepBeliefAutoEncoderModel {
     public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
     public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
     private static MultiLayerNetwork MODEL;
@@ -112,23 +97,25 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(69)
+                .iterations(1)
+                .learningRate(0.001)
                 .miniBatch(true)
-                .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(1e-2)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
-                .weightInit(WeightInit.XAVIER)
-                .regularization(true).l2(1e-4)
+                .updater(Updater.NESTEROVS)
+                .momentum(0.9)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.RELU)
-                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize) // encoder layers
-                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)  // decoder layers
-                        .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
-                        .nIn(numInputs)                       //Input size: 28x28
-                        .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
-                        .build())
-                .pretrain(true).backprop(false).build();
+                .layer(0, new RBM.Builder().nIn(numInputs).nOut(1000).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(1, new RBM.Builder().nIn(1000).nOut(500).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(2, new RBM.Builder().nIn(500).nOut(250).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(3, new RBM.Builder().nIn(250).nOut(100).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(4, new RBM.Builder().nIn(100).nOut(30).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
+                .layer(5, new RBM.Builder().nIn(30).nOut(100).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //decoding starts
+                .layer(6, new RBM.Builder().nIn(100).nOut(250).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(7, new RBM.Builder().nIn(250).nOut(500).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(8, new RBM.Builder().nIn(500).nOut(1000).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(9, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(1000).nOut(numInputs).build())
+                .pretrain(true).backprop(true)
+                .build();
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
