@@ -76,8 +76,8 @@ public class CPCVariationalAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 500000;
-        int numTests = 10000;
+        int sampleSize = 5000000;
+        int numTests = 50000;
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -171,10 +171,10 @@ public class CPCVariationalAutoEncoderModel {
             errorsList.add(overallError);
             if(startingError==null) startingError=overallError;
             System.out.println("Num errors: "+numErrors.get());
-            System.out.println("Current model error: "+overallError);
             if(overallError<bestErrorSoFar)bestErrorSoFar=overallError;
             System.out.println("Starting error: "+startingError);
             System.out.println("Avg Error: "+errorsList.stream().collect(Collectors.averagingDouble(d->d)));
+            System.out.println("Current model error: "+overallError);
             System.out.println("Best Error So Far: "+bestErrorSoFar);
 
         }

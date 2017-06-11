@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 5/31/17.
  */
 public class CPCKMeans {
-    public static final int DEFAULT_CPC_DEPTH = 3;
+    public static final int DEFAULT_CPC_DEPTH = 2;
     public static void main(String[] args) {
         Database.initializeDatabase();
         Map<String,Collection<String>> specificData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
