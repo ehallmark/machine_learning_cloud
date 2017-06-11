@@ -80,9 +80,9 @@ public class CPCAutoEncoderModel {
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
         int batchSize = 10;
-        final int nEpochs = 100;
+        final int nEpochs = 10;
         final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        int printIterations = 100;
+        int printIterations = 1000;
 
         // Split data
         List<String> testSet = patents.subList(0,numTests);
@@ -113,8 +113,8 @@ public class CPCAutoEncoderModel {
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.RELU)
-                        .encoderLayerSizes(numInputs/2, numInputs/2, numInputs/2)        //2 encoder layers
-                        .decoderLayerSizes(numInputs/2, numInputs/2, numInputs/2)        //2 decoder layers
+                        .encoderLayerSizes(numInputs/2) // encoder layers
+                        .decoderLayerSizes(numInputs/2)  // decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SIGMOID.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
@@ -125,7 +125,7 @@ public class CPCAutoEncoderModel {
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
         network.init();
-       // network.setListeners(new CustomAutoEncoderListener(printIterations));
+        network.setListeners(new CustomAutoEncoderListener(printIterations));
 
 
         INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
@@ -142,7 +142,7 @@ public class CPCAutoEncoderModel {
         List<Double> errorsList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
             network.fit(iterator);
-            iterator.reset();
+
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");
             INDArray latentValues = autoencoder.activate(testMatrix, false);
