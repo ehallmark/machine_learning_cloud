@@ -142,7 +142,8 @@ public class CPCAutoEncoderModel {
             double overallError = testSet.stream().collect(Collectors.averagingDouble(test -> {
                 INDArray latentValues = autoencoder.activate(testMatrix.dup(), false);
                 INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
-
+                System.out.println("Reconstruction: "+reconstruction.getRow(0));
+                System.out.println("Should be: "+testMatrix.getRow(0));
                 double error = 0d;
                 for (int r = 0; r < testMatrix.rows(); r++) {
                     double sim = Transforms.cosineSim(testMatrix.getRow(r), reconstruction.getRow(r));
