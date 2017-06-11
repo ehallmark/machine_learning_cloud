@@ -21,7 +21,7 @@ public class AsyncDataSetIterator implements DataSetIterator {
     private LinkedList<DataSet> queue = new LinkedList<>();
     private List<RecursiveAction> threads = new ArrayList<>();
     private int numThreads;
-    private final int seekDistance = 50;
+    private final int seekDistance = 2;
     private AtomicBoolean noMoreSequences = new AtomicBoolean(false);
     public AsyncDataSetIterator(DataSetIterator iterator, int numThreads) {
         this.iterator=iterator;
