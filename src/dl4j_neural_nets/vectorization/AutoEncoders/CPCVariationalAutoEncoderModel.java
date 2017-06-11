@@ -185,7 +185,7 @@ public class CPCVariationalAutoEncoderModel {
         }
         System.out.println("****************Model finished********************");
 
-        saveModel(network);
+       // saveModel(network);
 
         System.out.println("Saving cpc list");
         Database.trySaveObject(classifications,classificationsFile);
