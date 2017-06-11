@@ -76,7 +76,7 @@ public class CPCVariationalAutoEncoderModel {
 
     public static void main(String[] args) {
         // Fetch pre data
-        int sampleSize = 50000;
+        int sampleSize = 500000;
         int numTests = 10000;
 
         // Get Patents
@@ -105,7 +105,6 @@ public class CPCVariationalAutoEncoderModel {
 
         // Get Iterator
         DataSetIterator iterator = new CPCVectorDataSetIterator(patents,classifications,batchSize,cpcDepth);
-        iterator.reset();
 
         // Config
         System.out.println("Build model....");
