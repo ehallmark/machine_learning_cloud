@@ -97,8 +97,8 @@ public class CPCVariationalAutoEncoderModel {
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
-        final int vectorSize = Constants.VECTOR_LENGTH;
-        final int hiddenLayerSize = 600;
+        final int vectorSize = numInputs/10;
+        final int hiddenLayerSize = numInputs/4;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
@@ -115,7 +115,8 @@ public class CPCVariationalAutoEncoderModel {
                 .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(0.001)
-                .updater(Updater.ADAGRAD)
+                .updater(Updater.NESTEROVS)
+                .momentum(0.7)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
