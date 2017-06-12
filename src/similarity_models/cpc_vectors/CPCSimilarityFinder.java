@@ -59,7 +59,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             INDArray vec = Nd4j.create(CPCKMeans.classVectorForPatents(assets,orderedClassifications,cpcDepth));
             if(vec!=null) {
                 // encode
-                INDArray encoding = model.activate(vec,false);
+                INDArray encoding = model.getLayer(0).activate(vec,false);
                 if(encoding!=null && encoding.length()== Constants.VECTOR_LENGTH) {
                     System.out.println("Valid assignee encoding");
                     toSave.put(assignee, encoding);
