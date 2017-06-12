@@ -117,12 +117,14 @@ public class CPCVariationalAutoEncoderModel {
                 .learningRate(0.001)
                 .updater(Updater.RMSPROP).rmsDecay(0.95)
                 .weightInit(WeightInit.XAVIER)
+                .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
+                .gradientNormalizationThreshold(1d)
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
                         .activation(Activation.RELU)
-                        .encoderLayerSizes(hiddenLayerSize) // encoder layers
-                        .decoderLayerSizes(hiddenLayerSize)  // decoder layers
+                        .encoderLayerSizes(hiddenLayerSize,hiddenLayerSize) // encoder layers
+                        .decoderLayerSizes(hiddenLayerSize,hiddenLayerSize)  // decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
                         .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
                         .nIn(numInputs)                       //Input size: 28x28
