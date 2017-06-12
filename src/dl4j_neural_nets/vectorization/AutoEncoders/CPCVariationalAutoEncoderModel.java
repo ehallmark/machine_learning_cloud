@@ -122,7 +122,7 @@ public class CPCVariationalAutoEncoderModel {
                 .regularization(true).l2(1e-4)
                 .list()
                 .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.LEAKYRELU)
+                        .activation(Activation.RELU)
                         .encoderLayerSizes(hiddenLayerSize) // encoder layers
                         .decoderLayerSizes(hiddenLayerSize)  // decoder layers
                         .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
