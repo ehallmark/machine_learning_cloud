@@ -116,6 +116,7 @@ public class CPCVariationalAutoEncoderModel {
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(1e-2)
                 .updater(Updater.RMSPROP).rmsDecay(0.95)
+                .dropOut(0.5)
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
