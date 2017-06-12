@@ -1,11 +1,20 @@
 package ui_models.attributes.classification;
 
+import genetics.GeneticAlgorithm;
+import genetics.Listener;
+import genetics.SolutionCreator;
+import seeding.Database;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
+import svm.SVMHelper;
+import svm.genetics.SVMSolution;
+import svm.genetics.SVMSolutionCreator;
 import tools.MinHeap;
+import ui_models.attributes.classification.genetics.TechTaggerSolution;
 import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
 import ui_models.portfolios.AbstractPortfolio;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,33 +23,46 @@ import java.util.stream.Collectors;
  */
 public class TechTaggerNormalizer implements ClassificationAttr {
     private List<Pair<ClassificationAttr,Double>> taggerPairs;
+    private List<ClassificationAttr> taggers;
+    private List<Double> weights;
+    private static List<Double> DEFAULT_WEIGHTS;
+    private static final File weightsFile = new File("tech_tagger_normalizer_weights.jobj");
+    private static final int timeLimit = 10*60*1000;
 
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
-        throw new UnsupportedOperationException("Model not trainable");
+        System.out.println("Starting genetic algorithm...");
+        SolutionCreator creator = new TechTaggerSolutionCreator(validationData, taggers);
+        Listener listener = null;// new SVMSolutionListener();
+        GeneticAlgorithm<TechTaggerSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
+        algorithm.simulate(timeLimit,0.5,0.5);
+        TechTaggerSolution bestSolution = algorithm.getBestSolution();
+        return new TechTaggerNormalizer(bestSolution.getTaggers(),bestSolution.getWeights());
     }
 
     @Override
     public void save() {
-
-
+        Database.trySaveObject(weights,weightsFile);
     }
 
     @Override
     public ClassificationAttr untrainedDuplicate() {
-        throw new UnsupportedOperationException("Model not trainable");
+        return new TechTaggerNormalizer(taggers, weights);
     }
+
 
     @Override
     public void train(Map<String, Collection<String>> trainingData) {
         // Do nothing
-        throw new UnsupportedOperationException("Model not trainable");
+
     }
 
     private static ClassificationAttr tagger;
 
     public TechTaggerNormalizer(List<ClassificationAttr> taggers, List<Double> weights) {
         if(taggers.size()!=weights.size()) throw new RuntimeException("Illegal arguments in techtaggernormalizer");
+        this.weights=weights;
+        this.taggers=taggers;
         this.taggerPairs=new ArrayList<>(taggers.size());
         for(int i = 0; i < taggers.size(); i++) {
             this.taggerPairs.add(new Pair<>(taggers.get(i),weights.get(i)));
@@ -55,9 +77,28 @@ public class TechTaggerNormalizer implements ClassificationAttr {
 
     public static ClassificationAttr getDefaultTechTagger() {
         if(tagger==null) {
-            tagger=new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),TechTaggerSolutionCreator.getWeights());
+            tagger=new TechTaggerNormalizer(TechTaggerSolutionCreator.getTaggers(),getWeights());
         }
         return tagger;
+    }
+
+    private static List<Double> getWeights() {
+        if(DEFAULT_WEIGHTS==null) {
+            DEFAULT_WEIGHTS=loadWeights();
+        }
+        return DEFAULT_WEIGHTS;
+    }
+
+    private static List<Double> loadWeights() {
+        if(weightsFile.exists()) {
+            return (List<Double>) Database.tryLoadObject(weightsFile);
+        } else {
+            List<Double> weights = new ArrayList<>();
+            for(int i = 0; i < TechTaggerSolutionCreator.getTaggers().size(); i++) {
+                weights.add(1d);
+            }
+            return weights;
+        }
     }
 
     private List<Pair<String,Double>> technologyHelper(AbstractPortfolio portfolio, int n) {

@@ -111,14 +111,7 @@ public class GatherClassificationOptimizer {
 
         List<ClassificationAttr> models = new ArrayList<>();
         // Add classification models
-        models.add(SimilarityGatherTechTagger.getParagraphVectorModel());
-        models.add(SimilarityGatherTechTagger.getCPCModel());
-        models.add(NaiveGatherClassifier.get());
-        models.add(GatherSVMClassifier.getCPCModel());
-        models.add(GatherSVMClassifier.getParagraphVectorModel());
-       //Not yet Supported
-        // models.add(TechTaggerNormalizer.getDefaultTechTagger());
-
+        models.addAll(TechTaggerSolutionCreator.getTaggers());
 
         int numEpochs = 50;
 
@@ -153,6 +146,7 @@ public class GatherClassificationOptimizer {
                 for(ClassificationAttr model : models) {
                     model.save();
                 }
+                optimizedCombinedModel.save();
                 SplitModelData.saveBroadTechMap(gatherTechToBroadTechMap);
                 // for personally checking
                 writeToCSV(gatherTechToBroadTechMap,new File("data/ai_grouped_gather_technologies.csv"));

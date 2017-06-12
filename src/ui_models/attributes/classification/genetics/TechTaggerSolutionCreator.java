@@ -20,21 +20,15 @@ public class TechTaggerSolutionCreator implements SolutionCreator<TechTaggerSolu
             taggers = Arrays.asList(
                     NaiveGatherClassifier.get(),
                     SimilarityGatherTechTagger.getParagraphVectorModel(),
-                    SimilarityGatherTechTagger.getCPCModel(),
-                    GatherSVMClassifier.getCPCModel(),
+                    //SimilarityGatherTechTagger.getCPCModel(),
+                    //GatherSVMClassifier.getCPCModel(),
                     GatherSVMClassifier.getParagraphVectorModel()
             );
         }
         return taggers;
     }
 
-    @Getter
-    private static final List<Double> weights = Arrays.asList(0.7,0.95,0.03,0.23);
     private List<ClassificationAttr> mTaggers;
-    public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData) {
-        this(validationData,getTaggers());
-    }
-
     public TechTaggerSolutionCreator(Map<String,Collection<String>> validationData, List<ClassificationAttr> taggers) {
         this.mTaggers=taggers;
         this.validationData=validationData;
