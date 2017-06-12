@@ -45,13 +45,15 @@ public class GatherSVMClassifier implements ClassificationAttr {
     protected List<String> orderedTechnologies;
 
     // trainable version
-    public GatherSVMClassifier(svm_parameter param, File modelFile) {
+    public GatherSVMClassifier(svm_parameter param, File modelFile, Map<String,INDArray> lookupTable) {
         this.modelFile=modelFile;
         this.param=param;
+        this.lookupTable=lookupTable;
     }
     // pretrained model
-    public GatherSVMClassifier(svm_model model, List<String> orderedTechnologies, File modelFile) {
+    public GatherSVMClassifier(svm_model model, List<String> orderedTechnologies, File modelFile, Map<String,INDArray> lookupTable) {
         this.model=model;
+        this.lookupTable=lookupTable;
         this.orderedTechnologies=orderedTechnologies;
         this.param=model.param;
         this.modelFile=modelFile;
@@ -111,11 +113,11 @@ public class GatherSVMClassifier implements ClassificationAttr {
         Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,orderedTechnologies,this.lookupTable);
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies);
+        SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies, lookupTable);
         Listener listener = null;// new SVMSolutionListener();
         GeneticAlgorithm<SVMSolution> algorithm = new GeneticAlgorithm<>(creator,30,listener,20);
         algorithm.simulate(timeLimit,0.5,0.5);
-        return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies,modelFile);
+        return new GatherSVMClassifier(algorithm.getBestSolution().getModel(),orderedTechnologies,modelFile,lookupTable);
     }
 
     @Override
@@ -130,7 +132,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     @Override
     public ClassificationAttr untrainedDuplicate() {
-        return new GatherSVMClassifier(this.param,this.modelFile);
+        return new GatherSVMClassifier(this.param,this.modelFile,lookupTable);
     }
 
     public static GatherSVMClassifier loadCPCModel() {
@@ -141,7 +143,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
             ORDERED_TECHNOLOGIES=(List<String>) Database.tryLoadObject(TECH_FILE);
         }
 
-        return new GatherSVMClassifier(CPC_MODEL,ORDERED_TECHNOLOGIES,CPC_MODEL_FILE);
+        return new GatherSVMClassifier(CPC_MODEL,ORDERED_TECHNOLOGIES,CPC_MODEL_FILE,CPCSimilarityFinder.getLookupTable());
     }
 
     public static GatherSVMClassifier loadParagraphVectorModel() {
@@ -152,7 +154,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
             ORDERED_TECHNOLOGIES=(List<String>) Database.tryLoadObject(TECH_FILE);
         }
 
-        return new GatherSVMClassifier(PARAGRAPH_MODEL,ORDERED_TECHNOLOGIES,PARAGRAPH_VECTOR_MODEL_FILE);
+        return new GatherSVMClassifier(PARAGRAPH_MODEL,ORDERED_TECHNOLOGIES,PARAGRAPH_VECTOR_MODEL_FILE,SimilarPatentFinder.getLookupTable());
     }
 
     public static void trainParagraphVectorModel(Map<String,Collection<String>> gatherTrainingMap, List<String> orderedTechnologies) {

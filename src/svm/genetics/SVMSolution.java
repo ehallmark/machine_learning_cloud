@@ -4,6 +4,7 @@ import genetics.Solution;
 import lombok.Getter;
 import model_testing.GatherTechnologyScorer;
 import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import ui_models.attributes.classification.GatherSVMClassifier;
 import svm.SVMHelper;
 import svm.libsvm.svm_parameter;
@@ -27,13 +28,15 @@ public class SVMSolution implements Solution {
     protected svm_model model;
     protected Double fitness;
     protected File modelFile;
+    private Map<String,INDArray> lookupTable;
     protected List<String> technologies;
     private static final Random rand = new Random(782);
-    public SVMSolution(File modelFile, svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
+    public SVMSolution(File modelFile, svm_parameter param, Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
         this.param=param;
         this.modelFile=modelFile;
         this.trainingData=trainingData;
         this.validationData=validationData;
+        this.lookupTable=lookupTable;
         this.technologies=technologies;
         this.fitness=null;
         //System.out.println("Training solution...");
@@ -48,7 +51,7 @@ public class SVMSolution implements Solution {
     @Override
     public void calculateFitness() {
         if(fitness == null) {
-            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies, modelFile);
+            ClassificationAttr svmTagger = new GatherSVMClassifier(model, technologies, modelFile,lookupTable);
             GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
             fitness = scorer.accuracyOn(validationData, 3);
         }
@@ -79,7 +82,7 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? param.eps : delta*0.01 * rand.nextDouble() + (1d-delta)*param.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : rand.nextBoolean() ? 0 : 1;
         //if(rand.nextBoolean()) p.kernel_type = rand.nextBoolean() ? (rand.nextBoolean() ? svm_parameter.RBF : svm_parameter.LINEAR) : (rand.nextBoolean() ? svm_parameter.SIGMOID : svm_parameter.POLY);
-        return new SVMSolution(modelFile,p,trainingData,validationData,technologies);
+        return new SVMSolution(modelFile,p,trainingData,validationData,technologies,lookupTable);
     }
 
     @Override
@@ -109,7 +112,7 @@ public class SVMSolution implements Solution {
         //p.eps = rand.nextBoolean() ? (param.eps+otherParam.eps)/2d : rand.nextBoolean() ? param.eps : otherParam.eps;
         //p.shrinking = rand.nextBoolean() ? param.shrinking : otherParam.shrinking;
         //p.kernel_type = rand.nextBoolean() ? param.kernel_type : otherParam.kernel_type;
-        return new SVMSolution(modelFile,p,trainingData,validationData,technologies);
+        return new SVMSolution(modelFile,p,trainingData,validationData,technologies,lookupTable);
     }
 
     public svm_parameter getParam() {

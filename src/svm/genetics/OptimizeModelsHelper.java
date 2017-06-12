@@ -31,7 +31,7 @@ public class OptimizeModelsHelper {
         Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(gatherTrainingMap,classifier.getOrderedTechnologies(),classifier.getLookupTable());
 
         System.out.println("Starting genetic algorithm...");
-        SolutionCreator creator = new SVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies());
+        SolutionCreator creator = new SVMSolutionCreator(training,gatherValidationMap,classifier.getOrderedTechnologies(), classifier.getLookupTable());
         Listener listener = new SVMSolutionListener();
         GeneticAlgorithm algorithm = new GeneticAlgorithm(creator,populationSize,listener,numThreads);
         algorithm.simulate(timeLimit,probMutation,probCrossover);

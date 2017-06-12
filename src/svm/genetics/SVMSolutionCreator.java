@@ -6,6 +6,7 @@ import org.deeplearning4j.berkeley.Pair;
 
 import java.util.*;
 
+import org.nd4j.linalg.api.ndarray.INDArray;
 import svm.libsvm.svm_parameter;
 
 /**
@@ -16,10 +17,12 @@ public class SVMSolutionCreator implements SolutionCreator {
     protected Map<String,Collection<String>> validationData;
     protected List<String> technologies;
     private static final Random rand = new Random(69);
+    private Map<String,INDArray> lookupTable;
 
-    public SVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies) {
+    public SVMSolutionCreator(Pair<double[][],double[][]> trainingData, Map<String,Collection<String>> validationData, List<String> technologies, Map<String,INDArray> lookupTable) {
         this.trainingData=trainingData;
         this.validationData=validationData;
+        this.lookupTable=lookupTable;
         this.technologies=technologies;
     }
 
@@ -27,7 +30,7 @@ public class SVMSolutionCreator implements SolutionCreator {
     public Collection<Solution> nextRandomSolutions(int n) {
         List<Solution> list = new ArrayList<>(n);
         for(int i = 0; i < n; i++) {
-            list.add(new SVMSolution(null,randomParameter(),trainingData,validationData,technologies));
+            list.add(new SVMSolution(null,randomParameter(),trainingData,validationData,technologies,lookupTable));
         }
         return list;
     }
