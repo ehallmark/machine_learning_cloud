@@ -38,7 +38,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
         Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
 
-        List<Pair<String,List<String>>> collections = new ArrayList<>();
+        List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
 
         Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
             collections.add(new Pair<>(patent,Arrays.asList(patent)));
