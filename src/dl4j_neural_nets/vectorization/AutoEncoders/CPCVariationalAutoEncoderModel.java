@@ -150,6 +150,7 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Train model....");
         double bestErrorSoFar = 2.0d;
         Double startingError = null;
+        Double previousError = Double.NaN;
         List<Double> errorsList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
             network.fit(iterator);
@@ -183,8 +184,11 @@ public class CPCVariationalAutoEncoderModel {
             }
             System.out.println("Starting error: "+startingError);
             System.out.println("Avg Error: "+errorsList.stream().collect(Collectors.averagingDouble(d->d)));
+            System.out.println("Previous model error: "+previousError);
             System.out.println("Current model error: "+overallError);
             System.out.println("Best Error So Far: "+bestErrorSoFar);
+
+            previousError=overallError;
 
         }
         System.out.println("****************Model finished********************");
