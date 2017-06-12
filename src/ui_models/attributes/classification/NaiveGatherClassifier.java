@@ -28,7 +28,6 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     private static NaiveGatherClassifier defaultClassifier;
     private static final double defaultAlpha = 20d;
 
-    private  INDArray preallocatedArray;
     protected BayesianNet bayesianNet;
     protected List<String> orderedTechnologies;
     protected List<String> orderedClassifications;
@@ -84,7 +83,6 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         orderedTechnologies = new ArrayList<>(trainingData.keySet());
         orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
         bayesianNet = new BayesianNet();
-        preallocatedArray = Nd4j.create(orderedTechnologies.size());
 
         List<Map<String,Integer>> assignments = getAssignments(trainingData,orderedTechnologies,patentToClassificationMap,orderedClassifications);
 

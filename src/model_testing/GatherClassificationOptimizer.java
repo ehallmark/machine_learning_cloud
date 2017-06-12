@@ -113,7 +113,7 @@ public class GatherClassificationOptimizer {
         // Add classification models
         models.add(SimilarityGatherTechTagger.getParagraphVectorModel());
         models.add(SimilarityGatherTechTagger.getCPCModel());
-        //models.add(NaiveGatherClassifier.get());
+        models.add(NaiveGatherClassifier.get());
         models.add(GatherSVMClassifier.getCPCModel());
         models.add(GatherSVMClassifier.getParagraphVectorModel());
        //Not yet Supported
@@ -154,6 +154,7 @@ public class GatherClassificationOptimizer {
                     model.save();
                 }
                 SplitModelData.saveBroadTechMap(gatherTechToBroadTechMap);
+                // for personally checking
                 writeToCSV(gatherTechToBroadTechMap,new File("data/ai_grouped_gather_technologies.csv"));
             }
         }
