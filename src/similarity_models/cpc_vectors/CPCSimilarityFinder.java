@@ -2,6 +2,7 @@ package similarity_models.cpc_vectors;
 
 import dl4j_neural_nets.vectorization.auto_encoders.CPCVariationalAutoEncoderModel;
 import graphical_models.classification.CPCKMeans;
+import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -34,38 +35,51 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
 
         int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         List<String> orderedClassifications = CPCVariationalAutoEncoderModel.getOrderedClassifications();
-
         MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
-
         Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
 
+        List<Pair<String,List<String>>> collections = new ArrayList<>();
+
         Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
-            INDArray vec = Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patent),orderedClassifications,cpcDepth));
-            if(vec!=null) {
-                // encode
-                INDArray encoding = model.getLayer(0).activate(vec,false);
-                if(encoding!=null) {
-                    System.out.println("Valid patent encoding");
-                    toSave.put(patent, encoding);
-                }
-            }
+            collections.add(new Pair<>(patent,Arrays.asList(patent)));
         });
 
         System.out.println("Starting assignees");
         Database.getAssignees().parallelStream().forEach(assignee->{
-            Collection assets = Database.selectPatentNumbersFromExactAssignee(assignee);
+            List assets = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
             if(assets==null||assets.isEmpty()) return;
+            collections.add(new Pair<>(assignee,assets));
+        });
 
-            INDArray vec = Nd4j.create(CPCKMeans.classVectorForPatents(assets,orderedClassifications,cpcDepth));
+        int batchSize = 10000;
+        System.out.println("Batching...");
+        List<Pair<List<String>,INDArray>> data = new ArrayList<>();
+        for(int i = 0; i < collections.size(); i+=batchSize) {
+            List<INDArray> list = new ArrayList<>();
+            List<String> names = new ArrayList<>();
+            for(int j = i; j < Math.min(i+batchSize,collections.size()); i++) {
+                names.add(collections.get(j).getFirst());
+                list.add(Nd4j.create(CPCKMeans.classVectorForPatents(collections.get(j).getSecond(),orderedClassifications,cpcDepth)));
+            }
+            data.add(new Pair<>(names,Nd4j.vstack(list)));
+            System.out.println("i: "+i);
+        }
+
+        data.parallelStream().forEach(pair->{
+            INDArray vec = pair.getSecond();
+            List<String> names = pair.getFirst();
             if(vec!=null) {
                 // encode
                 INDArray encoding = model.getLayer(0).activate(vec,false);
                 if(encoding!=null) {
                     System.out.println("Valid assignee encoding");
-                    toSave.put(assignee, encoding);
+                    for(int i = 0; i < names.size(); i++) {
+                        toSave.put(names.get(i), encoding.getRow(i));
+                    }
                 }
             }
         });
+
         Database.trySaveObject(toSave,file);
     }
 }
