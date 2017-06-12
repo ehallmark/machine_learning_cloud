@@ -37,9 +37,9 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
 
         MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
 
-        Map<String,INDArray> toSave = new HashMap<>();
+        Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
 
-        Database.getCopyOfAllPatents().forEach(patent->{
+        Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
             INDArray vec = Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patent),orderedClassifications,cpcDepth));
             if(vec!=null) {
                 // encode
@@ -52,7 +52,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         });
 
         System.out.println("Starting assignees");
-        Database.getAssignees().forEach(assignee->{
+        Database.getAssignees().parallelStream().forEach(assignee->{
             Collection assets = Database.selectPatentNumbersFromExactAssignee(assignee);
             if(assets==null||assets.isEmpty()) return;
 

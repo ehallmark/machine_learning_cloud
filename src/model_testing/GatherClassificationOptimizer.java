@@ -112,10 +112,10 @@ public class GatherClassificationOptimizer {
         List<ClassificationAttr> models = new ArrayList<>();
         // Add classification models
         models.add(SimilarityGatherTechTagger.getParagraphVectorModel());
-        //models.add(SimilarityGatherTechTagger.getCPCModel());
-        models.add(NaiveGatherClassifier.get());
-        //models.add(GatherSVMClassifier.getCPCModel());
-        //models.add(GatherSVMClassifier.getParagraphVectorModel());
+        models.add(SimilarityGatherTechTagger.getCPCModel());
+        //models.add(NaiveGatherClassifier.get());
+        models.add(GatherSVMClassifier.getCPCModel());
+        models.add(GatherSVMClassifier.getParagraphVectorModel());
        //Not yet Supported
         // models.add(TechTaggerNormalizer.getDefaultTechTagger());
 
