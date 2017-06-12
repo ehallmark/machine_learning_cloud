@@ -1,6 +1,6 @@
 package similarity_models.cpc_vectors;
 
-import dl4j_neural_nets.vectorization.AutoEncoders.CPCVariationalAutoEncoderModel;
+import dl4j_neural_nets.vectorization.auto_encoders.CPCVariationalAutoEncoderModel;
 import graphical_models.classification.CPCKMeans;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -43,7 +43,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             INDArray vec = Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patent),orderedClassifications,cpcDepth));
             if(vec!=null) {
                 // encode
-                INDArray encoding = model.activate(vec,false);
+                INDArray encoding = model.getLayer(0).activate(vec,false);
                 if(encoding!=null && encoding.length()== Constants.VECTOR_LENGTH) {
                     System.out.println("Valid patent encoding");
                     toSave.put(patent, encoding);

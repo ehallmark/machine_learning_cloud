@@ -1,49 +1,36 @@
-package dl4j_neural_nets.vectorization.AutoEncoders;
+package dl4j_neural_nets.vectorization.auto_encoders;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import dl4j_neural_nets.iterators.datasets.CPCVectorDataSetIterator;
 import dl4j_neural_nets.listeners.CustomAutoEncoderListener;
 import graphical_models.classification.CPCKMeans;
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaRDD;
-import dl4j_neural_nets.iterators.datasets.AsyncDataSetIterator;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.sql.SparkSession;
-import org.deeplearning4j.models.sequencevectors.transformers.impl.iterables.ParallelTransformerIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.*;
-import org.deeplearning4j.parallelism.*;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
-import org.deeplearning4j.nn.conf.layers.variational.BernoulliReconstructionDistribution;
-import org.deeplearning4j.nn.conf.layers.variational.VariationalAutoencoder;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
-import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.deeplearning4j.spark.api.TrainingMaster;
-import org.deeplearning4j.spark.impl.multilayer.SparkDl4jMultiLayer;
-import org.deeplearning4j.spark.impl.paramavg.ParameterAveragingTrainingMaster;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.api.environment.Nd4jEnvironment;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 6/1/17.
  */
-public class CPCVariationalAutoEncoderModel {
+public class CPCDeepBeliefAutoEncoderModel {
     public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
     public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
     private static MultiLayerNetwork MODEL;
@@ -76,7 +63,7 @@ public class CPCVariationalAutoEncoderModel {
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
-        Collections.shuffle(patents,new Random(69));
+        Collections.shuffle(patents);
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
         int batchSize = 500;
@@ -91,8 +78,8 @@ public class CPCVariationalAutoEncoderModel {
         // Get Classifications
         List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
         final int numInputs = classifications.size();
-        final int vectorSize = numInputs/2;
-        final int hiddenLayerSize = (3*numInputs)/4;
+        final int vectorSize = numInputs/4;
+        final int hiddenLayerSize = numInputs/2;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
@@ -106,26 +93,20 @@ public class CPCVariationalAutoEncoderModel {
         System.out.println("Build model....");
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(69)
+                .iterations(1)
+                .learningRate(0.001)
                 .miniBatch(true)
-                .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(1e-2)
-                .updater(Updater.RMSPROP).rmsDecay(0.95)
-                .dropOut(0.5)
-                .weightInit(WeightInit.XAVIER)
-                //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
-                //.gradientNormalizationThreshold(1d)
-                .regularization(true).l2(1e-4)
+                .updater(Updater.ADAGRAD)
+                .optimizationAlgo(OptimizationAlgorithm.LINE_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new VariationalAutoencoder.Builder()
-                        .activation(Activation.RELU)
-                        .encoderLayerSizes(hiddenLayerSize) // encoder layers
-                        .decoderLayerSizes(hiddenLayerSize)  // decoder layers
-                        .pzxActivationFunction(Activation.IDENTITY)  //p(z|data) activation function
-                        .reconstructionDistribution(new BernoulliReconstructionDistribution(Activation.SOFTMAX.getActivationFunction()))     //Bernoulli distribution for p(data|z) (binary or 0 to 1 data only)
-                        .nIn(numInputs)                       //Input size: 28x28
-                        .nOut(vectorSize)                            //Size of the latent variable space: p(z|x). 2 dimensions here for plotting, use more in general
-                        .build())
-                .pretrain(true).backprop(false).build();
+                .layer(0, new RBM.Builder().nIn(numInputs).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(1, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(2, new RBM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(3, new RBM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(4, new RBM.Builder().nIn(hiddenLayerSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build()) //encoding stops
+                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(hiddenLayerSize).nOut(numInputs).build())
+                .pretrain(true).backprop(true)
+                .build();
 
         // Build and train network
         MultiLayerNetwork network = new MultiLayerNetwork(conf);
@@ -139,21 +120,16 @@ public class CPCVariationalAutoEncoderModel {
             testMatrix.putRow(i,Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(testSet.get(i)),classifications,cpcDepth)));
         }
 
-        org.deeplearning4j.nn.layers.variational.VariationalAutoencoder autoencoder
-                = (org.deeplearning4j.nn.layers.variational.VariationalAutoencoder) network.getLayer(0);
-
         System.out.println("Train model....");
         double bestErrorSoFar = 2.0d;
         Double startingError = null;
-        Double previousError = Double.NaN;
         List<Double> errorsList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
             network.fit(iterator);
 
             AtomicInteger numErrors = new AtomicInteger(0);
             System.out.println("*** Starting epoch {"+i+"} ***");
-            INDArray latentValues = autoencoder.activate(testMatrix, false);
-            INDArray reconstruction = autoencoder.generateAtMeanGivenZ(latentValues);
+            INDArray reconstruction = network.activateSelectedLayers(0,network.getnLayers()-1,testMatrix);
 
             //System.out.println("Reconstruction: "+reconstruction.getRow(0));
             //System.out.println("Should be: "+testMatrix.getRow(0));
@@ -179,11 +155,8 @@ public class CPCVariationalAutoEncoderModel {
             }
             System.out.println("Starting error: "+startingError);
             System.out.println("Avg Error: "+errorsList.stream().collect(Collectors.averagingDouble(d->d)));
-            System.out.println("Previous model error: "+previousError);
             System.out.println("Current model error: "+overallError);
             System.out.println("Best Error So Far: "+bestErrorSoFar);
-
-            previousError=overallError;
 
         }
         System.out.println("****************Model finished********************");
