@@ -92,7 +92,7 @@ public class CPCVariationalAutoEncoderModel {
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(1e-2)
                 .updater(Updater.RMSPROP).rmsDecay(0.95)
-                .dropOut(0.5)
+                //.dropOut(0.5)
                 .weightInit(WeightInit.XAVIER)
                 //.gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 //.gradientNormalizationThreshold(1d)
@@ -156,7 +156,7 @@ public class CPCVariationalAutoEncoderModel {
             if(overallError<bestErrorSoFar){
                 bestErrorSoFar=overallError;
                 System.out.println("FOUND BETTER MODEL");
-                saveModel(network);
+                save(network,classifications);
 
             }
             System.out.println("Starting error: "+startingError);
@@ -172,12 +172,11 @@ public class CPCVariationalAutoEncoderModel {
 
        // saveModel(network);
 
-        System.out.println("Saving cpc list");
-        Database.trySaveObject(classifications,classificationsFile);
+
         System.out.println("Saved.");
     }
 
-    public static void saveModel(MultiLayerNetwork network) {
+    public static void save(MultiLayerNetwork network, List<String> classifications) {
         System.out.println("Saving model...");
         try {
             ModelSerializer.writeModel(network, modelFile, true);
@@ -186,6 +185,8 @@ public class CPCVariationalAutoEncoderModel {
             System.out.println("Unable to save file.");
             e.printStackTrace();
         }
+        System.out.println("Saving cpc list");
+        Database.trySaveObject(classifications,classificationsFile);
 
     }
 }

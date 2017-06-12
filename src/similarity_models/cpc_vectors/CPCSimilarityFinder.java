@@ -44,7 +44,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             if(vec!=null) {
                 // encode
                 INDArray encoding = model.getLayer(0).activate(vec,false);
-                if(encoding!=null && encoding.length()== Constants.VECTOR_LENGTH) {
+                if(encoding!=null) {
                     System.out.println("Valid patent encoding");
                     toSave.put(patent, encoding);
                 }
@@ -60,7 +60,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             if(vec!=null) {
                 // encode
                 INDArray encoding = model.getLayer(0).activate(vec,false);
-                if(encoding!=null && encoding.length()== Constants.VECTOR_LENGTH) {
+                if(encoding!=null) {
                     System.out.println("Valid assignee encoding");
                     toSave.put(assignee, encoding);
                 }
