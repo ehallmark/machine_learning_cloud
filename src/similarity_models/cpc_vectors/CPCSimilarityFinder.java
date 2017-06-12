@@ -71,7 +71,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             List<String> names = pair.getFirst();
             if(vec!=null) {
                 // encode
-                INDArray encoding = model.getLayer(0).activate(vec,false);
+                INDArray encoding = vec; //model.getLayer(0).activate(vec,false);
                 if(encoding!=null) {
                     for(int i = 0; i < names.size(); i++) {
                         toSave.put(names.get(i), encoding.getRow(i));
