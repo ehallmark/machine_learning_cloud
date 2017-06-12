@@ -11,10 +11,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.SparkSession;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.iterables.ParallelTransformerIterator;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.GradientNormalization;
-import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
-import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
-import org.deeplearning4j.nn.conf.Updater;
+import org.deeplearning4j.nn.conf.*;
 import org.deeplearning4j.parallelism.*;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.RBM;
@@ -39,10 +36,7 @@ import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -82,7 +76,7 @@ public class CPCVariationalAutoEncoderModel {
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
-        Collections.shuffle(patents);
+        Collections.shuffle(patents,new Random(69));
         patents=patents.subList(0,Math.min(sampleSize,patents.size()));
 
         int batchSize = 500;
@@ -115,6 +109,10 @@ public class CPCVariationalAutoEncoderModel {
                 .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(1e-2)
+                //.biasLearningRate(1e-2)
+                .learningRateDecayPolicy(LearningRatePolicy.Inverse)
+                .lrPolicyDecayRate(1e-3)
+                .lrPolicyPower(0.75)
                 .updater(Updater.RMSPROP).rmsDecay(0.95)
                 .dropOut(0.5)
                 .weightInit(WeightInit.XAVIER)
