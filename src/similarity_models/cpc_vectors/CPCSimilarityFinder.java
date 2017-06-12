@@ -57,7 +57,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         for(int i = 0; i < collections.size(); i+=batchSize) {
             List<INDArray> list = new ArrayList<>();
             List<String> names = new ArrayList<>();
-            for(int j = i; j < Math.min(i+batchSize,collections.size()); i++) {
+            for(int j = i; j < Math.min(i+batchSize,collections.size()); j++) {
                 names.add(collections.get(j).getFirst());
                 list.add(Nd4j.create(CPCKMeans.classVectorForPatents(collections.get(j).getSecond(),orderedClassifications,cpcDepth)));
             }
