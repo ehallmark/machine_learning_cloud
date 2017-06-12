@@ -79,7 +79,6 @@ public class CPCVariationalAutoEncoderModel {
         // Fetch pre data
         int sampleSize = 5000000;
         int numTests = 50000;
-        Nd4jEnvironment.getEnvironment().setBlasThreads(20);
 
         // Get Patents
         List<String> patents = new ArrayList<>(Database.getPatentToClassificationMap().keySet());
@@ -115,8 +114,8 @@ public class CPCVariationalAutoEncoderModel {
                 .seed(69)
                 .miniBatch(true)
                 .iterations(1).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(0.01)
-                .updater(Updater.ADAGRAD)
+                .learningRate(0.001)
+                .updater(Updater.RMSPROP).rmsDecay(0.95)
                 .weightInit(WeightInit.XAVIER)
                 .regularization(true).l2(1e-4)
                 .list()
