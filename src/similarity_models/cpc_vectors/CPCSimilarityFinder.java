@@ -65,6 +65,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             System.out.println("i: "+i);
         }
 
+        System.out.println("Adding to map");
         data.parallelStream().forEach(pair->{
             INDArray vec = pair.getSecond();
             List<String> names = pair.getFirst();
@@ -72,7 +73,6 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
                 // encode
                 INDArray encoding = model.getLayer(0).activate(vec,false);
                 if(encoding!=null) {
-                    System.out.println("Valid assignee encoding");
                     for(int i = 0; i < names.size(); i++) {
                         toSave.put(names.get(i), encoding.getRow(i));
                     }
