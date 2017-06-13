@@ -19,9 +19,6 @@ public class SimRankHelper {
         Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.getPatentToCitedPatentsMap();
         SimRank algorithm = new SimRank(patentToCitedPatentsMap, new ArrayList<>(patentToCitedPatentsMap.keySet()),0.75);
         int numEpochs = 20;
-        Map<Edge<String>,Float> previousRankTable = new HashMap<>();
-        algorithm.rankTable=previousRankTable;
-
         for(int i = 0; i < numEpochs; i++) {
             long t1 = System.currentTimeMillis();
             algorithm.solve(1);

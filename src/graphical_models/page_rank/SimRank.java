@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 4/20/17.
  */
 public class SimRank extends RankGraph<Edge<String>> {
-    private final int jaccardDepth = 4;
+    private final int jaccardDepth = 3;
     private static double currentScore = Double.MAX_VALUE;
 
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels, double damping) {
