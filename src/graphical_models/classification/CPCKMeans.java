@@ -33,14 +33,14 @@ public class CPCKMeans {
         int n = specificTech.size();
         double[][] points = new double[n][];
         for(int i = 0; i < n; i++) {
-            points[i]=classVectorForPatents(specificData.get(specificTech.get(i)),classifications, DEFAULT_CPC_DEPTH);
+            points[i]=classVectorForPatents(specificData.get(specificTech.get(i)),classifications, cpcDepth);
         }
 
         // create centroids
         int k = broadData.size();
         double[][] centroids = new double[k][];
         for(int i = 0; i < k; i++) {
-            centroids[i]=classVectorForPatents(broadData.get(broadTech.get(i)),classifications, DEFAULT_CPC_DEPTH);
+            centroids[i]=classVectorForPatents(broadData.get(broadTech.get(i)),classifications, cpcDepth);
         }
 
         EKmeans kmeans = new EKmeans(centroids,points);
