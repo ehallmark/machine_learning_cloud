@@ -9,6 +9,8 @@ import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
+import similarity_models.paragraph_vectors.WordFrequencyPair;
+import tools.MinHeap;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.AbstractPatent;
@@ -22,13 +24,13 @@ import java.util.stream.Collectors;
  */
 public class SimRankSimilarityModel implements AbstractSimilarityModel {
     private static Map<String,Set<String>> patentToCitedPatentsMap;
-    private static Map<Edge<String>,Float> rankTable;
+    private static Map<String,List<util.Pair<String,Float>>> similarityMap;
     static {
-        if(SimRankHelper.file.exists()) {
-            rankTable = new SimRank.Loader().loadRankTable(SimRankHelper.file);
+        if(SimRankHelper.similarityMapFile.exists()) {
+            similarityMap = new SimRank.Loader().loadSimilarityMap(SimRankHelper.similarityMapFile);
         } else {
             System.out.println("WARNING: Rank table file does not exist");
-            rankTable=null;
+            similarityMap=null;
         }
     }
 
@@ -47,17 +49,12 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         this.name=name;
     }
 
-    protected Map<Edge<String>,Float> getRankTable() {
-        return rankTable;
-    }
 
     protected List<Pair<String, Double>> similarHelper(String patent, int n) {
-        List<util.Pair<String,Float>> data = SimRank.findSimilarDocumentsFromRankTable(getRankTable(),Arrays.asList(patent),n);
-        List<Pair<String,Double>> toReturn = new ArrayList<>(n);
-        data.forEach(p->{
-            toReturn.add(new Pair<>(p._1,p._2.doubleValue()));
-        });
-        return toReturn;
+        List<util.Pair<String,Float>> data = similarityMap.get(patent);
+        if(data==null) return Collections.emptyList();
+        return data.stream().sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(n)
+                .map(p->new Pair<>(p._1,p._2.doubleValue())).collect(Collectors.toList());
     }
 
     @Override

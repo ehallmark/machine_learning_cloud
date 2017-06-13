@@ -29,7 +29,7 @@ public abstract class RankGraph<K> {
     }
     // default
     protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels, double damping) {
-        this(labelToCitationLabelsMap,importantLabels,damping,new MarkovNet());
+        this(labelToCitationLabelsMap,importantLabels,damping,new BayesianNet());
     }
 
     protected abstract void initGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels);

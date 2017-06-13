@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 4/20/17.
  */
 public class SimRank extends RankGraph<Edge<String>> {
-    private final int jaccardDepth = 2;
+    private final int jaccardDepth = 4;
     private static double currentScore = Double.MAX_VALUE;
 
     public SimRank(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels, double damping) {
@@ -72,23 +72,6 @@ public class SimRank extends RankGraph<Edge<String>> {
     }
 
 
-    public static List<Pair<String,Float>> findSimilarDocumentsFromRankTable(Map<Edge<String>,Float> rankTable, Collection<String> nodeLabels, int limit) {
-        // greedily iterate through all values and sum ranks over nodelabels
-        Map<String,Float> scoreMap = new HashMap<>();
-        rankTable.entrySet().stream().filter(e->{
-            Edge<String> edge = e.getKey();
-            if(nodeLabels.contains(edge.getNode1())||nodeLabels.contains(edge.getNode2())) {
-                return true;
-            }
-            return false;
-        }).forEach(e->{
-            Edge<String> edge = e.getKey();
-            scoreMap.put(edge.getNode1(),e.getValue());
-            scoreMap.put(edge.getNode2(),e.getValue());
-        });
-        return scoreMap.entrySet().stream().sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit).map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
-    }
-
     protected double rankValue(Node n1, Node n2) {
         if(n1.equals(n2)) return 1d;
         Collection<Node> neighbors1;
@@ -122,7 +105,7 @@ public class SimRank extends RankGraph<Edge<String>> {
                     Node n1 = graph.findNode(edge.getNode1());
                     Node n2 = graph.findNode(edge.getNode2());
                     double newRank = rankValue(n1, n2);
-                    System.out.println("Rank ["+n1.getLabel()+","+n2.getLabel()+"]: "+newRank);
+                    //System.out.println("Rank ["+n1.getLabel()+","+n2.getLabel()+"]: "+newRank);
                     if(rankTable.containsKey(edge)) {
                         double prevRank = rankTable.get(edge);
                         delta.getAndAdd(Math.abs(prevRank-newRank));
@@ -153,13 +136,12 @@ public class SimRank extends RankGraph<Edge<String>> {
         double damping = 0.75;
         SimRank pr = new SimRank(test,null,damping);
         pr.solve(10);
-        pr.save(new File("testFile.jobj"));
         //System.out.println("Similar to n4: "+String.join("; ",pr.findSimilarDocuments(Arrays.asList("n4"),3,4,2)));
     }
 
     public static class Loader {
-        public Map<Edge<String>,Float> loadRankTable(File file) {
-            return new ObjectIO<Map<Edge<String>,Float>>().load(file);
+        public Map<String,List<Pair<String,Float>>> loadSimilarityMap(File file) {
+            return new ObjectIO<Map<String,List<Pair<String,Float>>>>().load(file);
         }
     }
 }
