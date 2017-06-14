@@ -8,12 +8,12 @@ import ui_models.portfolios.items.Item;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PortfolioSizeFilter implements AbstractFilter {
+public class PortfolioSizeMinimumFilter implements AbstractFilter {
     private int limit = 0;
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        this.limit = Integer.valueOf(params.value(Constants.PORTFOLIO_SIZE_LIMIT));
+        this.limit = Integer.valueOf(params.value(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER));
     }
 
     @Override
@@ -23,7 +23,7 @@ public class PortfolioSizeFilter implements AbstractFilter {
         String assignee = obj.getData(Constants.ASSIGNEE).toString();
         if(assignee!=null) {
             int portfolioSize = Database.getAssetCountFor(assignee);
-            return portfolioSize <= limit;
+            return portfolioSize >= limit;
         } else return true;
     }
 }

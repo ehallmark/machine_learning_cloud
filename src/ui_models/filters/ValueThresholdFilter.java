@@ -7,16 +7,16 @@ import ui_models.portfolios.items.Item;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class ThresholdFilter implements AbstractFilter {
+public class ValueThresholdFilter implements AbstractFilter {
     private Double threshold;
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        threshold = Double.valueOf(params.value(Constants.SIMILARITY_THRESHOLD));
+        threshold = Double.valueOf(params.value(Constants.VALUE_THRESHOLD_FILTER));
     }
 
     @Override
     public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : item.getSimilarity()>threshold;
+        return threshold==null ? true : item.getValue()>threshold;
     }
 }

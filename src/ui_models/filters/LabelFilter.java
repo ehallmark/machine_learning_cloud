@@ -16,7 +16,7 @@ public class LabelFilter implements AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        labelsToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.ASSIGNEES_TO_REMOVE, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+        labelsToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
     }
 
     @Override

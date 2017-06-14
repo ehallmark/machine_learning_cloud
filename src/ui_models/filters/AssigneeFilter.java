@@ -16,7 +16,7 @@ public class AssigneeFilter implements AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.ASSIGNEES_TO_REMOVE, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.ASSIGNEES_TO_REMOVE_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
 
     }
 

@@ -22,11 +22,9 @@ import spark.QueryParamsMap;
 import spark.Request;
 import spark.Response;
 import spark.Session;
-import tools.ClassCodeHandler;
 import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
@@ -58,27 +56,22 @@ public class SimilarPatentServer {
     protected static Map<String,String> javaFilterToHumanFilterMap;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
-        comparatorMap.put("value",Item.valueComparator());
-        comparatorMap.put("similarity",Item.similarityComparator());
+        comparatorMap.put(Constants.VALUE_COMPARATOR,Item.valueComparator());
+        comparatorMap.put(Constants.SIMILARITY_COMPARATOR,Item.similarityComparator());
         { // Attrs
             humanAttrToJavaAttrMap = new HashMap<>();
-            humanAttrToJavaAttrMap.put("Asset", "name");
-            humanAttrToJavaAttrMap.put("Similarity", "similarity");
-            humanAttrToJavaAttrMap.put("Relevant Asset(s)", "relevantAssetsList");
-            humanAttrToJavaAttrMap.put("Relevant Asset Count", "relevantAssetCount");
-            humanAttrToJavaAttrMap.put("Total Asset Count", "totalAssetCount");
-            humanAttrToJavaAttrMap.put("Assignee", "assignee");
-            humanAttrToJavaAttrMap.put("Title", "title");
-            humanAttrToJavaAttrMap.put("Primary Tag", "primaryTag");
-            humanAttrToJavaAttrMap.put("AI Value", "overallValue");
-            humanAttrToJavaAttrMap.put("Technology", "technology");
-            humanAttrToJavaAttrMap.put("Assignee Entity Type", "assigneeEntityType");
-            humanAttrToJavaAttrMap.put("Large Portfolio Size", "largePortfolios");
-            humanAttrToJavaAttrMap.put("Small Portfolio Size", "smallPortfolios");
-            humanAttrToJavaAttrMap.put("Assets Sold", "assetsSold");
-            humanAttrToJavaAttrMap.put("Assets Purchased", "assetsPurchased");
-            humanAttrToJavaAttrMap.put("CompDB Assets Sold", "compDBAssetsSold");
-            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", "compDBAssetsPurchased");
+            humanAttrToJavaAttrMap.put("Asset", Constants.NAME);
+            humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
+            humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
+            humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
+            humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
+            humanAttrToJavaAttrMap.put("Technology", Constants.TECHNOLOGY);
+            humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
+            humanAttrToJavaAttrMap.put("Large Portfolio Size", Constants.LARGE_PORTFOLIO_VALUE);
+            humanAttrToJavaAttrMap.put("Small Portfolio Size", Constants.SMALL_PORTFOLIO_VALUE);
+            humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD_VALUE);
+            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED_VALUE);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -88,12 +81,12 @@ public class SimilarPatentServer {
         {
             // filters
             humanFilterToJavaFilterMap= new HashMap<>();
-            humanFilterToJavaFilterMap.put("Portfolio Size Less Than","portfolioSizeLessThan");
-            humanFilterToJavaFilterMap.put("Portfolio Size Greater Than","portfolioSizeGreaterThan");
-            humanFilterToJavaFilterMap.put("Similarity Threshold","similarityThreshold");
-            humanFilterToJavaFilterMap.put("Value Threshold","valueThreshold");
-            humanFilterToJavaFilterMap.put("Only Japanese Assignees","japaneseOnly");
-            humanFilterToJavaFilterMap.put("Exclude Japanese Assignees","removeJapanese");
+            humanFilterToJavaFilterMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
+            humanFilterToJavaFilterMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
+            humanFilterToJavaFilterMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
+            humanFilterToJavaFilterMap.put("Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
+            humanFilterToJavaFilterMap.put("Only Japanese Assignees",Constants.JAPANESE_ONLY_FILTER);
+            humanFilterToJavaFilterMap.put("Exclude Japanese Assignees",Constants.NO_JAPANESE_FILTER);
 
 
             // inverted version to get human readables back
@@ -105,6 +98,8 @@ public class SimilarPatentServer {
     public static String humanAttributeFor(String attr) {
         if(javaAttrToHumanAttrMap.containsKey(attr))  {
             return javaAttrToHumanAttrMap.get(attr);
+        } else if(javaFilterToHumanFilterMap.containsKey(attr)) {
+            return javaFilterToHumanFilterMap.get(attr);
         } else {
             return attr;
         }
@@ -139,10 +134,13 @@ public class SimilarPatentServer {
     public static void loadFilterModels() {
         if(filterModelMap.isEmpty()) {
             try {
-                filterModelMap.put(Constants.THRESHOLD_FILTER,new ThresholdFilter());
-                filterModelMap.put(Constants.PORTFOLIO_SIZE_FILTER,new PortfolioSizeFilter());
+                filterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
+                filterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
+                filterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
+                filterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
                 filterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 filterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
+                filterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -218,7 +216,7 @@ public class SimilarPatentServer {
                 int limit = extractInt(req, "limit", 10);
                 String searchType = extractString(req, "search_type", "patents");
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-                String comparator = extractString(req, "comparator", "similarity");
+                String comparator = extractString(req, "comparator", Constants.SIMILARITY_COMPARATOR);
 
                 // get input data
                 // TODO Handle Gather Technology as input

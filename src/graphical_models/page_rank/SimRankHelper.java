@@ -1,6 +1,5 @@
 package graphical_models.page_rank;
 
-import model.edges.Edge;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 import similarity_models.sim_rank.SimRankSimilarityModel;
