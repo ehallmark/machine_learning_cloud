@@ -123,7 +123,7 @@ public class PatentToolsServer {
                                         item = item.trim();
                                         System.out.println("Item length after trim: "+item.length());
                                         final String prettyItem = item;
-                                        List<Pair<String,Double>> pairs = SimilarPatentServer.getTagger().attributesFor(Arrays.asList(item),1);
+                                        List<Pair<String,Double>> pairs = SimilarPatentServer.getTechTagger().attributesFor(Arrays.asList(item),1);
                                         String val = "";
                                         double probability = 0.0;
                                         if(!pairs.isEmpty()) {

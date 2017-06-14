@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import org.apache.hadoop.util.hash.Hash;
 import seeding.Constants;
 import seeding.Database;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -74,7 +75,12 @@ public class TechTaggerNormalizer implements ClassificationAttr {
         return taggerPairs.stream().min(Comparator.comparingInt(t->t.getFirst().numClassifications())).get().getFirst().numClassifications();
     }
 
-    public Collection<String> getClassifications() { return taggerPairs.stream().min(Comparator.comparingInt(t->t.getFirst().numClassifications())).get().getFirst().getClassifications(); }
+    public Collection<String> getClassifications() { return taggerPairs.stream().map(tagger->tagger.getFirst().getClassifications()).reduce((c1,c2)->{
+            Set<String> c3 = new HashSet<>(c1);
+            c3.addAll(c2);
+            return c3;
+        }).get();
+    }
 
     public static ClassificationAttr getDefaultTechTagger() {
         if(tagger==null) {

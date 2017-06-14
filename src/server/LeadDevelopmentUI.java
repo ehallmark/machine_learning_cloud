@@ -143,7 +143,7 @@ public class LeadDevelopmentUI {
                                                 tr().with(
                                                         td().with(
                                                                 select().withName("technology").with(
-                                                                        TECHNOLOGIES.stream().map(assignee->option(assignee).withValue(assignee)).collect(Collectors.toList())
+                                                                        TECHNOLOGIES.stream().map(tech->option(tech).withValue(tech)).collect(Collectors.toList())
                                                                 )
                                                         ),
                                                         td().with(

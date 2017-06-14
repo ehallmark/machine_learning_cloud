@@ -1,5 +1,7 @@
 package server;
 
+import j2html.tags.ContainerTag;
+import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.cpc_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
@@ -42,18 +45,25 @@ public class SimilarPatentServer {
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
 
     private static ClassificationAttr tagger;
+    private static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
+    private static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
+    private static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
+    private static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
+    private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
+    private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
+    private static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
+    private static final String SIMILARITY_MODEL_FIELD = "similarityModel";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
     static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
-    static Map<String,AbstractFilter> filterModelMap = new HashMap<>();
+    static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
+    static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,Comparator<Item>> comparatorMap = new HashMap<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
-    protected static Map<String,String> humanFilterToJavaFilterMap;
-    protected static Map<String,String> javaFilterToHumanFilterMap;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         comparatorMap.put(Constants.VALUE_COMPARATOR,Item.valueComparator());
@@ -72,41 +82,26 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Small Portfolio Size", Constants.SMALL_PORTFOLIO_VALUE);
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD_VALUE);
             humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED_VALUE);
+            humanAttrToJavaAttrMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
+            humanAttrToJavaAttrMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
+            humanAttrToJavaAttrMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
+            humanAttrToJavaAttrMap.put("Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
+            humanAttrToJavaAttrMap.put("Only Japanese Assignees",Constants.JAPANESE_ONLY_FILTER);
+            humanAttrToJavaAttrMap.put("Exclude Japanese Assignees",Constants.NO_JAPANESE_FILTER);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
-        }
 
-        {
-            // filters
-            humanFilterToJavaFilterMap= new HashMap<>();
-            humanFilterToJavaFilterMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
-            humanFilterToJavaFilterMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
-            humanFilterToJavaFilterMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
-            humanFilterToJavaFilterMap.put("Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
-            humanFilterToJavaFilterMap.put("Only Japanese Assignees",Constants.JAPANESE_ONLY_FILTER);
-            humanFilterToJavaFilterMap.put("Exclude Japanese Assignees",Constants.NO_JAPANESE_FILTER);
-
-
-            // inverted version to get human readables back
-            javaFilterToHumanFilterMap = new HashMap<>();
-            humanFilterToJavaFilterMap.forEach((k, v) -> javaFilterToHumanFilterMap.put(v, k));
         }
     }
 
     public static String humanAttributeFor(String attr) {
         if(javaAttrToHumanAttrMap.containsKey(attr))  {
             return javaAttrToHumanAttrMap.get(attr);
-        } else if(javaFilterToHumanFilterMap.containsKey(attr)) {
-            return javaFilterToHumanFilterMap.get(attr);
         } else {
             return attr;
         }
-    }
-
-    public static ClassificationAttr getTagger() {
-        return tagger;
     }
 
     public static void initialize() {
@@ -132,15 +127,17 @@ public class SimilarPatentServer {
     }
 
     public static void loadFilterModels() {
-        if(filterModelMap.isEmpty()) {
+        if(preFilterModelMap.isEmpty()&&postFilterModelMap.isEmpty()) {
             try {
-                filterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
-                filterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
-                filterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
-                filterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
-                filterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
-                filterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
-                filterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
+                // Pre filters
+                preFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
+                preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
+                // Post filters
+                postFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
+                postFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
+                postFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
+                postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
+                postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -164,6 +161,11 @@ public class SimilarPatentServer {
 
     public static void loadTechTaggerModel() {
         if(tagger==null)tagger = TechTaggerNormalizer.getDefaultTechTagger();
+    }
+
+    public static ClassificationAttr getTechTagger() {
+        if(tagger==null) loadTechTaggerModel();
+        return tagger;
     }
 
     static void evaluateModel(AbstractAttribute model, List<Item> portfolio) {
@@ -246,11 +248,11 @@ public class SimilarPatentServer {
                 boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
 
                 // Get Models to use
-                String similarityModel = extractString(req,"similarityModel", "pvector");
+                String similarityModel = extractString(req,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
                 List<String> valueModels = Arrays.stream(req.queryParamsValues("valueModels[]")).collect(Collectors.toList());
-                List<String> preFilterModels = Arrays.stream(req.queryParamsValues("preFilterModels[]")).collect(Collectors.toList());
-                List<String> postFilterModels = Arrays.stream(req.queryParamsValues("postFilterModels[]")).collect(Collectors.toList());
-                List<String> itemAttributes = Arrays.stream(req.queryParamsValues("itemAttributes[]")).collect(Collectors.toList());
+                List<String> preFilterModels = Arrays.stream(req.queryParamsValues(PRE_FILTER_ARRAY_FIELD)).collect(Collectors.toList());
+                List<String> postFilterModels = Arrays.stream(req.queryParamsValues(POST_FILTER_ARRAY_FIELD)).collect(Collectors.toList());
+                List<String> itemAttributes = Arrays.stream(req.queryParamsValues(ATTRIBUTES_ARRAY_FIELD)).collect(Collectors.toList());
 
                 AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel+"_"+portfolioType.toString());
 
@@ -269,8 +271,8 @@ public class SimilarPatentServer {
                 }
 
                 // Get filters
-                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->filterModelMap.get(modelName)).collect(Collectors.toList());
-                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName->filterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->preFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName->postFilterModelMap.get(modelName)).collect(Collectors.toList());
 
                 // Get value models
                 List<ValueAttr> evaluators = valueModels.stream().map(modelName->valueModelMap.get(modelName)).collect(Collectors.toList());
@@ -431,6 +433,12 @@ public class SimilarPatentServer {
         );
     }
 
+    private static Tag gatherTechnologySelect() {
+        return select().withName(Constants.TECHNOLOGY).with(
+                getTechTagger().getClassifications().stream().map(tech->option(tech).withValue(tech)).collect(Collectors.toList())
+        );
+    }
+
     private static Tag candidateSetModelsForm() {
         return div().with(
                 formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
@@ -440,60 +448,45 @@ public class SimilarPatentServer {
                                         td().attr("style","width:33%; vertical-align: top;").with(
                                                 h2("Knowledge Base"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
-                                                        h4("Similarity Model (NEW)"),select().withName("similarity_model").with(
-                                                                option().withValue("0").attr("selected","true").withText("PVecSim"),
-                                                                option().withValue("1").withText("SimRank"),
-                                                                option().withValue("2").withText("CPC-Sim")
-                                                        ),h4("With relevance to"),
-                                                        expandableDiv("Main Options", h3("Main options"),
-                                                            h4("Search for results in"),
-                                                            label("Entire Database"),input().withType("checkbox").withName("search_all"),
-                                                            h4("Or by"),
-                                                            label("Custom Patent List (1 per line)"),br(),
-                                                            textarea().withName("custom_patent_list"),br(),
-                                                            label("Custom Assignee List (1 per line)"),br(),
-                                                            textarea().withName("custom_assignee_list"),br(),
-                                                            label("Custom CPC Class Code List (1 per line)"),br(),
-                                                            label("Example: F05D 01/233"),br(),
-                                                            textarea().withName("custom_class_code_list"),
-                                                            h4("To find"),select().withName("search_type").with(
-                                                                    option().withValue("patents").attr("selected","true").withText("Patents"),
-                                                                    option().withValue("assignees").withText("Assignees"),
-                                                                    option().withValue("class_codes").withText("CPC Class Codes")
-                                                            ),h4("With relevance to"),
-                                                            label("Patents (1 per line)"),br(),textarea().withName("patents"),
-                                                            br(),
-                                                            label("Assignees (1 per line)"),br(),textarea().withName("assignees"),
-                                                            br(),
-                                                            label("CPC Class Codes (1 per line)"),br(),
-                                                            label("Example: F05D 01/233"),br(),
-                                                            textarea().withName("class_codes"), br(),
-                                                            label("Arbitrary Text"),br(),
-                                                            textarea().withName("words")
+                                                        h4("Similarity Model"),select().withName("similarityModel").with(
+                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
+                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
+                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Model")
+                                                        ),
+                                                        expandableDiv("Search Within",
+                                                                h4("Search Within"),
+                                                                h5("Leave Blank To Search Full Database"),
+                                                                label("Custom Patent List (1 per line)"),br(),
+                                                                textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
+                                                                label("Custom Assignee List (1 per line)"),br(),
+                                                                textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br(),
+                                                                h4("To find"),select().withName("search_type").with(
+                                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                            ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                            return option;
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),
+                                                        expandableDiv("Search For",
+                                                                h4("Search For"),
+                                                                label("Patents (1 per line)"),br(),
+                                                                textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
+                                                                label("Assignees (1 per line)"),br(),
+                                                                textarea().withName(ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
+                                                                label("Gather Technology"),br(),
+                                                                gatherTechnologySelect(),br()
                                                         ),
                                                         hr(),
-                                                        expandableDiv("Data Fields",h3("Select Data Fields to capture"),div().with(
-                                                                humanAttrToJavaAttrMap.entrySet().stream().map(e-> {
-                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("dataAttributes[]").withValue(e.getValue()).attr("checked","checked"));
+                                                        expandableDiv("Data Attributes",h3("Select Data Fields to capture"),div().with(
+                                                                attributesMap.keySet().stream().map(key-> {
+                                                                    return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(key));
                                                                 }).collect(Collectors.toList()))
                                                         ),hr(),expandableDiv("Filters",h3("Select applicable Filters"),div().with(
-                                                                humanFilterToJavaFilterMap.entrySet().stream().map(e-> {
-                                                                    return div().with(label(e.getKey()),input().withType("checkbox").withName("filters[]").withValue(e.getValue()));
+                                                                Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
+                                                                    return pair._1.keySet().stream().map(key->div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(pair._2).withValue(key)));
                                                                 }).collect(Collectors.toList()))
-                                                        ),hr(),expandableDiv("Advanced Options",
-                                                                h3("Advanced Options"),
-                                                                label("Patent Limit"),br(),input().withType("text").withName("limit"), br(),
-                                                                label("Merge Search Input?"),br(),input().withType("checkbox").withName("merge_search_input"),br(),
-                                                                label("Remove Gather Assets?"),br(),input().withType("checkbox").withName("remove_gather_patents"),br(),
-                                                                label("Relevance Threshold"),br(),input().withType("text").withName("threshold"),br(),
-                                                                label("Portfolio Size Limit"),br(),input().withType("text").withName("portfolio_limit"), br(),
-                                                                label("Allow Search Documents in Results?"),br(),input().withType("checkbox").withName("allowResultsFromOtherCandidateSet"),br(),
-                                                                label("Include CPC Subclasses (if using CPC codes)?"),br(),input().withType("checkbox").withName("includeSubclasses"),br(),
-                                                                label("Asset Filter (space separated)"),br(),textarea().withName("assetFilter"),br(),
-                                                                label("Assignee Filter (1 per line)"),br(),textarea().withName("assigneeFilter"),br(),
-                                                                label("Require keywords"),br(),textarea().withName("required_keywords"),br(),
-                                                                label("Avoid keywords"),br(),textarea().withName("avoided_keywords"),br()), hr(),
-                                                        expandableDiv("Cover Page Options",coverPageForm()),br(),hr(),br(),
+                                                        ),hr(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
