@@ -4,13 +4,11 @@ import graphical_models.page_rank.PageRank;
 import graphical_models.page_rank.PageRankHelper;
 import seeding.Database;
 import tools.DateHelper;
-import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 5/9/17.

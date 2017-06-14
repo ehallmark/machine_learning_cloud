@@ -21,14 +21,6 @@ public class WordFrequencyPair<T,V extends Comparable<V>> implements Comparable<
         return second;
     }
 
-    public void setFirst(T first) {
-        this.first=first;
-    }
-
-    public void setSecond(V second) {
-        this.second=second;
-    }
-
     @Override
     public int compareTo(WordFrequencyPair<T,V> other) {
         return getSecond().compareTo(other.getSecond());

@@ -1,7 +1,6 @@
 package ui_models.attributes.value;
 
 import seeding.Database;
-import ui_models.portfolios.AbstractPortfolio;
 
 import java.io.File;
 import java.util.Arrays;

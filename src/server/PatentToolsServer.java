@@ -9,6 +9,7 @@ import seeding.patent_view_api.PatentAPIHandler;
 import server.tools.SimpleAjaxMessage;
 import tools.ClassCodeHandler;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -122,7 +123,7 @@ public class PatentToolsServer {
                                         item = item.trim();
                                         System.out.println("Item length after trim: "+item.length());
                                         final String prettyItem = item;
-                                        List<Pair<String,Double>> pairs = SimilarPatentServer.getTagger().attributesFor(PortfolioList.asList(item,portfolioType),1);
+                                        List<Pair<String,Double>> pairs = SimilarPatentServer.getTagger().attributesFor(Arrays.asList(item),1);
                                         String val = "";
                                         double probability = 0.0;
                                         if(!pairs.isEmpty()) {

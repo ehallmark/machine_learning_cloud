@@ -8,6 +8,7 @@ import spark.Response;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,16 +21,6 @@ import static spark.Spark.*;
 public class GatherClassificationServer {
     private static ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
     public static void StartServer() throws Exception{
-
-        before((request, response) -> {
-            boolean authenticated = true;
-
-            // authentication not yet implemented
-            // TODO
-            if (!authenticated) {
-                halt(401, "You are not welcome here");
-            }
-        });
 
         get("/predict_patents", (req,res) ->handleRequest( req, res));
         post("/predict_patents", (req,res) ->handleRequest( req, res));
@@ -54,7 +45,7 @@ public class GatherClassificationServer {
 
         // make sure patents exist
         // run model
-        List<Pair<String,Double>> topTags = tagger.attributesFor(PortfolioList.abstractPorfolioList(patents, PortfolioList.Type.patents), tagLimit);
+        List<Pair<String,Double>> topTags = tagger.attributesFor(patents, tagLimit);
 
         // return results
         if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));

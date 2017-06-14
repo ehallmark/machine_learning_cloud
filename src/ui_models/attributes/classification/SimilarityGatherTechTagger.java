@@ -5,15 +5,10 @@ import similarity_models.cpc_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.models.embeddings.WeightLookupTable;
-import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.ops.transforms.Transforms;
-import seeding.Database;
-import server.SimilarPatentServer;
 import tools.MinHeap;
-import ui_models.portfolios.AbstractPortfolio;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +26,9 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private Map<String,Collection<String>> nameToInputMap;
     private static SimilarityGatherTechTagger pVectorModel;
     private static SimilarityGatherTechTagger cpcModel;
-    static {
+
+    public String getName() {
+        return "Average Similarity Model";
     }
 
     public static SimilarityGatherTechTagger getCPCModel() {
@@ -107,8 +104,8 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int n) {
-        List<INDArray> vecs = portfolio.getTokens().stream().map(input->lookupTable.get(input)).filter(input->input!=null).collect(Collectors.toList());
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
+        List<INDArray> vecs = portfolio.stream().map(input->lookupTable.get(input)).filter(input->input!=null).collect(Collectors.toList());
         if(vecs.size()>0) {
             return technologiesFor(Nd4j.vstack(vecs).mean(0),n);
         } else {

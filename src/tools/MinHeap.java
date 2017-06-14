@@ -5,8 +5,6 @@ package tools;
  * The BinaryHeap is an -generic- implementation of the PriorityQueue interface.
  * This is a binary min-heap implementation of the priority queue ADT.
  */
-import similarity_models.paragraph_vectors.Patent;
-import similarity_models.paragraph_vectors.WordFrequencyPair;
 
 import java.util.Arrays;
 
@@ -14,10 +12,6 @@ public class MinHeap<T extends Comparable<T>>  {
     protected T[] array;
     protected int size;
 
-    public static MinHeap<Patent> setupPatentHeap(int capacity) {
-        return new MinHeap<>(capacity);
-    }
-    public static MinHeap<WordFrequencyPair<String,Float>> setupWordFrequencyHeap(int capacity) { return new MinHeap<>(capacity); }
     /**
      * Constructs a new BinaryHeap.
      */

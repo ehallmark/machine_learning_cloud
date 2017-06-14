@@ -29,7 +29,7 @@ public class ValuationServer {
     public static final Map<String,ValueAttr> ATTRIBUTES = new HashMap<>();
     static {
         SimilarPatentServer.loadValueModels();
-        SimilarPatentServer.modelMap.forEach((name,model)->ATTRIBUTES.put(name,model));
+        SimilarPatentServer.valueModelMap.forEach((name,model)->ATTRIBUTES.put(name,model));
     }
 
     static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {

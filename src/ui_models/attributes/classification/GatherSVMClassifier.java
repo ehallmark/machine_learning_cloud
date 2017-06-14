@@ -15,7 +15,7 @@ import svm.genetics.SVMSolution;
 import svm.genetics.SVMSolutionCreator;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
-import ui_models.portfolios.AbstractPortfolio;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.util.*;
@@ -43,6 +43,10 @@ public class GatherSVMClassifier implements ClassificationAttr {
     protected Map<String,INDArray> lookupTable;
     @Getter
     protected List<String> orderedTechnologies;
+
+    public String getName() {
+        return "SVM Classifier";
+    }
 
     // trainable version
     public GatherSVMClassifier(svm_parameter param, File modelFile, Map<String,INDArray> lookupTable) {
@@ -80,9 +84,8 @@ public class GatherSVMClassifier implements ClassificationAttr {
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
-        Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        return portfolio.getTokens().stream().map(token->{
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
+        return portfolio.stream().map(token->{
             INDArray vector = lookupTable.get(token);
             if(vector!=null) {
                 double[] results = SVMHelper.svmPredictionDistribution(new double[][]{vector.data().asDouble()},model)[0];

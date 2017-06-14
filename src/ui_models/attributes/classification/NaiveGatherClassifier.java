@@ -11,7 +11,7 @@ import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
-import ui_models.portfolios.AbstractPortfolio;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.io.Serializable;
@@ -33,6 +33,9 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     protected List<String> orderedClassifications;
     protected double alpha;
 
+    public String getName() {
+        return "Bayesian Classifier";
+    }
 
     @Override
     public void save() {
@@ -106,9 +109,9 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int limit) {
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
         Set<String> classifications = new HashSet<>();
-        portfolio.getTokens().forEach(token->classifications.addAll(Database.subClassificationsForPatent(token)));
+        portfolio.forEach(token->classifications.addAll(Database.subClassificationsForPatent(token)));
         if(classifications.isEmpty()) return Collections.emptyList();
 
         double[] observation = new double[orderedClassifications.size()];

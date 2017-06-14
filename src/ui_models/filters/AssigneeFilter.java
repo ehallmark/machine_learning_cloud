@@ -1,27 +1,27 @@
 package ui_models.filters;
 
-import ui_models.portfolios.items.AbstractAssignee;
-import ui_models.portfolios.items.AbstractPatent;
+import seeding.Constants;
+import server.SimilarPatentServer;
+import spark.QueryParamsMap;
 import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * Created by ehallmark on 5/10/17.
  */
 public class AssigneeFilter implements AbstractFilter {
     private Collection<String> assigneesToRemove;
-    public AssigneeFilter(Collection<String> assigneesToRemove) {
-        this.assigneesToRemove=assigneesToRemove;
+
+    @Override
+    public void extractRelevantInformationFromParams(QueryParamsMap params) {
+        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.ASSIGNEES_TO_REMOVE, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+
     }
+
     @Override
     public boolean shouldKeepItem(Item item) {
-        if(item instanceof AbstractAssignee) {
-            return !assigneesToRemove.contains(item.getName());
-        } else if(item instanceof AbstractPatent) {
-            return !assigneesToRemove.contains(((AbstractPatent) item).getAssignee());
-        } else {
-            return false;
-        }
+        return !assigneesToRemove.contains(item.getData(Constants.ASSIGNEE));
     }
 }

@@ -337,10 +337,9 @@ public class CompanyPortfolioProfileUI {
                             Collection<String> assets = inputType.equals(PortfolioList.Type.patents) ?
                                     new HashSet<>(INPUT_PATENTS):
                                     Database.selectPatentNumbersFromAssignee(ASSIGNEE);
-                            portfolioType = PortfolioList.Type.patents;
                             comparator = Item.valueComparator();
                             comparingByValue = true;
-                            portfolioList = PortfolioList.abstractPorfolioList(assets, portfolioType);
+                            portfolioList = new PortfolioList(assets.stream().map(asset->new Item(asset)).collect(Collectors.toList()));
                             break;
                         }
                         case "Portfolio Valuation": {
@@ -452,26 +451,17 @@ public class CompanyPortfolioProfileUI {
                     }
 
                     System.out.println("Starting to run similar patent model...");
-                    double threshold = 0.5;
-                    Collection<AbstractFilter> filters = Arrays.asList(
-                            new LabelFilter(labelsToExclude),
-                            new ThresholdFilter(threshold)
-                    );
-                    while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
-                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinder, limit, filters);
-                        threshold-=0.2;
-                    }
+                    portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinder, limit, Collections.emptyList());
+
                     System.out.println("Finished similar patent model.");
                 }
 
-
+                List<String> attributes = new ArrayList<>(10);
                 if (portfolioList != null) {
                     System.out.println("Handling attrs");
-                    List<String> attributes = new ArrayList<>(10);
                     if (!attributesMap.containsKey(reportType))
                         return new Gson().toJson(new SimpleAjaxMessage("Attributes not defined for Report Type: " + reportType));
                     attributes.addAll(attributesMap.get(reportType));
-                    portfolioList.setAttributes(attributes);
 
                     // Handle overall value
                     if (comparingByValue) {
@@ -479,7 +469,7 @@ public class CompanyPortfolioProfileUI {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
-                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key, inputType);
+                                SimilarPatentServer.evaluateModel(model, portfolioList.getItemList());
                             }
                         }
                         portfolioList.init(comparator, limit);
@@ -490,7 +480,7 @@ public class CompanyPortfolioProfileUI {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
-                                SimilarPatentServer.evaluateModel(model, portfolioList.getPortfolio(), key, inputType);
+                                SimilarPatentServer.evaluateModel(model, portfolioList.getItemList());
                             }
                         }
                     }
@@ -521,7 +511,7 @@ public class CompanyPortfolioProfileUI {
                         ),
                         portfolioList == null ? div() : div().with(
                                 h4("Data"),
-                                tableFromPatentList(portfolioList.getPortfolio(), portfolioList.getAttributes())
+                                SimilarPatentServer.tableFromPatentList(portfolioList.getItemList(),attributes)
                         )
                 ).render(), charts));
 
@@ -530,21 +520,6 @@ public class CompanyPortfolioProfileUI {
                 return new Gson().toJson(new SimpleAjaxMessage(e.getMessage()));
             }
         });
-    }
-
-    static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().with(
-                thead().with(
-                        tr().with(
-                                attributes.stream().map(attr->th(Item.humanAttributeFor(attr))).collect(Collectors.toList())
-                        )
-                ),tbody().with(
-                        items.stream().map(item->tr().with(
-                                item.getDataAsRow(attributes).getCells().stream().map(cell->cell==null?td(""):td(cell.getContent().toString())).collect(Collectors.toList())
-                        )).collect(Collectors.toList())
-                )
-
-        );
     }
 
     public static void main(String[] args) throws Exception {

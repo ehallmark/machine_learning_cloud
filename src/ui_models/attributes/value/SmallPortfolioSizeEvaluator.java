@@ -1,6 +1,7 @@
 package ui_models.attributes.value;
 
-import ui_models.portfolios.AbstractPortfolio;
+import seeding.Constants;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 
@@ -10,16 +11,15 @@ import java.util.Collection;
 public class SmallPortfolioSizeEvaluator extends PortfolioSizeEvaluator {
 
     public SmallPortfolioSizeEvaluator() {
-        super("Small Portfolio Size Value");
+        super(Constants.SMALL_PORTFOLIO_VALUE);
     }
 
     // Returns value between 1 and 5
     @Override
-    public Double attributesFor(AbstractPortfolio portfolio, int n) {
-        Collection<String> tokens = portfolio.getTokens();
+    public Double attributesFor(Collection<String> tokens, int n) {
         // flip the value
         if(tokens.size()>0 && tokens.stream().anyMatch(token->model.containsKey(token))) {
-            double val = super.attributesFor(portfolio,n);
+            double val = super.attributesFor(tokens,n);
             double distFromStart = val - ValueMapNormalizer.DEFAULT_START;
             val = ValueMapNormalizer.DEFAULT_END-distFromStart;
             return val;

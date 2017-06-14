@@ -20,5 +20,7 @@ public interface AbstractSimilarityModel {
 
     String getName();
 
+    Collection<String> getTokens();
+
     AbstractSimilarityModel duplicateWithScope(Collection<String> scope);
 }

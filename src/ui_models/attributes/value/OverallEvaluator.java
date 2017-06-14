@@ -27,11 +27,10 @@ public class OverallEvaluator extends ValueAttr {
         List<ValueAttr> evaluators = Arrays.asList(
                 new CitationEvaluator(),
                 new ClaimRatioEvaluator(),
-                new ClassEvaluator(),
                 new PageRankEvaluator()
         );
 
-        List<Double> weights = Arrays.asList(10d,9d,19d,4d);
+        List<Double> weights = Arrays.asList(10d,9d,4d);
 
         Map<String,Double> mergedModel = new HashMap<>();
 

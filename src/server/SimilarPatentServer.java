@@ -11,12 +11,12 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
 import similarity_models.sim_rank.SimRankSimilarityModel;
+import ui_models.attributes.AbstractAttribute;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.value.ValueAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 import ui_models.attributes.value.*;
 import ui_models.filters.*;
-import excel.ExcelHandler;
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import spark.Request;
@@ -49,6 +49,7 @@ public class SimilarPatentServer {
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
     static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     static Map<String,AbstractFilter> filterModelMap = new HashMap<>();
+    static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,Comparator<Item>> comparatorMap = new HashMap<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
@@ -123,11 +124,11 @@ public class SimilarPatentServer {
     public static void loadValueModels() {
         if(valueModelMap.isEmpty()) {
             try {
-                valueModelMap.put("overallValue", new OverallEvaluator());
-                valueModelMap.put("compDBAssetsPurchased", new AssetsPurchasedEvaluator());
-                valueModelMap.put("compDBAssetsSold", new AssetsSoldEvaluator());
-                valueModelMap.put("largePortfolios", new PortfolioSizeEvaluator());
-                valueModelMap.put("smallPortfolios", new SmallPortfolioSizeEvaluator());
+                valueModelMap.put(Constants.AI_VALUE, new OverallEvaluator());
+                valueModelMap.put(Constants.COMPDB_ASSETS_PURCHASED_VALUE, new CompDBAssetsPurchasedEvaluator());
+                valueModelMap.put(Constants.COMPDB_ASSETS_SOLD_VALUE, new CompDBAssetsSoldEvaluator());
+                valueModelMap.put(Constants.LARGE_PORTFOLIO_VALUE, new PortfolioSizeEvaluator());
+                valueModelMap.put(Constants.SMALL_PORTFOLIO_VALUE, new SmallPortfolioSizeEvaluator());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -138,10 +139,10 @@ public class SimilarPatentServer {
     public static void loadFilterModels() {
         if(filterModelMap.isEmpty()) {
             try {
-                filterModelMap.put("thresholdFilter",new ThresholdFilter(0d));
-                filterModelMap.put("portfolioSizeFilter",new PortfolioSizeFilter(100));
-                filterModelMap.put("expirationFilter",new ExpirationFilter());
-
+                filterModelMap.put(Constants.THRESHOLD_FILTER,new ThresholdFilter());
+                filterModelMap.put(Constants.PORTFOLIO_SIZE_FILTER,new PortfolioSizeFilter());
+                filterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
+                filterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -151,11 +152,11 @@ public class SimilarPatentServer {
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
             try {
-                similarityModelMap.put("pvector_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
-                similarityModelMap.put("pvector_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
-                similarityModelMap.put("sim_rank_patents", new SimRankSimilarityModel("** SimRank Model **", Database.getValuablePatents()));
-                similarityModelMap.put("cpc_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
-                similarityModelMap.put("cpc_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
+                similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
+                similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **"));
+                similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
+                similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -167,13 +168,11 @@ public class SimilarPatentServer {
         if(tagger==null)tagger = TechTaggerNormalizer.getDefaultTechTagger();
     }
 
-    static void evaluateModel(ValueAttr model, Collection<Item> portfolio, String valueParamType, PortfolioList.Type type) {
-        System.out.println("Starting to evaluate model: "+valueParamType);
-        for (Item item : portfolio) {
-            double score = model.attributesFor(new PortfolioList(Arrays.asList(item)),1);
-            item.setData(valueParamType,score);
-        }
-        System.out.println("Finished "+valueParamType);
+    static void evaluateModel(AbstractAttribute model, List<Item> portfolio) {
+        System.out.println("Starting to evaluate model: "+model.getName());
+        PortfolioList portfolioList = new PortfolioList(portfolio);
+        portfolioList.applyAttribute(model);
+        System.out.println("Finished "+model.getName());
     }
 
     static String getAndRemoveMessage(Session session) {
@@ -184,23 +183,11 @@ public class SimilarPatentServer {
 
     private static Tag homePage() {
         return div().with(
-                h3().with(
-                        a("Portfolio Comparison").withHref("/candidate_set_models")
-                ),h3().with(
-                        a("Company Profiler").withHref("/company_profile")
-                ),
-                h3().with(
-                        a("Lead Development").withHref("/lead_development")
-                ),
-                h3().with(
-                        a("Tech Tagger").withHref("/tech_tagger")
-                ),
-                h3().with(
-                        a("Asset Valuation").withHref("/asset_valuation")
-                ),
-                h3().with(
-                        a("Additional Patent Tools").withHref("/patent_toolbox")
-                )
+                h3().with(a("Portfolio Comparison").withHref("/candidate_set_models")),h3().with(a("Company Profiler").withHref("/company_profile")),
+                h3().with(a("Lead Development").withHref("/lead_development")),
+                h3().with(a("Tech Tagger").withHref("/tech_tagger")),
+                h3().with(a("Asset Valuation").withHref("/asset_valuation")),
+                h3().with(a("Additional Patent Tools").withHref("/patent_toolbox"))
         );
     }
 
@@ -231,9 +218,10 @@ public class SimilarPatentServer {
                 int limit = extractInt(req, "limit", 10);
                 String searchType = extractString(req, "search_type", "patents");
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
+                String comparator = extractString(req, "comparator", "similarity");
 
                 // get input data
-                // TODO Handle Gather Technolgoy as input
+                // TODO Handle Gather Technology as input
                 Collection<String> inputsToSearchFor;
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
                     inputsToSearchFor=new HashSet<>(preProcess(extractString(req, "patents_to_search_for", ""), "\\s+", "[^0-9]"));
@@ -262,8 +250,8 @@ public class SimilarPatentServer {
                 // Get Models to use
                 String similarityModel = extractString(req,"similarityModel", "pvector");
                 List<String> valueModels = Arrays.stream(req.queryParamsValues("valueModels[]")).collect(Collectors.toList());
-                List<String> filterModels = Arrays.stream(req.queryParamsValues("filterModels[]")).collect(Collectors.toList());
-                List<String> techTaggerModels = Arrays.stream(req.queryParamsValues("techTaggerModels[]")).collect(Collectors.toList());
+                List<String> preFilterModels = Arrays.stream(req.queryParamsValues("preFilterModels[]")).collect(Collectors.toList());
+                List<String> postFilterModels = Arrays.stream(req.queryParamsValues("postFilterModels[]")).collect(Collectors.toList());
                 List<String> itemAttributes = Arrays.stream(req.queryParamsValues("itemAttributes[]")).collect(Collectors.toList());
 
                 AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel+"_"+portfolioType.toString());
@@ -275,7 +263,7 @@ public class SimilarPatentServer {
                     return null;
                 }
 
-                AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchIn);
+                AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                 if (secondFinder == null || secondFinder.numItems() == 0) {
                     res.redirect("/candidate_set_models");
                     req.session().attribute("message", "Unable to find any of the search inputs.");
@@ -283,23 +271,35 @@ public class SimilarPatentServer {
                 }
 
                 // Get filters
-                List<AbstractFilter> filters = new ArrayList<>();
-                filterModels.forEach(filterModel->{
-                    AbstractFilter filter = filterModelMap.get(filterModel);
-                    filters.add(filter);
-                });
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->filterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName->filterModelMap.get(modelName)).collect(Collectors.toList());
+
+                // Get value models
+                List<ValueAttr> evaluators = valueModels.stream().map(modelName->valueModelMap.get(modelName)).collect(Collectors.toList());
+
+                // Get tech tagger
 
                 // Run similarity models
-                PortfolioList portfolioList = runPatentFinderModel(firstFinder,secondFinder,limit,filters);
-                String comparator = extractString(req, "comparator", "similarity");
+                System.out.println("Running model");
+                PortfolioList portfolioList = runPatentFinderModel(firstFinder,secondFinder,limit,preFilters);
+
                 System.out.println("Init portfolio");
                 portfolioList.init(comparatorMap.get(comparator),limit);
                 System.out.println("Finished init portfolio");
 
                 // Run taggers and value models
+                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
 
+                attributes.forEach(attribute->{
+                    portfolioList.applyAttribute(attribute);
+                });
 
-                return tableFromPatentList(portfolioList.getPortfolio(),Arrays.asList(valueModels,techTaggerModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
+                // Run filters
+                postFilters.forEach(filter->{
+                    portfolioList.applyFilter(filter);
+                });
+
+                return tableFromPatentList(portfolioList.getItemList(),Arrays.asList(valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
 
             } catch(Exception e) {
                 res.redirect("/candidate_set_models");
@@ -311,7 +311,7 @@ public class SimilarPatentServer {
 
     }
 
-    private static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
+    static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
         return table().with(
                 thead().with(
                         tr().with(
@@ -337,7 +337,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static List<String> preProcess(String toSplit, String delim, String toReplace) {
+    public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
@@ -508,8 +508,12 @@ public class SimilarPatentServer {
 
 
     static String extractString(Request req, String param, String defaultVal) {
-        if(req.queryParams(param)!=null&&req.queryParams(param).trim().length()>0) {
-            return req.queryParams(param);
+        return extractString(req.queryMap(),param,defaultVal);
+    }
+
+    public static String extractString(QueryParamsMap paramsMap, String param, String defaultVal) {
+        if(paramsMap.value(param)!=null&&paramsMap.value(param).trim().length()>0) {
+            return paramsMap.value(param);
         } else {
             return defaultVal;
         }

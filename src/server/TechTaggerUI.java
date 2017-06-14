@@ -201,7 +201,7 @@ public class TechTaggerUI {
                 System.out.println("Starting similarity tagger");
                 List<Pair<String, Double>> results;
 
-                results = TAGGER.attributesFor(PortfolioList.abstractPorfolioList(all_search_inputs, inputType.get()), tag_limit);
+                results = TAGGER.attributesFor(all_search_inputs, tag_limit);
                 TechnologySolution solution = new TechnologySolution(results);
 
                 if(solution==null) return new Gson().toJson(new SimpleAjaxMessage("No solution found"));

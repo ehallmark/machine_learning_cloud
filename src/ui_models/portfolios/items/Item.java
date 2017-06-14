@@ -3,13 +3,7 @@ package ui_models.portfolios.items;
 import lombok.Getter;
 import lombok.Setter;
 import org.deeplearning4j.berkeley.Pair;
-import server.SimilarPatentServer;
-import excel.ExcelCell;
-import excel.ExcelHandler;
-import excel.ExcelRow;
 import ui_models.portfolios.PortfolioList;
-import ui_models.attributes.value.ValueMapNormalizer;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,11 +31,19 @@ public class Item implements Comparable<Item> {
     }
 
     public Item clone() {
-        return new Item(name);
+        Item item = new Item(name);
+        item.dataMap=dataMap;
+        item.similarity=similarity;
+        item.value=value;
+        return item;
     }
 
     public List<Object> getDataAsRow(List<String> attributes) {
         return attributes.stream().map(attr->dataMap.get(attr)).collect(Collectors.toList());
+    }
+
+    public Object getData(String param) {
+        return dataMap.get(param);
     }
 
     public void addData(String param, Object data) {

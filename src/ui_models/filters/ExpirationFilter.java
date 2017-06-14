@@ -1,7 +1,7 @@
 package ui_models.filters;
 
 import seeding.Database;
-import ui_models.portfolios.items.AbstractPatent;
+import spark.QueryParamsMap;
 import ui_models.portfolios.items.Item;
 
 /**
@@ -9,11 +9,12 @@ import ui_models.portfolios.items.Item;
  */
 public class ExpirationFilter implements AbstractFilter {
     @Override
+    public void extractRelevantInformationFromParams(QueryParamsMap params) {
+        // do nothing
+    }
+
+    @Override
     public boolean shouldKeepItem(Item obj) {
-        if (obj instanceof AbstractPatent) {
-            return Database.isExpired(obj.getName());
-        } else {
-            return true;
-        }
+        return !Database.isExpired(obj.getName());
     }
 }

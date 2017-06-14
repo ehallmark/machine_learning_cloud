@@ -207,8 +207,8 @@ public class LeadDevelopmentUI {
     }
 
     static void loadData() {
-        SimilarPatentServer.modelMap.forEach((name,model)->{
-            ATTRIBUTES.put(Item.humanAttributeFor(name),new ValueAttribute(name,0d,model));
+        SimilarPatentServer.valueModelMap.forEach((name,model)->{
+            ATTRIBUTES.put(SimilarPatentServer.humanAttributeFor(name),new ValueAttribute(name,0d,model));
         });
     }
 

@@ -1,9 +1,8 @@
 package ui_models.portfolios;
 
 import lombok.Getter;
-import seeding.Database;
+import ui_models.attributes.AbstractAttribute;
 import ui_models.filters.AbstractFilter;
-import excel.ExcelHandler;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -14,13 +13,12 @@ import java.util.stream.Collectors;
  */
 public class PortfolioList implements Comparable<PortfolioList> {
     @Getter
-    private List<Item> portfolio;
+    private List<Item> itemList;
     private double avgSimilarity;
-    private List<String> attributes;
     public enum Type { patents, assignees }
 
-    public PortfolioList(List<Item> portfolioList) {
-        this.portfolio=portfolioList;
+    public PortfolioList(List<Item> itemList) {
+        this.itemList=itemList;
     }
 
     @Override
@@ -29,17 +27,23 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
     public List<String> getTokens() {
-        return portfolio.stream().map(p->p.getName()).collect(Collectors.toList());
+        return itemList.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
     public void applyFilter(AbstractFilter filter) {
-        portfolio=portfolio.stream().filter(obj->filter.shouldKeepItem(obj)).collect(Collectors.toList());
+        itemList=itemList.stream().filter(obj->filter.shouldKeepItem(obj)).collect(Collectors.toList());
+    }
+
+    public void applyAttribute(AbstractAttribute attribute) {
+        itemList.forEach(item->{
+            item.addData(attribute.getName(),attribute.attributesFor(Arrays.asList(item.getName()),1));
+        });
     }
 
     public void init(Comparator<Item> comparator, int limit) {
-        portfolio = portfolio.stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
-        if (portfolio.size() > 0) {
-            this.avgSimilarity = portfolio.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+        itemList = itemList.stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+        if (itemList.size() > 0) {
+            this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
         } else this.avgSimilarity = 0.0d;
     }
 }

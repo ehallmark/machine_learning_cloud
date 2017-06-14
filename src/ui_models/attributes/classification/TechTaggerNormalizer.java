@@ -3,20 +3,17 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import seeding.Constants;
 import seeding.Database;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
-import svm.SVMHelper;
-import svm.genetics.SVMSolution;
-import svm.genetics.SVMSolutionCreator;
 import tools.MinHeap;
 import ui_models.attributes.classification.genetics.TechTaggerSolution;
 import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
-import ui_models.portfolios.AbstractPortfolio;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 3/4/2017.
@@ -28,6 +25,10 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     private static List<Double> DEFAULT_WEIGHTS;
     private static final File weightsFile = new File("tech_tagger_normalizer_weights.jobj");
     private static final int timeLimit = 10*60*1000;
+
+    public String getName() {
+        return Constants.TECHNOLOGY;
+    }
 
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
@@ -101,7 +102,7 @@ public class TechTaggerNormalizer implements ClassificationAttr {
         }
     }
 
-    private List<Pair<String,Double>> technologyHelper(AbstractPortfolio portfolio, int n) {
+    private List<Pair<String,Double>> technologyHelper(Collection<String> portfolio, int n) {
         Map<String,Double> technologyScores = new HashMap<>();
         taggerPairs.forEach(taggerPair->{
             ClassificationAttr tagger = taggerPair.getFirst();
@@ -133,7 +134,7 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     }
 
     @Override
-    public List<Pair<String, Double>> attributesFor(AbstractPortfolio portfolio, int n) {
+    public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int n) {
         return technologyHelper(portfolio,n);
     }
 

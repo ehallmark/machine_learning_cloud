@@ -1,5 +1,6 @@
 package highcharts;
 
+import server.SimilarPatentServer;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import genetics.lead_development.*;
@@ -146,7 +147,7 @@ public class HighchartDataAdapter {
             patentSample.add(patentList.remove(rand.nextInt(patentList.size())));
         }
         // get pre tech from company
-        tagger.attributesFor(PortfolioList.abstractPorfolioList(patentSample, PortfolioList.Type.patents),100).forEach(pair->{
+        tagger.attributesFor(patentSample,100).forEach(pair->{
             String tech = pair.getFirst();
             PointSeries series = new PointSeries();
             series.setName(tech);
@@ -231,7 +232,7 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(seriesName);
-        tagger.attributesFor(PortfolioList.abstractPorfolioList(portfolio,inputType),limit).forEach(pair->{
+        tagger.attributesFor(portfolio,limit).forEach(pair->{
             String tech = pair.getFirst();
             double prob = pair.getSecond();
             Point point = new Point(tech,prob);
@@ -295,8 +296,8 @@ public class HighchartDataAdapter {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(name);
-        portfolioList.getPortfolio().forEach(p->{
-            Point point = new Point(p.getName(),similarity?(p.getSimilarity()*100):p.getAvgValue()); // for visualizing percentages
+        portfolioList.getItemList().forEach(p->{
+            Point point = new Point(p.getName(),similarity?(p.getSimilarity()*100):p.getValue()); // for visualizing percentages
             series.addPoint(point);
         });
         data.add(series);
@@ -392,7 +393,7 @@ public class HighchartDataAdapter {
                 totalSize.addAndGet(size);
                 value.addAndGet(evaluator.evaluate(c)*size);
             });
-            Point point = new Point(evaluator.getModelName(),value.get());
+            Point point = new Point(SimilarPatentServer.humanAttributeFor(evaluator.getName()),value.get());
             series.addPoint(point);
         });
         data.add(series);
