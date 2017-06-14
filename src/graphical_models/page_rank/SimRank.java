@@ -115,7 +115,6 @@ public class SimRank extends RankGraph<Edge<String>> {
                         rankTable.put(edge, (float) newRank);
                     }
                 }
-                if(cnt.getAndIncrement()%10000==0) System.out.println("Updated scores of "+cnt.get()+" patents so far");
             });
             if(deltaCount.get()>0)currentScore = delta.get()/deltaCount.get();
             return currentScore  < 0.0000001/nodes.size();
