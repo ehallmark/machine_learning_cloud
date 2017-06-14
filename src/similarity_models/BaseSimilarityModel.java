@@ -15,37 +15,37 @@ import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/8/2017.
  */
-public abstract class BaseSimilarityModel implements AbstractSimilarityModel {
+public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected MinHeap<Patent> heap;
     protected INDArray avgVector;
-    protected List<Patent> patentList;
+    protected List<Item> itemList;
+    protected Map<String,INDArray> lookupTable;
     @Getter @Setter
     protected String name;
 
     public BaseSimilarityModel(Collection<String> candidateSet, String name, Map<String,INDArray> lookupTable) {
+        this.lookupTable=lookupTable;
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
-        candidateSet=new HashSet<>(candidateSet);
+        candidateSet=candidateSet.stream().distinct().collect(Collectors.toList());
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
         try {
-            int arrayCapacity = candidateSet.size();
-            patentList = new ArrayList<>(arrayCapacity);
-            for(String patent : candidateSet) {
-                INDArray vector = lookupTable.get(patent);
-                if (vector != null) {
-                    patentList.add(new Patent(patent, vector));
-                }
-            }
+            itemList = candidateSet.stream().map(item->{
+                INDArray vector = lookupTable.get(item);
+                return new Item(item, vector);
+            }).filter(item->item!=null).collect(Collectors.toList());
+
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
-            patentList = null;
+            itemList = null;
         }
         System.out.println("--- Finished Loading Patent Vectors ---");
     }
@@ -73,21 +73,26 @@ public abstract class BaseSimilarityModel implements AbstractSimilarityModel {
         return avgVector;
     }
 
-    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, PortfolioList.Type portfolioType, int limit, Collection<? extends AbstractFilter> filters)  {
+    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters)  {
         // Find the highest (pairwise) assets
-        if(((BaseSimilarityModel)other).getPatentList()==null||((BaseSimilarityModel)other).getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>(),portfolioType);
+        if(((BaseSimilarityModel)other).getPatentList()==null||((BaseSimilarityModel)other).getPatentList().isEmpty()) return new PortfolioList(new ArrayList<>());
         INDArray otherAvg = ((BaseSimilarityModel)other).computeAvg();
-        return findSimilarPatentsTo(other.getName(), otherAvg,limit,portfolioType,filters);
+        return findSimilarPatentsTo(other.getName(), otherAvg,limit,filters);
+    }
+
+    @Override
+    public AbstractSimilarityModel duplicateWithScope(Collection<String> scope) {
+        return new BaseSimilarityModel(scope,name,lo)
     }
 
     // returns null if patentNumber not found
-    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters)  {
+    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
         assert heap!=null : "Heap is null!";
         assert patentList!=null : "Patent list is null!";
-        if(avgVector==null) return new PortfolioList(new ArrayList<>(),portfolioType);
+        if(avgVector==null) return new PortfolioList(new ArrayList<>());
         long startTime = System.currentTimeMillis();
         setupMinHeap(limit);
-        PortfolioList list = similarPatentsHelper(patentList,avgVector, patentNumber,limit,(v1, v2)-> Transforms.cosineSim(v1,v2),portfolioType, filters);
+        PortfolioList list = similarPatentsHelper(patentList,avgVector, patentNumber,limit,(v1, v2)-> Transforms.cosineSim(v1,v2), filters);
         long endTime = System.currentTimeMillis();
         double time = new Double(endTime-startTime)/1000;
         System.out.println("Time to find "+list.getPortfolio().size()+" similar patents: "+time+" seconds");
@@ -99,11 +104,10 @@ public abstract class BaseSimilarityModel implements AbstractSimilarityModel {
         return patentList==null?0:patentList.size();
     }
 
-    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, String referringName, int limit, DistanceFunction dist, PortfolioList.Type portfolioType, Collection<? extends AbstractFilter> filters) {
-        Patent.setBaseVector(baseVector);
+    private synchronized PortfolioList similarPatentsHelper(List<Patent> patentList, INDArray baseVector, String referringName, int limit, DistanceFunction dist, Collection<? extends AbstractFilter> filters) {
         patentList.forEach(patent -> {
             if(patent!=null) {
-                patent.calculateSimilarityToTarget(dist);
+                double sim = Transforms.cosineSim(patent.getVector(),baseVector);
                 // apply item filters
                 Item clone;
                 switch(portfolioType) {
@@ -127,18 +131,9 @@ public abstract class BaseSimilarityModel implements AbstractSimilarityModel {
         while (!heap.isEmpty()) {
             Patent p = heap.remove();
             Item clone = null;
-            switch(portfolioType) {
-                case assignees: {
-                    clone=Patent.abstractAssignee(p,referringName);
-                    break;
-                }case patents: {
-                    clone=Patent.abstractPatent(p,referringName);
-                    break;
-                }
-            }
-            if(clone!=null)resultList.add(0, clone);
+            resultList.add(0, clone);
         }
-        PortfolioList results = new PortfolioList(resultList,portfolioType);
+        PortfolioList results = new PortfolioList(resultList);
         return results;
     }
 

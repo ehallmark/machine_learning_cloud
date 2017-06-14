@@ -1,6 +1,7 @@
 package ui_models.filters;
 
 import lombok.NonNull;
+import spark.QueryParamsMap;
 import ui_models.portfolios.AbstractPortfolio;
 import ui_models.portfolios.items.Item;
 
@@ -11,5 +12,6 @@ public interface AbstractFilter {
     enum Type {
         PreFilter, PostFilter
     }
+    void extractRelevantInformationFromParams(QueryParamsMap params);
     boolean shouldKeepItem(@NonNull Item item);
 }

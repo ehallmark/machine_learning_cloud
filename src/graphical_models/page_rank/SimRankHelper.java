@@ -24,7 +24,7 @@ public class SimRankHelper {
             long t2 = System.currentTimeMillis();
             System.out.println("Time to complete EPOCH "+i+": "+(t2-t1)/1000+" seconds");
 
-            if(i%10==9) {
+            //if(i%10==9) {
                 System.out.println("Starting to create similarity map!");
                 Map<String, List<Pair<String, Float>>> similarityMap = Collections.synchronizedMap(new HashMap<>(patentToCitedPatentsMap.size()));
                 algorithm.rankTable.forEach((edge, sim) -> {
@@ -45,7 +45,7 @@ public class SimRankHelper {
 
                 Database.trySaveObject(similarityMap, similarityMapFile);
                 System.out.println("Finished similarity map!");
-            }
+           // }
         }
     }
 }

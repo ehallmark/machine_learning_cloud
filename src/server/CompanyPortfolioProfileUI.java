@@ -326,8 +326,8 @@ public class CompanyPortfolioProfileUI {
                         }
                         case "Recent Value Timeline": {
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectValueTimelineData(INPUT_PATENTS, SimilarPatentServer.modelMap.get("pageRankValue")) :
-                                    HighchartDataAdapter.collectValueTimelineData (ASSIGNEE, SimilarPatentServer.modelMap.get("pageRankValue"));
+                                    HighchartDataAdapter.collectValueTimelineData(INPUT_PATENTS, SimilarPatentServer.valueModelMap.get("overallValue")) :
+                                    HighchartDataAdapter.collectValueTimelineData (ASSIGNEE, SimilarPatentServer.valueModelMap.get("overallValue"));
                             portfolioList = null;
                             LineChart chart = new LineChart("Recent Value Timeline for " + portfolioString, data, AxisType.DATETIME, "", "AI Value");
                             charts.add(chart);
@@ -349,11 +349,11 @@ public class CompanyPortfolioProfileUI {
                             List<Series<?>> data;
                             if (inputType.equals(PortfolioList.Type.assignees)) {
                                 assigneesToSearchFor = Database.possibleNamesForAssignee(ASSIGNEE);
-                                data = HighchartDataAdapter.collectAverageValueData(ASSIGNEE, inputType, SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
+                                data = HighchartDataAdapter.collectAverageValueData(ASSIGNEE, inputType, SimilarPatentServer.valueModelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             } else {
                                 //patents
                                 patentsToSearchFor = new HashSet<>(INPUT_PATENTS);
-                                data = HighchartDataAdapter.collectAverageValueData(INPUT_PATENTS, "Patents", SimilarPatentServer.modelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
+                                data = HighchartDataAdapter.collectAverageValueData(INPUT_PATENTS, "Patents", SimilarPatentServer.valueModelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             }
                             portfolioType = inputType;
                             comparator = Item.valueComparator();
@@ -422,8 +422,8 @@ public class CompanyPortfolioProfileUI {
                             portfolioList = null;
                             System.out.println("Using abstract portfolio type");
                             List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"), SimilarPatentFinder.getLookupTable()) :
-                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, limit, SimilarPatentServer.modelMap.get("compDBAssetsPurchased"),SimilarPatentFinder.getLookupTable());
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData(INPUT_PATENTS, "Patents", inputType, limit, SimilarPatentServer.valueModelMap.get("compDBAssetsPurchased"), SimilarPatentFinder.getLookupTable()) :
+                                    HighchartDataAdapter.collectLikelyAssetBuyersData (ASSIGNEE, inputType, limit, SimilarPatentServer.valueModelMap.get("compDBAssetsPurchased"),SimilarPatentFinder.getLookupTable());
 
                             AbstractChart chart = new PieChart("Top Likely Asset Buyers for " + portfolioString, data);
                             // test!
@@ -439,15 +439,15 @@ public class CompanyPortfolioProfileUI {
                 System.out.println("Starting to retrieve portfolio list...");
                 if (useSimilarPatentFinders) {
                     System.out.println("Using similar patent finders");
-                    firstFinder = SimilarPatentServer.getFirstPatentFinder(modelType,labelsToExclude, customAssigneeList, patentsToSearchIn, new HashSet<>(), searchEntireDatabase, includeSubclasses, allowResultsFromOtherCandidateSet, portfolioType.toString(), patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                    firstFinder = null;
 
                     if (firstFinder == null || firstFinder.numItems() == 0) {
                         return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
                     }
 
-                    List<AbstractSimilarityModel> secondFinders = SimilarPatentServer.getSecondPatentFinder(modelType,mergeSearchInput, patentsToSearchFor, assigneesToSearchFor, classCodesToSearchFor);
+                    AbstractSimilarityModel secondFinder = null;
 
-                    if (secondFinders.isEmpty() || secondFinders.stream().collect(Collectors.summingInt(finder -> finder.numItems())) == 0) {
+                    if (secondFinder == null || secondFinder.numItems() == 0) {
                         return new Gson().toJson(new SimpleAjaxMessage("Unable to find any of the search inputs."));
                     }
 
@@ -458,7 +458,7 @@ public class CompanyPortfolioProfileUI {
                             new ThresholdFilter(threshold)
                     );
                     while(threshold>0.0&&(portfolioList==null||portfolioList.getPortfolio().size()<limit)) {
-                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinders, portfolioType, limit, filters);
+                        portfolioList = SimilarPatentServer.runPatentFinderModel(firstFinder, secondFinder, limit, filters);
                         threshold-=0.2;
                     }
                     System.out.println("Finished similar patent model.");
@@ -475,7 +475,7 @@ public class CompanyPortfolioProfileUI {
 
                     // Handle overall value
                     if (comparingByValue) {
-                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.modelMap.entrySet()) {
+                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.valueModelMap.entrySet()) {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
@@ -486,7 +486,7 @@ public class CompanyPortfolioProfileUI {
                     } else {
                         // faster to init results first
                         portfolioList.init(comparator, limit);
-                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.modelMap.entrySet()) {
+                        for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.valueModelMap.entrySet()) {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();
                             if (attributes.contains(key) && model != null) {
