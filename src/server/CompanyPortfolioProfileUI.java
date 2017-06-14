@@ -13,9 +13,7 @@ import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import ui_models.attributes.value.ValueAttr;
-import ui_models.filters.AbstractFilter;
-import ui_models.filters.LabelFilter;
-import ui_models.filters.ThresholdFilter;
+
 import ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;
 import tools.AssigneeTrimmer;
