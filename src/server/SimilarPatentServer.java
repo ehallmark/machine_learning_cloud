@@ -101,6 +101,14 @@ public class SimilarPatentServer {
         }
     }
 
+    public static String humanAttributeFor(String attr) {
+        if(javaAttrToHumanAttrMap.containsKey(attr))  {
+            return javaAttrToHumanAttrMap.get(attr);
+        } else {
+            return attr;
+        }
+    }
+
     public static ClassificationAttr getTagger() {
         return tagger;
     }
@@ -162,8 +170,8 @@ public class SimilarPatentServer {
     static void evaluateModel(ValueAttr model, Collection<Item> portfolio, String valueParamType, PortfolioList.Type type) {
         System.out.println("Starting to evaluate model: "+valueParamType);
         for (Item item : portfolio) {
-            double score = model.attributesFor(PortfolioList.asList(item.getName(),type),1);
-            item.setValue(valueParamType,score);
+            double score = model.attributesFor(new PortfolioList(Arrays.asList(item)),1);
+            item.setData(valueParamType,score);
         }
         System.out.println("Finished "+valueParamType);
     }
@@ -307,11 +315,11 @@ public class SimilarPatentServer {
         return table().with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr->th(Item.humanAttributeFor(attr))).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(humanAttributeFor(attr))).collect(Collectors.toList())
                         )
                 ),tbody().with(
                         items.stream().map(item->tr().with(
-                                item.getDataAsRow(attributes).getCells().stream().map(cell->cell==null?td(""):td(cell.getContent().toString())).collect(Collectors.toList())
+                                item.getDataAsRow(attributes).stream().map(cell->cell==null?td(""):td(cell.toString())).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
 

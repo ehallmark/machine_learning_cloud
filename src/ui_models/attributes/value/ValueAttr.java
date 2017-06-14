@@ -3,7 +3,6 @@ package ui_models.attributes.value;
 import lombok.Getter;
 import seeding.Database;
 import ui_models.attributes.AbstractAttribute;
-import ui_models.portfolios.AbstractPortfolio;
 import ui_models.attributes.value.ValueMapNormalizer;
 import ui_models.portfolios.PortfolioList;
 
@@ -44,21 +43,17 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
 
     // Returns value between 1 and 5
     @Override
-    public Double attributesFor(AbstractPortfolio portfolio, int n) {
+    public Double attributesFor(PortfolioList portfolio, int n) {
         return portfolio.getTokens().stream().collect(Collectors.averagingDouble(token->{
-            if(model.containsKey(token)) {
-                return model.get(token);
-            } else {
-                return (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
-            }
+            return evaluate(token);
         }));
     }
 
     public double evaluate(String token) {
-        if(Database.isAssignee(token)) {
-            return attributesFor(PortfolioList.asList(token,PortfolioList.Type.assignees),1);
+        if(model.containsKey(token)) {
+            return model.get(token);
         } else {
-            return attributesFor(PortfolioList.asList(token, PortfolioList.Type.patents),1);
+            return (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
         }
     }
 }

@@ -1,9 +1,8 @@
 package ui_models.portfolios;
 
+import lombok.Getter;
 import seeding.Database;
 import ui_models.filters.AbstractFilter;
-import ui_models.portfolios.items.AbstractAssignee;
-import ui_models.portfolios.items.AbstractPatent;
 import excel.ExcelHandler;
 import ui_models.portfolios.items.Item;
 
@@ -14,7 +13,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/1/16.
  */
 public class PortfolioList implements Comparable<PortfolioList> {
-    private static Map<String,Double> colWidthsMap;
+    @Getter
     private List<Item> portfolio;
     private double avgSimilarity;
     private List<String> attributes;

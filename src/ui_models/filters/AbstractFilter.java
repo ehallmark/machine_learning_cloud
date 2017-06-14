@@ -2,7 +2,6 @@ package ui_models.filters;
 
 import lombok.NonNull;
 import spark.QueryParamsMap;
-import ui_models.portfolios.AbstractPortfolio;
 import ui_models.portfolios.items.Item;
 
 /**
