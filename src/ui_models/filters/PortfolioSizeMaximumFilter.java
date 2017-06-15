@@ -1,15 +1,27 @@
 package ui_models.filters;
 
+import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import spark.QueryParamsMap;
 import ui_models.portfolios.items.Item;
+
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.input;
+import static j2html.TagCreator.textarea;
 
 /**
  * Created by ehallmark on 5/10/17.
  */
 public class PortfolioSizeMaximumFilter implements AbstractFilter {
     private int limit = 0;
+
+    @Override
+    public Tag getOptionsTag() {
+        return div().with(
+                input().withType("number").withName(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER)
+        );
+    }
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {

@@ -1,5 +1,6 @@
 package ui_models.filters;
 
+import j2html.tags.Tag;
 import lombok.NonNull;
 import spark.QueryParamsMap;
 import ui_models.portfolios.items.Item;
@@ -13,4 +14,5 @@ public interface AbstractFilter {
     }
     void extractRelevantInformationFromParams(QueryParamsMap params);
     boolean shouldKeepItem(@NonNull Item item);
+    Tag getOptionsTag();
 }

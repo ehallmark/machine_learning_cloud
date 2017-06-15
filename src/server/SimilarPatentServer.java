@@ -3,6 +3,7 @@ package server;
 import j2html.tags.ContainerTag;
 import ui_models.portfolios.attributes.AssigneeNameAttribute;
 import ui_models.portfolios.attributes.InventionTitleAttribute;
+import ui_models.portfolios.attributes.NameAttribute;
 import ui_models.portfolios.attributes.PortfolioSizeAttribute;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
@@ -52,6 +53,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     private static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     private static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
+    private static final String TECHNOLOGIES_TO_SEARCH_FOR_FIELD = "technologiesToSearchFor";
     private static final String VALUE_MODELS_ARRAY_FIELD = "valueModels[]";
     private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
@@ -67,6 +69,7 @@ public class SimilarPatentServer {
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,Comparator<Item>> comparatorMap = new HashMap<>();
+    static List<AbstractAttribute> defaultAttributes = new ArrayList<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -171,9 +174,14 @@ public class SimilarPatentServer {
     }
 
     public static void loadAttributes() {
-        attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-        attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
-        attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
+        if(attributesMap.isEmpty()) {
+            attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
+            attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
+            attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
+        }
+        if(defaultAttributes.isEmpty()) {
+            defaultAttributes.add(new NameAttribute());
+        }
     }
 
     public static void loadTechTaggerModel() {
@@ -272,6 +280,7 @@ public class SimilarPatentServer {
                 List<String> preFilterModels = extractArray(req,PRE_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req,POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
+                List<String> technologies = extractArray(req,TECHNOLOGIES_TO_SEARCH_FOR_FIELD);
 
                 // Get data attributes
                 List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
@@ -279,6 +288,10 @@ public class SimilarPatentServer {
                 // Get filters
                 List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->preFilterModelMap.get(modelName)).collect(Collectors.toList());
                 List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName->postFilterModelMap.get(modelName)).collect(Collectors.toList());
+                // Update filters based on params
+                Arrays.asList(preFilters,postFilters).stream()
+                        .flatMap(filterList->filterList.stream())
+                        .forEach(filter->filter.extractRelevantInformationFromParams(req.queryMap()));
 
                 // Get value models
                 List<ValueAttr> evaluators = valueModels.stream().map(modelName->valueModelMap.get(modelName)).collect(Collectors.toList());
@@ -309,14 +322,29 @@ public class SimilarPatentServer {
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
+                // Default attrs
+                defaultAttributes.forEach(attribute->{
+                    portfolioList.applyAttribute(attribute);
+                });
                 attributes.forEach(attribute->{
                     portfolioList.applyAttribute(attribute);
+                });
+
+                // Apply value models
+                evaluators.forEach(valueModel->{
+                    portfolioList.applyAttribute(valueModel);
                 });
 
                 System.out.println("Applying post filters...");
                 // Run filters
                 postFilters.forEach(filter->{
                     portfolioList.applyFilter(filter);
+                });
+
+                System.out.println("Applying technology values...");
+                // Apply technology values
+                technologies.forEach(technology->{
+                    portfolioList.applyAttribute(new SpecificTechnologyEvaluator(technology,getTechTagger()));
                 });
 
                 System.out.println("Rendering table...");
@@ -438,9 +466,9 @@ public class SimilarPatentServer {
     }
 
     private static Tag gatherTechnologySelect() {
-        return select().withName(Constants.TECHNOLOGY).with(
-                getTechTagger().getClassifications().stream().map(tech->option(tech).withValue(tech)).collect(Collectors.toList())
-        );
+        return div().with(getTechTagger().getClassifications().stream().map(technology-> {
+            return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_FIELD).withValue(technology));
+        }).collect(Collectors.toList()));
     }
 
     private static Tag candidateSetModelsForm() {
@@ -493,7 +521,14 @@ public class SimilarPatentServer {
                                                         ),hr(),
                                                         expandableDiv("Filters",h4("Select applicable Filters"),div().with(
                                                                 Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
-                                                                    return pair._1.keySet().stream().map(key->div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(pair._2).withValue(key)));
+                                                                    return pair._1.entrySet().stream().map(e->{
+                                                                        String key = e.getKey();
+                                                                        AbstractFilter filter = e.getValue();
+                                                                        return div().with(
+                                                                                label(humanAttributeFor(key)),
+                                                                                input().withType("checkbox").withName(pair._2).withValue(key),
+                                                                                filter.getOptionsTag()==null? div():filter.getOptionsTag());
+                                                                    });
                                                                 }).collect(Collectors.toList()))
                                                         ),hr(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
