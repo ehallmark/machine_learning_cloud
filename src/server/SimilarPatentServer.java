@@ -387,7 +387,48 @@ public class SimilarPatentServer {
                         script().attr("src","https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"),
                         script().attr("src","http://code.highcharts.com/highcharts.js"),
                         script().attr("src","/js/customEvents.js"),
-                        script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
+                        script().attr("src","/css/multiselect.css"),
+                        script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}"),
+                        script().withText(
+                                "var expanded = false;" +
+                                "function showCheckboxes() {" +
+                                "  var checkboxes = document.getElementById(\"checkboxes\");" +
+                                "  if (!expanded) {" +
+                                "    checkboxes.style.display = \"block\";" +
+                                "    expanded = true;" +
+                                "  } else {" +
+                                "    checkboxes.style.display = \"none\";" +
+                                "    expanded = false;" +
+                                "  }" +
+                                "}"),
+                        style().withText(
+                                ".multiselect {" +
+                                "  width: 200px;" +
+                                "}" +
+                                ".selectBox {" +
+                                "  position: relative;" +
+                                "}" +
+                                ".selectBox select {" +
+                                "  width: 100%;" +
+                                "  font-weight: bold;" +
+                                "}" +
+                                ".overSelect {" +
+                                "  position: absolute;" +
+                                "  left: 0;" +
+                                "  right: 0;" +
+                                "  top: 0;" +
+                                "  bottom: 0;" +
+                                "}" +
+                                "#checkboxes {" +
+                                "  display: none;" +
+                                "  border: 1px #dadada solid;" +
+                                "}" +
+                                "#checkboxes label {" +
+                                "  display: block;" +
+                                "}" +
+                                "#checkboxes label:hover {" +
+                                "  background-color: #1e90ff;" +
+                                "}")
                 ),
                 body().with(
                         div().attr("style", "width:80%; padding: 2% 10%;").with(
@@ -453,9 +494,18 @@ public class SimilarPatentServer {
     }
 
     private static Tag gatherTechnologySelect() {
-        return div().attr("style","max-height: 200px; overflow-y: auto;").with(getTechTagger().getClassifications().stream().map(technology-> {
-            return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology));
-        }).collect(Collectors.toList()));
+        return div().withClass("multiselect").with(
+                div().withClass("selectBox").attr("onclick","showCheckboxes();").with(
+                        select().with(
+                                option("Select an Option")
+                        ),
+                        div().withClass("overSelect")
+                ), div().withId("checkboxes").with(
+                        getTechTagger().getClassifications().stream().map(technology-> {
+                            return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology));
+                        }).collect(Collectors.toList())
+                )
+        );
     }
 
     private static Tag candidateSetModelsForm() {
