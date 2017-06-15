@@ -1,5 +1,6 @@
 package highcharts;
 
+import seeding.Constants;
 import server.SimilarPatentServer;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -297,7 +298,7 @@ public class HighchartDataAdapter {
         PointSeries series = new PointSeries();
         series.setName(name);
         portfolioList.getItemList().forEach(p->{
-            Point point = new Point(p.getName(),similarity?(p.getSimilarity()*100):p.getValue()); // for visualizing percentages
+            Point point = new Point(p.getName(),similarity?(p.getSimilarity()*100):(Number)p.getData(Constants.AI_VALUE)); // for visualizing percentages
             series.addPoint(point);
         });
         data.add(series);

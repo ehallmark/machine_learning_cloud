@@ -3,7 +3,6 @@ package server;
 import j2html.tags.ContainerTag;
 import ui_models.portfolios.attributes.AssigneeNameAttribute;
 import ui_models.portfolios.attributes.InventionTitleAttribute;
-import ui_models.portfolios.attributes.NameAttribute;
 import ui_models.portfolios.attributes.PortfolioSizeAttribute;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;

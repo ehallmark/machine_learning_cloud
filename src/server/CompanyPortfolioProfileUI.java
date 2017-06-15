@@ -335,7 +335,6 @@ public class CompanyPortfolioProfileUI {
                             Collection<String> assets = inputType.equals(PortfolioList.Type.patents) ?
                                     new HashSet<>(INPUT_PATENTS):
                                     Database.selectPatentNumbersFromAssignee(ASSIGNEE);
-                            comparator = Item.valueComparator();
                             comparingByValue = true;
                             portfolioList = new PortfolioList(assets.stream().map(asset->new Item(asset)).collect(Collectors.toList()));
                             break;
@@ -353,7 +352,6 @@ public class CompanyPortfolioProfileUI {
                                 data = HighchartDataAdapter.collectAverageValueData(INPUT_PATENTS, "Patents", SimilarPatentServer.valueModelMap.entrySet().stream().filter(e->!badValueModels.contains(e.getKey())).map(e -> e.getValue()).collect(Collectors.toList()));
                             }
                             portfolioType = inputType;
-                            comparator = Item.valueComparator();
                             comparingByValue = true;
                             portfolioList = null;
                             AbstractChart chart = new ColumnChart("Valuation for " + portfolioString, data, 1.0, 5.0);
@@ -470,10 +468,10 @@ public class CompanyPortfolioProfileUI {
                                 SimilarPatentServer.evaluateModel(model, portfolioList.getItemList());
                             }
                         }
-                        portfolioList.init(comparator, limit);
+                        portfolioList.init(Constants.AI_VALUE, limit);
                     } else {
                         // faster to init results first
-                        portfolioList.init(comparator, limit);
+                        portfolioList.init(Constants.SIMILARITY, limit);
                         for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.valueModelMap.entrySet()) {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();
