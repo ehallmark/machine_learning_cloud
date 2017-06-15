@@ -52,7 +52,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     private static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     private static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    private static final String TECHNOLOGIES_TO_SEARCH_FOR_FIELD = "technologiesToSearchFor";
+    private static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
     private static final String VALUE_MODELS_ARRAY_FIELD = "valueModels[]";
     private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
@@ -271,7 +271,7 @@ public class SimilarPatentServer {
                 List<String> preFilterModels = extractArray(req,PRE_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req,POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
-                List<String> technologies = extractArray(req,TECHNOLOGIES_TO_SEARCH_FOR_FIELD);
+                List<String> technologies = extractArray(req,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
 
                 // Get data attributes
                 List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
@@ -454,7 +454,7 @@ public class SimilarPatentServer {
 
     private static Tag gatherTechnologySelect() {
         return div().attr("style","max-height: 200px; overflow-y: auto;").with(getTechTagger().getClassifications().stream().map(technology-> {
-            return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_FIELD).withValue(technology));
+            return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology));
         }).collect(Collectors.toList()));
     }
 
