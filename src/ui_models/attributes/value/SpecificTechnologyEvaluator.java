@@ -17,7 +17,7 @@ public class SpecificTechnologyEvaluator extends ValueAttr {
     private ClassificationAttr tagger;
     private String technology;
     public SpecificTechnologyEvaluator(String technology, ClassificationAttr tagger) {
-        super(ValueMapNormalizer.DistributionType.Normal,technology);
+        super(ValueMapNormalizer.DistributionType.Normal,technology+" Value");
         this.tagger=tagger;
         this.technology=technology;
     }

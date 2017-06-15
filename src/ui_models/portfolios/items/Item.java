@@ -3,6 +3,7 @@ package ui_models.portfolios.items;
 import lombok.Getter;
 import lombok.Setter;
 import org.deeplearning4j.berkeley.Pair;
+import seeding.Constants;
 import ui_models.portfolios.PortfolioList;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,16 +16,12 @@ public class Item implements Comparable<Item> {
     protected String name;
     @Getter @Setter
     protected double similarity;
-    @Getter @Setter
-    protected double value;
     @Getter
     protected List<Pair<String,Double>> technologyList;
     protected PortfolioList.Type type;
     protected Map<String,Object> dataMap = new HashMap<>();
 
     public static final Comparator<Item> similarityComparator() { return (o1, o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
-
-    public static final Comparator<Item> valueComparator() { return (o1, o2)->Double.compare(o1.getValue(),o2.getValue());}
 
     public Item(String name) {
         this.name=name;
@@ -34,8 +31,12 @@ public class Item implements Comparable<Item> {
         Item item = new Item(name);
         item.dataMap=dataMap;
         item.similarity=similarity;
-        item.value=value;
         return item;
+    }
+
+    public void init() {
+        addData(Constants.SIMILARITY,getSimilarity());
+        addData(Constants.NAME,getName());
     }
 
     public List<Object> getDataAsRow(List<String> attributes) {

@@ -40,8 +40,12 @@ public class PortfolioList implements Comparable<PortfolioList> {
         });
     }
 
-    public void init(Comparator<Item> comparator, int limit) {
-        itemList = itemList.stream().sorted(comparator.reversed()).limit(limit).collect(Collectors.toList());
+    public void init(String sortedBy, int limit) {
+        Collections.sort(itemList,(i1,i2)->(Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue())));
+        itemList=itemList.subList(0,Math.min(limit,itemList.size()));
+        itemList.forEach(item->{
+            item.init();
+        });
         if (itemList.size() > 0) {
             this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
         } else this.avgSimilarity = 0.0d;

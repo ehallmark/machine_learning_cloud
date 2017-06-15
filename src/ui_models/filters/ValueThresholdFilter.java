@@ -28,6 +28,6 @@ public class ValueThresholdFilter implements AbstractFilter {
 
     @Override
     public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : item.getValue()>threshold;
+        return threshold==null ? true : ((Number)item.getData(Constants.AI_VALUE)).doubleValue()>threshold;
     }
 }

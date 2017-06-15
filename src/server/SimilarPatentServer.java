@@ -68,15 +68,11 @@ public class SimilarPatentServer {
     static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    static Map<String,Comparator<Item>> comparatorMap = new HashMap<>();
-    static List<AbstractAttribute> defaultAttributes = new ArrayList<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
-        comparatorMap.put(Constants.VALUE_COMPARATOR,Item.valueComparator());
-        comparatorMap.put(Constants.SIMILARITY_COMPARATOR,Item.similarityComparator());
         { // Attrs
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("Asset", Constants.NAME);
@@ -179,9 +175,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
         }
-        if(defaultAttributes.isEmpty()) {
-            defaultAttributes.add(new NameAttribute());
-        }
     }
 
     public static void loadTechTaggerModel() {
@@ -265,7 +258,6 @@ public class SimilarPatentServer {
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
                     inputsToSearchIn=new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
                     new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-
                 } else {
                     inputsToSearchIn=new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
                 }
@@ -317,15 +309,8 @@ public class SimilarPatentServer {
                 System.out.println("Running model...");
                 PortfolioList portfolioList = runPatentFinderModel(firstFinder,secondFinder,limit,preFilters);
 
-                System.out.println("Initializing portfolio...");
-                portfolioList.init(comparatorMap.get(comparator),limit);
-
                 // Apply attributes
                 System.out.println("Applying attributes...");
-                // Default attrs
-                defaultAttributes.forEach(attribute->{
-                    portfolioList.applyAttribute(attribute);
-                });
                 attributes.forEach(attribute->{
                     portfolioList.applyAttribute(attribute);
                 });
@@ -334,6 +319,9 @@ public class SimilarPatentServer {
                 evaluators.forEach(valueModel->{
                     portfolioList.applyAttribute(valueModel);
                 });
+
+                System.out.println("Initializing portfolio...");
+                portfolioList.init(comparator,limit);
 
                 System.out.println("Applying post filters...");
                 // Run filters
@@ -348,7 +336,7 @@ public class SimilarPatentServer {
                 });
 
                 System.out.println("Rendering table...");
-                return tableFromPatentList(portfolioList.getItemList(),Arrays.asList(valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
+                return tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
 
             } catch(Exception e) {
                 System.out.println(e.getClass().getName()+": "+e.getMessage());
@@ -466,7 +454,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag gatherTechnologySelect() {
-        return div().with(getTechTagger().getClassifications().stream().map(technology-> {
+        return div().attr("style","max-height: 200px; overflow-y: auto;").with(getTechTagger().getClassifications().stream().map(technology-> {
             return div().with(label(technology),input().withType("checkbox").withName(TECHNOLOGIES_TO_SEARCH_FOR_FIELD).withValue(technology));
         }).collect(Collectors.toList()));
     }
@@ -487,21 +475,22 @@ public class SimilarPatentServer {
                                                         ),hr(),
                                                         expandableDiv("Search Within",
                                                                 h4("Search Within"),
-                                                                h5("Leave Blank To Search Full Database"),
+                                                                label("Leave Blank To Search Full Database"),br(),
                                                                 label("Custom Patent List (1 per line)"),br(),
                                                                 textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
                                                                 label("Custom Assignee List (1 per line)"),br(),
-                                                                textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br(),
-                                                                h4("To find"),select().withName(SEARCH_TYPE_FIELD).with(
+                                                                textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br()
+                                                        ),hr(),
+                                                        expandableDiv("Search For",
+                                                                h4("Search For"),
+                                                                select().withName(SEARCH_TYPE_FIELD).with(
                                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
                                                                             ContainerTag option = option(type.toString()).withValue(type.toString());
                                                                             if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
                                                                             return option;
                                                                         }).collect(Collectors.toList())
-                                                                )
-                                                        ),hr(),
-                                                        expandableDiv("Search For",
-                                                                h4("Search For"),
+                                                                ),br(),
+                                                                h4("With Similarity To"),
                                                                 label("Patents (1 per line)"),br(),
                                                                 textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
                                                                 label("Assignees (1 per line)"),br(),
