@@ -31,7 +31,9 @@ import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -208,17 +210,55 @@ public class SimilarPatentServer {
         );
     }
 
+    static void hostPublicAssets() {
+        File dir = new File("public/");
+        hostAssetsHelper(dir,"/");
+    }
+
+    private static void hostAssetsHelper(File file, String path) {
+        if(file.isDirectory()) {
+            for(File child : file.listFiles()) {
+                hostAssetsHelper(child, path+"/"+child.getName());
+            }
+        } else {
+            get(path+"/"+file.getName(),(request, response) -> {
+                response.type("text/javascript");
+
+                String pathToFile = "public"+path;
+                File f = new File(pathToFile);
+
+                OutputStream out = response.raw().getOutputStream();
+                BufferedReader reader = new BufferedReader(new FileReader(f));
+                reader.lines().forEach(line->{
+                    try {
+                        out.write(line.getBytes());
+                        out.write("\n".getBytes());
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+
+                out.close();
+                response.status(200);
+                return response.body();
+            });
+        }
+    }
+
     public static void server() {
         port(4568);
+
+        // HOST ASSETS
+        hostPublicAssets();
+
         // GET METHODS
         get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
         get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
 
-
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
-
             String pathToImage = Constants.DATA_FOLDER+"images/brand.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
@@ -387,48 +427,9 @@ public class SimilarPatentServer {
                         script().attr("src","https://ajax.googleapis.com/ajax/libs/jquery/3.0.0/jquery.min.js"),
                         script().attr("src","http://code.highcharts.com/highcharts.js"),
                         script().attr("src","/js/customEvents.js"),
-                        script().attr("src","/css/multiselect.css"),
-                        script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}"),
-                        script().withText(
-                                "var expanded = false;" +
-                                "function showCheckboxes() {" +
-                                "  var checkboxes = document.getElementById(\"checkboxes\");" +
-                                "  if (!expanded) {" +
-                                "    checkboxes.style.display = \"block\";" +
-                                "    expanded = true;" +
-                                "  } else {" +
-                                "    checkboxes.style.display = \"none\";" +
-                                "    expanded = false;" +
-                                "  }" +
-                                "}"),
-                        style().withText(
-                                ".multiselect {" +
-                                "  width: 200px;" +
-                                "}" +
-                                ".selectBox {" +
-                                "  position: relative;" +
-                                "}" +
-                                ".selectBox select {" +
-                                "  width: 100%;" +
-                                "  font-weight: bold;" +
-                                "}" +
-                                ".overSelect {" +
-                                "  position: absolute;" +
-                                "  left: 0;" +
-                                "  right: 0;" +
-                                "  top: 0;" +
-                                "  bottom: 0;" +
-                                "}" +
-                                "#checkboxes {" +
-                                "  display: none;" +
-                                "  border: 1px #dadada solid;" +
-                                "}" +
-                                "#checkboxes label {" +
-                                "  display: block;" +
-                                "}" +
-                                "#checkboxes label:hover {" +
-                                "  background-color: #1e90ff;" +
-                                "}")
+                        script().attr("src","/js/multiselect.js"),
+                        link().withRel("stylesheet").withHref("/css/multiselect.css"),
+                        script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
                         div().attr("style", "width:80%; padding: 2% 10%;").with(
@@ -436,7 +437,7 @@ public class SimilarPatentServer {
                                         img().attr("src", "/images/brand.png")
                                 ),
                                 hr(),
-                                h3("Artificial Intelligence Tools (Beta)"),
+                                h3("Artificial Intelligence Platform"),
                                 hr(),
                                 h4(message),
                                 form,
@@ -515,7 +516,7 @@ public class SimilarPatentServer {
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
-                                                h2("Knowledge Base"),
+                                                h2("Patent Recommendation System"),
                                                 form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
                                                         label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),

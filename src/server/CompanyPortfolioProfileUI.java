@@ -152,28 +152,7 @@ public class CompanyPortfolioProfileUI {
     }
 
     static void setupServer() {
-        get("/js/customEvents.js",(request, response) -> {
-            response.type("text/javascript");
-
-            String pathToFile = "public/js/customEvents.js";
-            File f = new File(pathToFile);
-
-            OutputStream out = response.raw().getOutputStream();
-            BufferedReader reader = new BufferedReader(new FileReader(f));
-            reader.lines().forEach(line->{
-                try {
-                    out.write(line.getBytes());
-                    out.write("\n".getBytes());
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-            });
-
-
-            out.close();
-            response.status(200);
-            return response.body();
-        });
+        SimilarPatentServer.hostPublicAssets();
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -190,7 +169,6 @@ public class CompanyPortfolioProfileUI {
         });
 
         get("/company_profile", (req, res) -> SimilarPatentServer.templateWrapper(res, generateReportsForm(), SimilarPatentServer.getAndRemoveMessage(req.session())));
-
 
         post("/company_profile_report", (req, res) -> {
             res.type("application/json");
