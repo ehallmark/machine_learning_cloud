@@ -319,9 +319,6 @@ public class SimilarPatentServer {
                     portfolioList.applyAttribute(valueModel);
                 });
 
-                System.out.println("Initializing portfolio...");
-                portfolioList.init(comparator,limit);
-
                 System.out.println("Applying post filters...");
                 // Run filters
                 postFilters.forEach(filter->{
@@ -333,6 +330,9 @@ public class SimilarPatentServer {
                 technologies.forEach(technology->{
                     portfolioList.applyAttribute(new SpecificTechnologyEvaluator(technology,getTechTagger()));
                 });
+
+                System.out.println("Initializing portfolio...");
+                portfolioList.init(comparator);
 
                 System.out.println("Rendering table...");
                 return tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
@@ -474,7 +474,7 @@ public class SimilarPatentServer {
                                                         ),hr(),
                                                         expandableDiv("Search Within",
                                                                 h4("Search Within"),
-                                                                label("Leave Blank To Search Full Database"),br(),
+                                                                h5("(Or Leave Blank To Search Full Database)"),
                                                                 label("Custom Patent List (1 per line)"),br(),
                                                                 textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
                                                                 label("Custom Assignee List (1 per line)"),br(),
