@@ -52,6 +52,7 @@ public class SimilarPatentServer {
     private static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     private static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     private static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
+    private static final String VALUE_MODELS_ARRAY_FIELD = "valueModels[]";
     private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     private static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
@@ -96,6 +97,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Expired Assets Filter", Constants.EXPIRATION_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assignees Filter", Constants.ASSIGNEES_TO_REMOVE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assets Filter", Constants.LABEL_FILTER);
+            humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -266,11 +268,13 @@ public class SimilarPatentServer {
                 System.out.println("Getting models...");
                 // Get Models to use
                 String similarityModel = extractString(req,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-                List<String> valueModels = Arrays.stream(req.queryParamsValues("valueModels[]")).collect(Collectors.toList());
-                List<String> preFilterModels = Arrays.stream(req.queryParamsValues(PRE_FILTER_ARRAY_FIELD)).collect(Collectors.toList());
-                List<String> postFilterModels = Arrays.stream(req.queryParamsValues(POST_FILTER_ARRAY_FIELD)).collect(Collectors.toList());
-                List<String> itemAttributes = Arrays.stream(req.queryParamsValues(ATTRIBUTES_ARRAY_FIELD)).collect(Collectors.toList());
+                List<String> valueModels = extractArray(req,VALUE_MODELS_ARRAY_FIELD);
+                List<String> preFilterModels = extractArray(req,PRE_FILTER_ARRAY_FIELD);
+                List<String> postFilterModels = extractArray(req,POST_FILTER_ARRAY_FIELD);
+                List<String> itemAttributes = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
 
+                // Get data attributes
+                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
 
                 // Get filters
                 List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->preFilterModelMap.get(modelName)).collect(Collectors.toList());
@@ -305,7 +309,6 @@ public class SimilarPatentServer {
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
-                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
                 attributes.forEach(attribute->{
                     portfolioList.applyAttribute(attribute);
                 });
@@ -482,8 +485,13 @@ public class SimilarPatentServer {
                                                                 attributesMap.keySet().stream().map(key-> {
                                                                     return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(key));
                                                                 }).collect(Collectors.toList()))
-                                                        ),hr()
-                                                        ,expandableDiv("Filters",h4("Select applicable Filters"),div().with(
+                                                        ),hr(),
+                                                        expandableDiv("Valuation Models",h4("Select Value Fields to capture"),div().with(
+                                                                valueModelMap.keySet().stream().map(key-> {
+                                                                    return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(key));
+                                                                }).collect(Collectors.toList()))
+                                                        ),hr(),
+                                                        expandableDiv("Filters",h4("Select applicable Filters"),div().with(
                                                                 Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
                                                                     return pair._1.keySet().stream().map(key->div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(pair._2).withValue(key)));
                                                                 }).collect(Collectors.toList()))
@@ -498,6 +506,11 @@ public class SimilarPatentServer {
     }
 
 
+    static List<String> extractArray(Request req, String param) {
+        String[] array = req.queryParamsValues(param);
+        if(array!=null) return Arrays.stream(array).collect(Collectors.toList());
+        else return Collections.emptyList();
+    }
 
     static String extractString(Request req, String param, String defaultVal) {
         return extractString(req.queryMap(),param,defaultVal);
