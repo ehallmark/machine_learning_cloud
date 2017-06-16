@@ -53,7 +53,6 @@ import static spark.Spark.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
-    private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
     private static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
@@ -209,7 +208,7 @@ public class SimilarPatentServer {
 
     private static Tag homePage() {
         return div().with(
-                h3().with(a("Portfolio Comparison").withHref("/candidate_set_models")),h3().with(a("Company Profiler").withHref("/company_profile")),
+                h3().with(a("Patent Recommendation System").withHref("/candidate_set_models")),h3().with(a("Company Profiler").withHref("/company_profile")),
                 h3().with(a("Lead Development").withHref("/lead_development")),
                 h3().with(a("Tech Tagger").withHref("/tech_tagger")),
                 h3().with(a("Asset Valuation").withHref("/asset_valuation")),
@@ -219,7 +218,7 @@ public class SimilarPatentServer {
 
     static void hostPublicAssets() {
         File dir = new File("public/");
-        hostAssetsHelper(dir,"/");
+        hostAssetsHelper(dir,"");
     }
 
     private static void hostAssetsHelper(File file, String path) {
@@ -575,7 +574,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating")),
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
@@ -638,10 +637,10 @@ public class SimilarPatentServer {
                                                                 select().withName(COMPARATOR_FIELD).with(
                                                                         option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
                                                                         option("Value").withValue(Constants.AI_VALUE),
-                                                                        option("Portfoli Size").withValue(Constants.PORTFOLIO_SIZE)
+                                                                        option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
                                                                 )
                                                         ),hr(),
-                                                        button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
+                                                        button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
