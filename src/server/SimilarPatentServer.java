@@ -565,10 +565,12 @@ public class SimilarPatentServer {
                                 option("Select an Option")
                         ),
                         div().withClass("overSelect")
-                ), div().withId("checkboxes").with(
-                        getTechTagger().getClassifications().stream().map(technology-> {
-                            return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology)));
-                        }).collect(Collectors.toList())
+                ), div().attr("style","max-height: 400px;").with(
+                        div().withId("checkboxes").with(
+                                getTechTagger().getClassifications().stream().map(technology-> {
+                                    return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology)));
+                                }).collect(Collectors.toList())
+                        )
                 )
         );
     }
@@ -642,14 +644,14 @@ public class SimilarPatentServer {
                                                                         )
                                                                 ),hr(),
                                                                 button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
-                                                                hr(),
-                                                                navigationTag(), br(),br()
+                                                                hr()
                                                         )
                                                 )
                                         )
                                 )
                         )
-                )
+                ),
+                navigationTag(), br(),br()
         );
     }
 
