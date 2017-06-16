@@ -347,9 +347,11 @@ public class SimilarPatentServer {
                 List<String> itemAttributes = extractArray(params,ATTRIBUTES_ARRAY_FIELD);
                 List<String> technologies = extractArray(params,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
 
+                System.out.println(" ... Attributes");
                 // Get data attributes
                 List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
 
+                System.out. println(" ... Filters");
                 // Get filters
                 List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName->preFilterModelMap.get(modelName)).collect(Collectors.toList());
                 List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName->postFilterModelMap.get(modelName)).collect(Collectors.toList());
@@ -358,9 +360,11 @@ public class SimilarPatentServer {
                         .flatMap(filterList->filterList.stream())
                         .forEach(filter->filter.extractRelevantInformationFromParams(params));
 
+                System.out.println(" ... Evaluators");
                 // Get value models
                 List<ValueAttr> evaluators = valueModels.stream().map(modelName->valueModelMap.get(modelName)).collect(Collectors.toList());
 
+                System.out.println(" ... Similarity model");
                 // Get similarity model
                 AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel+"_"+portfolioType.toString());
 
@@ -565,7 +569,7 @@ public class SimilarPatentServer {
                                 option("Select an Option")
                         ),
                         div().withClass("overSelect")
-                ), div().attr("style","max-height: 400px;").with(
+                ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
                         div().withId("checkboxes").with(
                                 getTechTagger().getClassifications().stream().map(technology-> {
                                     return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology)));
@@ -651,7 +655,7 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                navigationTag(), br(),br()
+                navigationTag()
         );
     }
 
