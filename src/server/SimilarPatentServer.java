@@ -227,7 +227,9 @@ public class SimilarPatentServer {
                 hostAssetsHelper(child, path+"/"+child.getName());
             }
         } else {
-            get(path+"/"+file.getName(),(request, response) -> {
+            String url = path+"/"+file.getName();
+            System.out.println("HOSTING ASSETS AT URL: "+url);
+            get(url,(request, response) -> {
                 response.type("text/javascript");
 
                 String pathToFile = "public"+path;
