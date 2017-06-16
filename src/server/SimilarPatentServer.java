@@ -1,6 +1,11 @@
 package server;
 
+import com.google.gson.Gson;
+import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
+import server.tools.AjaxChartMessage;
+import server.tools.BackButtonHandler;
+import server.tools.SimpleAjaxMessage;
 import ui_models.portfolios.attributes.AssigneeNameAttribute;
 import ui_models.portfolios.attributes.InventionTitleAttribute;
 import ui_models.portfolios.attributes.PortfolioSizeAttribute;
@@ -36,6 +41,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -48,7 +54,7 @@ import static spark.Spark.*;
  */
 public class SimilarPatentServer {
     private static final String SELECT_BETWEEN_CANDIDATES_FORM_ID = "select-between-candidates-form";
-
+    static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
     private static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     private static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
@@ -270,35 +276,62 @@ public class SimilarPatentServer {
         });
 
         post("/similar_candidate_sets", (req, res) -> {
+            res.type("application/json");
             try {
+                System.out.println("Handling back button handler...");
+                QueryParamsMap params;
+
+                // handle navigation
+                BackButtonHandler<QueryParamsMap> navigator;
+                if (req.session().attribute("navigator") == null) {
+                    navigator = new BackButtonHandler<>();
+                    req.session().attribute("navigator", navigator);
+                } else {
+                    navigator = req.session().attribute("navigator");
+                }
+
+                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
+                    QueryParamsMap tmp = navigator.goBack();
+                    if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
+                    params = tmp;
+                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
+                    QueryParamsMap tmp = navigator.goForward();
+                    if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
+                    params = tmp;
+                } else {
+                    params = req.queryMap();
+                    navigator.addRequest(new QueryParamsMap(req.raw()));
+                }
+
+
                 System.out.println("Getting parameters...");
                 // get meta parameters
-                int limit = extractInt(req, "limit", 10);
-                String searchType = extractString(req, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+                int limit = extractInt(params, "limit", 10);
+                String searchType = extractString(params, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-                String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY_COMPARATOR);
+                String comparator = extractString(params, COMPARATOR_FIELD, Constants.SIMILARITY);
 
                 System.out.println("Collecting inputs to search for...");
                 // get input data
                 // TODO Handle Gather Technology as input
                 Collection<String> inputsToSearchFor;
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
-                    inputsToSearchFor=new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
-                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->{
+                    inputsToSearchFor=new HashSet<>(preProcess(extractString(params, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->{
                        inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
                     });
                 } else {
-                    inputsToSearchFor=new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                    inputsToSearchFor=new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
                 }
 
                 System.out.println("Collecting inputs to search in...");
                 // Get scope of search
                 Collection<String> inputsToSearchIn;
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
-                    inputsToSearchIn=new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    inputsToSearchIn=new HashSet<>(preProcess(extractString(params, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
                 } else {
-                    inputsToSearchIn=new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                    inputsToSearchIn=new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
                 }
 
                 // Check whether to search entire database
@@ -306,12 +339,12 @@ public class SimilarPatentServer {
 
                 System.out.println("Getting models...");
                 // Get Models to use
-                String similarityModel = extractString(req,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-                List<String> valueModels = extractArray(req,VALUE_MODELS_ARRAY_FIELD);
-                List<String> preFilterModels = extractArray(req,PRE_FILTER_ARRAY_FIELD);
-                List<String> postFilterModels = extractArray(req,POST_FILTER_ARRAY_FIELD);
-                List<String> itemAttributes = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
-                List<String> technologies = extractArray(req,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
+                String similarityModel = extractString(params,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
+                List<String> valueModels = extractArray(params,VALUE_MODELS_ARRAY_FIELD);
+                List<String> preFilterModels = extractArray(params,PRE_FILTER_ARRAY_FIELD);
+                List<String> postFilterModels = extractArray(params,POST_FILTER_ARRAY_FIELD);
+                List<String> itemAttributes = extractArray(params,ATTRIBUTES_ARRAY_FIELD);
+                List<String> technologies = extractArray(params,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
 
                 // Get data attributes
                 List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
@@ -322,7 +355,7 @@ public class SimilarPatentServer {
                 // Update filters based on params
                 Arrays.asList(preFilters,postFilters).stream()
                         .flatMap(filterList->filterList.stream())
-                        .forEach(filter->filter.extractRelevantInformationFromParams(req.queryMap()));
+                        .forEach(filter->filter.extractRelevantInformationFromParams(params));
 
                 // Get value models
                 List<ValueAttr> evaluators = valueModels.stream().map(modelName->valueModelMap.get(modelName)).collect(Collectors.toList());
@@ -332,15 +365,11 @@ public class SimilarPatentServer {
 
                 AbstractSimilarityModel firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
                 if (firstFinder == null || firstFinder.numItems() == 0) {
-                    res.redirect("/candidate_set_models");
-                    req.session().attribute("message", "Unable to find any results to search in.");
                     return null;
                 }
 
                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                 if (secondFinder == null || secondFinder.numItems() == 0) {
-                    res.redirect("/candidate_set_models");
-                    req.session().attribute("message", "Unable to find any of the search inputs.");
                     return null;
                 }
 
@@ -375,17 +404,81 @@ public class SimilarPatentServer {
                 portfolioList.init(comparator);
 
                 System.out.println("Rendering table...");
-                return tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()));
+
+                List<AbstractChart> charts = new ArrayList<>();
+                AtomicInteger chartCnt = new AtomicInteger(0);
+                return new Gson().toJson(new AjaxChartMessage(div().with(
+                        charts.isEmpty() ? div() : div().with(
+                                h4("Charts"),
+                                div().with(
+                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                )
+                        ),
+                        portfolioList == null ? div() : div().with(
+                                h4("Data"),
+                                tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
+                        )
+                ).render(), charts));
 
             } catch(Exception e) {
                 System.out.println(e.getClass().getName()+": "+e.getMessage());
-                res.redirect("/candidate_set_models");
-                req.session().attribute("message","Error occured: "+e.toString());
-                return null;
+                return new Gson().toJson(new SimpleAjaxMessage("ERROR: "+e.getMessage()));
             }
 
         });
 
+    }
+
+    static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
+        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
+                + "var url = '/company_profile_report'; "
+                + "var tempScrollTop = $(window).scrollTop();"
+                //+ "window.onerror = function(errorMsg, url, lineNumber) {"
+                //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
+                //+ "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
+                //+ "    return false;"
+                //+ "};"
+                + "$.ajax({"
+                + "  type: 'POST', "
+                + "  dataType: 'json',"
+                + "  url: url,     "
+                + "  data: $('#"+ID+"').serialize(),"
+                + "  complete: function(jqxhr,status) {"
+                + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
+                + "    $(window).scrollTop(tempScrollTop);"
+                + "  },"
+                + "  error: function(jqxhr,status,error) {"
+                + "    $('#results').html('<div style=\"color: red;\">Server ajax error:'+error+'</div>'); "
+                + "  },"
+                + "  success: function(data) { "
+                + "    $('#results').html(data.message); "
+                + "    if (data.hasOwnProperty('charts')) {                    "
+                + "      try {    "
+                + "         var charts = JSON.parse(data.charts);                 "
+                + "         for(var i = 0; i<charts.length; i++) {  "
+                + "             $('#chart-'+i.toString()).highcharts(charts[i]);"
+                + "         }                        "
+                + "      } catch (err) {"
+                + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
+                + "      }            "
+                + "    }          "
+                + "  }        "
+                + "});"
+                + "return false; ";
+    }
+
+    static Tag navigationTag() {
+        return div().with(
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
+                        .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
+                        input().withName("goBack").withValue("on").withType("hidden"), br(),
+                        button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                ),
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward","Forward","Going forward"))
+                        .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
+                        input().withName("goForward").withValue("on").withType("hidden"), br(),
+                        button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                ));
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
@@ -450,36 +543,6 @@ public class SimilarPatentServer {
         );
     }
 
-    static Tag formScript(String formId, String url, String buttonText, boolean ajax) {
-        return script().withText(ajax?
-                ("$(document).ready(function() { "
-                          + "$('#"+formId+"').submit(function(e) {"
-                            + "$('#"+formId+"-button').attr('disabled',true).text('"+buttonText+"ing...');"
-                            + "var url = '"+url+"'; "
-                            + "var tempScrollTop = $(window).scrollTop();"
-                            + "$.ajax({"
-                            + "  type: 'POST',"
-                            + "  dataType: 'json',"
-                            + "  url: url,"
-                            + "  data: $('#"+formId+"').serialize(),"
-                            + "  complete: function(jqxhr,status) {"
-                            + "    $('#"+formId+"-button').attr('disabled',false).text('"+buttonText+"');"
-                            + "    $(window).scrollTop(tempScrollTop);"
-                            + "  },"
-                            + "  success: function(data) { "
-                            + "    $('#results').html(data.message); "
-                            + "  }"
-                            + "});"
-                            + "e.preventDefault(); "
-                          + "});"
-                        + "});") : (
-                "$(document).ready(function() { "
-                        + "$('#"+formId+"').attr('action','"+url+"');"
-                        + "$('#"+formId+"').attr('method','POST');"
-                + "});" )
-
-        );
-    }
 
     static Tag expandableDiv(String label, Tag... innerStuff) {
         return expandableDiv(label,true,innerStuff);
@@ -510,14 +573,14 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().with(
-                formScript(SELECT_BETWEEN_CANDIDATES_FORM_ID, "/similar_candidate_sets", "Search", false),
+        return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(
                                         td().attr("style","width:33%; vertical-align: top;").with(
                                                 h2("Patent Recommendation System"),
-                                                form().withId(SELECT_BETWEEN_CANDIDATES_FORM_ID).with(
+                                                div().with(
                                                         label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
@@ -570,6 +633,13 @@ public class SimilarPatentServer {
                                                                     });
                                                                 }).collect(Collectors.toList()))
                                                         ),hr(),
+                                                        h4("Sorted By"),div().with(
+                                                                select().withName(COMPARATOR_FIELD).with(
+                                                                        option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
+                                                                        option("Value").withValue(Constants.AI_VALUE),
+                                                                        option("Portfoli Size").withValue(Constants.PORTFOLIO_SIZE)
+                                                                )
+                                                        ),hr(),
                                                         button("Search").withId(SELECT_BETWEEN_CANDIDATES_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
@@ -580,14 +650,10 @@ public class SimilarPatentServer {
     }
 
 
-    static List<String> extractArray(Request req, String param) {
-        String[] array = req.queryParamsValues(param);
+    static List<String> extractArray(QueryParamsMap req, String param) {
+        String[] array = req.get(param).values();
         if(array!=null) return Arrays.stream(array).collect(Collectors.toList());
         else return Collections.emptyList();
-    }
-
-    static String extractString(Request req, String param, String defaultVal) {
-        return extractString(req.queryMap(),param,defaultVal);
     }
 
     public static String extractString(QueryParamsMap paramsMap, String param, String defaultVal) {
@@ -598,9 +664,9 @@ public class SimilarPatentServer {
         }
     }
 
-    static int extractInt(Request req, String param, int defaultVal) {
+    static int extractInt(QueryParamsMap req, String param, int defaultVal) {
         try {
-            return Integer.valueOf(req.queryParams(param));
+            return Integer.valueOf(req.value(param));
         } catch(Exception e) {
             System.out.println("No "+param+" parameter specified... using default");
             return defaultVal;
@@ -616,9 +682,9 @@ public class SimilarPatentServer {
         }
     }
 
-    static boolean extractBool(Request req, String param) {
+    static boolean extractBool(QueryParamsMap req, String param) {
         try {
-            return (req.queryParams(param)==null||!req.queryParams(param).startsWith("on")) ? false : true;
+            return (req.value(param)==null||!req.value(param).startsWith("on")) ? false : true;
         } catch(Exception e) {
             System.out.println("No "+param+" parameter specified... using default");
             return false;

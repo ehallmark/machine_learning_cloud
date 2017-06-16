@@ -35,8 +35,6 @@ import static spark.Spark.post;
  * Created by Evan on 2/12/2017.
  */
 public class CompanyPortfolioProfileUI {
-    private static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static final String MAIN_INPUT_ID = "main-input-id";
     private static final List<String> reportTypes;
     private static final Map<String,List<String>> attributesMap;
     static {
@@ -59,57 +57,15 @@ public class CompanyPortfolioProfileUI {
         reportTypes=attributesMap.keySet().stream().sorted().collect(Collectors.toList());
     }
 
-    static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
-        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
-                + "var url = '/company_profile_report'; "
-                + "var tempScrollTop = $(window).scrollTop();"
-                //+ "window.onerror = function(errorMsg, url, lineNumber) {"
-                //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
-                //+ "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
-                //+ "    return false;"
-                //+ "};"
-                + "$.ajax({"
-                + "  type: 'POST', "
-                + "  dataType: 'json',"
-                + "  url: url,     "
-                + "  data: $('#"+ID+"').serialize(),"
-                + "  complete: function(jqxhr,status) {"
-                + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
-                + "    $(window).scrollTop(tempScrollTop);"
-                + "  },"
-                + "  error: function(jqxhr,status,error) {"
-                + "    $('#results').html('<div style=\"color: red;\">Server ajax error:'+error+'</div>'); "
-                + "  },"
-                + "  success: function(data) { "
-                + "    $('#results').html(data.message); "
-                + "    if (data.hasOwnProperty('charts')) {                    "
-                + "      try {    "
-                + "         var charts = JSON.parse(data.charts);                 "
-                + "         for(var i = 0; i<charts.length; i++) {  "
-                + "             var clickable = $('#chart-'+i.toString()).attr('ajaxclickable');     "
-                + "             if((typeof clickable !== typeof undefined) && (clickable !== false)) {"
-                + "                 charts[i].plotOptions.series.point.events.dblclick=function() {"
-                + "                     $('#"+MAIN_INPUT_ID+"').val(this.name); $('#" + MAIN_INPUT_ID + "').closest('form').submit();"
-                + "                 };     "
-                + "             }       "
-                + "             $('#chart-'+i.toString()).highcharts(charts[i]);"
-                + "         }                        "
-                + "      } catch (err) {"
-                + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
-                + "      }            "
-                + "    }          "
-                + "  }        "
-                + "});"
-                + "return false; ";
-    }
+
 
     static Tag generateReportsForm() {
         AtomicBoolean isFirst = new AtomicBoolean(true);
-        return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
+        return div().with(form().withId(SimilarPatentServer.GENERATE_REPORTS_FORM_ID).attr("onsubmit",
+                SimilarPatentServer.ajaxSubmitWithChartsScript(SimilarPatentServer.GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
                         h2("Company Profiler"),
                         h3("Company Information"),
-                        label("Company Name"),br(),input().withId(MAIN_INPUT_ID).withType("text").withName("assignee"),br(),br(),
+                        label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),
                         SimilarPatentServer.expandableDiv("Report Types",false,div().with(
                                 h4("Report Types"),
                                 div().with(reportTypes.stream().sorted().map(type->{
@@ -132,24 +88,12 @@ public class CompanyPortfolioProfileUI {
                                 textarea().withName("patent_list"),br()
                         )),
                 br(),
-                button("Generate Report").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
-                navigationTag(),br(),br(),br()
+                button("Generate Report").withId(SimilarPatentServer.GENERATE_REPORTS_FORM_ID+"-button").withType("submit")),hr(),
+                SimilarPatentServer.navigationTag(),br(),br(),br()
         );
     }
 
-    private static Tag navigationTag() {
-        return div().with(
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
-                        .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                            input().withName("goBack").withValue("on").withType("hidden"), br(),
-                            button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
-                ),
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward","Forward","Going forward"))
-                        .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
-                        input().withName("goForward").withValue("on").withType("hidden"), br(),
-                        button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
-                ));
-    }
+
 
     static void setupServer() {
         SimilarPatentServer.hostPublicAssets();
@@ -186,11 +130,11 @@ public class CompanyPortfolioProfileUI {
                     navigator = req.session().attribute("navigator");
                 }
 
-                if (SimilarPatentServer.extractBool(req, "goBack")) {
+                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
                     QueryParamsMap tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                     params = tmp;
-                } else if (SimilarPatentServer.extractBool(req, "goForward")) {
+                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
                     QueryParamsMap tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
                     params = tmp;

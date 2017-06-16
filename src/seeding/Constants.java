@@ -9,8 +9,6 @@ public class Constants {
 	public static final String NAME = "name";
 	public static final String SIMILARITY = "similarity";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
-	public static final String VALUE_COMPARATOR = "valueComp";
-	public static final String SIMILARITY_COMPARATOR = "similarityComp";
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
 	public static final String AI_VALUE = "aiValue";
 	public static final String COMPDB_ASSETS_PURCHASED_VALUE = "compdbAssetsPurchasedValue";
@@ -31,7 +29,7 @@ public class Constants {
 	public static final String NO_JAPANESE_FILTER = "noJapaneseFilter";
 	public static final String VALUE_THRESHOLD_FILTER = "valueThresholdFilter";
 	public static final String JAPANESE_ONLY_FILTER = "japaneseOnlyFilter";
-	public static final String PORTFOLIO_SIZE = "portfolioSizeAttr";
+	public static final String PORTFOLIO_SIZE = "portfolioSize";
 
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
