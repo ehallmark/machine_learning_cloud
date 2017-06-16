@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import seeding.Constants;
 import seeding.Database;
 
 import java.util.Arrays;
@@ -12,7 +13,7 @@ import java.util.Map;
  */
 public class CompDBAssetsPurchasedEvaluator extends ValueAttr {
     public CompDBAssetsPurchasedEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"CompDB Assets Purchased Value");
+        super(ValueMapNormalizer.DistributionType.Normal, Constants.COMPDB_ASSETS_PURCHASED_VALUE);
     }
 
     @Override

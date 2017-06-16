@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import seeding.Constants;
 import seeding.Database;
 
 import java.util.*;
@@ -10,7 +11,7 @@ import java.util.*;
 public class PortfolioSizeEvaluator extends ValueAttr {
 
     public PortfolioSizeEvaluator() {
-        this("Portfolio Size Value");
+        this(Constants.LARGE_PORTFOLIO_VALUE);
     }
 
     protected PortfolioSizeEvaluator(String name) {

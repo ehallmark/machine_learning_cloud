@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import seeding.Constants;
 import seeding.Database;
 import tools.DateHelper;
 
@@ -14,7 +15,7 @@ public class OverallEvaluator extends ValueAttr {
     private static final File mergedValueModelFile = new File("data/merged_value_model_map.jobj");
 
     public OverallEvaluator() {
-        super(null, "AI Value");
+        super(null, Constants.AI_VALUE);
         model=(Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
     }
 

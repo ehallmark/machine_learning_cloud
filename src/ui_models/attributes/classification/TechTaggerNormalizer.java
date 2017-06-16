@@ -3,7 +3,6 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
-import org.apache.hadoop.util.hash.Hash;
 import seeding.Constants;
 import seeding.Database;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -11,7 +10,6 @@ import org.deeplearning4j.berkeley.Pair;
 import tools.MinHeap;
 import ui_models.attributes.classification.genetics.TechTaggerSolution;
 import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
-import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.util.*;

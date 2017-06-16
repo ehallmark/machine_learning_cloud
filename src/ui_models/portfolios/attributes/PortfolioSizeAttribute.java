@@ -19,6 +19,6 @@ public class PortfolioSizeAttribute implements AbstractAttribute<Integer> {
 
     @Override
     public String getName() {
-        return Constants.INVENTION_TITLE;
+        return Constants.PORTFOLIO_SIZE;
     }
 }
