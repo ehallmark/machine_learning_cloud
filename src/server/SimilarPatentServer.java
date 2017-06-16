@@ -68,6 +68,7 @@ public class SimilarPatentServer {
     private static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
+    private static final String REPORT_URL = "/similar_candidate_sets";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
@@ -275,7 +276,7 @@ public class SimilarPatentServer {
             return response.body();
         });
 
-        post("/similar_candidate_sets", (req, res) -> {
+        post(REPORT_URL, (req, res) -> {
             res.type("application/json");
             try {
                 System.out.println("Handling back button handler...");
@@ -429,9 +430,9 @@ public class SimilarPatentServer {
 
     }
 
-    static String ajaxSubmitWithChartsScript(String ID,String buttonText, String buttonTextWhileSearching) {
+    static String ajaxSubmitWithChartsScript(String ID, String url, String buttonText, String buttonTextWhileSearching) {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
-                + "var url = '/company_profile_report'; "
+                + "var url = '"+ url +"'; "
                 + "var tempScrollTop = $(window).scrollTop();"
                 //+ "window.onerror = function(errorMsg, url, lineNumber) {"
                 //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
@@ -469,12 +470,12 @@ public class SimilarPatentServer {
 
     static Tag navigationTag() {
         return div().with(
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back","Back","Going back"))
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
                         button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                 ),
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward","Forward","Going forward"))
+                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                         .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
                         button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
@@ -574,7 +575,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")),
+                ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating")),
                 table().with(
                         tbody().with(
                                 tr().attr("style", "vertical-align: top;").with(

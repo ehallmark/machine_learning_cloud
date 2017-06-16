@@ -62,7 +62,7 @@ public class CompanyPortfolioProfileUI {
     static Tag generateReportsForm() {
         AtomicBoolean isFirst = new AtomicBoolean(true);
         return div().with(form().withId(SimilarPatentServer.GENERATE_REPORTS_FORM_ID).attr("onsubmit",
-                SimilarPatentServer.ajaxSubmitWithChartsScript(SimilarPatentServer.GENERATE_REPORTS_FORM_ID,"Generate Report","Generating")).with(
+                SimilarPatentServer.ajaxSubmitWithChartsScript(SimilarPatentServer.GENERATE_REPORTS_FORM_ID,"/company_profile_report","Generate Report","Generating")).with(
                         h2("Company Profiler"),
                         h3("Company Information"),
                         label("Company Name"),br(),input().withType("text").withName("assignee"),br(),br(),

@@ -74,7 +74,7 @@ public class PatentToolsServer {
 
             String[] assignees = assigneeStr.split(System.getProperty("line.separator"));
             if(assignees==null||assignees.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one assignee"));
-            boolean usePatentsView = SimilarPatentServer.extractBool(req,"use_patents_view");
+            boolean usePatentsView = SimilarPatentServer.extractBool(req.queryMap(),"use_patents_view");
             Tag table = table().with(
                     thead().with(
                             tr().with(
@@ -173,11 +173,13 @@ public class PatentToolsServer {
 
 
 
+
+
         post("/cpc_to_assets", (req, res) -> {
             res.type("application/json");
             String classCodeStr = req.queryParams("class_code");
             if(classCodeStr==null||classCodeStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
-            boolean includeSubclasses = SimilarPatentServer.extractBool(req, "includeSubclasses");
+            boolean includeSubclasses = SimilarPatentServer.extractBool(req.queryMap(), "includeSubclasses");
 
             String[] classCodes = classCodeStr.split(System.getProperty("line.separator"));
             if(classCodes==null||classCodes.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Class Code"));
@@ -233,7 +235,7 @@ public class PatentToolsServer {
             res.type("application/json");
             String patentStr = req.queryParams("patent");
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            boolean includeSubclasses = SimilarPatentServer.extractBool(req, "includeSubclasses");
+            boolean includeSubclasses = SimilarPatentServer.extractBool(req.queryMap(), "includeSubclasses");
 
             String[] patents = patentStr.split(System.getProperty("line.separator"));
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
@@ -262,7 +264,7 @@ public class PatentToolsServer {
             res.type("application/json");
             String patentStr = req.queryParams("patent");
             if(patentStr==null||patentStr.trim().isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
-            boolean includeSubclasses = SimilarPatentServer.extractBool(req, "includeSubclasses");
+            boolean includeSubclasses = SimilarPatentServer.extractBool(req.queryMap(), "includeSubclasses");
 
             String[] patents = patentStr.split("\\s+");
             if(patents==null||patents.length==0) return new Gson().toJson(new SimpleAjaxMessage("Please enter at least one Patent"));
@@ -322,16 +324,16 @@ public class PatentToolsServer {
 
     private static Tag patentToolboxForm() {
         return div().with(
-                SimilarPatentServer.formScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", true),
-                SimilarPatentServer.formScript(ASSIGNEE_ASSETS_FORM_ID, "/assignee_assets", "Search", true),
-                SimilarPatentServer.formScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", true),
-                SimilarPatentServer.formScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", true),
-                SimilarPatentServer.formScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", true),
-                SimilarPatentServer.formScript(TITLE_FROM_ASSETS_FORM_ID, "/title_from_assets", "Search", true),
-                SimilarPatentServer.formScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search",true),
-                SimilarPatentServer.formScript(TECH_PREDICTION_FROM_ASSETS_FORM_ID,"/tech_predictions", "Search", true),
-                SimilarPatentServer.formScript(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID,"/tech_predictions", "Search", true),
-                SimilarPatentServer.formScript(TECH_PREDICTION_FROM_CPCS_FORM_ID,"/tech_predictions", "Search", true),
+               /* SimilarPatentServer.ajaxSubmitWithChartsScript(ASSIGNEE_ASSET_COUNT_FORM_ID, "/assignee_asset_count", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(ASSIGNEE_ASSETS_FORM_ID, "/assignee_assets", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(PATENTS_FROM_ETSI_FORM_ID, "/etsi_standards", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(CPC_TO_ASSETS_FORM_ID, "/cpc_to_assets", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(CPC_FROM_ASSETS_FORM_ID, "/cpc_from_assets", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(TITLE_FROM_ASSETS_FORM_ID, "/title_from_assets", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(CPC_FREQUENCY_FROM_ASSETS_FORM_ID, "/cpc_frequencies_from_assets", "Search","Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(TECH_PREDICTION_FROM_ASSETS_FORM_ID,"/tech_predictions", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(TECH_PREDICTION_FROM_ASSIGNEES_FORM_ID,"/tech_predictions", "Search", "Searching"),
+                SimilarPatentServer.ajaxSubmitWithChartsScript(TECH_PREDICTION_FROM_CPCS_FORM_ID,"/tech_predictions", "Search", "Searching"),*/
                 p("(Warning: Data only available from 2007 and onwards)"),
                 table().with(
                         tbody().with(

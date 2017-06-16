@@ -249,7 +249,7 @@ public class LeadDevelopmentUI {
                     navigator = req.session().attribute("navigator");
                 }
 
-                if (SimilarPatentServer.extractBool(req, "goBack")) {
+                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
                     Pair<List<Attribute>,CompanySolution> tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                     else {
@@ -257,7 +257,7 @@ public class LeadDevelopmentUI {
                         System.out.println("Going back");
                         return renderSolution(tmp.getSecond(),tmp.getFirst());
                     }
-                } else if (SimilarPatentServer.extractBool(req, "goForward")) {
+                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
                     Pair<List<Attribute>,CompanySolution> tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
                     else {

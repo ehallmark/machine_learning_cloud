@@ -149,7 +149,7 @@ public class TechTaggerUI {
                     navigator = req.session().attribute("navigator");
                 }
 
-                if (SimilarPatentServer.extractBool(req, "goBack")) {
+                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
                     TechnologySolution tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
                     else {
@@ -157,7 +157,7 @@ public class TechTaggerUI {
                         System.out.println("Going back");
                         return renderSolution(tmp);
                     }
-                } else if (SimilarPatentServer.extractBool(req, "goForward")) {
+                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
                     TechnologySolution tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
                     else {
