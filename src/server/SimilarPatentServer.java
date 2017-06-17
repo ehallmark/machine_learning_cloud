@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -165,15 +167,20 @@ public class SimilarPatentServer {
     }
 
     public static void loadSimilarityModels() {
-        boolean test = false;
         if(similarityModelMap.isEmpty()) {
             try {
-                similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
-                if(!test)similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
-                if(!test)similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **"));
-                if(!test)similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
-                if(!test)similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
-
+                ForkJoinPool pool = new ForkJoinPool();
+                pool.execute(()->{
+                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
+                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
+                });
+                pool.execute(()->similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **")));
+                pool.execute(()->{
+                    similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
+                    similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                });
+                pool.shutdown();
+                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -640,6 +647,7 @@ public class SimilarPatentServer {
                                                         ),br(),
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
+                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
                                                                 option("Value").withValue(Constants.AI_VALUE),
                                                                 option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
                                                         ),br(),

@@ -24,6 +24,7 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     private static List<Double> DEFAULT_WEIGHTS;
     private static final File weightsFile = new File("tech_tagger_normalizer_weights.jobj");
     private static final int timeLimit = 10*60*1000;
+    private Integer numClassifications;
 
     public String getName() {
         return Constants.TECHNOLOGY;
@@ -70,7 +71,8 @@ public class TechTaggerNormalizer implements ClassificationAttr {
     }
 
     public int numClassifications() {
-        return taggerPairs.stream().min(Comparator.comparingInt(t->t.getFirst().numClassifications())).get().getFirst().numClassifications();
+        if(numClassifications==null) numClassifications = taggerPairs.stream().min(Comparator.comparingInt(t->t.getFirst().numClassifications())).get().getFirst().numClassifications();
+        return numClassifications;
     }
 
     public Collection<String> getClassifications() { return taggerPairs.stream().map(tagger->tagger.getFirst().getClassifications()).reduce((c1,c2)->{

@@ -4,10 +4,7 @@ import org.deeplearning4j.berkeley.Pair;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.portfolios.PortfolioList;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,8 +32,8 @@ public class SpecificTechnologyEvaluator extends ValueAttr {
     }
 
     @Override
-    public Double attributesFor(Collection<String> portfolio, int n) {
-        List<Pair<String,Double>> pairs = tagger.attributesFor(portfolio,tagger.numClassifications()).stream().filter(p->technology.equals(p.getFirst())).collect(Collectors.toList());
+    public double evaluate(String token) {
+        List<Pair<String,Double>> pairs = tagger.attributesFor(Arrays.asList(token),tagger.numClassifications()/2).stream().filter(p->technology.equals(p.getFirst())).collect(Collectors.toList());
         if(pairs.isEmpty()) return ValueMapNormalizer.DEFAULT_START;
         else return pairs.stream().collect(Collectors.averagingDouble(p->p.getSecond()));
     }

@@ -57,7 +57,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         super(candidateSet,name,getLookupTable());
     }
 
-    public static Map<String,INDArray> getLookupTable() {
+    public synchronized static Map<String,INDArray> getLookupTable() {
         if(LOOKUP_TABLE==null) {
             LOOKUP_TABLE=(Map<String,INDArray>)Database.tryLoadObject(file);
         }
