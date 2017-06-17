@@ -390,10 +390,10 @@ public class CompanyPortfolioProfileUI {
                                 SimilarPatentServer.evaluateModel(model, portfolioList.getItemList());
                             }
                         }
-                        portfolioList.init(Constants.AI_VALUE);
+                        portfolioList.init(Constants.AI_VALUE,limit);
                     } else {
                         // faster to init results first
-                        portfolioList.init(Constants.SIMILARITY);
+                        portfolioList.init(Constants.SIMILARITY,limit);
                         for (Map.Entry<String, ValueAttr> e : SimilarPatentServer.valueModelMap.entrySet()) {
                             String key = e.getKey();
                             ValueAttr model = e.getValue();

@@ -34,13 +34,17 @@ public class PortfolioList implements Comparable<PortfolioList> {
         itemList=itemList.stream().filter(obj->filter.shouldKeepItem(obj)).collect(Collectors.toList());
     }
 
-    public void applyAttribute(AbstractAttribute attribute) {
+    public void applyAttributes(Collection<? extends AbstractAttribute> attributes) {
         itemList.forEach(item->{
-            item.addData(attribute.getName(),attribute.attributesFor(Arrays.asList(item.getName()),1));
+            attributes.forEach(attribute->{
+                item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
+
+            });
         });
     }
 
-    public void init(String sortedBy) {
+
+    public void init(String sortedBy, int limit) {
         itemList.forEach(item->{
             item.init();
         });
@@ -48,6 +52,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
         Collections.sort(itemList,(i1,i2)->(Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue())));
 
         if (itemList.size() > 0) {
+            itemList=itemList.subList(0,Math.min(itemList.size(),limit));
             this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
         } else this.avgSimilarity = 0.0d;
     }

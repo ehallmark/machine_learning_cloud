@@ -209,7 +209,7 @@ public class SimilarPatentServer {
     static void evaluateModel(AbstractAttribute model, List<Item> portfolio) {
         System.out.println("Starting to evaluate model: "+model.getName());
         PortfolioList portfolioList = new PortfolioList(portfolio);
-        portfolioList.applyAttribute(model);
+        portfolioList.applyAttributes(Arrays.asList(model));
         System.out.println("Finished "+model.getName());
     }
 
@@ -382,6 +382,7 @@ public class SimilarPatentServer {
 
                 PortfolioList portfolioList;
 
+                Set<String> appliedAttributes = new HashSet<>();
                 // Run value and similarity models
                 String maximizeValueOf = extractString(req,MAXIMIZING_PARAMETER_FIELD,null);
                 if(maximizeValueOf!=null) {
@@ -413,34 +414,28 @@ public class SimilarPatentServer {
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
-                Set<String> appliedAttributes = new HashSet<>();
-                attributes.forEach(attribute->{
-                    portfolioList.applyAttribute(attribute);
-                    appliedAttributes.add(attribute.getName());
-                });
+                portfolioList.applyAttributes(attributes);
+                appliedAttributes.addAll(itemAttributes);
 
                 // Apply value models
-                evaluators.forEach(valueModel->{
-                    portfolioList.applyAttribute(valueModel);
-                    appliedAttributes.add(valueModel.getName());
-                });
+                portfolioList.applyAttributes(evaluators);
+                appliedAttributes.addAll(valueModels);
 
-                System.out.println("Adding attributes for post filters...");
+                System.out.println("Adding prerequisite attributes for post filters...");
                 // Add necessary attributes for post filters
-                postFilters.forEach(filter->{
-                    filter.getPrerequisites().forEach(preReq->{
-                        if(!appliedAttributes.contains(preReq)) {
-                            if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
-                                portfolioList.applyAttribute(attributesMap.get(preReq));
-                                appliedAttributes.add(preReq);
-                            }
-                            if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
-                                portfolioList.applyAttribute(valueModelMap.get(preReq));
-                                appliedAttributes.add(preReq);
-                            }
-                        }
-                    });
-                });
+                portfolioList.applyAttributes(postFilters.stream().flatMap(filter->{
+                    return filter.getPrerequisites().stream().filter(preReq->!appliedAttributes.contains(preReq));
+                }).distinct().map(preReq->{
+                    if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
+                        appliedAttributes.add(preReq);
+                        return attributesMap.get(preReq);
+                    }
+                    if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
+                        appliedAttributes.add(preReq);
+                        return valueModelMap.get(preReq);
+                    }
+                    return null;
+                }).filter(model->model!=null).collect(Collectors.toList()));
 
                 System.out.println("Applying post filters...");
                 // Run filters
@@ -454,13 +449,30 @@ public class SimilarPatentServer {
                 technologies.forEach(technology->{
                     SpecificTechnologyEvaluator evaluator = new SpecificTechnologyEvaluator(technology,getTechTagger());
                     technologyEvaluators.add(evaluator);
-                    portfolioList.applyAttribute(evaluator);
                 });
-                // apply overall tech score
-                portfolioList.applyAttribute(new OverallTechnologyAttribute(technologyEvaluators));
+
+                if((comparator.equals(Constants.TECHNOLOGY_RELEVANCE) || itemAttributes.contains(Constants.TECHNOLOGY_RELEVANCE) || (maximizeValueOf!=null && maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE))) && ! appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
+                    portfolioList.applyAttributes(technologyEvaluators);
+                    // apply overall tech score
+                    portfolioList.getItemList().forEach(item->{
+                        item.addData(Constants.TECHNOLOGY_RELEVANCE,
+                                technologies.isEmpty() ? ValueMapNormalizer.DEFAULT_START : technologies.stream().collect(Collectors.averagingDouble(technology->{
+                                    return ((Number)item.getData(technology)).doubleValue();
+                                })));
+                    });
+                    appliedAttributes.add(Constants.TECHNOLOGY_RELEVANCE);
+                }
 
                 System.out.println("Initializing portfolio...");
-                portfolioList.init(comparator);
+                if(!appliedAttributes.contains(comparator)) {
+                    System.out.println("Applying comparator field before sorting: "+comparator);
+                    if(attributesMap.containsKey(comparator)) {
+                        portfolioList.applyAttributes(Arrays.asList(attributesMap.get(comparator)));
+                    } else if (valueModelMap.containsKey(comparator)) {
+                        portfolioList.applyAttributes(Arrays.asList(valueModelMap.get(comparator)));
+                    }
+                }
+                portfolioList.init(comparator,limit);
 
                 System.out.println("Rendering table...");
 
