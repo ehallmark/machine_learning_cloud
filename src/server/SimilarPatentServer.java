@@ -667,7 +667,7 @@ public class SimilarPatentServer {
 
     static List<String> extractArray(Request req, String param) {
         try {
-            String[] array = req.queryParamsValues(param.replace("[]",""));
+            String[] array = req.queryParamsValues(param);
             if (array != null) {
                 List<String> list = Arrays.stream(array).collect(Collectors.toList());
                 list.forEach(item->System.out.println("Found: "+item));
