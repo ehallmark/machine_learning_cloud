@@ -670,6 +670,9 @@ public class SimilarPatentServer {
     static List<String> extractArray(QueryParamsMap req, String param) {
         try {
             String[] array = req.toMap().get(param);
+            req.toMap().entrySet().forEach(e->{
+                System.out.println(e.getKey()+": "+Arrays.toString(e.getValue()));
+            });
             if (array != null) {
                 List<String> list = Arrays.stream(array).collect(Collectors.toList());
                 list.forEach(item->System.out.println("Found: "+item));
