@@ -686,7 +686,7 @@ public class SimilarPatentServer {
                                                         label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Neural Network Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graphical Model (patents only)"),
-                                                                option().withValue(Constants.CPC_MODEL).withText("Class Code Neural Neural Network Model")
+                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Code Neural Network Model")
                                                         ),br(),label("Result Type"),br(),
                                                         select().withName(SEARCH_TYPE_FIELD).with(
                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
