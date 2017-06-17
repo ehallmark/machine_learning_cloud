@@ -386,7 +386,7 @@ public class SimilarPatentServer {
                 String maximizeValueOf = extractString(req,MAXIMIZING_PARAMETER_FIELD,null);
                 if(maximizeValueOf!=null) {
                     System.out.println("Maximizing values...");
-                    if(searchEntireDatabase) return new Gson().toJson(new SimpleAjaxMessage("Unable to search entire database by values other than Similarity"));
+                    if(searchEntireDatabase && searchType.equals(PortfolioList.Type.patents)) return new Gson().toJson(new SimpleAjaxMessage("Unable to search entire patent database by values other than Similarity"));
                     if(maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
                         // get average of specific tech models
                         List<ValueAttr> techValueModels = technologies.stream().map(tech->new SpecificTechnologyEvaluator(tech,getTechTagger())).collect(Collectors.toList());
