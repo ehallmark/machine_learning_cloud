@@ -10,6 +10,7 @@ import tools.MinHeap;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
+import ui_models.portfolios.items.VectorizedItem;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
     @Getter
-    protected Collection<Item> items;
+    protected Collection<VectorizedItem> items;
     @Getter
     protected Collection<String> tokens;
     protected Map<String,INDArray> lookupTable;
@@ -38,7 +39,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
             items = candidateSet.stream().map(itemStr->{
                 if(!lookupTable.containsKey(itemStr)) return null; // no info on item
                 return itemStr;
-            }).filter(item->item!=null).map(item->new Item(item)).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new VectorizedItem(item,lookupTable.get(item))).collect(Collectors.toSet());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -92,7 +93,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         MinHeap<WordFrequencyPair<Item,Double>> heap = new MinHeap<>(limit);
         items.forEach(item -> {
             if(item!=null) {
-                double sim = Transforms.cosineSim(lookupTable.get(item.getName()),baseVector);
+                double sim = Transforms.cosineSim(item.getVec(),baseVector);
                 Item itemClone = item.clone();
                 itemClone.setSimilarity(sim);
                 // apply item pre filters

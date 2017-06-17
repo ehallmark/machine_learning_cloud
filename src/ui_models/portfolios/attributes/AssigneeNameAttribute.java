@@ -14,7 +14,9 @@ public class AssigneeNameAttribute implements AbstractAttribute<String> {
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
         if(portfolio.isEmpty()) return "";
-        return String.join("; ",Database.assigneesFor(portfolio.stream().findAny().get()));
+        String item = portfolio.stream().findAny().get();
+        if(Database.isAssignee(item)) return item;
+        else return String.join("; ",Database.assigneesFor(item));
     }
 
     @Override
