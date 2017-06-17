@@ -7,9 +7,7 @@ import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
-import ui_models.portfolios.attributes.AssigneeNameAttribute;
-import ui_models.portfolios.attributes.InventionTitleAttribute;
-import ui_models.portfolios.attributes.PortfolioSizeAttribute;
+import ui_models.portfolios.attributes.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.cpc_vectors.CPCSimilarityFinder;
@@ -89,6 +87,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("Asset", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
+            humanAttrToJavaAttrMap.put("Technology Relevance", Constants.TECHNOLOGY_RELEVANCE);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
@@ -192,6 +191,9 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
+            attributesMap.put(Constants.NAME, new DoNothingAttribute());
+            attributesMap.put(Constants.TECHNOLOGY_RELEVANCE, new DoNothingAttribute());
+            attributesMap.put(Constants.SIMILARITY, new DoNothingAttribute());
         }
     }
 
@@ -354,7 +356,7 @@ public class SimilarPatentServer {
 
                 System.out.println(" ... Attributes");
                 // Get data attributes
-                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr->attributesMap.get(attr)).collect(Collectors.toList());
+                List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr->!(attributesMap.get(attr) instanceof DoNothingAttribute)).map(attr->attributesMap.get(attr)).collect(Collectors.toList());
 
                 System.out. println(" ... Filters");
                 // Get filters
@@ -427,9 +429,14 @@ public class SimilarPatentServer {
 
                 System.out.println("Applying technology values...");
                 // Apply technology values
+                List<SpecificTechnologyEvaluator> technologyEvaluators = new ArrayList<>();
                 technologies.forEach(technology->{
-                    portfolioList.applyAttribute(new SpecificTechnologyEvaluator(technology,getTechTagger()));
+                    SpecificTechnologyEvaluator evaluator = new SpecificTechnologyEvaluator(technology,getTechTagger());
+                    technologyEvaluators.add(evaluator);
+                    portfolioList.applyAttribute(evaluator);
                 });
+                // apply overall tech score
+                portfolioList.applyAttribute(new OverallTechnologyAttribute(technologyEvaluators));
 
                 System.out.println("Initializing portfolio...");
                 portfolioList.init(comparator);
@@ -447,7 +454,7 @@ public class SimilarPatentServer {
                         ),
                         portfolioList == null ? div() : div().with(
                                 h4("Data"),
-                                tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes,technologies.stream().map(tech->tech+SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
+                                tableFromPatentList(portfolioList.getItemList(),Arrays.asList(itemAttributes,valueModels,technologies.stream().map(tech->tech+SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), charts));
 
