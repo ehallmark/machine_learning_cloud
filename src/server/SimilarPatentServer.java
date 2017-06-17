@@ -699,7 +699,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ),br(),
-                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD),br(),br()
                                                 ),
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Search Within"),
@@ -707,7 +707,7 @@ public class SimilarPatentServer {
                                                         label("Custom Patent List (1 per line)"),br(),
                                                         textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
                                                         label("Custom Assignee List (1 per line)"),br(),
-                                                        textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD)
+                                                        textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br(),br()
                                                 ), td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Search For"),
                                                         label("Patents (1 per line)"),br(),
@@ -715,7 +715,7 @@ public class SimilarPatentServer {
                                                         label("Assignees (1 per line)"),br(),
                                                         textarea().withName(ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
                                                         label("Gather Technology"),br(),
-                                                        gatherTechnologySelect()
+                                                        gatherTechnologySelect(),br(),br()
                                                 )
                                         ), tr().attr("style", "vertical-align: top; margin-top: 50px;").with(
                                                 td().attr("style","width:33%; vertical-align: top;").with(
