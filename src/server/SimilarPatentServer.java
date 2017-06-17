@@ -582,7 +582,11 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().with(form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
+        return div().with(
+                navigationTag(),
+                br(),
+                br(),
+                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
                         table().with(
                                 tbody().with(
@@ -659,9 +663,6 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                navigationTag(),
-                br(),
-                br(),
                 br()
         );
     }
@@ -669,7 +670,7 @@ public class SimilarPatentServer {
 
     static List<String> extractArray(QueryParamsMap req, String param) {
         try {
-            String[] array = req.toMap().get(param);
+            String[] array = req.toMap().get(param.replace("[]",""));
             req.toMap().entrySet().forEach(e->{
                 System.out.println(e.getKey()+": "+Arrays.toString(e.getValue()));
             });
