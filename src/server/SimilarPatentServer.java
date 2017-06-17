@@ -188,6 +188,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
+            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
             attributesMap.put(Constants.NAME, new DoNothingAttribute());
             attributesMap.put(Constants.TECHNOLOGY_RELEVANCE, new DoNothingAttribute());
             attributesMap.put(Constants.SIMILARITY, new DoNothingAttribute());
