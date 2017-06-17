@@ -666,7 +666,7 @@ public class SimilarPatentServer {
 
     static List<String> extractArray(QueryParamsMap req, String param) {
         try {
-            String[] array = req.get(param).values();
+            String[] array = req.toMap().get(param);
             if (array != null) return Arrays.stream(array).collect(Collectors.toList());
             else return Collections.emptyList();
         } catch(Exception e) {
