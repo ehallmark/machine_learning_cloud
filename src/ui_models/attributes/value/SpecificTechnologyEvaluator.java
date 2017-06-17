@@ -16,8 +16,9 @@ import java.util.stream.Collectors;
 public class SpecificTechnologyEvaluator extends ValueAttr {
     private ClassificationAttr tagger;
     private String technology;
+    public static final String TECHNOLOGY_SUFFIX = " Value";
     public SpecificTechnologyEvaluator(String technology, ClassificationAttr tagger) {
-        super(ValueMapNormalizer.DistributionType.Normal,technology+" Value");
+        super(ValueMapNormalizer.DistributionType.Normal,technology+TECHNOLOGY_SUFFIX);
         this.tagger=tagger;
         this.technology=technology;
     }

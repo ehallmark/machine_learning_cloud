@@ -417,7 +417,7 @@ public class SimilarPatentServer {
                         ),
                         portfolioList == null ? div() : div().with(
                                 h4("Data"),
-                                tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
+                                tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes,technologies.stream().map(tech->tech+SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), charts));
 
@@ -618,7 +618,7 @@ public class SimilarPatentServer {
                                                         label("Custom Assignee List (1 per line)"),br(),
                                                         textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD)
                                                 ), td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h4("With Similarity To"),
+                                                        h4("Search For"),
                                                         label("Patents (1 per line)"),br(),
                                                         textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
                                                         label("Assignees (1 per line)"),br(),
@@ -644,7 +644,7 @@ public class SimilarPatentServer {
                                                                 String key = e.getKey();
                                                                 AbstractFilter filter = e.getValue();
                                                                 String id = "form-dropdown-"+key;
-                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","var $dropdown = $('#"+id+"'); if($drowndown.prop('checked')) {$drowndown.show();} else {$dropdown.hide();}").withName(pair._2).withValue(key);
+                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","var $dropdown = $('#"+id+"'); if($dropdown.prop('checked')) {$dropdown.show();} else {$dropdown.hide();}").withName(pair._2).withValue(key);
                                                                 String display;
                                                                 if(filter.defaultSelected()) {
                                                                     display = "block;";
@@ -659,14 +659,11 @@ public class SimilarPatentServer {
                                                             });
                                                         }).collect(Collectors.toList()))
                                                 )
-                                        ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","width: 100%; vertical-align: top;").with(
-                                                        button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
-                                                        hr()
-                                                )
                                         )
                                 )
-                        )
+                        ),
+                        button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
+                        hr()
                 ),
                 br()
         );
