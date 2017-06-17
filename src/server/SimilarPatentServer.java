@@ -659,7 +659,10 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                navigationTag()
+                navigationTag(),
+                br(),
+                br(),
+                br()
         );
     }
 
@@ -667,7 +670,11 @@ public class SimilarPatentServer {
     static List<String> extractArray(QueryParamsMap req, String param) {
         try {
             String[] array = req.toMap().get(param);
-            if (array != null) return Arrays.stream(array).collect(Collectors.toList());
+            if (array != null) {
+                List<String> list = Arrays.stream(array).collect(Collectors.toList());
+                list.forEach(item->System.out.println("Found: "+item));
+                return list;
+            }
             else return Collections.emptyList();
         } catch(Exception e) {
             e.printStackTrace();
