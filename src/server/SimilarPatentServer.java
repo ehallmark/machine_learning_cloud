@@ -279,8 +279,8 @@ public class SimilarPatentServer {
         // apply overall tech score
         portfolioList.getItemList().forEach(item->{
             item.addData(Constants.TECHNOLOGY_RELEVANCE,
-                    technologies.isEmpty() ? ValueMapNormalizer.DEFAULT_START : technologies.stream().collect(Collectors.averagingDouble(technology->{
-                        return ((Number)item.getData(technology)).doubleValue();
+                    technologyEvaluators.isEmpty() ? ValueMapNormalizer.DEFAULT_START : technologyEvaluators.stream().collect(Collectors.averagingDouble(technology->{
+                        return ((Number)item.getData(technology.getName())).doubleValue();
                     })));
         });
         appliedAttributes.add(Constants.TECHNOLOGY_RELEVANCE);
