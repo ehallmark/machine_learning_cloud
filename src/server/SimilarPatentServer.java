@@ -297,228 +297,214 @@ public class SimilarPatentServer {
         });
 
         post(REPORT_URL, (req, res) -> {
-            RecursiveTask<String> task = new RecursiveTask<String>() {
-                @Override
-                protected String compute() {
-                    res.type("application/json");
-                    try {
-                        System.out.println("Handling back button handler...");
-                        // handle navigation
-                        BackButtonHandler<String> navigator;
-                        if (req.session().attribute("navigator") == null) {
-                            navigator = new BackButtonHandler<>();
-                            req.session().attribute("navigator", navigator);
-                        } else {
-                            navigator = req.session().attribute("navigator");
+            res.type("application/json");
+            try {
+                System.out.println("Handling back button handler...");
+                // handle navigation
+                BackButtonHandler<String> navigator;
+                if (req.session().attribute("navigator") == null) {
+                    navigator = new BackButtonHandler<>();
+                    req.session().attribute("navigator", navigator);
+                } else {
+                    navigator = req.session().attribute("navigator");
+                }
+
+                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
+                    String tmp = navigator.goBack();
+                    if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
+                    return tmp;
+                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
+                    String tmp = navigator.goForward();
+                    if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
+                    return tmp;
+                }
+
+                System.out.println("Getting parameters...");
+                // get meta parameters
+                int limit = extractInt(req, LIMIT_FIELD, 10);
+                String searchType = extractString(req, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+                PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
+                String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+
+                System.out.println("Collecting inputs to search for...");
+                // get input data
+                // TODO Handle Gather Technology as input
+                Collection<String> inputsToSearchFor;
+                if (portfolioType.equals(PortfolioList.Type.patents)) {
+                    inputsToSearchFor = new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee -> {
+                        inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
+                    });
+                } else {
+                    inputsToSearchFor = new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                }
+
+                System.out.println("Collecting inputs to search in...");
+                // Get scope of search
+                Collection<String> inputsToSearchIn;
+                if (portfolioType.equals(PortfolioList.Type.patents)) {
+                    inputsToSearchIn = new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                } else {
+                    inputsToSearchIn = new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                }
+
+                // Check whether to search entire database
+                boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
+
+                System.out.println("Getting models...");
+                // Get Models to use
+                String similarityModel = extractString(req, SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
+                List<String> valueModels = extractArray(req, VALUE_MODELS_ARRAY_FIELD);
+                List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
+                List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
+                List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+                List<String> technologies = extractArray(req, TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
+
+                System.out.println(" ... Attributes");
+                // Get data attributes
+                List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr -> !(attributesMap.get(attr) instanceof DoNothing)).map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
+
+                System.out.println(" ... Filters");
+                // Get filters
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
+                // Update filters based on params
+                Arrays.asList(preFilters, postFilters).stream()
+                        .flatMap(filterList -> filterList.stream())
+                        .forEach(filter -> filter.extractRelevantInformationFromParams(req));
+
+                System.out.println(" ... Evaluators");
+                // Get value models
+                List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
+
+                PortfolioList portfolioList;
+
+                Set<String> appliedAttributes = new HashSet<>();
+                // Run maximization model
+                String maximizeValueOf = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+                {
+                    System.out.println(" ... Similarity model");
+                    // Get similarity model
+                    AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
+                    AbstractSimilarityModel firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
+                    if (firstFinder == null || firstFinder.numItems() == 0) {
+                        return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
+                    }
+                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
+                        System.out.println("Running similarity model...");
+                        AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
+                        if (secondFinder == null || secondFinder.numItems() == 0) {
+                            return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
                         }
-
-                        if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
-                            String tmp = navigator.goBack();
-                            if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
-                            return tmp;
-                        } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
-                            String tmp = navigator.goForward();
-                            if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
-                            return tmp;
-                        }
-
-                        System.out.println("Getting parameters...");
-                        // get meta parameters
-                        int limit = extractInt(req, LIMIT_FIELD, 10);
-                        String searchType = extractString(req, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-                        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-                        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-
-                        System.out.println("Collecting inputs to search for...");
-                        // get input data
-                        // TODO Handle Gather Technology as input
-                        Collection<String> inputsToSearchFor;
-                        if (portfolioType.equals(PortfolioList.Type.patents)) {
-                            inputsToSearchFor = new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
-                            new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee -> {
-                                inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
-                            });
-                        } else {
-                            inputsToSearchFor = new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
-                        }
-
-                        System.out.println("Collecting inputs to search in...");
-                        // Get scope of search
-                        Collection<String> inputsToSearchIn;
-                        if (portfolioType.equals(PortfolioList.Type.patents)) {
-                            inputsToSearchIn = new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-                            new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-                        } else {
-                            inputsToSearchIn = new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
-                        }
-
-                        // Check whether to search entire database
-                        boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
-
-                        System.out.println("Getting models...");
-                        // Get Models to use
-                        String similarityModel = extractString(req, SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-                        List<String> valueModels = extractArray(req, VALUE_MODELS_ARRAY_FIELD);
-                        List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
-                        List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
-                        List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
-                        List<String> technologies = extractArray(req, TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
-
-                        System.out.println(" ... Attributes");
-                        // Get data attributes
-                        List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr -> !(attributesMap.get(attr) instanceof DoNothing)).map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
-
-                        System.out.println(" ... Filters");
-                        // Get filters
-                        List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
-                        List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
-                        // Update filters based on params
-                        Arrays.asList(preFilters, postFilters).stream()
-                                .flatMap(filterList -> filterList.stream())
-                                .forEach(filter -> filter.extractRelevantInformationFromParams(req));
-
-                        System.out.println(" ... Evaluators");
-                        // Get value models
-                        List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
-
-                        PortfolioList portfolioList;
-
-                        Set<String> appliedAttributes = new HashSet<>();
-                        // Run maximization model
-                        String maximizeValueOf = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-                        {
-                            System.out.println(" ... Similarity model");
-                            // Get similarity model
-                            AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
-                            AbstractSimilarityModel firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
-                            if (firstFinder == null || firstFinder.numItems() == 0) {
-                                return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
-                            }
-                            if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
-                                System.out.println("Running similarity model...");
-                                AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
-                                if (secondFinder == null || secondFinder.numItems() == 0) {
-                                    return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
-                                }
-                                portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
-                            } else {
-                                System.out.println("Maximizing values...");
-                                portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
-                                if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents))
-                                    return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity",Collections.emptyList()));
-                                if (maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
-                                    // get average of specific tech models
-                                    applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
-                                } else {
-                                    ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
-                                    if(!(valueModel instanceof DoNothing)) {
-                                        portfolioList.applyAttributes(Arrays.asList(valueModel));
-                                    }
-                                    appliedAttributes.add(maximizeValueOf);
-                                }
-                                // apply prefilters
-                                System.out.println("Applying prefilters...");
-                                portfolioList.applyFilters(preFilters);
-                            }
-                        }
-
-                        System.out.println("Initializing portfolio...");
-                        // special case
-                        if (comparator.equals(Constants.TECHNOLOGY_RELEVANCE) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
+                        portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
+                    } else {
+                        System.out.println("Maximizing values...");
+                        portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
+                        if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents))
+                            return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity",Collections.emptyList()));
+                        if (maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
+                            // get average of specific tech models
                             applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
-                        }
-
-                        // normal case
-                        if (!appliedAttributes.contains(comparator)) {
-                            System.out.println("Applying comparator field before sorting: " + comparator);
-                            List<AbstractAttribute> attrList = new ArrayList<>();
-                            if (attributesMap.containsKey(comparator)) {
-                                AbstractAttribute attr = attributesMap.get(comparator);
-                                if (!(attr instanceof DoNothing)) {
-                                    attrList.add(attr);
-                                }
-                            } else if (valueModelMap.containsKey(comparator)) {
-                                AbstractAttribute attr = valueModelMap.get(comparator);
-                                if (!(attr instanceof DoNothing)) {
-                                    attrList.add(attr);
-                                }
+                        } else {
+                            ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
+                            if(!(valueModel instanceof DoNothing)) {
+                                portfolioList.applyAttributes(Arrays.asList(valueModel));
                             }
-                            if(attrList.size()>0)portfolioList.applyAttributes(attrList);
+                            appliedAttributes.add(maximizeValueOf);
                         }
-                        portfolioList.init(comparator, limit);
-
-
-                        // Apply technology data
-                        System.out.println("Applying technologies...");
-                        if ((technologies.size() > 0 || postFilters.stream().anyMatch(filter->filter.getPrerequisites().contains(Constants.TECHNOLOGY_RELEVANCE))) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
-                            applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
-                        }
-
-                        System.out.println("Applying necessary prerequisite attributes for post filters...");
-                        // Add necessary attributes for post filters
-                        portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
-                            return filter.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq));
-                        }).distinct().map(preReq -> {
-                            if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
-                                appliedAttributes.add(preReq);
-                                return attributesMap.get(preReq);
-                            }
-                            if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
-                                appliedAttributes.add(preReq);
-                                return valueModelMap.get(preReq);
-                            }
-                            return null;
-                        }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList()));
-
-                        System.out.println("Applying post filters...");
-                        // Run filters
-                        portfolioList.applyFilters(postFilters);
-
-                        // Apply attributes
-                        System.out.println("Applying attributes...");
-                        portfolioList.applyAttributes(attributes);
-                        appliedAttributes.addAll(itemAttributes);
-
-                        // Apply value models
-                        System.out.println("Applying value models...");
-                        portfolioList.applyAttributes(evaluators);
-                        appliedAttributes.addAll(valueModels);
-
-
-                        System.out.println("Rendering table...");
-                        List<AbstractChart> charts = new ArrayList<>();
-                        AtomicInteger chartCnt = new AtomicInteger(0);
-                        String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                                charts.isEmpty() ? div() : div().with(
-                                        h4("Charts"),
-                                        div().with(
-                                                charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                        )
-                                ),
-                                portfolioList == null ? div() : div().with(
-                                        h4("Data"),
-                                        tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
-                                )
-                        ).render(), charts));
-
-                        navigator.addRequest(html);
-
-                        return html;
-
-                    } catch (Exception e) {
-                        System.out.println(e.getClass().getName() + ": " + e.getMessage());
-                        return new Gson().toJson(new AjaxChartMessage("ERROR: " + e.getMessage(), Collections.emptyList()));
+                        // apply prefilters
+                        System.out.println("Applying prefilters...");
+                        portfolioList.applyFilters(preFilters);
                     }
                 }
-            };
-            task.fork();
-            try {
-                return task.get(60,TimeUnit.SECONDS);
-            } catch(TimeoutException te) {
-                task.cancel(true);
-                return new Gson().toJson(new AjaxChartMessage("Request took too long. Considering increasing time limit.",Collections.emptyList()));
-            } catch(Exception e) {
-                return new Gson().toJson(new AjaxChartMessage("Unknown Error Message: "+e.getMessage(),Collections.emptyList()));
+
+                System.out.println("Initializing portfolio...");
+                // special case
+                if (comparator.equals(Constants.TECHNOLOGY_RELEVANCE) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
+                    applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
+                }
+
+                // normal case
+                if (!appliedAttributes.contains(comparator)) {
+                    System.out.println("Applying comparator field before sorting: " + comparator);
+                    List<AbstractAttribute> attrList = new ArrayList<>();
+                    if (attributesMap.containsKey(comparator)) {
+                        AbstractAttribute attr = attributesMap.get(comparator);
+                        if (!(attr instanceof DoNothing)) {
+                            attrList.add(attr);
+                        }
+                    } else if (valueModelMap.containsKey(comparator)) {
+                        AbstractAttribute attr = valueModelMap.get(comparator);
+                        if (!(attr instanceof DoNothing)) {
+                            attrList.add(attr);
+                        }
+                    }
+                    if(attrList.size()>0)portfolioList.applyAttributes(attrList);
+                }
+                portfolioList.init(comparator, limit);
+
+
+                // Apply technology data
+                System.out.println("Applying technologies...");
+                if ((technologies.size() > 0 || postFilters.stream().anyMatch(filter->filter.getPrerequisites().contains(Constants.TECHNOLOGY_RELEVANCE))) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
+                    applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
+                }
+
+                System.out.println("Applying necessary prerequisite attributes for post filters...");
+                // Add necessary attributes for post filters
+                portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
+                    return filter.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq));
+                }).distinct().map(preReq -> {
+                    if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
+                        appliedAttributes.add(preReq);
+                        return attributesMap.get(preReq);
+                    }
+                    if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
+                        appliedAttributes.add(preReq);
+                        return valueModelMap.get(preReq);
+                    }
+                    return null;
+                }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList()));
+
+                System.out.println("Applying post filters...");
+                // Run filters
+                portfolioList.applyFilters(postFilters);
+
+                // Apply attributes
+                System.out.println("Applying attributes...");
+                portfolioList.applyAttributes(attributes);
+                appliedAttributes.addAll(itemAttributes);
+
+                // Apply value models
+                System.out.println("Applying value models...");
+                portfolioList.applyAttributes(evaluators);
+                appliedAttributes.addAll(valueModels);
+
+
+                System.out.println("Rendering table...");
+                List<AbstractChart> charts = new ArrayList<>();
+                AtomicInteger chartCnt = new AtomicInteger(0);
+                String html = new Gson().toJson(new AjaxChartMessage(div().with(
+                        charts.isEmpty() ? div() : div().with(
+                                h4("Charts"),
+                                div().with(
+                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                )
+                        ),
+                        portfolioList == null ? div() : div().with(
+                                h4("Data"),
+                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
+                        )
+                ).render(), charts));
+
+                navigator.addRequest(html);
+
+                return html;
+
+            } catch (Exception e) {
+                System.out.println(e.getClass().getName() + ": " + e.getMessage());
+                return new Gson().toJson(new AjaxChartMessage("ERROR: " + e.getMessage(), Collections.emptyList()));
             }
         });
 
