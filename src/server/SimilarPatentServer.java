@@ -165,7 +165,7 @@ public class SimilarPatentServer {
     }
 
     public static void loadSimilarityModels() {
-        boolean test = true;
+        boolean test = false;
         if(similarityModelMap.isEmpty()) {
             try {
                 similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
@@ -668,7 +668,7 @@ public class SimilarPatentServer {
                                                                 String display;
                                                                 if(filter.defaultSelected()) {
                                                                     display = "block;";
-                                                                    checkbox=checkbox.attr("selected","selected");
+                                                                    checkbox=checkbox.attr("checked","checked");
                                                                 }else {
                                                                     display= "none;";
                                                                 }
