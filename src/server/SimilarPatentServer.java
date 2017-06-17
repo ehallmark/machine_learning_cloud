@@ -596,6 +596,13 @@ public class SimilarPatentServer {
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
                                                                 option().withValue(Constants.CPC_MODEL).withText("CPC Model")
+                                                        ),h4("Result Type"),
+                                                        select().withName(SEARCH_TYPE_FIELD).with(
+                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                    return option;
+                                                                }).collect(Collectors.toList())
                                                         ),
                                                         h4("Sorted By"),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
@@ -611,14 +618,6 @@ public class SimilarPatentServer {
                                                         label("Custom Assignee List (1 per line)"),br(),
                                                         textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD)
                                                 ), td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h4("Search For"),
-                                                        select().withName(SEARCH_TYPE_FIELD).with(
-                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                    return option;
-                                                                }).collect(Collectors.toList())
-                                                        ),br(),
                                                         h4("With Similarity To"),
                                                         label("Patents (1 per line)"),br(),
                                                         textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
@@ -644,17 +643,24 @@ public class SimilarPatentServer {
                                                             return pair._1.entrySet().stream().map(e->{
                                                                 String key = e.getKey();
                                                                 AbstractFilter filter = e.getValue();
-                                                                EmptyTag checkbox = input().withType("checkbox").withName(pair._2).withValue(key);
-                                                                if(filter.defaultSelected()) checkbox=checkbox.attr("selected","selected");
+                                                                String id = "form-dropdown-"+key;
+                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","var $dropdown = $('#"+id+"'); if($drowndown.prop('checked')) {$drowndown.show();} else {$dropdown.hide();}").withName(pair._2).withValue(key);
+                                                                String display;
+                                                                if(filter.defaultSelected()) {
+                                                                    display = "block;";
+                                                                    checkbox=checkbox.attr("selected","selected");
+                                                                }else {
+                                                                    display= "none;";
+                                                                }
                                                                 return div().with(
                                                                         label(humanAttributeFor(key)),
                                                                         checkbox,
-                                                                        filter.getOptionsTag()==null? div():filter.getOptionsTag());
+                                                                        filter.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(filter.getOptionsTag()));
                                                             });
                                                         }).collect(Collectors.toList()))
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","vertical-align: top;").with(
+                                                td().attr("style","width: 100%; vertical-align: top;").with(
                                                         button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
                                                         hr()
                                                 )
