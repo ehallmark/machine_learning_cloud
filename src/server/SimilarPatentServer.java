@@ -603,36 +603,37 @@ public class SimilarPatentServer {
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h5("Similarity Model"),select().withName(SIMILARITY_MODEL_FIELD).with(
+                                                        h4("Main Options"),
+                                                        label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
                                                                 option().withValue(Constants.CPC_MODEL).withText("CPC Model")
-                                                        ),h5("Result Type"),
+                                                        ),br(),label("Result Type"),br(),
                                                         select().withName(SEARCH_TYPE_FIELD).with(
                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
                                                                     ContainerTag option = option(type.toString()).withValue(type.toString());
                                                                     if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
                                                                     return option;
                                                                 }).collect(Collectors.toList())
-                                                        ),
-                                                        h5("Maximizing Value (or leave blank to maximize Similarity)"),
+                                                        ),br(),
+                                                        label("Maximizing Value"), br(),
                                                         select().withName(MAXIMIZING_PARAMETER_FIELD).with(
-                                                                option("-- Blank --").withValue("").attr("selected","selected"),
+                                                                option("Similarity").withValue("").attr("selected","selected"),
                                                                 div().with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             return option(humanAttributeFor(key)).withValue(key);
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),
-                                                        h5("Sorted By"),select().withName(COMPARATOR_FIELD).with(
+                                                        ),br(),
+                                                        label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
                                                                 option("Value").withValue(Constants.AI_VALUE),
                                                                 option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
-                                                        ),h5("Result Limit"),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                        ),label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 ),
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Search Within"),
-                                                        h5("(Or Leave Blank To Search Full Database)"),
+                                                        h5("(Leave Blank To Search Full Database)"),
                                                         label("Custom Patent List (1 per line)"),br(),
                                                         textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
                                                         label("Custom Assignee List (1 per line)"),br(),

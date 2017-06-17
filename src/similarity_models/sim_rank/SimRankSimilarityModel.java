@@ -63,8 +63,8 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     protected List<Pair<Item, Double>> similarHelper(String patent, int n) {
         List<Pair<String,Float>> data = similarityMap.get(patent);
         if(data==null) return Collections.emptyList();
-        return data.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(n)
-                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).collect(Collectors.toList());
+        return data.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
+                .map(p->new Pair<>(tokenMap.containsKey(p.getFirst())?tokenMap.get(p.getFirst()):new Item(p.getFirst()),p.getSecond().doubleValue())).collect(Collectors.toList());
     }
 
     @Override
