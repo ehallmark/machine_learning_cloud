@@ -410,7 +410,10 @@ public class SimilarPatentServer {
                                     // get average of specific tech models
                                     applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
                                 } else {
-                                    portfolioList.applyAttributes(Arrays.asList(valueModelMap.get(maximizeValueOf)));
+                                    ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
+                                    if(!(valueModel instanceof DoNothing)) {
+                                        portfolioList.applyAttributes(Arrays.asList(valueModel));
+                                    }
                                     appliedAttributes.add(maximizeValueOf);
                                 }
                                 // apply prefilters
