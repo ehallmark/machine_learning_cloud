@@ -366,7 +366,7 @@ public class SimilarPatentServer {
 
                         System.out.println(" ... Attributes");
                         // Get data attributes
-                        List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr -> !(attributesMap.get(attr) instanceof DoNothingAttribute)).map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
+                        List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr -> !(attributesMap.get(attr) instanceof DoNothing)).map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
 
                         System.out.println(" ... Filters");
                         // Get filters
@@ -379,7 +379,7 @@ public class SimilarPatentServer {
 
                         System.out.println(" ... Evaluators");
                         // Get value models
-                        List<ValueAttr> evaluators = valueModels.stream().map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
+                        List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
 
                         PortfolioList portfolioList;
 
@@ -420,25 +420,27 @@ public class SimilarPatentServer {
                         }
 
                         System.out.println("Initializing portfolio...");
+                        // special case
                         if (comparator.equals(Constants.TECHNOLOGY_RELEVANCE) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
                             applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
                         }
 
+                        // normal case
                         if (!appliedAttributes.contains(comparator)) {
                             System.out.println("Applying comparator field before sorting: " + comparator);
                             List<AbstractAttribute> attrList = new ArrayList<>();
                             if (attributesMap.containsKey(comparator)) {
                                 AbstractAttribute attr = attributesMap.get(comparator);
-                                if (!(attr instanceof DoNothingAttribute)) {
+                                if (!(attr instanceof DoNothing)) {
                                     attrList.add(attr);
                                 }
                             } else if (valueModelMap.containsKey(comparator)) {
                                 AbstractAttribute attr = valueModelMap.get(comparator);
-                                if (!(attr instanceof DoNothingAttribute)) {
+                                if (!(attr instanceof DoNothing)) {
                                     attrList.add(attr);
                                 }
                             }
-                            portfolioList.applyAttributes(attrList);
+                            if(attrList.size()>0)portfolioList.applyAttributes(attrList);
                         }
                         portfolioList.init(comparator, limit);
 
@@ -474,7 +476,7 @@ public class SimilarPatentServer {
                                 return valueModelMap.get(preReq);
                             }
                             return null;
-                        }).filter(model -> model != null).collect(Collectors.toList()));
+                        }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList()));
 
                         System.out.println("Applying post filters...");
                         // Run filters

@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class DoNothingValueAttribute extends ValueAttr {
+public class DoNothingValueAttribute extends ValueAttr implements DoNothing {
 
     public DoNothingValueAttribute() {
         super(ValueMapNormalizer.DistributionType.None, null);
