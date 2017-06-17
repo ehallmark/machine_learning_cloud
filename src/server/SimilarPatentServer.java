@@ -137,6 +137,7 @@ public class SimilarPatentServer {
                 valueModelMap.put(Constants.COMPDB_ASSETS_SOLD_VALUE, new CompDBAssetsSoldEvaluator());
                 valueModelMap.put(Constants.LARGE_PORTFOLIO_VALUE, new PortfolioSizeEvaluator());
                 valueModelMap.put(Constants.SMALL_PORTFOLIO_VALUE, new SmallPortfolioSizeEvaluator());
+                valueModelMap.put(Constants.TECHNOLOGY_RELEVANCE, new DoNothingValueAttribute());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -190,7 +191,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
             attributesMap.put(Constants.NAME, new DoNothingAttribute());
-            attributesMap.put(Constants.TECHNOLOGY_RELEVANCE, new DoNothingAttribute());
             attributesMap.put(Constants.SIMILARITY, new DoNothingAttribute());
         }
     }
@@ -445,7 +445,7 @@ public class SimilarPatentServer {
 
                         // Apply technology data
                         System.out.println("Applying technologies...");
-                        if (!appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
+                        if ((technologies.size() > 0 || postFilters.stream().anyMatch(filter->filter.getPrerequisites().contains(Constants.TECHNOLOGY_RELEVANCE))) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
                             applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
                         }
 

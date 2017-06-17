@@ -35,6 +35,6 @@ public class SpecificTechnologyEvaluator extends ValueAttr {
     public double evaluate(String token) {
         List<Pair<String,Double>> pairs = tagger.attributesFor(Arrays.asList(token),tagger.numClassifications()/2).stream().filter(p->technology.equals(p.getFirst())).collect(Collectors.toList());
         if(pairs.isEmpty()) return ValueMapNormalizer.DEFAULT_START;
-        else return pairs.stream().collect(Collectors.averagingDouble(p->p.getSecond()));
+        else return pairs.stream().collect(Collectors.averagingDouble(p->ValueMapNormalizer.DEFAULT_START+(ValueMapNormalizer.DEFAULT_END-ValueMapNormalizer.DEFAULT_START)*p.getSecond()));
     }
 }

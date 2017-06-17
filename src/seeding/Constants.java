@@ -41,16 +41,5 @@ public class Constants {
 	public static final Set<String> CLAIM_STOP_WORD_SET = new HashSet<>(Arrays.asList(CLAIM_STOP_WORDS));
 	public static final Set<String> STOP_WORD_SET = CLAIM_STOP_WORD_SET;
 
-	public static final String DEFAULT_EM_NAME = "Evan Hallmark";
-	public static final String DEFAULT_EM_TITLE = "Director, AI Services";
-	public static final String DEFAULT_EM_PHONE = "Direct: +1.503.200.5173";
-	public static final String DEFAULT_EM_EMAIL = "Email: ehallmark@gttgrp.com";
-	public static final String DEFAULT_SAM_NAME = "Michael Lubitz";
-	public static final String DEFAULT_SAM_TITLE = "Chairman & CEO";
-	public static final String DEFAULT_SAM_PHONE = "Direct: +1.503.200.5172";
-	public static final String DEFAULT_SAM_EMAIL = "Email: mlubitz@gttgrp.com";
-	public static final String DEFAULT_EM_LABEL = "Product Development Manager";
-	public static final String DEFAULT_SAM_LABEL = "Account Manager";
-
 
 }

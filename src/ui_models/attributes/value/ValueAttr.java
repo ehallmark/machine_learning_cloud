@@ -31,8 +31,8 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
         setModel();
     }
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelname) {
-        this(distributionType,modelname,DEFAULT_VAL);
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName) {
+        this(distributionType,modelName,DEFAULT_VAL);
     }
 
     public void setModel() {
