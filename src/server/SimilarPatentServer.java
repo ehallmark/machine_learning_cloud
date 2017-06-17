@@ -69,7 +69,6 @@ public class SimilarPatentServer {
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
     private static final String REPORT_URL = "/similar_candidate_sets";
-    private static final String MAXIMIZING_PARAMETER_FIELD = "maximizingParameter";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
@@ -397,7 +396,7 @@ public class SimilarPatentServer {
 
                         Set<String> appliedAttributes = new HashSet<>();
                         // Run maximization model
-                        String maximizeValueOf = extractString(req, MAXIMIZING_PARAMETER_FIELD, null);
+                        String maximizeValueOf = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
                         {
                             System.out.println(" ... Similarity model");
                             // Get similarity model
@@ -406,7 +405,7 @@ public class SimilarPatentServer {
                             if (firstFinder == null || firstFinder.numItems() == 0) {
                                 return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
                             }
-                            if (maximizeValueOf == null) { // Similarity model
+                            if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
                                 System.out.println("Running similarity model...");
                                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                                 if (secondFinder == null || secondFinder.numItems() == 0) {
@@ -701,16 +700,6 @@ public class SimilarPatentServer {
                                                                     if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
                                                                     return option;
                                                                 }).collect(Collectors.toList())
-                                                        ),br(),
-                                                        label("Maximizing Value"), br(),
-                                                        select().withName(MAXIMIZING_PARAMETER_FIELD).with(
-                                                                option("Similarity").withValue("").attr("selected","selected"),
-                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
-                                                                div().with(
-                                                                        valueModelMap.keySet().stream().map(key-> {
-                                                                            return option(humanAttributeFor(key)).withValue(key);
-                                                                        }).collect(Collectors.toList())
-                                                                )
                                                         ),br(),
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
