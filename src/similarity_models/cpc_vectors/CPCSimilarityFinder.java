@@ -34,8 +34,10 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         Database.initializeDatabase();
 
         int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        List<String> orderedClassifications = CPCVariationalAutoEncoderModel.getOrderedClassifications();
+        List<String> orderedClassifications = CPCKMeans.getClassifications(Database.getCopyOfAllPatents(),cpcDepth,true);
+
         //MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
+        // List<String> orderedClassificaitons = model.getOrderedClassifications();
         Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
 
         List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
