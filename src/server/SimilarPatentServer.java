@@ -634,7 +634,8 @@ public class SimilarPatentServer {
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
                                                                 option("Value").withValue(Constants.AI_VALUE),
                                                                 option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
-                                                        ),label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                        ),br(),
+                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 ),
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Search Within"),
@@ -700,7 +701,6 @@ public class SimilarPatentServer {
             String[] array = req.queryParamsValues(param);
             if (array != null) {
                 List<String> list = Arrays.stream(array).collect(Collectors.toList());
-                list.forEach(item->System.out.println("Found: "+item));
                 return list;
             }
             else return Collections.emptyList();
