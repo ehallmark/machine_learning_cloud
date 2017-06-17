@@ -454,17 +454,6 @@ public class SimilarPatentServer {
                             applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
                         }
 
-                        // Apply attributes
-                        System.out.println("Applying attributes...");
-                        portfolioList.applyAttributes(attributes);
-                        appliedAttributes.addAll(itemAttributes);
-
-                        // Apply value models
-                        System.out.println("Applying value models...");
-                        portfolioList.applyAttributes(evaluators);
-                        appliedAttributes.addAll(valueModels);
-
-
                         System.out.println("Applying necessary prerequisite attributes for post filters...");
                         // Add necessary attributes for post filters
                         portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
@@ -484,6 +473,17 @@ public class SimilarPatentServer {
                         System.out.println("Applying post filters...");
                         // Run filters
                         portfolioList.applyFilters(postFilters);
+
+                        // Apply attributes
+                        System.out.println("Applying attributes...");
+                        portfolioList.applyAttributes(attributes);
+                        appliedAttributes.addAll(itemAttributes);
+
+                        // Apply value models
+                        System.out.println("Applying value models...");
+                        portfolioList.applyAttributes(evaluators);
+                        appliedAttributes.addAll(valueModels);
+
 
                         System.out.println("Rendering table...");
                         List<AbstractChart> charts = new ArrayList<>();
