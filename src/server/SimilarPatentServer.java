@@ -162,13 +162,14 @@ public class SimilarPatentServer {
     }
 
     public static void loadSimilarityModels() {
+        boolean test = true;
         if(similarityModelMap.isEmpty()) {
             try {
                 similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
-                similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
-                similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **"));
-                similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
-                similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                if(!test)similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
+                if(!test)similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **"));
+                if(!test)similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
+                if(!test)similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
 
             } catch (Exception e) {
                 e.printStackTrace();
