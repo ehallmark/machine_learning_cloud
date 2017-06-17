@@ -472,7 +472,7 @@ public class SimilarPatentServer {
                         appliedAttributes.addAll(valueModels);
 
 
-                        System.out.println("Adding prerequisite attributes for post filters...");
+                        System.out.println("Applying necessary prerequisite attributes for post filters...");
                         // Add necessary attributes for post filters
                         portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
                             return filter.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq));
@@ -739,7 +739,7 @@ public class SimilarPatentServer {
                                                         label("Gather Technology"),br(),
                                                         gatherTechnologySelect()
                                                 )
-                                        ), tr().attr("style", "vertical-align: top;").with(
+                                        ), tr().attr("style", "vertical-align: top; margin-top: 50px;").with(
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Select Data Fields to capture"),div().with(
                                                         attributesMap.keySet().stream().map(key-> {
