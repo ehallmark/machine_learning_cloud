@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class SimRankSimilarityModel implements AbstractSimilarityModel {
     private static Map<String,Set<String>> patentToCitedPatentsMap;
-    private static Map<String,List<util.Pair<String,Float>>> similarityMap;
+    private static Map<String,List<Pair<String,Float>>> similarityMap;
     static {
         if(SimRankHelper.similarityMapFile.exists()) {
             similarityMap = new SimRank.Loader().loadSimilarityMap(SimRankHelper.similarityMapFile);
@@ -39,7 +39,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Getter
-    private Collection<String> tokens;
+    private Map<String,Item> tokenMap;
     @Getter
     private String name;
     public SimRankSimilarityModel(@NonNull Collection<String> candidateSet, String name) {
@@ -48,30 +48,30 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
         try {
-            tokens = candidateSet.stream().map(itemStr->{
+            tokenMap = candidateSet.stream().map(itemStr->{
                 if(!similarityMap.containsKey(itemStr)) return null; // no info on item
                 return itemStr;
-            }).filter(item->item!=null).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new Item(item)).collect(Collectors.toMap((item->item.getName()),item->item));
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
-            tokens = Collections.emptyList();
+            tokenMap = Collections.emptyMap();
         }
     }
 
-    protected List<Pair<String, Double>> similarHelper(String patent, int n) {
-        List<util.Pair<String,Float>> data = similarityMap.get(patent);
+    protected List<Pair<Item, Double>> similarHelper(String patent, int n) {
+        List<Pair<String,Float>> data = similarityMap.get(patent);
         if(data==null) return Collections.emptyList();
-        return data.stream().sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(n)
-                .map(p->new Pair<>(p._1,p._2.doubleValue())).collect(Collectors.toList());
+        return data.stream().sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(n)
+                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).collect(Collectors.toList());
     }
 
     @Override
     public PortfolioList findSimilarPatentsTo(String item, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters) {
         return new PortfolioList(similarHelper(item,limit).stream()
                 .map(pair->{
-                    Item similarItem = new Item(pair.getFirst());
+                    Item similarItem = pair.getFirst().clone();
                     similarItem.setSimilarity(pair.getSecond());
                     return similarItem;
                 }).filter(p->filters.stream().allMatch(filter -> filter.shouldKeepItem(p)))
@@ -80,7 +80,12 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public int numItems() {
-        return tokens.size();
+        return tokenMap.size();
+    }
+
+    @Override
+    public Collection<String> getTokens() {
+        return tokenMap.keySet();
     }
 
     @Override

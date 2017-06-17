@@ -11,20 +11,25 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class SimilarityThresholdFilter implements AbstractFilter {
+public class SimilarityThresholdFilter extends AbstractFilter {
     private Double threshold;
 
 
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").attr("step","0.1").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
+                input().withType("number").attr("step","0.1").withValue("0").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
         );
     }
 
     @Override
     public void extractRelevantInformationFromParams(QueryParamsMap params) {
         threshold = Double.valueOf(params.value(Constants.SIMILARITY_THRESHOLD_FILTER));
+    }
+
+    @Override
+    public boolean defaultSelected() {
+        return true;
     }
 
     @Override

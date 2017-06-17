@@ -13,7 +13,7 @@ import java.util.HashSet;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class AssigneeFilter implements AbstractFilter {
+public class AssigneeFilter extends AbstractFilter {
     private Collection<String> assigneesToRemove;
 
     @Override

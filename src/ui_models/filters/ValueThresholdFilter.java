@@ -11,7 +11,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class ValueThresholdFilter implements AbstractFilter {
+public class ValueThresholdFilter extends AbstractFilter {
     private Double threshold;
 
     @Override

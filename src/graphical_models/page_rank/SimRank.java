@@ -7,8 +7,8 @@ import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
+import org.deeplearning4j.berkeley.Pair;
 import util.ObjectIO;
-import util.Pair;
 
 import java.io.File;
 import java.util.*;

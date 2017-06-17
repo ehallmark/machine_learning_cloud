@@ -12,7 +12,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PortfolioSizeMinimumFilter implements AbstractFilter {
+public class PortfolioSizeMinimumFilter extends AbstractFilter {
     private int limit = 0;
 
     @Override

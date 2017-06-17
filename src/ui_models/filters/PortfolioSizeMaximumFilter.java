@@ -13,7 +13,7 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PortfolioSizeMaximumFilter implements AbstractFilter {
+public class PortfolioSizeMaximumFilter extends AbstractFilter {
     private int limit = 0;
 
     @Override

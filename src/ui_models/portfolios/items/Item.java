@@ -16,9 +16,6 @@ public class Item implements Comparable<Item> {
     protected String name;
     @Getter @Setter
     protected double similarity;
-    @Getter
-    protected List<Pair<String,Double>> technologyList;
-    protected PortfolioList.Type type;
     protected Map<String,Object> dataMap = new HashMap<>();
 
     public static final Comparator<Item> similarityComparator() { return (o1, o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
@@ -29,7 +26,7 @@ public class Item implements Comparable<Item> {
 
     public Item clone() {
         Item item = new Item(name);
-        item.dataMap=dataMap;
+        item.dataMap=new HashMap<>(dataMap);
         item.similarity=similarity;
         return item;
     }

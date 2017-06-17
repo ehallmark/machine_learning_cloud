@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
+import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import server.tools.SimpleAjaxMessage;
@@ -261,8 +262,8 @@ public class SimilarPatentServer {
         hostPublicAssets();
 
         // GET METHODS
-        get("/", (req, res) -> templateWrapper(res, div().with(homePage(),hr()), getAndRemoveMessage(req.session())));
-        get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm(), hr()), getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(homePage()), getAndRemoveMessage(req.session())));
+        get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm()), getAndRemoveMessage(req.session())));
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -634,9 +635,11 @@ public class SimilarPatentServer {
                                                                             return pair._1.entrySet().stream().map(e->{
                                                                                 String key = e.getKey();
                                                                                 AbstractFilter filter = e.getValue();
+                                                                                EmptyTag checkbox = input().withType("checkbox").withName(pair._2).withValue(key);
+                                                                                if(filter.defaultSelected()) checkbox=checkbox.attr("selected","selected");
                                                                                 return div().with(
                                                                                         label(humanAttributeFor(key)),
-                                                                                        input().withType("checkbox").withName(pair._2).withValue(key),
+                                                                                        checkbox,
                                                                                         filter.getOptionsTag()==null? div():filter.getOptionsTag());
                                                                             });
                                                                         }).collect(Collectors.toList()))

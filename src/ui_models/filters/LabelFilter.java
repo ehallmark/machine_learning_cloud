@@ -15,7 +15,7 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class LabelFilter implements AbstractFilter {
+public class LabelFilter extends AbstractFilter {
     private Collection<String> labelsToRemove;
 
     @Override

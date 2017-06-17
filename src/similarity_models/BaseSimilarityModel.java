@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
     @Getter
+    protected Collection<Item> items;
+    @Getter
     protected Collection<String> tokens;
     protected Map<String,INDArray> lookupTable;
     @Getter @Setter
@@ -33,17 +35,18 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         this.name=name;
         System.out.println("--- Started Loading Patent Vectors ---");
         try {
-            tokens = candidateSet.stream().map(itemStr->{
+            items = candidateSet.stream().map(itemStr->{
                 if(!lookupTable.containsKey(itemStr)) return null; // no info on item
                 return itemStr;
-            }).filter(item->item!=null).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new Item(item)).collect(Collectors.toSet());
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
-            tokens = Collections.emptyList();
+            items = Collections.emptyList();
         }
         System.out.println("--- Finished Loading Patent Vectors ---");
+        this.tokens=new HashSet<>(items.stream().map(item->item.getName()).collect(Collectors.toList()));
     }
 
     public INDArray computeAvg() {
@@ -70,7 +73,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     // returns null if patentNumber not found
     @Override
     public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
-        assert tokens!=null : "Item list is null!";
+        assert items!=null : "Item list is null!";
         if(avgVector==null) return new PortfolioList(new ArrayList<>());
         long startTime = System.currentTimeMillis();
         PortfolioList list = similarPatentsHelper(avgVector, limit, filters);
@@ -82,24 +85,25 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public int numItems() {
-        return tokens==null?0:tokens.size();
+        return items==null?0:items.size();
     }
 
     private synchronized PortfolioList similarPatentsHelper(INDArray baseVector, int limit, Collection<? extends AbstractFilter> filters) {
-        MinHeap<WordFrequencyPair<String,Double>> heap = new MinHeap<>(limit);
-        tokens.forEach(item -> {
+        MinHeap<WordFrequencyPair<Item,Double>> heap = new MinHeap<>(limit);
+        items.forEach(item -> {
             if(item!=null) {
-                double sim = Transforms.cosineSim(lookupTable.get(item),baseVector);
+                double sim = Transforms.cosineSim(lookupTable.get(item.getName()),baseVector);
+                Item itemClone = item.clone();
+                itemClone.setSimilarity(sim);
                 // apply item pre filters
-                if (filters.stream().allMatch(filter -> filter.shouldKeepItem(new Item(item)))) heap.add(new WordFrequencyPair<>(item,sim));
+                if (filters.stream().allMatch(filter -> filter.shouldKeepItem(itemClone))) heap.add(new WordFrequencyPair<>(itemClone,sim));
 
             }
         });
         List<Item> resultList = new ArrayList<>(limit);
         while (!heap.isEmpty()) {
-            WordFrequencyPair<String,Double> pair = heap.remove();
-            Item itemClone = new Item(pair.getFirst()); // make sure to clone item
-            itemClone.setSimilarity(pair.getSecond()); // make sure to set similarity
+            WordFrequencyPair<Item,Double> pair = heap.remove();
+            Item itemClone = pair.getFirst();
             resultList.add(0, itemClone);
         }
         PortfolioList results = new PortfolioList(resultList);
