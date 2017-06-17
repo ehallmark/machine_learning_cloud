@@ -407,6 +407,9 @@ public class SimilarPatentServer {
                     if (maximizeValueOf == null) { // Similarity model
                         System.out.println("Running similarity model...");
                         AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
+                        if (secondFinder == null || secondFinder.numItems() == 0) {
+                            return new Gson().toJson(new SimpleAjaxMessage("Must define what to search for when using similarity functionality."));
+                        }
                         portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
                     } else {
                         System.out.println("Maximizing values...");
