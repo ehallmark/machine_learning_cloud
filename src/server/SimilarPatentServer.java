@@ -6,7 +6,6 @@ import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
-import server.tools.SimpleAjaxMessage;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
@@ -325,11 +324,11 @@ public class SimilarPatentServer {
 
                         if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
                             String tmp = navigator.goBack();
-                            if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
+                            if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
                             return tmp;
                         } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
                             String tmp = navigator.goForward();
-                            if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
+                            if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
                             return tmp;
                         }
 
@@ -403,20 +402,20 @@ public class SimilarPatentServer {
                             AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
                             AbstractSimilarityModel firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
                             if (firstFinder == null || firstFinder.numItems() == 0) {
-                                return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
+                                return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
                             }
                             if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
                                 System.out.println("Running similarity model...");
                                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                                 if (secondFinder == null || secondFinder.numItems() == 0) {
-                                    return new Gson().toJson(new SimpleAjaxMessage("Must define what to search for when using similarity functionality."));
+                                    return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
                                 }
                                 portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
                             } else {
                                 System.out.println("Maximizing values...");
                                 portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
                                 if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents))
-                                    return new Gson().toJson(new SimpleAjaxMessage("Unable to search entire patent database by values other than Similarity"));
+                                    return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity",Collections.emptyList()));
                                 if (maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
                                     // get average of specific tech models
                                     applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
@@ -513,7 +512,7 @@ public class SimilarPatentServer {
 
                     } catch (Exception e) {
                         System.out.println(e.getClass().getName() + ": " + e.getMessage());
-                        return new Gson().toJson(new SimpleAjaxMessage("ERROR: " + e.getMessage()));
+                        return new Gson().toJson(new AjaxChartMessage("ERROR: " + e.getMessage(), Collections.emptyList()));
                     }
                 }
             };
@@ -521,9 +520,9 @@ public class SimilarPatentServer {
             try {
                 return task.get(60,TimeUnit.SECONDS);
             } catch(TimeoutException te) {
-                return new Gson().toJson(new SimpleAjaxMessage("Request took too long. Considering increasing time limit."));
+                return new Gson().toJson(new AjaxChartMessage("Request took too long. Considering increasing time limit.",Collections.emptyList()));
             } catch(Exception e) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unknown Error Message: "+e.getMessage()));
+                return new Gson().toJson(new AjaxChartMessage("Unknown Error Message: "+e.getMessage(),Collections.emptyList()));
             }
         });
 
