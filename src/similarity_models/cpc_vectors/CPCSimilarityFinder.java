@@ -38,7 +38,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
 
         //MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
         // List<String> orderedClassificaitons = model.getOrderedClassifications();
-        Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
+        Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 
         List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
 
@@ -76,12 +76,12 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
                 INDArray encoding = vec; //model.getLayer(0).activate(vec,false);
                 if(encoding!=null) {
                     for(int i = 0; i < names.size(); i++) {
-                        toSave.put(names.get(i), encoding.getRow(i));
+                        lookupTable.put(names.get(i), encoding.getRow(i));
                     }
                 }
             }
         });
 
-        Database.trySaveObject(toSave,file);
+        Database.trySaveObject(lookupTable,file);
     }
 }
