@@ -684,9 +684,9 @@ public class SimilarPatentServer {
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Main Options"),
                                                         label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
-                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
-                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
-                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Model")
+                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Neural Network Model"),
+                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graphical Model (patents only)"),
+                                                                option().withValue(Constants.CPC_MODEL).withText("Class Code Neural Neural Network Model")
                                                         ),br(),label("Result Type"),br(),
                                                         select().withName(SEARCH_TYPE_FIELD).with(
                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
