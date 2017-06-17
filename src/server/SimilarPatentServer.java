@@ -377,9 +377,16 @@ public class SimilarPatentServer {
                 String maximizeValueOf = extractString(req,MAXIMIZING_PARAMETER_FIELD,null);
                 if(maximizeValueOf!=null) {
                     System.out.println("Maximizing values...");
-                    ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
-                    Collection<String> valuables = firstFinder.getTokens().stream().map(input->new Pair<>(input,valueModel.evaluate(input))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
-                    firstFinder = firstFinder.duplicateWithScope(valuables);
+                    if(maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
+                        // get average of specific tech models
+                        List<ValueAttr> techValueModels = technologies.stream().map(tech->new SpecificTechnologyEvaluator(tech,getTechTagger())).collect(Collectors.toList());
+                        Collection<String> valuables = firstFinder.getTokens().stream().map(input->new Pair<>(input,techValueModels.stream().collect(Collectors.averagingDouble(valueModel->valueModel.evaluate(input))))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
+                        firstFinder = firstFinder.duplicateWithScope(valuables);
+                    } else {
+                        ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
+                        Collection<String> valuables = firstFinder.getTokens().stream().map(input->new Pair<>(input,valueModel.evaluate(input))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
+                        firstFinder = firstFinder.duplicateWithScope(valuables);
+                    }
                 }
 
                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
@@ -624,6 +631,7 @@ public class SimilarPatentServer {
                                                         label("Maximizing Value"), br(),
                                                         select().withName(MAXIMIZING_PARAMETER_FIELD).with(
                                                                 option("Similarity").withValue("").attr("selected","selected"),
+                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
                                                                 div().with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             return option(humanAttributeFor(key)).withValue(key);
