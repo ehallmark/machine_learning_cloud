@@ -30,8 +30,8 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return itemList.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
-    public void applyFilter(AbstractFilter filter) {
-        itemList=itemList.stream().filter(obj->filter.shouldKeepItem(obj)).collect(Collectors.toList());
+    public void applyFilters(Collection<AbstractFilter> filters) {
+        itemList=itemList.stream().filter(obj->filters.stream().allMatch(filter->filter.shouldKeepItem(obj))).collect(Collectors.toList());
     }
 
     public void applyAttributes(Collection<? extends AbstractAttribute> attributes) {

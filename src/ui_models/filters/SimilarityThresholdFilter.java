@@ -19,18 +19,13 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").attr("step","0.1").withValue("0").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
+                input().withType("number").attr("step","0.1").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
         );
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         threshold = Double.valueOf(req.queryParams(Constants.SIMILARITY_THRESHOLD_FILTER));
-    }
-
-    @Override
-    public boolean defaultSelected() {
-        return true;
     }
 
     @Override
