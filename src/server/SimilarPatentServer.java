@@ -515,6 +515,7 @@ public class SimilarPatentServer {
             try {
                 return task.get(60,TimeUnit.SECONDS);
             } catch(TimeoutException te) {
+                task.cancel(true);
                 return new Gson().toJson(new AjaxChartMessage("Request took too long. Considering increasing time limit.",Collections.emptyList()));
             } catch(Exception e) {
                 return new Gson().toJson(new AjaxChartMessage("Unknown Error Message: "+e.getMessage(),Collections.emptyList()));
