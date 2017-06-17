@@ -67,7 +67,7 @@ public class SimilarPatentServer {
     private static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
-    private static final String REPORT_URL = "/similar_candidate_sets";
+    private static final String REPORT_URL = "/patent_recommendation_system";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
@@ -217,16 +217,6 @@ public class SimilarPatentServer {
         return message;
     }
 
-    private static Tag homePage() {
-        return div().with(
-                h3().with(a("Patent Recommendation System").withHref("/candidate_set_models")),h3().with(a("Company Profiler").withHref("/company_profile")),
-                h3().with(a("Lead Development").withHref("/lead_development")),
-                h3().with(a("Tech Tagger").withHref("/tech_tagger")),
-                h3().with(a("Asset Valuation").withHref("/asset_valuation")),
-                h3().with(a("Additional Patent Tools").withHref("/patent_toolbox"))
-        );
-    }
-
     static void hostPublicAssets() {
         File dir = new File("public/");
         hostAssetsHelper(dir,"");
@@ -291,8 +281,7 @@ public class SimilarPatentServer {
         hostPublicAssets();
 
         // GET METHODS
-        get("/", (req, res) -> templateWrapper(res, div().with(homePage()), getAndRemoveMessage(req.session())));
-        get("/candidate_set_models", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm()), getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm()), getAndRemoveMessage(req.session())));
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
