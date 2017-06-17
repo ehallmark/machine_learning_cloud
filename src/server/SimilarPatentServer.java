@@ -65,10 +65,12 @@ public class SimilarPatentServer {
     private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     private static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
+    private static final String LIMIT_FIELD = "limit";
     private static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
     private static final String REPORT_URL = "/similar_candidate_sets";
+    private static final String MAXIMIZING_PARAMETER_FIELD = "maximizingParameter";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
@@ -303,7 +305,7 @@ public class SimilarPatentServer {
 
                 System.out.println("Getting parameters...");
                 // get meta parameters
-                int limit = extractInt(req, "limit", 10);
+                int limit = extractInt(req, LIMIT_FIELD, 10);
                 String searchType = extractString(req, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
                 String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
@@ -369,14 +371,23 @@ public class SimilarPatentServer {
                     return null;
                 }
 
+                PortfolioList portfolioList;
+
+                // Run value and similarity models
+                String maximizeValueOf = extractString(req,MAXIMIZING_PARAMETER_FIELD,null);
+                if(maximizeValueOf!=null) {
+                    System.out.println("Maximizing values...");
+                    ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
+                    Collection<String> valuables = inputsToSearchIn.stream().map(input->new Pair<>(input,valueModel.evaluate(input))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
+                    firstFinder = firstFinder.duplicateWithScope(valuables);
+                }
+
                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                 if (secondFinder == null || secondFinder.numItems() == 0) {
                     return null;
                 }
-
-                // Run similarity models
                 System.out.println("Running model...");
-                PortfolioList portfolioList = runPatentFinderModel(firstFinder,secondFinder,limit,preFilters);
+                portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
@@ -592,11 +603,11 @@ public class SimilarPatentServer {
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h4("Similarity Model"),select().withName(SIMILARITY_MODEL_FIELD).with(
+                                                        h5("Similarity Model"),select().withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
                                                                 option().withValue(Constants.CPC_MODEL).withText("CPC Model")
-                                                        ),h4("Result Type"),
+                                                        ),h5("Result Type"),
                                                         select().withName(SEARCH_TYPE_FIELD).with(
                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
                                                                     ContainerTag option = option(type.toString()).withValue(type.toString());
@@ -604,11 +615,20 @@ public class SimilarPatentServer {
                                                                     return option;
                                                                 }).collect(Collectors.toList())
                                                         ),
-                                                        h4("Sorted By"),select().withName(COMPARATOR_FIELD).with(
+                                                        h5("Maximizing Value (or leave blank to maximize Similarity)"),
+                                                        select().withName(MAXIMIZING_PARAMETER_FIELD).with(
+                                                                option("-- Blank --").withValue("").attr("selected","selected"),
+                                                                div().with(
+                                                                        valueModelMap.keySet().stream().map(key-> {
+                                                                            return option(humanAttributeFor(key)).withValue(key);
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),
+                                                        h5("Sorted By"),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
                                                                 option("Value").withValue(Constants.AI_VALUE),
                                                                 option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
-                                                        )
+                                                        ),h5("Result Limit"),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 ),
                                                 td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Search Within"),
