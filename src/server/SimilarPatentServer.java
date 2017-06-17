@@ -368,7 +368,7 @@ public class SimilarPatentServer {
 
                 AbstractSimilarityModel firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
                 if (firstFinder == null || firstFinder.numItems() == 0) {
-                    return null;
+                    return new Gson().toJson(new SimpleAjaxMessage("Unable to find any results to search in."));
                 }
 
                 PortfolioList portfolioList;
@@ -378,16 +378,21 @@ public class SimilarPatentServer {
                 if(maximizeValueOf!=null) {
                     System.out.println("Maximizing values...");
                     ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
-                    Collection<String> valuables = inputsToSearchIn.stream().map(input->new Pair<>(input,valueModel.evaluate(input))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
+                    Collection<String> valuables = firstFinder.getTokens().stream().map(input->new Pair<>(input,valueModel.evaluate(input))).sorted((p1,p2)->p2._2.compareTo(p1._2)).limit(limit).map(p->p._1).collect(Collectors.toSet());
                     firstFinder = firstFinder.duplicateWithScope(valuables);
                 }
 
                 AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                 if (secondFinder == null || secondFinder.numItems() == 0) {
-                    return null;
+                    // apply prefilters
+                    System.out.println("Applying prefilters...");
+                    portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(item->new Item(item)).collect(Collectors.toList()));
+                    preFilters.forEach(preFilter->portfolioList.applyFilter(preFilter));
+                } else {
+                    System.out.println("Running similarity model...");
+                    portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
+
                 }
-                System.out.println("Running model...");
-                portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
