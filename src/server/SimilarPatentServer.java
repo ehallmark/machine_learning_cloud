@@ -644,7 +644,7 @@ public class SimilarPatentServer {
                                                                 String key = e.getKey();
                                                                 AbstractFilter filter = e.getValue();
                                                                 String id = "form-dropdown-"+key;
-                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","var $dropdown = $('#"+id+"'); if($dropdown.prop('checked')) {$dropdown.show();} else {$dropdown.hide();}").withName(pair._2).withValue(key);
+                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","$('#"+id+"').toggle();").withName(pair._2).withValue(key);
                                                                 String display;
                                                                 if(filter.defaultSelected()) {
                                                                     display = "block;";
