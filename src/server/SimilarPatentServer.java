@@ -697,7 +697,6 @@ public class SimilarPatentServer {
                                                         ),br(),
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
-                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
                                                                 div().with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             return option(humanAttributeFor(key)).withValue(key);
