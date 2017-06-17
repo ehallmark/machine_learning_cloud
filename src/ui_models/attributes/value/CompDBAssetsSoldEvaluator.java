@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class CompDBAssetsSoldEvaluator extends ValueAttr {
     public CompDBAssetsSoldEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal, Constants.COMPDB_ASSETS_SOLD_VALUE);
+        super(ValueMapNormalizer.DistributionType.Normal, Constants.COMPDB_ASSETS_SOLD_VALUE, ValueMapNormalizer.DEFAULT_START);
     }
 
     @Override

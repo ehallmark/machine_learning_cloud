@@ -15,7 +15,7 @@ public class PortfolioSizeEvaluator extends ValueAttr {
     }
 
     protected PortfolioSizeEvaluator(String name) {
-        super(ValueMapNormalizer.DistributionType.Normal,name);
+        super(ValueMapNormalizer.DistributionType.Normal,name,ValueMapNormalizer.DEFAULT_START);
     }
 
     @Override

@@ -672,7 +672,7 @@ public class SimilarPatentServer {
                 br(),
                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
-                        h2("Patent Recommendation System"),
+                        h2("Patent Recommendation System"),br(),
                         table().attr("style","width: 100%").with(
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(
@@ -722,12 +722,12 @@ public class SimilarPatentServer {
                                                         h4("Select Data Fields to capture"),div().with(
                                                         attributesMap.keySet().stream().map(key-> {
                                                             return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(key));
-                                                        }).collect(Collectors.toList()))
+                                                        }).collect(Collectors.toList())),br(),br()
                                                 ), td().attr("style","width: 33%; vertical-align: top;").with(
                                                         h4("Select Value Fields to capture"),div().with(
                                                         valueModelMap.keySet().stream().map(key-> {
                                                             return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(key));
-                                                        }).collect(Collectors.toList()))
+                                                        }).collect(Collectors.toList())),br(),br()
                                                 ), td().attr("style","width:33%; vertical-align: top;").with(
                                                         h4("Select applicable Filters"),div().with(
                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
@@ -748,7 +748,7 @@ public class SimilarPatentServer {
                                                                         checkbox,
                                                                         filter.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(filter.getOptionsTag()));
                                                             });
-                                                        }).collect(Collectors.toList()))
+                                                        }).collect(Collectors.toList())),br(),br()
                                                 )
                                         )
                                 )

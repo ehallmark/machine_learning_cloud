@@ -21,11 +21,18 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
     @Getter
     protected String name;
     protected ValueMapNormalizer.DistributionType distributionType;
+    private static final double DEFAULT_VAL = (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
+    protected double defaultVal;
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName) {
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, double defaultVal) {
         this.name=modelName;
+        this.defaultVal=defaultVal;
         this.distributionType=distributionType;
         setModel();
+    }
+
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelname) {
+        this(distributionType,modelname,DEFAULT_VAL);
     }
 
     public void setModel() {
@@ -49,7 +56,7 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
         if(model.containsKey(token)) {
             return model.get(token);
         } else {
-            return (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
+            return defaultVal;
         }
     }
 }

@@ -14,17 +14,11 @@ public class SmallPortfolioSizeEvaluator extends PortfolioSizeEvaluator {
         super(Constants.SMALL_PORTFOLIO_VALUE);
     }
 
-    // Returns value between 1 and 5
-    @Override
-    public Double attributesFor(Collection<String> tokens, int n) {
-        // flip the value
-        if(tokens.size()>0 && tokens.stream().anyMatch(token->model.containsKey(token))) {
-            double val = super.attributesFor(tokens,n);
-            double distFromStart = val - ValueMapNormalizer.DEFAULT_START;
-            val = ValueMapNormalizer.DEFAULT_END-distFromStart;
-            return val;
+    public double evaluate(String token) {
+        if(model.containsKey(token)) {
+            return ValueMapNormalizer.DEFAULT_END - model.get(token);
         } else {
-            return ValueMapNormalizer.DEFAULT_START;
+            return defaultVal;
         }
     }
 }
