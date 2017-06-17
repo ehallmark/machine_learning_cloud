@@ -2,12 +2,14 @@ package similarity_models.sim_rank;
 
 import graphical_models.page_rank.SimRank;
 import graphical_models.page_rank.SimRankHelper;
+import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
+import spark.Request;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
@@ -64,7 +66,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         List<Pair<String,Float>> data = similarityMap.get(patent);
         if(data==null) return Collections.emptyList();
         return data.stream().filter(p->tokenMap.containsKey(p.getFirst())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(n)
-                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).collect(Collectors.toList());
+                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).filter(p->p.getSecond()<=0d).collect(Collectors.toList());
     }
 
     @Override

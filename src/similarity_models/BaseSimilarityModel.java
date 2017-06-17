@@ -94,11 +94,13 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         items.forEach(item -> {
             if(item!=null) {
                 double sim = Transforms.cosineSim(item.getVec(),baseVector);
-                Item itemClone = item.clone();
-                itemClone.setSimilarity(sim);
-                // apply item pre filters
-                if (filters.stream().allMatch(filter -> filter.shouldKeepItem(itemClone))) heap.add(new WordFrequencyPair<>(itemClone,sim));
-
+                if(!Double.isNaN(sim)) {
+                    Item itemClone = item.clone();
+                    itemClone.setSimilarity(sim);
+                    // apply item pre filters
+                    if (filters.stream().allMatch(filter -> filter.shouldKeepItem(itemClone)))
+                        heap.add(new WordFrequencyPair<>(itemClone, sim));
+                }
             }
         });
         List<Item> resultList = new ArrayList<>(limit);
