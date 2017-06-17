@@ -6,6 +6,7 @@ import ui_models.attributes.AbstractAttribute;
 import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -23,4 +24,8 @@ public abstract class AbstractFilter {
     }
 
     public abstract boolean shouldKeepItem(Item obj);
+
+    public Collection<String> getPrerequisites() {
+        return Collections.emptyList();
+    }
 }

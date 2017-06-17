@@ -7,6 +7,9 @@ import spark.QueryParamsMap;
 import spark.Request;
 import ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
 
@@ -37,5 +40,10 @@ public class PortfolioSizeMinimumFilter extends AbstractFilter {
         } catch(Exception e) {
             return true;
         }
+    }
+
+    @Override
+    public Collection<String> getPrerequisites() {
+        return Arrays.asList(Constants.PORTFOLIO_SIZE);
     }
 }

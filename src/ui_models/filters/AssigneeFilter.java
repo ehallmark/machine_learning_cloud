@@ -8,6 +8,7 @@ import spark.QueryParamsMap;
 import spark.Request;
 import ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -32,5 +33,10 @@ public class AssigneeFilter extends AbstractFilter {
     @Override
     public boolean shouldKeepItem(Item item) {
         return !assigneesToRemove.contains(item.getData(Constants.ASSIGNEE));
+    }
+
+    @Override
+    public Collection<String> getPrerequisites() {
+        return Arrays.asList(Constants.ASSIGNEE);
     }
 }

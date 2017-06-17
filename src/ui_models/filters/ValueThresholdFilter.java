@@ -6,6 +6,9 @@ import spark.QueryParamsMap;
 import spark.Request;
 import ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
 
@@ -30,5 +33,10 @@ public class ValueThresholdFilter extends AbstractFilter {
     @Override
     public boolean shouldKeepItem(Item item) {
         return threshold==null ? true : ((Number)item.getData(Constants.AI_VALUE)).doubleValue()>threshold;
+    }
+
+    @Override
+    public Collection<String> getPrerequisites() {
+        return Arrays.asList(Constants.AI_VALUE);
     }
 }

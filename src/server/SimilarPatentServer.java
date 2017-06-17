@@ -413,13 +413,33 @@ public class SimilarPatentServer {
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
+                Set<String> appliedAttributes = new HashSet<>();
                 attributes.forEach(attribute->{
                     portfolioList.applyAttribute(attribute);
+                    appliedAttributes.add(attribute.getName());
                 });
 
                 // Apply value models
                 evaluators.forEach(valueModel->{
                     portfolioList.applyAttribute(valueModel);
+                    appliedAttributes.add(valueModel.getName());
+                });
+
+                System.out.println("Adding attributes for post filters...");
+                // Add necessary attributes for post filters
+                postFilters.forEach(filter->{
+                    filter.getPrerequisites().forEach(preReq->{
+                        if(!appliedAttributes.contains(preReq)) {
+                            if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
+                                portfolioList.applyAttribute(attributesMap.get(preReq));
+                                appliedAttributes.add(preReq);
+                            }
+                            if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
+                                portfolioList.applyAttribute(valueModelMap.get(preReq));
+                                appliedAttributes.add(preReq);
+                            }
+                        }
+                    });
                 });
 
                 System.out.println("Applying post filters...");
@@ -656,8 +676,11 @@ public class SimilarPatentServer {
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
                                                                 option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
-                                                                option("Value").withValue(Constants.AI_VALUE),
-                                                                option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
+                                                                div().with(
+                                                                        valueModelMap.keySet().stream().map(key-> {
+                                                                            return option(humanAttributeFor(key)).withValue(key);
+                                                                        }).collect(Collectors.toList())
+                                                                )
                                                         ),br(),
                                                         label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 ),
@@ -786,12 +809,6 @@ public class SimilarPatentServer {
         System.out.println("Finished loading base finder.");
         System.out.println("Starting server...");
         server();
-        LeadDevelopmentUI.setupServer();
-        CompanyPortfolioProfileUI.setupServer();
-        TechTaggerUI.setupServer();
-        GatherClassificationServer.StartServer();
-        PatentToolsServer.setup();
-        ValuationServer.setupServer();
         System.out.println("Finished starting server.");
     }
 }

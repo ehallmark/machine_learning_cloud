@@ -3,6 +3,7 @@ package ui_models.portfolios.attributes;
 import seeding.Constants;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.attributes.value.SpecificTechnologyEvaluator;
+import ui_models.attributes.value.ValueMapNormalizer;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +19,7 @@ public class OverallTechnologyAttribute implements AbstractAttribute<Double> {
     }
     @Override
     public Double attributesFor(Collection<String> portfolio, int limit) {
+        if(evaluators.size()==0) return ValueMapNormalizer.DEFAULT_START;
         return evaluators.stream().collect(Collectors.averagingDouble(evaluator->evaluator.evaluate(portfolio.stream().findAny().get())));
     }
 
