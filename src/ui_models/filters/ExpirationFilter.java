@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
@@ -21,7 +22,7 @@ public class ExpirationFilter extends AbstractFilter {
     }
 
     @Override
-    public void extractRelevantInformationFromParams(QueryParamsMap params) {
+    public void extractRelevantInformationFromParams(Request req) {
         // do nothing
     }
 

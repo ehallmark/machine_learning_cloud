@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import server.SimilarPatentServer;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
@@ -26,8 +27,8 @@ public class LabelFilter extends AbstractFilter {
     }
 
     @Override
-    public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        labelsToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+    public void extractRelevantInformationFromParams(Request req) {
+        labelsToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
     }
 
     @Override

@@ -282,10 +282,8 @@ public class SimilarPatentServer {
             res.type("application/json");
             try {
                 System.out.println("Handling back button handler...");
-                QueryParamsMap params;
-
                 // handle navigation
-                BackButtonHandler<QueryParamsMap> navigator;
+                BackButtonHandler<String> navigator;
                 if (req.session().attribute("navigator") == null) {
                     navigator = new BackButtonHandler<>();
                     req.session().attribute("navigator", navigator);
@@ -294,47 +292,43 @@ public class SimilarPatentServer {
                 }
 
                 if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
-                    QueryParamsMap tmp = navigator.goBack();
+                    String tmp = navigator.goBack();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go back"));
-                    params = tmp;
+                    return tmp;
                 } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
-                    QueryParamsMap tmp = navigator.goForward();
+                    String tmp = navigator.goForward();
                     if (tmp == null) return new Gson().toJson(new SimpleAjaxMessage("Unable to go forward"));
-                    params = tmp;
-                } else {
-                    params = req.queryMap();
-                    navigator.addRequest(new QueryParamsMap(req.raw()));
+                    return tmp;
                 }
-
 
                 System.out.println("Getting parameters...");
                 // get meta parameters
-                int limit = extractInt(params, "limit", 10);
-                String searchType = extractString(params, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+                int limit = extractInt(req, "limit", 10);
+                String searchType = extractString(req, SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
                 PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-                String comparator = extractString(params, COMPARATOR_FIELD, Constants.SIMILARITY);
+                String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
 
                 System.out.println("Collecting inputs to search for...");
                 // get input data
                 // TODO Handle Gather Technology as input
                 Collection<String> inputsToSearchFor;
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
-                    inputsToSearchFor=new HashSet<>(preProcess(extractString(params, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
-                    new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->{
+                    inputsToSearchFor=new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->{
                        inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
                     });
                 } else {
-                    inputsToSearchFor=new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                    inputsToSearchFor=new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
                 }
 
                 System.out.println("Collecting inputs to search in...");
                 // Get scope of search
                 Collection<String> inputsToSearchIn;
                 if(portfolioType.equals(PortfolioList.Type.patents)) {
-                    inputsToSearchIn=new HashSet<>(preProcess(extractString(params, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-                    new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+                    inputsToSearchIn=new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
+                    new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee->inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
                 } else {
-                    inputsToSearchIn=new HashSet<>(preProcess(extractString(params, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+                    inputsToSearchIn=new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
                 }
 
                 // Check whether to search entire database
@@ -342,12 +336,12 @@ public class SimilarPatentServer {
 
                 System.out.println("Getting models...");
                 // Get Models to use
-                String similarityModel = extractString(params,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-                List<String> valueModels = extractArray(params,VALUE_MODELS_ARRAY_FIELD);
-                List<String> preFilterModels = extractArray(params,PRE_FILTER_ARRAY_FIELD);
-                List<String> postFilterModels = extractArray(params,POST_FILTER_ARRAY_FIELD);
-                List<String> itemAttributes = extractArray(params,ATTRIBUTES_ARRAY_FIELD);
-                List<String> technologies = extractArray(params,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
+                String similarityModel = extractString(req,SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
+                List<String> valueModels = extractArray(req,VALUE_MODELS_ARRAY_FIELD);
+                List<String> preFilterModels = extractArray(req,PRE_FILTER_ARRAY_FIELD);
+                List<String> postFilterModels = extractArray(req,POST_FILTER_ARRAY_FIELD);
+                List<String> itemAttributes = extractArray(req,ATTRIBUTES_ARRAY_FIELD);
+                List<String> technologies = extractArray(req,TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
 
                 System.out.println(" ... Attributes");
                 // Get data attributes
@@ -360,7 +354,7 @@ public class SimilarPatentServer {
                 // Update filters based on params
                 Arrays.asList(preFilters,postFilters).stream()
                         .flatMap(filterList->filterList.stream())
-                        .forEach(filter->filter.extractRelevantInformationFromParams(params));
+                        .forEach(filter->filter.extractRelevantInformationFromParams(req));
 
                 System.out.println(" ... Evaluators");
                 // Get value models
@@ -414,7 +408,7 @@ public class SimilarPatentServer {
 
                 List<AbstractChart> charts = new ArrayList<>();
                 AtomicInteger chartCnt = new AtomicInteger(0);
-                return new Gson().toJson(new AjaxChartMessage(div().with(
+                String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         charts.isEmpty() ? div() : div().with(
                                 h4("Charts"),
                                 div().with(
@@ -426,6 +420,10 @@ public class SimilarPatentServer {
                                 tableFromPatentList(portfolioList.getItemList(),Arrays.asList(Arrays.asList(Constants.NAME,Constants.SIMILARITY),valueModels,itemAttributes).stream().flatMap(list->list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), charts));
+
+                navigator.addRequest(html);
+
+                return html;
 
             } catch(Exception e) {
                 System.out.println(e.getClass().getName()+": "+e.getMessage());
@@ -667,13 +665,9 @@ public class SimilarPatentServer {
         );
     }
 
-
-    static List<String> extractArray(QueryParamsMap req, String param) {
+    static List<String> extractArray(Request req, String param) {
         try {
-            String[] array = req.toMap().get(param.replace("[]",""));
-            req.toMap().entrySet().forEach(e->{
-                System.out.println(e.getKey()+": "+Arrays.toString(e.getValue()));
-            });
+            String[] array = req.queryParamsValues(param.replace("[]",""));
             if (array != null) {
                 List<String> list = Arrays.stream(array).collect(Collectors.toList());
                 list.forEach(item->System.out.println("Found: "+item));
@@ -685,7 +679,9 @@ public class SimilarPatentServer {
             return Collections.emptyList();
         }
     }
-
+    public static String extractString(Request req, String param, String defaultVal) {
+        return extractString(req.queryMap(),param, defaultVal);
+    }
     public static String extractString(QueryParamsMap paramsMap, String param, String defaultVal) {
         if(paramsMap.value(param)!=null&&paramsMap.value(param).trim().length()>0) {
             return paramsMap.value(param);
@@ -693,7 +689,9 @@ public class SimilarPatentServer {
             return defaultVal;
         }
     }
-
+    static int extractInt(Request req, String param, int defaultVal) {
+        return extractInt(req.queryMap(),param, defaultVal);
+    }
     static int extractInt(QueryParamsMap req, String param, int defaultVal) {
         try {
             return Integer.valueOf(req.value(param));
@@ -702,7 +700,9 @@ public class SimilarPatentServer {
             return defaultVal;
         }
     }
-
+    static double extractDouble(Request req, String param, double defaultVal) {
+        return extractDouble(req.queryMap(),param, defaultVal);
+    }
     static double extractDouble(QueryParamsMap queryMap, String param, double defaultVal) {
         try {
             return Double.valueOf(queryMap.value(param));
@@ -712,6 +712,9 @@ public class SimilarPatentServer {
         }
     }
 
+    static boolean extractBool(Request req, String param) {
+        return extractBool(req.queryMap(),param);
+    }
     static boolean extractBool(QueryParamsMap req, String param) {
         try {
             return (req.value(param)==null||!req.value(param).startsWith("on")) ? false : true;

@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.portfolios.items.Item;
 
 import static j2html.TagCreator.div;
@@ -24,8 +25,8 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
     }
 
     @Override
-    public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        this.limit = Integer.valueOf(params.value(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER));
+    public void extractRelevantInformationFromParams(Request req) {
+        this.limit = Integer.valueOf(req.queryParams(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER));
     }
 
     @Override

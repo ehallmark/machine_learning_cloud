@@ -3,6 +3,7 @@ package ui_models.filters;
 import j2html.tags.Tag;
 import seeding.Constants;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.portfolios.items.Item;
 
 import static j2html.TagCreator.div;
@@ -23,8 +24,8 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     }
 
     @Override
-    public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        threshold = Double.valueOf(params.value(Constants.SIMILARITY_THRESHOLD_FILTER));
+    public void extractRelevantInformationFromParams(Request req) {
+        threshold = Double.valueOf(req.queryParams(Constants.SIMILARITY_THRESHOLD_FILTER));
     }
 
     @Override

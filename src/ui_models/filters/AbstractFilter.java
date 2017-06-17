@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import seeding.Database;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.portfolios.items.Item;
 
@@ -17,7 +18,7 @@ public abstract class AbstractFilter {
     enum Type {
         PreFilter, PostFilter
     }
-    public abstract void extractRelevantInformationFromParams(QueryParamsMap params);
+    public abstract void extractRelevantInformationFromParams(Request params);
 
     public abstract Tag getOptionsTag();
 

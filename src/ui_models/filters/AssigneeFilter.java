@@ -5,6 +5,7 @@ import static j2html.TagCreator.*;
 import seeding.Constants;
 import server.SimilarPatentServer;
 import spark.QueryParamsMap;
+import spark.Request;
 import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
@@ -24,8 +25,8 @@ public class AssigneeFilter extends AbstractFilter {
     }
 
     @Override
-    public void extractRelevantInformationFromParams(QueryParamsMap params) {
-        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(params, Constants.ASSIGNEES_TO_REMOVE_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+    public void extractRelevantInformationFromParams(Request req) {
+        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.ASSIGNEES_TO_REMOVE_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
     }
 
     @Override
