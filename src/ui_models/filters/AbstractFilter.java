@@ -1,10 +1,6 @@
 package ui_models.filters;
 
 import j2html.tags.Tag;
-import lombok.Getter;
-import lombok.NonNull;
-import seeding.Database;
-import spark.QueryParamsMap;
 import spark.Request;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.portfolios.items.Item;

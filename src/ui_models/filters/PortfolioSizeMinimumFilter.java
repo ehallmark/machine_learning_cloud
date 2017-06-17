@@ -32,10 +32,10 @@ public class PortfolioSizeMinimumFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item obj) {
         if(limit <= 0) return true;
 
-        String assignee = obj.getData(Constants.ASSIGNEE).toString();
-        if(assignee!=null) {
-            int portfolioSize = Database.getAssetCountFor(assignee);
-            return portfolioSize >= limit;
-        } else return true;
+        try {
+            return Integer.valueOf(obj.getData(Constants.PORTFOLIO_SIZE).toString()) >= limit;
+        } catch(Exception e) {
+            return true;
+        }
     }
 }

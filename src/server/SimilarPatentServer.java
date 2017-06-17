@@ -473,7 +473,7 @@ public class SimilarPatentServer {
     }
 
     static Tag navigationTag() {
-        return div().with(
+        return div().attr("style","margin-top: -10px;").with(
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
@@ -584,78 +584,86 @@ public class SimilarPatentServer {
                 navigationTag(),
                 br(),
                 br(),
+                br(),
                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
+                        h2("Patent Recommendation System"),
                         table().with(
                                 tbody().with(
+                                        tr().attr("style","vertical-align: top;").with(
+                                                td().attr("style","width:50%; vertical-align: top;").with(
+                                                        h5("Similarity Model"),select().withName(SIMILARITY_MODEL_FIELD).with(
+                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
+                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
+                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Model")
+                                                        ),hr()
+                                                ),
+                                                td().attr("style","width:50%; vertical-align: top;").with(
+                                                        h5("Sorted By"),select().withName(COMPARATOR_FIELD).with(
+                                                                option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
+                                                                option("Value").withValue(Constants.AI_VALUE),
+                                                                option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
+                                                        ),hr()
+                                                )
+                                        ),
                                         tr().attr("style", "vertical-align: top;").with(
-                                                td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h2("Patent Recommendation System"),
-                                                        div().with(
-                                                                label("Similarity Model"),br(),select().withName(SIMILARITY_MODEL_FIELD).with(
-                                                                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Paragraph Vector Model"),
-                                                                        option().withValue(Constants.SIM_RANK_MODEL).withText("SimRank Model"),
-                                                                        option().withValue(Constants.CPC_MODEL).withText("CPC Model")
-                                                                ),hr(),
-                                                                expandableDiv("Search Within",
-                                                                        h4("Search Within"),
-                                                                        h5("(Or Leave Blank To Search Full Database)"),
-                                                                        label("Custom Patent List (1 per line)"),br(),
-                                                                        textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
-                                                                        label("Custom Assignee List (1 per line)"),br(),
-                                                                        textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br()
-                                                                ),hr(),
-                                                                expandableDiv("Search For",
-                                                                        h4("Search For"),
-                                                                        select().withName(SEARCH_TYPE_FIELD).with(
-                                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                                    return option;
-                                                                                }).collect(Collectors.toList())
-                                                                        ),br(),
-                                                                        h4("With Similarity To"),
-                                                                        label("Patents (1 per line)"),br(),
-                                                                        textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
-                                                                        label("Assignees (1 per line)"),br(),
-                                                                        textarea().withName(ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
-                                                                        label("Gather Technology"),br(),
-                                                                        gatherTechnologySelect(),br()
-                                                                ), hr(),
-                                                                expandableDiv("Data Attributes",h4("Select Data Fields to capture"),div().with(
-                                                                        attributesMap.keySet().stream().map(key-> {
-                                                                            return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(key));
-                                                                        }).collect(Collectors.toList()))
-                                                                ),hr(),
-                                                                expandableDiv("Valuation Models",h4("Select Value Fields to capture"),div().with(
-                                                                        valueModelMap.keySet().stream().map(key-> {
-                                                                            return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(key));
-                                                                        }).collect(Collectors.toList()))
-                                                                ),hr(),
-                                                                expandableDiv("Filters",h4("Select applicable Filters"),div().with(
-                                                                        Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
-                                                                            return pair._1.entrySet().stream().map(e->{
-                                                                                String key = e.getKey();
-                                                                                AbstractFilter filter = e.getValue();
-                                                                                EmptyTag checkbox = input().withType("checkbox").withName(pair._2).withValue(key);
-                                                                                if(filter.defaultSelected()) checkbox=checkbox.attr("selected","selected");
-                                                                                return div().with(
-                                                                                        label(humanAttributeFor(key)),
-                                                                                        checkbox,
-                                                                                        filter.getOptionsTag()==null? div():filter.getOptionsTag());
-                                                                            });
-                                                                        }).collect(Collectors.toList()))
-                                                                ),hr(),
-                                                                h4("Sorted By"),div().with(
-                                                                        select().withName(COMPARATOR_FIELD).with(
-                                                                                option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
-                                                                                option("Value").withValue(Constants.AI_VALUE),
-                                                                                option("Portfolio Size").withValue(Constants.PORTFOLIO_SIZE)
-                                                                        )
-                                                                ),hr(),
-                                                                button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
-                                                                hr()
-                                                        )
+                                                td().attr("style","width:50%; vertical-align: top;").with(
+                                                        expandableDiv("Search Within",
+                                                                h4("Search Within"),
+                                                                h5("(Or Leave Blank To Search Full Database)"),
+                                                                label("Custom Patent List (1 per line)"),br(),
+                                                                textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
+                                                                label("Custom Assignee List (1 per line)"),br(),
+                                                                textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD),br()
+                                                        ),hr()
+                                                ), td().attr("style","width:50%; vertical-align: top;").with(
+                                                        expandableDiv("Search For",
+                                                                h4("Search For"),
+                                                                select().withName(SEARCH_TYPE_FIELD).with(
+                                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                            ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                            return option;
+                                                                        }).collect(Collectors.toList())
+                                                                ),br(),
+                                                                h4("With Similarity To"),
+                                                                label("Patents (1 per line)"),br(),
+                                                                textarea().withName(PATENTS_TO_SEARCH_FOR_FIELD), br(),
+                                                                label("Assignees (1 per line)"),br(),
+                                                                textarea().withName(ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
+                                                                label("Gather Technology"),br(),
+                                                                gatherTechnologySelect(),br()
+                                                        ), hr()
+
+                                                )
+                                        ), tr().attr("style", "vertical-align: top;").with(
+                                                td().attr("style","width:50%; vertical-align: top;").with(
+                                                        expandableDiv("Data Attributes",h4("Select Data Fields to capture"),div().with(
+                                                                attributesMap.keySet().stream().map(key-> {
+                                                                    return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(key));
+                                                                }).collect(Collectors.toList())),
+                                                                h4("Select Value Fields to capture"),div().with(
+                                                                valueModelMap.keySet().stream().map(key-> {
+                                                                    return div().with(label(humanAttributeFor(key)),input().withType("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(key));
+                                                                }).collect(Collectors.toList()))
+                                                        ),hr()
+                                                ), td().attr("style","width:50%; vertical-align: top;").with(
+                                                        expandableDiv("Filters",h4("Select applicable Filters"),div().with(
+                                                                Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
+                                                                    return pair._1.entrySet().stream().map(e->{
+                                                                        String key = e.getKey();
+                                                                        AbstractFilter filter = e.getValue();
+                                                                        EmptyTag checkbox = input().withType("checkbox").withName(pair._2).withValue(key);
+                                                                        if(filter.defaultSelected()) checkbox=checkbox.attr("selected","selected");
+                                                                        return div().with(
+                                                                                label(humanAttributeFor(key)),
+                                                                                checkbox,
+                                                                                filter.getOptionsTag()==null? div():filter.getOptionsTag());
+                                                                    });
+                                                                }).collect(Collectors.toList()))
+                                                        ),hr(),
+                                                        button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
+                                                        hr()
                                                 )
                                         )
                                 )
