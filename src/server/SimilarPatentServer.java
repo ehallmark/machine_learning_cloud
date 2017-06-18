@@ -627,14 +627,15 @@ public class SimilarPatentServer {
     }
 
     public static Tag gatherTechnologySelect(String name) {
+        String id = "checkboxes-"+name.hashCode();
         return div().withClass("multiselect").with(
-                div().withClass("selectBox").attr("onclick","showCheckboxes();").with(
+                div().withClass("selectBox").attr("onclick","showCheckboxes('"+id+"');").with(
                         select().with(
                                 option("Select an Option")
                         ),
                         div().withClass("overSelect")
                 ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
-                        div().withId("checkboxes").with(
+                        div().withId(id).with(
                                 getTechTagger().getClassifications().stream().sorted().map(technology-> {
                                     return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(name).withValue(technology)));
                                 }).collect(Collectors.toList())
