@@ -95,7 +95,7 @@ public class CPCDeepBeliefAutoEncoderModel {
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new AutoEncoder.Builder().corruptionLevel(0.3).nIn(numInputs).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.RECONSTRUCTION_CROSSENTROPY).build())
+                .layer(0, new RBM.Builder().nIn(numInputs).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
                 .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(vectorSize).nOut(numInputs).build())
                 .pretrain(true).backprop(false)
                 .build();
