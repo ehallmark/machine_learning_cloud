@@ -62,7 +62,7 @@ public class AbstractHistogramChart implements ChartAttribute {
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();
         for(double start = min; start <= max; start += step) {
-            ranges.add(new Range(start,start+step));
+            ranges.add(new Range(start,step));
         }
 
         List<Series<?>> seriesList = new ArrayList<>();
