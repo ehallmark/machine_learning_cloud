@@ -32,7 +32,7 @@ public class Item implements Comparable<Item> {
     }
 
     public void init() {
-        addData(Constants.SIMILARITY,getSimilarity());
+        addData(Constants.SIMILARITY,getSimilarity()*100d);
         addData(Constants.NAME,getName());
     }
 

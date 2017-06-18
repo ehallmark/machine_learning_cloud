@@ -87,7 +87,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("Asset", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
-            humanAttrToJavaAttrMap.put("Technology Relevance", Constants.TECHNOLOGY_RELEVANCE);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
@@ -384,11 +383,10 @@ public class SimilarPatentServer {
                     if (firstFinder == null || firstFinder.numItems() == 0) {
                         return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
                     }
-                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY) || maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) { // Similarity model
+                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
                         System.out.println("Running similarity model...");
-                        if(maximizeValueOf!=null && maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
-                            inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
-                        }
+                        // add technologies
+                        inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
                         AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                         if (secondFinder == null || secondFinder.numItems() == 0) {
                             return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
@@ -397,9 +395,6 @@ public class SimilarPatentServer {
                     } else {
                         System.out.println("Maximizing values...");
                         portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
-                        if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents)) {
-                            return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity", Collections.emptyList()));
-                        }
 
                         ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
                         if(!(valueModel instanceof DoNothing)) {
@@ -673,7 +668,6 @@ public class SimilarPatentServer {
                                                         ),br(),
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
-                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
                                                                 div().with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             return option(humanAttributeFor(key)).withValue(key);
