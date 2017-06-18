@@ -28,11 +28,11 @@ public class AbstractDistributionChart implements ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return div().with(label("Attribute"),br(), select().withName(Constants.PIE_CHART).with(
+        return select().withName(Constants.PIE_CHART).with(
                 option("Technology").withValue(Constants.TECHNOLOGY).attr("selected","selected"),
                 option("Company").withValue(Constants.ASSIGNEE),
                 option("Likely Buyer").withValue(Constants.LIKELY_BUYER)
-        ));
+        );
     }
 
     @Override
