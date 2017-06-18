@@ -62,6 +62,7 @@ public class SimilarPatentServer {
     private static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     private static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     private static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
+    public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     private static final String VALUE_MODELS_ARRAY_FIELD = "valueModels[]";
     private static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     private static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
@@ -158,6 +159,8 @@ public class SimilarPatentServer {
                 postFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
                 postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
+                postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -623,7 +626,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag gatherTechnologySelect() {
+    public static Tag gatherTechnologySelect(String name) {
         return div().withClass("multiselect").with(
                 div().withClass("selectBox").attr("onclick","showCheckboxes();").with(
                         select().with(
@@ -633,7 +636,7 @@ public class SimilarPatentServer {
                 ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
                         div().withId("checkboxes").with(
                                 getTechTagger().getClassifications().stream().sorted().map(technology-> {
-                                    return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology)));
+                                    return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(name).withValue(technology)));
                                 }).collect(Collectors.toList())
                         )
                 )
@@ -690,7 +693,7 @@ public class SimilarPatentServer {
                                                         label("Assignees (1 per line)"),br(),
                                                         textarea().withName(ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
                                                         label("Gather Technology"),br(),
-                                                        gatherTechnologySelect(),br(),br()
+                                                        gatherTechnologySelect(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD),br(),br()
                                                 )
                                         ), tr().attr("style", "vertical-align: top; margin-top: 50px;").with(
                                                 td().attr("style","width:33%; vertical-align: top;").with(
@@ -735,7 +738,7 @@ public class SimilarPatentServer {
         );
     }
 
-    static List<String> extractArray(Request req, String param) {
+    public static List<String> extractArray(Request req, String param) {
         try {
             String[] array = req.queryParamsValues(param);
             if (array != null) {
