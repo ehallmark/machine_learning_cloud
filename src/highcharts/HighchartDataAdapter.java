@@ -229,36 +229,6 @@ public class HighchartDataAdapter {
         }
     }
 
-    private static List<Series<?>> collectTechnologyData(Collection<String> portfolio, String seriesName, PortfolioList.Type inputType, int limit) {
-        List<Series<?>> data = new ArrayList<>();
-        PointSeries series = new PointSeries();
-        series.setName(seriesName);
-        tagger.attributesFor(portfolio,limit).forEach(pair->{
-            String tech = pair.getFirst();
-            double prob = pair.getSecond();
-            Point point = new Point(tech,prob);
-            series.addPoint(point);
-        });
-        data.add(series);
-        applySoftMax(data);
-        return data;
-    }
-
-    public static List<Series<?>> collectTechnologyData(String portfolio, PortfolioList.Type inputType, int limit) {
-        if (inputType.equals(PortfolioList.Type.patents)) {
-            return collectTechnologyData(Arrays.asList(portfolio),portfolio,inputType,limit);
-        } else {
-            return collectTechnologyData(Database.possibleNamesForAssignee(portfolio),portfolio,inputType,limit);
-        }
-    }
-
-    public static List<Series<?>> collectTechnologyData(Collection<String> patents, PortfolioList.Type inputType, int limit) {
-        if (inputType.equals(PortfolioList.Type.patents)) {
-            return collectTechnologyData(patents,"Patents",inputType,limit);
-        } else {
-            return collectTechnologyData(patents,"Companies",inputType,limit);
-        }
-    }
 
     public static List<Series<?>> collectLikelyAssetBuyersData(String portfolio, PortfolioList.Type inputType, int limit, ValueAttr buyerModel, Map<String,INDArray> lookupTable) {
         Collection<String> collection = inputType.equals(PortfolioList.Type.patents)?Arrays.asList(portfolio):Database.possibleNamesForAssignee(portfolio);

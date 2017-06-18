@@ -269,6 +269,20 @@ public class SimilarPatentServer {
         }
     }
 
+    public static Collection<? extends AbstractAttribute> getAttributesFromPrerequisites(Collection<? extends DependentAttribute> dependentAttributes, Collection<String> appliedAttributes) {
+        return dependentAttributes.stream().flatMap(dependency ->dependency.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq))).distinct().map(preReq -> {
+            if (attributesMap.containsKey(preReq)) {
+                appliedAttributes.add(preReq);
+                return attributesMap.get(preReq);
+            }
+            if (valueModelMap.containsKey(preReq)) {
+                appliedAttributes.add(preReq);
+                return valueModelMap.get(preReq);
+            }
+            return null;
+        }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList());
+    }
+
     public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) {
         System.out.println("Applying technology values...");
         // Apply technology values
@@ -446,19 +460,7 @@ public class SimilarPatentServer {
 
                 System.out.println("Applying necessary prerequisite attributes for post filters...");
                 // Add necessary attributes for post filters
-                portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
-                    return filter.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq));
-                }).distinct().map(preReq -> {
-                    if (attributesMap.containsKey(preReq)) {
-                        appliedAttributes.add(preReq);
-                        return attributesMap.get(preReq);
-                    }
-                    if (valueModelMap.containsKey(preReq)) {
-                        appliedAttributes.add(preReq);
-                        return valueModelMap.get(preReq);
-                    }
-                    return null;
-                }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList()));
+                portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
 
                 System.out.println("Applying post filters...");
                 // Run filters
@@ -480,16 +482,20 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(evaluators.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(valueModels);
 
+                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                System.out.println("Applying pre chart attributes...");
+                portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
+
+                List<AbstractChart> finishedCharts = new ArrayList<>();
+                // adding charts
+                charts.forEach(chartModel->{
+                    finishedCharts.add(chartModel.create(portfolioList));
+                });
 
                 System.out.println("Rendering table...");
-                List<AbstractChart> charts = new ArrayList<>();
-                // adding charts
-                chartModels.forEach(chartModel->{
-                    charts.add(chartModelMap.get(chartModel).create(portfolioList));
-                });
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        charts.isEmpty() ? div() : div().with(
+                        finishedCharts.isEmpty() ? div() : div().with(
                                 h4("Charts"),
                                 div().with(
                                         charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
@@ -499,7 +505,7 @@ public class SimilarPatentServer {
                                 h4("Data"),
                                 tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                         )
-                ).render(), charts));
+                ).render(), finishedCharts));
 
                 navigator.addRequest(html);
 

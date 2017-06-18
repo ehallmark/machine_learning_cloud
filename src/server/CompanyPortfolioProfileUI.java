@@ -321,9 +321,9 @@ public class CompanyPortfolioProfileUI {
                             break;
                         }
                         case "Technology Distribution": {
-                            List<Series<?>> data = inputType.equals(PortfolioList.Type.patents) ?
-                                    HighchartDataAdapter.collectTechnologyData(INPUT_PATENTS, inputType, limit) :
-                                    HighchartDataAdapter.collectTechnologyData (ASSIGNEE, inputType, limit);
+                            List<Series<?>> data = null;//inputType.equals(PortfolioList.Type.patents) ?
+                                    //HighchartDataAdapter.collectTechnologyData(INPUT_PATENTS, inputType, limit) :
+                                    //HighchartDataAdapter.collectTechnologyData (ASSIGNEE, inputType, limit);
                             // special model
                             portfolioType = inputType;
                             portfolioList = null;
