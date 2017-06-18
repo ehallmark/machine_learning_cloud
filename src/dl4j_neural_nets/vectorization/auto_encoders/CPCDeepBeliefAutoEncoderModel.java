@@ -100,7 +100,7 @@ public class CPCDeepBeliefAutoEncoderModel {
                 .layer(1, new RBM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
                 .layer(2, new RBM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
                 .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(hiddenLayerSize).nOut(numInputs).build())
-                .pretrain(true).backprop(false)
+                .pretrain(true).backprop(true)
                 .build();
 
         // Build and train network

@@ -52,7 +52,7 @@ public class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public AbstractChart create(PortfolioList portfolioList) {
-        return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5), 0d, null);
+        return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5), 0d, null, "", 0);
     }
 
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins) {

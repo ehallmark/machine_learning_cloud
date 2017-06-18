@@ -2,6 +2,7 @@ package highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.*;
+import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 
 import java.awt.*;
@@ -12,6 +13,7 @@ import java.util.List;
  */
 public abstract class AbstractChart {
     protected Options options;
+    protected SeriesType type;
 
     public Options getOptions() {
         return options;
@@ -27,6 +29,9 @@ public abstract class AbstractChart {
         options.getSingleYAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+valueSuffix));
         for(Series<?> series : options.getSeries()) {
+            series.setPointPadding(0f);
+            series.setType(type);
+            series.setPointPlacement(PointPlacement.BETWEEN);
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
@@ -51,6 +56,7 @@ public abstract class AbstractChart {
     protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix) {
         System.out.println("Starting to build: "+type);
         String formatStr = "point.y:."+decimals+"f";
+        this.type=type;
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
                 .setTitle(new Title(title))
@@ -59,8 +65,7 @@ public abstract class AbstractChart {
                 .setSeries(data)
                 .setyAxis(new Axis())
                 .setxAxis(new Axis())
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
-                        .setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)
                         .setPoint(new PointOptions().setEvents(new Events()))));
     }
 
