@@ -632,7 +632,7 @@ public class SimilarPatentServer {
                         div().withClass("overSelect")
                 ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
                         div().withId("checkboxes").with(
-                                getTechTagger().getClassifications().stream().map(technology-> {
+                                getTechTagger().getClassifications().stream().sorted().map(technology-> {
                                     return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD).withValue(technology)));
                                 }).collect(Collectors.toList())
                         )
