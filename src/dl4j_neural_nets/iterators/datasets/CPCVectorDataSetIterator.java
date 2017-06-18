@@ -112,7 +112,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
         System.out.println("Shape of vector: "+vector.shapeInfoToString());
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
             INDArray vec =  lookupTable.get(patentIterator.next());
-            System.out.println("Lookup: "+vec);
+            System.out.println("Shape of Lookup: "+vec.shapeInfoToString());
             vector.putRow(i.get()-1,vec);
         }
         if(batchSize-i.get()>0) { // ran out of patents
