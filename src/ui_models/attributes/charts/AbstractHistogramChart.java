@@ -1,17 +1,27 @@
 package ui_models.attributes.charts;
 
+import com.googlecode.wickedcharts.highcharts.options.series.Point;
+import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
+import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import highcharts.AbstractChart;
+import highcharts.ColumnChart;
+import highcharts.PieChart;
+import org.deeplearning4j.berkeley.Pair;
+import ui_models.attributes.value.ValueMapNormalizer;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.Item;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/18/2017.
  */
-public abstract class AbstractHistogramChart implements ChartAttribute {
+public class AbstractHistogramChart implements ChartAttribute {
     protected String title;
     protected String attribute;
+    protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
+    protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
     public AbstractHistogramChart(String title, String attribute) {
         this.title=title;
@@ -25,12 +35,41 @@ public abstract class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public AbstractChart create(PortfolioList portfolioList) {
-        return null;
+        return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,10), MIN, MAX);
     }
 
+    private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins) {
+        List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
+        double step = (max-min)/nBins;
+        List<Range> ranges = new ArrayList<>(nBins);
+        for(double start = min; start < max; start += step) {
+            ranges.add(new Range(start,start+step));
+        }
 
+        List<Series<?>> seriesList = new ArrayList<>();
+        PointSeries series = new PointSeries();
+        series.setName(title);
+        Map<Range,Long> countMap = scores.stream().map(score->ranges.stream().filter(range->range.contains(score.getSecond().doubleValue())).findAny().orElse(null)).filter(range->range!=null).collect(Collectors.groupingBy(r->r,Collectors.counting()));
+        ranges.forEach(range->{
+            Point point = new Point(range.mean(),countMap.containsKey(range)?countMap.get(range):0);
+            series.addPoint(point);
+        });
+        seriesList.add(series);
+        return seriesList;
+    }
 
-    class Histogram {
-        private
+    class Range {
+        private double start;
+        private double end;
+        Range(double start, double end) {
+            this.end=end;
+            this.start=start;
+        }
+        boolean contains(double score) {
+            return (start==0d && score == 0d) || (score > start && score <= end);
+        }
+        double mean() {
+            return (end+start)/2;
+        }
     }
 }
