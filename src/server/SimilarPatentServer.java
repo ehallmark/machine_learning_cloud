@@ -8,6 +8,8 @@ import model_testing.SplitModelData;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import similarity_models.BaseSimilarityModel;
+import ui_models.attributes.charts.ChartAttribute;
+import ui_models.attributes.charts.TechnologyChart;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
@@ -71,6 +73,7 @@ public class SimilarPatentServer {
     private static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
+    private static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     private static final String REPORT_URL = "/patent_recommendation_system";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -79,6 +82,7 @@ public class SimilarPatentServer {
     static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
+    static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -101,13 +105,14 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
             humanAttrToJavaAttrMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
-            humanAttrToJavaAttrMap.put("Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
+            humanAttrToJavaAttrMap.put("AI Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
             humanAttrToJavaAttrMap.put("Remove Non-Japanese Assignees Filter",Constants.JAPANESE_ONLY_FILTER);
             humanAttrToJavaAttrMap.put("Remove Japanese Assignees Filter",Constants.NO_JAPANESE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Expired Assets Filter", Constants.EXPIRATION_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assignees Filter", Constants.ASSIGNEES_TO_REMOVE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assets Filter", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Technology Distribution", Constants.TECHNOLOGY_DISTRIBUTION);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -130,6 +135,12 @@ public class SimilarPatentServer {
         loadValueModels();
         loadFilterModels();
         loadTechTaggerModel();
+        loadChartModels();
+    }
+
+    public static void loadChartModels() {
+        chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyChart());
+
     }
 
     public static void loadValueModels() {
@@ -354,6 +365,7 @@ public class SimilarPatentServer {
                 List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+                List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
                 List<String> technologies = extractArray(req, TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
 
                 System.out.println(" ... Attributes");
@@ -471,6 +483,10 @@ public class SimilarPatentServer {
 
                 System.out.println("Rendering table...");
                 List<AbstractChart> charts = new ArrayList<>();
+                // adding charts
+                chartModels.forEach(chartModel->{
+                    charts.add(chartModelMap.get(chartModel).create(portfolioList));
+                });
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         charts.isEmpty() ? div() : div().with(
@@ -627,6 +643,10 @@ public class SimilarPatentServer {
     }
 
     public static Tag gatherTechnologySelect(String name) {
+        return technologySelect(name,getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList()));
+    }
+
+    private static Tag technologySelect(String name, List<String> orderedClassifications) {
         String id = "checkboxes-"+name.hashCode();
         return div().withClass("multiselect").with(
                 div().withClass("selectBox").attr("onclick","showCheckboxes('"+id+"');").with(
@@ -636,8 +656,8 @@ public class SimilarPatentServer {
                         div().withClass("overSelect")
                 ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
                         div().withId(id).withClass("checkboxes").with(
-                                getTechTagger().getClassifications().stream().sorted().map(technology-> {
-                                    return div().with(label(technology).with(input().withType("checkbox").attr("style","float: right;").withName(name).withValue(technology)));
+                                orderedClassifications.stream().map(technology-> {
+                                    return div().with(label(humanAttributeFor(technology)).with(input().withType("checkbox").attr("style","float: right;").withName(name).withValue(technology)));
                                 }).collect(Collectors.toList())
                         )
                 )
@@ -728,6 +748,12 @@ public class SimilarPatentServer {
                                                                         filter.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(filter.getOptionsTag()));
                                                             });
                                                         }).collect(Collectors.toList())),br(),br()
+                                                )
+                                        ), tr().attr("style", "vertical-align: top;").with(
+                                                td().attr("style","width: 33%; vertical-align: top;").with(
+                                                        label("Select Charts"),
+                                                        technologySelect(CHART_MODELS_ARRAY_FIELD,chartModelMap.keySet().stream().sorted().collect(Collectors.toList())),
+                                                        br(),br()
                                                 )
                                         )
                                 )
