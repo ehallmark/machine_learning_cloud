@@ -1,6 +1,6 @@
 var expanded = false;
 
-function showCheckboxes(var id) {
+function showCheckboxes(id) {
   var checkboxes = document.getElementById(id);
   if (!expanded) {
     checkboxes.style.display = "block";
