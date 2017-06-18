@@ -1,5 +1,8 @@
 package ui_models.portfolios.attributes;
 
+import j2html.tags.Tag;
+import spark.Request;
+
 import java.util.Collection;
 
 /**
@@ -7,4 +10,6 @@ import java.util.Collection;
  */
 public interface DependentAttribute {
     Collection<String> getPrerequisites();
+    void extractRelevantInformationFromParams(Request params);
+    Tag getOptionsTag();
 }

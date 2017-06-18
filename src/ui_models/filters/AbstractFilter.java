@@ -13,12 +13,6 @@ import java.util.Collections;
  * Created by Evan on 5/9/2017.
  */
 public abstract class AbstractFilter implements DependentAttribute {
-    enum Type {
-        PreFilter, PostFilter
-    }
-    public abstract void extractRelevantInformationFromParams(Request params);
-
-    public abstract Tag getOptionsTag();
 
     public boolean defaultSelected() {
         return false;

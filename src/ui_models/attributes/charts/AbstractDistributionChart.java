@@ -5,7 +5,10 @@ import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import highcharts.AbstractChart;
 import highcharts.PieChart;
+import j2html.tags.Tag;
 import seeding.Constants;
+import server.SimilarPatentServer;
+import spark.Request;
 import ui_models.portfolios.PortfolioList;
 
 import java.util.ArrayList;
@@ -14,6 +17,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static j2html.TagCreator.*;
+
 /**
  * Created by Evan on 6/17/2017.
  */
@@ -21,16 +26,25 @@ public class AbstractDistributionChart implements ChartAttribute {
     protected String attribute;
     protected String title;
 
-    public AbstractDistributionChart(String title, String attribute) {
-        this.title=title;
-        this.attribute=attribute;
+    @Override
+    public Tag getOptionsTag() {
+        return div().with(label("Attribute"),br(), select().withName(Constants.PIE_CHART).with(
+                option("Technology").withValue(Constants.TECHNOLOGY).attr("selected","selected"),
+                option("Company").withValue(Constants.ASSIGNEE),
+                option("Likely Buyer").withValue(Constants.LIKELY_BUYER)
+        ));
+    }
+
+    @Override
+    public void extractRelevantInformationFromParams(Request params) {
+        this.attribute = SimilarPatentServer.extractString(params, Constants.PIE_CHART, null);
+        if(attribute!=null)this.title = attribute + " Distribution";
     }
 
     @Override
     public Collection<String> getPrerequisites() {
         return Arrays.asList(attribute);
     }
-
 
     @Override
     public AbstractChart create(PortfolioList portfolioList) {

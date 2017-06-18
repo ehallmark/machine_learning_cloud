@@ -1,6 +1,7 @@
 package ui_models.attributes.charts;
 
 import highcharts.AbstractChart;
+import spark.Request;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.attributes.DependentAttribute;
 

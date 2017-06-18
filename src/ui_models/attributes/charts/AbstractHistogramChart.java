@@ -6,13 +6,20 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import highcharts.AbstractChart;
 import highcharts.ColumnChart;
 import highcharts.PieChart;
+import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
+import seeding.Constants;
+import server.SimilarPatentServer;
+import spark.Request;
 import ui_models.attributes.value.ValueMapNormalizer;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.option;
 
 /**
  * Created by Evan on 6/18/2017.
@@ -23,9 +30,19 @@ public class AbstractHistogramChart implements ChartAttribute {
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
-    public AbstractHistogramChart(String title, String attribute) {
-        this.title=title;
-        this.attribute=attribute;
+    @Override
+    public Tag getOptionsTag() {
+        return div().with(label("Attribute"),br(), select().withName(Constants.HISTOGRAM).with(
+                SimilarPatentServer.valueModelMap.keySet().stream().map(key->{
+                    return option(SimilarPatentServer.humanAttributeFor(key)).withValue(key);
+                }).collect(Collectors.toList())
+        ));
+    }
+
+    @Override
+    public void extractRelevantInformationFromParams(Request params) {
+        this.attribute = SimilarPatentServer.extractString(params, Constants.HISTOGRAM, null);
+        if(attribute!=null)this.title = SimilarPatentServer.humanAttributeFor(attribute) + " Histogram";
     }
 
     @Override

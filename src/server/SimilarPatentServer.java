@@ -73,7 +73,7 @@ public class SimilarPatentServer {
     private static final String REPORT_URL = "/patent_recommendation_engine";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    static Map<String,ValueAttr> valueModelMap = new HashMap<>();
+    public static Map<String,ValueAttr> valueModelMap = new HashMap<>();
     static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
@@ -108,9 +108,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Assignees Filter", Constants.ASSIGNEES_TO_REMOVE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assets Filter", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
-            humanAttrToJavaAttrMap.put("Technology Distribution", Constants.TECHNOLOGY_DISTRIBUTION);
-            humanAttrToJavaAttrMap.put("Company Distribution",Constants.COMPANY_DISTRIBUTION);
-            humanAttrToJavaAttrMap.put("Likely Buyer Distribution", Constants.LIKELY_BUYER_DISTRIBUTION);
+            humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
+            humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Likely Buyer",Constants.LIKELY_BUYER);
 
             // inverted version to get human readables back
@@ -138,9 +137,8 @@ public class SimilarPatentServer {
     }
 
     public static void loadChartModels() {
-        //chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
-        //chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
-
+        chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
+        chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
     }
 
     public static void loadValueModels() {
@@ -485,6 +483,7 @@ public class SimilarPatentServer {
                 appliedAttributes.addAll(valueModels);
 
                 List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                 System.out.println("Applying pre chart attributes...");
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
@@ -759,8 +758,17 @@ public class SimilarPatentServer {
                                                 )
                                         ), tr().attr("style", "vertical-align: top;").with(
                                                 td().attr("style","width: 33%; vertical-align: top;").with(
-                                                        h4("Select Charts"),
-                                                        technologySelect(CHART_MODELS_ARRAY_FIELD,chartModelMap.keySet().stream().sorted().collect(Collectors.toList())),
+                                                        h4("Select Charts"), div().with(chartModelMap.entrySet().stream().map(e->{
+                                                            String key = e.getKey();
+                                                            ChartAttribute chart = e.getValue();
+                                                            String id = "form-dropdown-"+key;
+                                                            EmptyTag checkbox = input().withType("checkbox").attr("onclick","$('#"+id+"').toggle();").withName(CHART_MODELS_ARRAY_FIELD).withValue(key);
+                                                            String display = "none;";
+                                                            return div().with(
+                                                                    label(humanAttributeFor(key)),
+                                                                    checkbox,
+                                                                    chart.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(chart.getOptionsTag()));
+                                                        }).collect(Collectors.toList())),
                                                         br(),br()
                                                 )
                                         )

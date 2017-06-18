@@ -30,9 +30,8 @@ public class Constants {
 	public static final String NO_JAPANESE_FILTER = "noJapaneseFilter";
 	public static final String VALUE_THRESHOLD_FILTER = "valueThresholdFilter";
 	public static final String JAPANESE_ONLY_FILTER = "japaneseOnlyFilter";
-	public static final String TECHNOLOGY_DISTRIBUTION = "technologyDistributionChart";
-	public static final String COMPANY_DISTRIBUTION = "companyDistributionChart";
-	public static final String LIKELY_BUYER_DISTRIBUTION = "likelyBuyerDistribution";
+	public static final String PIE_CHART = "pieChart";
+	public static final String HISTOGRAM = "histogram";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 
 	public static final String DATA_FOLDER = "data/";
