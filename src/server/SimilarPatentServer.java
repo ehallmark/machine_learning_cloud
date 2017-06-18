@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
+import model_testing.SplitModelData;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
+import similarity_models.BaseSimilarityModel;
+import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
@@ -137,7 +140,6 @@ public class SimilarPatentServer {
                 valueModelMap.put(Constants.COMPDB_ASSETS_SOLD_VALUE, new CompDBAssetsSoldEvaluator());
                 valueModelMap.put(Constants.LARGE_PORTFOLIO_VALUE, new PortfolioSizeEvaluator());
                 valueModelMap.put(Constants.SMALL_PORTFOLIO_VALUE, new SmallPortfolioSizeEvaluator());
-                valueModelMap.put(Constants.TECHNOLOGY_RELEVANCE, new DoNothingValueAttribute());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -254,7 +256,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList, Collection<String> appliedAttributes) {
+    public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) {
         System.out.println("Applying technology values...");
         // Apply technology values
         List<SpecificTechnologyEvaluator> technologyEvaluators = new ArrayList<>();
@@ -262,16 +264,7 @@ public class SimilarPatentServer {
             SpecificTechnologyEvaluator evaluator = new SpecificTechnologyEvaluator(technology,getTechTagger());
             technologyEvaluators.add(evaluator);
         });
-
         portfolioList.applyAttributes(technologyEvaluators);
-        // apply overall tech score
-        portfolioList.getItemList().forEach(item->{
-            item.addData(Constants.TECHNOLOGY_RELEVANCE,
-                    technologyEvaluators.isEmpty() ? ValueMapNormalizer.DEFAULT_START : technologyEvaluators.stream().collect(Collectors.averagingDouble(technology->{
-                        return ((Number)item.getData(technology.getName())).doubleValue();
-                    })));
-        });
-        appliedAttributes.add(Constants.TECHNOLOGY_RELEVANCE);
     }
 
     public static void server() {
@@ -391,8 +384,11 @@ public class SimilarPatentServer {
                     if (firstFinder == null || firstFinder.numItems() == 0) {
                         return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
                     }
-                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
+                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY) || maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) { // Similarity model
                         System.out.println("Running similarity model...");
+                        if(maximizeValueOf!=null && maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
+                            inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
+                        }
                         AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
                         if (secondFinder == null || secondFinder.numItems() == 0) {
                             return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
@@ -401,28 +397,21 @@ public class SimilarPatentServer {
                     } else {
                         System.out.println("Maximizing values...");
                         portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
-                        if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents))
-                            return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity",Collections.emptyList()));
-                        if (maximizeValueOf.equals(Constants.TECHNOLOGY_RELEVANCE)) {
-                            // get average of specific tech models
-                            applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
-                        } else {
-                            ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
-                            if(!(valueModel instanceof DoNothing)) {
-                                portfolioList.applyAttributes(Arrays.asList(valueModel));
-                            }
-                            appliedAttributes.add(maximizeValueOf);
+                        if (searchEntireDatabase && searchType.equals(PortfolioList.Type.patents)) {
+                            return new Gson().toJson(new AjaxChartMessage("Unable to search entire patent database by values other than Similarity", Collections.emptyList()));
                         }
+
+                        ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
+                        if(!(valueModel instanceof DoNothing)) {
+                            portfolioList.applyAttributes(Arrays.asList(valueModel));
+                        }
+                        appliedAttributes.add(maximizeValueOf);
+
                         // apply prefilters
                         System.out.println("Applying prefilters...");
                         portfolioList.applyFilters(preFilters);
-                    }
-                }
 
-                System.out.println("Initializing portfolio...");
-                // special case
-                if (comparator.equals(Constants.TECHNOLOGY_RELEVANCE) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
-                    applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
+                    }
                 }
 
                 // normal case
@@ -445,22 +434,16 @@ public class SimilarPatentServer {
                 portfolioList.init(comparator, limit);
 
 
-                // Apply technology data
-                System.out.println("Applying technologies...");
-                if ((technologies.size() > 0 || postFilters.stream().anyMatch(filter->filter.getPrerequisites().contains(Constants.TECHNOLOGY_RELEVANCE))) && !appliedAttributes.contains(Constants.TECHNOLOGY_RELEVANCE)) {
-                    applyTechnologyAttributes(technologies, portfolioList, appliedAttributes);
-                }
-
                 System.out.println("Applying necessary prerequisite attributes for post filters...");
                 // Add necessary attributes for post filters
                 portfolioList.applyAttributes(postFilters.stream().flatMap(filter -> {
                     return filter.getPrerequisites().stream().filter(preReq -> !appliedAttributes.contains(preReq));
                 }).distinct().map(preReq -> {
-                    if (!itemAttributes.contains(preReq) && attributesMap.containsKey(preReq)) {
+                    if (attributesMap.containsKey(preReq)) {
                         appliedAttributes.add(preReq);
                         return attributesMap.get(preReq);
                     }
-                    if (!valueModels.contains(preReq) && valueModelMap.containsKey(preReq)) {
+                    if (valueModelMap.containsKey(preReq)) {
                         appliedAttributes.add(preReq);
                         return valueModelMap.get(preReq);
                     }
@@ -471,14 +454,20 @@ public class SimilarPatentServer {
                 // Run filters
                 portfolioList.applyFilters(postFilters);
 
+                // Apply technology data
+                System.out.println("Applying technologies...");
+                if (technologies.size() > 0) {
+                    applyTechnologyAttributes(technologies, portfolioList);
+                }
+
                 // Apply attributes
                 System.out.println("Applying attributes...");
-                portfolioList.applyAttributes(attributes);
+                portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(itemAttributes);
 
                 // Apply value models
                 System.out.println("Applying value models...");
-                portfolioList.applyAttributes(evaluators);
+                portfolioList.applyAttributes(evaluators.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(valueModels);
 
 
@@ -684,6 +673,7 @@ public class SimilarPatentServer {
                                                         ),br(),
                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
+                                                                option("Technology Relevance").withValue(Constants.TECHNOLOGY_RELEVANCE),
                                                                 div().with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             return option(humanAttributeFor(key)).withValue(key);

@@ -1,5 +1,6 @@
 package ui_models.attributes.classification;
 
+import lombok.Getter;
 import model_testing.SplitModelData;
 import similarity_models.cpc_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
@@ -23,6 +24,8 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private List<INDArray> vectors;
     private List<String> names;
     private Map<String,INDArray> lookupTable;
+    private static Map<String,Collection<String>> NAME_TO_INPUT_MAP;
+    @Getter
     private Map<String,Collection<String>> nameToInputMap;
     private static SimilarityGatherTechTagger pVectorModel;
     private static SimilarityGatherTechTagger cpcModel;
@@ -33,16 +36,16 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
 
     public static SimilarityGatherTechTagger getCPCModel() {
         if(cpcModel==null) {
-            Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
-            cpcModel = new SimilarityGatherTechTagger(data, CPCSimilarityFinder.getLookupTable());
+            if(NAME_TO_INPUT_MAP==null)NAME_TO_INPUT_MAP= SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+            cpcModel = new SimilarityGatherTechTagger(NAME_TO_INPUT_MAP, CPCSimilarityFinder.getLookupTable());
         }
         return cpcModel;
     }
 
     public static SimilarityGatherTechTagger getParagraphVectorModel() {
         if(pVectorModel==null) {
-            Map<String,Collection<String>> data = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
-            pVectorModel = new SimilarityGatherTechTagger(data, SimilarPatentFinder.getLookupTable());
+            if(NAME_TO_INPUT_MAP==null)NAME_TO_INPUT_MAP = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+            pVectorModel = new SimilarityGatherTechTagger(NAME_TO_INPUT_MAP, SimilarPatentFinder.getLookupTable());
         }
         return pVectorModel;
     }
