@@ -71,6 +71,7 @@ public class CPCDeepBeliefAutoEncoderModel {
         // Get Classifications
         final int numInputs = lookupTable.values().stream().findAny().get().length();
         final int vectorSize = numInputs/4;
+        final int hiddenLayerSize = numInputs/2;
 
         System.out.println("Num Inputs: "+numInputs);
         System.out.println("Vector Size: "+vectorSize);
@@ -95,8 +96,10 @@ public class CPCDeepBeliefAutoEncoderModel {
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new AutoEncoder.Builder().nIn(numInputs).nOut(vectorSize).corruptionLevel(0.3).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(vectorSize).nOut(numInputs).build())
+                .layer(0, new RBM.Builder().nIn(numInputs).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(1, new RBM.Builder().nIn(hiddenLayerSize).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(2, new RBM.Builder().nIn(vectorSize).nOut(hiddenLayerSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(hiddenLayerSize).nOut(numInputs).build())
                 .pretrain(true).backprop(false)
                 .build();
 
