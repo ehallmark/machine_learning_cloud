@@ -60,6 +60,7 @@ public abstract class AbstractChart {
                 .setyAxis(new Axis())
                 .setxAxis(new Axis())
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions()
+                        .setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)
                         .setPoint(new PointOptions().setEvents(new Events()))));
     }
 
