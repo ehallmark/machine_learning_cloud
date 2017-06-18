@@ -73,7 +73,7 @@ public class SimilarPatentServer {
     private static final String COMPARATOR_FIELD = "comparator";
     private static final String SEARCH_TYPE_FIELD = "searchType";
     private static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
-    private static final String REPORT_URL = "/patent_recommendation_system";
+    private static final String REPORT_URL = "/patent_recommendation_engine";
 
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     static Map<String,ValueAttr> valueModelMap = new HashMap<>();
@@ -684,7 +684,7 @@ public class SimilarPatentServer {
                 br(),
                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit",
                 ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
-                        h2("Patent Recommendation System"),br(),
+                        h2("Patent Recommendation Engine"),br(),
                         table().attr("style","width: 100%").with(
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(

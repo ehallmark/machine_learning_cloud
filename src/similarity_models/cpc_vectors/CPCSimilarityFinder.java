@@ -1,6 +1,5 @@
 package similarity_models.cpc_vectors;
 
-import dl4j_neural_nets.vectorization.auto_encoders.CPCVariationalAutoEncoderModel;
 import graphical_models.classification.CPCKMeans;
 import org.deeplearning4j.berkeley.Pair;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -18,15 +17,25 @@ import java.util.*;
  * Created by Evan on 6/8/2017.
  */
 public class CPCSimilarityFinder extends BaseSimilarityModel {
-    private static final File file = new File("data/cpc_similarity_finder_lookup_table.jobj");
+    private static final File file = new File("data/cpc_nn_similarity_finder_lookup_table.jobj");
+    private static final File rawFile = new File("data/cpc_similarity_finder_lookup_table.jobj");
     private static Map<String,INDArray> LOOKUP_TABLE;
+    private static Map<String,INDArray> RAW_LOOKUP_TABLE;
     public CPCSimilarityFinder(Collection<String> candidateSet, String name) {
         super(candidateSet,name,getLookupTable());
+    }
+
+    public static Map<String,INDArray> getRawLookupTable() {
+        if(RAW_LOOKUP_TABLE==null) {
+            RAW_LOOKUP_TABLE=(Map<String,INDArray>) Database.tryLoadObject(rawFile);
+        }
+        return RAW_LOOKUP_TABLE;
     }
 
     public static Map<String,INDArray> getLookupTable() {
         if(LOOKUP_TABLE==null) {
             LOOKUP_TABLE=(Map<String,INDArray>) Database.tryLoadObject(file);
+            if(LOOKUP_TABLE==null) LOOKUP_TABLE = getRawLookupTable();
         }
         return LOOKUP_TABLE;
     }

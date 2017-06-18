@@ -9,6 +9,7 @@ import org.nd4j.linalg.factory.Nd4j;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 12/14/16.
@@ -16,21 +17,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class CPCVectorDataSetIterator implements DataSetIterator {
     private int numInputs;
     private int numOutputs;
-    private List<String> orderedClassifications;
     private List<String> patents;
     private Iterator<String> patentIterator;
     private int batchSize;
     private DataSet nextDataSet;
-    private int cpcDepth;
+    private INDArray vector;
+    private Map<String,INDArray> lookupTable;
 
     // Concatenates vectors for all provided weight lookup tables
-    public CPCVectorDataSetIterator(List<String> patents, List<String> orderedClassifications, int batchSize, int cpcDepth) {
-        this.numOutputs=orderedClassifications.size();
-        this.numInputs=orderedClassifications.size();
-        this.patents=patents;
-        this.orderedClassifications=orderedClassifications;
+    public CPCVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable, int numInputs, int batchSize) {
+        this.numOutputs=numInputs;
+        this.numInputs=numInputs;
+        this.patents=patents.stream().filter(patent->lookupTable.containsKey(patent)).collect(Collectors.toList());
+        this.lookupTable=lookupTable;
         this.batchSize=batchSize;
-        this.cpcDepth=cpcDepth;
+        this.vector = Nd4j.create(batchSize,numInputs);
+        this.nextDataSet = new DataSet(vector,vector);
         setupIterator();
     }
 
@@ -105,17 +107,15 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public boolean hasNext() {
-        INDArray inputs = Nd4j.create(batchSize,numInputs);
+        boolean hasNext = true;
         AtomicInteger i = new AtomicInteger(0);
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
-            inputs.putRow(i.get()-1, Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(patentIterator.next()),orderedClassifications,cpcDepth)));
+            vector.putRow(i.get()-1, lookupTable.get(patentIterator.next()));
         }
         if(batchSize-i.get()>0) { // ran out of patents
-            nextDataSet=null;
-        } else {
-            nextDataSet=new DataSet(inputs,inputs);
+            hasNext = false;
         }
-        return nextDataSet!=null;
+        return hasNext;
     }
 
     @Override
