@@ -6,10 +6,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
-import ui_models.attributes.charts.ChartAttribute;
-import ui_models.attributes.charts.CompanyDistributionChart;
-import ui_models.attributes.charts.LikelyBuyerDistributionChart;
-import ui_models.attributes.charts.TechnologyDistributionChart;
+import ui_models.attributes.charts.*;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
@@ -141,10 +138,8 @@ public class SimilarPatentServer {
     }
 
     public static void loadChartModels() {
-        chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyDistributionChart());
-        chartModelMap.put(Constants.COMPANY_DISTRIBUTION, new CompanyDistributionChart());
-        chartModelMap.put(Constants.HISTOGRAM, new Abst());
-        chartModelMap.put(Constants.LIKELY_BUYER_DISTRIBUTION, new LikelyBuyerDistributionChart());
+        //chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
+        //chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
 
     }
 
