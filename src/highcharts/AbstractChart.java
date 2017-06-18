@@ -27,6 +27,7 @@ public abstract class AbstractChart {
         stripAxis(options.getSingleYAxis());
         options.getSingleXAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setType(AxisType.LINEAR);
+        options.getSingleXAxis().setLabels(new Labels().setFormat("{value}%"));
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+valueSuffix));
         for(Series<?> series : options.getSeries()) {
             series.setPointPadding(0f);
@@ -60,7 +61,7 @@ public abstract class AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}: <b> {"+formatStr+"}"+valueSuffix+"</b><br/>"))
+                .setTooltip(new Tooltip().setHeaderFormat("<b>{point.x} - {point.x+20}</b><br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}: <b> {"+formatStr+"}"+valueSuffix+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setyAxis(new Axis())
