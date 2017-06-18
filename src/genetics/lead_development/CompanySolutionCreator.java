@@ -17,13 +17,12 @@ public class CompanySolutionCreator implements SolutionCreator {
     private final int numThreads;
     private final int solutionSize;
     private final List<String> assigneeList;
-    private final Random random;
+    private static final Random random = new Random(69);
     public CompanySolutionCreator(List<Attribute> attributes, List<String> assigneeList, int solutionSize, int numThreads) {
         this.attributes=attributes;
         this.assigneeList=assigneeList;
         this.solutionSize=solutionSize;
         this.numThreads=numThreads;
-        this.random=new Random(69);
     }
 
     public String getRandomAssignee() {
