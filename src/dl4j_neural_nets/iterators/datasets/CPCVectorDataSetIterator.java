@@ -28,7 +28,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     public CPCVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable, int numInputs, int batchSize) {
         this.numOutputs=numInputs;
         this.numInputs=numInputs;
-        this.patents=patents.stream().filter(patent->lookupTable.containsKey(patent)).collect(Collectors.toList());
+        this.patents=patents;
         this.lookupTable=lookupTable;
         this.batchSize=batchSize;
         this.vector = Nd4j.create(batchSize,numInputs);

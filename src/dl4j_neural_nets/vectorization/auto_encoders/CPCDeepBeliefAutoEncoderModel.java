@@ -24,10 +24,7 @@ import seeding.Database;
 import similarity_models.cpc_vectors.CPCSimilarityFinder;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -36,9 +33,7 @@ import java.util.stream.Collectors;
  */
 public class CPCDeepBeliefAutoEncoderModel {
     public static final File modelFile = new File("data/cpc_auto_encoder_model.jobj");
-    public static final File classificationsFile = new File("data/cpc_auto_encoder_classifications_list.jobj");
     private static MultiLayerNetwork MODEL;
-    private static List<String> CLASSIFICATIONS;
 
     public static MultiLayerNetwork getModel() {
         if(MODEL==null) {
@@ -53,14 +48,9 @@ public class CPCDeepBeliefAutoEncoderModel {
         return MODEL;
     }
 
-    public static List<String> getOrderedClassifications() {
-        if(CLASSIFICATIONS==null) {
-            CLASSIFICATIONS=(List<String>) Database.tryLoadObject(classificationsFile);
-        }
-        return CLASSIFICATIONS;
-    }
-
     public static void main(String[] args) {
+        Map<String,INDArray> lookupTable = CPCSimilarityFinder.getRawLookupTable();
+
         // Fetch pre data
         int sampleSize = 50000;
         int numTests = 5000;
@@ -72,16 +62,14 @@ public class CPCDeepBeliefAutoEncoderModel {
 
         int batchSize = 10;
         final int nEpochs = 100;
-        final int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         int printIterations = 1000;
 
         // Split data
-        List<String> testSet = patents.subList(0,numTests);
-        patents=patents.subList(numTests,patents.size());
+        List<String> testSet = patents.subList(0,numTests).stream().filter(patent->lookupTable.containsKey(patent)).collect(Collectors.toList());
+        patents=patents.subList(numTests,patents.size()).stream().filter(patent->lookupTable.containsKey(patent)).collect(Collectors.toList());
 
         // Get Classifications
-        List<String> classifications = CPCKMeans.getClassifications(patents,cpcDepth,true);
-        final int numInputs = classifications.size();
+        final int numInputs = lookupTable.values().stream().findAny().get().length();
         final int vectorSize = numInputs/4;
 
         System.out.println("Num Inputs: "+numInputs);
@@ -89,8 +77,9 @@ public class CPCDeepBeliefAutoEncoderModel {
         System.out.println("Num Examples: "+patents.size());
         System.out.println("Num Tests: "+testSet.size());
 
+
         // Get Iterator
-        DataSetIterator iterator = new CPCVectorDataSetIterator(patents, CPCSimilarityFinder.getRawLookupTable(),batchSize,numInputs);
+        DataSetIterator iterator = new CPCVectorDataSetIterator(patents, lookupTable,batchSize,numInputs);
 
         // Config
         System.out.println("Build model....");
@@ -116,11 +105,9 @@ public class CPCDeepBeliefAutoEncoderModel {
         network.init();
         network.setListeners(new CustomAutoEncoderListener(printIterations));
 
-
-
-        INDArray testMatrix = Nd4j.create(testSet.size(),classifications.size());
+        INDArray testMatrix = Nd4j.create(testSet.size(),numInputs);
         for(int i = 0; i <testSet.size(); i++) {
-            testMatrix.putRow(i,Nd4j.create(CPCKMeans.classVectorForPatents(Arrays.asList(testSet.get(i)),classifications,cpcDepth)));
+            testMatrix.putRow(i,lookupTable.get(testSet.get(i)));
         }
 
         System.out.println("Train model....");
@@ -164,10 +151,8 @@ public class CPCDeepBeliefAutoEncoderModel {
         }
         System.out.println("****************Model finished********************");
 
-       // saveModel(network);
+        saveModel(network);
 
-        System.out.println("Saving cpc list");
-        Database.trySaveObject(classifications,classificationsFile);
         System.out.println("Saved.");
     }
 
