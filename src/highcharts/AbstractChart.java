@@ -25,7 +25,7 @@ public abstract class AbstractChart {
         options.setyAxis(new Axis());
         stripAxis(options.getSingleXAxis());
         stripAxis(options.getSingleYAxis());
-        options.getSingleXAxis().setType(AxisType.CATEGORY);
+        options.getSingleXAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+valueSuffix));
         for(Series<?> series : options.getSeries()) {
@@ -44,13 +44,13 @@ public abstract class AbstractChart {
 
     protected static void stripAxis(Axis axis) {
         axis
-                .setTitle(new Title(""))
-                .setLineWidth(0)
-                .setMinorGridLineWidth(0)
+                .setTitle(new Title(""));
+                //.setLineWidth(0)
+                //.setMinorGridLineWidth(0)
                 //.setLabels(new Labels().setEnabled(false))
-                .setMinorTickWidth(0)
+                //.setMinorTickWidth(0)
                 //.setGridLineWidth(0)
-                .setTickWidth(0);
+                //.setTickWidth(0);
     }
 
     protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix) {
@@ -65,8 +65,7 @@ public abstract class AbstractChart {
                 .setSeries(data)
                 .setyAxis(new Axis())
                 .setxAxis(new Axis())
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)
-                        .setPoint(new PointOptions().setEvents(new Events()))));
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)));
     }
 
     @Override
