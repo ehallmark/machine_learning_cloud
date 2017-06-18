@@ -21,6 +21,6 @@ public class PieChart extends AbstractChart {
                     .setY(-5)
             );
         }
-        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}</b><br/>"));
+        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Total Count: <b> {point.y} </b><br/>"));
     }
 }
