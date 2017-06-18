@@ -32,7 +32,7 @@ public abstract class AbstractChart {
         for(Series<?> series : options.getSeries()) {
             series.setPointPadding(0f);
             series.setType(type);
-            series.setPointPlacement(PointPlacement.BETWEEN);
+            series.setPointPlacement(PointPlacement.ON);
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
                     .setColor(Color.black)
@@ -61,12 +61,12 @@ public abstract class AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setHeaderFormat("<b>{point.x} - {point.x+20}</b><br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}: <b> {"+formatStr+"}"+valueSuffix+"</b><br/>"))
+                .setTooltip(new Tooltip().setHeaderFormat("{point.x}%<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name} <b> Total: {"+formatStr+"}"+valueSuffix+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setyAxis(new Axis())
                 .setxAxis(new Axis())
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.BETWEEN)));
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
     }
 
     @Override
