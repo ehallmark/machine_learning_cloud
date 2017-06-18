@@ -143,6 +143,7 @@ public class SimilarPatentServer {
     public static void loadChartModels() {
         chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyDistributionChart());
         chartModelMap.put(Constants.COMPANY_DISTRIBUTION, new CompanyDistributionChart());
+        chartModelMap.put(Constants.HISTOGRAM, new Abst());
         chartModelMap.put(Constants.LIKELY_BUYER_DISTRIBUTION, new LikelyBuyerDistributionChart());
 
     }

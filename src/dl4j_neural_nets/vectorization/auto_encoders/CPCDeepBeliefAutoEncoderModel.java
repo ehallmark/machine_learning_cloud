@@ -79,7 +79,7 @@ public class CPCDeepBeliefAutoEncoderModel {
 
 
         // Get Iterator
-        DataSetIterator iterator = new CPCVectorDataSetIterator(patents, lookupTable,batchSize,numInputs);
+        DataSetIterator iterator = new CPCVectorDataSetIterator(patents, lookupTable, numInputs, batchSize);
 
         // Config
         System.out.println("Build model....");
@@ -95,9 +95,9 @@ public class CPCDeepBeliefAutoEncoderModel {
                 .weightInit(WeightInit.XAVIER)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .list()
-                .layer(0, new RBM.Builder().nIn(numInputs).nOut(vectorSize).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
+                .layer(0, new AutoEncoder.Builder().nIn(numInputs).nOut(vectorSize).corruptionLevel(0.3).lossFunction(LossFunctions.LossFunction.KL_DIVERGENCE).build())
                 .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD).activation(Activation.SOFTMAX).nIn(vectorSize).nOut(numInputs).build())
-                .pretrain(true).backprop(true)
+                .pretrain(true).backprop(false)
                 .build();
 
         // Build and train network
