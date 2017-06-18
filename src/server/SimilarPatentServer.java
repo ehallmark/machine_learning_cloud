@@ -403,7 +403,6 @@ public class SimilarPatentServer {
 
                 Set<String> appliedAttributes = new HashSet<>();
                 // Run maximization model
-                String maximizeValueOf = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
                 {
                     System.out.println(" ... Similarity model");
                     // Get similarity model
@@ -412,33 +411,20 @@ public class SimilarPatentServer {
                     if (firstFinder == null || firstFinder.numItems() == 0) {
                         return new Gson().toJson(new AjaxChartMessage("Unable to find any results to search in.",Collections.emptyList()));
                     }
-                    if (maximizeValueOf == null || maximizeValueOf.equals(Constants.SIMILARITY)) { // Similarity model
-                        System.out.println("Running similarity model...");
-                        // add technologies
-                        inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
-                        AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
-                        if (secondFinder == null || secondFinder.numItems() == 0) {
-                            return new Gson().toJson(new AjaxChartMessage("Must define what to search for when using similarity functionality.",Collections.emptyList()));
-                        }
-                        portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
-                    } else {
-                        System.out.println("Maximizing values...");
+
+                    System.out.println("Running similarity model...");
+                    // add technologies
+                    inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
+                    AbstractSimilarityModel secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
+                    if (secondFinder == null || secondFinder.numItems() == 0) {
                         portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
-
-                        ValueAttr valueModel = valueModelMap.get(maximizeValueOf);
-                        if(!(valueModel instanceof DoNothing)) {
-                            portfolioList.applyAttributes(Arrays.asList(valueModel));
-                        }
-                        appliedAttributes.add(maximizeValueOf);
-
-                        // apply prefilters
-                        System.out.println("Applying prefilters...");
                         portfolioList.applyFilters(preFilters);
-
+                    } else {
+                        portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
                     }
                 }
 
-                // normal case
+                // handle comparator attributes and initialization of portfolio
                 if (!appliedAttributes.contains(comparator)) {
                     System.out.println("Applying comparator field before sorting: " + comparator);
                     List<AbstractAttribute> attrList = new ArrayList<>();
