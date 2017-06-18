@@ -80,15 +80,17 @@ public class AbstractHistogramChart implements ChartAttribute {
     class Range {
         private double start;
         private double end;
-        Range(double start, double end) {
-            this.end=end;
-            this.start=start;
+        private double mean;
+        Range(double mean, double step) {
+            this.mean = mean;
+            this.start = mean - step/2d;
+            this.end = mean + step/2d;
         }
         boolean contains(double score) {
-            return (start==0d && score == 0d) || (score > start && score <= end);
+            return score > start && score <= end;
         }
         double mean() {
-            return start;
+            return mean;
         }
     }
 }
