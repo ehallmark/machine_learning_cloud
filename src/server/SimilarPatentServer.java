@@ -8,6 +8,7 @@ import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import ui_models.attributes.charts.ChartAttribute;
 import ui_models.attributes.charts.CompanyDistributionChart;
+import ui_models.attributes.charts.LikelyBuyerDistributionChart;
 import ui_models.attributes.charts.TechnologyDistributionChart;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
@@ -112,6 +113,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Technology Distribution", Constants.TECHNOLOGY_DISTRIBUTION);
             humanAttrToJavaAttrMap.put("Company Distribution",Constants.COMPANY_DISTRIBUTION);
+            humanAttrToJavaAttrMap.put("Likely Buyer Distribution", Constants.LIKELY_BUYER_DISTRIBUTION);
+            humanAttrToJavaAttrMap.put("Likely Buyer",Constants.LIKELY_BUYER);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -140,6 +143,7 @@ public class SimilarPatentServer {
     public static void loadChartModels() {
         chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyDistributionChart());
         chartModelMap.put(Constants.COMPANY_DISTRIBUTION, new CompanyDistributionChart());
+        chartModelMap.put(Constants.LIKELY_BUYER_DISTRIBUTION, new LikelyBuyerDistributionChart());
 
     }
 
@@ -207,6 +211,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
             attributesMap.put(Constants.NAME, new DoNothingAttribute());
             attributesMap.put(Constants.SIMILARITY, new DoNothingAttribute());
+            loadValueModels();
+            attributesMap.put(Constants.LIKELY_BUYER, new LikelyBuyerAttribute(SimilarPatentFinder.getLookupTable(),new CompDBAssetsPurchasedEvaluator()));
         }
     }
 
