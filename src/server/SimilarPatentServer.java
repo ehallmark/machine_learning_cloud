@@ -420,6 +420,7 @@ public class SimilarPatentServer {
                         portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
                         portfolioList.applyFilters(preFilters);
                     } else {
+                        // Get Similarity
                         portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
                     }
                 }
