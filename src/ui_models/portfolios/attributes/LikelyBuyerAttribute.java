@@ -37,7 +37,7 @@ public class LikelyBuyerAttribute implements AbstractAttribute<String> {
     public String attributesFor(Collection<String> portfolio, int limit) {
         try {
             GeneticAlgorithm<CompanySolution> algorithm = new GeneticAlgorithm<>(new CompanySolutionCreator(Arrays.asList(new ValueAttribute(Constants.SIMILARITY,5d, new SimilarityEvaluator(Constants.SIMILARITY,lookupTable,lookupTable.get(portfolio.stream().findFirst().get()))),new ValueAttribute(Constants.COMPDB_ASSETS_PURCHASED_VALUE, 1d, buyerModel)), assignees, 10, Math.max(1, Runtime.getRuntime().availableProcessors())), 10, new CompanySolutionListener(), Math.max(1, Runtime.getRuntime().availableProcessors()));
-            algorithm.simulate(1000, 0.5, 0.5);
+            algorithm.simulate(5000, 0.5, 0.5);
             return algorithm.getBestSolution().getCompanyScores().get(0).getKey();
         } catch(Exception e) {
             e.printStackTrace();

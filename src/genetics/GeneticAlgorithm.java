@@ -70,9 +70,9 @@ public class GeneticAlgorithm<T extends Solution> {
                         clearScreen();
                     }
 
-                    double epsilon = 0.0000001;
+                    double epsilon = 0.00001;
 
-                    if(lastCurrentScore!=null&&lastLastCurrentScore!=null&&Math.abs(lastCurrentScore-currentScore)<epsilon&&Math.abs(lastLastCurrentScore-currentScore)<epsilon) {
+                    if(lastCurrentScore!=null&&lastLastCurrentScore!=null&&Math.abs(lastCurrentScore-currentScore)/maxPopulationSize<epsilon&&Math.abs(lastLastCurrentScore-currentScore)/maxPopulationSize<epsilon) {
                         System.out.println("Converged!");
                         break;
                     }
