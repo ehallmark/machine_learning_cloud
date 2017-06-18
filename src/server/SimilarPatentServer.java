@@ -4,12 +4,11 @@ import com.google.gson.Gson;
 import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
-import model_testing.SplitModelData;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
-import similarity_models.BaseSimilarityModel;
 import ui_models.attributes.charts.ChartAttribute;
-import ui_models.attributes.charts.TechnologyChart;
+import ui_models.attributes.charts.CompanyDistributionChart;
+import ui_models.attributes.charts.TechnologyDistributionChart;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
@@ -47,7 +46,6 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
@@ -113,6 +111,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Assets Filter", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Technology Distribution", Constants.TECHNOLOGY_DISTRIBUTION);
+            humanAttrToJavaAttrMap.put("Company Distribution",Constants.COMPANY_DISTRIBUTION);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -139,7 +138,8 @@ public class SimilarPatentServer {
     }
 
     public static void loadChartModels() {
-        chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyChart());
+        chartModelMap.put(Constants.TECHNOLOGY_DISTRIBUTION, new TechnologyDistributionChart());
+        chartModelMap.put(Constants.COMPANY_DISTRIBUTION, new CompanyDistributionChart());
 
     }
 

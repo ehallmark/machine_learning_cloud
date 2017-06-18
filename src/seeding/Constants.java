@@ -30,6 +30,7 @@ public class Constants {
 	public static final String VALUE_THRESHOLD_FILTER = "valueThresholdFilter";
 	public static final String JAPANESE_ONLY_FILTER = "japaneseOnlyFilter";
 	public static final String TECHNOLOGY_DISTRIBUTION = "technologyDistributionChart";
+	public static final String COMPANY_DISTRIBUTION = "companyDistributionChart";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 
 	public static final String DATA_FOLDER = "data/";

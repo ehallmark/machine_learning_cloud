@@ -1,12 +1,9 @@
 package ui_models.attributes.charts;
 
-import com.googlecode.wickedcharts.highcharts.options.AxisType;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import highcharts.AbstractChart;
-import highcharts.HighchartDataAdapter;
-import highcharts.LineChart;
 import highcharts.PieChart;
 import seeding.Constants;
 import ui_models.portfolios.PortfolioList;
@@ -20,21 +17,34 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class TechnologyChart extends ChartAttribute {
+public class AbstractDistributionChart implements ChartAttribute {
+    protected String attribute;
+    protected String title;
+
+    public AbstractDistributionChart(String title, String attribute) {
+        this.title=title;
+        this.attribute=attribute;
+    }
+
+    @Override
+    public Collection<String> getPrerequisites() {
+        return Arrays.asList(attribute);
+    }
+
 
     @Override
     public AbstractChart create(PortfolioList portfolioList) {
-        return new PieChart("Technology Distribution", collectTechnologyData(portfolioList, "Technology Distribution", 5));
+        return new PieChart(title, collectDistributionData(portfolioList));
     }
 
-    private static List<Series<?>> collectTechnologyData(PortfolioList portfolio, String seriesName, int limit) {
+    private List<Series<?>> collectDistributionData(PortfolioList portfolio) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
-        series.setName(seriesName);
+        series.setName(title);
 
         portfolio.getItemList().stream().map(item->{
-            return (String)item.getData(Constants.TECHNOLOGY);
-        }).collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().forEach(e->{
+            return (String)item.getData(attribute);
+        }).collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).forEach(e->{
             String tech = e.getKey();
             double prob = e.getValue();
             Point point = new Point(tech,prob);
@@ -44,10 +54,5 @@ public class TechnologyChart extends ChartAttribute {
         data.add(series);
         //applySoftMax(data);
         return data;
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.TECHNOLOGY);
     }
 }
