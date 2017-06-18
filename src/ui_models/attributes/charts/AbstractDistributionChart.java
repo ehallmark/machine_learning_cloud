@@ -38,7 +38,7 @@ public class AbstractDistributionChart implements ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         this.attribute = SimilarPatentServer.extractString(params, Constants.PIE_CHART, null);
-        if(attribute!=null)this.title = attribute + " Distribution";
+        if(attribute!=null)this.title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
     }
 
     @Override
