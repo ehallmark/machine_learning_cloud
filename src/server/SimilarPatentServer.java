@@ -757,7 +757,7 @@ public class SimilarPatentServer {
                                                 )
                                         ), tr().attr("style", "vertical-align: top;").with(
                                                 td().attr("style","width: 33%; vertical-align: top;").with(
-                                                        label("Select Charts"),
+                                                        h4("Select Charts"),
                                                         technologySelect(CHART_MODELS_ARRAY_FIELD,chartModelMap.keySet().stream().sorted().collect(Collectors.toList())),
                                                         br(),br()
                                                 )
