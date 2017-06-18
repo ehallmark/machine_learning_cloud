@@ -58,8 +58,8 @@ public class AbstractHistogramChart implements ChartAttribute {
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins) {
         List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
         double step = (max-min)/nBins;
-        List<Range> ranges = new ArrayList<>(nBins);
-        for(double start = min; start < max; start += step) {
+        List<Range> ranges = new ArrayList<>(nBins+1);
+        for(double start = min; start <= max; start += step) {
             ranges.add(new Range(start,start+step));
         }
 
@@ -86,7 +86,7 @@ public class AbstractHistogramChart implements ChartAttribute {
             return (start==0d && score == 0d) || (score > start && score <= end);
         }
         double mean() {
-            return (end+start)/2;
+            return start;
         }
     }
 }
