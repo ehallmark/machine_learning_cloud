@@ -20,7 +20,6 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     private List<String> patents;
     private Iterator<String> patentIterator;
     private int batchSize;
-    private DataSet nextDataSet;
     private INDArray vector;
     private Map<String,INDArray> lookupTable;
 
@@ -32,19 +31,17 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
         this.lookupTable=lookupTable;
         this.batchSize=batchSize;
         this.vector = Nd4j.create(batchSize,numInputs);
-        this.nextDataSet = new DataSet(vector,vector);
         setupIterator();
     }
 
     private void setupIterator() {
         Collections.shuffle(patents);
-        nextDataSet=null;
         patentIterator=patents.iterator();
     }
 
     @Override
     public DataSet next(int n) {
-        return nextDataSet;
+        return new DataSet(vector,vector);
     }
 
     @Override
@@ -109,10 +106,10 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     public boolean hasNext() {
         boolean hasNext = true;
         AtomicInteger i = new AtomicInteger(0);
-        System.out.println("Shape of vector: "+vector.shapeInfoToString());
+        System.out.println("Shape of vector: "+vector.rows()+"x"+vector.columns());
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
             INDArray vec =  lookupTable.get(patentIterator.next());
-            System.out.println("Shape of Lookup: "+vec.shapeInfoToString());
+            System.out.println("Shape of Lookup: "+vec.rows()+"x"+vec.columns());
             vector.putRow(i.get()-1,vec);
         }
         if(batchSize-i.get()>0) { // ran out of patents
