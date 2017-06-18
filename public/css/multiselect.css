@@ -19,16 +19,16 @@
    bottom: 0;
  }
 
- #checkboxes {
+ .checkboxes {
    display: none;
    border: 1px #dadada solid;
  }
 
- #checkboxes label {
+ .checkboxes label {
    display: block;
  }
 
- #checkboxes label:hover {
+ .checkboxes label:hover {
    background-color: #1e90ff;
  }
 

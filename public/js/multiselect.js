@@ -1,7 +1,7 @@
 var expanded = false;
 
-function showCheckboxes() {
-  var checkboxes = document.getElementById("checkboxes");
+function showCheckboxes(var id) {
+  var checkboxes = document.getElementById(id);
   if (!expanded) {
     checkboxes.style.display = "block";
     expanded = true;
