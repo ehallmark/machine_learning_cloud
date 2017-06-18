@@ -109,8 +109,11 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     public boolean hasNext() {
         boolean hasNext = true;
         AtomicInteger i = new AtomicInteger(0);
+        System.out.println("Shape of vector: "+vector.shapeInfoToString());
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
-            vector.putRow(i.get()-1, lookupTable.get(patentIterator.next()));
+            INDArray vec =  lookupTable.get(patentIterator.next());
+            System.out.println("Lookup: "+vec);
+            vector.putRow(i.get()-1,vec);
         }
         if(batchSize-i.get()>0) { // ran out of patents
             hasNext = false;
