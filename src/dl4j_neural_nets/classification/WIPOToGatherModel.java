@@ -104,7 +104,7 @@ public class WIPOToGatherModel {
 
 
         System.out.println("Train model....");
-        double bestErrorSoFar = Double.MIN_VALUE;
+        double bestErrorSoFar = Double.MAX_VALUE;
         Double startingError = null;
         List<Double> errorList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
