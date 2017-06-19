@@ -7,7 +7,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/18/2017.
@@ -18,6 +20,11 @@ public class WIPOHelper {
 
     private static Map<String,String> DEF_MAP;
     private static Map<String,String> WIPO_MAP;
+
+    public static List<String> getOrderedClassifications() {
+        if(DEF_MAP==null) getDefinitionMap();
+        return DEF_MAP.values().stream().distinct().sorted().collect(Collectors.toList());
+    }
 
     public static Map<String,String> getDefinitionMap() {
         if(!definitionFile.exists()) {
