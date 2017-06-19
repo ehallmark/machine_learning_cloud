@@ -104,7 +104,7 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         System.out.println("Num assignments: "+assignments.size());
     }
 
-    private NaiveGatherClassifier(double alpha) {
+    protected NaiveGatherClassifier(double alpha) {
         this.alpha=alpha;
     }
 
