@@ -158,7 +158,7 @@ public class WIPOToGatherModel {
 
         // Fetch pre data
         int batchSize = 5;
-        final int nEpochs = 1;
+        final int nEpochs = 100;
         trainAndSave(wipoLookupTable, gatherLookupTable, gatherPatents,0.3,batchSize,nEpochs,modelFile);
     }
 }
