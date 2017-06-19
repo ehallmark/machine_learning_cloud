@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 12/14/16.
  */
-public class CPCVectorDataSetIterator implements DataSetIterator {
+public class ClassificationVectorDataSetIterator implements DataSetIterator {
     private int numInputs;
     private int numOutputs;
     private List<String> patents;
@@ -24,7 +24,7 @@ public class CPCVectorDataSetIterator implements DataSetIterator {
     private Map<String,INDArray> lookupTable;
 
     // Concatenates vectors for all provided weight lookup tables
-    public CPCVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable, int numInputs, int batchSize) {
+    public ClassificationVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable, int numInputs, int batchSize) {
         this.numOutputs=numInputs;
         this.numInputs=numInputs;
         this.patents=patents;
