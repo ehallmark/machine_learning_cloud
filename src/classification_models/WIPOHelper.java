@@ -16,12 +16,31 @@ public class WIPOHelper {
     public static final File mapFile = new File("data/wipo_patent_map.jobj");
     public static final File definitionFile = new File("data/wipo_definition_map.jobj");
 
+    private static Map<String,String> DEF_MAP;
+    private static Map<String,String> WIPO_MAP;
+
     public static Map<String,String> getDefinitionMap() {
-        return (Map<String,String>) Database.tryLoadObject(definitionFile);
+        if(!definitionFile.exists()) {
+            try {
+                main(null);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(DEF_MAP==null) DEF_MAP = (Map<String,String>) Database.tryLoadObject(definitionFile);
+        return DEF_MAP;
     }
 
     public static Map<String,String> getWIPOMap() {
-        return (Map<String,String>) Database.tryLoadObject(mapFile);
+        if(!mapFile.exists()) {
+            try {
+                main(null);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(WIPO_MAP == null) WIPO_MAP = (Map<String,String>) Database.tryLoadObject(mapFile);
+        return WIPO_MAP;
     }
 
     public static void main(String[] args) throws Exception {

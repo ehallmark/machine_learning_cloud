@@ -6,6 +6,7 @@ import j2html.tags.ContainerTag;
 import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
+import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
@@ -191,8 +192,8 @@ public class SimilarPatentServer {
                     similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
                 });
                 pool.execute(()->{
-                    similarityModelMap.put(Constants.WIPO_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
-                    similarityModelMap.put(Constants.WIPO_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
+                    similarityModelMap.put(Constants.WIPO_MODEL+"_patents", new WIPOSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
+                    similarityModelMap.put(Constants.WIPO_MODEL+"_assignees",new WIPOSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
                 });
                 pool.shutdown();
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
