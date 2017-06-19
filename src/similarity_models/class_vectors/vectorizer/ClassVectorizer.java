@@ -9,6 +9,7 @@ import java.util.stream.Stream;
  */
 public class ClassVectorizer {
     public Map<String,? extends Collection<String>> lookupTable;
+
     public ClassVectorizer(Map<String,? extends Collection<String>> lookupTable) {
         this.lookupTable=lookupTable;
     }

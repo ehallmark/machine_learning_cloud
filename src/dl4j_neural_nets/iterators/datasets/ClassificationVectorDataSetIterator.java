@@ -20,17 +20,21 @@ public class ClassificationVectorDataSetIterator implements DataSetIterator {
     private List<String> patents;
     private Iterator<String> patentIterator;
     private int batchSize;
-    private INDArray vector;
-    private Map<String,INDArray> lookupTable;
+    private INDArray vector1;
+    private INDArray vector2;
+    private Map<String,INDArray> lookupTable1;
+    private Map<String,INDArray> lookupTable2;
 
     // Concatenates vectors for all provided weight lookup tables
-    public ClassificationVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable, int numInputs, int batchSize) {
-        this.numOutputs=numInputs;
+    public ClassificationVectorDataSetIterator(List<String> patents, Map<String,INDArray> lookupTable1, Map<String,INDArray> lookupTable2, int numInputs, int numOutputs, int batchSize) {
+        this.numOutputs=numOutputs;
         this.numInputs=numInputs;
         this.patents=patents;
-        this.lookupTable=lookupTable;
+        this.lookupTable1=lookupTable1;
+        this.lookupTable2=lookupTable2;
         this.batchSize=batchSize;
-        this.vector = Nd4j.create(batchSize,numInputs);
+        this.vector1 = Nd4j.create(batchSize,numInputs);
+        this.vector2 = Nd4j.create(batchSize,numOutputs);
         setupIterator();
     }
 
@@ -41,7 +45,7 @@ public class ClassificationVectorDataSetIterator implements DataSetIterator {
 
     @Override
     public DataSet next(int n) {
-        return new DataSet(vector,vector);
+        return new DataSet(vector1,vector2);
     }
 
     @Override
@@ -107,8 +111,10 @@ public class ClassificationVectorDataSetIterator implements DataSetIterator {
         boolean hasNext = true;
         AtomicInteger i = new AtomicInteger(0);
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
-            INDArray vec =  lookupTable.get(patentIterator.next());
-            vector.putRow(i.get()-1,vec);
+            INDArray vec1 =  lookupTable1.get(patentIterator.next());
+            INDArray vec2 =  lookupTable2.get(patentIterator.next());
+            vector1.putRow(i.get()-1,vec1);
+            vector2.putRow(i.get()-1,vec2);
         }
         if(batchSize-i.get()>0) { // ran out of patents
             hasNext = false;

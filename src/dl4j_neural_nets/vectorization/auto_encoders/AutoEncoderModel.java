@@ -55,7 +55,7 @@ public abstract class AutoEncoderModel {
 
 
         // Get Iterator
-        DataSetIterator iterator = new ClassificationVectorDataSetIterator(examples, lookupTable, numInputs, batchSize);
+        DataSetIterator iterator = new ClassificationVectorDataSetIterator(examples, lookupTable, lookupTable, numInputs, numInputs, batchSize);
 
         // Config
         System.out.println("Build model....");
