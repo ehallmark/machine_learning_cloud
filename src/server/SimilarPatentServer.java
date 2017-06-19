@@ -111,6 +111,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Likely Buyer",Constants.LIKELY_BUYER);
+            humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -205,6 +206,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
             attributesMap.put(Constants.NAME, new DoNothingAttribute());
             attributesMap.put(Constants.SIMILARITY, new DoNothingAttribute());
+            attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOClassificationAttribute());
             loadValueModels();
             attributesMap.put(Constants.LIKELY_BUYER, new LikelyBuyerAttribute(SimilarPatentFinder.getLookupTable(),new CompDBAssetsPurchasedEvaluator()));
         }
