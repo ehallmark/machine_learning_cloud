@@ -74,16 +74,42 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         return defaultClassifier;
     }
 
+    public static List<Map<String,Integer>> getAssignments(Map<String,Collection<String>> gatherTraining, List<String> orderedTechnologies, Map<String,Set<String>> patentToClassificationMap, List<String> orderedClassifications, Map<String,String> patentToWIPOMap, List<String> orderedWIPO) {
+        List<Map<String,Integer>> assignments = new ArrayList<>();
+        Map<String,Collection<String>> patentsToTech = invert(gatherTraining);
+        patentsToTech.forEach((patent,technologies)->{
+            // classes
+            Collection<String> classes = patentToClassificationMap.getOrDefault(patent, Collections.emptySet());
+            String wipo = patentToWIPOMap.getOrDefault(patent, null);
+            if(wipo!=null) {
+                final int wipoIdx = orderedWIPO.indexOf(wipo);
+                classes.forEach(cpc -> {
+                    technologies.forEach(tech -> {
+                        // create assignment
+                        Map<String, Integer> assignment = new HashMap<>(orderedClassifications.size() + orderedTechnologies.size());
+                        assignment.put("CPC", orderedClassifications.indexOf(cpc));
+                        assignment.put("Technology", orderedTechnologies.indexOf(tech));
+                        assignment.put("WIPO", wipoIdx);
+                        assignments.add(assignment);
+
+                    });
+                });
+            }
+        });
+        return assignments;
+    }
+
     @Override
     public void train(Map<String, Collection<String>> trainingData) {
         Map<String,Set<String>> patentToClassificationMap = Database.getPatentToClassificationMap();
         Map<String,Collection<String>> classificationToGatherPatentsMap = getClassificationToGatherPatentsMap(trainingData,patentToClassificationMap);
+        Map<String,String> wipoMap = WIPOHelper.getWIPOMap();
         orderedTechnologies = new ArrayList<>(trainingData.keySet());
         orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
         orderedWIPO = new ArrayList<>(WIPOHelper.getDefinitionMap().keySet());
         bayesianNet = new BayesianNet();
 
-        List<Map<String,Integer>> assignments = getAssignments(trainingData,orderedTechnologies,patentToClassificationMap,orderedClassifications);
+        List<Map<String,Integer>> assignments = getAssignments(trainingData,orderedTechnologies,patentToClassificationMap,orderedClassifications,wipoMap,orderedWIPO);
 
         // set data
         bayesianNet.setTrainingData(assignments);
@@ -140,7 +166,7 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         double[] observationCPC = getObservation(cpcClasses,orderedClassifications);
         double[] observationWIPO = getObservation(wipoClasses,orderedWIPO);
 
-        if(observationCPC==null&&observationWIPO==null) return Collections.emptyList();
+        if(observationCPC==null||observationWIPO==null) return Collections.emptyList();
 
         FactorNode cpcFactor = new FactorNode(observationCPC,new String[]{"CPC"},new int[]{orderedClassifications.size()});
         FactorNode wipoFactor = new FactorNode(observationWIPO,new String[]{"WIPO"},new int[]{orderedWIPO.size()});
