@@ -35,7 +35,7 @@ public class ClassVectorizer {
     }
 
     public List<String> getClassifications(Collection<String> patents, int classDepth, boolean distinct) {
-        Stream<String> classStream = patents.stream().flatMap(p-> patentToClassification(p).stream().map(cpc->(classDepth >= 0 ? cpc.substring(0,Math.min(classDepth,cpc.length())) : cpc).trim()));
+        Stream<String> classStream = patents.stream().flatMap(p-> patentToClassification(p).stream().map(cpc->(classDepth > 0 ? cpc.substring(0,Math.min(classDepth,cpc.length())) : cpc).trim()));
         if(distinct) classStream = classStream.distinct();
         return classStream.collect(Collectors.toList());
     }
