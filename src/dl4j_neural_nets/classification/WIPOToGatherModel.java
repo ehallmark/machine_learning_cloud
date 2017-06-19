@@ -26,6 +26,7 @@ import seeding.Database;
 import similarity_models.class_vectors.CPCSimilarityFinder;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import similarity_models.class_vectors.vectorizer.ClassVectorizer;
+import ui_models.attributes.classification.NaiveGatherClassifier;
 import ui_models.attributes.classification.TechTaggerNormalizer;
 
 import java.io.File;
@@ -138,7 +139,7 @@ public class WIPOToGatherModel {
         Map<String,INDArray> wipoLookupTable = WIPOSimilarityFinder.getRawLookupTable();
 
         Map<String,Collection<String>> gatherTechMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
-        ClassVectorizer vectorizer = new ClassVectorizer(gatherTechMap);
+        ClassVectorizer vectorizer = new ClassVectorizer(NaiveGatherClassifier.invert(gatherTechMap));
 
         List<String> gatherPatents = gatherTechMap.entrySet().stream()
                 .flatMap(e->e.getValue().stream()).distinct().collect(Collectors.toList());
