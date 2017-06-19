@@ -66,7 +66,7 @@ public class WIPOHelper {
         Map<String, String> definitionMap = Collections.synchronizedMap(new HashMap<>());
         {
             BufferedReader reader = new BufferedReader(new FileReader(new File("data/wipo_field.tsv")));
-            reader.lines().parallel().forEach(line -> {
+            reader.lines().skip(1).parallel().forEach(line -> {
                 String[] fields = line.split("\t");
                 String wipo = fields[0];
                 String title = fields[2];
@@ -82,7 +82,7 @@ public class WIPOHelper {
             File file = new File("data/wipo.tsv");
             BufferedReader reader = new BufferedReader(new FileReader(file));
             Map<String, String> patentToWIPOMap = Collections.synchronizedMap(new HashMap<>());
-            reader.lines().parallel().forEach(line -> {
+            reader.lines().skip(1).parallel().forEach(line -> {
                 String[] fields = line.split("\t");
                 String patent = fields[0];
                 String wipo = fields[1];
