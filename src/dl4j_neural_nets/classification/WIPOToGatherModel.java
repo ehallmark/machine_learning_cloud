@@ -145,6 +145,14 @@ public class WIPOToGatherModel {
                 .flatMap(e->e.getValue().stream()).distinct().collect(Collectors.toList());
 
         List<String> orderedTechnologies = new ArrayList<>(gatherTechMap.keySet());
+        orderedTechnologies.forEach(tech->{
+            System.out.println("TECHNOLOGY: "+tech);
+        });
+
+        gatherPatents.forEach(patent->{
+            System.out.println("Patent: "+patent);
+        });
+
 
         Map<String,INDArray> gatherLookupTable = gatherPatents.stream()
                 .collect(Collectors.toMap(p->p,p->Nd4j.create(vectorizer.classVectorForPatents(Arrays.asList(p),orderedTechnologies,-1))));
