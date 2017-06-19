@@ -27,8 +27,8 @@ public class WIPODeepBeliefAutoEncoderModel extends AutoEncoderModel {
         Map<String,INDArray> lookupTable = WIPOSimilarityFinder.getRawLookupTable();
 
         // Fetch pre data
-        int sampleSize = 50000;
-        int numTests = 5000;
+        int sampleSize = 500000;
+        int numTests = 50000;
         int batchSize = 10;
         final int nEpochs = 100;
         AutoEncoderModel.trainAndSave(lookupTable,Database.getAssignees(),sampleSize,numTests,batchSize,nEpochs,modelFile);

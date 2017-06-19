@@ -44,9 +44,9 @@ public class CPCDeepBeliefAutoEncoderModel extends AutoEncoderModel {
         Map<String,INDArray> lookupTable = CPCSimilarityFinder.getRawLookupTable();
 
         // Fetch pre data
-        int sampleSize = 50000;
-        int numTests = 5000;
-        int batchSize = 10;
+        int sampleSize = 5000000;
+        int numTests = 50000;
+        int batchSize = 5;
         final int nEpochs = 100;
         AutoEncoderModel.trainAndSave(lookupTable,Database.getPatentToClassificationMap().keySet(),sampleSize,numTests,batchSize,nEpochs,modelFile);
     }
