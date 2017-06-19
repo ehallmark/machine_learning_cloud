@@ -154,7 +154,7 @@ public class WIPOToGatherModel {
         gatherLookupTable.forEach((p,vec)->{
             System.out.println(p+": "+vec);
         });
-        
+
         // Fetch pre data
         int batchSize = 5;
         final int nEpochs = 1;

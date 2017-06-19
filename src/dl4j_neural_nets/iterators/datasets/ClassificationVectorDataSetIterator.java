@@ -111,8 +111,9 @@ public class ClassificationVectorDataSetIterator implements DataSetIterator {
         boolean hasNext = true;
         AtomicInteger i = new AtomicInteger(0);
         while(patentIterator.hasNext() && i.getAndIncrement()<batchSize) {
-            INDArray vec1 =  lookupTable1.get(patentIterator.next());
-            INDArray vec2 =  lookupTable2.get(patentIterator.next());
+            String next = patentIterator.next();
+            INDArray vec1 =  lookupTable1.get(next);
+            INDArray vec2 =  lookupTable2.get(next);
             vector1.putRow(i.get()-1,vec1);
             vector2.putRow(i.get()-1,vec2);
         }
