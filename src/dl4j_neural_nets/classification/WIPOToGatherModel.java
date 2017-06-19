@@ -103,32 +103,31 @@ public class WIPOToGatherModel {
 
 
         System.out.println("Train model....");
-        double bestAccuracySoFar = Double.MIN_VALUE;
-        Double startingAccuracy = null;
-        List<Double> accuracyList = new ArrayList<>(nEpochs);
+        double bestErrorSoFar = Double.MIN_VALUE;
+        Double startingError = null;
+        List<Double> errorList = new ArrayList<>(nEpochs);
         for( int i=0; i<nEpochs; i++ ) {
             System.out.println("*** STARTING epoch {"+i+"} ***");
             network.fit(iterator);
             System.out.println("*** STARTING TESTS ***");
 
             INDArray predictions = network.output(testMatrix,false);
-            Evaluation evaluation = new Evaluation();
-            evaluation.eval(testLabels,predictions);
 
-            double accuracy = evaluation.accuracy();
-            accuracyList.add(accuracy);
-            if(startingAccuracy==null) startingAccuracy=accuracy;
-            if(accuracy>bestAccuracySoFar){
-                bestAccuracySoFar=accuracy;
+            double error = Transforms.pow(testLabels.sub(predictions),2d,false).meanNumber().doubleValue();
+
+            errorList.add(error);
+            if(startingError==null) startingError=error;
+            if(error<bestErrorSoFar){
+                bestErrorSoFar=error;
                 System.out.println("FOUND BETTER MODEL");
                 AutoEncoderModel.saveModel(network,file);
                 System.out.println("Saved.");
 
             }
-            System.out.println("Starting accuracy: "+startingAccuracy);
-            System.out.println("Avg accuracy: "+accuracyList.stream().collect(Collectors.averagingDouble(d->d)));
-            System.out.println("Current model accuracy: "+accuracy);
-            System.out.println("Best accuracy So Far: "+bestAccuracySoFar);
+            System.out.println("Starting error: "+startingError);
+            System.out.println("Avg error: "+errorList.stream().collect(Collectors.averagingDouble(d->d)));
+            System.out.println("Current model error: "+error);
+            System.out.println("Best error So Far: "+bestErrorSoFar);
             System.out.println("*** FINISHED epoch {"+i+"} ***");
 
         }
@@ -149,14 +148,13 @@ public class WIPOToGatherModel {
             System.out.println("TECHNOLOGY: "+tech);
         });
 
-        gatherPatents.forEach(patent->{
-            System.out.println("Patent: "+patent);
-        });
-
-
         Map<String,INDArray> gatherLookupTable = gatherPatents.stream()
                 .collect(Collectors.toMap(p->p,p->Nd4j.create(vectorizer.classVectorForPatents(Arrays.asList(p),orderedTechnologies,-1))));
 
+        gatherLookupTable.forEach((p,vec)->{
+            System.out.println(p+": "+vec);
+        });
+        
         // Fetch pre data
         int batchSize = 5;
         final int nEpochs = 1;
