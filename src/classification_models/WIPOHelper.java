@@ -1,14 +1,12 @@
 package classification_models;
 
 import seeding.Database;
+import similarity_models.class_vectors.vectorizer.ClassVectorizer;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -17,9 +15,11 @@ import java.util.stream.Collectors;
 public class WIPOHelper {
     public static final File mapFile = new File("data/wipo_patent_map.jobj");
     public static final File definitionFile = new File("data/wipo_definition_map.jobj");
+    public static final File mapFileWithAssignees = new File("data/wipo_patent_with_assignee_map.jobj");
 
     private static Map<String,String> DEF_MAP;
     private static Map<String,String> WIPO_MAP;
+    private static Map<String,String> WIPO_MAP_WITH_ASSIGNEES;
 
     public static List<String> getOrderedClassifications() {
         if(DEF_MAP==null) getDefinitionMap();
@@ -36,6 +36,18 @@ public class WIPOHelper {
         }
         if(DEF_MAP==null) DEF_MAP = (Map<String,String>) Database.tryLoadObject(definitionFile);
         return DEF_MAP;
+    }
+
+    public static Map<String,String> getWIPOMapWithAssignees() {
+        if(!mapFileWithAssignees.exists()) {
+            try {
+                main(null);
+            } catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if(WIPO_MAP_WITH_ASSIGNEES == null) WIPO_MAP_WITH_ASSIGNEES = (Map<String,String>) Database.tryLoadObject(mapFileWithAssignees);
+        return WIPO_MAP_WITH_ASSIGNEES;
     }
 
     public static Map<String,String> getWIPOMap() {
@@ -77,7 +89,7 @@ public class WIPOHelper {
                 if(definitionMap.containsKey(wipo)) {
                     try {
                         if(Integer.valueOf(patent) > 6800000) {
-                            System.out.println(patent + ": " + wipo + " -> " + definitionMap.get(wipo));
+                            //System.out.println(patent + ": " + wipo + " -> " + definitionMap.get(wipo));
                             patentToWIPOMap.put(patent, wipo);
                         }
                     } catch(Exception e) {
@@ -85,8 +97,23 @@ public class WIPOHelper {
                     }
                 }
             });
+
             Database.trySaveObject(patentToWIPOMap, mapFile);
             reader.close();
+
+            System.out.println("Adding assignees...");
+            // add assignees
+            Database.getAssignees().parallelStream().forEach(assignee->{
+                Collection<String> patents = Database.selectPatentNumbersFromExactAssignee(assignee);
+                if(patents.isEmpty()) return;
+                Map.Entry<String,Long> entry = patents.stream().map(patent->patentToWIPOMap.get(patent)).filter(wipo->wipo!=null)
+                        .collect(Collectors.groupingBy(wipo->wipo,Collectors.counting())).entrySet()
+                        .stream().max((e1,e2)->e1.getValue().compareTo(e2.getValue())).orElse(null);
+                if(entry==null) return;
+                patentToWIPOMap.put(assignee,entry.getKey());
+            });
+
+            Database.trySaveObject(patentToWIPOMap, mapFileWithAssignees);
         }
     }
 }
