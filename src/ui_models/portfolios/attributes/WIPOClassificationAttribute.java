@@ -13,10 +13,12 @@ import java.util.Map;
 public class WIPOClassificationAttribute implements AbstractAttribute<String> {
     public static Map<String,String> definitionMap;
     public static Map<String,String> wipoMap;
-    static {
-        definitionMap= WIPOHelper.getDefinitionMap();
-        wipoMap = WIPOHelper.getWIPOMap();
+
+    public WIPOClassificationAttribute() {
+        if(definitionMap==null) definitionMap= WIPOHelper.getDefinitionMap();
+        if(wipoMap==null) wipoMap = WIPOHelper.getWIPOMapWithAssignees();
     }
+
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
         String attr = wipoMap.get(portfolio.stream().findAny().get());

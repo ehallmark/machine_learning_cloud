@@ -72,7 +72,7 @@ public class SimilarPatentServer {
     private static final String SEARCH_TYPE_FIELD = "searchType";
     private static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     private static final String REPORT_URL = "/patent_recommendation_engine";
-
+    public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,ValueAttr> valueModelMap = new HashMap<>();
     static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -647,7 +647,7 @@ public class SimilarPatentServer {
         return technologySelect(name,getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList()));
     }
 
-    private static Tag technologySelect(String name, List<String> orderedClassifications) {
+    public static Tag technologySelect(String name, List<String> orderedClassifications) {
         String id = "checkboxes-"+name.hashCode();
         return div().withClass("multiselect").with(
                 div().withClass("selectBox").attr("onclick","showCheckboxes('"+id+"');").with(
