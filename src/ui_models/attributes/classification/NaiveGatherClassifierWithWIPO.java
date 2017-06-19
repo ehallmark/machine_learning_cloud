@@ -135,23 +135,6 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         super(alpha);
     }
 
-    protected double[] getObservation(Collection<String> observed, List<String> orderedClasses) {
-        double[] observation = new double[orderedClasses.size()];
-        Arrays.fill(observation,0d);
-        AtomicBoolean found = new AtomicBoolean(false);
-        observed.forEach(clazz->{
-            int idx = orderedClasses.indexOf(clazz);
-            if(idx>=0) {
-                observation[idx]++;
-                found.set(true);
-            }
-        });
-        if(!found.get()) return null;
-        return observation;
-    }
-
-
-
     @Override
     public List<Pair<String, Double>> attributesFor(Collection<String> portfolio, int limit) {
         Set<String> cpcClasses = new HashSet<>();

@@ -114,17 +114,8 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
         portfolio.forEach(token->classifications.addAll(Database.subClassificationsForPatent(token)));
         if(classifications.isEmpty()) return Collections.emptyList();
 
-        double[] observation = new double[orderedClassifications.size()];
-        Arrays.fill(observation,0d);
-        AtomicBoolean found = new AtomicBoolean(false);
-        classifications.forEach(clazz->{
-           int idx = orderedClassifications.indexOf(clazz);
-           if(idx>=0) {
-               observation[idx]++;
-               found.set(true);
-           }
-        });
-        if(!found.get()) return Collections.emptyList();
+        double[] observation = getObservation(classifications,orderedClassifications);
+        if(observation==null) return Collections.emptyList();
 
         FactorNode observedFactor = new FactorNode(observation,new String[]{"CPC"},new int[]{orderedClassifications.size()});
         observedFactor.reNormalize(new DivideByPartition());
@@ -169,6 +160,21 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
             }
         });
         return map;
+    }
+
+    protected double[] getObservation(Collection<String> observed, List<String> orderedClasses) {
+        double[] observation = new double[orderedClasses.size()];
+        Arrays.fill(observation,0d);
+        AtomicBoolean found = new AtomicBoolean(false);
+        observed.forEach(clazz->{
+            int idx = orderedClasses.indexOf(clazz);
+            if(idx>=0) {
+                observation[idx]++;
+                found.set(true);
+            }
+        });
+        if(!found.get()) return null;
+        return observation;
     }
 
     public static List<Map<String,Integer>> getAssignments(Map<String,Collection<String>> gatherTraining, List<String> orderedTechnologies, Map<String,Set<String>> patentToClassificationMap, List<String> orderedClassifications) {
