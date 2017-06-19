@@ -1,56 +1,30 @@
-package similarity_models.cpc_vectors;
+package similarity_models.class_vectors;
 
-import graphical_models.classification.CPCKMeans;
+import classification_models.WIPOHelper;
 import org.deeplearning4j.berkeley.Pair;
-import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
-import seeding.Constants;
 import seeding.Database;
 import similarity_models.BaseSimilarityModel;
+import similarity_models.class_vectors.vectorizer.ClassVectorizer;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/8/2017.
  */
-public class CPCSimilarityFinder extends BaseSimilarityModel {
-    private static final File file = new File("data/cpc_nn_similarity_finder_lookup_table.jobj");
-    private static final File rawFile = new File("data/cpc_similarity_finder_lookup_table.jobj");
-    private static Map<String,INDArray> LOOKUP_TABLE;
-    private static Map<String,INDArray> RAW_LOOKUP_TABLE;
-    public CPCSimilarityFinder(Collection<String> candidateSet, String name) {
-        super(candidateSet,name,getLookupTable());
-    }
+public abstract class AbstractClassSimilarityFinder {
 
-    public static Map<String,INDArray> getRawLookupTable() {
-        if(RAW_LOOKUP_TABLE==null) {
-            RAW_LOOKUP_TABLE=(Map<String,INDArray>) Database.tryLoadObject(rawFile);
-        }
-        return RAW_LOOKUP_TABLE;
-    }
-
-    public static Map<String,INDArray> getLookupTable() {
-        if(LOOKUP_TABLE==null) {
-            LOOKUP_TABLE=(Map<String,INDArray>) Database.tryLoadObject(file);
-            if(LOOKUP_TABLE==null) LOOKUP_TABLE = getRawLookupTable();
-        }
-        return LOOKUP_TABLE;
-    }
-    public static void main(String[] args) throws IOException {
-        Database.initializeDatabase();
-
-        int cpcDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
-        List<String> orderedClassifications = CPCKMeans.getClassifications(Database.getCopyOfAllPatents(),cpcDepth,true);
-
-        //MultiLayerNetwork model = CPCVariationalAutoEncoderModel.getModel();
-        // List<String> orderedClassificaitons = model.getOrderedClassifications();
+    public static void trainAndSave(Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
+        ClassVectorizer vectorizer = new ClassVectorizer(dataMap);
+        List<String> orderedClassifications = vectorizer.getClassifications(Database.getCopyOfAllPatents(),classDepth,true);
         Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 
+        // Batching
         List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
-
         Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
             collections.add(new Pair<>(patent,Arrays.asList(patent)));
         });
@@ -70,12 +44,12 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
             List<String> names = new ArrayList<>();
             for(int j = i; j < Math.min(i+batchSize,collections.size()-1); j++) {
                 names.add(collections.get(j).getFirst());
-                list.add(Nd4j.create(CPCKMeans.classVectorForPatents(collections.get(j).getSecond(),orderedClassifications,cpcDepth)));
+                list.add(Nd4j.create(vectorizer.classVectorForPatents(collections.get(j).getSecond(),orderedClassifications,classDepth)));
             }
             data.add(new Pair<>(names,Nd4j.vstack(list)));
             System.out.println("i: "+i);
         }
-
+        // Done batching
         System.out.println("Adding to map");
         data.parallelStream().forEach(pair->{
             INDArray vec = pair.getSecond();

@@ -8,14 +8,13 @@ import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
-import similarity_models.cpc_vectors.CPCSimilarityFinder;
+import similarity_models.class_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import svm.SVMHelper;
 import svm.genetics.SVMSolution;
 import svm.genetics.SVMSolutionCreator;
 import svm.libsvm.svm_model;
 import svm.libsvm.svm_parameter;
-import ui_models.portfolios.PortfolioList;
 
 import java.io.File;
 import java.util.*;

@@ -2,7 +2,8 @@ package ui_models.attributes.classification;
 
 import lombok.Getter;
 import model_testing.SplitModelData;
-import similarity_models.cpc_vectors.CPCSimilarityFinder;
+import similarity_models.class_vectors.CPCSimilarityFinder;
+import similarity_models.class_vectors.WIPOSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
@@ -29,6 +30,7 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private Map<String,Collection<String>> nameToInputMap;
     private static SimilarityGatherTechTagger pVectorModel;
     private static SimilarityGatherTechTagger cpcModel;
+    private static SimilarityGatherTechTagger wipoModel;
 
     public String getName() {
         return "Average Similarity Model";
@@ -48,6 +50,14 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
             pVectorModel = new SimilarityGatherTechTagger(NAME_TO_INPUT_MAP, SimilarPatentFinder.getLookupTable());
         }
         return pVectorModel;
+    }
+
+    public static SimilarityGatherTechTagger getWIPOMOdel() {
+        if(wipoModel==null) {
+            if(NAME_TO_INPUT_MAP==null)NAME_TO_INPUT_MAP = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
+            wipoModel = new SimilarityGatherTechTagger(NAME_TO_INPUT_MAP, WIPOSimilarityFinder.getLookupTable());
+        }
+        return wipoModel;
     }
 
     public SimilarityGatherTechTagger(Map<String,Collection<String>> nameToInputMap, Map<String,INDArray> lookupTable) {

@@ -27,7 +27,7 @@ public class WIPOHelper {
     public static void main(String[] args) throws Exception {
         Map<String, String> definitionMap = Collections.synchronizedMap(new HashMap<>());
         {
-            BufferedReader reader = new BufferedReader(new FileReader(new File("wipo_field.tsv")));
+            BufferedReader reader = new BufferedReader(new FileReader(new File("data/wipo_field.tsv")));
             reader.lines().parallel().forEach(line -> {
                 String[] fields = line.split("\t");
                 String wipo = fields[0];
@@ -41,7 +41,7 @@ public class WIPOHelper {
         }
 
         {
-            File file = new File("wipo.tsv");
+            File file = new File("data/wipo.tsv");
             BufferedReader reader = new BufferedReader(new FileReader(file));
             Map<String, String> patentToWIPOMap = Collections.synchronizedMap(new HashMap<>());
             reader.lines().parallel().forEach(line -> {

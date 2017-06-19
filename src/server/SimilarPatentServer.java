@@ -11,7 +11,7 @@ import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
-import similarity_models.cpc_vectors.CPCSimilarityFinder;
+import similarity_models.class_vectors.CPCSimilarityFinder;
 import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import dl4j_neural_nets.tools.MyPreprocessor;
 import j2html.tags.Tag;
@@ -189,6 +189,10 @@ public class SimilarPatentServer {
                 pool.execute(()->{
                     similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
                     similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                });
+                pool.execute(()->{
+                    similarityModelMap.put(Constants.WIPO_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
+                    similarityModelMap.put(Constants.WIPO_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
                 });
                 pool.shutdown();
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);

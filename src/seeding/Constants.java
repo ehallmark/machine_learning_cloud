@@ -23,6 +23,7 @@ public class Constants {
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";
 	public static final String SIM_RANK_MODEL = "simRankModel";
 	public static final String CPC_MODEL = "cpcModel";
+	public static final String WIPO_MODEL = "wipoModel";
 	public static final String TECHNOLOGY = "technologyValue";
 	public static final String ASSIGNEE_ENTITY_TYPE = "assigneeEntityTypeValue";
 	public static final String INVENTION_TITLE = "inventionTitleValue";

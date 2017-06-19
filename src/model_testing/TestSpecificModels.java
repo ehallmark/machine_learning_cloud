@@ -21,28 +21,32 @@ public class TestSpecificModels {
                 int testIdx=0;
                 int test = Integer.valueOf(arg);
                 if (test == (testIdx++)) {
-                    ClassificationAttr paragraphVectorTagger = SimilarityGatherTechTagger.getParagraphVectorModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
+                    ClassificationAttr tagger = SimilarityGatherTechTagger.getParagraphVectorModel();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Paragraph Vector Simple Average [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr paragraphVectorTagger = SimilarityGatherTechTagger.getCPCModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(paragraphVectorTagger);
+                    ClassificationAttr tagger = SimilarityGatherTechTagger.getCPCModel();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("CPC Similarity Vector Simple Average [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr svmTagger = GatherSVMClassifier.getParagraphVectorModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
+                    ClassificationAttr tagger = SimilarityGatherTechTagger.getWIPOMOdel();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
+                    testModel("WIPO Similarity Vector Simple Average [n=" + i + "]", scorer, testData, i);
+                } else if (test == (testIdx++)) {
+                    ClassificationAttr tagger = GatherSVMClassifier.getParagraphVectorModel();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather SVM P-Vector Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr svmTagger = GatherSVMClassifier.getCPCModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(svmTagger);
+                    ClassificationAttr tagger = GatherSVMClassifier.getCPCModel();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather SVM CPC Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr bayesTagger = NaiveGatherClassifier.get();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(bayesTagger);
+                    ClassificationAttr tagger = NaiveGatherClassifier.get();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather Bayesian CPC Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr defaultTagger = TechTaggerNormalizer.getDefaultTechTagger();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(defaultTagger);
+                    ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
+                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);
                 }
             }
