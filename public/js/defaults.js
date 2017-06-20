@@ -23,6 +23,13 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
+    $(".checkbox").on("click", function (e) {
+        var checkbox = $(this);
+        // do the confirmation thing here
+        e.preventDefault();
+        return false;
+    });
+
     $('.droppable.values').droppable({
         accept: '.draggable.values',
         drop: dropFunc
