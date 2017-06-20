@@ -677,10 +677,9 @@ public class SimilarPatentServer {
                                                                                         return option;
                                                                                     }).collect(Collectors.toList())
                                                                             )
-                                                                    ), br()),
+                                                                    ), br(),
                                                                     div().withClass("draggable").with(
                                                                             label("Sorted By"),select().withName(COMPARATOR_FIELD).with(
-                                                                            div().with(
                                                                                     valueModelMap.keySet().stream().map(key-> {
                                                                                         return option(humanAttributeFor(key)).withValue(key);
                                                                                     }).collect(Collectors.toList())
@@ -688,7 +687,7 @@ public class SimilarPatentServer {
                                                                     ),br(),
                                                                     div().withClass("draggable").with(
                                                                             label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
-                                                                    )
+                                                                    ),br()
                                                             ), br(),
                                                             div().withClass("droppable values").with(
                                                                     h4("Values to Apply")
