@@ -2,8 +2,13 @@ $(document).ready(function() {
     var dropFunc = function(event, ui) {
         var $draggable = $(ui.draggable);
         $draggable.detach().css({top: 0,left: 0}).appendTo(this);
+        var shouldShow = $(this).hasClass('target');
         $toggle = $draggable.find(".toggle");
-        $toggle.toggle();
+        if(shouldShow) {
+            $toggle.show();
+        } else {
+            $toggle.hide();
+        }
         var shouldCheck = $toggle.is(":visible");
         var $checkbox = $draggable.find(".checkbox")
         $checkbox.prop("checked", shouldCheck);

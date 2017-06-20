@@ -689,16 +689,16 @@ public class SimilarPatentServer {
                                                                             label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                                     ),br()
                                                             ), br(),
-                                                            div().withClass("droppable values").with(
+                                                            div().withClass("droppable values target").with(
                                                                     h4("Values to Apply")
                                                             ), br(),
-                                                            div().withClass("droppable attributes").with(
+                                                            div().withClass("droppable attributes target").with(
                                                                     h4("Attributes to Apply")
                                                             ), br(),
-                                                            div().withClass("droppable filters").with(
+                                                            div().withClass("droppable filters target ").with(
                                                                     h4("Filters to Apply")
                                                             ), br(),
-                                                            div().withClass("droppable charts").with(
+                                                            div().withClass("droppable charts target").with(
                                                                     h4("Charts to Apply")
                                                             ), br(),
                                                             button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
