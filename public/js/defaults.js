@@ -8,7 +8,7 @@ var dropFunc = function(event, ui) {
 
 $('.draggable').draggable();
 
-#('.droppable.filters').droppable({
+$('.droppable.filters').droppable({
     accept: '.draggable.filters',
     drop: dropFunc
 });
