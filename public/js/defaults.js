@@ -23,5 +23,10 @@ $(document).ready(function() {
         accept: '.draggable.attributes',
         drop: dropFunc
     });
-    }
+
+    $('.droppable.charts').droppable({
+        accept: '.draggable.charts',
+        drop: dropFunc
+    });
+
 });

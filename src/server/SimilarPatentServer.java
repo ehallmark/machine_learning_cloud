@@ -673,31 +673,29 @@ public class SimilarPatentServer {
                                                                     );
                                                                 });
                                                             }).collect(Collectors.toList())
-                                                    ),br()
-
-                                            ),
-                                            td().attr("style","width:33%; vertical-align: top;").with(
+                                                    ),br(),
+                                                    h4("Charts"),
+                                                    div().withClass("droppable charts").with(chartModelMap.entrySet().stream().map(e->{
+                                                        return div().withClass("draggable charts").with(
+                                                                label(humanAttributeFor(e.getKey())),
+                                                                input().withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                        );
+                                                    }).collect(Collectors.toList())),br()
+                                            ), td().attr("style","width:33%; vertical-align: top;").with(
                                                     form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
                                                             div().withClass("droppable values").with(
-                                                                    h4("Values to apply")
+                                                                    h4("Values to Apply")
                                                             ), br(),
                                                             div().withClass("droppable attributes").with(
-                                                                    h4("Attributes to apply")
+                                                                    h4("Attributes to Apply")
                                                             ), br(),
                                                             div().withClass("droppable filters").with(
                                                                     h4("Filters to Apply")
                                                             ), br(),
-                                                            h4("Select Charts"), div().with(chartModelMap.entrySet().stream().map(e->{
-                                                                String key = e.getKey();
-                                                                ChartAttribute chart = e.getValue();
-                                                                String id = "form-dropdown-"+key;
-                                                                EmptyTag checkbox = input().withType("checkbox").attr("onclick","$('#"+id+"').toggle();").withName(CHART_MODELS_ARRAY_FIELD).withValue(key);
-                                                                String display = "none;";
-                                                                return div().with(
-                                                                        label(humanAttributeFor(key)),
-                                                                        checkbox,
-                                                                        chart.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(chart.getOptionsTag()));
-                                                            }).collect(Collectors.toList())),br(),
+                                                            div().withClass("droppable charts").with(
+                                                                    h4("Charts to Apply")
+                                                            ), br(),
                                                             button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                     ),br(),br()
                                             )
