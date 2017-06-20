@@ -27,6 +27,7 @@ h4 {
 
  .target {
     float: right;
+    background-color: #E8E8E8;
  }
 
  .start {
@@ -45,6 +46,7 @@ h4 {
         border: 1px #000000 solid;
         padding: 15px 32px;
         text-align: center;
+        background-color: white;
         text-decoration: none;
         display: inline-block;
         margin: 4px 2px;
