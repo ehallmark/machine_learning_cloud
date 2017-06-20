@@ -634,7 +634,7 @@ public class SimilarPatentServer {
                                                                 table().with(
                                                                         tbody().with(
                                                                                 tr().attr("style","vertical-align: top;").with(
-                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                        td().attr("style","width: 33%;").withClass("draggable").with(
                                                                                                 label("Result Type"),br(),
                                                                                                 select().withName(SEARCH_TYPE_FIELD).with(
                                                                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -644,14 +644,14 @@ public class SimilarPatentServer {
                                                                                                         }).collect(Collectors.toList())
                                                                                                 )
                                                                                         ),
-                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                        td().attr("style","width: 33%;").withClass("draggable").with(
                                                                                                 label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                                                             return option(humanAttributeFor(key)).withValue(key);
                                                                                                         }).collect(Collectors.toList())
                                                                                                 )
                                                                                         ),
-                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                        td().attr("style","width: 33%;").withClass("draggable").with(
                                                                                                 label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                                                         )
                                                                                 )
@@ -659,7 +659,7 @@ public class SimilarPatentServer {
                                                                 )
 
 
-                                                        )
+                                                        ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 50%;").with(
@@ -717,7 +717,7 @@ public class SimilarPatentServer {
 
                                                         ),br()
                                                 ), td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable filters target ").with(
+                                                        div().withClass("droppable filters target").with(
                                                                 h4("Filters to Apply")
                                                         ), br()
                                                 )

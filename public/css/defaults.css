@@ -1,6 +1,3 @@
- .th, .td {
-    padding: 15px;
- }
 
  .toggle {
     display: none;
@@ -18,4 +15,9 @@
     border: 1px #dadada solid;
     padding: 10px;
     border-radius: 6px;
+ }
+
+ table {
+    lable-layout: fixed;
+    width: 100%;
  }
