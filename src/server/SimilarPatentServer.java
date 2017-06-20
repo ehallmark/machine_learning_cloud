@@ -735,10 +735,13 @@ public class SimilarPatentServer {
                                                                 h4("Charts to Apply")
                                                         ), br()
                                                 )
+                                        ), tr().with(
+                                                td().attr("style","width: 100%;").with(
+                                                        button("Generate").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                )
                                         )
                                 )
-                        ), br(),
-                        button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                        ), br()
 
                 ), hr(), div().withId("results")
         );

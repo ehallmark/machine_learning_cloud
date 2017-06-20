@@ -21,7 +21,7 @@ public class SearchScopeFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                h4("Search Within"),
+                h5("Search Within"),
                 label("Custom Patent List (1 per line)"),br(),
                 textarea().withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD),br(),
                 label("Custom Assignee List (1 per line)"),br(),

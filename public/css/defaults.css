@@ -29,6 +29,21 @@
     float: left;
  }
 
+ .deactivated {
+    background-color: #E8E8E8;
+ }
+
  input[type='checkbox'] {
     float: right;
+ }
+
+ .button {
+        border: 1px #000000 solid;
+        padding: 15px 32px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        margin: 4px 2px;
+        border-radius: 6px;
+        cursor: pointer;
  }
