@@ -33,7 +33,7 @@ public class SimilarityThresholdFilter extends AbstractFilter {
 
     @Override
     public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : (double)item.getData(Constants.SIMILARITY)>threshold;
+        return threshold==null ? true : item.getSimilarity()>threshold;
     }
 
     @Override

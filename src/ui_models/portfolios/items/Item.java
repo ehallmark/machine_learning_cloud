@@ -1,10 +1,8 @@
 package ui_models.portfolios.items;
 
-import lombok.Getter;
-import lombok.Setter;
-import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
-import ui_models.portfolios.PortfolioList;
+import ui_models.attributes.value.ValueMapNormalizer;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -12,28 +10,36 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 11/19/16.
  */
 public class Item implements Comparable<Item> {
-    @Getter
-    protected String name;
-    @Getter @Setter
-    protected double similarity;
     protected Map<String,Object> dataMap = new HashMap<>();
+    protected Double similarityCache;
 
     public static final Comparator<Item> similarityComparator() { return (o1, o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
 
     public Item(String name) {
-        this.name=name;
+        setName(name);
     }
 
     public Item clone() {
-        Item item = new Item(name);
+        Item item = new Item(getName());
         item.dataMap=new HashMap<>(dataMap);
-        item.similarity=similarity;
         return item;
     }
 
-    public void init() {
-        addData(Constants.SIMILARITY,getSimilarity()*100d);
-        addData(Constants.NAME,getName());
+    public void setSimilarity(double sim) {
+        addData(Constants.SIMILARITY, sim*100d);
+    }
+
+    public double getSimilarity() {
+        if(similarityCache==null) similarityCache = (Double) dataMap.getOrDefault(Constants.SIMILARITY,null);
+        return similarityCache == null ? ValueMapNormalizer.DEFAULT_START : similarityCache;
+    }
+
+    public void setName(String name) {
+        addData(Constants.NAME,name);
+    }
+
+    public String getName() {
+        return (String) dataMap.getOrDefault(Constants.NAME, null);
     }
 
     public List<Object> getDataAsRow(List<String> attributes) {
@@ -50,6 +56,6 @@ public class Item implements Comparable<Item> {
 
     @Override
     public int compareTo(Item o) {
-        return Double.compare(similarity, o.similarity);
+        return Double.compare(getSimilarity(), o.getSimilarity());
     }
 }
