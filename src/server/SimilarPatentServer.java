@@ -184,7 +184,7 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            boolean test = true;
+            boolean test = false;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -425,6 +425,9 @@ public class SimilarPatentServer {
                 System.out.println("Applying value models...");
                 portfolioList.applyAttributes(evaluators.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(valueModels);
+                if(!comparator.equals(Constants.SIMILARITY) && valueModels.contains(Constants.SIMILARITY)) {
+                    portfolioList.setItemList(similarityEngine.runModel(portfolioList,limit).getItemList());
+                }
 
                 List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
                 charts.forEach(chart->chart.extractRelevantInformationFromParams(req));

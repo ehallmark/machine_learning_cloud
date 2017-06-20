@@ -1,8 +1,10 @@
 package ui_models.portfolios;
 
 import lombok.Getter;
+import lombok.Setter;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.filters.AbstractFilter;
+import ui_models.portfolios.attributes.DoNothing;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -12,7 +14,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/1/16.
  */
 public class PortfolioList implements Comparable<PortfolioList> {
-    @Getter
+    @Getter @Setter
     private List<Item> itemList;
     private double avgSimilarity;
     public enum Type { patents, assignees }
@@ -37,8 +39,8 @@ public class PortfolioList implements Comparable<PortfolioList> {
     public void applyAttributes(Collection<? extends AbstractAttribute> attributes) {
         itemList.forEach(item->{
             attributes.forEach(attribute->{
+                if(!(attribute instanceof DoNothing))
                 item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
-
             });
         });
     }

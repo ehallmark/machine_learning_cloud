@@ -19,17 +19,18 @@ import static server.SimilarPatentServer.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class SimilarityEngine{
+public class SimilarityEngine {
     private AbstractSimilarityModel firstFinder;
 
     private AbstractSimilarityModel secondFinder;
     @Getter
     private PortfolioList portfolioList;
+    private Collection<AbstractFilter> preFilters;
 
     public void extractRelevantInformationFromParams(Request req) {
         System.out.println("Collecting inputs to search in...");
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
+        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
         String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
         List<String> technologies = SimilarPatentServer.extractArray(req, SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
@@ -66,21 +67,19 @@ public class SimilarityEngine{
             throw new RuntimeException("Unable to find any results to search in.");
         }
 
-        List<String> valueModels = extractArray(req, VALUE_MODELS_ARRAY_FIELD);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-
-        if (secondFinder == null || secondFinder.numItems() == 0 || (!comparator.equals(Constants.SIMILARITY)&&!valueModels.contains(Constants.SIMILARITY))) {
+        if (secondFinder == null || secondFinder.numItems() == 0 || !comparator.equals(Constants.SIMILARITY)) {
             portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
         } else {
             int limit = extractInt(req, LIMIT_FIELD, 10);
-            if(comparator.equals(Constants.SIMILARITY)) {
-                // run limit
-                portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
-            } else {
-                portfolioList = runPatentFinderModel(firstFinder, secondFinder, firstFinder.numItems(), preFilters);
-            }
+            // run limit
+            portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
         }
 
+    }
+
+    public PortfolioList runModel(PortfolioList portfolioList, int limit) {
+        return runPatentFinderModel(firstFinder.duplicateWithScope(portfolioList.getTokens()), secondFinder, limit, preFilters);
     }
 
 }
