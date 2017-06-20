@@ -10,10 +10,12 @@
     border: 1px #dadada solid;
     margin: 10px;
     padding: 10px;
-    background-color: 'light gray';
+    background-color: #FF0000;
+    border-radius: 4px;
  }
 
  .draggable {
     border: 1px #dadada solid;
     padding: 10px;
+    border-radius: 6px;
  }
