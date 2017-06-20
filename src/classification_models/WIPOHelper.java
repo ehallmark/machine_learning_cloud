@@ -88,7 +88,7 @@ public class WIPOHelper {
                 String wipo = fields[1];
                 if(definitionMap.containsKey(wipo)) {
                     try {
-                        if(Integer.valueOf(patent) > 6800000) {
+                        if(Integer.valueOf(patent) > 6000000) {
                             //System.out.println(patent + ": " + wipo + " -> " + definitionMap.get(wipo));
                             patentToWIPOMap.put(patent, wipo);
                         }
