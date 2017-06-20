@@ -33,6 +33,7 @@ public class Constants {
 	public static final String PIE_CHART = "pieChart";
 	public static final String HISTOGRAM = "histogram";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
+	public static final String SEARCH_SCOPE_FILTER = "searchScopeFilter";
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 
 	public static final String DATA_FOLDER = "data/";

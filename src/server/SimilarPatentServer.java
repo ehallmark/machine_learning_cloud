@@ -114,6 +114,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
+            humanAttrToJavaAttrMap.put("Search Scope", Constants.SEARCH_SCOPE_FILTER);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
 
             // inverted version to get human readables back
@@ -173,6 +174,7 @@ public class SimilarPatentServer {
                 postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+                postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
             }catch(Exception e) {
                 e.printStackTrace();
@@ -682,13 +684,7 @@ public class SimilarPatentServer {
                                                                     h4("Attributes to apply")
                                                             ), br(),
                                                             div().withClass("droppable filters").with(
-                                                                    h4("Filters to Apply"),
-                                                                    h4("Search Within"),
-                                                                    h5("(Leave Blank To Search Full Database)"),
-                                                                    label("Custom Patent List (1 per line)"),br(),
-                                                                    textarea().withName(PATENTS_TO_SEARCH_IN_FIELD),br(),
-                                                                    label("Custom Assignee List (1 per line)"),br(),
-                                                                    textarea().withName(ASSIGNEES_TO_SEARCH_IN_FIELD)
+                                                                    h4("Filters to Apply")
                                                             ), br(),
                                                             h4("Select Charts"), div().with(chartModelMap.entrySet().stream().map(e->{
                                                                 String key = e.getKey();

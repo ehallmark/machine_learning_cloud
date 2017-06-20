@@ -13,12 +13,12 @@ $('.draggable').draggable();
     drop: dropFunc
 });
 
-#('.droppable.values').droppable({
+$('.droppable.values').droppable({
     accept: '.draggable.values',
     drop: dropFunc
 });
 
-#('.droppable.attributes').droppable({
+$('.droppable.attributes').droppable({
     accept: '.draggable.attributes',
     drop: dropFunc
 });
