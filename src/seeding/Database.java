@@ -5,7 +5,9 @@ import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 
 import lombok.Getter;
+import similarity_models.class_vectors.CPCSimilarityFinder;
 import tools.AssigneeTrimmer;
+import ui_models.attributes.classification.TechTaggerNormalizer;
 
 import java.io.*;
 import java.sql.*;
@@ -136,6 +138,21 @@ public class Database {
 			}
 		}
 		return japanese;
+	}
+
+	public static void preLoad() {
+		getAssignees();
+		getClassCodeToClassTitleMap();
+		getPatentToClassificationMap();
+		getPatentToLatestAssigneeMap();
+		getPatentToOriginalAssigneeMap();
+		getCopyOfAllPatents();
+		getLapsedPatentSet();
+		getExpiredPatentSet();
+		getJapaneseCompanies();
+		getCompDBAssigneeToAssetsPurchasedCountMap();
+		getCompDBAssigneeToAssetsSoldCountMap();
+		TechTaggerNormalizer.getDefaultTechTagger();
 	}
 
 	public synchronized static void initializeDatabase() {
