@@ -1,5 +1,9 @@
 var dropFunc = function(event, ui) {
-    $(ui.draggable).detach().css({top: 0,left: 0}).appendTo(this);
+    var $draggable = $(ui.draggable);
+    $draggable.detach().css({top: 0,left: 0}).appendTo(this);
+    $draggable.find(".toggle").toggle();
+    var $checkbox = $draggable.find(".checkbox")
+    checkbox.prop("checked", !checkBoxes.prop("checked"));
 };
 
 $('.draggable').draggable();

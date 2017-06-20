@@ -1,3 +1,18 @@
  .th, .td {
     padding: 15px;
  }
+
+ .toggle {
+    display: none;
+ }
+
+ .droppable {
+    border: 1px #dadada solid;
+    padding: 10px;
+    background-color: light gray;
+ }
+
+ .draggable {
+    border: 1px #dadada solid;
+    padding: 10px;
+ }
