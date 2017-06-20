@@ -2,9 +2,11 @@ $(document).ready(function() {
     var dropFunc = function(event, ui) {
         var $draggable = $(ui.draggable);
         $draggable.detach().css({top: 0,left: 0}).appendTo(this);
-        $draggable.find(".toggle").toggle();
+        $toggle = $draggable.find(".toggle");
+        $toggle.toggle();
+        var shouldCheck = $toggle.is(":visible");
         var $checkbox = $draggable.find(".checkbox")
-        $checkbox.prop("checked", !$checkbox.prop("checked"));
+        $checkbox.prop("checked", shouldCheck);
     };
 
     $('.draggable').draggable({

@@ -8,8 +8,9 @@
 
  .droppable {
     border: 1px #dadada solid;
+    margin: 10px;
     padding: 10px;
-    background-color: light gray;
+    background-color: 'light gray';
  }
 
  .draggable {
