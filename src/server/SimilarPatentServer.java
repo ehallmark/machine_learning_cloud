@@ -358,6 +358,7 @@ public class SimilarPatentServer {
                 System.out.println("Getting models...");
                 // Get Models to use
                 List<String> valueModels = extractArray(req, VALUE_MODELS_ARRAY_FIELD);
+                List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
                 List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
@@ -370,7 +371,9 @@ public class SimilarPatentServer {
                 System.out.println(" ... Filters");
                 // Get filters
                 List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
                 // Update filters based on params
+                preFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
                 postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
                 System.out.println(" ... Evaluators");
@@ -425,6 +428,10 @@ public class SimilarPatentServer {
                 charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                 System.out.println("Applying pre chart attributes...");
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
+
+                // reapply filters just in case
+                List<AbstractFilter> allFilters = Arrays.asList(preFilters,postFilters).stream().flatMap(list->list.stream()).collect(Collectors.toList());
+                portfolioList.applyFilters(allFilters);
 
                 List<AbstractChart> finishedCharts = new ArrayList<>();
                 // adding charts
