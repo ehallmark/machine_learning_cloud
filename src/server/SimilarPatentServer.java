@@ -807,8 +807,9 @@ public class SimilarPatentServer {
 
     public static void main(String[] args) throws Exception {
         //Database.setupSeedConn();
+        boolean preLoad = true;
         Database.initializeDatabase();
-        Database.preLoad();
+        if(preLoad)Database.preLoad();
         System.out.println("Starting to load base finder...");
         initialize();
         System.out.println("Finished loading base finder.");
