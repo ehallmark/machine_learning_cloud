@@ -695,13 +695,13 @@ public class SimilarPatentServer {
                                                                         label(humanAttributeFor(key)),
                                                                         checkbox,
                                                                         chart.getOptionsTag()==null? div():div().withId(id).attr("style","display: "+display).with(chart.getOptionsTag()));
-                                                            }).collect(Collectors.toList()))
+                                                            }).collect(Collectors.toList())),br(),
+                                                            button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                     ),br(),br()
                                             )
                                     )
                             )
                     ),
-                    button("Generate").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
                     hr(), div().withId("results")
         );
     }
