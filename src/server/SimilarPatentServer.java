@@ -681,8 +681,8 @@ public class SimilarPatentServer {
                                                         ), br()
                                                 )
                                         ),tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable attributes").with(
+                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                        div().attr("style","width: 50%;").withClass("droppable attributes").with(
                                                                 h4("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
@@ -693,15 +693,13 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),br()
-                                                ), td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable attributes target").with(
+                                                        ),div().attr("style","width: 50%;").withClass("droppable attributes target").with(
                                                                 h4("Attributes to Apply")
-                                                        ), br()
+                                                        ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable filters").with(
+                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                        div().attr("style","width: 50%;").withClass("droppable filters").with(
                                                                 h4("Available Filters"),
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
@@ -715,15 +713,13 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
 
-                                                        ),br()
-                                                ), td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable filters target").with(
+                                                        ), div().attr("style","width: 50%;").withClass("droppable filters target").with(
                                                                 h4("Filters to Apply")
                                                         ), br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable charts").with(
+                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                        div().attr("style","width: 50%;").withClass("droppable charts").with(
                                                                 h4("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
@@ -734,9 +730,7 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),br()
-                                                ), td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable charts target").with(
+                                                        ), div().attr("style","width: 50%;").withClass("droppable charts target").with(
                                                                 h4("Charts to Apply")
                                                         ), br()
                                                 )
