@@ -628,79 +628,109 @@ public class SimilarPatentServer {
                         table().attr("style","width: 100%").with(
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","width:33%; vertical-align: top;").with(
-                                                        h4("Values"),
-                                                        div().withClass("droppable values").with(valueModelMap.entrySet().stream().map(e-> {
-                                                            return div().withClass("draggable values").with(
-                                                                    label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                            );
-                                                        }).collect(Collectors.toList())),br(),
-                                                        h4("Attributes"),
-                                                        div().withClass("droppable attributes").with(attributesMap.entrySet().stream().map(e-> {
-                                                            return div().withClass("draggable attributes").with(
-                                                                    label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
-                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                            );
-                                                        }).collect(Collectors.toList())),br(),
-                                                        h4("Filters"),
+                                                td().attr("style","vertical-align: top; width: 100%;").with(
+                                                        div().attr("style","width: 100%").withClass("droppable options").with(
+                                                                h4("Main Options"),
+                                                                div().attr("style","width: 33%").withClass("draggable").with(
+                                                                        label("Result Type"),br(),
+                                                                        select().withName(SEARCH_TYPE_FIELD).with(
+                                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                                    return option;
+                                                                                }).collect(Collectors.toList())
+                                                                        )
+                                                                ),
+                                                                div().attr("style","width: 33%").withClass("draggable").with(
+                                                                        label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
+                                                                                valueModelMap.keySet().stream().map(key-> {
+                                                                                    return option(humanAttributeFor(key)).withValue(key);
+                                                                                }).collect(Collectors.toList())
+                                                                        )
+                                                                ),
+                                                                div().attr("style","width: 33%").withClass("draggable").with(
+                                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                                )
+                                                        ), br()
+                                                )
+                                        ), tr().attr("style","vertical-align: top;").with(
+                                                td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable values").with(
+                                                                h4("Values"),
+                                                                div().with(
+                                                                        valueModelMap.entrySet().stream().map(e-> {
+                                                                            return div().withClass("draggable values").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),br()
+                                                ), td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable values target").with(
+                                                                h4("Values to Apply")
+                                                        ), br()
+                                                )
+                                        ),tr().attr("style","vertical-align: top;").with(
+                                                td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable attributes").with(
+                                                                h4("Attributes"),
+                                                                div().with(
+                                                                        attributesMap.entrySet().stream().map(e-> {
+                                                                            return div().withClass("draggable attributes").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),br()
+                                                ), td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable attributes target").with(
+                                                                h4("Attributes to Apply")
+                                                        ), br()
+                                                )
+                                        ), tr().attr("style","vertical-align: top;").with(
+                                                td().attr("style","vertical-align: top;").with(
                                                         div().withClass("droppable filters").with(
-                                                                Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
-                                                                    return pair._1.entrySet().stream().map(e->{
-                                                                        return div().withClass("draggable filters").with(
-                                                                                label(humanAttributeFor(e.getKey())),
-                                                                                input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
-                                                                                div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                        );
-                                                                    });
-                                                                }).collect(Collectors.toList())
-                                                        ),br(),
-                                                        h4("Charts"),
-                                                        div().withClass("droppable charts").with(chartModelMap.entrySet().stream().map(e->{
-                                                            return div().withClass("draggable charts").with(
-                                                                    label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                            );
-                                                        }).collect(Collectors.toList())),br()
-                                                ), td().attr("style","width:33%; vertical-align: top;").with(
-                                                            div().withClass("droppable options").with(
-                                                                    h4("Main Options"),
-                                                                    div().withClass("draggable").with(
-                                                                            label("Result Type"),br(),
-                                                                            select().withName(SEARCH_TYPE_FIELD).with(
-                                                                                    Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                                        ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                                        if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                                        return option;
-                                                                                    }).collect(Collectors.toList())
-                                                                            )
-                                                                    ), br(),
-                                                                    div().withClass("draggable").with(
-                                                                            label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
-                                                                                    valueModelMap.keySet().stream().map(key-> {
-                                                                                        return option(humanAttributeFor(key)).withValue(key);
-                                                                                    }).collect(Collectors.toList())
-                                                                            )
-                                                                    ),br(),
-                                                                    div().withClass("draggable").with(
-                                                                            label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
-                                                                    ),br()
-                                                            ), br(),
-                                                            div().withClass("droppable values target").with(
-                                                                    h4("Values to Apply")
-                                                            ), br(),
-                                                            div().withClass("droppable attributes target").with(
-                                                                    h4("Attributes to Apply")
-                                                            ), br(),
-                                                            div().withClass("droppable filters target ").with(
-                                                                    h4("Filters to Apply")
-                                                            ), br(),
-                                                            div().withClass("droppable charts target").with(
-                                                                    h4("Charts to Apply")
-                                                            ), br()
+                                                                h4("Filters"),
+                                                                div().with(
+                                                                        Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
+                                                                            return pair._1.entrySet().stream().map(e->{
+                                                                                return div().withClass("draggable filters").with(
+                                                                                        label(humanAttributeFor(e.getKey())),
+                                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
+                                                                                        div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                                );
+                                                                            });
+                                                                        }).collect(Collectors.toList())
+                                                                )
+
+                                                        ),br()
+                                                ), td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable filters target ").with(
+                                                                h4("Filters to Apply")
+                                                        ), br()
+                                                )
+                                        ), tr().attr("style","vertical-align: top;").with(
+                                                td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable charts").with(
+                                                                h4("Charts"),
+                                                                div().with(
+                                                                        chartModelMap.entrySet().stream().map(e->{
+                                                                            return div().withClass("draggable charts").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),br()
+                                                ), td().attr("style","vertical-align: top;").with(
+                                                        div().withClass("droppable charts target").with(
+                                                                h4("Charts to Apply")
+                                                        ), br()
                                                 )
                                         )
                                 )
