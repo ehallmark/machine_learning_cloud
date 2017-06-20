@@ -656,7 +656,7 @@ public class SimilarPatentServer {
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top;").with(
                                                         div().withClass("droppable values").with(
-                                                                h4("Values"),
+                                                                h4("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
                                                                             return div().withClass("draggable values").with(
@@ -675,7 +675,7 @@ public class SimilarPatentServer {
                                         ),tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top;").with(
                                                         div().withClass("droppable attributes").with(
-                                                                h4("Attributes"),
+                                                                h4("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
                                                                             return div().withClass("draggable attributes").with(
@@ -694,7 +694,7 @@ public class SimilarPatentServer {
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top;").with(
                                                         div().withClass("droppable filters").with(
-                                                                h4("Filters"),
+                                                                h4("Available Filters"),
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
                                                                             return pair._1.entrySet().stream().map(e->{
@@ -716,7 +716,7 @@ public class SimilarPatentServer {
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top;").with(
                                                         div().withClass("droppable charts").with(
-                                                                h4("Charts"),
+                                                                h4("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
                                                                             return div().withClass("draggable charts").with(
