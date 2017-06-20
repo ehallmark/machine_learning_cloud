@@ -4,10 +4,12 @@ $(document).ready(function() {
         $draggable.detach().css({top: 0,left: 0}).appendTo(this);
         $draggable.find(".toggle").toggle();
         var $checkbox = $draggable.find(".checkbox")
-        checkbox.prop("checked", !checkBoxes.prop("checked"));
+        $checkbox.prop("checked", !$checkbox.prop("checked"));
     };
 
-    $('.draggable').draggable();
+    $('.draggable').draggable({
+        revert: true
+    });
 
     $('.droppable.filters').droppable({
         accept: '.draggable.filters',
