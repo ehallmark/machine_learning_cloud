@@ -444,7 +444,7 @@ public class SimilarPatentServer {
                         finishedCharts.isEmpty() ? div() : div().with(
                                 h4("Charts"),
                                 div().with(
-                                        charts.stream().map(c -> div().attr("style","margin-bottom: 20px;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        charts.stream().map(c -> div().withClass("chart").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         ),
                         portfolioList == null ? div() : div().with(

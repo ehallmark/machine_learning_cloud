@@ -66,3 +66,10 @@ label {
     border-radius: 6px;
     cursor: pointer;
  }
+
+ .chart {
+    border: 1px #000000 solid;
+    border-radius: 4px;
+    background-color: white;
+    margin-bottom: 20px;
+ }
