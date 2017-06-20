@@ -662,8 +662,8 @@ public class SimilarPatentServer {
                                                         ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable values").with(
+                                                td().attr("style","vertical-align: top; width: 100%;").with(
+                                                        div().attr("style","width: 50%;").withClass("droppable values").with(
                                                                 h4("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
@@ -674,14 +674,12 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),br()
-                                                ), td().attr("style","vertical-align: top; width: 50%;").with(
-                                                        div().withClass("droppable values target").with(
+                                                        ),div().attr("style","width: 50%;").withClass("droppable values target").with(
                                                                 h4("Values to Apply")
                                                         ), br()
                                                 )
                                         ),tr().attr("style","vertical-align: top;").with(
-                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 50%;").withClass("droppable attributes").with(
                                                                 h4("Available Attributes"),
                                                                 div().with(
@@ -698,7 +696,7 @@ public class SimilarPatentServer {
                                                         ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 50%;").withClass("droppable filters").with(
                                                                 h4("Available Filters"),
                                                                 div().with(
@@ -718,7 +716,7 @@ public class SimilarPatentServer {
                                                         ), br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
-                                                td().attr("colspan","3").attr("style","vertical-align: top; width: 100%;").with(
+                                                td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 50%;").withClass("droppable charts").with(
                                                                 h4("Available Charts"),
                                                                 div().with(
