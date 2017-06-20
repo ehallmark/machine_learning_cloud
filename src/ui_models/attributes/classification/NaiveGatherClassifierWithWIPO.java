@@ -122,9 +122,7 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         bayesianNet.connectNodes(wipoNode,techNode);
         bayesianNet.addFactorNode(null,cpcNode);
         bayesianNet.addFactorNode(null, wipoNode);
-        bayesianNet.addFactorNode(null, wipoNode,techNode);
-        bayesianNet.addFactorNode(null,techNode,cpcNode);
-
+        bayesianNet.addFactorNode(null, wipoNode,techNode,wipoNode);
 
         // learn
         bayesianNet.applyLearningAlgorithm(new BayesianLearningAlgorithm(bayesianNet,alpha),1);
@@ -157,9 +155,7 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         wipoFactor.reNormalize(new DivideByPartition());
 
         FactorNode condTechFactor = bayesianNet.findNode("Technology").getFactors().get(0);
-        FactorNode result = cpcFactor.multiply(condTechFactor).sumOut(new String[]{"CPC"});
-        result.reNormalize(new DivideByPartition());
-        result = result.multiply(wipoFactor).sumOut(new String[]{"WIPO"});
+        FactorNode result = cpcFactor.multiply(condTechFactor).multiply(wipoFactor).sumOut(new String[]{"CPC","WIPO"});
         result.reNormalize(new DivideByPartition());
 
         List<Pair<String,Double>> values = new ArrayList<>();
