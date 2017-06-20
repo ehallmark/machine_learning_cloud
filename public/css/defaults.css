@@ -4,15 +4,14 @@
  }
 
  .droppable {
-    border: 1px #dadada solid;
+    border: 1px #000000 solid;
     margin: 10px;
     padding: 10px;
-    background-color: #d3d3d3;
     border-radius: 4px;
  }
 
  .draggable {
-    border: 1px #dadada solid;
+    border: 1px #000000 solid;
     padding: 10px;
     border-radius: 6px;
  }
