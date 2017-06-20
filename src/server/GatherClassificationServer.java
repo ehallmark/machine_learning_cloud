@@ -53,7 +53,8 @@ public class GatherClassificationServer {
 
         List<Pair<String,Double>> topTags = new ArrayList<>(function.apply(patents,tagLimit));
 
-        topTags.add(new Pair<>("Design",new Double(patents.stream().filter(p->p.startsWith("D")).count())));
+        long designCount = patents.stream().filter(p->p.startsWith("D")).count();
+        if(designCount>0) topTags.add(new Pair<>("Design",new Double(designCount)/patents.size()));
 
         topTags = topTags.stream().sorted((p1,p2)->Double.compare(p2.getSecond(),p1.getSecond())).limit(tagLimit).collect(Collectors.toList());
 
