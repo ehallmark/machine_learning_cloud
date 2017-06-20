@@ -628,24 +628,6 @@ public class SimilarPatentServer {
                             tbody().with(
                                     tr().attr("style","vertical-align: top;").with(
                                             td().attr("style","width:33%; vertical-align: top;").with(
-                                                    h4("Main Options"),
-                                                    label("Result Type"),br(),
-                                                    select().withName(SEARCH_TYPE_FIELD).with(
-                                                            Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                return option;
-                                                            }).collect(Collectors.toList())
-                                                    ),br(),
-                                                    label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
-                                                            option("Similarity").withValue(Constants.SIMILARITY).attr("selected","selected"),
-                                                            div().with(
-                                                                    valueModelMap.keySet().stream().map(key-> {
-                                                                        return option(humanAttributeFor(key)).withValue(key);
-                                                                    }).collect(Collectors.toList())
-                                                            )
-                                                    ),br(),
-                                                    label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD),br(),br(),
                                                     h4("Values"),
                                                     div().withClass("droppable values").with(valueModelMap.entrySet().stream().map(e-> {
                                                         return div().withClass("draggable values").with(
@@ -684,6 +666,30 @@ public class SimilarPatentServer {
                                                     }).collect(Collectors.toList())),br()
                                             ), td().attr("style","width:33%; vertical-align: top;").with(
                                                     form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
+                                                            div().withClass("droppable options").with(
+                                                                    h4("Main Options"),
+                                                                    div().withClass("draggable").with(
+                                                                            label("Result Type"),
+                                                                            select().withName(SEARCH_TYPE_FIELD).with(
+                                                                                    Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                                        ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                                        if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                                        return option;
+                                                                                    }).collect(Collectors.toList())
+                                                                            )
+                                                                    ), br()),
+                                                                    div().withClass("draggable").with(
+                                                                            label("Sorted By"),select().withName(COMPARATOR_FIELD).with(
+                                                                            div().with(
+                                                                                    valueModelMap.keySet().stream().map(key-> {
+                                                                                        return option(humanAttributeFor(key)).withValue(key);
+                                                                                    }).collect(Collectors.toList())
+                                                                            )
+                                                                    ),br(),
+                                                                    div().withClass("draggable").with(
+                                                                            label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                                    )
+                                                            ), br(),
                                                             div().withClass("droppable values").with(
                                                                     h4("Values to Apply")
                                                             ), br(),

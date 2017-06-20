@@ -33,11 +33,9 @@ public class AbstractHistogramChart implements ChartAttribute {
     @Override
     public Tag getOptionsTag() {
         return select().withName(Constants.HISTOGRAM).with(
-                option("Similarity").withValue(Constants.SIMILARITY),div().with(
-                        SimilarPatentServer.valueModelMap.keySet().stream().map(key->{
-                            return option(SimilarPatentServer.humanAttributeFor(key)).withValue(key);
-                        }).collect(Collectors.toList())
-                )
+                SimilarPatentServer.valueModelMap.keySet().stream().map(key->{
+                    return option(SimilarPatentServer.humanAttributeFor(key)).withValue(key);
+                }).collect(Collectors.toList())
         );
     }
 
