@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
+import seeding.Database;
 import server.tools.SimpleAjaxMessage;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import spark.Request;
@@ -29,7 +30,7 @@ public class GatherClassificationServer {
         get("/predict_patents", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
         post("/predict_patents", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
         post("/predict_wipo", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> wipoHelper(patents, tagLimit)));
-        post("/predict_wipo", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> wipoHelper(patents, tagLimit)));
+        get("/predict_wipo", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> wipoHelper(patents, tagLimit)));
 
 
     }
@@ -67,6 +68,7 @@ public class GatherClassificationServer {
 
     public static void main(String[] args) throws Exception {
         port(4567);
+        Database.initializeDatabase();
         StartServer();
     }
 
