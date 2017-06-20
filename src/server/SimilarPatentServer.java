@@ -184,21 +184,24 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
+            boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
                     similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
                     similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
                 });
-                pool.execute(()->similarityModelMap.put(Constants.SIM_RANK_MODEL+"_patents", new SimRankSimilarityModel(Database.getValuablePatents(),"** SimRank Model **")));
-                pool.execute(()->{
-                    similarityModelMap.put(Constants.CPC_MODEL+"_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
-                    similarityModelMap.put(Constants.CPC_MODEL+"_assignees",new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
-                });
-                pool.execute(()->{
-                    similarityModelMap.put(Constants.WIPO_MODEL+"_patents", new WIPOSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
-                    similarityModelMap.put(Constants.WIPO_MODEL+"_assignees",new WIPOSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
-                });
+                if(!test) {
+                    pool.execute(() -> similarityModelMap.put(Constants.SIM_RANK_MODEL + "_patents", new SimRankSimilarityModel(Database.getValuablePatents(), "** SimRank Model **")));
+                    pool.execute(() -> {
+                        similarityModelMap.put(Constants.CPC_MODEL + "_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
+                        similarityModelMap.put(Constants.CPC_MODEL + "_assignees", new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                    });
+                    pool.execute(() -> {
+                        similarityModelMap.put(Constants.WIPO_MODEL + "_patents", new WIPOSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
+                        similarityModelMap.put(Constants.WIPO_MODEL + "_assignees", new WIPOSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
+                    });
+                }
                 pool.shutdown();
                 pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
             } catch (Exception e) {
@@ -254,8 +257,6 @@ public class SimilarPatentServer {
         } else {
             System.out.println("HOSTING ASSETS AT URL: "+path);
             get(path,(request, response) -> {
-                response.type("text/javascript");
-
                 String pathToFile = "public"+path;
                 File f = new File(pathToFile);
 
@@ -647,7 +648,7 @@ public class SimilarPatentServer {
                                                     label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD),br(),br(),
                                                     h4("Values"),
                                                     div().withClass("droppable values").with(valueModelMap.entrySet().stream().map(e-> {
-                                                        return div().withClass("draggable").with(
+                                                        return div().withClass("draggable values").with(
                                                                 label(humanAttributeFor(e.getKey())),
                                                                 input().withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                 div().withClass("toggle").with(e.getValue().getOptionsTag())
