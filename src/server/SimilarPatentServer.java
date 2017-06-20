@@ -630,7 +630,7 @@ public class SimilarPatentServer {
                                         tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 100%").withClass("droppable options").with(
-                                                                h4("Main Options"),
+                                                                h4("Search Options"),
                                                                 div().attr("style","width: 33%").withClass("draggable").with(
                                                                         label("Result Type"),br(),
                                                                         select().withName(SEARCH_TYPE_FIELD).with(
