@@ -1,12 +1,16 @@
 package ui_models.engines;
 
+import j2html.tags.Tag;
 import lombok.Getter;
 import seeding.Constants;
 import seeding.Database;
 import server.SimilarPatentServer;
 import similarity_models.AbstractSimilarityModel;
 import spark.Request;
+import ui_models.attributes.AbstractAttribute;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
+import ui_models.attributes.value.ValueAttr;
+import ui_models.attributes.value.ValueMapNormalizer;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
@@ -14,18 +18,30 @@ import ui_models.portfolios.items.Item;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.br;
+import static j2html.TagCreator.label;
 import static server.SimilarPatentServer.*;
 
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class SimilarityEngine {
+public class SimilarityEngine extends ValueAttr {
     private AbstractSimilarityModel firstFinder;
 
     private AbstractSimilarityModel secondFinder;
     @Getter
     private PortfolioList portfolioList;
     private Collection<AbstractFilter> preFilters;
+    private boolean wasEvaluated = false;
+
+    public SimilarityEngine() {
+        super(ValueMapNormalizer.DistributionType.None, Constants.SIMILARITY);
+    }
+
+    public boolean wasEvaluated() {
+        return wasEvaluated;
+    }
 
     public void extractRelevantInformationFromParams(Request req) {
         System.out.println("Collecting inputs to search in...");
@@ -70,16 +86,52 @@ public class SimilarityEngine {
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         if (secondFinder == null || secondFinder.numItems() == 0 || !comparator.equals(Constants.SIMILARITY)) {
             portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
+            wasEvaluated = false;
         } else {
             int limit = extractInt(req, LIMIT_FIELD, 10);
             // run limit
             portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
+            wasEvaluated = true;
         }
 
     }
 
-    public PortfolioList runModel(PortfolioList portfolioList, int limit) {
-        return runPatentFinderModel(firstFinder.duplicateWithScope(portfolioList.getTokens()), secondFinder, limit, preFilters);
+    @Override
+    public double evaluate(String item) {
+        try {
+            return runPatentFinderModel(firstFinder.duplicateWithScope(Arrays.asList(item)), secondFinder, 1, preFilters)
+                    .getItemList().get(0).getSimilarity() * 100d;
+        } catch(Exception e) {
+            return 0d;
+        }
     }
 
+    @Override
+    protected List<Map<String, Double>> loadModels() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Double attributesFor(Collection<String> portfolio, int limit) {
+        return evaluate(portfolio.stream().findAny().get());
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div().with(
+                h5("Similarity Model"),select().withName(SIMILARITY_MODEL_FIELD).with(
+                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
+                        option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model (patents only)"),
+                        option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
+                        option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
+                ),br(),
+                h5("Search For"),
+                label("Patents (1 per line)"),br(),
+                textarea().withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD), br(),
+                label("Assignees (1 per line)"),br(),
+                textarea().withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
+                label("Gather Technology"),br(),
+                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD)
+        );
+    }
 }

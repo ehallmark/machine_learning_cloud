@@ -23,7 +23,7 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").withName(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER)
+                input().withType("number").withValue("100").withName(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER)
         );
     }
 

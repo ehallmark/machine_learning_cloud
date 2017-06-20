@@ -154,7 +154,7 @@ public class SimilarPatentServer {
                 valueModelMap.put(Constants.COMPDB_ASSETS_SOLD_VALUE, new CompDBAssetsSoldEvaluator());
                 valueModelMap.put(Constants.LARGE_PORTFOLIO_VALUE, new PortfolioSizeEvaluator());
                 valueModelMap.put(Constants.SMALL_PORTFOLIO_VALUE, new SmallPortfolioSizeEvaluator());
-                valueModelMap.put(Constants.SIMILARITY, new DummySimilarityEvaluator());
+                valueModelMap.put(Constants.SIMILARITY, similarityEngine);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -380,7 +380,7 @@ public class SimilarPatentServer {
                 Set<String> appliedAttributes = new HashSet<>();
                 similarityEngine.extractRelevantInformationFromParams(req);
                 PortfolioList portfolioList = similarityEngine.getPortfolioList();
-                appliedAttributes.add(Constants.SIMILARITY);
+                if(similarityEngine.wasEvaluated()) appliedAttributes.add(Constants.SIMILARITY);
 
                 // handle comparator attributes and initialization of portfolio
                 if (!appliedAttributes.contains(comparator)) {
@@ -388,19 +388,14 @@ public class SimilarPatentServer {
                     List<AbstractAttribute> attrList = new ArrayList<>();
                     if (attributesMap.containsKey(comparator)) {
                         AbstractAttribute attr = attributesMap.get(comparator);
-                        if (!(attr instanceof DoNothing)) {
-                            attrList.add(attr);
-                        }
+                        attrList.add(attr);
                     } else if (valueModelMap.containsKey(comparator)) {
                         AbstractAttribute attr = valueModelMap.get(comparator);
-                        if (!(attr instanceof DoNothing)) {
-                            attrList.add(attr);
-                        }
+                        attrList.add(attr);
                     }
                     if(attrList.size()>0)portfolioList.applyAttributes(attrList);
                 }
                 portfolioList.init(comparator, limit);
-
 
                 System.out.println("Applying necessary prerequisite attributes for post filters...");
                 // Add necessary attributes for post filters
@@ -425,10 +420,6 @@ public class SimilarPatentServer {
                 System.out.println("Applying value models...");
                 portfolioList.applyAttributes(evaluators.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(valueModels);
-                if(!comparator.equals(Constants.SIMILARITY) && valueModels.contains(Constants.SIMILARITY)) {
-                    portfolioList.setItemList(similarityEngine.runModel(portfolioList,limit).getItemList());
-                    portfolioList.init(comparator, limit);
-                }
 
                 List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
                 charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
@@ -447,7 +438,7 @@ public class SimilarPatentServer {
                         finishedCharts.isEmpty() ? div() : div().with(
                                 h4("Charts"),
                                 div().with(
-                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        charts.stream().map(c -> div().attr("style","margin-bottom: 20px;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 )
                         ),
                         portfolioList == null ? div() : div().with(

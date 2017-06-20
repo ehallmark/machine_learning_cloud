@@ -21,7 +21,7 @@ public class ValueThresholdFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").attr("step","0.1").withName(Constants.VALUE_THRESHOLD_FILTER)
+                input().withType("number").withValue("0").withName(Constants.VALUE_THRESHOLD_FILTER)
         );
     }
 

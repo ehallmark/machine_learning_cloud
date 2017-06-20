@@ -6,6 +6,9 @@ import spark.QueryParamsMap;
 import spark.Request;
 import ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
+import java.util.Collection;
+
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
 
@@ -19,7 +22,7 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").attr("step","0.1").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
+                input().withType("number").withValue("0").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
         );
     }
 
@@ -30,7 +33,12 @@ public class SimilarityThresholdFilter extends AbstractFilter {
 
     @Override
     public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : item.getSimilarity()>threshold;
+        return threshold==null ? true : (double)item.getData(Constants.SIMILARITY)>threshold;
+    }
+
+    @Override
+    public Collection<String> getPrerequisites() {
+        return Arrays.asList(Constants.SIMILARITY);
     }
 
     @Override
