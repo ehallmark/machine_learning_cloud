@@ -32,6 +32,11 @@ table {
 
 .start {
     float: left;
+    background-color: white;
+}
+
+body {
+    background-color: #F8F8F8;
 }
 
 .target .draggable {
