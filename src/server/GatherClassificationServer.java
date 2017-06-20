@@ -36,7 +36,7 @@ public class GatherClassificationServer {
     }
 
     private static List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
-        return patents.stream().map(patent->wipoTagger.attributesFor(Arrays.asList(patent),limit))
+        return patents.stream().map(patent->patent.startsWith("D")?"Design":wipoTagger.attributesFor(Arrays.asList(patent),limit))
                 .filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting())).entrySet().stream()
                 .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit).map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
     }
