@@ -631,27 +631,35 @@ public class SimilarPatentServer {
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 100%").withClass("droppable options").with(
                                                                 h4("Search Options"),
-                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
-                                                                        label("Result Type"),br(),
-                                                                        select().withName(SEARCH_TYPE_FIELD).with(
-                                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                                    return option;
-                                                                                }).collect(Collectors.toList())
+                                                                table().with(
+                                                                        tbody().with(
+                                                                                tr().attr("style","vertical-align: top;").with(
+                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                                label("Result Type"),br(),
+                                                                                                select().withName(SEARCH_TYPE_FIELD).with(
+                                                                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                                                            ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                                                            return option;
+                                                                                                        }).collect(Collectors.toList())
+                                                                                                )
+                                                                                        ),
+                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                                label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
+                                                                                                        valueModelMap.keySet().stream().map(key-> {
+                                                                                                            return option(humanAttributeFor(key)).withValue(key);
+                                                                                                        }).collect(Collectors.toList())
+                                                                                                )
+                                                                                        ),
+                                                                                        div().attr("style","width: 33%;").withClass("draggable").with(
+                                                                                                label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                                                        )
+                                                                                )
                                                                         )
-                                                                ),
-                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
-                                                                        label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
-                                                                                valueModelMap.keySet().stream().map(key-> {
-                                                                                    return option(humanAttributeFor(key)).withValue(key);
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),
-                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
-                                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                                 )
-                                                        ), br()
+
+
+                                                        )
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 50%;").with(
