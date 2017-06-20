@@ -26,6 +26,7 @@ public class Item implements Comparable<Item> {
     }
 
     public void setSimilarity(double sim) {
+        this.similarityCache=sim;
         addData(Constants.SIMILARITY, sim*100d);
     }
 
