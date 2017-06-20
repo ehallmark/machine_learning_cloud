@@ -9,6 +9,7 @@ import spark.Request;
 import spark.Response;
 import ui_models.attributes.classification.ClassificationAttr;
 import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.attributes.classification.WIPOTechnologyClassifier;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.attributes.WIPOClassificationAttribute;
 import ui_models.portfolios.items.Item;
@@ -24,21 +25,12 @@ import static spark.Spark.*;
  */
 public class GatherClassificationServer {
     private static ClassificationAttr techTagger = TechTaggerNormalizer.getDefaultTechTagger();
-    private static WIPOClassificationAttribute wipoTagger = new WIPOClassificationAttribute();
-    public static void StartServer() throws Exception{
-
-        get("/predict_patents", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
-        post("/predict_patents", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
-        post("/predict_wipo", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> wipoHelper(patents, tagLimit)));
-        get("/predict_wipo", (req,res) ->handleRequest( req, res, (patents,tagLimit) -> wipoHelper(patents, tagLimit)));
-
-
-    }
-
-    private static List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
-        return patents.stream().map(patent->patent.startsWith("D")?"Design":wipoTagger.attributesFor(Arrays.asList(patent),limit))
-                .filter(tech->tech!=null).collect(Collectors.groupingBy(tech->tech,Collectors.counting())).entrySet().stream()
-                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit).map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
+    private static ClassificationAttr wipoTagger = new WIPOTechnologyClassifier();
+    public static void StartServer() throws Exception {
+        get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
+        post("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
+        post("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
+        get("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
     }
 
 
@@ -58,7 +50,12 @@ public class GatherClassificationServer {
 
         // make sure patents exist
         // run model
-        List<Pair<String,Double>> topTags = function.apply(patents,tagLimit);
+
+        List<Pair<String,Double>> topTags = new ArrayList<>(function.apply(patents,tagLimit));
+
+        topTags.add(new Pair<>("Design",new Double(patents.stream().filter(p->p.startsWith("D")).count())));
+
+        topTags = topTags.stream().sorted((p1,p2)->Double.compare(p2.getSecond(),p1.getSecond())).limit(tagLimit).collect(Collectors.toList());
 
         // return results
         if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));

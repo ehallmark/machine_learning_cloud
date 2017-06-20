@@ -24,7 +24,8 @@ public class WIPOClassificationAttribute implements AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
-        String attr = wipoMap.get(portfolio.stream().findAny().get());
+        String item = portfolio.stream().findAny().get();
+        String attr = wipoMap.get(item);
         if(attr!=null) {
             String title = definitionMap.get(attr);
             if(title!=null) return title;
