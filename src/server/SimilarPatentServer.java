@@ -670,7 +670,7 @@ public class SimilarPatentServer {
                                                                 h4("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable values").with(
+                                                                            return div().withClass("draggable values  deactivated").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
@@ -687,7 +687,7 @@ public class SimilarPatentServer {
                                                                 h4("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable attributes").with(
+                                                                            return div().withClass("draggable attributes deactivated").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
@@ -705,7 +705,7 @@ public class SimilarPatentServer {
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
                                                                             return pair._1.entrySet().stream().map(e->{
-                                                                                return div().withClass("draggable filters").with(
+                                                                                return div().withClass("draggable filters deactivated").with(
                                                                                         label(humanAttributeFor(e.getKey())),
                                                                                         input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
                                                                                         div().withClass("toggle").with(e.getValue().getOptionsTag())
@@ -724,7 +724,7 @@ public class SimilarPatentServer {
                                                                 h4("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
-                                                                            return div().withClass("draggable charts").with(
+                                                                            return div().withClass("draggable charts deactivated").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())

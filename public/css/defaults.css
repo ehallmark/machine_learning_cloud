@@ -16,6 +16,10 @@
     border-radius: 6px;
  }
 
+h4 {
+    text-align: center;
+}
+
  table {
     lable-layout: fixed;
     width: 100%;
