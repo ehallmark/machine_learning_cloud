@@ -511,12 +511,12 @@ public class SimilarPatentServer {
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
-                        button("Back").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                        button("Back").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                 ),
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                         .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
-                        button("Forward").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                        button("Forward").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                 ));
     }
 
@@ -572,7 +572,7 @@ public class SimilarPatentServer {
                                         img().attr("src", "/images/brand.png")
                                 ),
                                 hr(),
-                                h3("Artificial Intelligence Platform"),
+                                h2("Artificial Intelligence Platform"),
                                 hr(),
                                 h4(message),
                                 form,
@@ -627,7 +627,7 @@ public class SimilarPatentServer {
                 br(),
                 br(),
                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
-                        h2("Patent Recommendation Engine"),br(),
+                        h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),
                         table().attr("style","width: 100%").with(
                                 tbody().with(
                                         tr().attr("style","vertical-align: top;").with(
