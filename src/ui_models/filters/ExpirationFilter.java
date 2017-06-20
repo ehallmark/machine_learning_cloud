@@ -35,4 +35,11 @@ public class ExpirationFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item obj) {
         return !Database.isExpired(obj.getName());
     }
+
+
+    @Override
+    public String getName() {
+        return Constants.EXPIRATION_FILTER;
+    }
+
 }

@@ -14,6 +14,11 @@ import java.util.Collections;
  */
 public abstract class AbstractFilter implements DependentAttribute {
 
+    @Override
+    public Object attributesFor(Collection portfolio, int limit) {
+        throw new UnsupportedOperationException("Filter shouldn't use attributesFor method.");
+    }
+
     public boolean defaultSelected() {
         return false;
     }
@@ -23,5 +28,10 @@ public abstract class AbstractFilter implements DependentAttribute {
     @Override
     public Collection<String> getPrerequisites() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public void extractRelevantInformationFromParams(Request params) {
+
     }
 }

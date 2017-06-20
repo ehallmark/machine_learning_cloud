@@ -47,4 +47,9 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
     public Collection<String> getPrerequisites() {
         return Arrays.asList(Constants.PORTFOLIO_SIZE);
     }
+
+    @Override
+    public String getName() {
+        return Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER;
+    }
 }

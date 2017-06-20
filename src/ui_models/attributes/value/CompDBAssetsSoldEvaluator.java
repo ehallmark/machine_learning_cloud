@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 
@@ -7,6 +8,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 1/27/2017.
@@ -32,4 +35,5 @@ public class CompDBAssetsSoldEvaluator extends ValueAttr {
         System.out.println("Finished evaluator...");
         return model;
     }
+
 }

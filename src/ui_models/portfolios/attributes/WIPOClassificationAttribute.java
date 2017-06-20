@@ -1,11 +1,14 @@
 package ui_models.portfolios.attributes;
 
 import classification_models.WIPOHelper;
+import j2html.tags.Tag;
 import seeding.Constants;
 import ui_models.attributes.AbstractAttribute;
 
 import java.util.Collection;
 import java.util.Map;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 6/18/2017.
@@ -32,5 +35,10 @@ public class WIPOClassificationAttribute implements AbstractAttribute<String> {
     @Override
     public String getName() {
         return Constants.WIPO_TECHNOLOGY;
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
     }
 }

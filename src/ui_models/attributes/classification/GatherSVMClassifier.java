@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import j2html.tags.Tag;
 import lombok.Getter;
 import model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
@@ -19,6 +20,8 @@ import svm.libsvm.svm_parameter;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 5/16/2017.
@@ -45,6 +48,11 @@ public class GatherSVMClassifier implements ClassificationAttr {
 
     public String getName() {
         return "SVM Classifier";
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
     }
 
     // trainable version

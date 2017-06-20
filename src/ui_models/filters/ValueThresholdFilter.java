@@ -39,4 +39,9 @@ public class ValueThresholdFilter extends AbstractFilter {
     public Collection<String> getPrerequisites() {
         return Arrays.asList(Constants.AI_VALUE);
     }
+
+    @Override
+    public String getName() {
+        return Constants.VALUE_THRESHOLD_FILTER;
+    }
 }

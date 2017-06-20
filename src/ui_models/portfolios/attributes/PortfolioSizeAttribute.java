@@ -1,11 +1,14 @@
 package ui_models.portfolios.attributes;
 
+import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import ui_models.attributes.AbstractAttribute;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -25,5 +28,10 @@ public class PortfolioSizeAttribute implements AbstractAttribute<Integer> {
     @Override
     public String getName() {
         return Constants.PORTFOLIO_SIZE;
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
     }
 }

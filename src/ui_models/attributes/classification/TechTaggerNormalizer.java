@@ -3,6 +3,7 @@ package ui_models.attributes.classification;
 import genetics.GeneticAlgorithm;
 import genetics.Listener;
 import genetics.SolutionCreator;
+import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import similarity_models.paragraph_vectors.WordFrequencyPair;
@@ -13,6 +14,8 @@ import ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
 
 import java.io.File;
 import java.util.*;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 3/4/2017.
@@ -28,6 +31,11 @@ public class TechTaggerNormalizer implements ClassificationAttr {
 
     public String getName() {
         return Constants.TECHNOLOGY;
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
     }
 
     @Override

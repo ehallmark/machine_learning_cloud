@@ -1,5 +1,6 @@
 package ui_models.attributes.value;
 
+import j2html.tags.Tag;
 import lombok.Getter;
 import seeding.Database;
 import ui_models.attributes.AbstractAttribute;
@@ -10,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -58,5 +61,10 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
         } else {
             return defaultVal;
         }
+    }
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
     }
 }

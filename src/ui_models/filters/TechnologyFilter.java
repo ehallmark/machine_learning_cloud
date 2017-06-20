@@ -45,4 +45,9 @@ public class TechnologyFilter extends AbstractFilter {
     public Collection<String> getPrerequisites() {
         return Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY);
     }
+
+    @Override
+    public String getName() {
+        return Constants.TECHNOLOGY;
+    }
 }

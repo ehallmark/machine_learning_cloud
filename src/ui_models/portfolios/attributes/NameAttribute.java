@@ -12,19 +12,17 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssigneeNameAttribute implements AbstractAttribute<String> {
+public class NameAttribute implements AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
         if(portfolio.isEmpty()) return "";
-        String item = portfolio.stream().findAny().get();
-        if(Database.isAssignee(item)) return item;
-        else return String.join("; ",Database.assigneesFor(item));
+        return portfolio.stream().findAny().get();
     }
 
     @Override
     public String getName() {
-        return Constants.ASSIGNEE;
+        return Constants.NAME;
     }
 
     @Override

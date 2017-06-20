@@ -39,4 +39,10 @@ public class AssigneeFilter extends AbstractFilter {
     public Collection<String> getPrerequisites() {
         return Arrays.asList(Constants.ASSIGNEE);
     }
+
+
+    @Override
+    public String getName() {
+        return Constants.ASSIGNEES_TO_REMOVE_FILTER;
+    }
 }

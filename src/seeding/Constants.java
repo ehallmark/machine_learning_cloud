@@ -27,7 +27,6 @@ public class Constants {
 	public static final String TECHNOLOGY = "technologyValue";
 	public static final String ASSIGNEE_ENTITY_TYPE = "assigneeEntityTypeValue";
 	public static final String INVENTION_TITLE = "inventionTitleValue";
-	public static final String LIKELY_BUYER = "likelyBuyer";
 	public static final String NO_JAPANESE_FILTER = "noJapaneseFilter";
 	public static final String VALUE_THRESHOLD_FILTER = "valueThresholdFilter";
 	public static final String JAPANESE_ONLY_FILTER = "japaneseOnlyFilter";

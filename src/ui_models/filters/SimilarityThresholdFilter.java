@@ -32,4 +32,9 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item item) {
         return threshold==null ? true : item.getSimilarity()>threshold;
     }
+
+    @Override
+    public String getName() {
+        return Constants.SIMILARITY_THRESHOLD_FILTER;
+    }
 }

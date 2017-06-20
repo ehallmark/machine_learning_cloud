@@ -1,5 +1,7 @@
 package ui_models.attributes;
 
+import j2html.tags.Tag;
+
 import java.util.Collection;
 
 /**
@@ -8,4 +10,5 @@ import java.util.Collection;
 public interface AbstractAttribute<T> {
     T attributesFor(Collection<String> portfolio, int limit);
     String getName();
+    Tag getOptionsTag();
 }

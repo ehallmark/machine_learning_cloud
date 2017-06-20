@@ -1,5 +1,6 @@
 package ui_models.attributes.classification;
 
+import j2html.tags.Tag;
 import lombok.Getter;
 import model_testing.SplitModelData;
 import similarity_models.class_vectors.CPCSimilarityFinder;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static j2html.TagCreator.div;
+
 /**
  * Created by Evan on 3/4/2017.
  */
@@ -31,6 +34,11 @@ public class SimilarityGatherTechTagger implements ClassificationAttr {
     private static SimilarityGatherTechTagger pVectorModel;
     private static SimilarityGatherTechTagger cpcModel;
     private static SimilarityGatherTechTagger wipoModel;
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
+    }
 
     public String getName() {
         return "Average Similarity Model";

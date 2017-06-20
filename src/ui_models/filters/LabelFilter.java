@@ -35,4 +35,9 @@ public class LabelFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item item) {
         return !labelsToRemove.contains(item.getName());
     }
+
+    @Override
+    public String getName() {
+        return Constants.LABEL_FILTER;
+    }
 }

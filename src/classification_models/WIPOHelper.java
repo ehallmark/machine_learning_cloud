@@ -21,12 +21,12 @@ public class WIPOHelper {
     private static Map<String,String> WIPO_MAP;
     private static Map<String,String> WIPO_MAP_WITH_ASSIGNEES;
 
-    public static List<String> getOrderedClassifications() {
+    public synchronized static List<String> getOrderedClassifications() {
         if(DEF_MAP==null) getDefinitionMap();
         return DEF_MAP.values().stream().distinct().sorted().collect(Collectors.toList());
     }
 
-    public static Map<String,String> getDefinitionMap() {
+    public static synchronized Map<String,String> getDefinitionMap() {
         if(!definitionFile.exists()) {
             try {
                 main(null);
@@ -38,7 +38,7 @@ public class WIPOHelper {
         return DEF_MAP;
     }
 
-    public static Map<String,String> getWIPOMapWithAssignees() {
+    public static synchronized Map<String,String> getWIPOMapWithAssignees() {
         if(!mapFileWithAssignees.exists()) {
             try {
                 main(null);
@@ -50,7 +50,7 @@ public class WIPOHelper {
         return WIPO_MAP_WITH_ASSIGNEES;
     }
 
-    public static Map<String,String> getWIPOMap() {
+    public static synchronized Map<String,String> getWIPOMap() {
         if(!mapFile.exists()) {
             try {
                 main(null);

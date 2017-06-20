@@ -106,7 +106,7 @@ public class NaiveGatherClassifierWithWIPO extends NaiveGatherClassifier{
         Map<String,String> wipoMap = WIPOHelper.getWIPOMap();
         orderedTechnologies = new ArrayList<>(trainingData.keySet());
         orderedClassifications = new ArrayList<>(classificationToGatherPatentsMap.keySet());
-        orderedWIPO = new ArrayList<>(WIPOHelper.getDefinitionMap().keySet());
+        orderedWIPO = WIPOHelper.getOrderedClassifications();
         bayesianNet = new BayesianNet();
 
         List<Map<String,Integer>> assignments = getAssignments(trainingData,orderedTechnologies,patentToClassificationMap,orderedClassifications,wipoMap,orderedWIPO);

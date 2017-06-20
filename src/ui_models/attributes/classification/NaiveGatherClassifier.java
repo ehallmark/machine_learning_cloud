@@ -1,5 +1,6 @@
 package ui_models.attributes.classification;
 
+import j2html.tags.Tag;
 import model.functions.normalization.DivideByPartition;
 import model.graphs.*;
 import model.learning.algorithms.BayesianLearningAlgorithm;
@@ -19,6 +20,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import static j2html.TagCreator.div;
+
 /**
  * Created by ehallmark on 5/1/17.
  */
@@ -32,6 +35,11 @@ public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
     protected List<String> orderedTechnologies;
     protected List<String> orderedClassifications;
     protected double alpha;
+
+    @Override
+    public Tag getOptionsTag() {
+        return div();
+    }
 
     public String getName() {
         return "Bayesian Classifier";
