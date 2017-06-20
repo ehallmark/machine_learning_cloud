@@ -667,7 +667,7 @@ public class SimilarPatentServer {
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 43%;").withClass("droppable values start").with(
+                                                        div().attr("style","width: 45%;").withClass("droppable values start").with(
                                                                 h4("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
@@ -678,13 +678,13 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),div().attr("style","width: 43%;").withClass("droppable values target").with(
+                                                        ),div().attr("style","width: 45%;").withClass("droppable values target").with(
                                                                 h4("Values to Apply")
                                                         ), br()
                                                 )
                                         ),tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 43%;").withClass("droppable attributes start").with(
+                                                        div().attr("style","width: 45%;").withClass("droppable attributes start").with(
                                                                 h4("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
@@ -695,13 +695,13 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),div().attr("style","width: 43%;").withClass("droppable attributes target").with(
+                                                        ),div().attr("style","width: 45%;").withClass("droppable attributes target").with(
                                                                 h4("Attributes to Apply")
                                                         ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 43%;").withClass("droppable filters start").with(
+                                                        div().attr("style","width: 45%;").withClass("droppable filters start").with(
                                                                 h4("Available Filters"),
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
@@ -715,13 +715,13 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
 
-                                                        ), div().attr("style","width: 43%;").withClass("droppable filters target").with(
+                                                        ), div().attr("style","width: 45%;").withClass("droppable filters target").with(
                                                                 h4("Filters to Apply")
                                                         ), br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 43%;").withClass("droppable charts start").with(
+                                                        div().attr("style","width: 45%;").withClass("droppable charts start").with(
                                                                 h4("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
@@ -732,7 +732,7 @@ public class SimilarPatentServer {
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ), div().attr("style","width: 43%;").withClass("droppable charts target").with(
+                                                        ), div().attr("style","width: 45%;").withClass("droppable charts target").with(
                                                                 h4("Charts to Apply")
                                                         ), br()
                                                 )
