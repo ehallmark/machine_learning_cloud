@@ -5,7 +5,6 @@
 
 .droppable {
     border: 1px #000000 solid;
-    margin: 10px;
     padding: 10px;
     border-radius: 4px;
 }
@@ -63,7 +62,7 @@ label {
     text-decoration: none;
     font-weight: bold;
     display: inline-block;
-    margin: 4px 2px;
+    margin: 2px;
     border-radius: 6px;
     cursor: pointer;
  }

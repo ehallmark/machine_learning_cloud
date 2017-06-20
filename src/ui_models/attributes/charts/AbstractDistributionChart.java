@@ -11,10 +11,7 @@ import server.SimilarPatentServer;
 import spark.Request;
 import ui_models.portfolios.PortfolioList;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
@@ -56,9 +53,15 @@ public class AbstractDistributionChart implements ChartAttribute {
         PointSeries series = new PointSeries();
         series.setName(title);
 
-        portfolio.getItemList().stream().map(item->{
+        if(portfolio.getItemList().isEmpty()) return Collections.emptyList();
+
+        List<String> items = portfolio.getItemList().stream().map(item->{
             return (String)item.getData(attribute);
-        }).collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).forEach(e->{
+        }).filter(attr->attr!=null).collect(Collectors.toList());
+
+        if(items.isEmpty()) return Collections.emptyList();
+
+        items.stream().collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).forEach(e->{
             String tech = e.getKey();
             double prob = e.getValue();
             Point point = new Point(tech,prob);

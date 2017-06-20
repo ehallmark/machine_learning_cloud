@@ -427,6 +427,7 @@ public class SimilarPatentServer {
                 appliedAttributes.addAll(valueModels);
                 if(!comparator.equals(Constants.SIMILARITY) && valueModels.contains(Constants.SIMILARITY)) {
                     portfolioList.setItemList(similarityEngine.runModel(portfolioList,limit).getItemList());
+                    portfolioList.init(comparator, limit);
                 }
 
                 List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
