@@ -47,10 +47,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
 
     public void init(String sortedBy, int limit) {
-        itemList.forEach(item->{
-            item.init();
-        });
-
         Collections.sort(itemList,(i1,i2)->(Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue())));
 
         if (itemList.size() > 0) {
