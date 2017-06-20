@@ -73,3 +73,7 @@ label {
     background-color: white;
     margin-bottom: 20px;
  }
+
+ td, th {
+    text-align: center;
+ }

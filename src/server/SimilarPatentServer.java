@@ -526,7 +526,7 @@ public class SimilarPatentServer {
                         )
                 ),tbody().with(
                         items.stream().map(item->tr().with(
-                                item.getDataAsRow(attributes).stream().map(cell->cell==null?td(""):td(cell.toString())).collect(Collectors.toList())
+                                item.getDataAsRow(attributes).stream().map(cell->cell==null?td(""): ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? td(String.valueOf(((Number)cell).intValue())) : td(String.format("%.1f",cell))) : td(cell.toString()))).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
 
