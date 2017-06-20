@@ -2,7 +2,6 @@ package server;
 
 import com.google.gson.Gson;
 import org.deeplearning4j.berkeley.Pair;
-import scala.Function2;
 import server.tools.SimpleAjaxMessage;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import spark.Request;
@@ -69,5 +68,9 @@ public class GatherClassificationServer {
     public static void main(String[] args) throws Exception {
         port(4567);
         StartServer();
+    }
+
+    interface Function2<T1,T2,T3> {
+        T3 apply(T1 t1, T2 t2);
     }
 }
