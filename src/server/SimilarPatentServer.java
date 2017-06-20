@@ -430,8 +430,7 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
                 // reapply filters just in case
-                List<AbstractFilter> allFilters = Arrays.asList(preFilters,postFilters).stream().flatMap(list->list.stream()).collect(Collectors.toList());
-                portfolioList.applyFilters(allFilters);
+                portfolioList.applyFilters(preFilters);
 
                 List<AbstractChart> finishedCharts = new ArrayList<>();
                 // adding charts
