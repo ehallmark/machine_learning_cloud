@@ -631,7 +631,7 @@ public class SimilarPatentServer {
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
                                                         div().attr("style","width: 100%").withClass("droppable options").with(
                                                                 h4("Search Options"),
-                                                                span().attr("style","width: 33%").withClass("draggable").with(
+                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
                                                                         label("Result Type"),br(),
                                                                         select().withName(SEARCH_TYPE_FIELD).with(
                                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -641,14 +641,14 @@ public class SimilarPatentServer {
                                                                                 }).collect(Collectors.toList())
                                                                         )
                                                                 ),
-                                                                span().attr("style","width: 33%").withClass("draggable").with(
+                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
                                                                         label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                                                 valueModelMap.keySet().stream().map(key-> {
                                                                                     return option(humanAttributeFor(key)).withValue(key);
                                                                                 }).collect(Collectors.toList())
                                                                         )
                                                                 ),
-                                                                span().attr("style","width: 33%").withClass("draggable").with(
+                                                                div().attr("style","width: 33%; float: left;").withClass("draggable").with(
                                                                         label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                                 )
                                                         ), br()
