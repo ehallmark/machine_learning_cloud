@@ -737,11 +737,12 @@ public class SimilarPatentServer {
                                                 )
                                         ), tr().with(
                                                 td().attr("style","width: 100%;").with(
+                                                        br(),br(),
                                                         button("Generate").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
-                        ), br()
+                        )
 
                 ), hr(), div().withId("results")
         );
