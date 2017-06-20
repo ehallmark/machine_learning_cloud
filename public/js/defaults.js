@@ -10,11 +10,6 @@ $(document).ready(function() {
             $toggle.hide();
         }
         var $checkbox = $draggable.find(".checkbox")
-        if(shouldShow && $draggable.hasClass('deactivated')) {
-            $draggable.removeClass('deactivated');
-        } else if(!shouldShow && !$draggable.hasClass('deactivated')) {
-            $draggable.addClass('deactivated');
-        }
         $checkbox.prop("checked", shouldShow);
         $checkbox.prop("disabled", !shouldShow);
     };
