@@ -29,12 +29,10 @@ table {
 }
 
 .target {
-    float: right;
     background-color: #E8E8E8;
 }
 
 .start {
-    float: left;
     background-color: white;
 }
 
