@@ -13,7 +13,6 @@
     border: 1px #000000 solid;
     border-radius: 4px;
     text-align: center;
-    z-index: 1;
 }
 
 .multiselect-container {
@@ -26,11 +25,15 @@ h4 {
 
 
 .target {
-    background-color: #E8E8E8;
+    background-color: white;
+    margin-top: 10px;
+    opacity: 0;
 }
 
 .start {
     background-color: white;
+    margin-top: 10px;
+    opacity: 0;
 }
 
 body {
@@ -38,7 +41,7 @@ body {
 }
 
 .target .draggable {
-    background-color: white;
+    background-color: #E8E8E8;
 }
 
 .start .draggable {
