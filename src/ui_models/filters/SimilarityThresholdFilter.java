@@ -22,7 +22,7 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").withValue("0").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
+                input().withClass("form-control").withType("number").withValue("0").withName(Constants.SIMILARITY_THRESHOLD_FILTER)
         );
     }
 

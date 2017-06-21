@@ -23,9 +23,9 @@ public class SearchScopeFilter extends AbstractFilter {
         return div().with(
                 h5("Search Within"),
                 label("Custom Patent List (1 per line)"),br(),
-                textarea().withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD),br(),
+                textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD),br(),
                 label("Custom Assignee List (1 per line)"),br(),
-                textarea().withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD)
+                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD)
         );
     }
 

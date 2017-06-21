@@ -22,7 +22,7 @@ public class PortfolioSizeMinimumFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withType("number").withValue("0").withName(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER)
+                input().withClass("form-control").withType("number").withValue("0").withName(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER)
         );
     }
 

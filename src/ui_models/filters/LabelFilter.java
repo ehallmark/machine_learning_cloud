@@ -22,7 +22,7 @@ public class LabelFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withName(Constants.LABEL_FILTER)
+                textarea().withClass("form-control").withName(Constants.LABEL_FILTER)
         );
     }
 

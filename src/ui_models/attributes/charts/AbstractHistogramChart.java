@@ -32,7 +32,7 @@ public class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return select().withName(Constants.HISTOGRAM).with(
+        return select().withClass("form-control").withName(Constants.HISTOGRAM).with(
                 SimilarPatentServer.valueModelMap.keySet().stream().map(key->{
                     return option(SimilarPatentServer.humanAttributeFor(key)).withValue(key);
                 }).collect(Collectors.toList())
