@@ -604,7 +604,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag technologySelect(String name, List<String> orderedClassifications) {
-        return select().withClass("multiselect form-control").attr("multiple","multiple").with(
+        return select().withClass("multiselect").attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withName(name).withValue(technology));
                 }).collect(Collectors.toList())
@@ -631,7 +631,7 @@ public class SimilarPatentServer {
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                            ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
                                                             if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
                                                             return option;
                                                         }).collect(Collectors.toList())
@@ -656,7 +656,7 @@ public class SimilarPatentServer {
                                                         valueModelMap.entrySet().stream().map(e-> {
                                                             return div().withClass("draggable values ").attr("data-target","values").with(
                                                                     label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                             );
                                                         }).collect(Collectors.toList())
@@ -671,7 +671,7 @@ public class SimilarPatentServer {
                                                         attributesMap.entrySet().stream().map(e-> {
                                                             return div().withClass("draggable attributes").attr("data-target","attributes").with(
                                                                     label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
+                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                             );
                                                         }).collect(Collectors.toList())
@@ -687,7 +687,7 @@ public class SimilarPatentServer {
                                                             return pair._1.entrySet().stream().map(e->{
                                                                 return div().withClass("draggable filters").attr("data-target","filters").with(
                                                                         label(humanAttributeFor(e.getKey())),
-                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
+                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(pair._2).withValue(e.getKey()),
                                                                         div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                                 );
                                                             });
@@ -704,7 +704,7 @@ public class SimilarPatentServer {
                                                         chartModelMap.entrySet().stream().map(e->{
                                                             return div().withClass("draggable charts").attr("data-target","charts").with(
                                                                     label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                             );
                                                         }).collect(Collectors.toList())

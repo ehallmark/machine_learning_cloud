@@ -9,7 +9,7 @@ $(document).ready(function() {
         } else {
             $toggle.hide();
         }
-        var $checkbox = $draggable.find(".checkbox")
+        var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
         $checkbox.prop("disabled", !shouldShow);
     }
