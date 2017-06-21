@@ -7,13 +7,14 @@
     border: 1px #000000 solid;
     border-radius: 4px;
     padding: 5px;
+    z-index: 0;
 }
 
 .draggable {
     border: 1px #000000 solid;
     border-radius: 4px;
     text-align: center;
-    padding: 5px;
+    z-index: 100000;
 }
 
 h4 {
