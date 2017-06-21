@@ -49,6 +49,16 @@ body {
     float: right;
 }
 
+.multiselect-container .input-group {
+    margin: 0px;
+}
+
+.multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox {
+    margin: 0px;
+    padding: 5px;
+    width: 100%;
+}
+
 label {
     font-weight: bold;
 }
