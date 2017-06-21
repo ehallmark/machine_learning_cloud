@@ -20,11 +20,10 @@
     border-radius: 4px;
     text-align: center;
     border-collapse: collapse;
-    z-index: 10;
 }
 
 .multiselect-container {
-    z-index: 50;
+    z-index: 1000;
 }
 
 h4 {
@@ -42,7 +41,6 @@ h4 {
     border-right: 0px black solid;
     border-bottom-right-radius: 4px;
     border-collapse: collapse;
-    z-index: 1;
 }
 
 .start {
@@ -51,7 +49,6 @@ h4 {
     border-right: 0px black solid;
     border-bottom-left-radius: 4px;
     border-collapse: collapse;
-    z-index: 1;
 }
 
 body {
@@ -64,7 +61,6 @@ body {
 
 .start .draggable {
     background-color: #E8E8E8;
-    z-index: 11;
 }
 
 .mycheckbox {
