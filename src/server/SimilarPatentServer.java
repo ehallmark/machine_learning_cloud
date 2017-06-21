@@ -440,7 +440,7 @@ public class SimilarPatentServer {
 
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
-                String html = new Gson().toJson(new AjaxChartMessage(div().with(
+                String html = new Gson().toJson(new AjaxChartMessage(div().withClass("panel panel-default").with(
                         finishedCharts.isEmpty() ? div() : div().with(
                                 h4("Charts"),
                                 div().with(
@@ -655,7 +655,7 @@ public class SimilarPatentServer {
                                         )
                                 ), br(), div().withClass("row panel panel-default").with(
                                         div().withClass("col-12 panel-body").with(
-                                                toggleButton("values-row","Add Values"),
+                                                toggleButton("values-row","Values"),
                                                 div().withId("values-row").withClass("row collapse").with(
                                                         div().withId("values-start").withClass("droppable values start col-6").with(
                                                                 h4("Available Values"),
@@ -675,7 +675,7 @@ public class SimilarPatentServer {
                                         )
                                 ), br(), div().withClass("row panel panel-default").with(
                                         div().withClass("col-12 panel-body").with(
-                                                toggleButton("attributes-row","Add Attributes"),
+                                                toggleButton("attributes-row","Attributes"),
                                                 div().withId("attributes-row").withClass("row collapse").with(
                                                         div().withId("attributes-start").withClass("droppable attributes start col-6").with(
                                                                 h4("Available Attributes"),
@@ -695,7 +695,7 @@ public class SimilarPatentServer {
                                         )
                                 ), br(), div().withClass("row panel panel-default").with(
                                         div().withClass("col-12 panel-body").with(
-                                                toggleButton("filters-row","Add Filters"),
+                                                toggleButton("filters-row","Filters"),
                                                 div().withId("filters-row").withClass("row collapse").with(
                                                         div().withId("filters-start").withClass("droppable filters start col-6").with(
                                                                 h4("Available Filters"),
@@ -718,7 +718,7 @@ public class SimilarPatentServer {
                                         )
                                 ), br(), div().withClass("row panel panel-default").with(
                                         div().withClass("col-12 panel-body").with(
-                                                toggleButton("charts-row","Add Charts"),
+                                                toggleButton("charts-row","Charts"),
                                                 div().withId("charts-row").withClass("row collapse").with(
                                                         div().withId("charts-start").withClass("droppable charts start col-6").with(
                                                                 h4("Available Charts"),
@@ -744,7 +744,7 @@ public class SimilarPatentServer {
                                 )
                         )
                 ), hr(),
-                div().withClass("col-12 panel panel-default").withId("results")
+                div().withClass("col-12").withId("results")
         );
     }
 
