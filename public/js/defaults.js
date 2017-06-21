@@ -5,7 +5,7 @@ $(document).ready(function() {
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".collapse");
         if(shouldShow) {
-            if($toggle.data('hidden-target') {
+            if($toggle.data('hidden-target')) {
                 $toggle.data('target',$toggle.data('hidden-target'));
                 $toggle.data('hidden-target', '');
             }
