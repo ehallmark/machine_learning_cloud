@@ -751,7 +751,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
                 div().withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
-                        h4(text)
+                        h4(text).attr("style","cursor: pointer;")
                 )
         );
     }
