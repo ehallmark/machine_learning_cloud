@@ -5,16 +5,20 @@ $(document).ready(function() {
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".collapse");
         if(shouldShow) {
-            if(! $toggle.hasClass('show')) {
-                $toggle.addClass('show');
+            if($toggle.data('hidden-target') {
                 $toggle.data('target',$toggle.data('hidden-target'));
                 $toggle.data('hidden-target', '');
             }
+            if(! $toggle.hasClass('show')) {
+                $toggle.addClass('show');
+            }
         } else {
-            if($toggle.hasClass('show')) {
-                $toggle.removeClass('show');
+            if($toggle.data('target')) {
                 $toggle.data('hidden-target',$toggle.data('target'));
                 $toggle.data('target', '');
+            }
+            if($toggle.hasClass('show')) {
+                $toggle.removeClass('show');
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
