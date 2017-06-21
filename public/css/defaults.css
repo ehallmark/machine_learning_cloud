@@ -6,11 +6,13 @@
 .droppable {
     border: 1px #000000 solid;
     border-radius: 4px;
+    padding: 5px;
 }
 
 .draggable {
     border: 1px #000000 solid;
-    border-radius: 6px;
+    border-radius: 4px;
+    text-align: center;
 }
 
 h4 {
