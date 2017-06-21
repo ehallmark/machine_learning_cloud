@@ -11,6 +11,7 @@ import java.util.List;
  * Created by ehallmark on 5/9/17.
  */
 public interface AbstractSimilarityModel {
+    double similarityTo(String label);
 
     PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters);
 

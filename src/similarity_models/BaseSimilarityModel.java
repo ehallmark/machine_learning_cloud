@@ -69,6 +69,14 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         return new BaseSimilarityModel(scope,name,lookupTable);
     }
 
+    @Override
+    public double similarityTo(String label) {
+        INDArray avg = computeAvg();
+        INDArray thisVec = lookupTable.get(label);
+        if(thisVec==null) return 0d;
+        else return Transforms.cosineSim(avg,thisVec);
+    }
+
     // returns null if patentNumber not found
     @Override
     public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {

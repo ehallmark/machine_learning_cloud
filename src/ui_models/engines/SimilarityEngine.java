@@ -98,12 +98,7 @@ public class SimilarityEngine extends ValueAttr {
 
     @Override
     public double evaluate(String item) {
-        try {
-            return runPatentFinderModel(firstFinder.duplicateWithScope(Arrays.asList(item)), secondFinder, 1, preFilters)
-                    .getItemList().get(0).getSimilarity() * 100d;
-        } catch(Exception e) {
-            return 0d;
-        }
+        return secondFinder.similarityTo(item) * 100d;
     }
 
     @Override

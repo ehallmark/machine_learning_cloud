@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.ops.transforms.Transforms;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
 import spark.Request;
@@ -59,6 +60,17 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
             // errors
             tokenMap = Collections.emptyMap();
         }
+    }
+
+    @Override
+    public double similarityTo(String label) {
+        if(!similarityMap.containsKey(label)) {
+            return 0d;
+        }
+        List<Float> scores = similarityMap.get(label).stream().filter(pair->tokenMap.containsKey(pair.getFirst())).map(pair->pair.getSecond()).collect(Collectors.toList());
+        if(scores.isEmpty()) return 0d;
+
+        return scores.stream().collect(Collectors.averagingDouble(f->f.doubleValue()));
     }
 
     protected List<Pair<Item, Double>> similarHelper(String patent, int n) {
