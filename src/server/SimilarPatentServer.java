@@ -625,14 +625,17 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 div().withClass("col-12-xs").with(
                         navigationTag(),
+                        hr(),
                         br(),
                         br(),
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),
                                 div().withClass("row droppable options").with(
-                                        h4("Search Options"),
-                                        div().withClass("draggable col-xs-4").with(
+                                        div().withClass("col-12").with(
+                                                h4("Search Options")
+                                        ),
+                                        div().withClass("draggable col-4").with(
                                                 label("Result Type"),br(),
                                                 select().withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -642,18 +645,18 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("draggable col-xs-4").with(
+                                        div().withClass("draggable col-4").with(
                                                 label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
                                                         valueModelMap.keySet().stream().map(key-> {
                                                             return option(humanAttributeFor(key)).withValue(key);
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("draggable col-xs-4").with(
+                                        div().withClass("draggable col-4").with(
                                                 label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 ), div().withClass("row").with(
-                                        div().withId("values-start").withClass("droppable values start col-xs-6").with(
+                                        div().withId("values-start").withClass("droppable values start col-6").with(
                                                 h4("Available Values"),
                                                 div().with(
                                                         valueModelMap.entrySet().stream().map(e-> {
@@ -664,11 +667,11 @@ public class SimilarPatentServer {
                                                             );
                                                         }).collect(Collectors.toList())
                                                 )
-                                        ),div().withId("values-target").withClass("droppable values target col-xs-6").with(
+                                        ),div().withId("values-target").withClass("droppable values target col-6").with(
                                                 h4("Values to Apply")
                                         )
                                 ), div().withClass("row").with(
-                                        div().withId("attributes-start").withClass("droppable attributes start col-xs-6").with(
+                                        div().withId("attributes-start").withClass("droppable attributes start col-6").with(
                                                 h4("Available Attributes"),
                                                 div().with(
                                                         attributesMap.entrySet().stream().map(e-> {
@@ -679,11 +682,11 @@ public class SimilarPatentServer {
                                                             );
                                                         }).collect(Collectors.toList())
                                                 )
-                                        ),div().withId("attributes-target").withClass("droppable attributes target col-xs-6").with(
+                                        ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
                                                 h4("Attributes to Apply")
                                         )
                                 ), div().withClass("row").with(
-                                        div().withId("filters-start").withClass("droppable filters start col-xs-6").with(
+                                        div().withId("filters-start").withClass("droppable filters start col-6").with(
                                                 h4("Available Filters"),
                                                 div().with(
                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
@@ -697,11 +700,11 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
 
-                                        ), div().withId("filters-target").withClass("droppable filters target col-xs-6").with(
+                                        ), div().withId("filters-target").withClass("droppable filters target col-6").with(
                                                 h4("Filters to Apply")
                                         )
                                 ), div().withClass("row").with(
-                                        div().withId("charts-start").withClass("droppable charts start col-xs-6").with(
+                                        div().withId("charts-start").withClass("droppable charts start col-6").with(
                                                 h4("Available Charts"),
                                                 div().with(
                                                         chartModelMap.entrySet().stream().map(e->{
@@ -712,18 +715,19 @@ public class SimilarPatentServer {
                                                             );
                                                         }).collect(Collectors.toList())
                                                 )
-                                        ), div().withId("charts-target").withClass("droppable charts target col-xs-6").with(
+                                        ), div().withId("charts-target").withClass("droppable charts target col-6").with(
                                                 h4("Charts to Apply")
                                         )
                                 ), div().withClass("row").with(
-                                        div().withClass("col-xs-12").with(
+                                        div().withClass("col-12").with(
                                                 br(),br(),
                                                 button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                         )
                                 )
 
-                        ), hr(), div().withId("results")
-                )
+                        )
+                ), hr(),
+                div().withClass("col-12").withId("results")
         );
     }
 

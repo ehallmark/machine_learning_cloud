@@ -19,14 +19,6 @@ h4 {
     text-align: center;
 }
 
-table {
-    lable-layout: fixed;
-    width: 100%;
-}
-
-.row {
-    vertical-align: top;
-}
 
 .target {
     background-color: #E8E8E8;
