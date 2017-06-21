@@ -629,7 +629,7 @@ public class SimilarPatentServer {
                                                         div().withClass("col-12").with(
                                                                 h4("Search Options")
                                                         ),
-                                                        div().withClass("draggable col-4").with(
+                                                        div().withClass("col-4").attr("style","text-align: center").with(
                                                                 label("Result Type"),br(),
                                                                 select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
                                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -639,7 +639,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ),
-                                                        div().withClass("draggable col-4").with(
+                                                        div().withClass("col-4").attr("style","text-align: center").with(
                                                                 label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                                         valueModelMap.keySet().stream().map(key-> {
                                                                             ContainerTag option = option(humanAttributeFor(key)).withValue(key);
@@ -648,7 +648,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ),
-                                                        div().withClass("draggable col-4").with(
+                                                        div().withClass("col-4").attr("style","text-align: center").with(
                                                                 label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                                         )
                                                 )
