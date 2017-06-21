@@ -440,12 +440,13 @@ public class SimilarPatentServer {
 
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
-                String html = new Gson().toJson(new AjaxChartMessage(div().withClass("panel panel-default").with(
+                String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().with(
+                                hr(),
                                 h4("Charts"),
                                 div().with(
-                                        charts.stream().map(c -> div().withClass("panel panel-default").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                )
+                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                ),br(),br()
                         ),
                         portfolioList == null ? div() : div().with(
                                 h4("Data"),
@@ -519,7 +520,7 @@ public class SimilarPatentServer {
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().with(
+        return table().withClass("table table-striped").with(
                 thead().with(
                         tr().with(
                                 attributes.stream().map(attr->th(humanAttributeFor(attr))).collect(Collectors.toList())
