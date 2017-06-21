@@ -65,4 +65,8 @@ $(document).ready(function() {
         }
     });
 
+    $('.multiselect').multiselect({
+        enableFiltering: true
+    });
+
 });

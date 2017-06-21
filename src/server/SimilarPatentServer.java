@@ -554,16 +554,16 @@ public class SimilarPatentServer {
         if(message==null)message="";
         return html().with(
                 head().with(
-                        script().attr("src","https://code.jquery.com/jquery-1.12.4.js"),
-                        script().attr("src","https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
-                        script().attr("src","http://code.highcharts.com/highcharts.js"),
-                        script().attr("src","/js/customEvents.js"),
-                        script().attr("src","/js/multiselect.js"),
-                        script().attr("src","/js/defaults.js"),
+                        script().withSrc("https://code.jquery.com/jquery-1.12.4.js"),
+                        script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
+                        script().withSrc("http://code.highcharts.com/highcharts.js"),
+                        script().withSrc("/js/customEvents.js"),
+                        script().withSrc("/js/defaults.js"),
+                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"),
                         script().withSrc("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"),
                         link().withRel("stylesheet").withHref("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"),
-                        link().withRel("stylesheet").withHref("/css/multiselect.css"),
+                        link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css"),
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
@@ -604,20 +604,10 @@ public class SimilarPatentServer {
     }
 
     public static Tag technologySelect(String name, List<String> orderedClassifications) {
-        String id = "checkboxes-"+name.hashCode();
-        return div().withClass("multiselect").with(
-                div().withClass("selectBox").attr("onclick","showCheckboxes('"+id+"');").with(
-                        select().withClass("form-control").with(
-                                option("Select an Option")
-                        ),
-                        div().withClass("overSelect")
-                ), div().attr("style","max-height: 400px; overflow-y: scroll;").with(
-                        div().withId(id).withClass("checkboxes").with(
-                                orderedClassifications.stream().map(technology-> {
-                                    return div().with(label(humanAttributeFor(technology)).with(input().withType("checkbox").attr("style","float: right;").withName(name).withValue(technology)));
-                                }).collect(Collectors.toList())
-                        )
-                )
+        return select().withClass("multiselect form-control").attr("multiple","multiple").with(
+                orderedClassifications.stream().map(technology-> {
+                    return div().with(option(humanAttributeFor(technology)).withName(name).withValue(technology));
+                }).collect(Collectors.toList())
         );
     }
 
