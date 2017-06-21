@@ -4,18 +4,19 @@ $(document).ready(function() {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".collapse");
+        $handle = $draggable.find(".handle");
         if(shouldShow) {
-            if($toggle.data('hidden-target')) {
-                $toggle.data('target',$toggle.data('hidden-target'));
-                $toggle.data('hidden-target', '');
+            if($handle.attr('data-hidden-target')) {
+                $handle.attr('data-target',$toggle.attr('data-hidden-target'));
+                $handle.attr('data-hidden-target', '');
             }
             if(! $toggle.hasClass('show')) {
                 $toggle.addClass('show');
             }
         } else {
-            if($toggle.data('target')) {
-                $toggle.data('hidden-target',$toggle.data('target'));
-                $toggle.data('target', '');
+            if($handle.attr('data-target')) {
+                $handle.attr('data-hidden-target',$toggle.attr('data-target'));
+                $handle.attr('data-target', '');
             }
             if($toggle.hasClass('show')) {
                 $toggle.removeClass('show');
