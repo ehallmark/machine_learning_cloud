@@ -658,7 +658,7 @@ public class SimilarPatentServer {
                                                 toggleButton("values-row","Values"),
                                                 div().withId("values-row").withClass("row collapse").with(
                                                         div().withId("values-start").withClass("droppable values start col-6").with(
-                                                                h4("Available Values"),
+                                                                h5("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
                                                                             return div().withClass("draggable values ").attr("data-target","values").with(
@@ -669,7 +669,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ),div().withId("values-target").withClass("droppable values target col-6").with(
-                                                                h4("Values to Apply")
+                                                                h5("Values to Apply")
                                                         )
                                                 )
                                         )
@@ -678,7 +678,7 @@ public class SimilarPatentServer {
                                                 toggleButton("attributes-row","Attributes"),
                                                 div().withId("attributes-row").withClass("row collapse").with(
                                                         div().withId("attributes-start").withClass("droppable attributes start col-6").with(
-                                                                h4("Available Attributes"),
+                                                                h5("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
                                                                             return div().withClass("draggable attributes").attr("data-target","attributes").with(
@@ -689,7 +689,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
-                                                                h4("Attributes to Apply")
+                                                                h5("Attributes to Apply")
                                                         )
                                                 )
                                         )
@@ -698,7 +698,7 @@ public class SimilarPatentServer {
                                                 toggleButton("filters-row","Filters"),
                                                 div().withId("filters-row").withClass("row collapse").with(
                                                         div().withId("filters-start").withClass("droppable filters start col-6").with(
-                                                                h4("Available Filters"),
+                                                                h5("Available Filters"),
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
                                                                             return pair._1.entrySet().stream().map(e->{
@@ -712,7 +712,7 @@ public class SimilarPatentServer {
                                                                 )
 
                                                         ), div().withId("filters-target").withClass("droppable filters target col-6").with(
-                                                                h4("Filters to Apply")
+                                                                h5("Filters to Apply")
                                                         )
                                                 )
                                         )
@@ -721,7 +721,7 @@ public class SimilarPatentServer {
                                                 toggleButton("charts-row","Charts"),
                                                 div().withId("charts-row").withClass("row collapse").with(
                                                         div().withId("charts-start").withClass("droppable charts start col-6").with(
-                                                                h4("Available Charts"),
+                                                                h5("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
                                                                             return div().withClass("draggable charts").attr("data-target","charts").with(
@@ -732,7 +732,7 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
                                                         ), div().withId("charts-target").withClass("droppable charts target col-6").with(
-                                                                h4("Charts to Apply")
+                                                                h5("Charts to Apply")
                                                         )
                                                 )
                                         )
