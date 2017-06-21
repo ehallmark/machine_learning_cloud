@@ -649,7 +649,8 @@ public class SimilarPatentServer {
                                         div().withClass("draggable col-4").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
-                                ), div().withClass("row").with(
+                                ),toggleButton("values-row","Add Values"),
+                                div().withId("values-row").withClass("row collapse").with(
                                         div().withId("values-start").withClass("droppable values start col-6").with(
                                                 h4("Available Values"),
                                                 div().with(
@@ -664,7 +665,8 @@ public class SimilarPatentServer {
                                         ),div().withId("values-target").withClass("droppable values target col-6").with(
                                                 h4("Values to Apply")
                                         )
-                                ), div().withClass("row").with(
+                                ),toggleButton("attributes-row","Add Attributes"),
+                                div().withId("attributes-row").withClass("row collapse").with(
                                         div().withId("attributes-start").withClass("droppable attributes start col-6").with(
                                                 h4("Available Attributes"),
                                                 div().with(
@@ -679,7 +681,8 @@ public class SimilarPatentServer {
                                         ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
                                                 h4("Attributes to Apply")
                                         )
-                                ), div().withClass("row").with(
+                                ),toggleButton("filters-row","Add Filters"),
+                                div().withId("filters-row").withClass("row collapse").with(
                                         div().withId("filters-start").withClass("droppable filters start col-6").with(
                                                 h4("Available Filters"),
                                                 div().with(
@@ -697,7 +700,8 @@ public class SimilarPatentServer {
                                         ), div().withId("filters-target").withClass("droppable filters target col-6").with(
                                                 h4("Filters to Apply")
                                         )
-                                ), div().withClass("row").with(
+                                ),toggleButton("charts-row","Add Charts"),
+                                div().withId("charts-row").withClass("row collapse").with(
                                         div().withId("charts-start").withClass("droppable charts start col-6").with(
                                                 h4("Available Charts"),
                                                 div().with(
@@ -722,6 +726,14 @@ public class SimilarPatentServer {
                         )
                 ), hr(),
                 div().withClass("col-12").withId("results")
+        );
+    }
+
+    private static Tag toggleButton(String id, String text) {
+        return div().withClass("row").with(
+                div().withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
+                        h4(text)
+                )
         );
     }
 
