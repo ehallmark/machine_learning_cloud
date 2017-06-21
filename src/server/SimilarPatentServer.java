@@ -654,90 +654,13 @@ public class SimilarPatentServer {
                                                         )
                                                 )
                                         )
-                                ), br(), div().withClass("row panel panel-default").with(
-                                        div().withClass("col-12 panel-body").with(
-                                                toggleButton("values-row","Values"),
-                                                div().withId("values-row").withClass("row collapse").with(
-                                                        div().withId("values-start").withClass("droppable values start col-6").with(
-                                                                h5("Available Values"),
-                                                                div().with(
-                                                                        valueModelMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable values ").attr("data-target","values").with(
-                                                                                    label(humanAttributeFor(e.getKey())),
-                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                            );
-                                                                        }).collect(Collectors.toList())
-                                                                )
-                                                        ),div().withId("values-target").withClass("droppable values target col-6").with(
-                                                                h5("Values to Apply")
-                                                        )
-                                                )
-                                        )
-                                ), br(), div().withClass("row panel panel-default").with(
-                                        div().withClass("col-12 panel-body").with(
-                                                toggleButton("attributes-row","Attributes"),
-                                                div().withId("attributes-row").withClass("row collapse").with(
-                                                        div().withId("attributes-start").withClass("droppable attributes start col-6").with(
-                                                                h5("Available Attributes"),
-                                                                div().with(
-                                                                        attributesMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable attributes").attr("data-target","attributes").with(
-                                                                                    label(humanAttributeFor(e.getKey())),
-                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                            );
-                                                                        }).collect(Collectors.toList())
-                                                                )
-                                                        ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
-                                                                h5("Attributes to Apply")
-                                                        )
-                                                )
-                                        )
-                                ), br(), div().withClass("row panel panel-default").with(
-                                        div().withClass("col-12 panel-body").with(
-                                                toggleButton("filters-row","Filters"),
-                                                div().withId("filters-row").withClass("row collapse").with(
-                                                        div().withId("filters-start").withClass("droppable filters start col-6").with(
-                                                                h5("Available Filters"),
-                                                                div().with(
-                                                                        Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
-                                                                            return pair._1.entrySet().stream().map(e->{
-                                                                                return div().withClass("draggable filters").attr("data-target","filters").with(
-                                                                                        label(humanAttributeFor(e.getKey())),
-                                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(pair._2).withValue(e.getKey()),
-                                                                                        div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                                );
-                                                                            });
-                                                                        }).collect(Collectors.toList())
-                                                                )
-
-                                                        ), div().withId("filters-target").withClass("droppable filters target col-6").with(
-                                                                h5("Filters to Apply")
-                                                        )
-                                                )
-                                        )
-                                ), br(), div().withClass("row panel panel-default").with(
-                                        div().withClass("col-12 panel-body").with(
-                                                toggleButton("charts-row","Charts"),
-                                                div().withId("charts-row").withClass("row collapse").with(
-                                                        div().withId("charts-start").withClass("droppable charts start col-6").with(
-                                                                h5("Available Charts"),
-                                                                div().with(
-                                                                        chartModelMap.entrySet().stream().map(e->{
-                                                                            return div().withClass("draggable charts").attr("data-target","charts").with(
-                                                                                    label(humanAttributeFor(e.getKey())),
-                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                            );
-                                                                        }).collect(Collectors.toList())
-                                                                )
-                                                        ), div().withId("charts-target").withClass("droppable charts target col-6").with(
-                                                                h5("Charts to Apply")
-                                                        )
-                                                )
-                                        )
-                                ), br(),br(),
+                                ), br(),
+                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
+                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
+                                customFormRow("pre-filters", preFilterModelMap, PRE_FILTER_ARRAY_FIELD), br(),
+                                customFormRow("post-filters", preFilterModelMap, PRE_FILTER_ARRAY_FIELD), br(),
+                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
+                                br(),
                                 div().withClass("row").with(
                                         div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
                                                 button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
@@ -753,6 +676,31 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 div().withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
                         h4(text).attr("style","cursor: pointer;")
+                )
+        );
+    }
+
+    private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName) {
+        String title = type.substring(0,1).toUpperCase()+type.substring(1);
+        return div().withClass("row panel panel-default").with(
+                div().withClass("col-12 panel-body").with(
+                        toggleButton(type+"-row", title),
+                        div().withId(type+"-row").withClass("row collapse").with(
+                                div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
+                                        h5("Available "+title),
+                                        div().with(
+                                                modelMap.entrySet().stream().map(e->{
+                                                    return div().withClass("draggable "+type).attr("data-target",type).with(
+                                                            label(humanAttributeFor(e.getKey())),
+                                                            input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
+                                                            div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                    );
+                                                }).collect(Collectors.toList())
+                                        )
+                                ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
+                                        h5(title+" to Apply")
+                                )
+                        )
                 )
         );
     }

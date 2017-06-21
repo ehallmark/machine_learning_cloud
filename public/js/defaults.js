@@ -27,6 +27,18 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
+    $('.droppable.pre-filters').droppable({
+        accept: '.draggable.pre-filters',
+        drop: dropFunc
+    });
+
+
+    $('.droppable.post-filters').droppable({
+        accept: '.draggable.post-filters',
+        drop: dropFunc
+    });
+
+
     $(".mycheckbox").on("click", function (e) {
         var checkbox = $(this);
         // do the confirmation thing here
