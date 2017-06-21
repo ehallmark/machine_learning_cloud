@@ -3,7 +3,7 @@ $(document).ready(function() {
         var $draggable = $(elem);
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
-        $toggle = $draggable.find(".toggle");
+        $toggle = $draggable.find(".collapse");
         if(shouldShow) {
             $toggle.show();
         } else {
@@ -26,18 +26,6 @@ $(document).ready(function() {
         accept: '.draggable.filters',
         drop: dropFunc
     });
-
-    $('.droppable.pre-filters').droppable({
-        accept: '.draggable.pre-filters',
-        drop: dropFunc
-    });
-
-
-    $('.droppable.post-filters').droppable({
-        accept: '.draggable.post-filters',
-        drop: dropFunc
-    });
-
 
     $(".mycheckbox").on("click", function (e) {
         var checkbox = $(this);
@@ -80,7 +68,7 @@ $(document).ready(function() {
     $('.multiselect').multiselect({
         enableFiltering: true,
         enableCaseInsensitiveFiltering: true,
-        maxHeight: 500
+        maxHeight: 300
     });
 
 });

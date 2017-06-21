@@ -624,41 +624,10 @@ public class SimilarPatentServer {
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
-                                div().withClass("row panel panel-default").with(
-                                        div().withClass("col-12 panel-body").with(
-                                                div().withClass("row").with(
-                                                        div().withClass("col-12").with(
-                                                                h4("Search Options")
-                                                        ),
-                                                        div().withClass("col-4").attr("style","text-align: center").with(
-                                                                label("Result Type"),br(),
-                                                                select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
-                                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                            return option;
-                                                                        }).collect(Collectors.toList())
-                                                                )
-                                                        ),
-                                                        div().withClass("col-4").attr("style","text-align: center").with(
-                                                                label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                                        valueModelMap.keySet().stream().map(key-> {
-                                                                            ContainerTag option = option(humanAttributeFor(key)).withValue(key);
-                                                                            if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
-                                                                            return option;
-                                                                        }).collect(Collectors.toList())
-                                                                )
-                                                        ),
-                                                        div().withClass("col-4").attr("style","text-align: center").with(
-                                                                label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                                        )
-                                                )
-                                        )
-                                ), br(),
+                                mainOptionsRow(), br(),
                                 customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
-                                customFormRow("pre-filters", preFilterModelMap, PRE_FILTER_ARRAY_FIELD), br(),
-                                customFormRow("post-filters", preFilterModelMap, PRE_FILTER_ARRAY_FIELD), br(),
+                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)), br(),
                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
                                 br(),
                                 div().withClass("row").with(
@@ -679,9 +648,16 @@ public class SimilarPatentServer {
                 )
         );
     }
-
     private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName) {
+        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName));
+    }
+
+    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames) {
         String title = type.substring(0,1).toUpperCase()+type.substring(1);
+        List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
+        for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
+            modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
+        }
         return div().withClass("row panel panel-default").with(
                 div().withClass("col-12 panel-body").with(
                         toggleButton(type+"-row", title),
@@ -689,16 +665,56 @@ public class SimilarPatentServer {
                                 div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                         h5("Available "+title),
                                         div().with(
-                                                modelMap.entrySet().stream().map(e->{
-                                                    return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                            label(humanAttributeFor(e.getKey())),
-                                                            input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
-                                                            div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                    );
+                                                modelFields.stream().flatMap(pair->{
+                                                    String arrayFieldName = pair._2;
+                                                    return pair._1.entrySet().stream().map(e->{
+                                                        String collapseId = "collapse-"+type+"-"+e.getKey();
+                                                        return div().withClass("draggable "+type).attr("data-target",type).with(
+                                                                i().withClass("glyphicon glyphicon-minus").attr("style","float: left; cursor: pointer;").attr("data-toggle","collapse")
+                                                                        .attr("data-target","#"+collapseId),
+                                                                label(humanAttributeFor(e.getKey())),
+                                                                input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
+                                                                div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
+                                                        );
+                                                    });
                                                 }).collect(Collectors.toList())
                                         )
                                 ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
                                         h5(title+" to Apply")
+                                )
+                        )
+                )
+        );
+    }
+
+    private static Tag mainOptionsRow() {
+        return div().withClass("row panel panel-default").with(
+                div().withClass("col-12 panel-body").with(
+                        div().withClass("row").with(
+                                div().withClass("col-12").with(
+                                        h4("Search Options")
+                                ),
+                                div().withClass("col-4").attr("style","text-align: center").with(
+                                        label("Result Type"),br(),
+                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                    return option;
+                                                }).collect(Collectors.toList())
+                                        )
+                                ),
+                                div().withClass("col-4").attr("style","text-align: center").with(
+                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                valueModelMap.keySet().stream().map(key-> {
+                                                    ContainerTag option = option(humanAttributeFor(key)).withValue(key);
+                                                    if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
+                                                    return option;
+                                                }).collect(Collectors.toList())
+                                        )
+                                ),
+                                div().withClass("col-4").attr("style","text-align: center").with(
+                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                 )
                         )
                 )
