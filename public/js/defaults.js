@@ -1,7 +1,7 @@
 $(document).ready(function() {
     var resetCheckbox = function(elem,target) {
         var $draggable = $(elem);
-        $draggable.detach().css({top: 0,left: 0}).appendTo(this);
+        $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".toggle");
         if(shouldShow) {
@@ -60,7 +60,7 @@ $(document).ready(function() {
             }
             $target = $('#'+id+'-'+target);
             if($target) {
-                  resetCheckbox(this,$('#'+id+));
+                  resetCheckbox(this,$target.get(0));
             }
         }
     });

@@ -509,12 +509,12 @@ public class SimilarPatentServer {
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
-                        button("Back").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                        button("Back").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                 ),
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                         .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
-                        button("Forward").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                        button("Forward").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                 ));
     }
 
@@ -627,7 +627,7 @@ public class SimilarPatentServer {
                 br(),
                 br(),
                 br(),
-                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate","Generating...")).with(
+                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                         h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),
                         table().attr("style","width: 100%").with(
                                 tbody().with(
@@ -719,7 +719,7 @@ public class SimilarPatentServer {
                                         ), div().withClass("row").with(
                                                 td().attr("style","width: 100%;").with(
                                                         br(),br(),
-                                                        button("Generate").withClass("button").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                        button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
