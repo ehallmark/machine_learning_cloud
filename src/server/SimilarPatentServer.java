@@ -623,7 +623,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
-                div().withClass("col-12-xs").with(
+                div().withClass("col-12").with(
                         navigationTag(),
                         hr(),
                         br(),
