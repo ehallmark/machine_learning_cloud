@@ -66,7 +66,9 @@ $(document).ready(function() {
     });
 
     $('.multiselect').multiselect({
-        enableFiltering: true
+        enableFiltering: true,
+        enableCaseInsensitiveFiltering: true,
+        maxHeight: 500
     });
 
 });
