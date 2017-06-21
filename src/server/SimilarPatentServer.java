@@ -607,7 +607,7 @@ public class SimilarPatentServer {
         String id = "checkboxes-"+name.hashCode();
         return div().withClass("multiselect").with(
                 div().withClass("selectBox").attr("onclick","showCheckboxes('"+id+"');").with(
-                        select().with(
+                        select().withClass("form-control").with(
                                 option("Select an Option")
                         ),
                         div().withClass("overSelect")
@@ -639,7 +639,7 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("draggable col-4").with(
                                                 label("Result Type"),br(),
-                                                select().withName(SEARCH_TYPE_FIELD).with(
+                                                select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
                                                             ContainerTag option = option(type.toString()).withValue(type.toString());
                                                             if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
@@ -648,14 +648,14 @@ public class SimilarPatentServer {
                                                 )
                                         ),
                                         div().withClass("draggable col-4").with(
-                                                label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
+                                                label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                         valueModelMap.keySet().stream().map(key-> {
                                                             return option(humanAttributeFor(key)).withValue(key);
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
                                         div().withClass("draggable col-4").with(
-                                                label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 ), div().withClass("row").with(
                                         div().withId("values-start").withClass("droppable values start col-6").with(
@@ -664,7 +664,7 @@ public class SimilarPatentServer {
                                                         valueModelMap.entrySet().stream().map(e-> {
                                                             return div().withClass("draggable values ").attr("data-target","values").with(
                                                                     label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox form-control").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                             );
                                                         }).collect(Collectors.toList())
@@ -695,7 +695,7 @@ public class SimilarPatentServer {
                                                             return pair._1.entrySet().stream().map(e->{
                                                                 return div().withClass("draggable filters").attr("data-target","filters").with(
                                                                         label(humanAttributeFor(e.getKey())),
-                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
+                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("checkbox form-control").withName(pair._2).withValue(e.getKey()),
                                                                         div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                                 );
                                                             });
@@ -712,7 +712,7 @@ public class SimilarPatentServer {
                                                         chartModelMap.entrySet().stream().map(e->{
                                                             return div().withClass("draggable charts").attr("data-target","charts").with(
                                                                     label(humanAttributeFor(e.getKey())),
-                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("checkbox form-control").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                             );
                                                         }).collect(Collectors.toList())
