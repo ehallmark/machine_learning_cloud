@@ -184,7 +184,7 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            boolean test = false;
+            boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -631,32 +631,27 @@ public class SimilarPatentServer {
                         h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),
                         table().attr("style","width: 100%").with(
                                 tbody().with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-xs-12 droppable options").with(
-                                                        h4("Search Options"),
-                                                        div().withClass("row").with(
-                                                                div().withClass("draggable col-xs-4").with(
-                                                                        label("Result Type"),br(),
-                                                                        select().withName(SEARCH_TYPE_FIELD).with(
-                                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
-                                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                                    return option;
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),
-                                                                div().withClass("draggable col-xs-4").with(
-                                                                        label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
-                                                                                valueModelMap.keySet().stream().map(key-> {
-                                                                                    return option(humanAttributeFor(key)).withValue(key);
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),
-                                                                div().withClass("draggable col-xs-4").with(
-                                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
-                                                                )
+                                        div().withClass("row droppable options").with(
+                                                h4("Search Options"),
+                                                div().withClass("draggable col-xs-4").with(
+                                                        label("Result Type"),br(),
+                                                        select().withName(SEARCH_TYPE_FIELD).with(
+                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                    ContainerTag option = option(type.toString()).withValue(type.toString());
+                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                    return option;
+                                                                }).collect(Collectors.toList())
                                                         )
-
+                                                ),
+                                                div().withClass("draggable col-xs-4").with(
+                                                        label("Sorted By"),br(),select().withName(COMPARATOR_FIELD).with(
+                                                                valueModelMap.keySet().stream().map(key-> {
+                                                                    return option(humanAttributeFor(key)).withValue(key);
+                                                                }).collect(Collectors.toList())
+                                                        )
+                                                ),
+                                                div().withClass("draggable col-xs-4").with(
+                                                        label("Result Limit"),br(),input().withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 )
                                         ), div().withClass("row").with(
                                                 div().withId("values-start").withClass("droppable values start col-xs-6").with(
