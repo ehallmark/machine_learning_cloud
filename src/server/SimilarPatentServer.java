@@ -624,8 +624,8 @@ public class SimilarPatentServer {
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
                                 div().withClass("row").with(
-                                        div().withClass("panel panel-default").with(
-                                                div().withClass("panel-body").with(
+                                        div().withClass("row panel panel-default").with(
+                                                div().withClass("col-12 panel-body").with(
                                                         div().withClass("row droppable options").with(
                                                                 div().withClass("col-12").with(
                                                                         h4("Search Options")
@@ -654,8 +654,8 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 )
-                                        ), div().withClass("panel panel-default").with(
-                                                div().withClass("panel-body").with(
+                                        ), br(), div().withClass("row panel panel-default").with(
+                                                div().withClass("col-12 panel-body").with(
                                                         toggleButton("values-row","Add Values"),
                                                         div().withId("values-row").withClass("row collapse").with(
                                                                 div().withId("values-start").withClass("droppable values start col-6").with(
@@ -674,8 +674,8 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 )
-                                        ),div().withClass("panel panel-default").with(
-                                                div().withClass("panel-body").with(
+                                        ), br(), div().withClass("row panel panel-default").with(
+                                                div().withClass("col-12 panel-body").with(
                                                         toggleButton("attributes-row","Add Attributes"),
                                                         div().withId("attributes-row").withClass("row collapse").with(
                                                                 div().withId("attributes-start").withClass("droppable attributes start col-6").with(
@@ -694,8 +694,8 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 )
-                                        ),div().withClass("panel panel-default").with(
-                                                div().withClass("panel-body").with(
+                                        ), br(), div().withClass("row panel panel-default").with(
+                                                div().withClass("col-12 panel-body").with(
                                                         toggleButton("filters-row","Add Filters"),
                                                         div().withId("filters-row").withClass("row collapse").with(
                                                                 div().withId("filters-start").withClass("droppable filters start col-6").with(
@@ -717,9 +717,8 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 )
-                                        ),
-                                        div().withClass("panel panel-default").with(
-                                                div().withClass("panel-body").with(
+                                        ), br(), div().withClass("row panel panel-default").with(
+                                                div().withClass("col-12 panel-body").with(
                                                         toggleButton("charts-row","Add Charts"),
                                                         div().withId("charts-row").withClass("row collapse").with(
                                                                 div().withId("charts-start").withClass("droppable charts start col-6").with(
@@ -736,18 +735,18 @@ public class SimilarPatentServer {
                                                                 ), div().withId("charts-target").withClass("droppable charts target col-6").with(
                                                                         h4("Charts to Apply")
                                                                 )
-                                                        ), div().withClass("row").with(
-                                                                div().withClass("col-12").with(
-                                                                        br(),br(),
-                                                                        button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                                                )
                                                         )
+                                                )
+                                        ), br(),br(),
+                                        div().withClass("row").with(
+                                                div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
+                                                        button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         )
                                 )
                         )
                 ), hr(),
-                div().withClass("col-12").withId("results")
+                div().withClass("col-12 panel panel-default").withId("results")
         );
     }
 

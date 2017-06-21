@@ -26,13 +26,11 @@ h4 {
 .target {
     background-color: white;
     margin-top: 10px;
-    opacity: 0;
 }
 
 .start {
     background-color: white;
     margin-top: 10px;
-    opacity: 0;
 }
 
 body {
@@ -78,5 +76,6 @@ button.multiselect.dropdown-toggle {
 
 label {
     font-weight: bold;
+    margin-bottom: 0px;
 }
 
