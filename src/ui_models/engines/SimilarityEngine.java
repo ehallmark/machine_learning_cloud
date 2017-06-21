@@ -119,13 +119,12 @@ public class SimilarityEngine extends ValueAttr {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                h5("Find Similar"),
-                label("Patents (1 per line)"),br(),
+                label("Similar to Patents (1 per line)"),br(),
                 textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD), br(),
-                label("Assignees (1 per line)"),br(),
+                label("Similar to Assignees (1 per line)"),br(),
                 textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
-                label("Gather Technology"),br(),
-                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD), br(),
+                label("Similar to Gather Technology"),br(),
+                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD), br(), br(),
                 label("Similarity Model"),br(),select().withClass("form-control").withName(SIMILARITY_MODEL_FIELD).with(
                         option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
                         option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model (patents only)"),

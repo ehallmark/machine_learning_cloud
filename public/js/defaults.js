@@ -27,7 +27,7 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
-    $(".checkbox").on("click", function (e) {
+    $(".mycheckbox").on("click", function (e) {
         var checkbox = $(this);
         // do the confirmation thing here
         e.preventDefault();
