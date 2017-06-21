@@ -5,9 +5,13 @@ $(document).ready(function() {
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".collapse");
         if(shouldShow) {
-            $toggle.show();
+            if(! $toggle.hasClass('show')) {
+                $toggle.addClass('show');
+            }
         } else {
-            $toggle.hide();
+            if($toggle.hasClass('show')) {
+                $toggle.removeClass('show');
+            }
         }
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
