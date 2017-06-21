@@ -1,8 +1,8 @@
 $(document).ready(function() {
-    var dropFunc = function(event, ui) {
-        var $draggable = $(ui.draggable);
+    var resetCheckbox = function(elem,target) {
+        var $draggable = $(elem);
         $draggable.detach().css({top: 0,left: 0}).appendTo(this);
-        var shouldShow = $(this).hasClass('target');
+        var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".toggle");
         if(shouldShow) {
             $toggle.show();
@@ -12,6 +12,10 @@ $(document).ready(function() {
         var $checkbox = $draggable.find(".checkbox")
         $checkbox.prop("checked", shouldShow);
         $checkbox.prop("disabled", !shouldShow);
+    }
+
+    var dropFunc = function(event, ui) {
+        resetCheckbox(ui.draggable,this);
     };
 
     $('.draggable').draggable({
@@ -43,6 +47,22 @@ $(document).ready(function() {
     $('.droppable.charts').droppable({
         accept: '.draggable.charts',
         drop: dropFunc
+    });
+
+    $('.draggable').dblclick(function() {
+        var id = $(this).data('target');
+        if(id) {
+            var target;
+            if($(this).closest('.droppable').hasClass('target')) {
+                target = "start";
+            } else {
+                target = "target";
+            }
+            $target = $('#'+id+'-'+target);
+            if($target) {
+                  resetCheckbox(this,$('#'+id+));
+            }
+        }
     });
 
 });

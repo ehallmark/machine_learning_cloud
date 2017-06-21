@@ -664,46 +664,46 @@ public class SimilarPatentServer {
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 45%;").withClass("droppable values start").with(
+                                                        div().attr("style","width: 45%;").withId("values-start").withClass("droppable values start").with(
                                                                 h4("Available Values"),
                                                                 div().with(
                                                                         valueModelMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable values ").with(
+                                                                            return div().withClass("draggable values ").attr("data-target","values").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),div().attr("style","width: 45%;").withClass("droppable values target").with(
+                                                        ),div().attr("style","width: 45%;").withId("values-target").withClass("droppable values target").with(
                                                                 h4("Values to Apply")
                                                         ), br()
                                                 )
                                         ),tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 45%;").withClass("droppable attributes start").with(
+                                                        div().attr("style","width: 45%;").withId("attributes-start").withClass("droppable attributes start").with(
                                                                 h4("Available Attributes"),
                                                                 div().with(
                                                                         attributesMap.entrySet().stream().map(e-> {
-                                                                            return div().withClass("draggable attributes").with(
+                                                                            return div().withClass("draggable attributes").attr("data-target","attributes").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ),div().attr("style","width: 45%;").withClass("droppable attributes target").with(
+                                                        ),div().attr("style","width: 45%;").withId("attributes-target").withClass("droppable attributes target").with(
                                                                 h4("Attributes to Apply")
                                                         ),br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 45%;").withClass("droppable filters start").with(
+                                                        div().attr("style","width: 45%;").withId("filters-start").withClass("droppable filters start").with(
                                                                 h4("Available Filters"),
                                                                 div().with(
                                                                         Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
                                                                             return pair._1.entrySet().stream().map(e->{
-                                                                                return div().withClass("draggable filters").with(
+                                                                                return div().withClass("draggable filters").attr("data-target","filters").with(
                                                                                         label(humanAttributeFor(e.getKey())),
                                                                                         input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(pair._2).withValue(e.getKey()),
                                                                                         div().withClass("toggle").with(e.getValue().getOptionsTag())
@@ -712,24 +712,24 @@ public class SimilarPatentServer {
                                                                         }).collect(Collectors.toList())
                                                                 )
 
-                                                        ), div().attr("style","width: 45%;").withClass("droppable filters target").with(
+                                                        ), div().attr("style","width: 45%;").withId("filters-target").withClass("droppable filters target").with(
                                                                 h4("Filters to Apply")
                                                         ), br()
                                                 )
                                         ), tr().attr("style","vertical-align: top;").with(
                                                 td().attr("style","vertical-align: top; width: 100%;").with(
-                                                        div().attr("style","width: 45%;").withClass("droppable charts start").with(
+                                                        div().attr("style","width: 45%;").withId("charts-start").withClass("droppable charts start").with(
                                                                 h4("Available Charts"),
                                                                 div().with(
                                                                         chartModelMap.entrySet().stream().map(e->{
-                                                                            return div().withClass("draggable charts").with(
+                                                                            return div().withClass("draggable charts").attr("data-target","charts").with(
                                                                                     label(humanAttributeFor(e.getKey())),
                                                                                     input().attr("disabled","disabled").withType("checkbox").withClass("checkbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
                                                                                     div().withClass("toggle").with(e.getValue().getOptionsTag())
                                                                             );
                                                                         }).collect(Collectors.toList())
                                                                 )
-                                                        ), div().attr("style","width: 45%;").withClass("droppable charts target").with(
+                                                        ), div().attr("style","width: 45%;").withId("charts-target").withClass("droppable charts target").with(
                                                                 h4("Charts to Apply")
                                                         ), br()
                                                 )
