@@ -7,16 +7,16 @@ $(document).ready(function() {
         $handle = $draggable.find(".handle");
         if(shouldShow) {
             if($handle.attr('data-hidden-target')) {
-                $handle.attr('data-target',$toggle.attr('data-hidden-target'));
-                $handle.attr('data-hidden-target', '');
+                $handle.attr('data-target',$handle.attr('data-hidden-target'));
+                $handle.removeAttr('data-hidden-target');
             }
             if(! $toggle.hasClass('show')) {
                 $toggle.addClass('show');
             }
         } else {
             if($handle.attr('data-target')) {
-                $handle.attr('data-hidden-target',$toggle.attr('data-target'));
-                $handle.attr('data-target', '');
+                $handle.attr('data-hidden-target',$handle.attr('data-target'));
+                $handle.removeAttr('data-target');
             }
             if($toggle.hasClass('show')) {
                 $toggle.removeClass('show');
