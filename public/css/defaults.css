@@ -5,12 +5,15 @@
 
 .droppable {
     padding: 5px;
-    border: 1px #000000 solid;
+    border-top: 1px #000000 solid;
 }
 
 .panel {
     border: 1px #000000 solid;
     border-collapse: collapse;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    padding-top: 5px;
 }
 
 .draggable {

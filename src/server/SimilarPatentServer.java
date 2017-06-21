@@ -625,7 +625,7 @@ public class SimilarPatentServer {
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
                                 div().withClass("row panel panel-default").with(
                                         div().withClass("col-12 panel-body").with(
-                                                div().withClass("row droppable options").with(
+                                                div().withClass("row").with(
                                                         div().withClass("col-12").with(
                                                                 h4("Search Options")
                                                         ),
