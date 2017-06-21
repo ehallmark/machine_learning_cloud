@@ -21,7 +21,7 @@ public class AssigneeFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withName(Constants.ASSIGNEES_TO_REMOVE_FILTER)
+                textarea().withClass("form-control").withName(Constants.ASSIGNEES_TO_REMOVE_FILTER)
         );
     }
 

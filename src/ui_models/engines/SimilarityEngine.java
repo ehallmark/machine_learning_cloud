@@ -124,7 +124,7 @@ public class SimilarityEngine extends ValueAttr {
                         option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model (patents only)"),
                         option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
                         option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
-                ),br(), br(),
+                ),br(),
                 h5("Search For"),
                 label("Patents (1 per line)"),br(),
                 textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD), br(),

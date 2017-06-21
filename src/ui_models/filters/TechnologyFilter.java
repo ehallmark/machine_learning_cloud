@@ -27,9 +27,9 @@ public class TechnologyFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag() {
-        return div().with(br(),
+        return div().with(
                 label("Gather Technology"),br(),
-                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD),
+                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD),br(),
                 label("WIPO Technology"),br(),
                 SimilarPatentServer.technologySelect(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD, WIPOHelper.getOrderedClassifications())
         );
