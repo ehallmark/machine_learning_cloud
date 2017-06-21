@@ -34,7 +34,6 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         candidateSet=candidateSet.stream().distinct().collect(Collectors.toList());
         this.name=name;
-        System.out.println("--- Started Loading Patent Vectors ---");
         try {
             items = candidateSet.stream().map(itemStr->{
                 if(!lookupTable.containsKey(itemStr)) return null; // no info on item
@@ -46,7 +45,6 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
             // errors
             items = Collections.emptyList();
         }
-        System.out.println("--- Finished Loading Patent Vectors ---");
         this.tokens=new HashSet<>(items.stream().map(item->item.getName()).collect(Collectors.toList()));
     }
 

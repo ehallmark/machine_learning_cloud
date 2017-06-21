@@ -48,7 +48,6 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         candidateSet=candidateSet.stream().distinct().collect(Collectors.toList());
         this.name=name;
-        System.out.println("--- Started Loading Patent Vectors ---");
         try {
             tokenMap = candidateSet.stream().map(itemStr->{
                 if(!similarityMap.containsKey(itemStr)) return null; // no info on item
