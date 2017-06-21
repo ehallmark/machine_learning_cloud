@@ -4,7 +4,6 @@
 }
 
 .droppable {
-    border: 1px #000000 solid;
     border-radius: 4px;
     padding: 5px;
 }
@@ -52,8 +51,23 @@ body {
     float: right;
 }
 
+.show>.dropdown-menu {
+    display: block;
+    left: 25%;
+    width: 50%;
+}
+
+button.multiselect.dropdown-toggle {
+    width: 100%;
+    background-color: white;
+}
+
 .multiselect-container .input-group {
     margin: 0px;
+}
+
+.collapse.show {
+    display: flex;
 }
 
 .multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox {
@@ -66,9 +80,3 @@ label {
     font-weight: bold;
 }
 
- .chart {
-    border: 1px #000000 solid;
-    border-radius: 4px;
-    background-color: white;
-    margin-bottom: 10px;
- }
