@@ -632,7 +632,7 @@ public class SimilarPatentServer {
                         hr(),
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),
+                                h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
                                 div().withClass("row droppable options").with(
                                         div().withClass("col-12").with(
                                                 h4("Search Options")
