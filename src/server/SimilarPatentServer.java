@@ -623,125 +623,123 @@ public class SimilarPatentServer {
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
-                                div().withClass("row").with(
-                                        div().withClass("row panel panel-default").with(
-                                                div().withClass("col-12 panel-body").with(
-                                                        div().withClass("row droppable options").with(
-                                                                div().withClass("col-12").with(
-                                                                        h4("Search Options")
-                                                                ),
-                                                                div().withClass("draggable col-4").with(
-                                                                        label("Result Type"),br(),
-                                                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
-                                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                                    return option;
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),
-                                                                div().withClass("draggable col-4").with(
-                                                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                                                valueModelMap.keySet().stream().map(key-> {
-                                                                                    ContainerTag option = option(humanAttributeFor(key)).withValue(key);
-                                                                                    if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
-                                                                                    return option;
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),
-                                                                div().withClass("draggable col-4").with(
-                                                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                div().withClass("row panel panel-default").with(
+                                        div().withClass("col-12 panel-body").with(
+                                                div().withClass("row droppable options").with(
+                                                        div().withClass("col-12").with(
+                                                                h4("Search Options")
+                                                        ),
+                                                        div().withClass("draggable col-4").with(
+                                                                label("Result Type"),br(),
+                                                                select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                            return option;
+                                                                        }).collect(Collectors.toList())
                                                                 )
+                                                        ),
+                                                        div().withClass("draggable col-4").with(
+                                                                label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                                        valueModelMap.keySet().stream().map(key-> {
+                                                                            ContainerTag option = option(humanAttributeFor(key)).withValue(key);
+                                                                            if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
+                                                                            return option;
+                                                                        }).collect(Collectors.toList())
+                                                                )
+                                                        ),
+                                                        div().withClass("draggable col-4").with(
+                                                                label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                                         )
                                                 )
-                                        ), br(), div().withClass("row panel panel-default").with(
-                                                div().withClass("col-12 panel-body").with(
-                                                        toggleButton("values-row","Add Values"),
-                                                        div().withId("values-row").withClass("row collapse").with(
-                                                                div().withId("values-start").withClass("droppable values start col-6").with(
-                                                                        h4("Available Values"),
-                                                                        div().with(
-                                                                                valueModelMap.entrySet().stream().map(e-> {
-                                                                                    return div().withClass("draggable values ").attr("data-target","values").with(
-                                                                                            label(humanAttributeFor(e.getKey())),
-                                                                                            input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                            div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                                    );
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),div().withId("values-target").withClass("droppable values target col-6").with(
-                                                                        h4("Values to Apply")
+                                        )
+                                ), br(), div().withClass("row panel panel-default").with(
+                                        div().withClass("col-12 panel-body").with(
+                                                toggleButton("values-row","Add Values"),
+                                                div().withId("values-row").withClass("row collapse").with(
+                                                        div().withId("values-start").withClass("droppable values start col-6").with(
+                                                                h4("Available Values"),
+                                                                div().with(
+                                                                        valueModelMap.entrySet().stream().map(e-> {
+                                                                            return div().withClass("draggable values ").attr("data-target","values").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(VALUE_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
                                                                 )
+                                                        ),div().withId("values-target").withClass("droppable values target col-6").with(
+                                                                h4("Values to Apply")
                                                         )
                                                 )
-                                        ), br(), div().withClass("row panel panel-default").with(
-                                                div().withClass("col-12 panel-body").with(
-                                                        toggleButton("attributes-row","Add Attributes"),
-                                                        div().withId("attributes-row").withClass("row collapse").with(
-                                                                div().withId("attributes-start").withClass("droppable attributes start col-6").with(
-                                                                        h4("Available Attributes"),
-                                                                        div().with(
-                                                                                attributesMap.entrySet().stream().map(e-> {
-                                                                                    return div().withClass("draggable attributes").attr("data-target","attributes").with(
-                                                                                            label(humanAttributeFor(e.getKey())),
-                                                                                            input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                            div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                                    );
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
-                                                                        h4("Attributes to Apply")
+                                        )
+                                ), br(), div().withClass("row panel panel-default").with(
+                                        div().withClass("col-12 panel-body").with(
+                                                toggleButton("attributes-row","Add Attributes"),
+                                                div().withId("attributes-row").withClass("row collapse").with(
+                                                        div().withId("attributes-start").withClass("droppable attributes start col-6").with(
+                                                                h4("Available Attributes"),
+                                                                div().with(
+                                                                        attributesMap.entrySet().stream().map(e-> {
+                                                                            return div().withClass("draggable attributes").attr("data-target","attributes").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(ATTRIBUTES_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
                                                                 )
+                                                        ),div().withId("attributes-target").withClass("droppable attributes target col-6").with(
+                                                                h4("Attributes to Apply")
                                                         )
                                                 )
-                                        ), br(), div().withClass("row panel panel-default").with(
-                                                div().withClass("col-12 panel-body").with(
-                                                        toggleButton("filters-row","Add Filters"),
-                                                        div().withId("filters-row").withClass("row collapse").with(
-                                                                div().withId("filters-start").withClass("droppable filters start col-6").with(
-                                                                        h4("Available Filters"),
-                                                                        div().with(
-                                                                                Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
-                                                                                    return pair._1.entrySet().stream().map(e->{
-                                                                                        return div().withClass("draggable filters").attr("data-target","filters").with(
-                                                                                                label(humanAttributeFor(e.getKey())),
-                                                                                                input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(pair._2).withValue(e.getKey()),
-                                                                                                div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                                        );
-                                                                                    });
-                                                                                }).collect(Collectors.toList())
-                                                                        )
+                                        )
+                                ), br(), div().withClass("row panel panel-default").with(
+                                        div().withClass("col-12 panel-body").with(
+                                                toggleButton("filters-row","Add Filters"),
+                                                div().withId("filters-row").withClass("row collapse").with(
+                                                        div().withId("filters-start").withClass("droppable filters start col-6").with(
+                                                                h4("Available Filters"),
+                                                                div().with(
+                                                                        Arrays.asList(new Pair<>(preFilterModelMap,PRE_FILTER_ARRAY_FIELD),new Pair<>(postFilterModelMap,POST_FILTER_ARRAY_FIELD)).stream().flatMap(pair-> {
+                                                                            return pair._1.entrySet().stream().map(e->{
+                                                                                return div().withClass("draggable filters").attr("data-target","filters").with(
+                                                                                        label(humanAttributeFor(e.getKey())),
+                                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(pair._2).withValue(e.getKey()),
+                                                                                        div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                                );
+                                                                            });
+                                                                        }).collect(Collectors.toList())
+                                                                )
 
-                                                                ), div().withId("filters-target").withClass("droppable filters target col-6").with(
-                                                                        h4("Filters to Apply")
-                                                                )
+                                                        ), div().withId("filters-target").withClass("droppable filters target col-6").with(
+                                                                h4("Filters to Apply")
                                                         )
                                                 )
-                                        ), br(), div().withClass("row panel panel-default").with(
-                                                div().withClass("col-12 panel-body").with(
-                                                        toggleButton("charts-row","Add Charts"),
-                                                        div().withId("charts-row").withClass("row collapse").with(
-                                                                div().withId("charts-start").withClass("droppable charts start col-6").with(
-                                                                        h4("Available Charts"),
-                                                                        div().with(
-                                                                                chartModelMap.entrySet().stream().map(e->{
-                                                                                    return div().withClass("draggable charts").attr("data-target","charts").with(
-                                                                                            label(humanAttributeFor(e.getKey())),
-                                                                                            input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
-                                                                                            div().withClass("toggle").with(e.getValue().getOptionsTag())
-                                                                                    );
-                                                                                }).collect(Collectors.toList())
-                                                                        )
-                                                                ), div().withId("charts-target").withClass("droppable charts target col-6").with(
-                                                                        h4("Charts to Apply")
+                                        )
+                                ), br(), div().withClass("row panel panel-default").with(
+                                        div().withClass("col-12 panel-body").with(
+                                                toggleButton("charts-row","Add Charts"),
+                                                div().withId("charts-row").withClass("row collapse").with(
+                                                        div().withId("charts-start").withClass("droppable charts start col-6").with(
+                                                                h4("Available Charts"),
+                                                                div().with(
+                                                                        chartModelMap.entrySet().stream().map(e->{
+                                                                            return div().withClass("draggable charts").attr("data-target","charts").with(
+                                                                                    label(humanAttributeFor(e.getKey())),
+                                                                                    input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(CHART_MODELS_ARRAY_FIELD).withValue(e.getKey()),
+                                                                                    div().withClass("toggle").with(e.getValue().getOptionsTag())
+                                                                            );
+                                                                        }).collect(Collectors.toList())
                                                                 )
+                                                        ), div().withId("charts-target").withClass("droppable charts target col-6").with(
+                                                                h4("Charts to Apply")
                                                         )
                                                 )
-                                        ), br(),br(),
-                                        div().withClass("row").with(
-                                                div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
-                                                        button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                                )
+                                        )
+                                ), br(),br(),
+                                div().withClass("row").with(
+                                        div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
+                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                         )
                                 )
                         )

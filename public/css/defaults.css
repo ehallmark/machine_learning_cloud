@@ -4,8 +4,9 @@
 }
 
 .droppable {
-    border-radius: 4px;
+    border: 1px #000000 solid;
     padding: 5px;
+    border: 1px
 }
 
 .draggable {
@@ -26,11 +27,17 @@ h4 {
 .target {
     background-color: white;
     margin-top: 10px;
+    border-right: 0px black solid;
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
 .start {
     background-color: white;
     margin-top: 10px;
+    border-right: 0px black solid;
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
 }
 
 body {
