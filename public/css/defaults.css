@@ -78,6 +78,10 @@ body {
     width: 50%;
 }
 
+.collapse div {
+    width: 100%;
+}
+
 button.multiselect.dropdown-toggle {
     width: 100%;
     background-color: white;

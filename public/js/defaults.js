@@ -7,10 +7,14 @@ $(document).ready(function() {
         if(shouldShow) {
             if(! $toggle.hasClass('show')) {
                 $toggle.addClass('show');
+                $toggle.data('target',$toggle.data('hidden-target'));
+                $toggle.data('hidden-target', '');
             }
         } else {
             if($toggle.hasClass('show')) {
                 $toggle.removeClass('show');
+                $toggle.data('hidden-target',$toggle.data('target'));
+                $toggle.data('target', '');
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")

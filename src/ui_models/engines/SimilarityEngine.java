@@ -113,7 +113,7 @@ public class SimilarityEngine extends ValueAttr {
 
     @Override
     public Tag getOptionsTag() {
-        return div().attr("style","width: 100%;").with(
+        return div().with(
                 label("Similar to Patents (1 per line)"),br(),
                 textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD), br(),
                 label("Similar to Assignees (1 per line)"),br(),
