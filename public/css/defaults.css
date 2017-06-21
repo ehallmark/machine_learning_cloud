@@ -65,6 +65,7 @@ body {
 
 .start .draggable {
     background-color: #E8E8E8;
+    z-index: 1;
 }
 
 .mycheckbox {
