@@ -650,7 +650,9 @@ public class SimilarPatentServer {
                                         div().withClass("draggable col-4").with(
                                                 label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                         valueModelMap.keySet().stream().map(key-> {
-                                                            return option(humanAttributeFor(key)).withValue(key);
+                                                            ContainerTag option = option(humanAttributeFor(key)).withValue(key);
+                                                            if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
+                                                            return option;
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
