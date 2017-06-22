@@ -436,15 +436,16 @@ public class SimilarPatentServer {
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().with(
-                                hr(),
                                 h4("Charts"),
                                 div().with(
-                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        charts.stream().map(c -> div().withClass("panel panel-default").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br(),br()
                         ),
-                        portfolioList == null ? div() : div().with(
-                                h4("Data"),
-                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
+                        portfolioList == null ? div() : div().withClass("panel panel-default").with(
+                                div().withClass("panel-body").with(
+                                        h4("Data"),
+                                        tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
+                                )
                         )
                 ).render(), finishedCharts));
 
@@ -686,30 +687,35 @@ public class SimilarPatentServer {
                 div().withClass("col-12 panel-body").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
-                                        h4("Search Options")
+                                        h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
                                 ),
-                                div().withClass("col-4").attr("style","text-align: center").with(
-                                        label("Result Type"),br(),
-                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
-                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                    return option;
-                                                }).collect(Collectors.toList())
+                                div().withClass("col-12").with(
+                                        div().withClass("row").with(
+                                                div().withClass("col-4").attr("style","text-align: center").with(
+                                                        label("Result Type"),br(),
+                                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                    return option;
+                                                                }).collect(Collectors.toList())
+                                                        )
+                                                ),
+                                                div().withClass("col-4").attr("style","text-align: center").with(
+                                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                                valueModelMap.keySet().stream().map(key-> {
+                                                                    ContainerTag option = option(humanAttributeFor(key)).withValue(key);
+                                                                    if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
+                                                                    return option;
+                                                                }).collect(Collectors.toList())
+                                                        )
+                                                ),
+                                                div().withClass("col-4").attr("style","text-align: center").with(
+                                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                )
                                         )
-                                ),
-                                div().withClass("col-4").attr("style","text-align: center").with(
-                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                valueModelMap.keySet().stream().map(key-> {
-                                                    ContainerTag option = option(humanAttributeFor(key)).withValue(key);
-                                                    if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
-                                                    return option;
-                                                }).collect(Collectors.toList())
-                                        )
-                                ),
-                                div().withClass("col-4").attr("style","text-align: center").with(
-                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                 )
+
                         )
                 )
         );
