@@ -670,7 +670,7 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                span().withClass("glyphicon glyphicon-chevron-down handle").attr("style","float: left; cursor: pointer;").attr("data-toggle","collapse")
+                                                                span().withClass("arrow-down handle").attr("style","float: left; cursor: pointer;").attr("data-toggle","collapse")
                                                                         .attr("data-hidden-target","#"+collapseId).withText("Toggle"),
                                                                 label(humanAttributeFor(e.getKey())),
                                                                 input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
