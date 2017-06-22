@@ -670,8 +670,8 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                span().withClass("arrow-down handle").attr("style","float: left; cursor: pointer;").attr("data-toggle","collapse")
-                                                                        .attr("data-hidden-target","#"+collapseId).withText("Toggle"),
+                                                                span().withClass("arrow-down handle").attr("style","float: left; margin-top: 5px; cursor: pointer;").attr("data-toggle","collapse")
+                                                                        .attr("data-hidden-target","#"+collapseId),
                                                                 label(humanAttributeFor(e.getKey())),
                                                                 input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
                                                                 div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
@@ -783,12 +783,13 @@ public class SimilarPatentServer {
         //Database.setupSeedConn();
         boolean preLoad = true;
         Database.initializeDatabase();
-        if(preLoad)Database.preLoad();
         System.out.println("Starting to load base finder...");
         initialize();
         System.out.println("Finished loading base finder.");
         System.out.println("Starting server...");
         server();
         System.out.println("Finished starting server.");
+        if(preLoad)Database.preLoad();
+
     }
 }
