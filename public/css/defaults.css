@@ -40,8 +40,9 @@ h4, h5 {
   border-left: 7px solid transparent;
   border-right: 7px solid transparent;
   border-top: 7px solid black;
-  margin: 3px;
-
+  margin-left: 3px;
+  margin-top: 8px;
+  cursor: pointer;
 }
 
 .target {
@@ -79,6 +80,7 @@ body {
 
 .mycheckbox {
     float: right;
+    margin-top: 5px;
 }
 
 .show>.dropdown-menu {
