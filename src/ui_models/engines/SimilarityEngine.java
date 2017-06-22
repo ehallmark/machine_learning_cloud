@@ -98,6 +98,7 @@ public class SimilarityEngine extends ValueAttr {
 
     @Override
     public double evaluate(String item) {
+        if(secondFinder==null||secondFinder.numItems()==0) return ValueMapNormalizer.DEFAULT_START;
         return secondFinder.similarityTo(item) * 100d;
     }
 

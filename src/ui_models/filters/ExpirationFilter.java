@@ -25,12 +25,7 @@ public class ExpirationFilter extends AbstractFilter {
     public void extractRelevantInformationFromParams(Request req) {
         // do nothing
     }
-
-    @Override
-    public boolean defaultSelected() {
-        return true;
-    }
-
+    
     @Override
     public boolean shouldKeepItem(Item obj) {
         return !Database.isExpired(obj.getName());

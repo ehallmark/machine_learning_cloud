@@ -10,6 +10,7 @@ import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.engines.SimilarityEngine;
+import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
@@ -231,13 +232,6 @@ public class SimilarPatentServer {
         return tagger;
     }
 
-    static void evaluateModel(AbstractAttribute model, List<Item> portfolio) {
-        System.out.println("Starting to evaluate model: "+model.getName());
-        PortfolioList portfolioList = new PortfolioList(portfolio);
-        portfolioList.applyAttributes(Arrays.asList(model));
-        System.out.println("Finished "+model.getName());
-    }
-
     static String getAndRemoveMessage(Session session) {
         String message = session.attribute("message");
         if(message!=null)session.removeAttribute("message");
@@ -293,7 +287,7 @@ public class SimilarPatentServer {
         }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList());
     }
 
-    public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) {
+    public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) throws AttributeException {
         System.out.println("Applying technology values...");
         // Apply technology values
         List<SpecificTechnologyEvaluator> technologyEvaluators = new ArrayList<>();
@@ -460,7 +454,7 @@ public class SimilarPatentServer {
 
             } catch (Exception e) {
                 System.out.println(e.getClass().getName() + ": " + e.getMessage());
-                return new Gson().toJson(new AjaxChartMessage("ERROR: " + e.getMessage(), Collections.emptyList()));
+                return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
             }
         });
 
