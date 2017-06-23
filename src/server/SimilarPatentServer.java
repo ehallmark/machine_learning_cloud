@@ -439,8 +439,8 @@ public class SimilarPatentServer {
                                 h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
                                 div().attr("style","width: 100%").withId("data-charts").withClass("collapse show").with(
                                         charts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                ),br(),br()
-                        ),
+                                ),br()
+                        ),finishedCharts.isEmpty()?div():div().with(br(),br()),
                         portfolioList == null ? div() : div().withClass("panel panel-default row").with(
                                 h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
                                 tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
@@ -622,14 +622,13 @@ public class SimilarPatentServer {
                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)), br(),
                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
-                                br(),
                                 div().withClass("row").with(
                                         div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
                                                 button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                         )
                                 )
                         )
-                ), hr(),
+                ),br(),
                 div().withClass("col-12").withId("results")
         );
     }
