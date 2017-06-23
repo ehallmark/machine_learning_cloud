@@ -47,6 +47,10 @@ $(document).ready(function() {
         return false;
     });
 
+    $('.handle').click(function(e) {
+        e.stopPropagation();
+    });
+
     $('.droppable.values').droppable({
         accept: '.draggable.values',
         drop: dropFunc
@@ -62,11 +66,11 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
-    $('.draggable').dblclick(function() {
-        var id = $(this).data('target');
+    $('.draggable .double-click').dblclick(function() {
+        var id = $(this).parent().data('target');
         if(id) {
             var target;
-            $parent = $(this).parent();
+            $parent = $(this).parent().parent();
             if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
                 target = "start";
             } else {

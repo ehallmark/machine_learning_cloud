@@ -504,15 +504,15 @@ public class SimilarPatentServer {
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                 input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                button("Back").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                button("Back").withClass("btn btn-secondary").attr("style","margin-top: -6px;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ),div().withClass("col-10").with(
-                        h1("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;")
+                        h1("Patent Recommendation Engine").attr("style","margin-top: 12px; text-align: center; margin-right: auto; margin-left: auto;")
                 ),div().withClass("col-1").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-secondary").attr("style","float: right; margin-top: -6px;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
@@ -668,11 +668,12 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                span().withClass("arrow-down handle").attr("style","float: left;").attr("data-toggle","collapse")
-                                                                        .attr("data-hidden-target","#"+collapseId),
-                                                                label(humanAttributeFor(e.getKey())),
-                                                                input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
-                                                                div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
+                                                                div().attr("style","width: 100%;").withClass("double-click").with(
+                                                                        span().withClass("arrow-down handle").attr("style","float: left;").attr("data-toggle","collapse")
+                                                                                .attr("data-hidden-target","#"+collapseId),
+                                                                        label(humanAttributeFor(e.getKey())),
+                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
+                                                                ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                         );
                                                     });
                                                 }).collect(Collectors.toList())
