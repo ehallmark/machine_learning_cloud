@@ -620,14 +620,14 @@ public class SimilarPatentServer {
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(
-                                                mainOptionsRow(), br(),
-                                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
-                                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
-                                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)), br(),
-                                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
+                                                mainOptionsRow(),
+                                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD),
+                                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
+                                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
+                                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
                                                 div().withClass("row").with(
-                                                        div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
-                                                                button("Search").attr("style","margin-bottom: 10px;").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),br()
+                                                        div().withClass("col-12").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                         )
                                                 )
                                         )
