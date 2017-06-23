@@ -487,7 +487,7 @@ public class SimilarPatentServer {
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
                 + "         for(var i = 0; i<charts.length; i++) {  "
-                + "             $('#chart-'+i.toString()).highcharts(charts[i]).redraw();"
+                + "             $('#chart-'+i.toString()).highcharts(charts[i]).reflow();"
                 + "         }                        "
                 + "      } catch (err) {"
                 + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
