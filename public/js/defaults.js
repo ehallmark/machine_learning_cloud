@@ -51,10 +51,6 @@ $(document).ready(function() {
         e.stopPropagation();
         return false;
     });
-    $('.handle-wrapper').click(function(e) {
-        e.stopPropagation();
-        return false;
-    });
 
     $('.droppable.values').droppable({
         accept: '.draggable.values',
