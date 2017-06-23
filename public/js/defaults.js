@@ -67,10 +67,11 @@ $(document).ready(function() {
     });
 
     $('.draggable .double-click').dblclick(function() {
-        var id = $(this).parent().data('target');
+        var $draggable = $(this).parent();
+        var id = draggable.data('target');
         if(id) {
             var target;
-            $parent = $(this).parent().parent();
+            $parent = $draggable.parent();
             if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
                 target = "start";
             } else {
@@ -78,7 +79,7 @@ $(document).ready(function() {
             }
             $target = $('#'+id+'-'+target);
             if($target) {
-                  resetCheckbox(this,$target.get(0));
+                  resetCheckbox($draggable,$target.get(0));
             }
         }
     });

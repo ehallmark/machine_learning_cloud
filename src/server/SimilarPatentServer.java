@@ -499,7 +499,7 @@ public class SimilarPatentServer {
     }
 
     static Tag navigationTag() {
-        return div().withClass("row panel panel-default").with(
+        return div().withClass("row panel panel-default").attr("style","padding-top: 0px;").with(
                 div().withClass("col-1").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
