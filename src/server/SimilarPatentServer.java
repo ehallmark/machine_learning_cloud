@@ -627,7 +627,7 @@ public class SimilarPatentServer {
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
-                                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),br()
                                                         )
                                                 )
                                         )

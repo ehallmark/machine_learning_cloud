@@ -44,15 +44,20 @@ h4, h5 {
     width: 100%;
 }
 
+.row.panel .row.panel {
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
 .arrow-down {
-  width: 0;
-  height: 0;
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  border-top: 7px solid black;
-  margin-left: 3px;
-  margin-top: 8px;
-  cursor: pointer;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid black;
+    margin-left: 3px;
+    margin-top: 8px;
+    cursor: pointer;
 }
 
 .target {
