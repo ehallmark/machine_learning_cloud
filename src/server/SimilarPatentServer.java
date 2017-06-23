@@ -633,8 +633,8 @@ public class SimilarPatentServer {
                                 )
 
                         )
-                ),br(),br(),
-                div().withClass("col-12").withId("results")
+                ),
+                div().withClass("col-12").attr("style","margin-top: 10px;").withId("results")
         );
     }
 
