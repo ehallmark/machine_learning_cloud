@@ -504,12 +504,15 @@ public class SimilarPatentServer {
                         .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                         input().withName("goBack").withValue("on").withType("hidden"), br(),
                         button("Back").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                ),div().attr("style","width: 100%;").with(
+                        h1("Patent Recommendation Engine").attr("style","text-align: center;")
                 ),
                 form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                         .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                         input().withName("goForward").withValue("on").withType("hidden"), br(),
                         button("Forward").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
-                ));
+                )
+        );
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
@@ -616,7 +619,7 @@ public class SimilarPatentServer {
                         hr(),
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
+                                br(),
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(
                                                 mainOptionsRow(),
