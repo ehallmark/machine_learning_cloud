@@ -437,14 +437,12 @@ public class SimilarPatentServer {
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").with(
                                 h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
-                                div().withId("data-charts").withClass("panel-body").with(
-                                        div().withClass("panel panel-default").with(
-                                                charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                        )
+                                div().withId("data-charts").withClass("collapse show").with(
+                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br(),br()
                         ),
                         portfolioList == null ? div() : div().withClass("panel panel-default row").with(
-                                div().withClass("panel-body").with(
+                                div().with(
                                         h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
                                         tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                                 )
@@ -517,7 +515,7 @@ public class SimilarPatentServer {
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().withClass("table table-striped").withId("data-table").with(
+        return table().withClass("table table-striped collapse show").withId("data-table").with(
                 thead().with(
                         tr().with(
                                 attributes.stream().map(attr->th(humanAttributeFor(attr))).collect(Collectors.toList())
@@ -656,7 +654,7 @@ public class SimilarPatentServer {
             modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
         }
         return div().withClass("row panel panel-default").with(
-                div().withClass("col-12 panel-body").with(
+                div().withClass("col-12").with(
                         toggleButton(type+"-row", title),
                         div().withId(type+"-row").withClass("row collapse").with(
                                 div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
