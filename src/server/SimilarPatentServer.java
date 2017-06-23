@@ -688,29 +688,27 @@ public class SimilarPatentServer {
                                         h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
                                 ),
                                 div().withClass("col-12 collapse show").withId("main-options").with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-4").attr("style","text-align: center").with(
-                                                        label("Result Type"),br(),
-                                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
-                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                    return option;
-                                                                }).collect(Collectors.toList())
-                                                        )
-                                                ),
-                                                div().withClass("col-4").attr("style","text-align: center").with(
-                                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                                valueModelMap.keySet().stream().map(key-> {
-                                                                    ContainerTag option = option(humanAttributeFor(key)).withValue(key);
-                                                                    if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
-                                                                    return option;
-                                                                }).collect(Collectors.toList())
-                                                        )
-                                                ),
-                                                div().withClass("col-4").attr("style","text-align: center").with(
-                                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                                label("Result Type"),br(),
+                                                select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                            return option;
+                                                        }).collect(Collectors.toList())
                                                 )
+                                        ),
+                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                                label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                        valueModelMap.keySet().stream().map(key-> {
+                                                            ContainerTag option = option(humanAttributeFor(key)).withValue(key);
+                                                            if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
+                                                            return option;
+                                                        }).collect(Collectors.toList())
+                                                )
+                                        ),
+                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                                label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
 

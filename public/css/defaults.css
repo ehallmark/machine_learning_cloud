@@ -107,6 +107,14 @@ button.multiselect.dropdown-toggle {
     display: flex;
 }
 
+table.collapse.show.table {
+    display: table;
+}
+
+.highcharts-container {
+    width: 100%;
+}
+
 .multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox {
     margin: 0px;
     padding: 5px;
