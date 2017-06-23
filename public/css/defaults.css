@@ -79,6 +79,11 @@ option {
     border-collapse: collapse;
 }
 
+.double-click label {
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
 body {
     background-color: #white;
 }
