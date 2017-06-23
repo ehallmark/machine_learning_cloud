@@ -437,8 +437,10 @@ public class SimilarPatentServer {
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").with(
                                 h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
-                                div().withId("data-charts").with(
-                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                div().withId("data-charts").withClass("panel-body").with(
+                                        div().withClass("panel panel-default").with(
+                                                charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        )
                                 ),br(),br()
                         ),
                         portfolioList == null ? div() : div().withClass("panel panel-default row").with(
