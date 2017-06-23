@@ -499,18 +499,21 @@ public class SimilarPatentServer {
     }
 
     static Tag navigationTag() {
-        return div().attr("style","margin-top: -10px;").with(
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
-                        .attr("style","float: left;").withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                        input().withName("goBack").withValue("on").withType("hidden"), br(),
-                        button("Back").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
-                ),div().attr("style","width: 100%;").with(
-                        h1("Patent Recommendation Engine").attr("style","text-align: center;")
-                ),
-                form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
-                        .attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
-                        input().withName("goForward").withValue("on").withType("hidden"), br(),
-                        button("Forward").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+        return div().withClass("row").with(
+                div().withClass("col-1").with(
+                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
+                                .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
+                                input().withName("goBack").withValue("on").withType("hidden"), br(),
+                                button("Back").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                        )
+                ),div().withClass("col-10").with(
+                        h1("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;")
+                ),div().withClass("col-1").with(
+                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
+                                .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
+                                input().withName("goForward").withValue("on").withType("hidden"), br(),
+                                button("Forward").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                        )
                 )
         );
     }
@@ -611,11 +614,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        div().withClass("row").with(
-                                div().withClass("col-12").with(
-                                        navigationTag()
-                                )
-                        ),
+                        navigationTag(),
                         hr(),
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
