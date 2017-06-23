@@ -689,7 +689,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
                                 ),
-                                div().withClass("col-12").withId("main-options").with(
+                                div().withClass("col-12 collapse show").withId("main-options").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-4").attr("style","text-align: center").with(
                                                         label("Result Type"),br(),
