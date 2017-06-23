@@ -22,6 +22,10 @@
     border-collapse: collapse;
 }
 
+.collapsing div {
+    display: none;
+}
+
 .multiselect-container {
     z-index: 1000;
 }
