@@ -26,6 +26,10 @@
     display: none;
 }
 
+.collapse.show.charts-div {
+    display: block;
+}
+
 .multiselect-container {
     z-index: 1000;
 }
