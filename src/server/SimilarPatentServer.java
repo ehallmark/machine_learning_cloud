@@ -186,7 +186,7 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            boolean test = true;
+            boolean test = false;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -508,7 +508,7 @@ public class SimilarPatentServer {
                                 button("Back").withClass("btn btn-secondary").attr("style","margin-top: -6px;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ),div().withClass("col-10").with(
-                        h1("Patent Recommendation Engine").attr("style","margin-top: 12px; text-align: center; margin-right: auto; margin-left: auto;")
+                        h2("Patent Recommendation Engine").attr("style","margin-top: 18px; text-align: center; margin-right: auto; margin-left: auto;")
                 ),div().withClass("col-1").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
