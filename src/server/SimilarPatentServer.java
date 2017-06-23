@@ -185,7 +185,7 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            boolean test = false;
+            boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -435,15 +435,15 @@ public class SimilarPatentServer {
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().with(
-                                h4("Charts"),
-                                div().with(
-                                        charts.stream().map(c -> div().withClass("panel panel-default").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                        finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").with(
+                                h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
+                                div().withId("data-charts").with(
+                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br(),br()
                         ),
-                        portfolioList == null ? div() : div().withClass("panel panel-default").with(
+                        portfolioList == null ? div() : div().withClass("panel panel-default row").with(
                                 div().withClass("panel-body").with(
-                                        h4("Data"),
+                                        h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
                                         tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                                 )
                         )
@@ -515,7 +515,7 @@ public class SimilarPatentServer {
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().withClass("table table-striped").with(
+        return table().withClass("table table-striped").withId("data-table").with(
                 thead().with(
                         tr().with(
                                 attributes.stream().map(attr->th(humanAttributeFor(attr))).collect(Collectors.toList())
@@ -689,7 +689,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
                                 ),
-                                div().withClass("col-12").with(
+                                div().withClass("col-12").withId("main-options").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-4").attr("style","text-align: center").with(
                                                         label("Result Type"),br(),
