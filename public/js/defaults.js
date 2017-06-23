@@ -47,8 +47,9 @@ $(document).ready(function() {
         return false;
     });
 
-    $('.handle').click(function(e) {
+    $('.handle-wrapper').click(function(e) {
         e.stopPropagation();
+        return false;
     });
 
     $('.droppable.values').droppable({

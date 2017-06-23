@@ -628,7 +628,7 @@ public class SimilarPatentServer {
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
                                                 div().withClass("row").with(
                                                         div().withClass("col-12").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
-                                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                                button("Search").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                         )
                                                 )
                                         )
@@ -670,8 +670,10 @@ public class SimilarPatentServer {
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
                                                                 div().attr("style","width: 100%;").withClass("double-click").with(
-                                                                        span().withClass("arrow-down handle").attr("style","float: left;").attr("data-toggle","collapse")
-                                                                                .attr("data-hidden-target","#"+collapseId),
+                                                                        span().withClass("handle-wrapper").attr("style","float: left;").with(
+                                                                                span().withClass("arrow-down handle").attr("style","float: left;").attr("data-toggle","collapse")
+                                                                                .attr("data-hidden-target","#"+collapseId)
+                                                                        ),
                                                                         label(humanAttributeFor(e.getKey())),
                                                                         input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
                                                                 ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
