@@ -68,7 +68,7 @@ $(document).ready(function() {
 
     $('.draggable .double-click').dblclick(function() {
         var $draggable = $(this).parent();
-        var id = draggable.data('target');
+        var id = $draggable.data('target');
         if(id) {
             var target;
             $parent = $draggable.parent();
@@ -79,7 +79,7 @@ $(document).ready(function() {
             }
             $target = $('#'+id+'-'+target);
             if($target) {
-                  resetCheckbox($draggable,$target.get(0));
+                  resetCheckbox($draggable.get(0),$target.get(0));
             }
         }
     });

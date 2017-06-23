@@ -175,6 +175,7 @@ public class SimilarPatentServer {
                 postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+                postFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new JapaneseAssigneeFilter());
                 postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
             }catch(Exception e) {

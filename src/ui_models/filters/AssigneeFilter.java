@@ -16,7 +16,13 @@ import java.util.HashSet;
  * Created by ehallmark on 5/10/17.
  */
 public class AssigneeFilter extends AbstractFilter {
-    private Collection<String> assigneesToRemove;
+    protected Collection<String> assigneesToRemove;
+
+    public AssigneeFilter() {}
+
+    protected AssigneeFilter(Collection<String> assigneesToRemove) {
+        this.assigneesToRemove=assigneesToRemove;
+    }
 
     @Override
     public Tag getOptionsTag() {
