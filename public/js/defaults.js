@@ -66,7 +66,8 @@ $(document).ready(function() {
         var id = $(this).data('target');
         if(id) {
             var target;
-            if($(this).parent().parent().hasClass('target')) {
+            $parent = $(this).parent();
+            if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
                 target = "start";
             } else {
                 target = "target";
