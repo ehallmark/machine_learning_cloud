@@ -499,7 +499,7 @@ public class SimilarPatentServer {
     }
 
     static Tag navigationTag() {
-        return div().withClass("row").with(
+        return div().withClass("row panel panel-default").with(
                 div().withClass("col-1").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
@@ -512,7 +512,7 @@ public class SimilarPatentServer {
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-secondary").attr("style","float: right;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
@@ -614,8 +614,8 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
+                        br(),
                         navigationTag(),
-                        hr(),
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
