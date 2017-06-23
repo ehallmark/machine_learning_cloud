@@ -437,15 +437,13 @@ public class SimilarPatentServer {
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").with(
                                 h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
-                                div().withId("data-charts").withClass("collapse show").with(
-                                        charts.stream().map(c -> div().withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                div().attr("style","width: 100%").withId("data-charts").withClass("collapse show").with(
+                                        charts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br(),br()
                         ),
                         portfolioList == null ? div() : div().withClass("panel panel-default row").with(
-                                div().with(
-                                        h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
-                                        tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
-                                )
+                                h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
+                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), finishedCharts));
 
