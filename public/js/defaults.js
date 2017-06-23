@@ -47,6 +47,10 @@ $(document).ready(function() {
         return false;
     });
 
+    $('.handle-wrapper').dblclick(function(e) {
+        e.stopPropagation();
+        return false;
+    });
     $('.handle-wrapper').click(function(e) {
         e.stopPropagation();
         return false;
