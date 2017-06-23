@@ -618,18 +618,23 @@ public class SimilarPatentServer {
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
-                                mainOptionsRow(), br(),
-                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
-                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
-                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)), br(),
-                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
-                                div().withClass("row").with(
-                                        div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
-                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                div().withClass("panel panel-default row").with(
+                                        div().withClass("panel-body col-12").with(
+                                                mainOptionsRow(), br(),
+                                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
+                                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD), br(),
+                                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)), br(),
+                                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD), br(),
+                                                div().withClass("row").with(
+                                                        div().withClass("col-12").attr("style","align-items: center; text-align: center;").with(
+                                                                button("Search").withClass("btn btn-primary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                        )
+                                                )
                                         )
                                 )
+
                         )
-                ),br(),
+                ),br(),br(),
                 div().withClass("col-12").withId("results")
         );
     }
