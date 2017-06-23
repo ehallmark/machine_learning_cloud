@@ -66,7 +66,7 @@ $(document).ready(function() {
         var id = $(this).data('target');
         if(id) {
             var target;
-            if($(this).closest('.droppable').hasClass('target')) {
+            if($(this).parent().parent().hasClass('target')) {
                 target = "start";
             } else {
                 target = "target";
