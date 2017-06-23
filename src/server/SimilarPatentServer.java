@@ -618,7 +618,7 @@ public class SimilarPatentServer {
                         br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 h1("Patent Recommendation Engine").attr("style","text-align: center;"),br(),br(),
-                                div().withClass("panel panel-default row").with(
+                                div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(
                                                 mainOptionsRow(), br(),
                                                 customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD), br(),
