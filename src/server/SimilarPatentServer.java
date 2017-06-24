@@ -703,7 +703,7 @@ public class SimilarPatentServer {
         return div().withClass("row panel panel-default").with(
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
-                        div().withId(groupID).withClass("row collapse").with(
+                        div().withId(groupID).withClass("collapsible-form row collapse").with(
                                 div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                         h5("Available "+title),
                                         div().with(

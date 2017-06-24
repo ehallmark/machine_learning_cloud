@@ -143,6 +143,9 @@ var setupDataTable = function (dataTable) {
 var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
+    $('.collapsible-form.collapse.show').each(function() {
+        $('#'+$(this).id().toString()+"-panel-toggle").click();
+    });
 };
 
 var applyParams = function(params) {
@@ -151,7 +154,6 @@ var applyParams = function(params) {
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
             $.each(value, function(i,elem) {
                 $input = $input.find('[value="'+elem+'"]');
-                alert('["'+key+'"="'+elem+'"]');
                 paramsHelper($input,elem);
             });
         } else {
