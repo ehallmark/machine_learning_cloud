@@ -147,12 +147,19 @@ var resetSearchForm = function() {
 
 var applyParams = function(params) {
     $.each(params, function(key,value){
-        $input = $('[name="'+key+'"');
-        $dropZone = $input.closest('.droppable');
-        if(! $dropZone.hasClass('.target')) {
-            $input.closest('.double-click').dblclick();
+        var $input = $('[name="'+key+'"');
+        var $checkbox = $input;
+        if(! $input.hasClass("mycheckbox")) {
+            $checkbox = $input.closest('.mycheckbox');
+            $input.val(value);
         }
-        $input.val(value);
+        var $dropZone = $checkbox.closest('.droppable');
+        if($checkbox.hasClass('mycheckbox') && ! $dropZone.hasClass('.target')) {
+            $checkbox.parent().dblclick();
+            if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
+                $("#"+$checkbox.attr("toggle-id")).click();
+            }
+        }
         $input.addClass('highlighted');
     });
 };

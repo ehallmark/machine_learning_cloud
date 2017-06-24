@@ -162,7 +162,9 @@ public class SimilarPatentServer {
         if(templates.isEmpty()) {
             Map<String,Object> previewParams = new HashMap<>();
             previewParams.put(SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
-            previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
+            previewParams.put(Constants.COMPDB_ASSETS_PURCHASED,null);
+            previewParams.put(Constants.PORTFOLIO_SIZE,null);
+            previewParams.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,100);
             templates.add(new FormTemplate("Preview Form",previewParams));
             templates.add(new FormTemplate("Reset Form",new HashMap<>()));
         }
@@ -598,8 +600,8 @@ public class SimilarPatentServer {
                 ),
                 body().with(
                         div().withClass("container-fluid").with(
-                                div().withClass("row").with(
-                                        nav().withClass("col-3 bg-faded sidebar").with(
+                                div().withClass("row").attr("style","width: 100%;").with(
+                                        nav().withClass("col-2 bg-faded sidebar").with(
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
@@ -607,7 +609,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9").with(
+                                        ),div().withClass("col-8 offset-1").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
                                                 ),
@@ -682,7 +684,7 @@ public class SimilarPatentServer {
 
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
-                div().withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
+                div().withId(id+"-panel-toggle").withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
                         h4(text).attr("style","cursor: pointer;")
                 )
         );
@@ -697,10 +699,12 @@ public class SimilarPatentServer {
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
             modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
         }
+        String groupID = type+"-row";
+        String toggleID = groupID+"-panel-toggle";
         return div().withClass("row panel panel-default").with(
                 div().withClass("col-12").with(
-                        toggleButton(type+"-row", title),
-                        div().withId(type+"-row").withClass("row collapse").with(
+                        toggleButton(groupID, title),
+                        div().withId(groupID).withClass("row collapse").with(
                                 div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                         h5("Available "+title),
                                         div().with(
@@ -715,7 +719,7 @@ public class SimilarPatentServer {
                                                                                 .attr("data-hidden-target","#"+collapseId)
                                                                         ),
                                                                         label(humanAttributeFor(e.getKey())),
-                                                                        input().attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
+                                                                        input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
                                                                 ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                         );
                                                     });
