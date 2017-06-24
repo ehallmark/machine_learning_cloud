@@ -18,6 +18,6 @@ public class FormTemplate {
     }
 
     public String getHref() {
-        return "javascript:resetSearchForm();applyParams("+new Gson().toJson(params)+");";
+        return "javascript:resetSearchForm();setTimeout(applyParams("+new Gson().toJson(params)+"),200);";
     }
 }

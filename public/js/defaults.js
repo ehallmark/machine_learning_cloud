@@ -14,12 +14,12 @@ $(document).ready(function() {
                 $toggle.addClass('show');
             }
         } else {
+            if($toggle.hasClass('show')) {
+                $toggle.removeClass('show');
+            }
             if($handle.attr('data-target')) {
                 $handle.attr('data-hidden-target',$handle.attr('data-target'));
                 $handle.removeAttr('data-target');
-            }
-            if($toggle.hasClass('show')) {
-                $toggle.removeClass('show');
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
@@ -141,6 +141,7 @@ var resetSearchForm = function() {
     $('.collapsible-form.collapse.show').each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
+
 };
 
 var applyParams = function(params) {
