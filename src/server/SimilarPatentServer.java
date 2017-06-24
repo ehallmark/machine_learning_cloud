@@ -5,6 +5,7 @@ import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
+import server.tools.SimpleAjaxMessage;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
 import ui_models.engines.SimilarityEngine;
@@ -358,6 +359,10 @@ public class SimilarPatentServer {
                 System.out.println("Getting parameters...");
                 // get meta parameters
                 int limit = extractInt(req, LIMIT_FIELD, 10);
+                int maxResultLimit = 10000;
+                if(limit > maxResultLimit) {
+                    return new Gson().toJson(new AjaxChartMessage("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit,Collections.emptyList()));
+                }
                 String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
 
 
