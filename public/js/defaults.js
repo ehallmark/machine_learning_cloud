@@ -91,11 +91,11 @@ $(document).ready(function() {
         maxHeight: 300
     });
 
-    $('#data-table th.sortable').click(function(event) {
+    $('#data-table thead tr th.sortable').click(function(event) {
         var sortOnField = $(this).data('sort-field');
         var $wrapper = $('#data-table tbody');
         var $rows = $wrapper.find("tr");
-        [].sort.call($articles, function(a,b) {
+        [].sort.call($rows, function(a,b) {
             return $(b).data(sortOnField).localCompare($(a).data(sortOnField));
         });
         $rows.each(function(){

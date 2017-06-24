@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -523,15 +524,26 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped collapse show").withId("data-table").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-sort-field",attr)).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-sort-field",attr.toLowerCase())).collect(Collectors.toList())
                         )
                 ),tbody().with(
-                        items.stream().map(item->tr().with(
-                                item.getDataAsRow(attributes).stream().map(pair->createItemCell(pair.getSecond()).attr("data-"+pair.getFirst(),pair.getSecond().toString())).collect(Collectors.toList())
-                        )).collect(Collectors.toList())
+                        items.stream().map(item-> {
+                            List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
+                            return addAttributesToRow(tr().with(
+                                    results.stream().map(pair -> createItemCell(pair.getSecond()).attr("data-" + pair.getFirst().toLowerCase(), pair.getSecond().toString())).collect(Collectors.toList())
+                            ), results);
+                        }).collect(Collectors.toList())
                 )
 
         );
+    }
+
+    public static Tag addAttributesToRow(ContainerTag tag, List<org.deeplearning4j.berkeley.Pair<String,Object>> data) {
+        AtomicReference<ContainerTag> ref = new AtomicReference<>(tag);
+        data.forEach(pair->{
+            ref.set(ref.get().attr("data-"+pair.getFirst(),pair.getSecond().toString()));
+        });
+        return ref.get();
     }
 
     public static ContainerTag createItemCell(Object cell) {
