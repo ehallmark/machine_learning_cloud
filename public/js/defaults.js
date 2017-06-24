@@ -97,8 +97,15 @@ $(document).ready(function() {
 });
 
 var setupDataTable = function (dataTable) {
-    var f = -1;
     $(dataTable).find('th.sortable').on("click",function() {
+        var f = -1;
+        if($(this).attr("data-sorted")) {
+            f=1;
+            $(this).removeAttr("data-sorted");
+        } else {
+            $(this).attr("data-sorted","true");
+        }
+
         var sortOnField = $(this).data('field');
         var $wrapper = $(dataTable).find('tbody');
         var rows = $wrapper.find("tr").get();
@@ -108,26 +115,22 @@ var setupDataTable = function (dataTable) {
             var A = getVal(a,sortOnField);
             var B = getVal(b,sortOnField);
 
-            if(A < B) {
-                return -1*f;
-            }
-            if(A > B) {
-                return 1*f;
-            }
-            return 0;
+            return B.localCompare(A);
         });
 
 
         $.each(rows, function(){
             $wrapper.append(this);
         });
+
+
     });
 
     var getVal = function (elm,sortOnField) {
         var v = $(elm).data(sortOnField);
-        if($.isNumeric(v)){
-            v = parseInt(v,10);
-        }
+        //if($.isNumeric(v)){
+        //    v = parseInt(v,10);
+        //}
         return v;
     };
 };
