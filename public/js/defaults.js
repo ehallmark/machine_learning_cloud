@@ -149,7 +149,7 @@ var applyParams = function(params) {
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"');
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
-            $.each(value, function(elem) {
+            $.each(value, function(i,elem) {
                 $input = $input.find('[value="'+elem+'"]');
                 paramsHelper($input,elem);
             });
@@ -174,9 +174,9 @@ var paramsHelper = function(input,value) {
         if($checkbox.hasClass('mycheckbox')) {
             $checkbox.parent().dblclick();
         }
-        if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
-            $("#"+$checkbox.attr("toggle-id")).click();
-        }
+    }
+    if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
+        $("#"+$checkbox.attr("toggle-id")).click();
     }
     $checkbox.addClass('highlighted');
 };

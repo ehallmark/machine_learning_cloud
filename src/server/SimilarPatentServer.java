@@ -598,9 +598,9 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
-                        div().withClass("container-fluid").with(
-                                div().withClass("row").attr("style","width: 100%;").with(
-                                        nav().withClass("col-2 bg-faded sidebar").with(
+                        div().withClass("container-fluid").attr("style","height: 100%;").with(
+                                div().withClass("row").attr("style","height: 100%;").with(
+                                        nav().withClass("col-2 sidebar").with(
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(

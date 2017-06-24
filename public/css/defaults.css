@@ -155,3 +155,7 @@ td, th, option {
 .highlighted {
     background-color: #87CEFA;
 }
+
+.sidebar {
+    background-color: #BEBEBE;
+}
