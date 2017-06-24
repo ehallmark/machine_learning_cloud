@@ -151,12 +151,11 @@ var resetSearchForm = function() {
 var applyParams = function(params) {
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"]');
-        alert("Size: "+$input.get().length);
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
-            $.each(value, function(i,elem) {
-                $input = $input.find('[value="'+elem+'"]');
-                alert("New Size: "+$input.get().length);
-                paramsHelper($input,elem);
+            $.each(value, function(i,val) {
+                var input = findByValue($input.get(),val);
+                if(input == null) alert("NULL");
+                paramsHelper($(input),null);
             });
         } else {
             paramsHelper($input,value);
@@ -165,6 +164,13 @@ var applyParams = function(params) {
     });
 
 };
+
+var findByValue= function(inputs, value) {
+    for(var i = 0; i < inputs.length; i++) {
+        if(inputs[i].value == value) return inputs[i];
+    }
+    return null;
+}
 
 
 var paramsHelper = function(input,value) {
