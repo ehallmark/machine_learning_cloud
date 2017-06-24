@@ -91,7 +91,7 @@ $(document).ready(function() {
         maxHeight: 300
     });
 
-    var createDataTable = function (dataTable) {
+    var setupDataTable = function (dataTable) {
         var f = -1;
         $(dataTable).find('th.sortable').on("click",function() {
             var sortOnField = $(this).data('field');
