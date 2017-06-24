@@ -6,6 +6,7 @@ import seeding.Constants;
 import seeding.Database;
 import server.SimilarPatentServer;
 import similarity_models.AbstractSimilarityModel;
+import similarity_models.paragraph_vectors.SimilarPatentFinder;
 import spark.Request;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;

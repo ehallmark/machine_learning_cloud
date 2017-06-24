@@ -166,6 +166,7 @@ public class SimilarPatentServer {
             try {
                 // Pre filters
                 preFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
+                // TODO Fix prefilter issue with only being able to prefilter similarity
                 // Post filters
                 postFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
                 postFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
@@ -425,6 +426,7 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
                 // reapply filters just in case
+                portfolioList.applyAttributes(getAttributesFromPrerequisites(preFilters,appliedAttributes));
                 portfolioList.applyFilters(preFilters);
 
                 List<AbstractChart> finishedCharts = new ArrayList<>();
