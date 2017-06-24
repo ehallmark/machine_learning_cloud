@@ -47,11 +47,6 @@ $(document).ready(function() {
         return false;
     });
 
-    $('.handle-wrapper').dblclick(function(e) {
-        e.stopPropagation();
-        return false;
-    });
-
     $('.droppable.values').droppable({
         accept: '.draggable.values',
         drop: dropFunc

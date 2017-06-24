@@ -713,11 +713,8 @@ public class SimilarPatentServer {
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
                                                                 div().attr("style","width: 100%;").withClass("double-click").with(
-                                                                        span().withClass("handle-wrapper").attr("style","float: left;").with(
-                                                                                span().withClass("arrow-down handle").attr("style","float: left;").attr("data-toggle","collapse")
-                                                                                .attr("data-hidden-target","#"+collapseId)
-                                                                        ),
-                                                                        label(humanAttributeFor(e.getKey())),
+                                                                        label(humanAttributeFor(e.getKey())).withClass("handle").attr("data-toggle","collapse")
+                                                                                .attr("data-hidden-target","#"+collapseId),
                                                                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
                                                                 ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                         );
