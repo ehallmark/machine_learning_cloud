@@ -100,7 +100,6 @@ var setupDataTable = function (dataTable) {
     var f = -1;
     $(dataTable).find('th.sortable').on("click",function() {
         var sortOnField = $(this).data('field');
-        alert(sortOnField);
         var $wrapper = $(dataTable).find('tbody');
         var rows = $wrapper.find("tr").get();
 
@@ -126,7 +125,6 @@ var setupDataTable = function (dataTable) {
 
     var getVal = function (elm,sortOnField) {
         var v = $(elm).data(sortOnField);
-        alert(v);
         if($.isNumeric(v)){
             v = parseInt(v,10);
         }
