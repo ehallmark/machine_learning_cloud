@@ -133,6 +133,10 @@ table.collapse.show.table {
     width: 100%;
 }
 
+th.sortable {
+    cursor: pointer;
+}
+
 .multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox {
     margin: 0px;
     padding: 5px;
