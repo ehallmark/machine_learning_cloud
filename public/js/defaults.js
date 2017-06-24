@@ -150,10 +150,12 @@ var resetSearchForm = function() {
 
 var applyParams = function(params) {
     $.each(params, function(key,value){
-        var $input = $('[name="'+key+'"');
+        var $input = $('[name="'+key+'"]');
+        alert("Size: "+$input.get().length);
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
             $.each(value, function(i,elem) {
                 $input = $input.find('[value="'+elem+'"]');
+                alert("New Size: "+$input.get().length);
                 paramsHelper($input,elem);
             });
         } else {
