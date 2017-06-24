@@ -17,9 +17,9 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class JapaneseAssigneeFilter extends AssigneeFilter {
+public class RemoveJapaneseAssigneeFilter extends AssigneeFilter {
 
-    public JapaneseAssigneeFilter() {
+    public RemoveJapaneseAssigneeFilter() {
         super(Database.getJapaneseCompanies());
     }
 

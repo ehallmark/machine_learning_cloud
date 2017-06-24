@@ -94,6 +94,7 @@ $(document).ready(function() {
     var f = -1;
     $('#data-table thead tr th.sortable').click(function(event) {
         var sortOnField = $(this).data('sort-field');
+        alert(sortOnField);
         var $wrapper = $('#data-table tbody');
         var rows = $wrapper.find("tr").get();
 
@@ -120,7 +121,7 @@ $(document).ready(function() {
             return v;
         }
 
-        $.each(rows).each(function(){
+        $.each(rows, function(){
             $wrapper.append(this);
         });
     });

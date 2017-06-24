@@ -3,12 +3,10 @@ package server;
 import com.google.gson.Gson;
 import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
-import j2html.tags.EmptyTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
-import ui_models.attributes.classification.SimilarityGatherTechTagger;
 import ui_models.engines.SimilarityEngine;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
@@ -176,7 +174,8 @@ public class SimilarPatentServer {
                 postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
-                postFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new JapaneseAssigneeFilter());
+                postFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
+                postFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
             }catch(Exception e) {
@@ -470,6 +469,7 @@ public class SimilarPatentServer {
                 //+ "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
                 //+ "    return false;"
                 //+ "};"
+                + "$('#results').html('');       " // clears results div
                 + "$.ajax({"
                 + "  type: 'POST', "
                 + "  dataType: 'json',"
