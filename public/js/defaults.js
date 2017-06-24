@@ -146,7 +146,6 @@ var resetSearchForm = function() {
 };
 
 var applyParams = function(params) {
-    alert(params);
     $.each(params, function(key,value){
         $input = $('[name="'+key+'"');
         $dropZone = $input.closest('.droppable');

@@ -164,6 +164,7 @@ public class SimilarPatentServer {
             previewParams.put(SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
             previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
             templates.add(new FormTemplate("Preview Form",previewParams));
+            templates.add(new FormTemplate("Reset Form",new HashMap<>()));
         }
     }
 
@@ -601,8 +602,8 @@ public class SimilarPatentServer {
                                         nav().withClass("col-3 bg-faded sidebar").with(
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
-                                                        return li(template.getName()).withClass("nav-item").with(
-                                                                a().withClass("nav-link").withHref(template.getHref())
+                                                        return li().withClass("nav-item").with(
+                                                                a(template.getName()).withClass("nav-link").withHref(template.getHref())
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
