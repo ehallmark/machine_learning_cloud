@@ -1,5 +1,6 @@
 package ui_models.portfolios.items;
 
+import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import ui_models.attributes.value.ValueMapNormalizer;
 
@@ -43,8 +44,8 @@ public class Item implements Comparable<Item> {
         return (String) dataMap.getOrDefault(Constants.NAME, null);
     }
 
-    public List<Object> getDataAsRow(List<String> attributes) {
-        return attributes.stream().map(attr->dataMap.get(attr)).collect(Collectors.toList());
+    public List<Pair<String,Object>> getDataAsRow(List<String> attributes) {
+        return attributes.stream().map(attr->new Pair<>(attr,dataMap.get(attr))).collect(Collectors.toList());
     }
 
     public Object getData(String param) {

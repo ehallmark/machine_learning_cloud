@@ -523,15 +523,19 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped collapse show").withId("data-table").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr->th(humanAttributeFor(attr))).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-sort-field",attr)).collect(Collectors.toList())
                         )
                 ),tbody().with(
                         items.stream().map(item->tr().with(
-                                item.getDataAsRow(attributes).stream().map(cell->cell==null?td(""): ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? td(String.valueOf(((Number)cell).intValue())) : td(String.format("%.1f",cell))) : td(cell.toString()))).collect(Collectors.toList())
+                                item.getDataAsRow(attributes).stream().map(pair->createItemCell(pair.getSecond()).attr("data-"+pair.getFirst(),pair.getSecond().toString())).collect(Collectors.toList())
                         )).collect(Collectors.toList())
                 )
 
         );
+    }
+
+    public static ContainerTag createItemCell(Object cell) {
+        return cell==null?td(""): ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? td(String.valueOf(((Number)cell).intValue())) : td(String.format("%.1f",cell))) : td(cell.toString()));
     }
 
 
