@@ -92,7 +92,7 @@ $(document).ready(function() {
     });
 
     var f = -1;
-    $('#data-table thead tr th.sortable').click(function(event) {
+    $('th.sortable').on("click",function(event) {
         var sortOnField = $(this).data('sort-field');
         alert(sortOnField);
         var $wrapper = $('#data-table tbody');
@@ -100,8 +100,8 @@ $(document).ready(function() {
 
         rows.sort(function(a, b) {
 
-            var A = getVal(a);
-            var B = getVal(b);
+            var A = getVal(a,sortOnField);
+            var B = getVal(b,sortOnField);
 
             if(A < B) {
                 return -1*f;
@@ -112,19 +112,19 @@ $(document).ready(function() {
             return 0;
         });
 
-        function getVal(elm){
-            var v = $(elm).data(sortOnField);
-            alert(v);
-            if($.isNumeric(v)){
-                v = parseInt(v,10);
-            }
-            return v;
-        }
 
         $.each(rows, function(){
             $wrapper.append(this);
         });
     });
 
+    var getVal = function (elm,sortOnField) {
+        var v = $(elm).data(sortOnField);
+        alert(v);
+        if($.isNumeric(v)){
+            v = parseInt(v,10);
+        }
+        return v;
+    };
 
 });
