@@ -779,7 +779,7 @@ public class SimilarPatentServer {
                                         h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
                                 ),
                                 div().withClass("col-12 collapse show").withId("main-options").with(
-                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                        div().withClass("col-3").attr("style","text-align: center").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -789,7 +789,7 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                        div().withClass("col-3").attr("style","text-align: center").with(
                                                 label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                         valueModelMap.keySet().stream().map(key-> {
                                                             ContainerTag option = option(humanAttributeFor(key)).withValue(key);
@@ -798,8 +798,15 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("col-4").attr("style","text-align: center").with(
+                                        div().withClass("col-3").attr("style","text-align: center").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        ), div().withClass("col-3").attr("style","text-align: center").with(
+                                                label("Similarity Model"),br(),select().withClass("form-control").withName(SIMILARITY_MODEL_FIELD).with(
+                                                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
+                                                        option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
+                                                        option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
+                                                        option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
+                                                )
                                         )
                                 )
 

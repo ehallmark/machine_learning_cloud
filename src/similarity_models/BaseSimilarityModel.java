@@ -32,12 +32,11 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         this.lookupTable=lookupTable;
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
-        candidateSet=candidateSet.stream().distinct().collect(Collectors.toList());
         this.name=name;
         try {
-            items = candidateSet.stream().map(itemStr->{
-                if(!lookupTable.containsKey(itemStr)) return null; // no info on item
-                return itemStr;
+            items = candidateSet.stream().map(item->{
+                if(!lookupTable.containsKey(item.getName())) return null; // no info on item
+                return item;
             }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item))).collect(Collectors.toSet());
 
         } catch (Exception e) {
