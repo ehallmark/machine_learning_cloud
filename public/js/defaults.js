@@ -151,6 +151,7 @@ var applyParams = function(params) {
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
             $.each(value, function(i,elem) {
                 $input = $input.find('[value="'+elem+'"]');
+                alert('["'+key+'"="'+elem+'"]');
                 paramsHelper($input,elem);
             });
         } else {
@@ -165,12 +166,12 @@ var applyParams = function(params) {
 var paramsHelper = function(input,value) {
     var $checkbox = input;
     if(! input.hasClass("mycheckbox")) {
-        $checkbox = input.closest('.mycheckbox');
+        $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
         input.addClass('highlighted');
     }
     var $dropZone = $checkbox.closest('.droppable');
-    if(! $dropZone.hasClass('.target')) {
+    if(! $dropZone.hasClass('target')) {
         if($checkbox.hasClass('mycheckbox')) {
             $checkbox.parent().dblclick();
         }
