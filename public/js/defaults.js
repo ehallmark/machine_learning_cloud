@@ -139,3 +139,21 @@ var setupDataTable = function (dataTable) {
         return v;
     };
 };
+
+var resetSearchForm = function() {
+    $('.target .double-click').dblclick();
+    $('.highlighted').removeClass('highlighted');
+};
+
+var applyParams = function(params) {
+    alert(params);
+    $.each(params, function(key,value){
+        $input = $('[name="'+key+'"');
+        $dropZone = $input.closest('.droppable');
+        if(! $dropZone.hasClass('.target')) {
+            $input.closest('.double-click').dblclick();
+        }
+        $input.val(value);
+        $input.addClass('highlighted');
+    });
+};

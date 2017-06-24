@@ -10,6 +10,7 @@ import ui_models.attributes.charts.*;
 import ui_models.engines.SimilarityEngine;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
+import ui_models.templates.FormTemplate;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.class_vectors.CPCSimilarityFinder;
@@ -83,6 +84,7 @@ public class SimilarPatentServer {
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static SimilarityEngine similarityEngine = new SimilarityEngine();
+    static List<FormTemplate> templates = new ArrayList<>();
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -90,7 +92,7 @@ public class SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attrs
             humanAttrToJavaAttrMap = new HashMap<>();
-            humanAttrToJavaAttrMap.put("Asset", Constants.NAME);
+            humanAttrToJavaAttrMap.put("Patent Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
@@ -137,6 +139,7 @@ public class SimilarPatentServer {
         loadFilterModels();
         loadTechTaggerModel();
         loadChartModels();
+        loadTemplates();
     }
 
     public static void loadChartModels() {
@@ -152,6 +155,15 @@ public class SimilarPatentServer {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public static void loadTemplates() {
+        if(templates.isEmpty()) {
+            Map<String,Object> previewParams = new HashMap<>();
+            previewParams.put(SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
+            previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
+            templates.add(new FormTemplate("Preview Form",previewParams));
         }
     }
 
@@ -584,18 +596,30 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
-                        div().withClass("container").with(
-                                a().attr("href", "/").with(
-                                        img().attr("src", "/images/brand.png")
-                                ),
-                                hr(),
-                                h2("Artificial Intelligence Platform"),
-                                hr(),
-                                h4(message),
-                                form,
-                                br(),
-                                br(),
-                                br()
+                        div().withClass("container-fluid").with(
+                                div().withClass("row").with(
+                                        nav().withClass("col-3 bg-faded sidebar").with(
+                                                ul().withClass("nav nav-pills flex-column").with(
+                                                    templates.stream().map(template->{
+                                                        return li(template.getName()).withClass("nav-item").with(
+                                                                a().withClass("nav-link").withHref(template.getHref())
+                                                        );
+                                                    }).collect(Collectors.toList())
+                                                )
+                                        ),div().withClass("col-9").with(
+                                                a().attr("href", "/").with(
+                                                        img().attr("src", "/images/brand.png")
+                                                ),
+                                                hr(),
+                                                h2("Artificial Intelligence Platform"),
+                                                hr(),
+                                                h4(message),
+                                                form,
+                                                br(),
+                                                br(),
+                                                br()
+                                        )
+                                )
                         )
                 )
         );
