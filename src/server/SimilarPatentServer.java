@@ -89,6 +89,7 @@ public class SimilarPatentServer {
     static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
     static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
     static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
+    static Collection<? extends AbstractAttribute> preComputedAttributes;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -192,6 +193,8 @@ public class SimilarPatentServer {
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
                 postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
+                // pre computed attributes
+                preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -243,10 +246,9 @@ public class SimilarPatentServer {
 
     public static void loadAllItems() {
         if(allPatents.isEmpty()) {
-            Collection<? extends AbstractAttribute> attributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
             Database.getCopyOfAllPatents().parallelStream().forEach(patent -> {
                 Item item = new Item(patent);
-                attributes.forEach(model -> {
+                preComputedAttributes.forEach(model -> {
                     item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
                 });
                 allPatents.add(item);
@@ -255,10 +257,9 @@ public class SimilarPatentServer {
         }
 
         if(allAssignees.isEmpty()) {
-            Collection<? extends AbstractAttribute> attributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
             Database.getAssignees().parallelStream().forEach(assignee -> {
                 Item item = new Item(assignee);
-                attributes.forEach(model -> {
+                preComputedAttributes.forEach(model -> {
                     item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
                 });
                 allAssignees.add(item);
@@ -426,7 +427,7 @@ public class SimilarPatentServer {
                 // Get value models
                 List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
 
-                Set<String> appliedAttributes = new HashSet<>();
+                Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
                 similarityEngine.extractRelevantInformationFromParams(req);
                 PortfolioList portfolioList = similarityEngine.getPortfolioList();
                 if(similarityEngine.wasEvaluated()) appliedAttributes.add(Constants.SIMILARITY);
@@ -476,7 +477,6 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
                 // reapply filters just in case
-                portfolioList.applyAttributes(getAttributesFromPrerequisites(preFilters,appliedAttributes));
                 portfolioList.applyFilters(preFilters);
 
                 List<AbstractChart> finishedCharts = new ArrayList<>();
