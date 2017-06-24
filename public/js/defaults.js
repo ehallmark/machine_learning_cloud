@@ -150,13 +150,16 @@ var resetSearchForm = function() {
 
 };
 
-var applyParams = function(params) {
+var applyParams = function(params,searchOptions) {
+    $.each(searchOptions, function(key,value){
+        var $input = $('[name="'+key+'"]');
+        $input.val(value);
+    });
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"]');
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
             $.each(value, function(i,val) {
                 var input = findByValue($input.get(),val);
-                if(input == null) alert("NULL");
                 paramsHelper($(input),null);
             });
         } else {
