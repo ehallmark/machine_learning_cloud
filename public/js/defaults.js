@@ -183,8 +183,8 @@ var paramsHelper = function(input,value) {
         }
     }
     var $group = $("#"+$checkbox.attr("group-id"));
-    if(! ($group.hasClass("show") || $group.hasClass("collapsing")) ) {
+    if(! ($group.hasClass("show")) ) {
         $("#"+$checkbox.attr("toggle-id")).click();
     }
-    $checkbox.addClass('highlighted');
+    $checkbox.parent().addClass('highlighted');
 };
