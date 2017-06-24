@@ -530,7 +530,7 @@ public class SimilarPatentServer {
                         items.stream().map(item-> {
                             List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
                             return addAttributesToRow(tr().with(
-                                    results.stream().map(pair -> createItemCell(pair.getSecond()).attr("data-" + pair.getFirst().toLowerCase(), pair.getSecond().toString())).collect(Collectors.toList())
+                                    results.stream().map(pair -> createItemCell(pair.getSecond())).collect(Collectors.toList())
                             ), results);
                         }).collect(Collectors.toList())
                 )

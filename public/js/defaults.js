@@ -91,16 +91,39 @@ $(document).ready(function() {
         maxHeight: 300
     });
 
+    var f = -1;
     $('#data-table thead tr th.sortable').click(function(event) {
         var sortOnField = $(this).data('sort-field');
         var $wrapper = $('#data-table tbody');
-        var $rows = $wrapper.find("tr");
-        [].sort.call($rows, function(a,b) {
-            return $(b).data(sortOnField).localCompare($(a).data(sortOnField));
+        var rows = $wrapper.find("tr").get();
+
+        rows.sort(function(a, b) {
+
+            var A = getVal(a);
+            var B = getVal(b);
+
+            if(A < B) {
+                return -1*f;
+            }
+            if(A > B) {
+                return 1*f;
+            }
+            return 0;
         });
-        $rows.each(function(){
+
+        function getVal(elm){
+            var v = $(elm).data(sortOnField);
+            alert(v);
+            if($.isNumeric(v)){
+                v = parseInt(v,10);
+            }
+            return v;
+        }
+
+        $.each(rows).each(function(){
             $wrapper.append(this);
         });
     });
+
 
 });
