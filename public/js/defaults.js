@@ -144,7 +144,7 @@ var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
     $('.collapsible-form.collapse.show').each(function() {
-        $('#'+$(this).id().toString()+"-panel-toggle").click();
+        $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
 };
 

@@ -608,7 +608,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-8 offset-1").with(
+                                        ),div().withClass("col-8 offset-1").attr("style","overflow-y: auto;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
                                                 ),
