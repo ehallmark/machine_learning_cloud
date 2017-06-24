@@ -149,10 +149,10 @@ var applyParams = function(params) {
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"');
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
-            $.each(value, function(elem)) {
+            $.each(value, function(elem) {
                 $input = $input.find('[value="'+elem+'"]');
                 paramsHelper($input,elem);
-            }
+            });
         } else {
             paramsHelper($input,value);
         }
