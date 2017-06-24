@@ -148,18 +148,35 @@ var resetSearchForm = function() {
 var applyParams = function(params) {
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"');
-        var $checkbox = $input;
-        if(! $input.hasClass("mycheckbox")) {
-            $checkbox = $input.closest('.mycheckbox');
-            $input.val(value);
-        }
-        var $dropZone = $checkbox.closest('.droppable');
-        if($checkbox.hasClass('mycheckbox') && ! $dropZone.hasClass('.target')) {
-            $checkbox.parent().dblclick();
-            if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
-                $("#"+$checkbox.attr("toggle-id")).click();
+        if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
+            $.each(value, function(elem)) {
+                $input = $input.find('[value="'+elem+'"]');
+                paramsHelper($input,elem);
             }
+        } else {
+            paramsHelper($input,value);
         }
-        $input.addClass('highlighted');
+
     });
+
+};
+
+
+var paramsHelper = function(input,value) {
+    var $checkbox = input;
+    if(! input.hasClass("mycheckbox")) {
+        $checkbox = input.closest('.mycheckbox');
+        input.val(value);
+        input.addClass('highlighted');
+    }
+    var $dropZone = $checkbox.closest('.droppable');
+    if(! $dropZone.hasClass('.target')) {
+        if($checkbox.hasClass('mycheckbox')) {
+            $checkbox.parent().dblclick();
+        }
+        if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
+            $("#"+$checkbox.attr("toggle-id")).click();
+        }
+    }
+    $checkbox.addClass('highlighted');
 };
