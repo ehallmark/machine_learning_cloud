@@ -115,7 +115,7 @@ var setupDataTable = function (dataTable) {
             var A = getVal(a,sortOnField);
             var B = getVal(b,sortOnField);
 
-            return B.localCompare(A);
+            return B.localeCompare(A, 'kn');
         });
 
 
