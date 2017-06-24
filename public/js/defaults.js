@@ -27,6 +27,12 @@ $(document).ready(function() {
         $checkbox.prop("disabled", !shouldShow);
     }
 
+    $('.handle').dblclick(function(e){
+        e.stopPropagation();
+        e.preventDefault();
+        return false;
+    });
+
     var dropFunc = function(event, ui) {
         resetCheckbox(ui.draggable,this);
     };
@@ -183,7 +189,7 @@ var paramsHelper = function(input,value) {
         }
     }
     var $group = $("#"+$checkbox.attr("group-id"));
-    if(! ($group.hasClass("show")) ) {
+    if(! ($group.hasClass("show") || $group.hasClass("collapsing")) ) {
         $("#"+$checkbox.attr("toggle-id")).click();
     }
     $checkbox.parent().addClass('highlighted');
