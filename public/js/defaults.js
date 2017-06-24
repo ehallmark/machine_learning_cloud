@@ -115,7 +115,12 @@ var setupDataTable = function (dataTable) {
             var A = getVal(a,sortOnField);
             var B = getVal(b,sortOnField);
 
-            return A.toString().localeCompare(B.toString(), {numeric: $.isNumeric(A)}) * f;
+            if(A > B) {
+                return 1*f;
+            } else if(A < B) {
+                return -1*f;
+            }
+            return 0;
         });
 
 
@@ -128,9 +133,9 @@ var setupDataTable = function (dataTable) {
 
     var getVal = function (elm,sortOnField) {
         var v = $(elm).data(sortOnField);
-        //if($.isNumeric(v)){
-        //    v = parseInt(v,10);
-        //}
+        if($.isNumeric(v)){
+            v = parseFloat(v);
+        }
         return v;
     };
 };
