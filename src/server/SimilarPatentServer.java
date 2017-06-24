@@ -86,6 +86,9 @@ public class SimilarPatentServer {
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static SimilarityEngine similarityEngine = new SimilarityEngine();
     static List<FormTemplate> templates = new ArrayList<>();
+    static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
+    static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
+    static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -135,12 +138,13 @@ public class SimilarPatentServer {
 
     public static void initialize() {
         loadAttributes();
-        loadSimilarityModels();
         loadValueModels();
         loadFilterModels();
         loadTechTaggerModel();
         loadChartModels();
         loadTemplates();
+        loadAllItems();
+        loadSimilarityModels();
     }
 
     public static void loadChartModels() {
@@ -165,8 +169,8 @@ public class SimilarPatentServer {
             previewParams.put(SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
             previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
             previewParams.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,100);
-            templates.add(new FormTemplate("Preview Form",previewParams));
-            templates.add(new FormTemplate("Reset Form",new HashMap<>()));
+            templates.add(new FormTemplate("Preview Form",previewParams, FormTemplate.valueAssigneeSmall()));
+            templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall()));
         }
     }
 
@@ -175,17 +179,18 @@ public class SimilarPatentServer {
             try {
                 // Pre filters
                 preFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
+                preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
+                preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
+                preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
+                preFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
+                preFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
+                preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
+
                 // TODO Fix prefilter issue with only being able to prefilter similarity
                 // Post filters
-                postFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
                 postFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
-                postFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
-                postFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
                 postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
-                postFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
-                postFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
-                postFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
             }catch(Exception e) {
@@ -195,23 +200,24 @@ public class SimilarPatentServer {
     }
 
     public static void loadSimilarityModels() {
+        loadAllItems();
         if(similarityModelMap.isEmpty()) {
             boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
-                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(Database.getValuablePatents(), "** Paragraph Vector Model **"));
-                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(Database.getAssignees(), "** Paragraph Vector Model **"));
+                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(allPatents, "** Paragraph Vector Model **"));
+                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(allAssignees, "** Paragraph Vector Model **"));
                 });
                 if(!test) {
-                    pool.execute(() -> similarityModelMap.put(Constants.SIM_RANK_MODEL + "_patents", new SimRankSimilarityModel(Database.getValuablePatents(), "** SimRank Model **")));
+                    pool.execute(() -> similarityModelMap.put(Constants.SIM_RANK_MODEL + "_patents", new SimRankSimilarityModel(allPatents, "** SimRank Model **")));
                     pool.execute(() -> {
-                        similarityModelMap.put(Constants.CPC_MODEL + "_patents", new CPCSimilarityFinder(Database.getValuablePatents(), "** CPC Model **"));
-                        similarityModelMap.put(Constants.CPC_MODEL + "_assignees", new CPCSimilarityFinder(Database.getAssignees(), "** CPC Model **"));
+                        similarityModelMap.put(Constants.CPC_MODEL + "_patents", new CPCSimilarityFinder(allPatents, "** CPC Model **"));
+                        similarityModelMap.put(Constants.CPC_MODEL + "_assignees", new CPCSimilarityFinder(allAssignees, "** CPC Model **"));
                     });
                     pool.execute(() -> {
-                        similarityModelMap.put(Constants.WIPO_MODEL + "_patents", new WIPOSimilarityFinder(Database.getValuablePatents(), "** WIPO Model **"));
-                        similarityModelMap.put(Constants.WIPO_MODEL + "_assignees", new WIPOSimilarityFinder(Database.getAssignees(), "** WIPO Model **"));
+                        similarityModelMap.put(Constants.WIPO_MODEL + "_patents", new WIPOSimilarityFinder(allPatents, "** WIPO Model **"));
+                        similarityModelMap.put(Constants.WIPO_MODEL + "_assignees", new WIPOSimilarityFinder(allAssignees, "** WIPO Model **"));
                     });
                 }
                 pool.shutdown();
@@ -234,6 +240,36 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             loadValueModels();
         }
+    }
+
+    public static void loadAllItems() {
+        if(allPatents.isEmpty()) {
+            Collection<? extends AbstractAttribute> attributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
+            Database.getCopyOfAllPatents().parallelStream().forEach(patent -> {
+                Item item = new Item(patent);
+                attributes.forEach(model -> {
+                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
+                });
+                allPatents.add(item);
+                nameToItemMap.put(patent,item);
+            });
+        }
+
+        if(allAssignees.isEmpty()) {
+            Collection<? extends AbstractAttribute> attributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
+            Database.getAssignees().parallelStream().forEach(assignee -> {
+                Item item = new Item(assignee);
+                attributes.forEach(model -> {
+                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
+                });
+                allAssignees.add(item);
+                nameToItemMap.put(assignee,item);
+            });
+        }
+    }
+
+    public static List<Item> findItemsByName(Collection<String> names) {
+        return names.stream().map(name->nameToItemMap.get(name)).filter(item->item!=null).collect(Collectors.toList());
     }
 
     public static void loadTechTaggerModel() {

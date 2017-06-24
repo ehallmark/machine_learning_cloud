@@ -7,6 +7,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import similarity_models.BaseSimilarityModel;
 import similarity_models.class_vectors.vectorizer.ClassVectorizer;
+import ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
     private static final File rawFile = new File("data/wipo_similarity_finder_lookup_table.jobj");
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
-    public WIPOSimilarityFinder(Collection<String> candidateSet, String name) {
+    public WIPOSimilarityFinder(Collection<Item> candidateSet, String name) {
         super(candidateSet,name,getLookupTable());
     }
 

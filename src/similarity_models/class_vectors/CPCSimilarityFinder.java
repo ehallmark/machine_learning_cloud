@@ -7,6 +7,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import similarity_models.BaseSimilarityModel;
+import ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
     private static final File rawFile = new File("data/cpc_similarity_finder_lookup_table.jobj");
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
-    public CPCSimilarityFinder(Collection<String> candidateSet, String name) {
+    public CPCSimilarityFinder(Collection<Item> candidateSet, String name) {
         super(candidateSet,name,getLookupTable());
     }
 

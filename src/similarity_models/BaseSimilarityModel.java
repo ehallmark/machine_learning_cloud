@@ -10,7 +10,7 @@ import tools.MinHeap;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
 import ui_models.portfolios.items.Item;
-import ui_models.portfolios.items.VectorizedItem;
+import ui_models.portfolios.items.VectorizedItemWrapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -21,14 +21,14 @@ import java.util.stream.Collectors;
 public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
     @Getter
-    protected Collection<VectorizedItem> items;
+    protected Collection<VectorizedItemWrapper> items;
     @Getter
     protected Collection<String> tokens;
     protected Map<String,INDArray> lookupTable;
     @Getter @Setter
     protected String name;
 
-    public BaseSimilarityModel(Collection<String> candidateSet, String name, Map<String,INDArray> lookupTable) {
+    public BaseSimilarityModel(Collection<Item> candidateSet, String name, Map<String,INDArray> lookupTable) {
         this.lookupTable=lookupTable;
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
@@ -38,14 +38,14 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
             items = candidateSet.stream().map(itemStr->{
                 if(!lookupTable.containsKey(itemStr)) return null; // no info on item
                 return itemStr;
-            }).filter(item->item!=null).map(item->new VectorizedItem(item,lookupTable.get(item))).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item))).collect(Collectors.toSet());
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
             items = Collections.emptyList();
         }
-        this.tokens=new HashSet<>(items.stream().map(item->item.getName()).collect(Collectors.toList()));
+        this.tokens=new HashSet<>(items.stream().map(item->item.getItem().getName()).collect(Collectors.toList()));
     }
 
     public INDArray computeAvg() {
@@ -65,7 +65,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Override
-    public AbstractSimilarityModel duplicateWithScope(Collection<String> scope) {
+    public AbstractSimilarityModel duplicateWithScope(Collection<Item> scope) {
         return new BaseSimilarityModel(scope,name,lookupTable);
     }
 
@@ -101,7 +101,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
             if(item!=null) {
                 double sim = Transforms.cosineSim(item.getVec(),baseVector);
                 if(!Double.isNaN(sim)) {
-                    Item itemClone = item.clone();
+                    Item itemClone = item.getItem().clone();
                     itemClone.setSimilarity(sim);
                     // apply item pre filters
                     if (filters.stream().allMatch(filter -> filter.shouldKeepItem(itemClone)))

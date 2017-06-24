@@ -3,6 +3,7 @@ package similarity_models;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.Item;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,5 +24,5 @@ public interface AbstractSimilarityModel {
 
     Collection<String> getTokens();
 
-    AbstractSimilarityModel duplicateWithScope(Collection<String> scope);
+    AbstractSimilarityModel duplicateWithScope(Collection<Item> scope);
 }

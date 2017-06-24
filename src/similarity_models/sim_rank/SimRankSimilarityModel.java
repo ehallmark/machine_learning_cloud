@@ -45,15 +45,14 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     private Map<String,Item> tokenMap;
     @Getter
     private String name;
-    public SimRankSimilarityModel(@NonNull Collection<String> candidateSet, String name) {
+    public SimRankSimilarityModel(@NonNull Collection<Item> candidateSet, String name) {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
-        candidateSet=candidateSet.stream().distinct().collect(Collectors.toList());
         this.name=name;
         try {
-            tokenMap = candidateSet.stream().map(itemStr->{
-                if(!similarityMap.containsKey(itemStr)) return null; // no info on item
-                return itemStr;
-            }).filter(item->item!=null).map(item->new Item(item)).collect(Collectors.toMap((item->item.getName()),item->item));
+            tokenMap = candidateSet.stream().map(item->{
+                if(!similarityMap.containsKey(item.getName())) return null; // no info on item
+                return item;
+            }).filter(item->item!=null).collect(Collectors.toMap((item->item.getName()),item->item));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -112,7 +111,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Override
-    public AbstractSimilarityModel duplicateWithScope(Collection<String> scope) {
+    public AbstractSimilarityModel duplicateWithScope(Collection<Item> scope) {
         return new SimRankSimilarityModel(scope,name);
     }
 

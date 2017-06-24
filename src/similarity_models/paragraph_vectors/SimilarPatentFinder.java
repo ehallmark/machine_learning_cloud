@@ -53,7 +53,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         }
     }
 
-    public SimilarPatentFinder(Collection<String> candidateSet, String name) {
+    public SimilarPatentFinder(Collection<Item> candidateSet, String name) {
         super(candidateSet,name,getLookupTable());
     }
 

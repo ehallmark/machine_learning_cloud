@@ -78,8 +78,8 @@ public class SimilarityEngine extends ValueAttr {
         System.out.println(" ... Similarity model");
         // Get similarity model
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
-        firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(inputsToSearchIn);
-        secondFinder = finderPrototype.duplicateWithScope(inputsToSearchFor);
+        firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchIn));
+        secondFinder = finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchFor));
         if (firstFinder == null || firstFinder.numItems() == 0) {
             throw new RuntimeException("Unable to find any results to search in.");
         }
