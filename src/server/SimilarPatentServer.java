@@ -601,6 +601,7 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-2 sidebar").attr("style","height: 100%; position: fixed;").with(
+                                                h5("Templates").attr("style","margin-top: 40px;"),hr(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(

@@ -181,7 +181,8 @@ var paramsHelper = function(input,value) {
             $checkbox.parent().dblclick();
         }
     }
-    if(! $("#"+$checkbox.attr("group-id")).hasClass("show")) {
+    var $group = $("#"+$checkbox.attr("group-id"));
+    if(! ($group.hasClass("show") || $group.hasClass("collapsing")) ) {
         $("#"+$checkbox.attr("toggle-id")).click();
     }
     $checkbox.addClass('highlighted');
