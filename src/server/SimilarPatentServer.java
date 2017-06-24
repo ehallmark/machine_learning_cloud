@@ -523,10 +523,10 @@ public class SimilarPatentServer {
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().withClass("table table-striped collapse show").withId("data-table").with(
+        return table().attr("data-toggle","table").attr("data-sort-order","desc").withClass("table table-striped collapse show").withId("data-table").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-sort-field",attr.toLowerCase())).collect(Collectors.toList())
+                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-field",attr.toLowerCase()).attr("data-sortable","true")).collect(Collectors.toList())
                         )
                 ),tbody().with(
                         items.stream().map(item-> {
