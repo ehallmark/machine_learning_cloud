@@ -11,10 +11,8 @@ public class Constants {
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
 	public static final String AI_VALUE = "aiValue";
-	public static final String COMPDB_ASSETS_PURCHASED_VALUE = "compdbAssetsPurchasedValue";
-	public static final String COMPDB_ASSETS_SOLD_VALUE = "compDBAssetsSoldValue";
-	public static final String LARGE_PORTFOLIO_VALUE = "largePortfolioValue";
-	public static final String SMALL_PORTFOLIO_VALUE = "smallPortfolioValue";
+	public static final String COMPDB_ASSETS_PURCHASED = "compdbAssetsPurchased";
+	public static final String COMPDB_ASSETS_SOLD = "compDBAssetsSold";
 	public static final String SIMILARITY_THRESHOLD_FILTER = "similarityThresholdFilter";
 	public static final String PORTFOLIO_SIZE_MINIMUM_FILTER = "portfolioSizeMinimumFilter";
 	public static final String PORTFOLIO_SIZE_MAXIMUM_FILTER = "portfolioSizeMaximumFilter";

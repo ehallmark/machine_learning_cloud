@@ -98,10 +98,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
             humanAttrToJavaAttrMap.put("Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
-            humanAttrToJavaAttrMap.put("Large Portfolio Size", Constants.LARGE_PORTFOLIO_VALUE);
-            humanAttrToJavaAttrMap.put("Small Portfolio Size", Constants.SMALL_PORTFOLIO_VALUE);
-            humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD_VALUE);
-            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED_VALUE);
+            humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD);
+            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED);
             humanAttrToJavaAttrMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
             humanAttrToJavaAttrMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
@@ -150,10 +148,6 @@ public class SimilarPatentServer {
         if(valueModelMap.isEmpty()) {
             try {
                 valueModelMap.put(Constants.AI_VALUE, new OverallEvaluator());
-                valueModelMap.put(Constants.COMPDB_ASSETS_PURCHASED_VALUE, new CompDBAssetsPurchasedEvaluator());
-                valueModelMap.put(Constants.COMPDB_ASSETS_SOLD_VALUE, new CompDBAssetsSoldEvaluator());
-                valueModelMap.put(Constants.LARGE_PORTFOLIO_VALUE, new PortfolioSizeEvaluator());
-                valueModelMap.put(Constants.SMALL_PORTFOLIO_VALUE, new SmallPortfolioSizeEvaluator());
                 valueModelMap.put(Constants.SIMILARITY, similarityEngine);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -221,6 +215,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
             attributesMap.put(Constants.NAME, new NameAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOClassificationAttribute());
+            attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
+            attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             loadValueModels();
         }
     }
