@@ -4,7 +4,6 @@ import genetics.Solution;
 import genetics.keyword_analysis.ProbabilityHelper;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.AtomicDouble;
-import ui_models.attributes.value.PortfolioSizeEvaluator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -116,7 +115,7 @@ public class CompanySolution implements Solution {
 
     public static void main(String[] args) {
         // test
-        Attribute attr = new ValueAttribute("Portfolio Size",1,new PortfolioSizeEvaluator());
+        //Attribute attr = new ValueAttribute("Portfolio Size",1,new PortfolioSizeEvaluator());
         //GeneticAlgorithm algorithm = new GeneticAlgorithm(new CompanySolutionCreator(Arrays.asList(attr),false,10,10),10,new CompanySolutionListener(),10);
         //algorithm.simulate(10000,0.5,0.5);
     }
