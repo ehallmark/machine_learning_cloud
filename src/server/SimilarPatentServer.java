@@ -600,7 +600,7 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-2 sidebar").with(
+                                        nav().withClass("col-2 sidebar").attr("style","height: 100%; position: fixed;").with(
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
@@ -608,7 +608,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-8 offset-1").attr("style","overflow-y: auto;").with(
+                                        ),div().withClass("col-8 offset-3").attr("style","padding-top: 15px;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
                                                 ),
