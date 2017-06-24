@@ -45,8 +45,11 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     private Map<String,Item> tokenMap;
     @Getter
     private String name;
+    @Getter
+    private List<Item> itemList;
     public SimRankSimilarityModel(@NonNull Collection<Item> candidateSet, String name) {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
+        this.itemList=candidateSet instanceof List ? (List<Item>)candidateSet : new ArrayList<>(candidateSet);
         this.name=name;
         try {
             tokenMap = candidateSet.stream().map(item->{
@@ -96,13 +99,8 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Override
-    public Collection<String> getTokens() {
-        return tokenMap.keySet();
-    }
-
-    @Override
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters) {
-        PortfolioList finalPortfolio = other.getTokens().stream().map(item->{
+        PortfolioList finalPortfolio = ((SimRankSimilarityModel)other).tokenMap.keySet().stream().map(item->{
             return findSimilarPatentsTo(item,null,limit,filters);
         }).reduce((p1,p2)->{
             return merge(p1,p2,limit);

@@ -22,8 +22,6 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
     @Getter
     protected Collection<VectorizedItemWrapper> items;
-    @Getter
-    protected Collection<String> tokens;
     protected Map<String,INDArray> lookupTable;
     @Getter @Setter
     protected String name;
@@ -37,28 +35,31 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
             items = candidateSet.stream().map(item->{
                 if(!lookupTable.containsKey(item.getName())) return null; // no info on item
                 return item;
-            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item))).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName()))).collect(Collectors.toSet());
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
             items = Collections.emptyList();
         }
-        this.tokens=new HashSet<>(items.stream().map(item->item.getItem().getName()).collect(Collectors.toList()));
     }
 
     public INDArray computeAvg() {
         if(avgVector==null) {
-            avgVector = Nd4j.vstack(tokens.stream()
-                .map(token->lookupTable.get(token))
-                .filter(vec->vec!=null).collect(Collectors.toList())).mean(0);
+            avgVector = Nd4j.vstack(items.stream()
+                .map(item->item.getVec()).collect(Collectors.toList())).mean(0);
         }
         return avgVector;
     }
 
     @Override
+    public List<Item> getItemList() {
+        return items.stream().map(item->item.getItem()).collect(Collectors.toList());
+    }
+
+    @Override
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters)  {
-        if(other.getTokens()==null||other.getTokens().isEmpty()) return new PortfolioList(new ArrayList<>());
+        if(other.numItems()==0) return new PortfolioList(new ArrayList<>());
         INDArray otherAvg = ((BaseSimilarityModel)other).computeAvg();
         return findSimilarPatentsTo(other.getName(),otherAvg,limit,filters);
     }

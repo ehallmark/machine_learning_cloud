@@ -166,7 +166,6 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             Map<String,Object> previewParams = new HashMap<>();
-            previewParams.put(SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
             previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
             previewParams.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,100);
             templates.add(new FormTemplate("Preview Form",previewParams, FormTemplate.valueAssigneeSmall()));

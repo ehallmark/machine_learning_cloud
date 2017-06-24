@@ -86,7 +86,12 @@ public class SimilarityEngine extends ValueAttr {
 
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         if (secondFinder == null || secondFinder.numItems() == 0 || !comparator.equals(Constants.SIMILARITY)) {
-            portfolioList = new PortfolioList(firstFinder.getTokens().stream().map(token -> new Item(token)).collect(Collectors.toList()));
+            portfolioList = new PortfolioList(firstFinder.getItemList());
+            try {
+                portfolioList.applyFilters(preFilters);
+            } catch(Exception e) {
+                throw new RuntimeException("Error on filters: "+e.getMessage());
+            }
             wasEvaluated = false;
         } else {
             int limit = extractInt(req, LIMIT_FIELD, 10);
