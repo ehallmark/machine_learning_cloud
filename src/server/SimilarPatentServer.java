@@ -486,6 +486,7 @@ public class SimilarPatentServer {
                 + "  },"
                 + "  success: function(data) { "
                 + "    $('#results').html(data.message); "
+                + "    setupDataTable($('#results #data-table').get(0));   "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
