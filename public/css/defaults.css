@@ -44,10 +44,6 @@ h4, h5 {
     width: 100%;
 }
 
-th.sortable {
-    cursor: pointer;
-}
-
 .row.panel .row.panel {
     margin: 10px;
 }
@@ -84,8 +80,7 @@ option {
 }
 
 .double-click label {
-    cursor: -webkit-grab;
-    cursor: grab;
+    cursor: pointer;
 }
 
 body {

@@ -91,4 +91,40 @@ $(document).ready(function() {
         maxHeight: 300
     });
 
+    var f = -1;
+    $('th.sortable').on("click",function() {
+        var sortOnField = $(this).data('field');
+        alert(sortOnField);
+        var $wrapper = $('#data-table').find('tbody');
+        var rows = $wrapper.find("tr").get();
+
+        rows.sort(function(a, b) {
+
+            var A = getVal(a,sortOnField);
+            var B = getVal(b,sortOnField);
+
+            if(A < B) {
+                return -1*f;
+            }
+            if(A > B) {
+                return 1*f;
+            }
+            return 0;
+        });
+
+
+        $.each(rows, function(){
+            $wrapper.append(this);
+        });
+    });
+
+    var getVal = function (elm,sortOnField) {
+        var v = $(elm).data(sortOnField);
+        alert(v);
+        if($.isNumeric(v)){
+            v = parseInt(v,10);
+        }
+        return v;
+    };
+
 });
