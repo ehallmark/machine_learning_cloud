@@ -27,14 +27,8 @@ $(document).ready(function() {
         //$checkbox.prop("disabled", !shouldShow);
         $draggable.find('input').prop("disabled",!shouldShow);
         $draggable.find('textarea').prop("disabled",!shouldShow);
-        $draggable.find('select'.prop("disabled",!shouldShow));
+        $draggable.find('select').prop("disabled",!shouldShow);
     }
-
-    $('.handle').dblclick(function(e){
-        e.stopPropagation();
-        e.preventDefault();
-        return false;
-    });
 
     var dropFunc = function(event, ui) {
         resetCheckbox(ui.draggable,this);
@@ -71,22 +65,31 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
-    $('.draggable .double-click').dblclick(function() {
-        var $draggable = $(this).parent();
-        var id = $draggable.data('target');
-        if(id) {
-            var target;
-            $parent = $draggable.parent();
-            if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
-                target = "start";
-            } else {
-                target = "target";
-            }
-            $target = $('#'+id+'-'+target);
-            if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0));
+    var doubleClickWhileCollapsingHelper = function(elem) {
+        var isCollapsing = $('#'+$(elem).find("input").attr("group-id")).hasClass("collapsing");
+        if(isCollapsing) {
+            setTimeout(doubleClickWhileCollapsingHelper(elem),50);
+        } else {
+            var $draggable = $(elem).parent();
+            var id = $draggable.data('target');
+            if(id) {
+                var target;
+                $parent = $draggable.parent();
+                if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
+                    target = "start";
+                } else {
+                    target = "target";
+                }
+                $target = $('#'+id+'-'+target);
+                if($target) {
+                      resetCheckbox($draggable.get(0),$target.get(0));
+                }
             }
         }
+    }
+
+    $('.draggable .double-click').dblclick(function() {
+        doubleClickWhileCollapsingHelper(this);
     });
 
     $('.multiselect').multiselect({
