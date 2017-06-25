@@ -25,6 +25,7 @@ $(document).ready(function() {
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
         //$checkbox.prop("disabled", !shouldShow);
+        // security concern ?
         $draggable.find('input').prop("disabled",!shouldShow);
         $draggable.find('textarea').prop("disabled",!shouldShow);
         $draggable.find('select').prop("disabled",!shouldShow);
