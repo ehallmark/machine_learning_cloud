@@ -13,6 +13,8 @@ import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import ui_models.templates.FormTemplate;
 import ui_models.templates.PortfolioAssessment;
+import ui_models.templates.SimilarAssigneeSearch;
+import ui_models.templates.SimilarPatentSearch;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.class_vectors.CPCSimilarityFinder;
@@ -168,6 +170,8 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
+            templates.add(new SimilarPatentSearch());
+            templates.add(new SimilarAssigneeSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall()));
         }
     }

@@ -144,6 +144,7 @@ var setupDataTable = function (dataTable) {
 var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
+    $('.highlighted-special').removeClass('highlighted-special');
     $('.collapsible-form.collapse.show').each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
@@ -183,7 +184,7 @@ var paramsHelper = function(input,value) {
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
-        input.addClass('highlighted');
+        input.addClass('highlighted-special');
     }
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
