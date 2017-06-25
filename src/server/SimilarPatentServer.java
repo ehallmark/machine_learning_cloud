@@ -680,7 +680,7 @@ public class SimilarPatentServer {
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
                                                 div().withClass("col-4 offset-4").with(
-                                                        button("Search").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                        button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),
                                         customFormFooter()
