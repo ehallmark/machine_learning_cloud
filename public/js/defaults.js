@@ -216,7 +216,7 @@ var paramsHelper = function(input,value) {
 
 var waitForDoneCollapsing = function(groupId,checkbox) {
     var group = $(groupId);
-    if(group.hasClass("show")) {
+    if(! group.hasClass("show")) {
         $("#"+checkbox.attr("toggle-id")).click();
     }
 }
