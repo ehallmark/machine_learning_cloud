@@ -486,7 +486,7 @@ public class SimilarPatentServer {
                 List<AbstractChart> finishedCharts = new ArrayList<>();
                 // adding charts
                 charts.forEach(chartModel->{
-                    finishedCharts.add(chartModel.create(portfolioList));
+                    finishedCharts.addAll(chartModel.create(portfolioList));
                 });
 
                 System.out.println("Rendering table...");
@@ -559,19 +559,17 @@ public class SimilarPatentServer {
 
     static Tag navigationTag() {
         return div().withClass("row panel panel-default").attr("style","padding-top: 0px;").with(
-                div().withClass("col-1").with(
+                div().withClass("col-6").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                 input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                button("Back").withClass("btn btn-secondary").attr("style","margin-top: -6px;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                button("Back").withClass("btn btn-secondary").attr("style","margin-auto; width:100%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
-                ),div().withClass("col-10").with(
-                        h2("Patent Recommendation Engine").attr("style","margin-top: 18px; text-align: center; margin-right: auto; margin-left: auto;")
-                ),div().withClass("col-1").with(
+                ),div().withClass("col-6").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","float: right; margin-top: -6px;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-secondary").attr("style","margin: auto; width:100%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
@@ -644,7 +642,7 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-2 sidebar").attr("style","height: 100%; position: fixed;").with(
+                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px;").with(
                                                 h4("Templates").attr("style","margin-top: 40px;"),hr(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
@@ -653,8 +651,8 @@ public class SimilarPatentServer {
                                                                 hr()
                                                         );
                                                     }).collect(Collectors.toList())
-                                                )
-                                        ),div().withClass("col-8 offset-3").attr("style","padding-top: 15px;").with(
+                                                ),navigationTag(),hr()
+                                        ),div().withClass("col-9 offset-3").attr("style","padding: 30px 100px;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
                                                 ),
@@ -702,9 +700,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        br(),
-                        navigationTag(),
-                        br(),
+                        h2("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;"),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(
