@@ -97,7 +97,12 @@ $(document).ready(function() {
     });
 
 
-
+    $(".collapsible-header").click(function () {
+        $header = $(this);
+        //getting the next element
+        $content = $($header.attr("data-target"));
+        $content.toggleClass("show");
+    });
 
 });
 
@@ -216,9 +221,3 @@ var waitForDoneCollapsing = function(groupId,checkbox) {
     }
 }
 
-$(".collapsible-header").click(function () {
-    $header = $(this);
-    //getting the next element
-    $content = $($header.attr("data-target"));
-    $content.toggleClass("show");
-});
