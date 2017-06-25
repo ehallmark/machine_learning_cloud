@@ -634,8 +634,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
-                                                customFormRow("similarity", similarityEngine.getEngineMap(), SIMILARITY_ENGINES_ARRAY_FIELD),
-                                                customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
+                                                customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD)),
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
                                                 div().withClass("col-4 offset-4").with(
