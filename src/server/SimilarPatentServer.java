@@ -556,24 +556,6 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag navigationTag() {
-        return div().withClass("row").attr("style","padding-top: 0px;").with(
-                div().withClass("col-6").with(
-                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
-                                .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                                input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                button("Back").withClass("btn btn-secondary").attr("style","margin-auto; width:100%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
-                        )
-                ),div().withClass("col-6").with(
-                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
-                                .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
-                                input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","margin: auto; width:100%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
-                        )
-                )
-        );
-    }
-
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
         return table().withClass("table table-striped collapse show").withId("data-table").with(
                 thead().with(
@@ -642,14 +624,14 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px;").with(
-                                                h4("Templates").attr("style","margin-top: 40px;"),hr(),
+                                                h4("Templates").attr("style","margin-top: 40px;"),hr(),br(),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
                                                                 a(template.getName()).withClass("btn btn-secondary").attr("style","width: 100%;").withHref(template.getHref())
                                                         );
                                                     }).collect(Collectors.toList())
-                                                ),hr(),navigationTag(),hr()
+                                                )
                                         ),div().withClass("col-9 offset-3").attr("style","padding: 30px 100px;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
@@ -702,17 +684,35 @@ public class SimilarPatentServer {
                                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
-                                                div().withClass("row").with(
-                                                        div().withClass("col-12").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
-                                                                button("Search").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                                        )
-                                                )
+                                                customFormFooter()
                                         )
                                 )
 
                         )
                 ),
                 div().withClass("col-12").attr("style","margin-top: 10px;").withId("results")
+        );
+    }
+
+
+    private static Tag customFormFooter() {
+        return div().withClass("row").with(
+                div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
+                                .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
+                                input().withName("goBack").withValue("on").withType("hidden"), br(),
+                                button("Back").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                        )
+                ),
+                div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                        button("Search").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                ),div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
+                                .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
+                                input().withName("goForward").withValue("on").withType("hidden"), br(),
+                                button("Forward").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                        )
+                )
         );
     }
 

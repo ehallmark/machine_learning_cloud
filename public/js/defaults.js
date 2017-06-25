@@ -182,6 +182,7 @@ var applyParams = function(params,searchOptions,special=[]) {
             if(special.includes(key)) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
+                    $input.siblings('button').addClass('highlighted-special');
                 }
             }
         }
@@ -202,7 +203,11 @@ var paramsHelper = function(input,value) {
     var $checkbox = input;
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
-        input.val(value);
+        if(input.hasClass("multiselect") || input.hasClass("multiselect-no-search")) {
+            input.selectpicker('val', value)
+        } else {
+            input.val(value);
+        }
     }
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
