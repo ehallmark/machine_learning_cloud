@@ -203,10 +203,9 @@ var paramsHelper = function(input,value) {
     var $checkbox = input;
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
+        input.val(value);
         if(input.hasClass("multiselect") || input.hasClass("multiselect-no-search")) {
-            input.selectpicker('val', value);
-        } else {
-            input.val(value);
+            input.multiselect('refresh');
         }
     }
     var $dropZone = $checkbox.closest('.droppable');
