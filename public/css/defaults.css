@@ -148,7 +148,7 @@ td, th, option {
 }
 
 .highlighted-special {
-    background-color: #FFCC66;
+    background-color: #FFCC66 !important;
 }
 
 .sidebar {
