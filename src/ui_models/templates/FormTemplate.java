@@ -27,7 +27,7 @@ public class FormTemplate {
     }
 
     public String getHref() {
-        return "javascript:resetSearchForm();setTimeout(applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+"),50);";
+        return "javascript:resetSearchForm();applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+");";
     }
 
 

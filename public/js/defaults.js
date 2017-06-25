@@ -67,24 +67,19 @@ $(document).ready(function() {
     });
 
     var doubleClickWhileCollapsingHelper = function(elem) {
-        var isCollapsing = $('#'+$(elem).find("input").attr("group-id")).hasClass("collapsing");
-        if(isCollapsing) {
-            setTimeout(doubleClickWhileCollapsingHelper(elem),50);
-        } else {
-            var $draggable = $(elem).parent();
-            var id = $draggable.data('target');
-            if(id) {
-                var target;
-                $parent = $draggable.parent();
-                if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
-                    target = "start";
-                } else {
-                    target = "target";
-                }
-                $target = $('#'+id+'-'+target);
-                if($target) {
-                      resetCheckbox($draggable.get(0),$target.get(0));
-                }
+        var $draggable = $(elem).parent();
+        var id = $draggable.data('target');
+        if(id) {
+            var target;
+            $parent = $draggable.parent();
+            if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
+                target = "start";
+            } else {
+                target = "target";
+            }
+            $target = $('#'+id+'-'+target);
+            if($target) {
+                  resetCheckbox($draggable.get(0),$target.get(0));
             }
         }
     }
@@ -208,17 +203,13 @@ var paramsHelper = function(input,value) {
         $checkbox.parent().addClass('highlighted');
     }
 
-    var $group = $("#"+$checkbox.attr("group-id"));
-    waitForDoneCollapsing($group,$checkbox);
+    waitForDoneCollapsing("#"+$checkbox.attr("group-id"),$checkbox);
 };
 
 
-var waitForDoneCollapsing = function(group,checkbox) {
-    if(group.hasClass("collapsing")) {
-        setTimeout(waitForDoneCollapsing(group,checkbox),50);
-    } else {
-        if(group.hasClass("show")) {
-            $("#"+checkbox.attr("toggle-id")).click();
-        }
+var waitForDoneCollapsing = function(groupId,checkbox) {
+    var group = $(groupId);
+    if(group.hasClass("show")) {
+        $("#"+checkbox.attr("toggle-id")).click();
     }
 }

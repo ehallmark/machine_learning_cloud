@@ -152,3 +152,8 @@ td, th, option {
 .sidebar {
     background-color: #BEBEBE;
 }
+
+.collapsing {
+    -webkit-transition: none;
+    transition: none;
+}
