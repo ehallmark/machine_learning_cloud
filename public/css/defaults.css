@@ -153,7 +153,6 @@ td, th, option {
     background-color: #BEBEBE;
 }
 
-.collapsing {
-    -webkit-transition: none;
-    transition: none;
+.collapsible-header {
+    cursor: pointer;
 }

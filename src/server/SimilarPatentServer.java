@@ -491,12 +491,12 @@ public class SimilarPatentServer {
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").attr("style","margin-bottom: 10px;").with(
-                                h4("Charts").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-charts"),
+                                h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                                 div().attr("style","width: 100%").withId("data-charts").withClass("collapse show chart-div").with(
                                         charts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("panel panel-default row").attr("style","margin-top: 10px;").with(
-                                h4("Data").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#data-table"),
+                                h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
                                 tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), finishedCharts));
@@ -726,8 +726,8 @@ public class SimilarPatentServer {
 
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
-                div().withId(id+"-panel-toggle").withClass("col-12").attr("data-toggle","collapse").attr("data-target","#"+id).with(
-                        h4(text).attr("style","cursor: pointer;")
+                div().withId(id+"-panel-toggle").withClass("col-12 collapsible-header").attr("data-target","#"+id).with(
+                        h4(text)
                 )
         );
     }
@@ -756,7 +756,7 @@ public class SimilarPatentServer {
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
                                                                 div().attr("style","width: 100%;").withClass("double-click").with(
-                                                                        label(humanAttributeFor(e.getKey())).withClass("handle").attr("data-toggle","collapse")
+                                                                        label(humanAttributeFor(e.getKey())).withClass("handle collapsible-header")
                                                                                 .attr("data-hidden-target","#"+collapseId),
                                                                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
                                                                 ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
@@ -777,7 +777,7 @@ public class SimilarPatentServer {
                 div().withClass("col-12 panel-body").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
-                                        h4("Search Options").attr("style","cursor: pointer;").attr("data-toggle","collapse").attr("data-target","#main-options")
+                                        h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                                 ),
                                 div().withClass("col-12 collapse show").withId("main-options").with(
                                         div().withClass("col-3").attr("style","text-align: center").with(

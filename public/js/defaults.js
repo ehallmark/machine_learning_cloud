@@ -215,3 +215,10 @@ var waitForDoneCollapsing = function(groupId,checkbox) {
         $("#"+checkbox.attr("toggle-id")).click();
     }
 }
+
+$(".collapsible-header").click(function () {
+    $header = $(this);
+    //getting the next element
+    $content = $($header.attr("data-target"));
+    $content.toggleClass("show");
+});
