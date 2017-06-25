@@ -41,11 +41,6 @@ $(document).ready(function() {
         revert: true
     });
 
-    $('#charts-row .draggable').draggable({
-        revert: true,
-        helper: 'clone'
-    });
-
     $('.droppable.filters').droppable({
         accept: '.draggable.filters',
         drop: dropFunc

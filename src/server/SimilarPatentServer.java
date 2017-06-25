@@ -11,10 +11,7 @@ import ui_models.attributes.charts.*;
 import ui_models.engines.SimilarityEngine;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
-import ui_models.templates.FormTemplate;
-import ui_models.templates.PortfolioAssessment;
-import ui_models.templates.SimilarAssigneeSearch;
-import ui_models.templates.SimilarPatentSearch;
+import ui_models.templates.*;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.class_vectors.CPCSimilarityFinder;
@@ -171,8 +168,10 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
+            templates.add(new AssigneeAssessment());
             templates.add(new SimilarPatentSearch());
             templates.add(new SimilarAssigneeSearch());
+            templates.add(new LeadDevelopmentSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall(),Collections.emptyList()));
         }
     }
@@ -671,19 +670,6 @@ public class SimilarPatentServer {
         );
     }
 
-
-    static Tag expandableDiv(String label, Tag... innerStuff) {
-        return expandableDiv(label,true,innerStuff);
-    }
-
-    static Tag expandableDiv(String label, boolean hiddenToStart, Tag... innerStuff) {
-        String id = "div-"+label.hashCode();
-        return div().with(label("Toggle "+label).attr("style","cursor: pointer; color: blue; text-decoration: underline;").attr("onclick","$('#"+id+"').toggle();"),
-                div().withId(id).attr("style","display: "+(hiddenToStart?"none;":"block;")).with(
-                        innerStuff
-                )
-        );
-    }
 
     public static Tag gatherTechnologySelect(String name) {
         return technologySelect(name,getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList()));

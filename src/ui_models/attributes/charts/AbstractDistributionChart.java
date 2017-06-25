@@ -24,11 +24,8 @@ public class AbstractDistributionChart implements ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return select().withClass("form-control").withName(Constants.PIE_CHART).with(
-                option("Gather Technology").withValue(Constants.TECHNOLOGY).attr("selected","selected"),
-                option("WIPO Technology").withValue(Constants.WIPO_TECHNOLOGY),
-                option("Company").withValue(Constants.ASSIGNEE)
-        );
+        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.ASSIGNEE));
+
     }
 
     @Override
