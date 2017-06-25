@@ -119,8 +119,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
-            humanAttrToJavaAttrMap.put("Only Include Patents", Constants.PATENT_SEARCH_SCOPE_FILTER);
-            humanAttrToJavaAttrMap.put("Only Include Assignees", Constants.ASSIGNEE_SEARCH_SCOPE_FILTER);
+            humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
+            humanAttrToJavaAttrMap.put("Assignee Scope", Constants.ASSIGNEE_SEARCH_SCOPE_FILTER);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
 
             // inverted version to get human readables back
