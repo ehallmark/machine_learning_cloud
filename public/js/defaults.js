@@ -154,7 +154,7 @@ var resetSearchForm = function() {
 
 };
 
-var applyParams = function(params,searchOptions) {
+var applyParams = function(params,searchOptions,special=[]) {
     $.each(searchOptions, function(key,value){
         var $input = $('[name="'+key+'"]');
         $input.val(value);
@@ -168,6 +168,11 @@ var applyParams = function(params,searchOptions) {
             });
         } else {
             paramsHelper($input,value);
+            if(special.includes(key)) {
+                if(!$input.hasClass("highlighted-special")) {
+                    $input.addClass('highlighted-special');
+                }
+            }
         }
 
     });
@@ -187,9 +192,6 @@ var paramsHelper = function(input,value) {
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
-        if(!input.hasClass("highlighted-special")) {
-            input.addClass('highlighted-special');
-        }
     }
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {

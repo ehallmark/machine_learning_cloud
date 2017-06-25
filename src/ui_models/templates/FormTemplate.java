@@ -7,6 +7,7 @@ import server.SimilarPatentServer;
 import ui_models.portfolios.PortfolioList;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,14 +18,16 @@ public class FormTemplate {
     protected String name;
     protected Map<String,Object> params;
     protected Map<String,Object> searchOptions;
-    public FormTemplate(String name, Map<String,Object> params, Map<String,Object> searchOptions) {
+    protected List<String> special;
+    public FormTemplate(String name, Map<String,Object> params, Map<String,Object> searchOptions, List<String> special) {
         this.params=params;
         this.searchOptions=searchOptions;
         this.name=name;
+        this.special = special;
     }
 
     public String getHref() {
-        return "javascript:resetSearchForm();setTimeout(applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+"),50);";
+        return "javascript:resetSearchForm();setTimeout(applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+"),50);";
     }
 
 

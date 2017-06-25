@@ -13,7 +13,7 @@ import java.util.Map;
 public class SimilarAssigneeSearch extends FormTemplate {
 
     public SimilarAssigneeSearch() {
-        super(Constants.SIMILAR_ASSIGNEE_SEARCH, getParams(), FormTemplate.similarityAssigneeSmall());
+        super(Constants.SIMILAR_ASSIGNEE_SEARCH, getParams(), FormTemplate.similarityAssigneeSmall(), Arrays.asList(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD));
     }
 
     private static Map<String,Object> getParams() {

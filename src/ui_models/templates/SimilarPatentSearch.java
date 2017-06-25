@@ -13,7 +13,7 @@ import java.util.Map;
 public class SimilarPatentSearch extends FormTemplate {
 
     public SimilarPatentSearch() {
-        super(Constants.SIMILAR_PATENT_SEARCH, getParams(), FormTemplate.similarityPatentSmall());
+        super(Constants.SIMILAR_PATENT_SEARCH, getParams(), FormTemplate.similarityPatentSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD));
     }
 
     private static Map<String,Object> getParams() {
