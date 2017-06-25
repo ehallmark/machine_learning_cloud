@@ -133,4 +133,5 @@ td, th, option {
 .collapsible-header {
     cursor: pointer;
     width: 100%;
+    margin: 20px 0px;
 }
