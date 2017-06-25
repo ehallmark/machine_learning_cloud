@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
+import seeding.Constants;
 import seeding.Database;
 import similarity_models.AbstractSimilarityModel;
 import spark.Request;
@@ -114,19 +115,11 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     }
 
     private static PortfolioList merge(PortfolioList p1, PortfolioList p2, int limit) {
-        Map<String,Item> scoreMap = new HashMap<>();
-        p1.getItemList().forEach(item->{
-            scoreMap.put(item.getName(),item);
-        });
-        p2.getItemList().forEach(item->{
-            if(scoreMap.containsKey(item.getName())) {
-                Item dup = scoreMap.get(item.getName());
-                dup.setSimilarity(dup.getSimilarity()+item.getSimilarity());
-            } else {
-                scoreMap.put(item.getName(),item);
-            }
-        });
-        return new PortfolioList(scoreMap.values().stream()
-                .sorted(Item.similarityComparator()).limit(limit).collect(Collectors.toList()));
+        try {
+            return p1.merge(p2, Constants.SIMILARITY, limit);
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Sorting: "+e.getMessage());
+        }
     }
 }

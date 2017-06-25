@@ -7,10 +7,7 @@ import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
-import ui_models.engines.AbstractSimilarityEngine;
-import ui_models.engines.AssigneeSimilarityEngine;
-import ui_models.engines.PatentSimilarityEngine;
-import ui_models.engines.TechnologySimilarityEngine;
+import ui_models.engines.*;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import ui_models.templates.*;
@@ -68,7 +65,7 @@ public class SimilarPatentServer {
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
     public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
-    public static final String VALUE_MODELS_ARRAY_FIELD = "valueModels[]";
+    public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     public static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
@@ -80,8 +77,8 @@ public class SimilarPatentServer {
     public static final String REPORT_URL = "/patent_recommendation_engine";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
-    public static Map<String,ValueAttr> valueModelMap = new HashMap<>();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
+    public static SimilarityEngine similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
@@ -144,7 +141,6 @@ public class SimilarPatentServer {
 
     public static void initialize() {
         loadAttributes();
-        loadValueModels();
         loadFilterModels();
         loadTechTaggerModel();
         loadChartModels();
@@ -158,18 +154,6 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
     }
 
-    public static void loadValueModels() {
-        if(valueModelMap.isEmpty()) {
-            try {
-                valueModelMap.put(Constants.AI_VALUE, new OverallEvaluator());
-                valueModelMap.put(Constants.PATENT_SIMILARITY, new PatentSimilarityEngine());
-                valueModelMap.put(Constants.ASSIGNEE_SIMILARITY, new AssigneeSimilarityEngine());
-                valueModelMap.put(Constants.TECHNOLOGY_SIMILARITY, new TechnologySimilarityEngine());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 
     public static void loadTemplates() {
         if(templates.isEmpty()) {
@@ -249,7 +233,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOClassificationAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
-            loadValueModels();
+            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
+            similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(),new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
         }
     }
 
@@ -333,15 +318,11 @@ public class SimilarPatentServer {
 
     public static Collection<? extends AbstractAttribute> getAttributesFromPrerequisites(Collection<? extends DependentAttribute> dependentAttributes, Collection<String> appliedAttributes) {
         return dependentAttributes.stream().flatMap(dependency ->(Stream<String>)dependency.getPrerequisites().stream()).distinct().filter(preReq -> !appliedAttributes.contains(preReq)).map(preReq -> {
-            if (attributesMap.containsKey(preReq)) {
+            AbstractAttribute attr = attributesMap.get(preReq);
+            if (attr != null) {
                 appliedAttributes.add(preReq);
-                return attributesMap.get(preReq);
             }
-            if (valueModelMap.containsKey(preReq)) {
-                appliedAttributes.add(preReq);
-                return valueModelMap.get(preReq);
-            }
-            return null;
+            return attr;
         }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList());
     }
 
@@ -408,12 +389,9 @@ public class SimilarPatentServer {
                 if(limit > maxResultLimit) {
                     return new Gson().toJson(new AjaxChartMessage("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit,Collections.emptyList()));
                 }
-                String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-
 
                 System.out.println("Getting models...");
                 // Get Models to use
-                List<String> valueModels = extractArray(req, VALUE_MODELS_ARRAY_FIELD);
                 List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
@@ -434,57 +412,10 @@ public class SimilarPatentServer {
 
                 System.out.println(" ... Evaluators");
                 // Get value models
-                List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
 
                 Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
-                AtomicReference<PortfolioList> portfolioListRef = new AtomicReference<>();
-                // handle similarity engines
-                evaluators.forEach(evaluator-> {
-                    if(evaluator instanceof AbstractSimilarityEngine) {
-                        AbstractSimilarityEngine similarityEngine = (AbstractSimilarityEngine)evaluator;
-                        similarityEngine.extractRelevantInformationFromParams(req);
-                        PortfolioList portfolioList = similarityEngine.getPortfolioList();
-                        appliedAttributes.add(similarityEngine.getName());
-
-                        // handle comparator attributes and initialization of portfolio
-                        if (!appliedAttributes.contains(comparator)) {
-                            System.out.println("Applying comparator field before sorting: " + comparator);
-                            List<AbstractAttribute> attrList = new ArrayList<>();
-                            if (attributesMap.containsKey(comparator)) {
-                                AbstractAttribute attr = attributesMap.get(comparator);
-                                attrList.add(attr);
-                            } else if (valueModelMap.containsKey(comparator)) {
-                                AbstractAttribute attr = valueModelMap.get(comparator);
-                                attrList.add(attr);
-                            }
-                            if(attrList.size()>0) {
-                                try {
-                                    portfolioList.applyAttributes(attrList);
-
-                                } catch(Exception e) {
-                                    e.printStackTrace();
-                                    throw new RuntimeException(e.getMessage());
-                                }
-                            }
-                        }
-
-                        try {
-                            portfolioList.init(comparator, limit);
-                            if(portfolioListRef.get()==null) portfolioListRef.set(portfolioList);
-                            else {
-                                portfolioListRef.set(portfolioList.merge(portfolioListRef.get()));
-                            }
-                        } catch(Exception e) {
-                            e.printStackTrace();
-                            throw new RuntimeException("Sorting: "+e.getMessage());
-                        }
-                    }
-                });
-                appliedAttributes.add(Constants.SIMILARITY);
-
-
-                PortfolioList portfolioList = portfolioListRef.get();
-                portfolioList.init(comparator, limit);
+                similarityEngine.extractRelevantInformationFromParams(req);
+                PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
                 System.out.println("Applying necessary prerequisite attributes for post filters...");
                 // Add necessary attributes for post filters
@@ -505,18 +436,11 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(itemAttributes);
 
-                // Apply value models
-                System.out.println("Applying value models...");
-                portfolioList.applyAttributes(evaluators.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
-                appliedAttributes.addAll(valueModels);
 
                 List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
                 charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
                 System.out.println("Applying pre chart attributes...");
                 portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
-
-                // reapply filters just in case
-                portfolioList.applyFilters(preFilters);
 
                 List<AbstractChart> finishedCharts = new ArrayList<>();
                 // adding charts
@@ -534,7 +458,7 @@ public class SimilarPatentServer {
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
+                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                         )
                 ).render(), finishedCharts));
 
@@ -648,11 +572,10 @@ public class SimilarPatentServer {
                         script().withSrc("http://code.highcharts.com/highcharts.js"),
                         script().withSrc("/js/customEvents.js"),
                         script().withSrc("/js/defaults.js"),
-                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/js/bootstrap-multiselect.min.js"),
-                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"),
+                        script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),
                         script().withSrc("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"),
                         link().withRel("stylesheet").withHref("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"),
-                        link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/bootstrap-multiselect/0.9.13/css/bootstrap-multiselect.css"),
+                        link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css"),
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
@@ -711,7 +634,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
-                                                customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD),
+                                                customFormRow("similarity-engines", similarityEngine.getEngineMap(), SIMILARITY_ENGINES_ARRAY_FIELD),
                                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
@@ -813,11 +736,8 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-3").attr("style","text-align: center").with(
                                                 label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                        valueModelMap.keySet().stream().map(key-> {
-                                                            ContainerTag option = option(humanAttributeFor(key)).withValue(key);
-                                                            if(key.equals(Constants.SIMILARITY)) option=option.attr("selected","selected");
-                                                            return option;
-                                                        }).collect(Collectors.toList())
+                                                        option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
+                                                        option("AI Value").withValue(Constants.AI_VALUE)
                                                 )
                                         ),
                                         div().withClass("col-3").attr("style","text-align: center").with(

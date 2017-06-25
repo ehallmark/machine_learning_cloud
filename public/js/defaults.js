@@ -93,15 +93,13 @@ $(document).ready(function() {
         doubleClickWhileCollapsingHelper(this);
     });
 
-    $('.multiselect').multiselect({
-        enableFiltering: true,
-        enableCaseInsensitiveFiltering: true,
-        maxHeight: 300
+    $('.multiselect').select2({
+        minimumResultsForSearch: 20
     });
 
 
-    $('.multiselect-no-search').multiselect({
-        maxHeight: 300
+    $('.multiselect-no-search').select2({
+        minimumResultsForSearch: Infinity
     });
 
 
@@ -210,7 +208,7 @@ var paramsHelper = function(input,value) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
         if(input.hasClass("multiselect") || input.hasClass("multiselect-no-search")) {
-            input.multiselect('refresh');
+            input.trigger('change');
         }
     }
     var $dropZone = $checkbox.closest('.droppable');

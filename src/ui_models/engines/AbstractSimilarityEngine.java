@@ -32,16 +32,11 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
 
     private AbstractSimilarityModel secondFinder;
     @Getter
-    private PortfolioList portfolioList;
+    protected PortfolioList portfolioList;
     private Collection<AbstractFilter> preFilters;
-    private boolean wasEvaluated = false;
 
     public AbstractSimilarityEngine(String name) {
         super(ValueMapNormalizer.DistributionType.None, name);
-    }
-
-    public boolean wasEvaluated() {
-        return wasEvaluated;
     }
 
     protected void setPortolioList(Request req, Collection<String> inputsToSearchFor, Collection<String> inputsToSearchIn) {
@@ -70,12 +65,10 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
             } catch(Exception e) {
                 throw new RuntimeException("Error on filters: "+e.getMessage());
             }
-            wasEvaluated = false;
         } else {
             int limit = extractInt(req, LIMIT_FIELD, 10);
             // run limit
             portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
-            wasEvaluated = true;
         }
     }
 

@@ -31,7 +31,7 @@ public class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return SimilarPatentServer.technologySelect(Constants.HISTOGRAM,new ArrayList<>(SimilarPatentServer.valueModelMap.keySet()),false);
+        return SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY),false);
     }
 
     @Override
