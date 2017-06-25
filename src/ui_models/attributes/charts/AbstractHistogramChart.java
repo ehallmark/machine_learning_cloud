@@ -25,8 +25,7 @@ import static j2html.TagCreator.option;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart implements ChartAttribute {
-    protected String title;
-    protected String attribute;
+    protected List<String> attributes;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
@@ -41,21 +40,23 @@ public class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.attribute = SimilarPatentServer.extractString(params, Constants.HISTOGRAM, null);
-        if(attribute!=null)this.title = SimilarPatentServer.humanAttributeFor(attribute) + " Histogram";
+        this.attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
     }
 
     @Override
     public Collection<String> getPrerequisites() {
-        return Arrays.asList(attribute);
+        return attributes;
     }
 
     @Override
-    public AbstractChart create(PortfolioList portfolioList) {
-        return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5), 0d, null, "", 0);
+    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
+        return attributes.stream().map(attribute->{
+            String title = SimilarPatentServer.humanAttributeFor(attribute);
+            return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5, attribute, title), 0d, null, "", 0);
+        }).collect(Collectors.toList());
     }
 
-    private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins) {
+    private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title) {
         List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();

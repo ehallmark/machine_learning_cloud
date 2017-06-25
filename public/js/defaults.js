@@ -6,7 +6,7 @@ $(document).ready(function() {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
         $toggle = $draggable.find(".collapse");
-        $handle = $draggable.find(".handle");
+        $handle = $draggable.find(".collapsible-header");
         if(shouldShow) {
             if($handle.attr('data-hidden-target')) {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
@@ -39,6 +39,11 @@ $(document).ready(function() {
 
     $('.draggable').draggable({
         revert: true
+    });
+
+    $('#charts-row .draggable').draggable({
+        revert: true,
+        helper: 'clone'
     });
 
     $('.droppable.filters').droppable({

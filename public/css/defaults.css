@@ -88,6 +88,7 @@ body {
 
 .mycheckbox {
     float: right;
+    display: none;
     margin-right: 3px;
     margin-top: 5px;
 }
@@ -156,4 +157,5 @@ td, th, option {
 
 .collapsible-header {
     cursor: pointer;
+    width: 100%;
 }

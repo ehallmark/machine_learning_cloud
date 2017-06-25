@@ -20,8 +20,7 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractDistributionChart implements ChartAttribute {
-    protected String attribute;
-    protected String title;
+    protected List<String> attributes;
 
     @Override
     public Tag getOptionsTag() {
@@ -34,21 +33,23 @@ public class AbstractDistributionChart implements ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.attribute = SimilarPatentServer.extractString(params, Constants.PIE_CHART, null);
-        if(attribute!=null)this.title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
+        this.attributes = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
     }
 
     @Override
     public Collection<String> getPrerequisites() {
-        return Arrays.asList(attribute);
+        return attributes;
     }
 
     @Override
-    public AbstractChart create(PortfolioList portfolioList) {
-        return new PieChart(title, collectDistributionData(portfolioList));
+    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
+        return attributes.stream().map(attribute-> {
+            String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
+            return new PieChart(title, collectDistributionData(portfolioList, attribute, title));
+        }).collect(Collectors.toList());
     }
 
-    private List<Series<?>> collectDistributionData(PortfolioList portfolio) {
+    private List<Series<?>> collectDistributionData(PortfolioList portfolio, String attribute, String title) {
         List<Series<?>> data = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(title);

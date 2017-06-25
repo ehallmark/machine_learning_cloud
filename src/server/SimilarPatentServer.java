@@ -114,15 +114,16 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
             humanAttrToJavaAttrMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
             humanAttrToJavaAttrMap.put("AI Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Non-Japanese Assignees Filter",Constants.JAPANESE_ONLY_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Japanese Assignees Filter",Constants.NO_JAPANESE_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Expired Assets Filter", Constants.EXPIRATION_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Assignees Filter", Constants.ASSIGNEES_TO_REMOVE_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Assets Filter", Constants.LABEL_FILTER);
+            humanAttrToJavaAttrMap.put("Only Include Japanese",Constants.JAPANESE_ONLY_FILTER);
+            humanAttrToJavaAttrMap.put("Remove Japanese",Constants.NO_JAPANESE_FILTER);
+            humanAttrToJavaAttrMap.put("Remove Expired Assets", Constants.EXPIRATION_FILTER);
+            humanAttrToJavaAttrMap.put("Remove Assignees", Constants.ASSIGNEES_TO_REMOVE_FILTER);
+            humanAttrToJavaAttrMap.put("Remove Patents", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
-            humanAttrToJavaAttrMap.put("Search Scope", Constants.SEARCH_SCOPE_FILTER);
+            humanAttrToJavaAttrMap.put("Only Include Patents", Constants.PATENT_SEARCH_SCOPE_FILTER);
+            humanAttrToJavaAttrMap.put("Only Include Assignees", Constants.ASSIGNEE_SEARCH_SCOPE_FILTER);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
 
             // inverted version to get human readables back
@@ -189,7 +190,8 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
                 preFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
-                preFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
+                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER,new PatentSearchScopeFilter());
+                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
 
                 // TODO Fix prefilter issue with only being able to prefilter similarity
                 // Post filters
@@ -643,11 +645,12 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-2 sidebar").attr("style","height: 100%; position: fixed;").with(
-                                                h5("Templates").attr("style","margin-top: 40px;"),hr(),
+                                                h4("Templates").attr("style","margin-top: 40px;"),hr(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
-                                                                a(template.getName()).withClass("nav-link").withHref(template.getHref())
+                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 100%;").withHref(template.getHref()),
+                                                                hr()
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
@@ -755,9 +758,8 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey();
                                                         return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                div().attr("style","width: 100%;").withClass("double-click").with(
-                                                                        label(humanAttributeFor(e.getKey())).withClass("handle collapsible-header")
-                                                                                .attr("data-hidden-target","#"+collapseId),
+                                                                div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
+                                                                        label(humanAttributeFor(e.getKey())),
                                                                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
                                                                 ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                         );
