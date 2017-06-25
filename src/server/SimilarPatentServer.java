@@ -557,7 +557,7 @@ public class SimilarPatentServer {
     }
 
     static Tag navigationTag() {
-        return div().withClass("row panel panel-default").attr("style","padding-top: 0px;").with(
+        return div().withClass("row").attr("style","padding-top: 0px;").with(
                 div().withClass("col-6").with(
                         form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
@@ -646,11 +646,10 @@ public class SimilarPatentServer {
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
-                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 100%;").withHref(template.getHref()),
-                                                                hr()
+                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 100%;").withHref(template.getHref())
                                                         );
                                                     }).collect(Collectors.toList())
-                                                ),navigationTag(),hr()
+                                                ),hr(),navigationTag(),hr()
                                         ),div().withClass("col-9 offset-3").attr("style","padding: 30px 100px;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
@@ -690,7 +689,11 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        h2("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;"),
+                        div().withClass("row panel panel-default").with(
+                                div().withClass("col-12 panel-body").with(
+                                        h2("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;")
+                                )
+                        ),br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(

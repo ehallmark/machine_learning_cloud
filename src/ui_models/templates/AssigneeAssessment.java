@@ -23,7 +23,7 @@ public class AssigneeAssessment extends FormTemplate {
         map.put(Constants.HISTOGRAM,Constants.AI_VALUE);
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
-        map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
+        map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD,"");
         return map;
     }
 }

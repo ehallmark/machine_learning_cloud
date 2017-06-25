@@ -97,6 +97,11 @@ $(document).ready(function() {
     });
 
 
+    $('.multiselect-no-search').multiselect({
+        maxHeight: 300
+    });
+
+
     $(".collapsible-header").click(function () {
         $header = $(this);
         //getting the next element
