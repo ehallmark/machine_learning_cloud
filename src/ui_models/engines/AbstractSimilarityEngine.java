@@ -27,7 +27,7 @@ import static server.SimilarPatentServer.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class SimilarityEngine extends ValueAttr {
+public abstract class AbstractSimilarityEngine extends ValueAttr {
     private AbstractSimilarityModel firstFinder;
 
     private AbstractSimilarityModel secondFinder;
@@ -36,44 +36,22 @@ public class SimilarityEngine extends ValueAttr {
     private Collection<AbstractFilter> preFilters;
     private boolean wasEvaluated = false;
 
-    public SimilarityEngine() {
-        super(ValueMapNormalizer.DistributionType.None, Constants.SIMILARITY);
+    public AbstractSimilarityEngine(String name) {
+        super(ValueMapNormalizer.DistributionType.None, name);
     }
 
     public boolean wasEvaluated() {
         return wasEvaluated;
     }
 
-    public void extractRelevantInformationFromParams(Request req) {
-        System.out.println("Collecting inputs to search in...");
-        List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
-        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-        List<String> technologies = SimilarPatentServer.extractArray(req, SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
-
-        // Get scope of search
-        Collection<String> inputsToSearchIn;
-        if (portfolioType.equals(PortfolioList.Type.patents)) {
-            inputsToSearchIn = new HashSet<>(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-            new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-        } else {
-            inputsToSearchIn = new HashSet<>(preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
-        }
-
+    protected void setPortolioList(Request req, Collection<String> inputsToSearchFor, Collection<String> inputsToSearchIn) {
         // Check whether to search entire database
         boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
 
         String similarityModel = extractString(req, SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        System.out.println("Collecting inputs to search for...");
-        // get input data
-        Collection<String> inputsToSearchFor = new HashSet<>();
-        inputsToSearchFor.addAll(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
-        preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> {
-                inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
-        });
-        inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
 
+        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
 
         System.out.println(" ... Similarity model");
         // Get similarity model
@@ -99,7 +77,39 @@ public class SimilarityEngine extends ValueAttr {
             portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
             wasEvaluated = true;
         }
+    }
 
+    protected abstract Collection<String> getInputsToSearchFor(Request req);
+
+    protected Collection<String> getInputsToSearchIn(Request req) {
+        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
+
+        // Get scope of search
+        Collection<String> inputsToSearchIn = new HashSet<>();
+        if(portfolioType.equals(PortfolioList.Type.patents)) {
+            inputsToSearchIn.addAll(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
+            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+        } else {
+            preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]").forEach(patent->inputsToSearchIn.addAll(Database.assigneesFor(patent)));
+            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
+
+        }
+        return inputsToSearchIn;
+    };
+
+
+    public void setPrefilters(Request req) {
+        System.out.println("Collecting inputs to search in...");
+        List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
+        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
+    }
+
+    public void extractRelevantInformationFromParams(Request req) {
+        setPrefilters(req);
+        Collection<String> toSearchFor = getInputsToSearchFor(req);
+        Collection<String> toSearchIn = getInputsToSearchIn(req);
+        setPortolioList(req,toSearchFor,toSearchIn);
     }
 
     @Override
@@ -118,15 +128,4 @@ public class SimilarityEngine extends ValueAttr {
         return evaluate(portfolio.stream().findAny().get());
     }
 
-    @Override
-    public Tag getOptionsTag() {
-        return div().with(
-                label("Patents"),br(),
-                textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD), br(),
-                label("Assignees"),br(),
-                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD), br(),
-                label("Technology"),br(),
-                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD), br()
-        );
-    }
 }

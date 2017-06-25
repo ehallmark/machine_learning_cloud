@@ -5,10 +5,12 @@ import highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import server.tools.AjaxChartMessage;
 import server.tools.BackButtonHandler;
-import server.tools.SimpleAjaxMessage;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
-import ui_models.engines.SimilarityEngine;
+import ui_models.engines.AbstractSimilarityEngine;
+import ui_models.engines.AssigneeSimilarityEngine;
+import ui_models.engines.PatentSimilarityEngine;
+import ui_models.engines.TechnologySimilarityEngine;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import ui_models.templates.*;
@@ -84,7 +86,6 @@ public class SimilarPatentServer {
     static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
-    static SimilarityEngine similarityEngine = new SimilarityEngine();
     static List<FormTemplate> templates = new ArrayList<>();
     static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
     static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
@@ -99,6 +100,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("Patent Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
+            humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Patent Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
@@ -158,7 +162,9 @@ public class SimilarPatentServer {
         if(valueModelMap.isEmpty()) {
             try {
                 valueModelMap.put(Constants.AI_VALUE, new OverallEvaluator());
-                valueModelMap.put(Constants.SIMILARITY, similarityEngine);
+                valueModelMap.put(Constants.PATENT_SIMILARITY, new PatentSimilarityEngine());
+                valueModelMap.put(Constants.ASSIGNEE_SIMILARITY, new AssigneeSimilarityEngine());
+                valueModelMap.put(Constants.TECHNOLOGY_SIMILARITY, new TechnologySimilarityEngine());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -431,23 +437,53 @@ public class SimilarPatentServer {
                 List<ValueAttr> evaluators = valueModels.stream().filter(modelName->!(valueModelMap.get(modelName) instanceof DoNothing)).map(modelName -> valueModelMap.get(modelName)).collect(Collectors.toList());
 
                 Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
-                similarityEngine.extractRelevantInformationFromParams(req);
-                PortfolioList portfolioList = similarityEngine.getPortfolioList();
-                if(similarityEngine.wasEvaluated()) appliedAttributes.add(Constants.SIMILARITY);
+                AtomicReference<PortfolioList> portfolioListRef = new AtomicReference<>();
+                // handle similarity engines
+                evaluators.forEach(evaluator-> {
+                    if(evaluator instanceof AbstractSimilarityEngine) {
+                        AbstractSimilarityEngine similarityEngine = (AbstractSimilarityEngine)evaluator;
+                        similarityEngine.extractRelevantInformationFromParams(req);
+                        PortfolioList portfolioList = similarityEngine.getPortfolioList();
+                        appliedAttributes.add(similarityEngine.getName());
 
-                // handle comparator attributes and initialization of portfolio
-                if (!appliedAttributes.contains(comparator)) {
-                    System.out.println("Applying comparator field before sorting: " + comparator);
-                    List<AbstractAttribute> attrList = new ArrayList<>();
-                    if (attributesMap.containsKey(comparator)) {
-                        AbstractAttribute attr = attributesMap.get(comparator);
-                        attrList.add(attr);
-                    } else if (valueModelMap.containsKey(comparator)) {
-                        AbstractAttribute attr = valueModelMap.get(comparator);
-                        attrList.add(attr);
+                        // handle comparator attributes and initialization of portfolio
+                        if (!appliedAttributes.contains(comparator)) {
+                            System.out.println("Applying comparator field before sorting: " + comparator);
+                            List<AbstractAttribute> attrList = new ArrayList<>();
+                            if (attributesMap.containsKey(comparator)) {
+                                AbstractAttribute attr = attributesMap.get(comparator);
+                                attrList.add(attr);
+                            } else if (valueModelMap.containsKey(comparator)) {
+                                AbstractAttribute attr = valueModelMap.get(comparator);
+                                attrList.add(attr);
+                            }
+                            if(attrList.size()>0) {
+                                try {
+                                    portfolioList.applyAttributes(attrList);
+
+                                } catch(Exception e) {
+                                    e.printStackTrace();
+                                    throw new RuntimeException(e.getMessage());
+                                }
+                            }
+                        }
+
+                        try {
+                            portfolioList.init(comparator, limit);
+                            if(portfolioListRef.get()==null) portfolioListRef.set(portfolioList);
+                            else {
+                                portfolioListRef.set(portfolioList.merge(portfolioListRef.get()));
+                            }
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            throw new RuntimeException("Sorting: "+e.getMessage());
+                        }
                     }
-                    if(attrList.size()>0)portfolioList.applyAttributes(attrList);
-                }
+                });
+                appliedAttributes.add(Constants.SIMILARITY);
+
+
+                PortfolioList portfolioList = portfolioListRef.get();
                 portfolioList.init(comparator, limit);
 
                 System.out.println("Applying necessary prerequisite attributes for post filters...");
@@ -491,12 +527,12 @@ public class SimilarPatentServer {
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().withClass("panel panel-default row").attr("style","margin-bottom: 10px;").with(
+                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                                 div().attr("style","width: 100%").withId("data-charts").withClass("collapse show chart-div").with(
                                         charts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
-                        ),portfolioList == null ? div() : div().withClass("panel panel-default row").attr("style","margin-top: 10px;").with(
+                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
                                 tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, valueModels, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
                         )
@@ -632,12 +668,12 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3").attr("style","padding: 30px 100px;").with(
+                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 20px;").with(
                                                 a().attr("href", "/").with(
                                                         img().attr("src", "/images/brand.png")
                                                 ),
                                                 hr(),
-                                                h2("Artificial Intelligence Platform"),
+                                                h2("Artificial Intelligence Platform").attr("style","text-align: center;"),
                                                 hr(),
                                                 h4(message),
                                                 form,
@@ -671,8 +707,8 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
-                                div().withClass("panel-body col-12").with(
+                        div().withClass("row").with(
+                                div().withClass("col-12").with(
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
                                                 customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD),
@@ -683,11 +719,11 @@ public class SimilarPatentServer {
                                                         button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
                                         ),
-                                        customFormFooter()
+                                        customFormFooter(),hr()
                                 )
                         )
                 ),
-                div().withClass("col-12").attr("style","margin-top: 30px;").withId("results")
+                div().withClass("col-12").withId("results")
         );
     }
 
@@ -729,7 +765,7 @@ public class SimilarPatentServer {
         }
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
-        return div().withClass("row panel panel-default").with(
+        return div().withClass("row").with(
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
                         div().withId(groupID).withClass("collapsible-form row collapse").with(
@@ -758,8 +794,8 @@ public class SimilarPatentServer {
     }
 
     private static Tag mainOptionsRow() {
-        return div().withClass("row panel panel-default").with(
-                div().withClass("col-12 panel-body").with(
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
                                         h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")

@@ -39,6 +39,9 @@ public class Constants {
 	public static final String ASSIGNEE_ASSESSMENT = "Assignee Assessment";
 	public static final String SIMILAR_ASSIGNEE_SEARCH = "Similar Assignee Search";
 	public static final String LEAD_DEVELOPMENT_SEARCH = "Lead Development Search";
+	public static final String PATENT_SIMILARITY = "patentSimilarity";
+	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";
+	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
 
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
