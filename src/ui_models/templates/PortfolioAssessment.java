@@ -19,9 +19,8 @@ public class PortfolioAssessment extends FormTemplate {
 
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.CHART_MODELS_ARRAY_FIELD, Arrays.asList(Constants.PIE_CHART, Arrays.asList(Constants.HISTOGRAM)));
-        map.put(Constants.HISTOGRAM,Constants.AI_VALUE);
-        map.put(Constants.PIE_CHART,Constants.WIPO_TECHNOLOGY);
+        map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE));
+        map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY));
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.ASSIGNEE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
         return map;

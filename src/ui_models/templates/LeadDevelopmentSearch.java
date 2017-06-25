@@ -19,13 +19,12 @@ public class LeadDevelopmentSearch extends FormTemplate {
 
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.CHART_MODELS_ARRAY_FIELD, Arrays.asList(Constants.PIE_CHART, Arrays.asList(Constants.HISTOGRAM)));
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.ASSIGNEE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER, 10);
         map.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER, 1000);
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
-        map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,"");
+        map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,new ArrayList<>());
         map.put(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD,new ArrayList<>());
         map.put(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD,new ArrayList<>());
         return map;

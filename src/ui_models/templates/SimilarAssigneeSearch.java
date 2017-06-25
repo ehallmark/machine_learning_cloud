@@ -18,8 +18,7 @@ public class SimilarAssigneeSearch extends FormTemplate {
 
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.CHART_MODELS_ARRAY_FIELD, Arrays.asList(Constants.PIE_CHART, Arrays.asList(Constants.HISTOGRAM)));
-        map.put(Constants.HISTOGRAM,Constants.SIMILARITY);
+        map.put(Constants.HISTOGRAM,Arrays.asList(Constants.SIMILARITY));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER, 10);
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.ASSIGNEE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
