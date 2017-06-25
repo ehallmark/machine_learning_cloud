@@ -188,12 +188,12 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
+                preFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
+                preFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
                 // TODO Fix prefilter issue with only being able to prefilter similarity
                 // Post filters
-                postFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
-                postFilterModelMap.put(Constants.SEARCH_SCOPE_FILTER,new SearchScopeFilter());
 
                 // pre computed attributes
                 preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
