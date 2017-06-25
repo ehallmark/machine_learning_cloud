@@ -607,7 +607,7 @@ public class SimilarPatentServer {
         if(message==null)message="";
         return html().with(
                 head().with(
-                        script().withSrc("https://code.jquery.com/jquery-1.12.4.js"),
+                        script().withSrc("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"),
                         script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
                         script().withSrc("http://code.highcharts.com/highcharts.js"),
                         script().withSrc("/js/customEvents.js"),
