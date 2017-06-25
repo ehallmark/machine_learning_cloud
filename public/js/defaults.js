@@ -24,7 +24,10 @@ $(document).ready(function() {
         }
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
-        $checkbox.prop("disabled", !shouldShow);
+        //$checkbox.prop("disabled", !shouldShow);
+        $draggable.find('input').prop("disabled",!shouldShow);
+        $draggable.find('textarea').prop("disabled",!shouldShow);
+        $draggable.find('select'.prop("disabled",!shouldShow));
     }
 
     $('.handle').dblclick(function(e){
