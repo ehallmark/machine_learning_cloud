@@ -671,18 +671,20 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
-                                        div().withClass("panel-body col-12").with(
+                        div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
+                                div().withClass("panel-body col-12").with(
+                                        form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
                                                 customFormRow("values", valueModelMap, VALUE_MODELS_ARRAY_FIELD),
                                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
-                                                customFormFooter()
-                                        )
+                                                div().withClass("col-4 offset-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                                                        button("Search").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                )
+                                        ),
+                                        customFormFooter()
                                 )
-
                         )
                 ),
                 div().withClass("col-12").attr("style","margin-top: 10px;").withId("results")
@@ -691,17 +693,14 @@ public class SimilarPatentServer {
 
 
     private static Tag customFormFooter() {
-        return div().withClass("row").with(
+        return div().withClass("row").attr("style","margin-top: -50px;").with(
                 div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                                input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                button("Back").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                        input().withName("goBack").withValue("on").withType("hidden"), br(),
+                                        button("Back").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
-                ),
-                div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
-                        button("Search").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                ),div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
+                ),div().withClass("col-4 offset-8").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
