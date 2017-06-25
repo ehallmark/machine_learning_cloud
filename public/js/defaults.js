@@ -1,5 +1,8 @@
 $(document).ready(function() {
-    $.support.transition = false;
+    $('.sidebar .nav-item .btn').click(function(e){
+        $('.sidebar .nav-item .btn').removeClass('active');
+        $(this).addClass('active');
+    });
 
     var resetCheckbox = function(elem,target) {
         var $draggable = $(elem);
