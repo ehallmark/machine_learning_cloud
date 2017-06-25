@@ -33,6 +33,7 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String SEARCH_SCOPE_FILTER = "searchScopeFilter";
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
+	public static final String PORTFOLIO_ASSESSMENT = "Portfolio Assessment";
 
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;

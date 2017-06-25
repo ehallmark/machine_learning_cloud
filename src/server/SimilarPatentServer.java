@@ -12,6 +12,7 @@ import ui_models.engines.SimilarityEngine;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import ui_models.templates.FormTemplate;
+import ui_models.templates.PortfolioAssessment;
 import util.Pair;
 import similarity_models.AbstractSimilarityModel;
 import similarity_models.class_vectors.CPCSimilarityFinder;
@@ -166,10 +167,7 @@ public class SimilarPatentServer {
 
     public static void loadTemplates() {
         if(templates.isEmpty()) {
-            Map<String,Object> previewParams = new HashMap<>();
-            previewParams.put(ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED,Constants.PORTFOLIO_SIZE));
-            previewParams.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,100);
-            templates.add(new FormTemplate("Preview Form",previewParams, FormTemplate.valueAssigneeSmall()));
+            templates.add(new PortfolioAssessment());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall()));
         }
     }

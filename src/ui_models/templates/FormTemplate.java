@@ -30,7 +30,7 @@ public class FormTemplate {
 
     public static Map<String,Object> similarityAssigneeSmall() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,10);
+        map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
         map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assignees.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
@@ -39,7 +39,7 @@ public class FormTemplate {
 
     public static Map<String,Object> similarityPatentSmall() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,10);
+        map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
         map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
@@ -48,7 +48,7 @@ public class FormTemplate {
 
     public static Map<String,Object> valueAssigneeSmall() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,10);
+        map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
         map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assignees.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
@@ -57,7 +57,7 @@ public class FormTemplate {
 
     public static Map<String,Object> valuePatentSmall() {
         Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,10);
+        map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
         map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
