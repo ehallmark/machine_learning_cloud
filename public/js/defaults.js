@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    $.support.transition = false;
+
     var resetCheckbox = function(elem,target) {
         var $draggable = $(elem);
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
