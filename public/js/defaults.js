@@ -185,7 +185,9 @@ var applyParams = function(params,searchOptions,special=[]) {
             if(special.includes(key)) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
-                    $input.siblings('div.btn-group').find('button').addClass('highlighted-special');
+                    if($input.hasClass("multiselect") || $input.hasClass("multiselect-no-search")) {
+                        $input.next().children('button').addClass('highlighted-special');
+                    }
                 }
             }
         }
