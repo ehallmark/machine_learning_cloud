@@ -204,7 +204,7 @@ var paramsHelper = function(input,value) {
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         if(input.hasClass("multiselect") || input.hasClass("multiselect-no-search")) {
-            input.selectpicker('val', value)
+            input.selectpicker('val', value);
         } else {
             input.val(value);
         }

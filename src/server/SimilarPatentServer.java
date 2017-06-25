@@ -693,7 +693,7 @@ public class SimilarPatentServer {
     private static Tag customFormFooter() {
         return div().withClass("row").with(
                 div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
-                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
+                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                 input().withName("goBack").withValue("on").withType("hidden"), br(),
                                 button("Back").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
@@ -702,7 +702,7 @@ public class SimilarPatentServer {
                 div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
                         button("Search").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                 ),div().withClass("col-4").attr("style","align-items: center; text-align: center; margin-bottom: 10px;").with(
-                        form().attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
+                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
                                 button("Forward").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
