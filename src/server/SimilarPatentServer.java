@@ -323,7 +323,7 @@ public class SimilarPatentServer {
                 appliedAttributes.add(preReq);
             }
             return attr;
-        }).filter(model -> model != null && !(model instanceof DoNothing)).collect(Collectors.toList());
+        }).filter(model -> model != null).collect(Collectors.toList());
     }
 
     public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) throws AttributeException {
@@ -400,7 +400,7 @@ public class SimilarPatentServer {
 
                 System.out.println(" ... Attributes");
                 // Get data attributes
-                List<AbstractAttribute> attributes = itemAttributes.stream().filter(attr -> !(attributesMap.get(attr) instanceof DoNothing)).map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
+                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
 
                 System.out.println(" ... Filters");
                 // Get filters
@@ -620,7 +620,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag technologySelect(String name, List<String> orderedClassifications, boolean searchable) {
-        return select().withName(name).withClass("multiselect"+(searchable ? "" : "-no-search")).attr("multiple","multiple").with(
+        return select().attr("style","width:100%;").withName(name).withClass("multiselect"+(searchable ? "" : "-no-search")).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withName(name).withValue(technology));
                 }).collect(Collectors.toList())
@@ -634,7 +634,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
-                                                customFormRow("similarity-engines", similarityEngine.getEngineMap(), SIMILARITY_ENGINES_ARRAY_FIELD),
+                                                customFormRow("similarity", similarityEngine.getEngineMap(), SIMILARITY_ENGINES_ARRAY_FIELD),
                                                 customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD),
                                                 customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),

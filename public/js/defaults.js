@@ -184,7 +184,7 @@ var applyParams = function(params,searchOptions,special=[]) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
                     if($input.hasClass("multiselect") || $input.hasClass("multiselect-no-search")) {
-                        $input.next().children('button').addClass('highlighted-special');
+                        $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
                 }
             }

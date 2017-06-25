@@ -23,10 +23,6 @@
     display: block;
 }
 
-.multiselect-container {
-    z-index: 1000;
-}
-
 h4, h5 {
     text-align: center;
     margin-left: auto;
@@ -96,10 +92,6 @@ button.multiselect.dropdown-toggle {
     background-color: white;
 }
 
-.multiselect-container .input-group {
-    margin: 0px;
-}
-
 .collapse.show {
     display: flex;
 }
@@ -116,11 +108,6 @@ th.sortable {
     cursor: pointer;
 }
 
-.multiselect-container>li>a>label.radio, .multiselect-container>li>a>label.checkbox {
-    margin: 0px;
-    padding: 5px;
-    width: 100%;
-}
 
 label {
     font-weight: bold;

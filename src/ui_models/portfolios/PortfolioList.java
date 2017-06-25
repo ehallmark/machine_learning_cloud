@@ -7,7 +7,6 @@ import ui_models.exceptions.AttributeException;
 import ui_models.exceptions.FilterException;
 import ui_models.exceptions.SortingException;
 import ui_models.filters.AbstractFilter;
-import ui_models.portfolios.attributes.DoNothing;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
@@ -55,13 +54,11 @@ public class PortfolioList implements Comparable<PortfolioList> {
     public void applyAttributes(Collection<? extends AbstractAttribute> attributes) throws AttributeException {
         for(Item item : itemList) {
             for(AbstractAttribute attribute : attributes) {
-                if(!(attribute instanceof DoNothing)) {
-                    try {
-                        item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                        throw new AttributeException(attribute.getName());
-                    }
+                try {
+                    item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    throw new AttributeException(attribute.getName());
                 }
             }
         }

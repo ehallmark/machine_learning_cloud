@@ -7,7 +7,6 @@ import seeding.Database;
 import server.SimilarPatentServer;
 import spark.Request;
 import ui_models.portfolios.PortfolioList;
-import ui_models.portfolios.attributes.DoNothing;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -19,7 +18,7 @@ import static server.SimilarPatentServer.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class SimilarityEngine extends AbstractSimilarityEngine implements DoNothing<Double> {
+public class SimilarityEngine extends AbstractSimilarityEngine {
     @Getter
     private List<AbstractSimilarityEngine> engines;
     public SimilarityEngine(List<AbstractSimilarityEngine> engines) {
