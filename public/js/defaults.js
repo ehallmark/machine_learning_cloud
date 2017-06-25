@@ -187,7 +187,9 @@ var paramsHelper = function(input,value) {
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
-        input.addClass('highlighted-special');
+        if(!input.hasClass("highlighted-special")) {
+            input.addClass('highlighted-special');
+        }
     }
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
@@ -195,9 +197,22 @@ var paramsHelper = function(input,value) {
             $checkbox.parent().dblclick();
         }
     }
-    var $group = $("#"+$checkbox.attr("group-id"));
-    if(! ($group.hasClass("show") || $group.hasClass("collapsing")) ) {
-        $("#"+$checkbox.attr("toggle-id")).click();
+
+    if(!$checkbox.parent().hasClass("highlighted")) {
+        $checkbox.parent().addClass('highlighted');
     }
-    $checkbox.parent().addClass('highlighted');
+
+    var $group = $("#"+$checkbox.attr("group-id"));
+    waitForDoneCollapsing($group,$checkbox);
 };
+
+
+var waitForDoneCollapsing = function(group,checkbox) {
+    if(group.hasClass("collapsing")) {
+        setTimeout(waitForDoneCollapsing(group,checkbox),50);
+    } else {
+        if(group.hasClass("show")) {
+            $("#"+checkbox.attr("toggle-id")).click();
+        }
+    }
+}
