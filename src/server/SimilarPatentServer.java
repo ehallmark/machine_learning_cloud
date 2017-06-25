@@ -671,11 +671,6 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        div().withClass("row panel panel-default").with(
-                                div().withClass("col-12 panel-body").with(
-                                        h2("Patent Recommendation Engine").attr("style","text-align: center; margin-right: auto; margin-left: auto;")
-                                )
-                        ),br(),
                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                 div().withClass("panel panel-default row").attr("style","background-color: #E8E8E8;").with(
                                         div().withClass("panel-body col-12").with(
