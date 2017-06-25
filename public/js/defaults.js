@@ -182,7 +182,7 @@ var applyParams = function(params,searchOptions,special=[]) {
             if(special.includes(key)) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
-                    $input.siblings('button').addClass('highlighted-special');
+                    $input.siblings('div.btn-group').addClass('highlighted-special');
                 }
             }
         }
