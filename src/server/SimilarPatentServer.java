@@ -80,7 +80,7 @@ public class SimilarPatentServer {
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngine similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
-    static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
+    public static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();

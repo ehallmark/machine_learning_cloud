@@ -100,6 +100,12 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
         }
 
+        // add similarity filters
+        preFilters = new ArrayList<>(preFilters);
+        if(extractArray(req,POST_FILTER_ARRAY_FIELD).contains(Constants.SIMILARITY_THRESHOLD_FILTER)) {
+            preFilters.add(postFilterModelMap.get(Constants.SIMILARITY_THRESHOLD_FILTER));
+        }
+
         // run full similarity model
         relevantEngines.forEach(engine -> {
             PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, preFilters);
