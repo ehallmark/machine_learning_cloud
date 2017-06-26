@@ -578,7 +578,7 @@ public class SimilarPatentServer {
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
-                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 100%;").withHref(template.getHref())
+                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 80%; margin-left: 10%").withHref(template.getHref())
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
