@@ -454,7 +454,7 @@ public class SimilarPatentServer {
                         finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                                 div().attr("style","width: 100%").withId("data-charts").withClass("collapse show chart-div").with(
-                                        finishedCharts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        finishedCharts.stream().map(c -> div().attr("style","width: 70%; margin-left: 15%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
@@ -546,16 +546,6 @@ public class SimilarPatentServer {
         return cell==null?td(""): ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? td(String.valueOf(((Number)cell).intValue())) : td(String.format("%.1f",cell))) : td(cell.toString()));
     }
 
-
-    public static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, AbstractSimilarityModel secondFinder, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
-        try {
-            return firstFinder.similarFromCandidateSet(secondFinder, resultLimit, preFilters);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("... while running patent finder model.");
-            throw new RuntimeException(e.getMessage());
-        }
-    }
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();

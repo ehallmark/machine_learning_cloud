@@ -52,7 +52,7 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
         // Get similarity model
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
         firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchIn));
-        
+
         secondFinder = finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchFor));
         if (firstFinder == null || firstFinder.numItems() == 0) {
             throw new RuntimeException("Unable to find any results to search in.");
@@ -72,6 +72,18 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
             portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
         }
     }
+
+
+    public static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, AbstractSimilarityModel secondFinder, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
+        try {
+            return firstFinder.similarFromCandidateSet(secondFinder, resultLimit, preFilters);
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("... while running patent finder model.");
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
 
     protected abstract Collection<String> getInputsToSearchFor(Request req);
 
