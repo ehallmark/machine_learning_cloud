@@ -42,8 +42,6 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
         return secondFinder;
     }
 
-
-
     public void extractRelevantInformationFromParams(Request req) {
 
     }
