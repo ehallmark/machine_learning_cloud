@@ -461,7 +461,7 @@ public class SimilarPatentServer {
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
-                                div().attr("style","width: 100%").withId("data-charts").withClass("collapse show chart-div").with(
+                                span().withId("data-charts").withClass("collapse show").with(
                                         finishedCharts.stream().map(c -> div().attr("style","width: 70%; margin-left: 15%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
@@ -526,20 +526,21 @@ public class SimilarPatentServer {
     }
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
-        return table().withClass("table table-striped collapse show").withId("data-table").with(
-                thead().with(
-                        tr().with(
-                                attributes.stream().map(attr->th(humanAttributeFor(attr)).withClass("sortable").attr("data-field",attr.toLowerCase())).collect(Collectors.toList())
+        return span().withClass("collapse show").withId("data-table").with(
+                 table().withClass("table table-striped table-responsive").with(
+                        thead().with(
+                                tr().with(
+                                        attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
+                                )
+                        ), tbody().with(
+                                items.stream().map(item -> {
+                                    List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
+                                    return addAttributesToRow(tr().with(
+                                            results.stream().map(pair -> createItemCell(pair.getSecond())).collect(Collectors.toList())
+                                    ), results);
+                                }).collect(Collectors.toList())
                         )
-                ),tbody().with(
-                        items.stream().map(item-> {
-                            List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
-                            return addAttributesToRow(tr().with(
-                                    results.stream().map(pair -> createItemCell(pair.getSecond())).collect(Collectors.toList())
-                            ), results);
-                        }).collect(Collectors.toList())
                 )
-
         );
     }
 
@@ -704,7 +705,7 @@ public class SimilarPatentServer {
                                                                         div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
                                                                                 label(humanAttributeFor(e.getKey())),
                                                                                 input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
-                                                                        ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
+                                                                        ), span().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                                 );
                                                             });
                                                         }).collect(Collectors.toList())

@@ -15,16 +15,16 @@ $(document).ready(function() {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
                 $handle.removeAttr('data-hidden-target');
             }
-            if(! $toggle.hasClass('show')) {
-                $toggle.addClass('show');
+            if(! $toggle.hasClass(':visible')) {
+                $toggle.click();
             }
         } else {
-            if($toggle.hasClass('show')) {
-                $toggle.removeClass('show');
-            }
             if($handle.attr('data-target')) {
                 $handle.attr('data-hidden-target',$handle.attr('data-target'));
                 $handle.removeAttr('data-target');
+            }
+            if($toggle.hasClass(':visible')) {
+                $toggle.click();
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
@@ -150,7 +150,7 @@ var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapsible-form.collapse.show').each(function() {
+    $('.collapsible-form.collapse:visible').each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
     $('.draggable .multiselect').val(null).trigger("change");
@@ -219,7 +219,7 @@ var paramsHelper = function(input,value) {
 
 var waitForDoneCollapsing = function(groupId,checkbox) {
     var group = $(groupId);
-    if(! group.hasClass("show")) {
+    if(! group.is(":visible")) {
         $("#"+checkbox.attr("toggle-id")).click();
     }
 }
@@ -231,10 +231,7 @@ var setCollapsibleHeaders = function() {
         //getting the next element
         $content = $($header.attr("data-target"));
         $content.slideToggle({
-            duration: 300,
-            complete: function() {
-                $content.toggleClass("show");
-            }
+            duration: 300
         })
     });
 }

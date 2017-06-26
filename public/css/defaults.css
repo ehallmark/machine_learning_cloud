@@ -15,10 +15,6 @@
     border-collapse: collapse;
 }
 
-.collapse.show.chart-div {
-    display: block;
-}
-
 h4, h5 {
     text-align: center;
     margin-left: auto;
@@ -73,23 +69,13 @@ body {
     margin-top: 5px;
 }
 
-.show>.dropdown-menu {
-    display: block;
-    left: 25%;
-    width: 50%;
-}
-
-.draggable .collapse div {
+.collapse {
     width: 100%;
 }
 
 button.multiselect.dropdown-toggle {
     width: 100%;
     background-color: white;
-}
-
-table.collapse.show.table {
-    display: table;
 }
 
 .highcharts-container {
