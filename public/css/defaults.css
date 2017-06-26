@@ -83,7 +83,7 @@ body {
     width: 50%;
 }
 
-.collapse div {
+.draggable .collapse div {
     width: 100%;
 }
 
