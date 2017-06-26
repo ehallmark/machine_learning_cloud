@@ -45,6 +45,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             }
         });
         portfolioList = ref.get();
+        portfolioList.init(comparator,limit);
     }
 
     @Override

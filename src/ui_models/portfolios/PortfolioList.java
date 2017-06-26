@@ -17,10 +17,11 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/1/16.
  */
 public class PortfolioList implements Comparable<PortfolioList> {
-    @Getter @Setter
+    @Getter
     private List<Item> itemList;
     private double avgSimilarity;
     public enum Type { patents, assignees }
+    private boolean init = false;
 
     public PortfolioList(List<Item> itemList) {
         this.itemList=itemList;
@@ -80,15 +81,18 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
 
     public void init(String sortedBy, int limit) {
-        Collections.sort(itemList,(i1,i2)->{
-            System.out.println("i1: "+i1.getData(sortedBy));
-            System.out.println("i2: "+i2.getData(sortedBy));
-            return (Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue()));
-        });
+        if(!init) {
+            Collections.sort(itemList, (i1, i2) -> {
+                System.out.println("i1: " + i1.getData(sortedBy));
+                System.out.println("i2: " + i2.getData(sortedBy));
+                return (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue()));
+            });
 
-        if (itemList.size() > 0) {
-            itemList=itemList.subList(0,Math.min(itemList.size(),limit));
-            this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
-        } else this.avgSimilarity = 0.0d;
+            if (itemList.size() > 0) {
+                itemList = itemList.subList(0, Math.min(itemList.size(), limit));
+                this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+            } else this.avgSimilarity = 0.0d;
+        }
+        init=true;
     }
 }
