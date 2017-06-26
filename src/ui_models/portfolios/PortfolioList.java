@@ -62,19 +62,30 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
     public PortfolioList merge(PortfolioList other, String comparator, int limit) throws SortingException {
-        Map<String, Item> scoreMap = new HashMap<>();
-        this.getItemList().forEach(item -> {
-            scoreMap.put(item.getName(), item);
-        });
-        other.getItemList().forEach(item -> {
-            if (scoreMap.containsKey(item.getName())) {
-                Item dup = scoreMap.get(item.getName());
-                dup.setSimilarity((dup.getSimilarity() + item.getSimilarity()) / 2d);
-            } else {
+        PortfolioList newList;
+        if(other.itemList.isEmpty()) {
+            newList = new PortfolioList(itemList);
+            newList.init(comparator,limit);
+            return newList;
+        } else if (itemList.isEmpty()) {
+            newList = new PortfolioList(other.itemList);
+            newList.init(comparator,limit);
+            return newList;
+        } else {
+            Map<String, Item> scoreMap = new HashMap<>();
+            this.getItemList().forEach(item -> {
                 scoreMap.put(item.getName(), item);
-            }
-        });
-        PortfolioList newList = new PortfolioList(new ArrayList<>(scoreMap.values()));
+            });
+            other.getItemList().forEach(item -> {
+                if (scoreMap.containsKey(item.getName())) {
+                    Item dup = scoreMap.get(item.getName());
+                    dup.setSimilarity((dup.getSimilarity() + item.getSimilarity()) / 2d);
+                } else {
+                    scoreMap.put(item.getName(), item);
+                }
+            });
+            newList = new PortfolioList(new ArrayList<>(scoreMap.values()));
+        }
         newList.init(comparator, limit);
         return newList;
     }
@@ -83,8 +94,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
     public void init(String sortedBy, int limit) {
         if(!init) {
             Collections.sort(itemList, (i1, i2) -> {
-                System.out.println("i1: " + i1.getData(sortedBy));
-                System.out.println("i2: " + i2.getData(sortedBy));
                 return (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue()));
             });
 
