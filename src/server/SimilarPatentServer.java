@@ -625,19 +625,21 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().withClass("row collapse show").with(
-                div().withClass("col-12").withId("main-content-id").with(
-                        div().withClass("row").with(
-                                div().withClass("col-12").with(
-                                        form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                                mainOptionsRow(),
-                                                customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD)),
-                                                customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
-                                                customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
-                                                div().withClass("col-4 offset-4").with(
-                                                        button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                                )
-                                        ),hr()
+        return div().withClass("row").with(
+                div().withClass("col-12").with(
+                        span().withId("main-content-id").withClass("collapse show").with(
+                                div().withClass("row").with(
+                                        div().withClass("col-12").with(
+                                                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                                        mainOptionsRow(),
+                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD)),
+                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
+                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
+                                                        div().withClass("col-4 offset-4").with(
+                                                                button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                        )
+                                                ),hr()
+                                        )
                                 )
                         )
                 ),
