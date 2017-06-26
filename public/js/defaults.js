@@ -151,7 +151,7 @@ var resetSearchForm = function() {
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapse .collapsible-form').filter(":visible").each(function() {
-        $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
+        $('#'+$(this).parent().attr("id").toString()+"-panel-toggle").click();
     });
     $('.draggable .multiselect').val(null).trigger("change");
 };
