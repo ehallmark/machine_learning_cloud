@@ -624,7 +624,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().withClass("row collapse show").withId("form-id").with(
+        return div().withClass("row collapse show").with(
                 div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
@@ -655,7 +655,7 @@ public class SimilarPatentServer {
                         )
                 ), div().withClass("col-8").with(
                         h2("Artificial Intelligence Platform").withClass("collapsible-header")
-                                .attr("data-target","#form-id").attr("style","text-align: center; width: 100%;")
+                                .attr("data-target","#main-options-container").attr("style","text-align: center; width: 100%;")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
@@ -714,7 +714,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag mainOptionsRow() {
-        return div().withClass("row").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
+        return div().withClass("row").withId("main-options-container").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
                 div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
