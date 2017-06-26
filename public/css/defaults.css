@@ -13,9 +13,18 @@
     text-align: center;
     border-collapse: collapse;
 
-    h5 {
-        margin-top: -10px;
+    .highlighted {
+        border: 1px white solid;
     }
+
+    .highlighted-special {
+        border: 1px white solid;
+    }
+}
+
+.droppable h5 {
+    margin-top: -20px;
+    margin-bottom: 20px;
 }
 
 h4, h5 {
