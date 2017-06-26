@@ -31,14 +31,17 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     public void extractRelevantInformationFromParams(Request req) {
         int limit = extractInt(req, LIMIT_FIELD, 10);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+        List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
         engines.forEach(engine->{
-            engine.extractRelevantInformationFromParams(req);
-            try {
-                ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
-            } catch(Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Sorting: "+e.getMessage());
+            if(similarityEngines.contains(engine.getName())) {
+                engine.extractRelevantInformationFromParams(req);
+                try {
+                    ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException("Sorting: " + e.getMessage());
+                }
             }
         });
         portfolioList = ref.get();

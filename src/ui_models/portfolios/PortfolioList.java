@@ -2,6 +2,7 @@ package ui_models.portfolios;
 
 import lombok.Getter;
 import lombok.Setter;
+import seeding.Constants;
 import ui_models.attributes.AbstractAttribute;
 import ui_models.exceptions.AttributeException;
 import ui_models.exceptions.FilterException;
@@ -60,20 +61,20 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
     public PortfolioList merge(PortfolioList other, String comparator, int limit) throws SortingException {
-        Map<String,Item> scoreMap = new HashMap<>();
-        this.getItemList().forEach(item->{
-            scoreMap.put(item.getName(),item);
+        Map<String, Item> scoreMap = new HashMap<>();
+        this.getItemList().forEach(item -> {
+            scoreMap.put(item.getName(), item);
         });
-        other.getItemList().forEach(item->{
-            if(scoreMap.containsKey(item.getName())) {
+        other.getItemList().forEach(item -> {
+            if (scoreMap.containsKey(item.getName())) {
                 Item dup = scoreMap.get(item.getName());
-                dup.setSimilarity((dup.getSimilarity()+item.getSimilarity())/2d);
+                dup.setSimilarity((dup.getSimilarity() + item.getSimilarity()) / 2d);
             } else {
-                scoreMap.put(item.getName(),item);
+                scoreMap.put(item.getName(), item);
             }
         });
         PortfolioList newList = new PortfolioList(new ArrayList<>(scoreMap.values()));
-        newList.init(comparator,limit);
+        newList.init(comparator, limit);
         return newList;
     }
 

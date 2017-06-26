@@ -44,7 +44,6 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                label("Patents"),br(),
                 textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD)
         );
     }
