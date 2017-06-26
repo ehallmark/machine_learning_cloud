@@ -700,7 +700,7 @@ public class SimilarPatentServer {
                                                         modelFields.stream().flatMap(pair->{
                                                             String arrayFieldName = pair._2;
                                                             return pair._1.entrySet().stream().map(e->{
-                                                                String collapseId = "collapse-"+type+"-"+e.getKey();
+                                                                String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
                                                                 return div().withClass("draggable "+type).attr("data-target",type).with(
                                                                         div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
                                                                                 label(humanAttributeFor(e.getKey())),
