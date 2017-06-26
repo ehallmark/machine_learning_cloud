@@ -98,11 +98,6 @@ $(document).ready(function() {
     });
 
 
-    $('.multiselect-no-search').select2({
-        minimumResultsForSearch: Infinity
-    });
-
-
     $(".collapsible-header").click(function () {
         $header = $(this);
         //getting the next element
@@ -163,6 +158,8 @@ var resetSearchForm = function() {
     $('.collapsible-form.collapse.show').each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
+    $('.draggable .multiselect').val(null).trigger("change");
+    $('.draggable .multiselect').trigger('change');
 
 };
 
@@ -183,7 +180,7 @@ var applyParams = function(params,searchOptions,special=[]) {
             if(special.includes(key)) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
-                    if($input.hasClass("multiselect") || $input.hasClass("multiselect-no-search")) {
+                    if($input.hasClass("multiselect")) {
                         $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
                     // only open if special
@@ -208,7 +205,7 @@ var paramsHelper = function(input,value) {
     if(! input.hasClass("mycheckbox")) {
         $checkbox = input.closest('.draggable').find('.mycheckbox');
         input.val(value);
-        if(input.hasClass("multiselect") || input.hasClass("multiselect-no-search")) {
+        if(input.hasClass("multiselect")) {
             input.trigger('change');
         }
     }
