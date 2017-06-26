@@ -590,8 +590,7 @@ public class SimilarPatentServer {
                                                         img().attr("src", "/images/brand.png")
                                                 ),
                                                 hr(),
-                                                h2("Artificial Intelligence Platform").withClass("collapsible-header").attr("data-target","#form-id").attr("style","text-align: center;"),
-                                                customFormFooter(),
+                                                customFormHeader(),
                                                 hr(),
                                                 h4(message),
                                                 form,
@@ -641,19 +640,22 @@ public class SimilarPatentServer {
     }
 
 
-    private static Tag customFormFooter() {
-        return div().withClass("row").attr("style","margin-top: -54px;").with(
-                div().withClass("col-4").with(
+    private static Tag customFormHeader() {
+        return div().withClass("row").with(
+                div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                         input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                        button("Back").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                        button("Back").withClass("btn btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
-                ),div().withClass("col-4 offset-4").with(
+                ), div().withClass("col-8").with(
+                        h2("Artificial Intelligence Platform").withClass("collapsible-header")
+                                .attr("data-target","#form-id").attr("style","text-align: center; width: 100%;")
+                ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","margin: auto; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
