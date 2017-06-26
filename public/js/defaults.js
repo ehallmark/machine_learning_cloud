@@ -148,11 +148,11 @@ var setupDataTable = function (dataTable) {
 
 var resetSearchForm = function() {
     $('.target .double-click').dblclick();
-    $('.start .double-click .collapse ').hide();
+    $('.start .double-click .collapse')
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapse .collapsible-form').filter(":visible").each(function() {
-        $('#'+$(this).parent().attr("id").toString()+"-panel-toggle").hide();
+    $('.collapse').filter(":visible").find('.collapsible-form').each(function() {
+        $(this).parent().hide();
     });
     $('.draggable .multiselect').val(null).trigger("change");
 };
