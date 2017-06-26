@@ -5,7 +5,6 @@
 
 .droppable {
     padding: 5px;
-    border-top: 1px rgba(0,0,0,.1) solid;
 }
 
 .draggable {
@@ -13,6 +12,10 @@
     border-radius: 4px;
     text-align: center;
     border-collapse: collapse;
+
+    h5 {
+        margin-top: -10px;
+    }
 }
 
 h4, h5 {
@@ -28,9 +31,6 @@ h4, h5 {
 .target {
     background-color: white;
     margin-top: 10px;
-    border-right: 0px rgba(0,0,0,.1) solid;
-    border-bottom-right-radius: 4px;
-    border-collapse: collapse;
 }
 
 option {
@@ -40,9 +40,6 @@ option {
 .start {
     background-color: white;
     margin-top: 10px;
-    border-right: 0px rgba(0,0,0,.1) solid;
-    border-bottom-left-radius: 4px;
-    border-collapse: collapse;
 }
 
 .double-click label {
