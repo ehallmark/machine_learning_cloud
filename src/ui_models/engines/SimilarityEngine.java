@@ -89,51 +89,36 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // second finder
         relevantEngines.forEach(engine->engine.setSecondFinder(finderPrototype,engine.getInputsToSearchFor(req)));
 
-        System.out.println("Found second finders");
         // get similarity model
         portfolioList = new PortfolioList(firstFinder.getItemList());
         boolean dupScope = false;
         if(!preFilters.isEmpty()) {
-            System.out.println("applying pre filters");
             portfolioList.applyFilters(preFilters);
             dupScope=true;
         }
 
         if(!comparator.equals(Constants.SIMILARITY)) {
-            System.out.println("Init");
             portfolioList.init(comparator,limit);
             dupScope=true;
         }
 
-        // if scope was reduced
-        if(dupScope){
-            System.out.println("reducing scope");
-            firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
-        }
-
         // check similarity threshold filter
         if(!relevantEngines.isEmpty()) {
-            System.out.println("running sim model");
-            AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
-            List<AbstractFilter> similarityFilters = new ArrayList<>();
-            if (extractArray(req, POST_FILTER_ARRAY_FIELD).contains(Constants.SIMILARITY_THRESHOLD_FILTER)) {
-                System.out.println("Similarity filter");
-                AbstractFilter thresholdFilter = postFilterModelMap.get(Constants.SIMILARITY_THRESHOLD_FILTER);
-                similarityFilters.add(thresholdFilter);
+            // if scope was reduced
+            if(dupScope){
+                firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
             }
+
+            List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
+            AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
             // run full similarity model
             relevantEngines.forEach(engine -> {
-                System.out.println("starting engine: "+engine.getName());
                 PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters);
                 ref.set(newList.merge(ref.get(), comparator, limit));
             });
             // set portfolio list
             portfolioList = ref.get();
         }
-
-        System.out.println("last init");
-        portfolioList.init(comparator,limit);
-        System.out.println("DONE!!!!");
     }
 
     @Override

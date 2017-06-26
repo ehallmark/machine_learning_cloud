@@ -67,6 +67,7 @@ public class SimilarPatentServer {
     public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
+    public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
     public static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String LIMIT_FIELD = "limit";
@@ -81,6 +82,7 @@ public class SimilarPatentServer {
     public static SimilarityEngine similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
+    public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();
@@ -183,10 +185,11 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
 
-                // TODO Fix prefilter issue with only being able to prefilter similarity
+                // During filters
+                similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
+
                 // Post filters
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
-                postFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
                 // pre computed attributes
                 preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
@@ -395,10 +398,11 @@ public class SimilarPatentServer {
                 System.out.println("Getting models...");
                 // Get Models to use
                 List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
+                List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
                 List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
                 List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
                 List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
-                List<String> technologies = extractArray(req, TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
+                List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
 
                 System.out.println(" ... Attributes");
                 // Get data attributes
@@ -408,9 +412,12 @@ public class SimilarPatentServer {
                 // Get filters
                 List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
                 List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
+
                 // Update filters based on params
                 preFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
                 postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
+                similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
                 System.out.println(" ... Evaluators");
                 // Get value models
@@ -427,12 +434,6 @@ public class SimilarPatentServer {
                 System.out.println("Applying post filters...");
                 // Run filters
                 portfolioList.applyFilters(postFilters);
-
-                // Apply technology data
-                System.out.println("Applying technologies...");
-                if (technologies.size() > 0) {
-                    applyTechnologyAttributes(technologies, portfolioList);
-                }
 
                 // Apply attributes
                 System.out.println("Applying attributes...");
@@ -453,6 +454,10 @@ public class SimilarPatentServer {
 
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
+                List<String> tableHeaders = new ArrayList<>(itemAttributes);
+                if(similarityEngines.size()>0) {
+                    tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
+                }
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
@@ -461,7 +466,7 @@ public class SimilarPatentServer {
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                tableFromPatentList(portfolioList.getItemList(), Arrays.asList(itemAttributes, technologies.stream().map(tech -> tech + SpecificTechnologyEvaluator.TECHNOLOGY_SUFFIX).collect(Collectors.toList())).stream().flatMap(list -> list.stream()).collect(Collectors.toList()))
+                                tableFromPatentList(portfolioList.getItemList(), tableHeaders)
                         )
                 ).render(), finishedCharts));
 
@@ -626,7 +631,7 @@ public class SimilarPatentServer {
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                                 mainOptionsRow(),
                                                 customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD)),
-                                                customFormRow("filters", Arrays.asList(preFilterModelMap, postFilterModelMap), Arrays.asList(PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
+                                                customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
                                                 customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
                                                 div().withClass("col-4 offset-4").with(
                                                         button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
