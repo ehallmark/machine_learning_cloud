@@ -13,7 +13,7 @@ import java.util.Map;
 public class AssigneeAssessment extends FormTemplate {
 
     public AssigneeAssessment() {
-        super(Constants.ASSIGNEE_ASSESSMENT, getParams(), FormTemplate.valueAssigneeSmall(), Arrays.asList(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
+        super(Constants.ASSIGNEE_ASSESSMENT, getParams(), FormTemplate.valuePatentSmall(), Arrays.asList(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
     }
 
     private static Map<String,Object> getParams() {
