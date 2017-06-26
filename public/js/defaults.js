@@ -16,7 +16,7 @@ $(document).ready(function() {
                 $handle.removeAttr('data-hidden-target');
             }
             if(! $toggle.hasClass(':visible')) {
-                $toggle.click();
+                $handle.click();
             }
         } else {
             if($handle.attr('data-target')) {
@@ -24,7 +24,7 @@ $(document).ready(function() {
                 $handle.removeAttr('data-target');
             }
             if($toggle.hasClass(':visible')) {
-                $toggle.click();
+                $handle.click();
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
