@@ -32,31 +32,16 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public void applyFilters(Collection<AbstractFilter> filters) throws FilterException {
-        Set<String> errorNames = new HashSet<>();
+    public void applyFilters(Collection<AbstractFilter> filters) {
         itemList=itemList.stream().filter(obj->filters.stream().allMatch(filter->{
-            try {
-                return filter.shouldKeepItem(obj);
-            } catch(Exception e) {
-                e.printStackTrace();
-                errorNames.add(filter.getName());
-                return false;
-            }
+            return filter.shouldKeepItem(obj);
         })).collect(Collectors.toList());
-        if(errorNames.size()>0) {
-            throw new FilterException(String.join("; ",errorNames));
-        }
     }
 
-    public void applyAttributes(Collection<? extends AbstractAttribute> attributes) throws AttributeException {
+    public void applyAttributes(Collection<? extends AbstractAttribute> attributes)  {
         for(Item item : itemList) {
             for(AbstractAttribute attribute : attributes) {
-                try {
-                    item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    throw new AttributeException(attribute.getName());
-                }
+                item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
             }
         }
     }

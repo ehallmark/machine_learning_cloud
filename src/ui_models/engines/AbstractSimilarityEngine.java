@@ -28,93 +28,24 @@ import static server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public abstract class AbstractSimilarityEngine extends ValueAttr {
-    private AbstractSimilarityModel firstFinder;
-
-    private AbstractSimilarityModel secondFinder;
-    @Getter
-    protected PortfolioList portfolioList;
-    private Collection<AbstractFilter> preFilters;
+    protected AbstractSimilarityModel secondFinder;
 
     public AbstractSimilarityEngine(String name) {
         super(ValueMapNormalizer.DistributionType.None, name);
     }
 
-    protected void setPortolioList(Request req, Collection<String> inputsToSearchFor, Collection<String> inputsToSearchIn) {
-        // Check whether to search entire database
-        boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
-
-        String similarityModel = extractString(req, SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-
-        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-
-        System.out.println(" ... Similarity model");
-        // Get similarity model
-        AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModel + "_" + portfolioType.toString());
-        firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchIn));
-
-        secondFinder = finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchFor));
-        if (firstFinder == null || firstFinder.numItems() == 0) {
-            throw new RuntimeException("Unable to find any results to search in.");
-        }
-
-        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-        if (secondFinder == null || secondFinder.numItems() == 0 || !comparator.equals(Constants.SIMILARITY)) {
-            portfolioList = new PortfolioList(firstFinder.getItemList());
-            try {
-                portfolioList.applyFilters(preFilters);
-            } catch(Exception e) {
-                throw new RuntimeException("Error on filters: "+e.getMessage());
-            }
-        } else {
-            int limit = extractInt(req, LIMIT_FIELD, 10);
-            // run limit
-            portfolioList = runPatentFinderModel(firstFinder, secondFinder, limit, preFilters);
-        }
-    }
-
-
-    public static PortfolioList runPatentFinderModel(AbstractSimilarityModel firstFinder, AbstractSimilarityModel secondFinder, int resultLimit, Collection<? extends AbstractFilter> preFilters) {
-        try {
-            return firstFinder.similarFromCandidateSet(secondFinder, resultLimit, preFilters);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("... while running patent finder model.");
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
 
     protected abstract Collection<String> getInputsToSearchFor(Request req);
 
-    protected Collection<String> getInputsToSearchIn(Request req) {
-        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-
-        // Get scope of search
-        Collection<String> inputsToSearchIn = new HashSet<>();
-        if(portfolioType.equals(PortfolioList.Type.patents)) {
-            inputsToSearchIn.addAll(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
-        } else {
-            preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]").forEach(patent->inputsToSearchIn.addAll(Database.assigneesFor(patent)));
-            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
-
-        }
-        return inputsToSearchIn;
-    };
-
-
-    public void setPrefilters(Request req) {
-        List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
+    protected AbstractSimilarityModel setSecondFinder(AbstractSimilarityModel finderPrototype, Collection<String> inputsToSearchFor) {
+        secondFinder = finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchFor));
+        return secondFinder;
     }
 
+
+
     public void extractRelevantInformationFromParams(Request req) {
-        setPrefilters(req);
-        Collection<String> toSearchFor = getInputsToSearchFor(req);
-        Collection<String> toSearchIn = getInputsToSearchIn(req);
-        setPortolioList(req,toSearchFor,toSearchIn);
+
     }
 
     @Override

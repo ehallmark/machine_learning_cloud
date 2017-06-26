@@ -170,7 +170,6 @@ public class SimilarPatentServer {
         if(preFilterModelMap.isEmpty()&&postFilterModelMap.isEmpty()) {
             try {
                 // Pre filters
-                preFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
                 preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
@@ -181,10 +180,13 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
                 preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER,new PatentSearchScopeFilter());
                 preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
+                preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
+                preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
 
                 // TODO Fix prefilter issue with only being able to prefilter similarity
                 // Post filters
                 postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+                postFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
                 // pre computed attributes
                 preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
@@ -414,6 +416,7 @@ public class SimilarPatentServer {
                 // Get value models
 
                 Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
+                // get portfolio list from similarity engine
                 similarityEngine.extractRelevantInformationFromParams(req);
                 PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
