@@ -6,6 +6,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import highcharts.AbstractChart;
 import highcharts.PieChart;
 import j2html.tags.Tag;
+import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import server.SimilarPatentServer;
 import spark.Request;
@@ -59,9 +60,16 @@ public class AbstractDistributionChart implements ChartAttribute {
 
         if(items.isEmpty()) return Collections.emptyList();
 
-        items.stream().collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).forEach(e->{
-            String tech = e.getKey();
-            double prob = e.getValue();
+        int limit = 15;
+        List<Pair<String,Long>> itemPairs = items.stream().collect(Collectors.groupingBy(t->t,Collectors.counting())).entrySet().stream().sorted((e1, e2)->e2.getValue().compareTo(e1.getValue())).map(e->new Pair<>(e.getKey(),e.getValue())).collect(Collectors.toList());
+        if(itemPairs.size()>limit+5) {
+            Pair<String,Long> remaining = itemPairs.subList(limit,itemPairs.size()).stream().reduce((p1,p2)->new Pair<>("Remaining",p1.getSecond()+p2.getSecond())).get();
+            itemPairs = itemPairs.subList(0,limit);
+            itemPairs.add(remaining);
+        }
+        itemPairs.forEach(e->{
+            String tech = e.getFirst();
+            double prob = e.getSecond();
             Point point = new Point(tech,prob);
             series.addPoint(point);
         });
