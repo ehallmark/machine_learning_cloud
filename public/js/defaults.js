@@ -159,8 +159,6 @@ var resetSearchForm = function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
     $('.draggable .multiselect').val(null).trigger("change");
-    $('.draggable .multiselect').trigger('change');
-
 };
 
 var applyParams = function(params,searchOptions,special=[]) {
