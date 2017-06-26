@@ -641,7 +641,7 @@ public class SimilarPatentServer {
 
 
     private static Tag customFormHeader() {
-        return div().withClass("row").with(
+        return div().withClass("row").attr("style","margin-bottom: -15px;").with(
                 div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
