@@ -127,6 +127,8 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
                 PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters);
                 ref.set(newList.merge(ref.get(), comparator, limit));
             });
+            // set portfolio list
+            portfolioList = ref.get();
         }
 
         System.out.println("last init");
