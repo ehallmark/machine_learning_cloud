@@ -33,10 +33,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(Collections.emptyList()));
         engines.forEach(engine->{
-            engine.setPrefilters(req);
-            Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
-            Collection<String> toSearchIn = engine.getInputsToSearchIn(req);
-            engine.setPortolioList(req,toSearchFor,toSearchIn);
+            engine.extractRelevantInformationFromParams(req);
             try {
                 ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
             } catch(Exception e) {
@@ -45,12 +42,6 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             }
         });
         portfolioList = ref.get();
-        try {
-            portfolioList.init(comparator, limit);
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Final comparison error: "+e.getMessage());
-        }
     }
 
     @Override

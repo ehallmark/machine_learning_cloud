@@ -43,7 +43,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     public Tag getOptionsTag() {
         return div().with(
                 label("Assignees"),br(),
-                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD), br()
+                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );
     }
 }

@@ -38,7 +38,7 @@ public class TechnologySimilarityEngine extends AbstractSimilarityEngine {
     public Tag getOptionsTag() {
         return div().with(
                 label("Technology"),br(),
-                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD), br()
+                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD)
         );
     }
 }

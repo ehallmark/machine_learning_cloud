@@ -13,9 +13,7 @@ import java.util.stream.Collectors;
 public class Item implements Comparable<Item> {
     protected Map<String,Object> dataMap = new HashMap<>();
     protected Double similarityCache;
-
-    public static final Comparator<Item> similarityComparator() { return (o1, o2)->Double.compare(o1.getSimilarity(),o2.getSimilarity());}
-
+    
     public Item(String name) {
         setName(name);
     }
