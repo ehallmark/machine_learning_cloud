@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class Item implements Comparable<Item> {
     protected Map<String,Object> dataMap = new HashMap<>();
     protected Double similarityCache;
+    protected String name;
 
     public Item(String name) {
         setName(name);
@@ -34,11 +35,12 @@ public class Item implements Comparable<Item> {
     }
 
     public void setName(String name) {
+        this.name=name;
         addData(Constants.NAME,name);
     }
 
     public String getName() {
-        return (String) dataMap.getOrDefault(Constants.NAME, null);
+        return name;
     }
 
     public List<Pair<String,Object>> getDataAsRow(List<String> attributes) {
@@ -56,5 +58,20 @@ public class Item implements Comparable<Item> {
     @Override
     public int compareTo(Item o) {
         return Double.compare(getSimilarity(), o.getSimilarity());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return name.equals(other.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name.toString();
     }
 }

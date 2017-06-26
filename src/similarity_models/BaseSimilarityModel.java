@@ -23,6 +23,8 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     @Getter
     protected Collection<VectorizedItemWrapper> items;
     protected Map<String,INDArray> lookupTable;
+    protected Map<VectorizedItemWrapper,VectorizedItemWrapper> itemMap;
+
     @Getter @Setter
     protected String name;
 
@@ -32,17 +34,21 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         this.name=name;
         try {
-            items = candidateSet.stream().map(item->{
+            itemMap = candidateSet.stream().map(item->{
                 if(!lookupTable.containsKey(item.getName())) return null; // no info on item
                 return item;
-            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName()))).collect(Collectors.toSet());
+            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName()))).collect(Collectors.toMap(e->e,e->e));
+            items = itemMap.keySet();
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
             items = Collections.emptyList();
+            itemMap = Collections.emptyMap();
         }
     }
+
+    private BaseSimilarityModel() {};
 
     public INDArray computeAvg() {
         if(avgVector==null) {
@@ -66,6 +72,11 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public AbstractSimilarityModel duplicateWithScope(Collection<Item> scope) {
+        BaseSimilarityModel model = new BaseSimilarityModel();
+        model.name=name;
+        model.lookupTable=lookupTable;
+        model.itemMap = scope.stream().map(item->itemMap.get(item)).collect(Collectors.toMap(e->e,e->e));
+        model.items = model.itemMap.keySet();
         return new BaseSimilarityModel(scope,name,lookupTable);
     }
 

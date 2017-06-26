@@ -89,29 +89,37 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // second finder
         relevantEngines.forEach(engine->engine.setSecondFinder(finderPrototype,engine.getInputsToSearchFor(req)));
 
-
-        AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
-        if(!comparator.equals(Constants.SIMILARITY)) {
-            // get similarity model
-            portfolioList = new PortfolioList(firstFinder.getItemList());
+        // get similarity model
+        portfolioList = new PortfolioList(firstFinder.getItemList());
+        boolean dupScope = false;
+        if(!preFilters.isEmpty()) {
             portfolioList.applyFilters(preFilters);
+            dupScope=true;
+        }
+
+        if(!comparator.equals(Constants.SIMILARITY)) {
             portfolioList.init(comparator,limit);
-            ref.set(portfolioList);
-            firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
+            dupScope=true;
         }
 
-        // add similarity filters
-        preFilters = new ArrayList<>(preFilters);
-        if(extractArray(req,POST_FILTER_ARRAY_FIELD).contains(Constants.SIMILARITY_THRESHOLD_FILTER)) {
-            preFilters.add(postFilterModelMap.get(Constants.SIMILARITY_THRESHOLD_FILTER));
+        // if scope was reduced
+        if(dupScope) firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
+
+        // check similarity threshold filter
+        if(!relevantEngines.isEmpty()) {
+            AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
+            List<AbstractFilter> similarityFilters = new ArrayList<>();
+            if (extractArray(req, POST_FILTER_ARRAY_FIELD).contains(Constants.SIMILARITY_THRESHOLD_FILTER)) {
+                AbstractFilter thresholdFilter = postFilterModelMap.get(Constants.SIMILARITY_THRESHOLD_FILTER);
+                similarityFilters.add(thresholdFilter);
+            }
+            // run full similarity model
+            relevantEngines.forEach(engine -> {
+                PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters);
+                ref.set(newList.merge(ref.get(), comparator, limit));
+            });
         }
 
-        // run full similarity model
-        relevantEngines.forEach(engine -> {
-            PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, preFilters);
-            ref.set(newList.merge(ref.get(), comparator, limit));
-        });
-        portfolioList = ref.get();
         portfolioList.init(comparator,limit);
     }
 

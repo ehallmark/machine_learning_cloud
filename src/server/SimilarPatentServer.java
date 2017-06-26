@@ -591,6 +591,7 @@ public class SimilarPatentServer {
                                                 ),
                                                 hr(),
                                                 h2("Artificial Intelligence Platform").withClass("collapsible-header").attr("data-target","#form-id").attr("style","text-align: center;"),
+                                                customFormFooter(),
                                                 hr(),
                                                 h4(message),
                                                 form,
@@ -631,8 +632,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-4 offset-4").with(
                                                         button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                 )
-                                        ),
-                                        customFormFooter(),hr()
+                                        ),hr()
                                 )
                         )
                 ),

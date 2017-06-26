@@ -65,6 +65,10 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         }
     }
 
+    private SimRankSimilarityModel() {
+
+    }
+
     @Override
     public double similarityTo(String label) {
         if(!similarityMap.containsKey(label)) {
@@ -111,6 +115,10 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public AbstractSimilarityModel duplicateWithScope(Collection<Item> scope) {
+        SimRankSimilarityModel model = new SimRankSimilarityModel();
+        model.itemList=scope instanceof List ? (List<Item>)scope : new ArrayList<>(scope);
+        model.name=name;
+        model.tokenMap = scope.stream().filter(item->tokenMap.containsKey(item.getName())).collect(Collectors.toMap(e->e.getName(),e->e));
         return new SimRankSimilarityModel(scope,name);
     }
 

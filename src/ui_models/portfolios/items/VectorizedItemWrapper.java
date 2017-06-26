@@ -22,4 +22,19 @@ public class VectorizedItemWrapper {
         this.item=item;
         this.vec=vec;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        return item.getName().equals(other.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return item.getName().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return item.getName().toString();
+    }
 }
