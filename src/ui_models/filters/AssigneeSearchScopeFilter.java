@@ -17,7 +17,7 @@ public class AssigneeSearchScopeFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         return div().with(
                 label("Assignee List"),br(),
-                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD),br()
+                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD)
         );
     }
 

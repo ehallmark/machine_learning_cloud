@@ -17,7 +17,7 @@ public class PatentSearchScopeFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         return div().with(
                 label("Patent List"),br(),
-                textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD),br()
+                textarea().withClass("form-control").withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD)
         );
     }
 

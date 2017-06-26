@@ -134,3 +134,9 @@ td, th, option {
     cursor: pointer;
     width: 100%;
 }
+
+
+.collapsible-form.row {
+    padding-left: 5%;
+    padding-right: 5%;
+}
