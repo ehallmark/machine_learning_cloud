@@ -32,18 +32,36 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         int limit = extractInt(req, LIMIT_FIELD, 10);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
+
         AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
-        engines.forEach(engine->{
-            if(similarityEngines.contains(engine.getName())) {
-                engine.extractRelevantInformationFromParams(req);
-                try {
-                    ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new RuntimeException("Sorting: " + e.getMessage());
-                }
+        if(!comparator.equals(Constants.SIMILARITY)) {
+            // get similarity model
+            Collection<String> toSearchIn = getInputsToSearchIn(req);
+            setPrefilters(req);
+            setPortolioList(req,Collections.emptyList(),toSearchIn);
+            portfolioList.init(comparator,limit);
+            ref.set(portfolioList);
+            if(similarityEngines.size()>0) {
+                // apply similarity partially
+                engines.forEach(engine -> {
+                    if (similarityEngines.contains(engine.getName())) {
+                        engine.extractRelevantInformationFromParams(req);
+                        engine.setPrefilters(req);
+                        Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
+                        engine.setPortolioList(req,toSearchFor,portfolioList.getItemList().stream().map(item->item.getName()).collect(Collectors.toList()));
+                        ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
+                    }
+                });
             }
-        });
+        } else {
+            // run full similarity model
+            engines.forEach(engine -> {
+                if (similarityEngines.contains(engine.getName())) {
+                    engine.extractRelevantInformationFromParams(req);
+                    ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
+                }
+            });
+        }
         portfolioList = ref.get();
         portfolioList.init(comparator,limit);
     }

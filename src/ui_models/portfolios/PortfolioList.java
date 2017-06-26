@@ -61,7 +61,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
         }
     }
 
-    public PortfolioList merge(PortfolioList other, String comparator, int limit) throws SortingException {
+    public PortfolioList merge(PortfolioList other, String comparator, int limit) {
         PortfolioList newList;
         if(other.itemList.isEmpty()) {
             newList = new PortfolioList(itemList);
