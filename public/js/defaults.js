@@ -94,7 +94,8 @@ $(document).ready(function() {
     });
 
     $('.multiselect').select2({
-        minimumResultsForSearch: 20
+        minimumResultsForSearch: 20,
+        closeOnSelect: false
     });
 
 
