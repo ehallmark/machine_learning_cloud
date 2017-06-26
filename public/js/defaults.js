@@ -230,11 +230,6 @@ var setCollapsibleHeaders = function() {
         $header = $(this);
         //getting the next element
         $content = $($header.attr("data-target"));
-        $content.slideToggle({
-            complete: function() {
-                $content.toggleClass("show");
-            },
-            duration: 250
-        });
+        $content.toggleClass("show");
     });
 }
