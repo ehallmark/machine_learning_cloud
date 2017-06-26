@@ -12,14 +12,6 @@
     border-radius: 4px;
     text-align: center;
     border-collapse: collapse;
-
-    .highlighted {
-        border: 1px white solid;
-    }
-
-    .highlighted-special {
-        border: 1px white solid;
-    }
 }
 
 .droppable h5 {
@@ -102,7 +94,7 @@ td, th, option {
 }
 
 .highlighted {
-    background-color: #87CEFA;
+    /* background-color: #87CEFA; */
 }
 
 .highlighted-special {
