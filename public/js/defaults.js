@@ -150,7 +150,7 @@ var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapsible-form .collapse').filter(":visible").each(function() {
+    $('.collapse .collapsible-form').filter(":visible").each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
     $('.draggable .multiselect').val(null).trigger("change");
