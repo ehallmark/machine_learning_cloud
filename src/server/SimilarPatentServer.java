@@ -587,7 +587,7 @@ public class SimilarPatentServer {
                                                         img().attr("src", "/images/brand.png")
                                                 ),
                                                 hr(),
-                                                h2("Artificial Intelligence Platform").attr("style","text-align: center;"),
+                                                h2("Artificial Intelligence Platform").withClass("collapsible-header").attr("data-target","#form-id").attr("style","text-align: center;"),
                                                 hr(),
                                                 h4(message),
                                                 form,
@@ -616,7 +616,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().withClass("row").with(
+        return div().withClass("row collapse show").withId("form-id").with(
                 div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
