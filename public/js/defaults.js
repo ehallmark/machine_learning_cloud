@@ -179,17 +179,18 @@ var applyParams = function(params,searchOptions,special=[]) {
                 paramsHelper($(input),null);
             });
         } else {
-            paramsHelper($input,value);
+            var $checkbox = paramsHelper($input,value);
             if(special.includes(key)) {
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
                     if($input.hasClass("multiselect") || $input.hasClass("multiselect-no-search")) {
                         $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
+                    // only open if special
+                    waitForDoneCollapsing("#"+$checkbox.attr("group-id"),$checkbox);
                 }
             }
         }
-
     });
 
 };
@@ -222,7 +223,7 @@ var paramsHelper = function(input,value) {
         $checkbox.parent().addClass('highlighted');
     }
 
-    waitForDoneCollapsing("#"+$checkbox.attr("group-id"),$checkbox);
+    return $checkbox;
 };
 
 

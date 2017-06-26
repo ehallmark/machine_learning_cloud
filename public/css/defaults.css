@@ -134,7 +134,3 @@ td, th, option {
     cursor: pointer;
     width: 100%;
 }
-
-.row h4.collapsible-header {
-    margin: 20px 10px;
-}
