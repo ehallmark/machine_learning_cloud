@@ -717,7 +717,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag mainOptionsRow() {
-        return div().withClass("row").with(
+        return div().withClass("row").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
                 div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
