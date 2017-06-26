@@ -626,7 +626,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row collapse show").with(
-                div().withClass("col-12").with(
+                div().withClass("col-12").withId("main-content-id").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
                                         form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
@@ -656,7 +656,7 @@ public class SimilarPatentServer {
                         )
                 ), div().withClass("col-8").with(
                         h2("Artificial Intelligence Platform").withClass("collapsible-header")
-                                .attr("data-target","#main-options-container").attr("style","text-align: center; width: 100%;")
+                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%;")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
@@ -689,25 +689,27 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
-                        div().withId(groupID).withClass("collapsible-form row collapse").with(
-                                div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
-                                        h5("Available "+title),
-                                        div().with(
-                                                modelFields.stream().flatMap(pair->{
-                                                    String arrayFieldName = pair._2;
-                                                    return pair._1.entrySet().stream().map(e->{
-                                                        String collapseId = "collapse-"+type+"-"+e.getKey();
-                                                        return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
-                                                                        label(humanAttributeFor(e.getKey())),
-                                                                        input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
-                                                                ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
-                                                        );
-                                                    });
-                                                }).collect(Collectors.toList())
+                        span().withId(groupID).withClass("collapse").with(
+                                div().withClass("collapsible-form row").with(
+                                        div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
+                                                h5("Available "+title),
+                                                div().with(
+                                                        modelFields.stream().flatMap(pair->{
+                                                            String arrayFieldName = pair._2;
+                                                            return pair._1.entrySet().stream().map(e->{
+                                                                String collapseId = "collapse-"+type+"-"+e.getKey();
+                                                                return div().withClass("draggable "+type).attr("data-target",type).with(
+                                                                        div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
+                                                                                label(humanAttributeFor(e.getKey())),
+                                                                                input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
+                                                                        ), div().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
+                                                                );
+                                                            });
+                                                        }).collect(Collectors.toList())
+                                                )
+                                        ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
+                                                h5(title+" to Apply")
                                         )
-                                ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
-                                        h5(title+" to Apply")
                                 )
                         )
                 )
@@ -715,37 +717,39 @@ public class SimilarPatentServer {
     }
 
     private static Tag mainOptionsRow() {
-        return div().withClass("row").withId("main-options-container").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
+        return div().withClass("row").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
                 div().withClass("col-12").with(
                         div().withClass("row").with(
                                 div().withClass("col-12").with(
                                         h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                                 ),
-                                div().withClass("col-12 collapse").withId("main-options").with(
-                                        div().withClass("col-3").attr("style","text-align: center").with(
-                                                label("Result Type"),br(),
-                                                select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
-                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                            return option;
-                                                        }).collect(Collectors.toList())
-                                                )
-                                        ),
-                                        div().withClass("col-3").attr("style","text-align: center").with(
-                                                label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
-                                                        option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
-                                                        option("AI Value").withValue(Constants.AI_VALUE)
-                                                )
-                                        ),
-                                        div().withClass("col-3").attr("style","text-align: center").with(
-                                                label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                        ), div().withClass("col-3").attr("style","text-align: center").with(
-                                                label("Similarity Model"),br(),select().withClass("form-control").withName(SIMILARITY_MODEL_FIELD).with(
-                                                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
-                                                        option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
-                                                        option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
-                                                        option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
+                                span().withId("main-options").withClass("collapse").with(
+                                        div().withClass("col-12").with(
+                                                div().withClass("col-3").attr("style","text-align: center").with(
+                                                        label("Result Type"),br(),
+                                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                                    return option;
+                                                                }).collect(Collectors.toList())
+                                                        )
+                                                ),
+                                                div().withClass("col-3").attr("style","text-align: center").with(
+                                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                                option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
+                                                                option("AI Value").withValue(Constants.AI_VALUE)
+                                                        )
+                                                ),
+                                                div().withClass("col-3").attr("style","text-align: center").with(
+                                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                ), div().withClass("col-3").attr("style","text-align: center").with(
+                                                        label("Similarity Model"),br(),select().withClass("form-control").withName(SIMILARITY_MODEL_FIELD).with(
+                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
+                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
+                                                                option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
+                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
+                                                        )
                                                 )
                                         )
                                 )
