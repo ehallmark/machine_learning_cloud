@@ -31,7 +31,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     public void extractRelevantInformationFromParams(Request req) {
         int limit = extractInt(req, LIMIT_FIELD, 10);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
-        AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(Collections.emptyList()));
+        AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
         engines.forEach(engine->{
             engine.extractRelevantInformationFromParams(req);
             try {

@@ -454,7 +454,7 @@ public class SimilarPatentServer {
                         finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                                 div().attr("style","width: 100%").withId("data-charts").withClass("collapse show chart-div").with(
-                                        charts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                        finishedCharts.stream().map(c -> div().attr("style","width: 100%").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),

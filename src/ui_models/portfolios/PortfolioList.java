@@ -78,13 +78,12 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
 
-    public void init(String sortedBy, int limit) throws SortingException {
-        try {
-            Collections.sort(itemList,(i1,i2)->(Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue())));
-        } catch(Exception e) {
-            e.printStackTrace();
-            throw new SortingException(sortedBy);
-        }
+    public void init(String sortedBy, int limit) {
+        Collections.sort(itemList,(i1,i2)->{
+            System.out.println("i1: "+i1.getData(sortedBy));
+            System.out.println("i2: "+i2.getData(sortedBy));
+            return (Double.compare(((Number)(i2.getData(sortedBy))).doubleValue(),((Number)(i1.getData(sortedBy))).doubleValue()));
+        });
 
         if (itemList.size() > 0) {
             itemList=itemList.subList(0,Math.min(itemList.size(),limit));
