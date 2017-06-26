@@ -41,14 +41,14 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             setPortolioList(req,Collections.emptyList(),toSearchIn);
             portfolioList.init(comparator,limit);
             ref.set(portfolioList);
+            Collection<String> newItems = portfolioList.getItemList().stream().map(item->item.getName()).collect(Collectors.toList());
             if(similarityEngines.size()>0) {
                 // apply similarity partially
                 engines.forEach(engine -> {
                     if (similarityEngines.contains(engine.getName())) {
-                        engine.extractRelevantInformationFromParams(req);
                         engine.setPrefilters(req);
                         Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
-                        engine.setPortolioList(req,toSearchFor,portfolioList.getItemList().stream().map(item->item.getName()).collect(Collectors.toList()));
+                        engine.setPortolioList(req,toSearchFor,newItems);
                         ref.set(engine.getPortfolioList().merge(ref.get(), comparator, limit));
                     }
                 });
