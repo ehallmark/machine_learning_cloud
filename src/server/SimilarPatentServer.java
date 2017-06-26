@@ -723,7 +723,7 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                                 ),
-                                div().withClass("col-12 collapse show").withId("main-options").with(
+                                div().withClass("col-12 collapse").withId("main-options").with(
                                         div().withClass("col-3").attr("style","text-align: center").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
