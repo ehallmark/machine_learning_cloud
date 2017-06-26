@@ -10,7 +10,6 @@ import ui_models.filters.AbstractFilter;
 import ui_models.portfolios.items.Item;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -29,10 +28,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
     @Override
     public int compareTo(PortfolioList o) {
         return Double.compare(o.avgSimilarity,avgSimilarity);
-    }
-
-    public List<String> getTokens() {
-        return itemList.stream().map(p->p.getName()).collect(Collectors.toList());
     }
 
     public void applyFilters(Collection<AbstractFilter> filters) throws FilterException {
@@ -77,7 +72,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
                 scoreMap.put(item.getName(),item);
             }
         });
-        PortfolioList newList = new PortfolioList(scoreMap.values().stream().collect(Collectors.toList()));
+        PortfolioList newList = new PortfolioList(new ArrayList<>(scoreMap.values()));
         newList.init(comparator,limit);
         return newList;
     }

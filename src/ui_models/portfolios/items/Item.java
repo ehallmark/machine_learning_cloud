@@ -30,7 +30,6 @@ public class Item implements Comparable<Item> {
     }
 
     public double getSimilarity() {
-        if(similarityCache==null) similarityCache = (Double) dataMap.getOrDefault(Constants.SIMILARITY,null);
         return similarityCache == null ? ValueMapNormalizer.DEFAULT_START : similarityCache;
     }
 
