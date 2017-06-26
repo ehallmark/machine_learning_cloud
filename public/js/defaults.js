@@ -15,7 +15,7 @@ $(document).ready(function() {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
                 $handle.removeAttr('data-hidden-target');
             }
-            if(! $toggle.hasClass(':visible')) {
+            if(! $toggle.is(':visible')) {
                 $handle.click();
             }
         } else {
@@ -23,7 +23,7 @@ $(document).ready(function() {
                 $handle.attr('data-hidden-target',$handle.attr('data-target'));
                 $handle.removeAttr('data-target');
             }
-            if($toggle.hasClass(':visible')) {
+            if($toggle.is(':visible')) {
                 $handle.click();
             }
         }
@@ -150,7 +150,7 @@ var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapsible-form.collapse:visible').each(function() {
+    $('.collapsible-form .collapse').filter(":visible").each(function() {
         $('#'+$(this).attr("id").toString()+"-panel-toggle").click();
     });
     $('.draggable .multiselect').val(null).trigger("change");
