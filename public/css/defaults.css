@@ -135,6 +135,6 @@ td, th, option {
     width: 100%;
 }
 
-.row.collapsible-header {
+.row h4.collapsible-header {
     margin: 20px 10px;
 }
