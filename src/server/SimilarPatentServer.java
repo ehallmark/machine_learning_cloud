@@ -508,6 +508,7 @@ public class SimilarPatentServer {
                 + "  success: function(data) { "
                 + "    $('#results').html(data.message); "
                 + "    setupDataTable($('#results #data-table').get(0));   "
+                + "    setCollapsibleHeaders();   "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "

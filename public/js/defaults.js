@@ -98,13 +98,7 @@ $(document).ready(function() {
         closeOnSelect: false
     });
 
-
-    $(".collapsible-header").click(function () {
-        $header = $(this);
-        //getting the next element
-        $content = $($header.attr("data-target"));
-        $content.toggleClass("show");
-    });
+    setCollapsibleHeaders();
 
 });
 
@@ -230,3 +224,17 @@ var waitForDoneCollapsing = function(groupId,checkbox) {
     }
 }
 
+
+var setCollapsibleHeaders = function() {
+    $(".collapsible-header").click(function () {
+        $header = $(this);
+        //getting the next element
+        $content = $($header.attr("data-target"));
+        $content.slideToggle({
+            complete: function() {
+                $content.toggleClass("show");
+            },
+            duration: 250
+        });
+    });
+}
