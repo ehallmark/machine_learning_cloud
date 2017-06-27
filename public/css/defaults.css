@@ -127,6 +127,7 @@ td, th, option {
     position: fixed;
     width: 75%;
     margin-left: 25%;
+    z-index: 50000;
 }
 
 .bordered {
