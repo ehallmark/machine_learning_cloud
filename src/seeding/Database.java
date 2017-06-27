@@ -111,7 +111,7 @@ public class Database {
 		if(priorityDate==null) return 0;
 
 		// determine life remaining
-		return Math.max(0,LocalDate.now().getYear() - priorityDate.getYear());
+		return Math.max(0,20 + LocalDate.now().getYear() - priorityDate.getYear());
 	}
 
 	public synchronized static boolean isJapaneseAssignee(String assignee) {
