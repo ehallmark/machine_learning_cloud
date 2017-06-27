@@ -20,13 +20,13 @@ public class RemainingLifeFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withClass("form-control").withType("number").withValue("0").withName(Constants.REMAINING_LIFE)
+                input().withClass("form-control").withType("number").withValue("0").withName(Constants.REMAINING_LIFE_FILTER)
         );
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        this.limit = Integer.valueOf(req.queryParams(Constants.REMAINING_LIFE));
+        this.limit = Integer.valueOf(req.queryParams(Constants.REMAINING_LIFE_FILTER));
     }
 
     @Override
@@ -47,6 +47,6 @@ public class RemainingLifeFilter extends AbstractFilter {
 
     @Override
     public String getName() {
-        return Constants.REMAINING_LIFE;
+        return Constants.REMAINING_LIFE_FILTER;
     }
 }
