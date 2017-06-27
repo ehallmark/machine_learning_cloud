@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 20px;").with(
+                                        ),div().withClass("col-9 offset-3").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -625,7 +625,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
-                div().withClass("col-12").with(
+                div().withClass("col-12 bordered").with(
                         span().withId("main-content-id").withClass("collapse show").with(
                                 div().withClass("row").with(
                                         div().withClass("col-12").with(
@@ -637,7 +637,7 @@ public class SimilarPatentServer {
                                                         div().withClass("col-4 offset-4").with(
                                                                 button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                         )
-                                                ),hr()
+                                                )
                                         )
                                 )
                         )
@@ -648,21 +648,21 @@ public class SimilarPatentServer {
 
 
     private static Tag customFormHeader() {
-        return div().withClass("row").attr("style","margin-bottom: -15px;").with(
+        return div().withClass("row header-main").with(
                 div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                         input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                        button("Back").withClass("btn btn-secondary").attr("style","margin-right: auto; width: 90%; margin-top: -5px;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                        button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ), div().withClass("col-8").with(
-                        h2("Artificial Intelligence Platform").withClass("collapsible-header header-main")
-                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%;")
+                        h2("Artificial Intelligence Platform").withClass("collapsible-header")
+                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%; margin-top: -5px;")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","margin-left: auto; width: 90%; margin-top: -5px;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-sm btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
