@@ -16,7 +16,7 @@ $(document).ready(function() {
                 $handle.removeAttr('data-hidden-target');
             }
             if(! $toggle.is(':visible')) {
-                $handle.show();
+                $toggle.show();
             }
         } else {
             if($handle.attr('data-target')) {
@@ -24,7 +24,7 @@ $(document).ready(function() {
                 $handle.removeAttr('data-target');
             }
             if($toggle.is(':visible')) {
-                $handle.hide();
+                $toggle.hide();
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
@@ -221,7 +221,7 @@ var paramsHelper = function(input,value) {
 var waitForDoneCollapsing = function(groupId,checkbox) {
     var group = $(groupId);
     if(! group.is(":visible")) {
-        $("#"+checkbox.attr("toggle-id")).show();
+        group.show();
     }
 }
 
