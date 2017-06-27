@@ -9,6 +9,7 @@ $(document).ready(function() {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
         $handle = $draggable.find(".collapsible-header");
+        $draggable.find(".collapse").css('display','');
         if(shouldShow) {
             if($handle.attr('data-hidden-target')) {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
@@ -161,12 +162,16 @@ var applyParams = function(params,searchOptions,special=[]) {
         } else {
             var $checkbox = paramsHelper($input,value);
             if(special.includes(key)) {
+                // highlight and keep open
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
                     if($input.hasClass("multiselect")) {
                         $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
                 }
+            } else {
+                // hide dropdown if not special
+                $checkbox.parent().next().hide();
             }
         }
     });
