@@ -20,6 +20,7 @@ public class SimilarPatentSearch extends FormTemplate {
         Map<String,Object> map = new HashMap<>();
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.SIMILARITY));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.ASSIGNEE));
+        map.put(Constants.REMAINING_LIFE, 5);
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
         return map;
