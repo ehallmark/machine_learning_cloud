@@ -107,7 +107,7 @@ public class Database {
 	public synchronized static int getLifeRemaining(String patent) {
 		if(!valuablePatents.contains(patent)) return 0;
 
-		LocalDate priorityDate = patentToPriorityDateMap.get(patent);
+		LocalDate priorityDate = getPatentToPriorityDateMap().get(patent);
 		if(priorityDate==null) return 0;
 
 		// determine life remaining
