@@ -701,9 +701,9 @@ public class SimilarPatentServer {
                         toggleButton(groupID, title),
                         span().withId(groupID).withClass("collapse").with(
                                 div().withClass("row ").with(
-                                        div().withClass("col-6").with(
+                                        div().withClass("col-6 droppable").with(
                                                 h5("Available "+shortTitle)
-                                        ), div().withClass("col-6").with(
+                                        ), div().withClass("col-6 droppable").with(
                                                 h5(shortTitle+" to Apply")
                                         )
                                 ), div().withClass("collapsible-form row").with(
