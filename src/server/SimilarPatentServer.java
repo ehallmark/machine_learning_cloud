@@ -700,7 +700,7 @@ public class SimilarPatentServer {
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
                         span().withId(groupID).withClass("collapse").with(
-                                div().withClass("row").with(
+                                div().withClass("row").attr("style","padding-left: 5%; padding-right: 5%;").with(
                                         div().withClass("col-6 droppable").with(
                                                 h5("Available "+shortTitle)
                                         ), div().withClass("col-6 droppable").with(
@@ -750,7 +750,7 @@ public class SimilarPatentServer {
                                                         )
                                                 ),
                                                 div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Attribute to Maximize"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                        label("Maximization"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
                                                                 option("AI Value").withValue(Constants.AI_VALUE)
                                                         )

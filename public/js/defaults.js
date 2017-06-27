@@ -140,7 +140,7 @@ var resetSearchForm = function() {
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapse').filter(":visible").find('.collapsible-form').each(function() {
-        $(this).parent().hide();
+        $(this).parent()removeClass("show");
     });
     $('.draggable .multiselect').val(null).trigger("change");
 };
@@ -174,13 +174,13 @@ var applyParams = function(params,searchOptions,special=[]) {
                 }
             } else {
                 // hide dropdown if not special
-                $checkbox.parent().next().hide();
+                $checkbox.parent().next().removeClass("show");
             }
         }
     });
     // open search forms
     $('.collapse').filter(":hidden").find('.collapsible-form').each(function() {
-        $(this).parent().show();
+        $(this).parent().addClass("show");
     });
 };
 

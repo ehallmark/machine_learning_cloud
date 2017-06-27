@@ -64,6 +64,11 @@ body {
 
 .collapse {
     width: 100%;
+    display: none;
+}
+
+.collapse.show {
+    display: inline;
 }
 
 button.multiselect.dropdown-toggle {
@@ -80,7 +85,6 @@ th.sortable {
 }
 
 label {
-    font-weight: bold;
     margin-bottom: 0px;
 }
 
