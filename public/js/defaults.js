@@ -148,13 +148,13 @@ var setupDataTable = function (dataTable) {
 
 var resetSearchForm = function() {
     $('.target .double-click').dblclick();
-    $('.start .double-click .collapse')
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapse').filter(":visible").find('.collapsible-form').each(function() {
         $(this).parent().hide();
     });
     $('.draggable .multiselect').val(null).trigger("change");
+    $('.start .double-click .collapse').hide();
 };
 
 var applyParams = function(params,searchOptions,special=[]) {
