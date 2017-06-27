@@ -589,12 +589,12 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px;").with(
-                                                a().attr("style","margin-left: auto; margin-right: auto;").attr("href", "/").with(
-                                                        img().attr("style","margin-left: auto; margin-right: auto;")
+                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 15px;").with(
+                                                a().attr("href", "/").with(
+                                                        img().attr("style","display: block; margin-left: auto; margin-right: auto;")
                                                                 .attr("src", "/images/brand.png")
                                                 ),hr(),br(),
-                                                h4("Templates"),br(),br(),
+                                                h4("Templates"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
@@ -660,7 +660,7 @@ public class SimilarPatentServer {
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                         input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                        button("Back").withClass("btn btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                        button("Back").withClass("btn btn-secondary").attr("style","margin-right: auto; width: 90%; margin-top: -5px;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ), div().withClass("col-8").with(
                         h2("Artificial Intelligence Platform").withClass("collapsible-header")
@@ -669,7 +669,7 @@ public class SimilarPatentServer {
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                button("Forward").withClass("btn btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                button("Forward").withClass("btn btn-secondary").attr("style","margin-left: auto; width: 90%; margin-top: -5px;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
                 )
         );
