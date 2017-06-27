@@ -706,7 +706,7 @@ public class SimilarPatentServer {
                                         ), div().withClass("col-6").with(
                                                 h5(shortTitle+" to Apply")
                                         )
-                                ), div().attr("style","max-height: 400px; overflow-y: auto;").withClass("collapsible-form row").with(
+                                ), div().withClass("collapsible-form row").with(
                                         div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{
