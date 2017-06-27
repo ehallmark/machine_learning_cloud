@@ -101,7 +101,8 @@ td, th, option {
 }
 
 .sidebar {
-    background-color: #e6e6e6;
+    background-color: #c4c4c4∂;
+    border-right: 1px #e6e6e6 solid;
 }
 
 .collapsible-header {
