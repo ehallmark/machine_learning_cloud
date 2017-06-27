@@ -745,7 +745,7 @@ public class SimilarPatentServer {
                                                         )
                                                 ),
                                                 div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Sorted By"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                        label("Attribute to Maximize"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
                                                                 option("AI Value").withValue(Constants.AI_VALUE)
                                                         )

@@ -142,14 +142,15 @@ var resetSearchForm = function() {
         $(this).parent().hide();
     });
     $('.draggable .multiselect').val(null).trigger("change");
-    $('.start .double-click .collapse').hide();
 };
 
 var applyParams = function(params,searchOptions,special=[]) {
+    // add search options
     $.each(searchOptions, function(key,value){
         var $input = $('[name="'+key+'"]');
         $input.val(value);
     });
+    // add other params
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"]');
         if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
@@ -165,13 +166,14 @@ var applyParams = function(params,searchOptions,special=[]) {
                     if($input.hasClass("multiselect")) {
                         $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
-                    // only open if special
-                    waitForDoneCollapsing("#"+$checkbox.attr("group-id"),$checkbox);
                 }
             }
         }
     });
-
+    // open search forms
+    $('.collapse').filter(":hidden").find('.collapsible-form').each(function() {
+        $(this).parent().show();
+    });
 };
 
 var findByValue= function(inputs, value) {
@@ -197,22 +199,11 @@ var paramsHelper = function(input,value) {
             $checkbox.parent().dblclick();
         }
     }
-
     if(!$checkbox.parent().hasClass("highlighted")) {
         $checkbox.parent().addClass('highlighted');
     }
-
     return $checkbox;
 };
-
-
-var waitForDoneCollapsing = function(groupId,checkbox) {
-    var group = $(groupId);
-    if(! group.is(":visible")) {
-        group.show();
-    }
-}
-
 
 var setCollapsibleHeaders = function() {
     $(".collapsible-header").click(function () {
