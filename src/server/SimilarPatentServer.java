@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3").with(
+                                        ),div().attr("style","padding-top: 100px;").withClass("col-9 offset-3").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -656,8 +656,8 @@ public class SimilarPatentServer {
                                         button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ), div().withClass("col-8").with(
-                        h2("Artificial Intelligence Platform").withClass("collapsible-header")
-                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%; margin-top: -5px;")
+                        h3("Artificial Intelligence Platform").withClass("collapsible-header")
+                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%;")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(

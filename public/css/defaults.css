@@ -124,6 +124,9 @@ td, th, option {
     color: whitesmoke;
     background-color: black;
     padding-top: 15px;
+    position: fixed;
+    width: 75%;
+    margin-left: 25%;
 }
 
 .bordered {
