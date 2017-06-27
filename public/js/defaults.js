@@ -87,7 +87,7 @@ $(document).ready(function() {
         closeOnSelect: false
     });
 
-    setCollapsibleHeaders();
+    setCollapsibleHeaders(".collapsible-header");
 
 });
 
@@ -213,11 +213,11 @@ var paramsHelper = function(input,value) {
     return $checkbox;
 };
 
-var setCollapsibleHeaders = function() {
-    $(".collapsible-header").click(function () {
+var setCollapsibleHeaders = function(selector) {
+    $(selector).click(function () {
         $header = $(this);
         //getting the next element
         $content = $($header.attr("data-target"));
-        $content.toggle();
+        $content.toggleClass("show");
     });
 }

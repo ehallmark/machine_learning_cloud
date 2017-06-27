@@ -514,7 +514,7 @@ public class SimilarPatentServer {
                 + "  success: function(data) { "
                 + "    $('#results').html(data.message); "
                 + "    setupDataTable($('#results #data-table').get(0));   "
-                + "    setCollapsibleHeaders();   "
+                + "    setCollapsibleHeaders('#results .collapsible-header');   "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
@@ -738,7 +738,7 @@ public class SimilarPatentServer {
                                         h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                                 ),
                                 span().withId("main-options").withClass("collapse").with(
-                                        div().withClass("row collapsible-form").with(
+                                        div().withClass("row collapsible-form").attr("style","padding-top: 20px; padding-left: 5%; padding-right: 5%;").with(
                                                 div().withClass("col-3").attr("style","text-align: center").with(
                                                         label("Result Type"),br(),
                                                         select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
