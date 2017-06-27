@@ -688,7 +688,7 @@ public class SimilarPatentServer {
     }
 
     private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames) {
-        String title = type.substring(0,1).toUpperCase()+type.substring(1);
+        String title = type.substring(0,1).toUpperCase()+type.substring(1, type.length()-1)+" Options";
         List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
             modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
