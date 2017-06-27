@@ -700,7 +700,7 @@ public class SimilarPatentServer {
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
                         span().withId(groupID).withClass("collapse").with(
-                                div().withClass("row ").with(
+                                div().withClass("row").with(
                                         div().withClass("col-6 droppable").with(
                                                 h5("Available "+shortTitle)
                                         ), div().withClass("col-6 droppable").with(
