@@ -3,11 +3,6 @@
     display: none;
 }
 
-.droppable {
-    padding-right: 5%;
-    padding-left: 5%;
-}
-
 .draggable {
     border: 1px rgba(0,0,0,.1) solid;
     border-radius: 4px;
@@ -60,7 +55,7 @@ body {
 }
 
 .start .draggable {
-    background-color: #E8E8E8;
+    background-color: whitesmoke;
     z-index: 1;
 }
 
@@ -116,4 +111,6 @@ td, th, option {
 
 .collapsible-form.row {
     padding-bottom: 20px;
+    padding-left: 5%;
+    padding-right: 5%;
 }
