@@ -4,7 +4,10 @@
 }
 
 .droppable {
-    padding: 5px;
+    padding-right: 5%;
+    padding-left: 5%;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .draggable {
