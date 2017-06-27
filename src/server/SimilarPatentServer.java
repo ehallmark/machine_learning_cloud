@@ -184,6 +184,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
+                preFilterModelMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyFilter());
 
                 // During filters
                 similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
@@ -239,6 +240,9 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
+            attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
+
+            // similarity engine
             similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(),new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
         }
     }

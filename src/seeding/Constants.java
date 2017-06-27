@@ -42,6 +42,7 @@ public class Constants {
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";
 	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
+	public static final String REMAINING_LIFE = "remainingLife";
 
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;

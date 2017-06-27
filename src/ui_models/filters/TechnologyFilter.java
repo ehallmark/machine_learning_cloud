@@ -18,32 +18,27 @@ import static j2html.TagCreator.label;
  */
 public class TechnologyFilter extends AbstractFilter {
     private Set<String> technologies;
-    private Set<String> wipoTechnologies;
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         technologies = new HashSet<>(SimilarPatentServer.extractArray(params, SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD));
-        wipoTechnologies = new HashSet<>(SimilarPatentServer.extractArray(params, SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD));
     }
 
     @Override
     public Tag getOptionsTag() {
         return div().with(
                 label("Gather Technology"),br(),
-                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD),br(),
-                label("WIPO Technology"),br(),
-                SimilarPatentServer.technologySelect(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD, WIPOHelper.getOrderedClassifications())
+                SimilarPatentServer.gatherTechnologySelect(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD)
         );
     }
 
     @Override
     public boolean shouldKeepItem(Item item) {
-        return (technologies.isEmpty()||technologies.contains(item.getData(Constants.TECHNOLOGY.toString())))
-                && (wipoTechnologies.isEmpty() || wipoTechnologies.contains(item.getData(Constants.WIPO_TECHNOLOGY).toString()));
+        return technologies.isEmpty()||technologies.contains(item.getData(Constants.TECHNOLOGY.toString()));
     }
 
     @Override
     public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY);
+        return Arrays.asList(Constants.TECHNOLOGY);
     }
 
     @Override

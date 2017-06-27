@@ -46,7 +46,9 @@ public class Database {
 	@Getter
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static Map<String,LocalDate> patentToPubDateMap;
+	private static Map<String,LocalDate> patentToPriorityDateMap;
 	private static File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
+	private static File patentToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_priority_date_map.jobj");
 	private static File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
 	private static File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
 	private static File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
@@ -100,6 +102,16 @@ public class Database {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public synchronized static int getLifeRemaining(String patent) {
+		if(!valuablePatents.contains(patent)) return 0;
+
+		LocalDate priorityDate = patentToPriorityDateMap.get(patent);
+		if(priorityDate==null) return 0;
+
+		// determine life remaining
+		return Math.max(0,LocalDate.now().getYear() - priorityDate.getYear());
 	}
 
 	public synchronized static boolean isJapaneseAssignee(String assignee) {
@@ -298,6 +310,14 @@ public class Database {
 			patentToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPubDateMapFile));
 		}
 		return patentToPubDateMap;
+	}
+
+
+	public synchronized static Map<String,LocalDate> getPatentToPriorityDateMap() {
+		if(patentToPriorityDateMap==null) {
+			patentToPriorityDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPriorityDateMapFile));
+		}
+		return patentToPriorityDateMap;
 	}
 
 	public synchronized static Map<String,List<String>> getPatentToOriginalAssigneeMap() {
