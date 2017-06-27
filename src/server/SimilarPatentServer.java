@@ -689,6 +689,7 @@ public class SimilarPatentServer {
 
     private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames) {
         String title = type.substring(0,1).toUpperCase()+type.substring(1, type.length()-1)+" Options";
+        String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
             modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
@@ -699,9 +700,14 @@ public class SimilarPatentServer {
                 div().withClass("col-12").with(
                         toggleButton(groupID, title),
                         span().withId(groupID).withClass("collapse").with(
-                                div().withClass("collapsible-form row").with(
+                                div().withClass("row ").with(
+                                        div().withClass("col-6").with(
+                                                h5("Available "+shortTitle)
+                                        ), div().withClass("col-6").with(
+                                                h5(shortTitle+" to Apply")
+                                        )
+                                ), div().attr("style","max-height: 400px; overflow-y: auto;").withClass("collapsible-form row").with(
                                         div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
-                                                h5("Available "+title),
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{
                                                             String arrayFieldName = pair._2;
@@ -717,7 +723,6 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
-                                                h5(title+" to Apply")
                                         )
                                 )
                         )
