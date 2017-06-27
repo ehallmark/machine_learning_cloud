@@ -47,11 +47,11 @@ body {
 }
 
 .target .draggable {
-    background-color: whitesmoke;
+    background-color: #e6e6e6;
 }
 
 .start .draggable {
-    background-color: whitesmoke;
+    background-color: #e6e6e6;
     z-index: 1;
 }
 
@@ -97,7 +97,7 @@ td, th, option {
 }
 
 .sidebar {
-    background-color: #BEBEBE;
+    background-color: #e6e6e6;
 }
 
 .collapsible-header {
