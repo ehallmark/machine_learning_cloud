@@ -287,12 +287,6 @@ public class SimilarPatentServer {
         return tagger;
     }
 
-    static String getAndRemoveMessage(Session session) {
-        String message = session.attribute("message");
-        if(message!=null)session.removeAttribute("message");
-        return message;
-    }
-
     static void hostPublicAssets() {
         File dir = new File("public/");
         hostAssetsHelper(dir,"");
@@ -356,7 +350,7 @@ public class SimilarPatentServer {
         hostPublicAssets();
 
         // GET METHODS
-        get("/", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm()), getAndRemoveMessage(req.session())));
+        get("/", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm())));
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -569,9 +563,8 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    static Tag templateWrapper(Response res, Tag form, String message) {
+    static Tag templateWrapper(Response res, Tag form) {
         res.type("text/html");
-        if(message==null)message="";
         return html().with(
                 head().with(
                         script().withSrc("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"),
@@ -604,8 +597,7 @@ public class SimilarPatentServer {
                                                     }).collect(Collectors.toList())
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 20px;").with(
-                                                customFormHeader(),
-                                                h4(message),
+                                                customFormHeader(),hr(),
                                                 form,
                                                 br(),
                                                 br(),

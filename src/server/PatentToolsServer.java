@@ -37,7 +37,7 @@ public class PatentToolsServer {
     private static final String TECH_PREDICTION_FROM_CPCS_FORM_ID = "tech-from-cpcs-form";
 
     public static void setup() {
-        get("/patent_toolbox", (req, res) -> SimilarPatentServer.templateWrapper(res, div().with(patentToolboxForm(), hr()), SimilarPatentServer.getAndRemoveMessage(req.session())));
+        get("/patent_toolbox", (req, res) -> SimilarPatentServer.templateWrapper(res, div().with(patentToolboxForm(), hr())));
 
         // POST METHODS
         post("/assignee_asset_count", (req, res) -> {
