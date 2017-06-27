@@ -119,3 +119,9 @@ td, th, option {
 .droppable {
     min-height: 100px;
 }
+
+.header-main {
+    color: whitesmoke;
+    background-color: black;
+    margin-bottom: 20px;
+}
