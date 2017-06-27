@@ -140,7 +140,7 @@ var resetSearchForm = function() {
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapse').filter(":visible").find('.collapsible-form').each(function() {
-        $(this).parent()removeClass("show");
+        $(this).parent().removeClass("show");
     });
     $('.draggable .multiselect').val(null).trigger("change");
 };
