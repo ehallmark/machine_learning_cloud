@@ -56,11 +56,6 @@ $(document).ready(function() {
         return false;
     });
 
-    $('.droppable.values').droppable({
-        accept: '.draggable.values',
-        drop: dropFunc
-    });
-
     $('.droppable.attributes').droppable({
         accept: '.draggable.attributes',
         drop: dropFunc
@@ -73,7 +68,7 @@ $(document).ready(function() {
 
     var doubleClickWhileCollapsingHelper = function(elem) {
         var $draggable = $(elem).parent();
-        var id = $draggable.data('target');
+        var id = $draggable.attr('data-target');
         if(id) {
             var target;
             $parent = $draggable.parent();

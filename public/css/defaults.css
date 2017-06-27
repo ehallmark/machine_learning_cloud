@@ -14,6 +14,10 @@
     border-collapse: collapse;
 }
 
+.start .draggable .collapse {
+    display: none;
+}
+
 .droppable h5 {
     margin-top: -20px;
     margin-bottom: 20px;
