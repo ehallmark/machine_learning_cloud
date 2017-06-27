@@ -590,7 +590,11 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px;").with(
-                                                h4("Templates").attr("style","margin-top: 40px;"),hr(),br(),br(),
+                                                a().attr("style","margin-left: auto; margin-right: auto;").attr("href", "/").with(
+                                                        img().attr("style","margin-left: auto; margin-right: auto;")
+                                                                .attr("src", "/images/brand.png")
+                                                ),hr(),br(),
+                                                h4("Templates"),br(),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
@@ -599,12 +603,7 @@ public class SimilarPatentServer {
                                                     }).collect(Collectors.toList())
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 20px;").with(
-                                                a().attr("href", "/").with(
-                                                        img().attr("src", "/images/brand.png")
-                                                ),
-                                                hr(),
                                                 customFormHeader(),
-                                                hr(),
                                                 h4(message),
                                                 form,
                                                 br(),
@@ -701,9 +700,9 @@ public class SimilarPatentServer {
                         toggleButton(groupID, title),
                         span().withId(groupID).withClass("collapse").with(
                                 div().withClass("row").attr("style","padding-left: 5%; padding-right: 5%;").with(
-                                        div().withClass("col-6 droppable").with(
+                                        div().withClass("col-6").with(
                                                 h5("Available "+shortTitle)
-                                        ), div().withClass("col-6 droppable").with(
+                                        ), div().withClass("col-6").with(
                                                 h5(shortTitle+" to Apply")
                                         )
                                 ), div().withClass("collapsible-form row").with(

@@ -139,7 +139,7 @@ var resetSearchForm = function() {
     $('.target .double-click').dblclick();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapse').filter(":visible").find('.collapsible-form').each(function() {
+    $('.collapsible-form').filter(':visible').each(function() {
         $(this).parent().removeClass("show");
     });
     $('.draggable .multiselect').val(null).trigger("change");
