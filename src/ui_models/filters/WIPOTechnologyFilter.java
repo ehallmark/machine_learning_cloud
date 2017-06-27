@@ -27,7 +27,6 @@ public class WIPOTechnologyFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                label("WIPO Technology"),br(),
                 SimilarPatentServer.technologySelect(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD, WIPOHelper.getOrderedClassifications())
         );
     }
