@@ -15,7 +15,11 @@
 }
 
 .start .draggable .collapse {
-    display: none;
+    display: none !important;
+}
+
+.target .draggable .collapse {
+    display : inline;
 }
 
 .droppable h5 {

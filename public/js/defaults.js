@@ -8,23 +8,16 @@ $(document).ready(function() {
         var $draggable = $(elem);
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var shouldShow = $(target).hasClass('target');
-        $toggle = $draggable.find(".collapse");
         $handle = $draggable.find(".collapsible-header");
         if(shouldShow) {
             if($handle.attr('data-hidden-target')) {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
                 $handle.removeAttr('data-hidden-target');
             }
-            if(! $toggle.is(':visible')) {
-                $toggle.show();
-            }
         } else {
             if($handle.attr('data-target')) {
                 $handle.attr('data-hidden-target',$handle.attr('data-target'));
                 $handle.removeAttr('data-target');
-            }
-            if($toggle.is(':visible')) {
-                $toggle.hide();
             }
         }
         var $checkbox = $draggable.find(".mycheckbox")
