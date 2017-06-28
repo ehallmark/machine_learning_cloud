@@ -139,3 +139,7 @@ label {
 input.form-control {
     border: 1px solid #aaa;
 }
+
+.placeholder {
+    color: #999;
+}

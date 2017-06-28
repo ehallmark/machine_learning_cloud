@@ -699,7 +699,7 @@ public class SimilarPatentServer {
                         span().withId(groupID).withClass("collapse").with(
                                 div().withClass("collapsible-form row").with(
                                         div().withClass("col-12").with(
-                                                select().withClass("display-item-select form-control").with(option())
+                                                select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected"))
                                         ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start"+type).with(
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{
@@ -729,8 +729,8 @@ public class SimilarPatentServer {
                         h5("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                 ),
                 span().withId("main-options").withClass("collapse").with(
-                        div().withClass("col-12 collapsible-form").with(
-                                div().withClass("row").with(
+                        div().withClass("col-12").with(
+                                div().withClass("row collapsible-form").with(
                                         div().withClass("col-4").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(

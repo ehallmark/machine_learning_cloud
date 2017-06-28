@@ -1,15 +1,35 @@
 $(document).ready(function() {
     // display-item-select
     $('.display-item-select').select2({width: '100%', placeholder: "Search available..."});
+
+    // On opening
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
-        $this.empty();
-        $this.append("<option></option>");
+        $placeholder = $this.find('option.placeholder');
+        $placeholder.removeAttr('selected');
+        $placeholder.hide();
+
+        // clear all except for placeholder
+        $this.html($placeholder);
+
+        // add hidden elements
         $this.parent().next().find('.draggable .collapsible-header label').each(function(index, elem) {
             $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
         $this.trigger('change');
     });
+
+    // On closing
+    $('.display-item-select').on("select2:closing", function(e){
+        $this = $(this);
+        $placeholder = $this.find('option.placeholder');
+        $placeholder.attr('selected','selected');
+        $placeholder.show();
+        $this.html($placeholder);
+        $this.trigger('change');
+    });
+
+    // On select
     $('.display-item-select').on("select2:select", function(e){
         e.preventDefault();
         $this = $(this);
