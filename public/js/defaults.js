@@ -45,32 +45,6 @@ $(document).ready(function() {
         return false;
     });
 
-    var showDraggable = function(elem) {
-        var $draggable = $(elem);
-        if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
-        var id = $draggable.attr('data-target');
-        if(id) {
-            var target = "target";
-            $target = $('#'+id+'-'+target);
-            if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0),true);
-            }
-        }
-    };
-
-    var hideDraggable = function(elem) {
-        var $draggable = $(elem);
-        if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
-        var id = $draggable.attr('data-target');
-        if(id) {
-            var target = "start";
-            $target = $('#'+id+'-'+target);
-            if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0),false);
-            }
-        }
-    };
-
     $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
         hideDraggable($(this).parent().get(0));
@@ -222,3 +196,29 @@ var setCollapsibleHeaders = function(selector) {
         $content.toggleClass("show");
     });
 }
+
+var showDraggable = function(elem) {
+    var $draggable = $(elem);
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+    var id = $draggable.attr('data-target');
+    if(id) {
+        var target = "target";
+        $target = $('#'+id+'-'+target);
+        if($target) {
+              resetCheckbox($draggable.get(0),$target.get(0),true);
+        }
+    }
+};
+
+var hideDraggable = function(elem) {
+    var $draggable = $(elem);
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+    var id = $draggable.attr('data-target');
+    if(id) {
+        var target = "start";
+        $target = $('#'+id+'-'+target);
+        if($target) {
+              resetCheckbox($draggable.get(0),$target.get(0),false);
+        }
+    }
+};
