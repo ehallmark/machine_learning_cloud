@@ -115,14 +115,18 @@ label {
 
 .form-right {
     padding-right: 5%;
-    border-right: 1px rgba(0,0,0,.1) solid;
-    border-top: 1px rgba(0,0,0,.1) solid;
-    border-bottom: 1px rgba(0,0,0,.1) solid;
 }
 
 .form-left {
     padding-left: 5%;
-    border: 1px rgba(0,0,0,.1) solid;
+    border-right: 1px rgba(0,0,0,.1) solid;
+}
+
+.form-top {
+    border-bottom: 1px rgba(0,0,0,.1) solid;
+}
+
+.form-bottom {
 }
 
 .header-main {
