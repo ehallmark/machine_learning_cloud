@@ -729,8 +729,8 @@ public class SimilarPatentServer {
                         h5("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
                 ),
                 span().withId("main-options").withClass("collapse").with(
-                        div().withClass("col-12").with(
-                                div().withClass("row collapsible-form").with(
+                        div().withClass("col-12 collapsible-form").with(
+                                div().withClass("row").with(
                                         div().withClass("col-4").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
@@ -749,7 +749,7 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-4").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                        ), div().withClass("col-12").with(
+                                        ), div().withClass("col-12").attr("style","margin-top: 8px;").with(
                                                 label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
                                                         option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
                                                         option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),

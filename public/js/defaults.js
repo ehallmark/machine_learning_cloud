@@ -116,6 +116,8 @@ var applyParams = function(params,searchOptions,special=[]) {
 
     if(special.length==0) return null;
 
+    //
+
     // add other params
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"]');

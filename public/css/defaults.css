@@ -3,6 +3,14 @@
     display: none;
 }
 
+
+label {
+    margin-bottom: 3px;
+}
+.draggable div.collapse-header label {
+    margin-bottom: 0px;
+}
+
 .draggable {
     border: 1px rgba(0,0,0,.1) solid;
     border-radius: 4px;
@@ -99,7 +107,7 @@ label {
     width: 100%;
 }
 
-.collapsible-form.row {
+.collapsible-form {
     padding-bottom: 20px;
     padding-left: 5%;
     padding-right: 5%;
