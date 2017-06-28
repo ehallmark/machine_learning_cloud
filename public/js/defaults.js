@@ -19,16 +19,6 @@ $(document).ready(function() {
         $this.trigger('change');
     });
 
-    // On closing
-    $('.display-item-select').on("select2:closing", function(e){
-        $this = $(this);
-        $placeholder = $this.find('option.placeholder');
-        $placeholder.attr('selected','selected');
-        $placeholder.show();
-        $this.html($placeholder);
-        $this.trigger('change');
-    });
-
     // On select
     $('.display-item-select').on("select2:select", function(e){
         e.preventDefault();
@@ -36,6 +26,13 @@ $(document).ready(function() {
         var value = $(e.currentTarget).find("option:selected").val();
         var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
+
+        // place holder stuff
+        $placeholder = $this.find('option.placeholder');
+        $placeholder.attr('selected','selected');
+        $placeholder.show();
+        $this.html($placeholder);
+        $this.trigger('change');
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
