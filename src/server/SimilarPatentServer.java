@@ -710,7 +710,7 @@ public class SimilarPatentServer {
                                                             return pair._1.entrySet().stream().map(e->{
                                                                 String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
                                                                 return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                        div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
+                                                                        div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-target","#"+collapseId).with(
                                                                                 label(humanAttributeFor(e.getKey())),
                                                                                 input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
                                                                                 span().withClass("remove-button").withText("x")
@@ -753,9 +753,9 @@ public class SimilarPatentServer {
                                                         )
                                                 ),
                                                 div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Result Limit"),br(),input().withClass("form-control").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                                        label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                                 ), div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Similarity Model"),br(),select().withClass("form-control").withName(SIMILARITY_MODEL_FIELD).with(
+                                                        label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
                                                                 option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
                                                                 option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
                                                                 option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),

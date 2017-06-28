@@ -15,7 +15,7 @@ $(document).ready(function() {
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
         var toDisplay = $this.parent().next().find('.draggable .double-click').get(parseInt(value,10));
-        toggleDraggable(toDisplay);
+        showDraggable(toDisplay);
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
@@ -28,16 +28,7 @@ $(document).ready(function() {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         $handle = $draggable.find(".collapsible-header");
         $draggable.find(".collapse").css('display','');
-        if(shouldShow) {
-                $handle.attr('data-target',$handle.attr('data-hidden-target'));
-                $handle.removeAttr('data-hidden-target');
-            }
-        } else {
-            if($handle.attr('data-target')) {
-                $handle.attr('data-hidden-target',$handle.attr('data-target'));
-                $handle.removeAttr('data-target');
-            }
-        }
+
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
         //$checkbox.prop("disabled", !shouldShow);
@@ -82,12 +73,18 @@ $(document).ready(function() {
 
     $('.draggable .double-click .remove-button').click(function(e) {
         e.stopPropagation();
-        toggleDraggable($(this).parent());
+        hideDraggable($(this).parent());
     });
 
     $('.multiselect').select2({
         minimumResultsForSearch: 5,
         closeOnSelect: false
+    });
+
+
+    $('.single-select2').select2({
+        minimumResultsForSearch: 5,
+        width: "100%"
     });
 
     setCollapsibleHeaders(".collapsible-header");
@@ -208,7 +205,7 @@ var paramsHelper = function(input,value) {
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
         if($checkbox.hasClass('mycheckbox')) {
-            toggleDraggable($checkbox.get(0));
+            showDraggable($checkbox.get(0));
         }
     }
     if(!$checkbox.parent().hasClass("highlighted")) {
