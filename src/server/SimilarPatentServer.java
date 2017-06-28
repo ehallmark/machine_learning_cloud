@@ -628,14 +628,25 @@ public class SimilarPatentServer {
                 div().withClass("col-12").with(
                         span().withId("main-content-id").withClass("collapse show").with(
                                 div().withClass("row").with(
-                                        form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                                div().withClass("col-6").with(
-                                                        mainOptionsRow(),
-                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
-                                                ),div().withClass("col-6").with(
-                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
-                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
+                                        form().attr("style","width: 100%; display: flex;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                                div().withClass("col-12").with(
+                                                        div().withClass("row").with(
+                                                                div().withClass("col-6").with(
+                                                                        mainOptionsRow()
+                                                                ),div().withClass("col-6").with(
+                                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
+                                                                )
+                                                        )
+                                                ), div().withClass("col-12").with(
+                                                        div().withClass("row").with(
+                                                                div().withClass("col-6").with(
+                                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
+                                                                ),div().withClass("col-6").with(
+                                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
+                                                                )
+                                                        )
                                                 )
+
                                         )
                                 ),div().withClass("row").with(
                                         div().withClass("col-4 offset-4").with(
@@ -673,7 +684,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").attr("style","margin-right: 0px;").with(
                 div().withId(id+"-panel-toggle").withClass("col-12 collapsible-header").attr("style","margin: 20px 10px;").attr("data-target","#"+id).with(
-                        h4(text)
+                        h5(text)
                 )
         );
     }
