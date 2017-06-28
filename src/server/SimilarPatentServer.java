@@ -627,7 +627,7 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 10px;").with(
                         span().withId("main-content-id").withClass("collapse show").with(
-                                form().attr("style","width: 100%; display: flex;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6").with(
                                                         mainOptionsRow()
@@ -676,7 +676,7 @@ public class SimilarPatentServer {
 
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").attr("style","margin-right: 0px;").with(
-                div().withId(id+"-panel-toggle").withClass("col-12").attr("style","margin: 20px 10px;").with(
+                div().withId(id+"-panel-toggle").withClass("col-12").with(
                         h5(text).withClass("collapsible-header").attr("data-target","#"+id)
                 )
         );

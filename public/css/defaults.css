@@ -130,10 +130,6 @@ td, th, option {
     padding-right: 0px;
 }
 
-.container-fluid {
-    padding-right: 30px;
-}
-
 .remove-button {
     color: #999;
     cursor: pointer;
