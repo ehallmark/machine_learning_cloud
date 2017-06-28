@@ -109,6 +109,9 @@ var applyParams = function(params,searchOptions,special=[]) {
     $.each(searchOptions, function(key,value){
         var $input = $('[name="'+key+'"]');
         $input.val(value);
+        if($input.hasClass("single-select2")) {
+            $input.trigger('change');
+        }
     });
 
     if(special.length==0) return null;
