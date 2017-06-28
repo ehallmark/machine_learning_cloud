@@ -114,6 +114,10 @@ var applyParams = function(params,searchOptions,special=[]) {
         }
     });
 
+    if(!$('#main-content-id').hasClass('show')) {
+        $('#main-content-id').addClass("show"):
+    }
+
     if(special.length==0) return null;
 
     //
