@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().attr("style","padding-top: 100px;").withClass("col-9 offset-3").with(
+                                        ),div().attr("style","padding-top: 75px;").withClass("col-9 offset-3").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
