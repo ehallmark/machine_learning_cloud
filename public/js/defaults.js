@@ -5,7 +5,7 @@ $(document).ready(function() {
         $this = $(this);
         $this.empty();
         $this.append("<option></option>");
-        $this.parent().next().find('.draggable .double-click label').each(function(index, elem) {
+        $this.parent().next().find('.draggable .collapsible-header label').each(function(index, elem) {
             $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
         $this.trigger('change');
@@ -14,7 +14,7 @@ $(document).ready(function() {
         e.preventDefault();
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
-        var toDisplay = $this.parent().next().find('.draggable .double-click').get(parseInt(value,10));
+        var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
     });
 
@@ -71,9 +71,9 @@ $(document).ready(function() {
         }
     });
 
-    $('.draggable .double-click .remove-button').click(function(e) {
+    $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
-        hideDraggable($(this).parent());
+        hideDraggable($(this).parent().get(0));
     });
 
     $('.multiselect').select2({
@@ -136,7 +136,7 @@ var setupDataTable = function (dataTable) {
 };
 
 var resetSearchForm = function() {
-    $('.target .double-click .remove-button').click();
+    $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapsible-form').filter(':visible').each(function() {

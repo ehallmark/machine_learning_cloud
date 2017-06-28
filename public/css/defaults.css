@@ -38,7 +38,7 @@ option {
     margin-top: 10px;
 }
 
-.double-click label {
+.collapsible-header label {
     cursor: pointer;
 }
 
