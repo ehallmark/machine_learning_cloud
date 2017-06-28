@@ -638,10 +638,10 @@ public class SimilarPatentServer {
                                                                 button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                                         )
                                                 )
-                                        )
+                                        ),hr()
                                 )
                         )
-                ), hr(),
+                ),
                 div().withClass("col-12").withId("results")
         );
     }
