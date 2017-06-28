@@ -56,7 +56,7 @@ $(document).ready(function() {
                   resetCheckbox($draggable.get(0),$target.get(0),true);
             }
         }
-    });
+    };
 
     var hideDraggable = function(elem) {
         var $draggable = $(elem);
@@ -69,7 +69,7 @@ $(document).ready(function() {
                   resetCheckbox($draggable.get(0),$target.get(0),false);
             }
         }
-    });
+    };
 
     $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
