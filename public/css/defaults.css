@@ -140,7 +140,11 @@ td, th, option {
     cursor: pointer;
     display: inline-block;
     font-weight: bold;
-    margin-right: 2px;
-    margin-left: 2px;
     float: right;
+    margin-top: -2;
+    padding: 0px 5px;
+}
+
+input.single-select2 {
+    border: 1px solid #aaa;
 }
