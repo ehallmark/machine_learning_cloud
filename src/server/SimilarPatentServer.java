@@ -629,15 +629,15 @@ public class SimilarPatentServer {
                         div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 10px; padding-top: 75px; background-color: whitesmoke;").with(
                                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                         div().withClass("row").with(
-                                                div().withClass("col-6").with(
+                                                div().withClass("col-6 form-left").with(
                                                         mainOptionsRow()
-                                                ),div().withClass("col-6").with(
+                                                ),div().withClass("col-6 form-right").with(
                                                         customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
                                                 )
                                         ), div().withClass("row").with(
-                                                div().withClass("col-6").with(
+                                                div().withClass("col-6 form-left").with(
                                                         customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
-                                                ),div().withClass("col-6").with(
+                                                ),div().withClass("col-6 form-right").with(
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )

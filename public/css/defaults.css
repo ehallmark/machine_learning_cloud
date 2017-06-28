@@ -26,6 +26,10 @@ h4, h5 {
     margin-right: auto;
 }
 
+h5 {
+    padding-top: 10px;
+}
+
 .btn-group {
     width: 100%;
 }
@@ -107,8 +111,18 @@ label {
 
 .collapsible-form {
     padding-bottom: 20px;
-    padding-left: 5%;
+}
+
+.form-right {
     padding-right: 5%;
+    border-right: 1px rgba(0,0,0,.1) solid;
+    border-top: 1px rgba(0,0,0,.1) solid;
+    border-bottom: 1px rgba(0,0,0,.1) solid;
+}
+
+.form-left {
+    padding-left: 5%;
+    border: 1px rgba(0,0,0,.1) solid;
 }
 
 .header-main {
@@ -143,3 +157,4 @@ input.form-control {
 .placeholder {
     color: #999;
 }
+
