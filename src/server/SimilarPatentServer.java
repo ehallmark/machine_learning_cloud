@@ -624,29 +624,22 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().withClass("row").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
-                div().withClass("col-12").with(
+        return div().withClass("row").with(
+                div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 10px;").with(
                         span().withId("main-content-id").withClass("collapse show").with(
-                                div().withClass("row").with(
-                                        form().attr("style","width: 100%; display: flex;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                                div().withClass("col-12").with(
-                                                        div().withClass("row").with(
-                                                                div().withClass("col-6").with(
-                                                                        mainOptionsRow()
-                                                                ),div().withClass("col-6").with(
-                                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
-                                                                )
-                                                        )
-                                                ), div().withClass("col-12").with(
-                                                        div().withClass("row").with(
-                                                                div().withClass("col-6").with(
-                                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
-                                                                ),div().withClass("col-6").with(
-                                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
-                                                                )
-                                                        )
+                                form().attr("style","width: 100%; display: flex;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                        div().withClass("row").with(
+                                                div().withClass("col-6").with(
+                                                        mainOptionsRow()
+                                                ),div().withClass("col-6").with(
+                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
                                                 )
-
+                                        ), div().withClass("row").with(
+                                                div().withClass("col-6").with(
+                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
+                                                ),div().withClass("col-6").with(
+                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
+                                                )
                                         )
                                 ),div().withClass("row").with(
                                         div().withClass("col-4 offset-4").with(
@@ -669,7 +662,7 @@ public class SimilarPatentServer {
                                         button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                         )
                 ), div().withClass("col-8").with(
-                        h3("Artificial Intelligence Platform").withClass("collapsible-header")
+                        h4("Artificial Intelligence Platform").withClass("collapsible-header")
                                 .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%;")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
@@ -683,8 +676,8 @@ public class SimilarPatentServer {
 
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").attr("style","margin-right: 0px;").with(
-                div().withId(id+"-panel-toggle").withClass("col-12 collapsible-header").attr("style","margin: 20px 10px;").attr("data-target","#"+id).with(
-                        h5(text)
+                div().withId(id+"-panel-toggle").withClass("col-12").attr("style","margin: 20px 10px;").with(
+                        h5(text).withClass("collapsible-header").attr("data-target","#"+id)
                 )
         );
     }
