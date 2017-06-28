@@ -1,9 +1,10 @@
 $(document).ready(function() {
     // display-item-select
-    $('.display-item-select').select2({width: '100%'});
+    $('.display-item-select').select2({width: '100%', placeholder: "Search available..."});
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
         $this.empty();
+        $this.append("<option></option>");
         $this.parent().next().find('.draggable .double-click label').each(function(index, elem) {
             $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
