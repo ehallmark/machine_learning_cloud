@@ -23,14 +23,12 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    var resetCheckbox = function(elem,target) {
+    var resetCheckbox = function(elem,target,shouldShow) {
         var $draggable = $(elem);
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
-        var shouldShow = $(target).hasClass('target');
         $handle = $draggable.find(".collapsible-header");
         $draggable.find(".collapse").css('display','');
         if(shouldShow) {
-            if($handle.attr('data-hidden-target')) {
                 $handle.attr('data-target',$handle.attr('data-hidden-target'));
                 $handle.removeAttr('data-hidden-target');
             }
@@ -49,19 +47,6 @@ $(document).ready(function() {
         $draggable.find('select').prop("disabled",!shouldShow);
     }
 
-    var dropFunc = function(event, ui) {
-        resetCheckbox(ui.draggable,this);
-    };
-
-    $('.draggable').draggable({
-        revert: true
-    });
-
-    $('.droppable.filters').droppable({
-        accept: '.draggable.filters',
-        drop: dropFunc
-    });
-
     $(".mycheckbox").on("click", function (e) {
         var checkbox = $(this);
         // do the confirmation thing here
@@ -69,37 +54,35 @@ $(document).ready(function() {
         return false;
     });
 
-    $('.droppable.attributes').droppable({
-        accept: '.draggable.attributes',
-        drop: dropFunc
-    });
-
-    $('.droppable.charts').droppable({
-        accept: '.draggable.charts',
-        drop: dropFunc
-    });
-
-    var toggleDraggable = function(elem) {
-        var $draggable = $(elem).parent();
+    var showDraggable = function(elem) {
+        var $draggable = $(elem);
+        if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
         var id = $draggable.attr('data-target');
         if(id) {
-            var target;
-            $parent = $draggable.parent();
-            if($parent.hasClass('target') || $parent.parent().hasClass('target')) {
-                target = "start";
-            } else {
-                target = "target";
-            }
+            var target = "target";
             $target = $('#'+id+'-'+target);
             if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0));
+                  resetCheckbox($draggable.get(0),$target.get(0),true);
             }
         }
-    }
+    });
+
+    var hideDraggable = function(elem) {
+        var $draggable = $(elem);
+        if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+        var id = $draggable.attr('data-target');
+        if(id) {
+            var target = "start";
+            $target = $('#'+id+'-'+target);
+            if($target) {
+                  resetCheckbox($draggable.get(0),$target.get(0),false);
+            }
+        }
+    });
 
     $('.draggable .double-click .remove-button').click(function(e) {
         e.stopPropagation();
-        toggleDraggable($(this.parent()));
+        toggleDraggable($(this).parent());
     });
 
     $('.multiselect').select2({
