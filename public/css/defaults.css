@@ -115,10 +115,6 @@ td, th, option {
     padding-right: 5%;
 }
 
-.droppable {
-    min-height: 75px;
-}
-
 .header-main {
     color: whitesmoke;
     background-color: #0b1141;
