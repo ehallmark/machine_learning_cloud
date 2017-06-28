@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().attr("style","padding-top: 75px;").withClass("col-9 offset-3").with(
+                                        ),div().withClass("col-9 offset-3").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -625,8 +625,8 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
-                div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 10px;").with(
-                        span().withId("main-content-id").withClass("collapse show").with(
+                span().withId("main-content-id").withClass("collapse show").with(
+                        div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 10px; padding-top: 75px; background-color: whitesmoke;").with(
                                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6").with(
