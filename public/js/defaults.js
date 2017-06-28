@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // display-item-select
-    $('.display-item-select').select2({width: '100%', placeholder: "Search available..."});
+    $('.display-item-select').select2({width: '100%', height: 40, placeholder: "Search available..."});
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
         $this.empty();

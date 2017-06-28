@@ -737,7 +737,7 @@ public class SimilarPatentServer {
                                         div().withClass("row collapsible-form").attr("style","padding-top: 20px;").with(
                                                 div().withClass("col-3").attr("style","text-align: center").with(
                                                         label("Result Type"),br(),
-                                                        select().withClass("form-control").withName(SEARCH_TYPE_FIELD).with(
+                                                        select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
                                                                 Arrays.stream(PortfolioList.Type.values()).map(type->{
                                                                     ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
                                                                     if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
@@ -746,7 +746,7 @@ public class SimilarPatentServer {
                                                         )
                                                 ),
                                                 div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Maximization"),br(),select().withClass("form-control").withName(COMPARATOR_FIELD).with(
+                                                        label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                                 option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
                                                                 option("AI Value").withValue(Constants.AI_VALUE)
                                                         )
