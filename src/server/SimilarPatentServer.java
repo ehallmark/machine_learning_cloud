@@ -528,7 +528,7 @@ public class SimilarPatentServer {
 
     static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
-                 table().withClass("table table-striped table-responsive").with(
+                 table().withClass("table table-striped").with(
                         thead().with(
                                 tr().with(
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
