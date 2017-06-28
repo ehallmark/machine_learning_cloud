@@ -701,7 +701,7 @@ public class SimilarPatentServer {
                                         )
                                 ), div().withClass("collapsible-form row").with(
                                         // search
-                                        div().withClass("col-6").with(
+                                        div().withClass("col-6").attr("style","padding-top: 10px;").with(
                                                 select().withClass("display-item-select form-control")
                                         ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                                 div().with(
@@ -712,7 +712,8 @@ public class SimilarPatentServer {
                                                                 return div().withClass("draggable "+type).attr("data-target",type).with(
                                                                         div().attr("style","width: 100%;").withClass("double-click collapsible-header").attr("data-hidden-target","#"+collapseId).with(
                                                                                 label(humanAttributeFor(e.getKey())),
-                                                                                input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey())
+                                                                                input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
+                                                                                span().withClass("remove-button").withText("x")
                                                                         ), span().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
                                                                 );
                                                             });

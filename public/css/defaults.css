@@ -116,7 +116,7 @@ td, th, option {
 }
 
 .droppable {
-    min-height: 100px;
+    min-height: 75px;
 }
 
 .header-main {
@@ -133,4 +133,14 @@ td, th, option {
 
 .container-fluid {
     padding-right: 30px;
+}
+
+.remove-button {
+    color: #999;
+    cursor: pointer;
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 2px;
+    margin-left: 2px;
+    float: right;
 }

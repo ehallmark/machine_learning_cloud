@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // display-item-select
-    $('.display-item-select').select2({width: '100%', height: 40, placeholder: "Search available..."});
+    $('.display-item-select').select2({width: '100%', placeholder: "Search available..."});
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
         $this.empty();
@@ -15,7 +15,7 @@ $(document).ready(function() {
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
         var toDisplay = $this.parent().next().find('.draggable .double-click').get(parseInt(value,10));
-        $(toDisplay).dblclick();
+        toggleDraggable(toDisplay);
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
@@ -79,7 +79,7 @@ $(document).ready(function() {
         drop: dropFunc
     });
 
-    var doubleClickWhileCollapsingHelper = function(elem) {
+    var toggleDraggable = function(elem) {
         var $draggable = $(elem).parent();
         var id = $draggable.attr('data-target');
         if(id) {
@@ -97,8 +97,9 @@ $(document).ready(function() {
         }
     }
 
-    $('.draggable .double-click').dblclick(function() {
-        doubleClickWhileCollapsingHelper(this);
+    $('.draggable .double-click .remove-button').click(function(e) {
+        e.stopPropagation();
+        toggleDraggable($(this.parent()));
     });
 
     $('.multiselect').select2({
@@ -155,7 +156,7 @@ var setupDataTable = function (dataTable) {
 };
 
 var resetSearchForm = function() {
-    $('.target .double-click').dblclick();
+    $('.target .double-click .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapsible-form').filter(':visible').each(function() {
@@ -224,7 +225,7 @@ var paramsHelper = function(input,value) {
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
         if($checkbox.hasClass('mycheckbox')) {
-            $checkbox.parent().dblclick();
+            toggleDraggable($checkbox.get(0));
         }
     }
     if(!$checkbox.parent().hasClass("highlighted")) {
