@@ -42,7 +42,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withClass("form-control").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
+                textarea().withClass("form-control").attr("placeholder","1 assignee per line").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );
     }
 }

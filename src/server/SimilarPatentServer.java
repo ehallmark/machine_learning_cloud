@@ -624,21 +624,23 @@ public class SimilarPatentServer {
     }
 
     private static Tag candidateSetModelsForm() {
-        return div().withClass("row").with(
-                div().withClass("col-12").attr("style","padding-left: 30px;").with(
+        return div().withClass("row").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
+                div().withClass("col-12").with(
                         span().withId("main-content-id").withClass("collapse show").with(
                                 div().withClass("row").with(
-                                        div().withClass("col-12").with(
-                                                form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                        form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                                                div().withClass("col-6").with(
                                                         mainOptionsRow(),
-                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD)),
+                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
+                                                ),div().withClass("col-6").with(
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD)),
-                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD),
-                                                        div().withClass("col-4 offset-4").with(
-                                                                button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                                        )
+                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
                                                 )
-                                        ),hr()
+                                        )
+                                ),div().withClass("row").with(
+                                        div().withClass("col-4 offset-4").with(
+                                                button("Search").withClass("btn btn-secondary").attr("style","margin-left: 25%; width: 50%;").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                        )
                                 )
                         )
                 ),
@@ -680,7 +682,6 @@ public class SimilarPatentServer {
     }
 
     private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames) {
-        String title = type.substring(0,1).toUpperCase()+type.substring(1, type.length()-1)+" Options";
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
@@ -690,19 +691,12 @@ public class SimilarPatentServer {
         String toggleID = groupID+"-panel-toggle";
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        toggleButton(groupID, title),
+                        toggleButton(groupID, shortTitle),
                         span().withId(groupID).withClass("collapse").with(
-                                div().withClass("row").attr("style","padding-left: 5%; padding-right: 5%;").with(
-                                        div().withClass("col-6").with(
-                                                h5("Available "+shortTitle)
-                                        ), div().withClass("col-6").with(
-                                                h5(shortTitle+" to Apply")
-                                        )
-                                ), div().withClass("collapsible-form row").with(
-                                        // search
-                                        div().withClass("col-6").attr("style","padding-top: 10px;").with(
+                                div().withClass("collapsible-form row").with(
+                                        div().withClass("col-12").with(
                                                 select().withClass("display-item-select form-control").with(option())
-                                        ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start col-6 "+type).with(
+                                        ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start"+type).with(
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{
                                                             String arrayFieldName = pair._2;
@@ -718,8 +712,7 @@ public class SimilarPatentServer {
                                                             });
                                                         }).collect(Collectors.toList())
                                                 )
-                                        ), div().withId(type+"-target").withClass("droppable target col-6 "+type).with(
-                                        )
+                                        ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
                                 )
                         )
                 )
@@ -727,43 +720,40 @@ public class SimilarPatentServer {
     }
 
     private static Tag mainOptionsRow() {
-        return div().withClass("row").attr("style","margin-bottom: 20px; margin-top: 20px;").with(
+        return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        div().withClass("row").with(
-                                div().withClass("col-12").with(
-                                        h4("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
-                                ),
-                                span().withId("main-options").withClass("collapse").with(
-                                        div().withClass("row collapsible-form").attr("style","padding-top: 20px;").with(
-                                                div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Result Type"),br(),
-                                                        select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
-                                                                Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                                    ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
-                                                                    if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                                    return option;
-                                                                }).collect(Collectors.toList())
-                                                        )
-                                                ),
-                                                div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                                option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
-                                                                option("AI Value").withValue(Constants.AI_VALUE)
-                                                        )
-                                                ),
-                                                div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                                ), div().withClass("col-3").attr("style","text-align: center").with(
-                                                        label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
-                                                                option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
-                                                                option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
-                                                                option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
-                                                                option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
-                                                        )
+                        h5("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
+                ),
+                span().withId("main-options").withClass("collapse").with(
+                        div().withClass("col-12").with(
+                                div().withClass("row collapsible-form").with(
+                                        div().withClass("col-12").with(
+                                                label("Result Type"),br(),
+                                                select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
+                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
+                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
+                                                            return option;
+                                                        }).collect(Collectors.toList())
+                                                )
+                                        ),
+                                        div().withClass("col-12").with(
+                                                label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
+                                                        option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
+                                                        option("AI Value").withValue(Constants.AI_VALUE)
+                                                )
+                                        ),
+                                        div().withClass("col-12").with(
+                                                label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        ), div().withClass("col-12").with(
+                                                label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
+                                                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
+                                                        option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
+                                                        option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
+                                                        option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
                                                 )
                                         )
                                 )
-
                         )
                 )
         );
