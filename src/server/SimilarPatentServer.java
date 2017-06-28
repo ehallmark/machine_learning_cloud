@@ -581,7 +581,7 @@ public class SimilarPatentServer {
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
-                        div().withClass("container-fluid").attr("style","height: 100%;").with(
+                        div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 15px;").with(
                                                 a().attr("href", "/").with(
@@ -592,7 +592,7 @@ public class SimilarPatentServer {
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
-                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 80%; margin-left: 10%").withHref(template.getHref())
+                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 80%;").withHref(template.getHref())
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
@@ -663,7 +663,7 @@ public class SimilarPatentServer {
                         )
                 ), div().withClass("col-8").with(
                         h4("Artificial Intelligence Platform").withClass("collapsible-header")
-                                .attr("data-target","#main-content-id").attr("style","text-align: center; width: 100%;")
+                                .attr("data-target","#main-content-id")
                 ), div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Forward","Going forward"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
@@ -731,7 +731,7 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().withClass("col-12").with(
+                                        div().withClass("col-4").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -741,13 +741,13 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("col-12").with(
+                                        div().withClass("col-4").with(
                                                 label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
                                                         option("AI Value").withValue(Constants.AI_VALUE)
                                                 )
                                         ),
-                                        div().withClass("col-12").with(
+                                        div().withClass("col-4").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         ), div().withClass("col-12").with(
                                                 label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
