@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // display-item-select
-    $('.display-item-select').select2();
+    $('.display-item-select').select2({width: '100%'});
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
         $this.empty();
@@ -13,7 +13,8 @@ $(document).ready(function() {
         e.preventDefault();
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
-        $this.parent().next().find('.draggable .double-click').get(parseInt(value,10)).dblclick();
+        var toDisplay = $this.parent().next().find('.draggable .double-click').get(parseInt(value,10));
+        $(toDisplay).dblclick();
     });
 
     $('.sidebar .nav-item .btn').click(function(e){

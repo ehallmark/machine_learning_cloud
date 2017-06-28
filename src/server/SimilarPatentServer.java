@@ -625,7 +625,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
-                div().withClass("col-12").with(
+                div().withClass("col-12").attr("style","padding-left: 30px;").with(
                         span().withId("main-content-id").withClass("collapse show").with(
                                 div().withClass("row").with(
                                         div().withClass("col-12").with(
