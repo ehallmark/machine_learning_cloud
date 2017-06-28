@@ -125,7 +125,7 @@ var resetSearchForm = function() {
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
     $('.collapsible-form').filter(':visible').each(function() {
-        $(this).parent().removeClass("show");
+        $(this).closest('.collapse').removeClass("show");
     });
     $('.draggable .multiselect').val(null).trigger("change");
 };
@@ -175,7 +175,7 @@ var applyParams = function(params,searchOptions,special=[]) {
     });
     // open search forms
     $('.collapse').filter(":hidden").find('.collapsible-form').each(function() {
-        $(this).parent().addClass("show");
+        $(this).closest('.collapse').addClass("show");
     });
 };
 
