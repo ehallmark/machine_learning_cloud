@@ -167,7 +167,7 @@ var paramsHelper = function(input,value) {
     var $dropZone = $checkbox.closest('.droppable');
     if(! $dropZone.hasClass('target')) {
         if($checkbox.hasClass('mycheckbox')) {
-            showDraggable($checkbox.get(0));
+            showDraggable($checkbox.parent().get(0));
         }
     }
     if(!$checkbox.parent().hasClass("highlighted")) {
