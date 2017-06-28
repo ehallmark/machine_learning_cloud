@@ -102,7 +102,6 @@ td, th, option {
 
 .sidebar {
     background-color: #c4c4c4;
-    border-right: 1px black solid;
 }
 
 .collapsible-header {
@@ -127,11 +126,11 @@ td, th, option {
     position: fixed;
     width: 75%;
     margin-left: 25%;
+    top: 0;
+    left: 0;
     z-index: 50000;
 }
 
-.bordered {
-    border-right: 1px black solid;
-    border-top: 1px black solid;
-    border-bottom: 1px black solid;
+.container-fluid {
+    padding-right: 30px;
 }
