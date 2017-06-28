@@ -48,6 +48,12 @@ $(document).ready(function() {
 
     setCollapsibleHeaders(".collapsible-header");
 
+    // hack to dropdown select2 when clicking on a placeholder
+    $('span.select2-selection__placeholder').click(function(e){
+        $(this).parent().click();
+        e.stopPropagation();
+    });
+
 });
 
 var setupDataTable = function (dataTable) {
