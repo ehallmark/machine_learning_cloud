@@ -134,3 +134,7 @@ td, th, option {
 .container-fluid {
     padding-right: 30px;
 }
+
+.display-item-select {
+    width: 100%;
+}

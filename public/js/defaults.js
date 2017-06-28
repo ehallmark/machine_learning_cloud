@@ -5,7 +5,7 @@ $(document).ready(function() {
         $this = $(this);
         $this.empty();
         $this.parent().next().find('.draggable .double-click label').each(function(index, elem) {
-            $this.append('<option value="'+index.toString()+'">'+elem.text()+"</option>");
+            $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
         $this.trigger('change');
     });

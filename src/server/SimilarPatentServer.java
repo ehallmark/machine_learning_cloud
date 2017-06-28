@@ -664,7 +664,8 @@ public class SimilarPatentServer {
                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
                                 button("Forward").withClass("btn btn-sm btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                         )
-                )
+                ),
+                hr()
         );
     }
 
