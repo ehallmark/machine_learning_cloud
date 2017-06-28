@@ -625,7 +625,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
-                div().withClass("col-12 bordered").with(
+                div().withClass("col-12").with(
                         span().withId("main-content-id").withClass("collapse show").with(
                                 div().withClass("row").with(
                                         div().withClass("col-12").with(
@@ -699,7 +699,10 @@ public class SimilarPatentServer {
                                                 h5(shortTitle+" to Apply")
                                         )
                                 ), div().withClass("collapsible-form row").with(
-                                        div().withId(type+"-start").withClass("droppable start col-6 "+type).with(
+                                        // search
+                                        div().withClass("col-6").with(
+                                                select().withClass("display-item-select form-control")
+                                        ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start col-6 "+type).with(
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{
                                                             String arrayFieldName = pair._2;
