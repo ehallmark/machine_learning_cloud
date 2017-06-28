@@ -23,21 +23,6 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    var resetCheckbox = function(elem,target,shouldShow) {
-        var $draggable = $(elem);
-        $draggable.detach().css({top: 0,left: 0}).appendTo(target);
-        $handle = $draggable.find(".collapsible-header");
-        $draggable.find(".collapse").css('display','');
-
-        var $checkbox = $draggable.find(".mycheckbox")
-        $checkbox.prop("checked", shouldShow);
-        //$checkbox.prop("disabled", !shouldShow);
-        // security concern ?
-        $draggable.find('input').prop("disabled",!shouldShow);
-        $draggable.find('textarea').prop("disabled",!shouldShow);
-        $draggable.find('select').prop("disabled",!shouldShow);
-    }
-
     $(".mycheckbox").on("click", function (e) {
         var checkbox = $(this);
         // do the confirmation thing here
@@ -195,6 +180,21 @@ var setCollapsibleHeaders = function(selector) {
         $content = $($header.attr("data-target"));
         $content.toggleClass("show");
     });
+}
+
+var resetCheckbox = function(elem,target,shouldShow) {
+    var $draggable = $(elem);
+    $draggable.detach().css({top: 0,left: 0}).appendTo(target);
+    $handle = $draggable.find(".collapsible-header");
+    $draggable.find(".collapse").css('display','');
+
+    var $checkbox = $draggable.find(".mycheckbox")
+    $checkbox.prop("checked", shouldShow);
+    //$checkbox.prop("disabled", !shouldShow);
+    // security concern ?
+    $draggable.find('input').prop("disabled",!shouldShow);
+    $draggable.find('textarea').prop("disabled",!shouldShow);
+    $draggable.find('select').prop("disabled",!shouldShow);
 }
 
 var showDraggable = function(elem) {

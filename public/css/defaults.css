@@ -145,6 +145,6 @@ td, th, option {
     padding: 0px 5px;
 }
 
-input.single-select2 {
+input.form-control {
     border: 1px solid #aaa;
 }
