@@ -23,6 +23,7 @@ import static server.SimilarPatentServer.*;
 public class SimilarityEngine extends AbstractSimilarityEngine {
     private AbstractSimilarityModel firstFinder;
     private Collection<AbstractFilter> preFilters;
+    protected boolean searchEntireDatabase;
     @Getter
     protected PortfolioList portfolioList;
 
@@ -35,8 +36,6 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
     protected AbstractSimilarityModel setFirstFinder(AbstractSimilarityModel finderPrototype, Collection<String> inputsToSearchIn) {
         // Check whether to search entire database
-        boolean searchEntireDatabase = inputsToSearchIn.isEmpty();
-
         System.out.println(" ... Similarity model");
         // Get similarity model
         firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchIn));
@@ -50,17 +49,25 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
 
-        // Get scope of search
-        Collection<String> inputsToSearchIn = new HashSet<>();
-        if(portfolioType.equals(PortfolioList.Type.patents)) {
-            inputsToSearchIn.addAll(preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]"));
-            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
+        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+        if(patents.isEmpty()&&assignees.isEmpty()) {
+            searchEntireDatabase=true;
+            return Collections.emptyList();
         } else {
-            preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]").forEach(patent->inputsToSearchIn.addAll(Database.assigneesFor(patent)));
-            preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> inputsToSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
+            searchEntireDatabase=false;
+            // Get scope of search
+            Collection<String> inputsToSearchIn = new HashSet<>();
+            if (portfolioType.equals(PortfolioList.Type.patents)) {
+                inputsToSearchIn.addAll(patents);
+                assignees.forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+            } else {
+                patents.forEach(patent -> inputsToSearchIn.addAll(Database.assigneesFor(patent)));
+                assignees.forEach(assignee -> inputsToSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
 
+            }
+            return inputsToSearchIn;
         }
-        return inputsToSearchIn;
     };
 
     private void setPrefilters(Request req) {
