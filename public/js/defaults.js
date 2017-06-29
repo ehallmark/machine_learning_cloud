@@ -227,6 +227,12 @@ var setCollapsibleHeaders = function(selector) {
     });
 }
 
+var doubleClickTable(e) {
+    $(e).find('tbody').click(function(event) {
+        selectElementContents(e);
+    });
+}
+
 var resetCheckbox = function(elem,target,shouldShow) {
     var $draggable = $(elem);
     $draggable.detach().css({top: 0,left: 0}).appendTo(target);
@@ -272,3 +278,24 @@ var hideDraggable = function(elem) {
         }
     }
 };
+
+
+function selectElementContents(el) {
+    var body = document.body, range, sel;
+    if (document.createRange && window.getSelection) {
+        range = document.createRange();
+        sel = window.getSelection();
+        sel.removeAllRanges();
+        try {
+            range.selectNodeContents(el);
+            sel.addRange(range);
+        } catch (e) {
+            range.selectNode(el);
+            sel.addRange(range);
+        }
+    } else if (body.createTextRange) {
+        range = body.createTextRange();
+        range.moveToElementText(el);
+        range.select();
+    }
+}

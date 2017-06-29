@@ -510,6 +510,7 @@ public class SimilarPatentServer {
                 + "    $('#results').html(data.message); "
                 + "    setupDataTable($('#results #data-table').get(0));   "
                 + "    setCollapsibleHeaders('#results .collapsible-header');   "
+                + "    doubleClickTable($('#results table').get(0));   "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
@@ -641,7 +642,7 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
+                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding: 0px;").with(
                                         button("Search").attr("style","width: 100%; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                 )
                         )

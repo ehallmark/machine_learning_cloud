@@ -47,7 +47,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{
-            String title = SimilarPatentServer.humanAttributeFor(attribute);
+            String title = SimilarPatentServer.humanAttributeFor(attribute)+ " Histogram";
             return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5, attribute, title), 0d, null, "", 0);
         }).collect(Collectors.toList());
     }
