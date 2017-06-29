@@ -36,7 +36,7 @@ $(document).ready(function() {
         showDraggable(toDisplay);
 
         // place holder stuff
-        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder');
+        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         $this.html($placeholder);
         $this.trigger('change');
         return false;
@@ -46,7 +46,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
         // place holder stuff
-        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder');
+        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         $this.html($placeholder);
         $this.trigger('change');
         return true;
