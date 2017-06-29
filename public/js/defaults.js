@@ -25,14 +25,17 @@ $(document).ready(function() {
         $this.trigger('change');
     });
 
+    // on select
+    $('.display-item-select').on("select2:select", function(e){
+        $this = $(this);
+        var value = $(e.currentTarget).find("option:selected").val();
+        var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
+        showDraggable(toDisplay);
+    });
+
     // on close
     $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
-        var value = $(e.currentTarget).find("option:selected").val();
-
-        var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
-        showDraggable(toDisplay);
-
         // place holder stuff
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         $this.html($placeholder);
