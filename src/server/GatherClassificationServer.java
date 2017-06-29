@@ -27,8 +27,14 @@ public class GatherClassificationServer {
     private static ClassificationAttr techTagger = TechTaggerNormalizer.getDefaultTechTagger();
     private static ClassificationAttr wipoTagger = new WIPOTechnologyClassifier();
     public static void StartServer() throws Exception {
-        get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
-        post("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents, tagLimit)));
+        get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> {
+            return Arrays.asList(wipoTagger.attributesFor(patents,1),techTagger.attributesFor(patents,tagLimit-1)).stream()
+                    .flatMap(list->list.stream()).collect(Collectors.toList());
+        }));
+        post("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> {
+            return Arrays.asList(wipoTagger.attributesFor(patents,1),techTagger.attributesFor(patents,tagLimit-1)).stream()
+                    .flatMap(list->list.stream()).collect(Collectors.toList());
+        }));
         post("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
         get("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
     }
