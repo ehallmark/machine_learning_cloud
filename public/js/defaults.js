@@ -1,6 +1,7 @@
 $(document).ready(function() {
     // display-item-select
-    $('.display-item-select').select2({width: '100%', placeholder: "Search available..."});
+    var displayItemSelectOptions = {width: '100%', placeholder: "Search available..."};
+    $('.display-item-select').select2(displayItemSelectOptions);
 
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
@@ -8,32 +9,37 @@ $(document).ready(function() {
 
         // placeholder data
         $placeholder = $this.find('option.placeholder');
-        $this.attr("data-placeholder",$placeholder.text());
 
-        // clear all contents
-        $this.empty();
+        // delete all items of the native select element
+        $this.html($placeholder);
 
         // add hidden elements
-        $this.parent().next().find('.draggable .collapsible-header label').each(function(index, elem) {
+        var $items = $this.parent().next().find('.draggable .collapsible-header label');
+
+        // add new items
+        $items.each(function(index, elem) {
             $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
+
         $this.trigger('change');
     });
 
     // On select
     $('.display-item-select').on("select2:select", function(e){
         e.preventDefault();
+
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
+        if(value.length==0) return false;
+        
         var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
 
         // place holder stuff
-        $placeholder = $('<option></option>');
-        $placeholder.addClass("placeholder");
-        $placeholder.text($this.attr('data-placeholder'));
+        $placeholder = $this.find('option.placeholder');
         $this.html($placeholder);
         $this.trigger('change');
+        return true;
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
