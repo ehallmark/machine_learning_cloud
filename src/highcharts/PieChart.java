@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class PieChart extends AbstractChart {
     public PieChart(String title, List<Series<?>> data) {
-        super(title, data, SeriesType.PIE,1,"%");
+        super(title, data, SeriesType.PIE,1,"%",null,null);
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)

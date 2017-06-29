@@ -163,8 +163,8 @@ var applyParams = function(params,searchOptions,special=[]) {
             });
         } else {
             var $checkbox = paramsHelper($input,value);
+            $checkbox.parent().next().addClass("show");
             if(special.includes(key)) {
-                $checkbox.parent().next().addClass("show");
                 // highlight and keep open
                 if(!$input.hasClass("highlighted-special")) {
                     $input.addClass('highlighted-special');
@@ -172,9 +172,6 @@ var applyParams = function(params,searchOptions,special=[]) {
                         $input.next().find('.selection .select2-selection').addClass('highlighted-special');
                     }
                 }
-            } else {
-                // hide dropdown if not special
-                $checkbox.parent().next().removeClass("show");
             }
         }
     });

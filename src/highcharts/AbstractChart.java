@@ -13,6 +13,8 @@ import java.util.List;
  */
 public abstract class AbstractChart {
     protected Options options;
+    protected String xLabel;
+    protected String yLabel;
     protected SeriesType type;
 
     public Options getOptions() {
@@ -21,10 +23,8 @@ public abstract class AbstractChart {
 
 
     protected void setupColumnAndBarAxes(String valueSuffix, int decimals) {
-        options.setxAxis(new Axis());
-        options.setyAxis(new Axis());
-        stripAxis(options.getSingleXAxis());
-        stripAxis(options.getSingleYAxis());
+        options.setxAxis(new Axis().setTitle(new Title(xLabel)));
+        options.setyAxis(new Axis().setTitle(new Title(yLabel)));
         options.getSingleXAxis().setType(AxisType.LINEAR);
         options.getSingleYAxis().setType(AxisType.LINEAR);
         options.getSingleXAxis().setLabels(new Labels().setFormat("{value}%"));
@@ -43,25 +43,16 @@ public abstract class AbstractChart {
         }
     }
 
-    protected static void stripAxis(Axis axis) {
-        axis
-                .setTitle(new Title(""));
-                //.setLineWidth(0)
-                //.setMinorGridLineWidth(0)
-                //.setLabels(new Labels().setEnabled(false))
-                //.setMinorTickWidth(0)
-                //.setGridLineWidth(0)
-                //.setTickWidth(0);
-    }
-
-    protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix) {
+    protected AbstractChart(String title, List<Series<?>> data, SeriesType type, int decimals, String valueSuffix, String xLabel, String yLabel) {
         System.out.println("Starting to build: "+type);
         String formatStr = "point.y:."+decimals+"f";
+        this.yLabel=yLabel;
+        this.xLabel=xLabel;
         this.type=type;
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setHeaderFormat("{point.x}%<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name} <b> Total: {"+formatStr+"}"+valueSuffix+"</b><br/>"))
+                .setTooltip(new Tooltip().setHeaderFormat("{point.x}% "+xLabel+" Range<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name} <b> Total: {"+formatStr+"}"+valueSuffix+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setyAxis(new Axis())

@@ -28,6 +28,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     protected List<String> attributes;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
+    protected String searchType;
 
     @Override
     public Tag getOptionsTag() {
@@ -37,6 +38,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         this.attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
+        this.searchType = SimilarPatentServer.extractString(params, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
     }
 
     @Override
@@ -47,8 +49,10 @@ public class AbstractHistogramChart implements ChartAttribute {
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{
-            String title = SimilarPatentServer.humanAttributeFor(attribute)+ " Histogram";
-            return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5, attribute, title), 0d, null, "", 0);
+            String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
+            String humanSearchType = SimilarPatentServer.humanAttributeFor(searchType);
+            String title = humanAttr + " Histogram";
+            return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
         }).collect(Collectors.toList());
     }
 
@@ -63,6 +67,7 @@ public class AbstractHistogramChart implements ChartAttribute {
         List<Series<?>> seriesList = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(title);
+        series.setShowInLegend(false);
         Map<Range,Long> countMap = scores.stream().map(score->ranges.stream().filter(range->range.contains(score.getSecond().doubleValue())).findAny().orElse(null)).filter(range->range!=null).collect(Collectors.groupingBy(r->r,Collectors.counting()));
         ranges.forEach(range->{
             Point point = new Point(range.mean(),countMap.containsKey(range)?countMap.get(range):0);

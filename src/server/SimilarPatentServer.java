@@ -120,6 +120,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Assignees", Constants.ASSIGNEES_TO_REMOVE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Patents", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
+            humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
+            humanAttrToJavaAttrMap.put("Assignees",PortfolioList.Type.assignees.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
