@@ -228,7 +228,7 @@ var setCollapsibleHeaders = function(selector) {
 }
 
 var doubleClickTable(e) {
-    $(e).find('tbody').click(function(event) {
+    $(e).find('tbody').dblclick(function(event) {
         selectElementContents(e);
     });
 }
