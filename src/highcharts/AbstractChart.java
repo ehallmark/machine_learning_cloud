@@ -37,7 +37,7 @@ public abstract class AbstractChart {
                     .setRotation(0)
                     .setColor(Color.black)
                     .setAlign(HorizontalAlignment.CENTER)
-                    .setFormat("{point.y:."+decimals+"f}"+valueSuffix)
+                    .setFormat("{point.y:."+decimals+"f}"+valueSuffix+" "+yLabel)
                     .setY(-5)
             );
         }
