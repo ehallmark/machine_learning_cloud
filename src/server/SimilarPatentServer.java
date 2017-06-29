@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3").with(
+                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px;").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -648,7 +648,7 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                div().withClass("col-12").withId("results").attr("style","padding-top: 65px;")
+                div().withClass("col-12").withId("results").attr("style","padding-top: 20px;")
         );
     }
 

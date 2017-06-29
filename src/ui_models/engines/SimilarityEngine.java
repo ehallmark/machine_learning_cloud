@@ -40,7 +40,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // Get similarity model
         firstFinder = searchEntireDatabase ? finderPrototype : finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchIn));
         if (firstFinder == null || firstFinder.numItems() == 0) {
-            throw new RuntimeException("Unable to find any results to search in.");
+            throw new RuntimeException("No patents or assignees found in scope.");
         }
         return firstFinder;
     }
@@ -94,7 +94,11 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
 
         // second finder
-        relevantEngines.forEach(engine->engine.setSecondFinder(finderPrototype,engine.getInputsToSearchFor(req)));
+        relevantEngines.forEach(engine->{
+            Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
+            if(toSearchFor.isEmpty()) throw new RuntimeException("Unable to find patents or assignees to search for.");
+            engine.setSecondFinder(finderPrototype,toSearchFor);
+        });
 
         // get similarity model
         portfolioList = new PortfolioList(firstFinder.getItemList());
