@@ -102,6 +102,7 @@ label {
 
 .sidebar {
     background-color: #c4c4c4;
+    z-index: 5000;
 }
 
 .collapsible-header {
