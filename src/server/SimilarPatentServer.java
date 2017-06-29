@@ -206,7 +206,7 @@ public class SimilarPatentServer {
     public static void loadSimilarityModels() {
         loadAllItems();
         if(similarityModelMap.isEmpty()) {
-            boolean test = false;
+            boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -350,7 +350,7 @@ public class SimilarPatentServer {
         hostPublicAssets();
 
         // GET METHODS
-        get("/", (req, res) -> templateWrapper(res, div().with(candidateSetModelsForm())));
+        get("/", (req, res) -> templateWrapper(res, candidateSetModelsForm()));
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px;").with(
+                                        ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -641,10 +641,8 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("row").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
-                                        div().withClass("col-12").with(
-                                                button("Search").attr("style","width: 100%; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
-                                        )
+                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
+                                        button("Search").attr("style","width: 100%; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                 )
                         )
                 ),
