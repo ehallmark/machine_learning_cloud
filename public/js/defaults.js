@@ -8,7 +8,7 @@ $(document).ready(function() {
         $this = $(this);
 
         // placeholder data
-        $placeholder = $this.find('option.placeholder');
+        var $placeholder = $this.find('option.placeholder');
 
         // delete all items of the native select element
         $this.html($placeholder);
@@ -25,18 +25,20 @@ $(document).ready(function() {
     });
 
     // On select
-    $('.display-item-select').on("select2:select", function(e){
-        e.preventDefault();
-
+    $('.display-item-select').on("select2:selecting", function(e){
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
-        if(value.length==0) return false;
-        
+        if(value.length==0) {
+            alert(value);
+            e.preventDefault();
+            return false;
+        }
+
         var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
 
         // place holder stuff
-        $placeholder = $this.find('option.placeholder');
+        var $placeholder = $this.find('option.placeholder');
         $this.html($placeholder);
         $this.trigger('change');
         return true;

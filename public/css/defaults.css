@@ -135,16 +135,20 @@ label {
     color: whitesmoke;
     background-color: #0b1141;
     padding-top: 15px;
+    z-index: 50000;
+}
+
+.header-top {
     position: fixed;
     width: 75%;
     margin-left: 25%;
     top: 0;
     left: 0;
-    z-index: 50000;
+    z-index: 49999;
     margin-right: 0px;
     padding-left: 0px;
     padding-right: 0px;
-}
+ }
 
 .remove-button {
     color: #999;

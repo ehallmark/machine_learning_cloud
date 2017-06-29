@@ -626,7 +626,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 15px; background-color: whitesmoke;").with(
+                        div().withClass("col-12").withClass("header-top").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding-bottom: 15px;").with(
                                 form().withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -654,7 +654,7 @@ public class SimilarPatentServer {
 
 
     private static Tag customFormHeader() {
-        return div().withClass("row header-main").with(
+        return div().withClass("row header-main header-top").with(
                 div().withClass("col-2").with(
                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Going back"))
                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
