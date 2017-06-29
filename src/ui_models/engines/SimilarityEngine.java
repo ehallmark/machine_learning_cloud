@@ -121,14 +121,12 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             }
 
             List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
-            AtomicReference<PortfolioList> ref = new AtomicReference<>(new PortfolioList(new ArrayList<>()));
+
             // run full similarity model
-            relevantEngines.forEach(engine -> {
-                PortfolioList newList = firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters);
-                ref.set(newList.merge(ref.get(), comparator, limit));
-            });
-            // set portfolio list
-            portfolioList = ref.get();
+            portfolioList = relevantEngines.parallelStream()
+                    .map(engine->firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters))
+                    .reduce((list1,list2)->list1.merge(list2,comparator,limit))
+                    .get();
         }
     }
 

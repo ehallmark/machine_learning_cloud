@@ -19,6 +19,7 @@ import ui_models.portfolios.items.Item;
 import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 4/20/17.
@@ -47,22 +48,23 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     @Getter
     private String name;
     @Getter
-    private List<Item> itemList;
+    private Item[] itemList;
     public SimRankSimilarityModel(@NonNull Collection<Item> candidateSet, String name) {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
-        this.itemList=candidateSet instanceof List ? (List<Item>)candidateSet : new ArrayList<>(candidateSet);
         this.name=name;
         try {
-            tokenMap = candidateSet.stream().map(item->{
+            tokenMap = candidateSet.parallelStream().map(item->{
                 if(!similarityMap.containsKey(item.getName())) return null; // no info on item
                 return item;
             }).filter(item->item!=null).collect(Collectors.toMap((item->item.getName()),item->item));
+            tokenMap = Collections.synchronizedMap(tokenMap);
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
             tokenMap = Collections.emptyMap();
         }
+        this.itemList=tokenMap.values().toArray(new Item[tokenMap.size()]);
     }
 
     private SimRankSimilarityModel() {
@@ -80,22 +82,22 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         return scores.stream().collect(Collectors.averagingDouble(f->f.doubleValue()));
     }
 
-    protected List<Pair<Item, Double>> similarHelper(String patent, int n) {
+    protected Stream<Pair<Item, Double>> similarHelper(String patent, int n) {
         List<Pair<String,Float>> data = similarityMap.get(patent);
-        if(data==null) return Collections.emptyList();
-        return data.stream().filter(p->tokenMap.containsKey(p.getFirst())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(n)
-                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).filter(p->p.getSecond()>0d).collect(Collectors.toList());
+        if(data==null) return Stream.empty();
+        return data.parallelStream().filter(p->tokenMap.containsKey(p.getFirst())).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond())).limit(n)
+                .map(p->new Pair<>(tokenMap.get(p.getFirst()),p.getSecond().doubleValue())).filter(p->p.getSecond()>0d);
     }
 
     @Override
     public PortfolioList findSimilarPatentsTo(String item, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters) {
-        return new PortfolioList(similarHelper(item,limit).stream()
+        return new PortfolioList(similarHelper(item,limit)
                 .map(pair->{
                     Item similarItem = pair.getFirst().clone();
                     similarItem.setSimilarity(pair.getSecond());
                     return similarItem;
                 }).filter(p->filters.stream().allMatch(filter -> filter.shouldKeepItem(p)))
-                .collect(Collectors.toList()));
+                .toArray(size->new Item[size]));
     }
 
     @Override
@@ -105,21 +107,21 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters) {
-        PortfolioList finalPortfolio = ((SimRankSimilarityModel)other).tokenMap.keySet().stream().map(item->{
+        PortfolioList finalPortfolio = ((SimRankSimilarityModel)other).tokenMap.keySet().parallelStream().map(item->{
             return findSimilarPatentsTo(item,null,limit,filters);
         }).reduce((p1,p2)->{
             return merge(p1,p2,limit);
-        }).orElse(new PortfolioList(Collections.emptyList()));
+        }).orElse(new PortfolioList(new Item[]{}));
         return finalPortfolio;
     }
 
     @Override
-    public AbstractSimilarityModel duplicateWithScope(Collection<Item> scope) {
+    public AbstractSimilarityModel duplicateWithScope(Item[] scope) {
         SimRankSimilarityModel model = new SimRankSimilarityModel();
-        model.itemList=scope instanceof List ? (List<Item>)scope : new ArrayList<>(scope);
+        model.itemList=scope;
         model.name=name;
-        model.tokenMap = scope.stream().filter(item->tokenMap.containsKey(item.getName())).collect(Collectors.toMap(e->e.getName(),e->e));
-        return new SimRankSimilarityModel(scope,name);
+        model.tokenMap = Arrays.stream(model.itemList).parallel().filter(item->tokenMap.containsKey(item.getName())).collect(Collectors.toMap(e->e.getName(),e->e));
+        return model;
     }
 
     private static PortfolioList merge(PortfolioList p1, PortfolioList p2, int limit) {

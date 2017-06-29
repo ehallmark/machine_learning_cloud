@@ -52,7 +52,7 @@ public class AbstractHistogramChart implements ChartAttribute {
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = SimilarPatentServer.humanAttributeFor(searchType);
             String title = humanAttr + " Histogram";
-            return new ColumnChart(title, collectDistributionData(portfolioList.getItemList(),MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
+            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
         }).collect(Collectors.toList());
     }
 

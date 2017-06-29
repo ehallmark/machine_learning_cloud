@@ -54,9 +54,9 @@ public class AbstractDistributionChart implements ChartAttribute {
         PointSeries series = new PointSeries();
         series.setName(title);
 
-        if(portfolio.getItemList().isEmpty()) return Collections.emptyList();
+        if(portfolio.getItemList().length==0) return Collections.emptyList();
 
-        List<String> items = portfolio.getItemList().stream().map(item->{
+        List<String> items = Arrays.stream(portfolio.getItemList()).map(item->{
             return (String)item.getData(attribute);
         }).filter(attr->attr!=null).collect(Collectors.toList());
 

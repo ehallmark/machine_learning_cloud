@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
  */
 public class PortfolioList implements Comparable<PortfolioList> {
     @Getter
-    private List<Item> itemList;
+    private Item[] itemList;
     private double avgSimilarity;
     public enum Type { patents, assignees }
     private boolean init = false;
 
-    public PortfolioList(List<Item> itemList) {
+    public PortfolioList(Item[] itemList) {
         this.itemList=itemList;
     }
 
@@ -33,9 +33,9 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
     public void applyFilters(Collection<AbstractFilter> filters) {
-        itemList=itemList.stream().filter(obj->filters.stream().allMatch(filter->{
+        itemList=Arrays.stream(itemList).parallel().filter(obj->filters.stream().allMatch(filter->{
             return filter.shouldKeepItem(obj);
-        })).collect(Collectors.toList());
+        })).toArray(size-> new Item[size]);
     }
 
     public void applyAttributes(Collection<? extends AbstractAttribute> attributes)  {
@@ -48,28 +48,28 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
     public PortfolioList merge(PortfolioList other, String comparator, int limit) {
         PortfolioList newList;
-        if(other.itemList.isEmpty()) {
+        if(other.itemList.length==0) {
             newList = new PortfolioList(itemList);
             newList.init(comparator,limit);
             return newList;
-        } else if (itemList.isEmpty()) {
+        } else if (itemList.length==0) {
             newList = new PortfolioList(other.itemList);
             newList.init(comparator,limit);
             return newList;
         } else {
             Map<String, Item> scoreMap = new HashMap<>();
-            this.getItemList().forEach(item -> {
+            for(Item item : this.getItemList()) {
                 scoreMap.put(item.getName(), item);
-            });
-            other.getItemList().forEach(item -> {
+            }
+            for(Item item : other.getItemList()) {
                 if (scoreMap.containsKey(item.getName())) {
                     Item dup = scoreMap.get(item.getName());
                     dup.setSimilarity((dup.getSimilarity() + item.getSimilarity()) / 2d);
                 } else {
                     scoreMap.put(item.getName(), item);
                 }
-            });
-            newList = new PortfolioList(new ArrayList<>(scoreMap.values()));
+            }
+            newList = new PortfolioList(scoreMap.values().toArray(new Item[scoreMap.size()]));
         }
         newList.init(comparator, limit);
         return newList;
@@ -78,13 +78,10 @@ public class PortfolioList implements Comparable<PortfolioList> {
 
     public void init(String sortedBy, int limit) {
         if(!init) {
-            Collections.sort(itemList, (i1, i2) -> {
-                return (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue()));
-            });
-
-            if (itemList.size() > 0) {
-                itemList = itemList.subList(0, Math.min(itemList.size(), limit));
-                this.avgSimilarity = itemList.stream().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
+            Arrays.parallelSort(itemList,(i1,i2)-> (Double.compare(((Number) (i2.getData(sortedBy))).doubleValue(), ((Number) (i1.getData(sortedBy))).doubleValue())));
+            if (itemList.length > 0) {
+                itemList = Arrays.copyOfRange(itemList, 0, Math.min(itemList.length, limit));
+                this.avgSimilarity = Arrays.stream(itemList).parallel().collect(Collectors.averagingDouble(obj -> obj.getSimilarity()));
             } else this.avgSimilarity = 0.0d;
         }
         init=true;

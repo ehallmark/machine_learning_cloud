@@ -208,7 +208,7 @@ public class SimilarPatentServer {
     public static void loadSimilarityModels() {
         loadAllItems();
         if(similarityModelMap.isEmpty()) {
-            boolean test = true;
+            boolean test = false;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{
@@ -276,8 +276,8 @@ public class SimilarPatentServer {
         }
     }
 
-    public static List<Item> findItemsByName(Collection<String> names) {
-        return names.stream().map(name->nameToItemMap.get(name)).filter(item->item!=null).collect(Collectors.toList());
+    public static Item[] findItemsByName(Collection<String> names) {
+        return names.stream().map(name->nameToItemMap.get(name)).filter(item->item!=null).toArray(size->new Item[size]);
     }
 
     public static void loadTechTaggerModel() {
@@ -529,7 +529,7 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag tableFromPatentList(List<Item> items, List<String> attributes) {
+    static Tag tableFromPatentList(Item[] items, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                  table().withClass("table table-striped").with(
                         thead().with(
@@ -537,7 +537,7 @@ public class SimilarPatentServer {
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
                                 )
                         ), tbody().with(
-                                items.stream().map(item -> {
+                                Arrays.stream(items).map(item -> {
                                     List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
                                     return addAttributesToRow(tr().with(
                                             results.stream().map(pair -> createItemCell(pair.getSecond())).collect(Collectors.toList())
