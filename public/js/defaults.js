@@ -1,7 +1,10 @@
 $(document).ready(function() {
     // display-item-select
-    var displayItemSelectOptions = {width: '100%', placeholder: 'Search Available...'};
-    $('.display-item-select').select2(displayItemSelectOptions);
+    $('.display-item-select').each(function(){
+        $this = $(this);
+        var displayItemSelectOptions = {width: '100%', placeholder: $this.find('option.placeholder').text()};
+        $this.select2(displayItemSelectOptions);
+    });
 
     // On opening
     $('.display-item-select').on("select2:opening", function(e){

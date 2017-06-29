@@ -643,7 +643,7 @@ public class SimilarPatentServer {
                                         )
                                 ),div().withClass("row").with(
                                         div().withClass("col-12").with(
-                                                button("Search").attr("style","width: 100%; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                                button("Search").attr("style","width: 100%; border: none; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                         )
                                 )
                         )
