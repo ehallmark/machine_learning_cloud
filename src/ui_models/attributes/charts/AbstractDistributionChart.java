@@ -22,6 +22,7 @@ import static j2html.TagCreator.*;
  */
 public class AbstractDistributionChart implements ChartAttribute {
     protected List<String> attributes;
+    protected String searchType;
 
     @Override
     public Tag getOptionsTag() {
@@ -32,6 +33,7 @@ public class AbstractDistributionChart implements ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         this.attributes = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
+        this.searchType = SimilarPatentServer.extractString(params, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
     }
 
     @Override
@@ -43,7 +45,7 @@ public class AbstractDistributionChart implements ChartAttribute {
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
-            return new PieChart(title, collectDistributionData(portfolioList, attribute, title));
+            return new PieChart(title, collectDistributionData(portfolioList, attribute, title), SimilarPatentServer.humanAttributeFor(searchType));
         }).collect(Collectors.toList());
     }
 

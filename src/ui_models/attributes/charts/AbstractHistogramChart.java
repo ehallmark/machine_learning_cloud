@@ -26,9 +26,9 @@ import static j2html.TagCreator.option;
  */
 public class AbstractHistogramChart implements ChartAttribute {
     protected List<String> attributes;
+    protected String searchType;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
-    protected String searchType;
 
     @Override
     public Tag getOptionsTag() {
