@@ -115,11 +115,9 @@ label {
 }
 
 .form-right {
-    padding-right: 5%;
 }
 
 .form-left {
-    padding-left: 5%;
     border-right: 1px rgba(0,0,0,.1) solid;
 }
 
