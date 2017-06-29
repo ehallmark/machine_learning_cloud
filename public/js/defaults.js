@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // display-item-select
-    var displayItemSelectOptions = {width: '100%', placeholder: "Search available..."};
+    var displayItemSelectOptions = {width: '100%'};
     $('.display-item-select').select2(displayItemSelectOptions);
 
     // On opening
@@ -8,7 +8,7 @@ $(document).ready(function() {
         $this = $(this);
 
         // placeholder data
-        var $placeholder = $this.find('option.placeholder');
+        var $placeholder = $this.find('option.placeholder').detach();
 
         // delete all items of the native select element
         $this.parent().find(".hidden-placeholder").html($placeholder);
@@ -35,6 +35,16 @@ $(document).ready(function() {
         var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
 
+        // place holder stuff
+        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder');
+        $this.html($placeholder);
+        $this.trigger('change');
+        return false;
+    });
+
+    // on close
+    $('.display-item-select').on("select2:close", function(e){
+        $this = $(this);
         // place holder stuff
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder');
         $this.html($placeholder);
