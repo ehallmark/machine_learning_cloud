@@ -1,6 +1,6 @@
 $(document).ready(function() {
     // display-item-select
-    var displayItemSelectOptions = {width: '100%'};
+    var displayItemSelectOptions = {width: '100%', placeholder: 'Search Available...'};
     $('.display-item-select').select2(displayItemSelectOptions);
 
     // On opening
@@ -15,6 +15,7 @@ $(document).ready(function() {
         $this.empty();
 
         // add hidden elements
+        $this.append('<option></option>');
         var $items = $this.parent().next().find('.draggable .collapsible-header label');
 
         // add new items
