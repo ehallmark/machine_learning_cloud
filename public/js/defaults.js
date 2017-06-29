@@ -44,10 +44,10 @@ $(document).ready(function() {
         var value = $(e.currentTarget).find("option:selected").val();
         if($.isNumeric(value)) {
             $this.parent().find(".value").val(value);
-            var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-            $this.html($placeholder);
-            $this.trigger('change');
         }
+        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
+        $this.html($placeholder);
+        $this.trigger('change');
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
