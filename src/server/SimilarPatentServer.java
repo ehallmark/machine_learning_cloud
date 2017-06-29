@@ -700,7 +700,8 @@ public class SimilarPatentServer {
                                 div().withClass("collapsible-form row").with(
                                         div().withClass("col-12").with(
                                                 select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected")),
-                                                div().withClass("hidden-placeholder").attr("style","display: none;")
+                                                div().withClass("hidden-placeholder").attr("style","display: none;"),
+                                                div().withClass("value").attr("style","display: none;")
                                         ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start"+type).with(
                                                 div().with(
                                                         modelFields.stream().flatMap(pair->{

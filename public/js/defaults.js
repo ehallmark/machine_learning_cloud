@@ -28,7 +28,7 @@ $(document).ready(function() {
     // on select
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
-        var value = $(e.currentTarget).find("option:selected").val();
+        var value = $this.parent().find(".value").val();
         var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
         showDraggable(toDisplay);
     });
@@ -37,9 +37,13 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
         // place holder stuff
-        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-        $this.html($placeholder);
-        $this.trigger('change');
+        var value = $(e.currentTarget).find("option:selected").val();
+        if($.isNumeric(value)) {
+            $this.parent().find(".value").val(value);
+            var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
+            $this.html($placeholder);
+            $this.trigger('change');
+        }
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
