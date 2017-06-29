@@ -485,7 +485,7 @@ public class SimilarPatentServer {
     }
 
     static String ajaxSubmitWithChartsScript(String ID, String url, String buttonText, String buttonTextWhileSearching) {
-        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"...');"
+        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"');"
                 + "var url = '"+ url +"'; "
                 + "var tempScrollTop = $(window).scrollTop();"
                 //+ "window.onerror = function(errorMsg, url, lineNumber) {"
