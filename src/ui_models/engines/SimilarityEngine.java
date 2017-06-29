@@ -49,12 +49,12 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
 
-        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
-        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-        if(patents.isEmpty()&&assignees.isEmpty()) {
+        if(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").isEmpty()&&extractString(req, PATENTS_TO_SEARCH_IN_FIELD, "").isEmpty()) {
             searchEntireDatabase=true;
             return Collections.emptyList();
         } else {
+            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
             searchEntireDatabase=false;
             // Get scope of search
             Collection<String> inputsToSearchIn = new HashSet<>();
