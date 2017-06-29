@@ -460,12 +460,12 @@ public class SimilarPatentServer {
                     tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
                 }
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px; margin-left: 0px;").with(
+                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                                 span().withId("data-charts").withClass("collapse show").with(
                                         finishedCharts.stream().map(c -> div().attr("style","width: 70%; margin-left: 15%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                                 ),br()
-                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px; margin-left: 0px;").with(
+                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
                                 tableFromPatentList(portfolioList.getItemList(), tableHeaders)
                         )
