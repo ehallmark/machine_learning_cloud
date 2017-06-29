@@ -59,7 +59,7 @@ public abstract class AbstractChart {
         String formatStr = "point.y:."+decimals+"f";
         this.type=type;
         options=new Options()
-                .setChartOptions(new ChartOptions().setHeight(400).setType(type))
+                .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
                 .setTooltip(new Tooltip().setHeaderFormat("{point.x}%<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name} <b> Total: {"+formatStr+"}"+valueSuffix+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))

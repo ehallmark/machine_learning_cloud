@@ -232,6 +232,11 @@ var resetCheckbox = function(elem,target,shouldShow) {
     $draggable.detach().css({top: 0,left: 0}).appendTo(target);
     $handle = $draggable.find(".collapsible-header");
     $draggable.find(".collapse").css('display','');
+    if(shouldShow && !$draggable.hasClass('show')) {
+        $draggable.addClass('show');
+    } else if ($draggable.hasClass('show') && !shouldShow) {
+        $draggable.removeClass('show');
+    }
 
     var $checkbox = $draggable.find(".mycheckbox")
     $checkbox.prop("checked", shouldShow);
