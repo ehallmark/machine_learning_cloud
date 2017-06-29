@@ -648,7 +648,7 @@ public class SimilarPatentServer {
                                 )
                         )
                 ),
-                div().withClass("col-12").withId("results")
+                div().withClass("col-12").withId("results").attr("style","padding-top: 65px;")
         );
     }
 
