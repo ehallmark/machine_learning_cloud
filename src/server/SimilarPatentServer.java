@@ -596,7 +596,7 @@ public class SimilarPatentServer {
                                                         );
                                                     }).collect(Collectors.toList())
                                                 )
-                                        ),div().withClass("col-9 offset-3 header-top").with(
+                                        ),div().withClass("col-9 offset-3").with(
                                                 customFormHeader(),
                                                 form,
                                                 br(),
@@ -627,7 +627,7 @@ public class SimilarPatentServer {
         return div().withClass("row").with(
                 span().withId("main-content-id").withClass("collapse show").with(
                         form().attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
-                                div().withClass("col-12").withClass("header-top").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
+                                div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
                                                         mainOptionsRow()
@@ -641,7 +641,7 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("row").with(
+                                ),div().withClass("row").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").with(
                                         div().withClass("col-12").with(
                                                 button("Search").attr("style","width: 100%; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                         )

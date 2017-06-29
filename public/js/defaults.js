@@ -79,13 +79,6 @@ $(document).ready(function() {
     });
 
     setCollapsibleHeaders(".collapsible-header");
-
-    // hack to dropdown select2 when clicking on a placeholder
-    $('span.select2-selection__placeholder').click(function(e){
-        $(this).parent().click();
-        e.stopPropagation();
-    });
-
 });
 
 var setupDataTable = function (dataTable) {
@@ -226,6 +219,11 @@ var setCollapsibleHeaders = function(selector) {
         //getting the next element
         $content = $($header.attr("data-target"));
         $content.toggleClass("show");
+        if($content.hasClass("show") && $content.attr("id")==="main-content-id") {
+            $("html, body").animate({
+                scrollTop: 0
+            }, 500);
+        }
     });
 }
 
