@@ -5,12 +5,13 @@ $(document).ready(function() {
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
         $this = $(this);
-        $placeholder = $this.find('option.placeholder');
-        $placeholder.removeAttr('selected');
-        $placeholder.hide();
 
-        // clear all except for placeholder
-        $this.html($placeholder);
+        // placeholder data
+        $placeholder = $this.find('option.placeholder');
+        $this.attr("data-placeholder",$placeholder.text());
+
+        // clear all contents
+        $this.empty();
 
         // add hidden elements
         $this.parent().next().find('.draggable .collapsible-header label').each(function(index, elem) {
@@ -28,9 +29,9 @@ $(document).ready(function() {
         showDraggable(toDisplay);
 
         // place holder stuff
-        $placeholder = $this.find('option.placeholder');
-        $placeholder.attr('selected','selected');
-        $placeholder.show();
+        $placeholder = $('<option></option>');
+        $placeholder.addClass("placeholder");
+        $placeholder.text($this.attr('data-placeholder'));
         $this.html($placeholder);
         $this.trigger('change');
     });
