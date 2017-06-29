@@ -25,10 +25,8 @@ $(document).ready(function() {
         $this.trigger('change');
     });
 
-    // On select
-    $('.display-item-select').on("select2:select", function(e){
-        e.preventDefault();
-
+    // on close
+    $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
         var value = $(e.currentTarget).find("option:selected").val();
 
@@ -39,17 +37,6 @@ $(document).ready(function() {
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         $this.html($placeholder);
         $this.trigger('change');
-        return false;
-    });
-
-    // on close
-    $('.display-item-select').on("select2:close", function(e){
-        $this = $(this);
-        // place holder stuff
-        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-        $this.html($placeholder);
-        $this.trigger('change');
-        return true;
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
