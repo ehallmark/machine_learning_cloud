@@ -227,11 +227,11 @@ var setCollapsibleHeaders = function(selector) {
     });
 }
 
-var doubleClickTable(e) {
+var doubleClickTable = function(e) {
     $(e).find('tbody').dblclick(function(event) {
         selectElementContents(e);
     });
-}
+};
 
 var resetCheckbox = function(elem,target,shouldShow) {
     var $draggable = $(elem);
@@ -280,7 +280,7 @@ var hideDraggable = function(elem) {
 };
 
 
-function selectElementContents(el) {
+var selectElementContents = function(el) {
     var body = document.body, range, sel;
     if (document.createRange && window.getSelection) {
         range = document.createRange();
@@ -298,4 +298,4 @@ function selectElementContents(el) {
         range.moveToElementText(el);
         range.select();
     }
-}
+};
