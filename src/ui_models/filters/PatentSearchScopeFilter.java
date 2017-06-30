@@ -33,4 +33,7 @@ public class PatentSearchScopeFilter extends AbstractFilter {
     public String getName() {
         return Constants.PATENT_SEARCH_SCOPE_FILTER;
     }
+
+    public boolean isActive() { return false; }
+
 }

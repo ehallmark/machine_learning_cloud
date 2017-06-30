@@ -33,4 +33,7 @@ public class AssigneeSearchScopeFilter extends AbstractFilter {
     public String getName() {
         return Constants.ASSIGNEE_SEARCH_SCOPE_FILTER;
     }
+
+    public boolean isActive() { return false; }
+
 }

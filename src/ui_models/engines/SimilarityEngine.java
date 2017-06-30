@@ -72,7 +72,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList());
+        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
     }
 
 
@@ -110,6 +110,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         if(!preFilters.isEmpty()) {
             System.out.println("Should duplicate scope 1...");
             portfolioList.applyFilters(preFilters);
+            System.out.println("Applied prefilters...");
             dupScope=true;
         }
 

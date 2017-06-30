@@ -28,4 +28,6 @@ public abstract class AbstractFilter implements DependentAttribute {
     public void extractRelevantInformationFromParams(Request params) {
 
     }
+
+    public boolean isActive() { return true; }
 }
