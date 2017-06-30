@@ -125,6 +125,9 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             throw new RuntimeException("Unable to find patents or assignees to search for.");
         }
 
+        // only keep relevant engines with items
+        relevantEngines = relevantEngines.stream().filter(engine->engine.secondFinder.numItems()>0).collect(Collectors.toList());
+
         System.out.println("Starting to run model...");
         portfolioList = new PortfolioList(firstFinder.getItemList());
         boolean dupScope = false;

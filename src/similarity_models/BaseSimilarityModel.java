@@ -46,8 +46,6 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         itemList = itemMap.values().stream().map(item->item.getItem()).toArray(size->new Item[size]);
     }
 
-    private BaseSimilarityModel() {};
-
     public INDArray computeAvg() {
         if(avgVector==null) {
             avgVector = Nd4j.vstack(itemMap.values().stream()
