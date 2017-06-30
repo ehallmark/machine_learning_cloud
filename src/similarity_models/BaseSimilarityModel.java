@@ -81,7 +81,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         model.lookupTable=lookupTable;
         model.itemMap = Arrays.stream(scope).map(item->itemMap.get(item)).filter(item->item!=null).collect(Collectors.toMap(e->e,e->e));
         model.items = model.itemMap.keySet();
-        model.itemList = model.items.toArray(new Item[model.items.size()]);
+        model.itemList = model.items.stream().map(vectorized->vectorized.getItem()).toArray(size->new Item[size]);
         return model;
     }
 
