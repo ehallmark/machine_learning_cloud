@@ -78,6 +78,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
+        System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
@@ -85,14 +86,17 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(extractString(req,SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString()));
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString());
 
+        System.out.println("Found finder prototype...");
         // first finder
         Collection<String> toSearchIn = getInputsToSearchIn(req);
+        System.out.println("Found to search in...");
         setFirstFinder(finderPrototype,toSearchIn);
-
+        System.out.println("Set first finder...");
 
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
 
+        System.out.println("Getting second finders...");
         // second finder
         relevantEngines.forEach(engine->{
             Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
@@ -100,15 +104,17 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             engine.setSecondFinder(finderPrototype,toSearchFor);
         });
 
-        // get similarity model
+        System.out.println("Starting to run model...");
         portfolioList = new PortfolioList(firstFinder.getItemList());
         boolean dupScope = false;
         if(!preFilters.isEmpty()) {
+            System.out.println("Should duplicate scope 1...");
             portfolioList.applyFilters(preFilters);
             dupScope=true;
         }
 
         if(!comparator.equals(Constants.SIMILARITY)) {
+            System.out.println("Should duplicate scope 2...");
             portfolioList.init(comparator,limit);
             dupScope=true;
         }
@@ -117,11 +123,13 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         if(!relevantEngines.isEmpty()) {
             // if scope was reduced
             if(dupScope){
+                System.out.println("Duplicating scope...");
                 firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
             }
 
             List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
 
+            System.out.println("Running similarity model...");
             // run full similarity model
             portfolioList = relevantEngines.parallelStream()
                     .map(engine->firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters))

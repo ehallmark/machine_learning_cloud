@@ -39,7 +39,7 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
         try {
             return Integer.valueOf(obj.getData(Constants.PORTFOLIO_SIZE).toString()) <= limit;
         } catch(Exception e) {
-            return true;
+            return false;
         }
     }
 

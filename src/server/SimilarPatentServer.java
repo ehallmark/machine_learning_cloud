@@ -208,7 +208,7 @@ public class SimilarPatentServer {
     public static void loadSimilarityModels() {
         loadAllItems();
         if(similarityModelMap.isEmpty()) {
-            boolean test = false;
+            boolean test = true;
             try {
                 ForkJoinPool pool = new ForkJoinPool();
                 pool.execute(()->{

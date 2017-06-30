@@ -36,7 +36,7 @@ public class RemainingLifeFilter extends AbstractFilter {
         try {
             return Integer.valueOf(obj.getData(Constants.REMAINING_LIFE).toString()) >= limit;
         } catch(Exception e) {
-            return true;
+            return false;
         }
     }
 

@@ -36,7 +36,7 @@ public class CompDBAssetsSoldFilter extends AbstractFilter {
         try {
             return Integer.valueOf(obj.getData(Constants.COMPDB_ASSETS_SOLD).toString()) >= limit;
         } catch(Exception e) {
-            return true;
+            return false;
         }
     }
 
