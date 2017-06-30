@@ -166,3 +166,10 @@ input.form-control {
     color: #999;
 }
 
+.div-button {
+    width: 100%;
+    cursor: default;
+    margin: 0px;
+    border: none;
+    border-radius: 0px;
+}

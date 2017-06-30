@@ -656,10 +656,17 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding: 0px;").with(
-                                        button("Excel Download").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withType("submit"),
-                                        div().withText("Generate Report").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button")
-                                            .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
+                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").attr("style","padding-top: 0px; padding-bottom: 0px;").with(
+                                        div().withClass("row").with(
+                                                div().withClass("col-6 form-left").attr("style","padding: 0px;").with(
+                                                        div().with(h5("Excel Download")).withClass("div-button btn btn-secondary").withType("submit")
+                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').submit();")
+                                                ),div().withClass("col-6 form-right").attr("style","padding: 0px;").with(
+                                                        div().with(h5("Generate Report")).withClass("div-button btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                                                .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
+
+                                                )
+                                        )
                                 )
                         )
                 ),
