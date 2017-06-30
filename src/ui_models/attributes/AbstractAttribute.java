@@ -1,6 +1,7 @@
 package ui_models.attributes;
 
 import j2html.tags.Tag;
+import jxl.write.WritableCellFormat;
 
 import java.util.Collection;
 

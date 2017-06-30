@@ -8,6 +8,7 @@ import server.tools.BackButtonHandler;
 import similarity_models.class_vectors.WIPOSimilarityFinder;
 import ui_models.attributes.charts.*;
 import ui_models.engines.*;
+import ui_models.excel.ExcelHandler;
 import ui_models.exceptions.AttributeException;
 import ui_models.portfolios.attributes.*;
 import ui_models.templates.*;
@@ -37,6 +38,7 @@ import spark.Session;
 import ui_models.portfolios.PortfolioList;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -73,6 +75,7 @@ public class SimilarPatentServer {
     public static final String LIMIT_FIELD = "limit";
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
+    public static final String DOWNLOAD_EXCEL_FIELD = "downloadExcelField";
     public static final String SEARCH_TYPE_FIELD = "searchType";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
@@ -367,7 +370,6 @@ public class SimilarPatentServer {
         });
 
         post(REPORT_URL, (req, res) -> {
-            res.type("application/json");
             try {
                 System.out.println("Handling back button handler...");
                 // handle navigation
@@ -442,39 +444,48 @@ public class SimilarPatentServer {
                 portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
                 appliedAttributes.addAll(itemAttributes);
 
-
-                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
-                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
-                System.out.println("Applying pre chart attributes...");
-                portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
-
-                List<AbstractChart> finishedCharts = new ArrayList<>();
-                // adding charts
-                charts.forEach(chartModel->{
-                    finishedCharts.addAll(chartModel.create(portfolioList));
-                });
-
-                System.out.println("Rendering table...");
-                AtomicInteger chartCnt = new AtomicInteger(0);
                 List<String> tableHeaders = new ArrayList<>(itemAttributes);
                 if(similarityEngines.size()>0) {
                     tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
                 }
-                String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
-                                h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
-                                span().withId("data-charts").withClass("collapse show").with(
-                                        finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                ),br()
-                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
-                                h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                tableFromPatentList(portfolioList.getItemList(), tableHeaders)
-                        )
-                ).render(), finishedCharts));
 
-                navigator.addRequest(html);
+                if(extractBool(req,DOWNLOAD_EXCEL_FIELD)) {
+                    HttpServletResponse raw = res.raw();
+                    res.header("Content-Disposition", "attachment; filename=download.xls");
+                    res.type("application/force-download");
+                    ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", portfolioList,  tableHeaders);
+                    return raw;
 
-                return html;
+                } else { // default
+                    res.type("application/json");
+                    List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                    charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+                    System.out.println("Applying pre chart attributes...");
+                    portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
+
+                    List<AbstractChart> finishedCharts = new ArrayList<>();
+                    // adding charts
+                    charts.forEach(chartModel->{
+                        finishedCharts.addAll(chartModel.create(portfolioList));
+                    });
+
+                    System.out.println("Rendering table...");
+                    AtomicInteger chartCnt = new AtomicInteger(0);
+                    String html = new Gson().toJson(new AjaxChartMessage(div().with(
+                            finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
+                                    h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
+                                    span().withId("data-charts").withClass("collapse show").with(
+                                            finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                    ),br()
+                            ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
+                                    h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
+                                    tableFromPatentList(portfolioList.getItemList(), tableHeaders)
+                            )
+                    ).render(), finishedCharts));
+
+                    navigator.addRequest(html);
+                    return html;
+                }
 
             } catch (Exception e) {
                 System.out.println(e.getClass().getName() + ": " + e.getMessage());
@@ -628,7 +639,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Search","Searching...")).with(
+                        form().attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report...")).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -644,7 +655,8 @@ public class SimilarPatentServer {
                                                 )
                                         )
                                 ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding: 0px;").with(
-                                        button("Search").attr("style","width: 100%; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                        button("Excel Download").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
+                                        button("Generate Report").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                 )
                         )
                 ),
