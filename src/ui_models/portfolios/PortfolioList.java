@@ -52,13 +52,9 @@ public class PortfolioList implements Comparable<PortfolioList> {
     public PortfolioList merge(PortfolioList other, String comparator, int limit) {
         PortfolioList newList;
         if(other.itemList.length==0) {
-            newList = new PortfolioList(itemList);
-            newList.init(comparator,limit);
-            return newList;
+            newList = this;
         } else if (itemList.length==0) {
-            newList = new PortfolioList(other.itemList);
-            newList.init(comparator,limit);
-            return newList;
+            newList = other;
         } else {
             Map<String, Item> scoreMap = new HashMap<>();
             for(Item item : this.getItemList()) {

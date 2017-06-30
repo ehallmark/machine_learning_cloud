@@ -109,6 +109,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         boolean dupScope = false;
         if(!preFilters.isEmpty()) {
             System.out.println("Should duplicate scope 1...");
+            System.out.println("Item list: "+portfolioList.getItemList());
             portfolioList.applyFilters(preFilters);
             System.out.println("Applied prefilters...");
             dupScope=true;
