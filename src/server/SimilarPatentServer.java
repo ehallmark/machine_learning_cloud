@@ -641,7 +641,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report...")).with(
+                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -658,7 +658,8 @@ public class SimilarPatentServer {
                                         )
                                 ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding: 0px;").with(
                                         button("Excel Download").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withType("submit"),
-                                        button("Generate Report").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
+                                        div().withText("Generate Report").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                            .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                 )
                         )
                 ),
