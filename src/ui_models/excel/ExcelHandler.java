@@ -238,7 +238,7 @@ public class ExcelHandler {
         return widths;
     }
 
-    private static int charToPixelLength(int numChars) { return numChars * 8; }
+    private static int charToPixelLength(int numChars) { return numChars + 8; }
 
     private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, PortfolioList portfolioList, List<String> attributes) throws Exception{
         try {
