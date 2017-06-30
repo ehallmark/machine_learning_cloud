@@ -71,24 +71,25 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
         preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList()));
-        preFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
-        preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
+        preFilters.forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
         // get labels to remove (if any)
         Collection<String> labelsToRemove = new HashSet<>();
         if(portfolioType.equals(PortfolioList.Type.patents)) {
             // remove any patents in the search for category
-            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
+            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
             labelsToRemove.addAll(patents);
         } else {
             // remove any assignees
-            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
             labelsToRemove.addAll(assignees);
         }
 
         if(labelsToRemove.size()>0) {
             preFilters.add(new LabelFilter(labelsToRemove));
         }
+
+        preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
     }
 
 
@@ -117,9 +118,12 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // second finder
         relevantEngines.forEach(engine->{
             Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
-            if(toSearchFor.isEmpty()) throw new RuntimeException("Unable to find patents or assignees to search for.");
             engine.setSecondFinder(finderPrototype,toSearchFor);
         });
+
+        if(relevantEngines.size()>0 && relevantEngines.stream().map(engine->engine.secondFinder.numItems()).collect(Collectors.summingInt(i->i))==0) {
+            throw new RuntimeException("Unable to find patents or assignees to search for.");
+        }
 
         System.out.println("Starting to run model...");
         portfolioList = new PortfolioList(firstFinder.getItemList());

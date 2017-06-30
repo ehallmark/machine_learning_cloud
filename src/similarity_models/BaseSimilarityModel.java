@@ -21,10 +21,8 @@ import java.util.stream.Stream;
  */
 public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected INDArray avgVector;
-    @Getter
-    protected Collection<VectorizedItemWrapper> items;
     protected Map<String,INDArray> lookupTable;
-    protected Map<VectorizedItemWrapper,VectorizedItemWrapper> itemMap;
+    protected Map<String,VectorizedItemWrapper> itemMap;
     protected Item[] itemList;
 
     @Getter @Setter
@@ -36,27 +34,23 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         if(candidateSet==null) throw new NullPointerException("candidateSet");
         this.name=name;
         try {
-            itemMap = candidateSet.parallelStream().map(item->{
-                if(!lookupTable.containsKey(item.getName())) return null; // no info on item
-                return item;
-            }).filter(item->item!=null).map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName()))).collect(Collectors.toMap(e->e,e->e));
-            items = itemMap.keySet();
+            itemMap = candidateSet.parallelStream().map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName())))
+                    .filter(vec->vec.getVec()!=null).collect(Collectors.toMap(e->e.getItem().getName(),e->e));
             itemMap = Collections.synchronizedMap(itemMap);
 
         } catch (Exception e) {
             e.printStackTrace();
             // errors
-            items = Collections.emptyList();
             itemMap = Collections.emptyMap();
         }
-        itemList = items.stream().map(item->item.getItem()).toArray(size->new Item[size]);
+        itemList = itemMap.values().stream().map(item->item.getItem()).toArray(size->new Item[size]);
     }
 
     private BaseSimilarityModel() {};
 
     public INDArray computeAvg() {
         if(avgVector==null) {
-            avgVector = Nd4j.vstack(items.stream()
+            avgVector = Nd4j.vstack(itemMap.values().stream()
                 .map(item->item.getVec()).collect(Collectors.toList())).mean(0);
         }
         return avgVector;
@@ -76,13 +70,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public AbstractSimilarityModel duplicateWithScope(Item[] scope) {
-        BaseSimilarityModel model = new BaseSimilarityModel();
-        model.name=name;
-        model.lookupTable=lookupTable;
-        model.itemMap = Arrays.stream(scope).map(item->itemMap.get(item)).filter(item->item!=null).collect(Collectors.toMap(e->e,e->e));
-        model.items = model.itemMap.keySet();
-        model.itemList = model.items.stream().map(vectorized->vectorized.getItem()).toArray(size->new Item[size]);
-        return model;
+        return new BaseSimilarityModel(Arrays.asList(scope), name, lookupTable);
     }
 
     @Override
@@ -96,7 +84,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     // returns null if patentNumber not found
     @Override
     public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
-        assert items!=null : "Item list is null!";
+        assert itemList!=null : "Item list is null!";
         if(avgVector==null) return new PortfolioList(new Item[]{});
         long startTime = System.currentTimeMillis();
         PortfolioList list = similarPatentsHelper(avgVector, limit, filters);
@@ -108,14 +96,14 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public int numItems() {
-        return items==null?0:items.size();
+        return itemList==null?0:itemList.length;
     }
 
     private synchronized PortfolioList similarPatentsHelper(INDArray baseVector, int limit, Collection<? extends AbstractFilter> filters) {
-        Stream<Item> resultStream = items.parallelStream().map(item->{
+        Stream<Item> resultStream = itemMap.values().parallelStream().map(item->{
             double sim = Transforms.cosineSim(item.getVec(),baseVector);
             if(!Double.isNaN(sim)) {
-                Item itemClone = item.getItem().clone();
+                Item itemClone = item.getItem();
                 itemClone.setSimilarity(sim);
                 return itemClone;
             } else return null;

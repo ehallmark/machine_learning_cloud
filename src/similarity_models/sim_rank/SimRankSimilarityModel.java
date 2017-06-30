@@ -67,10 +67,6 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
         this.itemList=tokenMap.values().toArray(new Item[tokenMap.size()]);
     }
 
-    private SimRankSimilarityModel() {
-
-    }
-
     @Override
     public double similarityTo(String label) {
         if(!similarityMap.containsKey(label)) {
@@ -93,7 +89,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
     public PortfolioList findSimilarPatentsTo(String item, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters) {
         return new PortfolioList(similarHelper(item,limit)
                 .map(pair->{
-                    Item similarItem = pair.getFirst().clone();
+                    Item similarItem = pair.getFirst();
                     similarItem.setSimilarity(pair.getSecond());
                     return similarItem;
                 }).filter(p->filters.stream().allMatch(filter -> filter.shouldKeepItem(p)))
@@ -117,11 +113,7 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
 
     @Override
     public AbstractSimilarityModel duplicateWithScope(Item[] scope) {
-        SimRankSimilarityModel model = new SimRankSimilarityModel();
-        model.itemList=scope;
-        model.name=name;
-        model.tokenMap = Arrays.stream(model.itemList).parallel().filter(item->tokenMap.containsKey(item.getName())).collect(Collectors.toMap(e->e.getName(),e->e));
-        return model;
+        return new SimRankSimilarityModel(Arrays.asList(scope),name);
     }
 
     private static PortfolioList merge(PortfolioList p1, PortfolioList p2, int limit) {
