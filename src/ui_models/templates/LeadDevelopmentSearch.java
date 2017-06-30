@@ -14,7 +14,7 @@ import java.util.Map;
 public class LeadDevelopmentSearch extends FormTemplate {
 
     public LeadDevelopmentSearch() {
-        super(Constants.LEAD_DEVELOPMENT_SEARCH, getParams(), FormTemplate.similarityPatentSmall(), Arrays.asList(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
+        super(Constants.LEAD_DEVELOPMENT_SEARCH, getParams(), FormTemplate.similarityAssigneeSmall(), Arrays.asList(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD));
     }
 
     private static Map<String,Object> getParams() {
@@ -23,11 +23,10 @@ public class LeadDevelopmentSearch extends FormTemplate {
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.ASSIGNEE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER, 10);
         map.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER, 1000);
-        map.put(Constants.REMAINING_LIFE, 5);
-        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
+        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
+        map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
+        map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,new ArrayList<>());
-        map.put(SimilarPatentServer.TECHNOLOGIES_TO_FILTER_ARRAY_FIELD,new ArrayList<>());
-        map.put(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD,new ArrayList<>());
         return map;
     }
 }

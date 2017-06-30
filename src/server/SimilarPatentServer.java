@@ -164,7 +164,6 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
-            templates.add(new AssigneeAssessment());
             templates.add(new SimilarPatentSearch());
             templates.add(new SimilarAssigneeSearch());
             templates.add(new LeadDevelopmentSearch());
@@ -413,13 +412,13 @@ public class SimilarPatentServer {
 
                 System.out.println(" ... Filters");
                 // Get filters
-                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
-                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
+                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
                 List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
 
                 // Update filters based on params
-                preFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
                 postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
+                postFilters=postFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
                 similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
                 System.out.println(" ... Evaluators");

@@ -51,4 +51,7 @@ public class AssigneeFilter extends AbstractFilter {
     public String getName() {
         return Constants.ASSIGNEES_TO_REMOVE_FILTER;
     }
+
+    public boolean isActive() { return assigneesToRemove.size()>0; }
+
 }

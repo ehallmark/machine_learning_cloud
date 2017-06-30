@@ -19,6 +19,13 @@ import static j2html.TagCreator.textarea;
 public class LabelFilter extends AbstractFilter {
     private Collection<String> labelsToRemove;
 
+    public LabelFilter() {super();};
+
+    public LabelFilter(Collection<String> labelsToRemove) {
+        super();
+        this.labelsToRemove=labelsToRemove;
+    }
+
     @Override
     public Tag getOptionsTag() {
         return div().with(
@@ -40,4 +47,7 @@ public class LabelFilter extends AbstractFilter {
     public String getName() {
         return Constants.LABEL_FILTER;
     }
+
+    public boolean isActive() { return labelsToRemove.size()>0; }
+
 }

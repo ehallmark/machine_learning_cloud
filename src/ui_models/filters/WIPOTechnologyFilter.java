@@ -45,4 +45,7 @@ public class WIPOTechnologyFilter extends AbstractFilter {
     public String getName() {
         return Constants.WIPO_TECHNOLOGY;
     }
+
+    public boolean isActive() { return wipoTechnologies.size()>0; }
+
 }

@@ -33,9 +33,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
     }
 
     public void applyFilters(Collection<AbstractFilter> filters) {
-        System.out.println("Portfolio size: "+itemList.length);
-        System.out.println("Item: "+itemList[0].getName());
-        System.out.println("Assignee: "+itemList[0].getData(Constants.ASSIGNEE));
         itemList=Arrays.stream(itemList).parallel().filter(obj->filters.stream().allMatch(filter->{
             return filter.shouldKeepItem(obj);
         })).toArray(size-> new Item[size]);

@@ -45,4 +45,7 @@ public class SimilarityThresholdFilter extends AbstractFilter {
     public String getName() {
         return Constants.SIMILARITY_THRESHOLD_FILTER;
     }
+
+    public boolean isActive() { return threshold!=null && threshold > 0; }
+
 }

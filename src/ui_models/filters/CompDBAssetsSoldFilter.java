@@ -49,4 +49,7 @@ public class CompDBAssetsSoldFilter extends AbstractFilter {
     public String getName() {
         return Constants.COMPDB_ASSETS_SOLD;
     }
+
+    public boolean isActive() { return limit > 0; }
+
 }

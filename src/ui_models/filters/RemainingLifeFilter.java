@@ -49,4 +49,7 @@ public class RemainingLifeFilter extends AbstractFilter {
     public String getName() {
         return Constants.REMAINING_LIFE_FILTER;
     }
+
+    public boolean isActive() { return limit > 0; }
+
 }

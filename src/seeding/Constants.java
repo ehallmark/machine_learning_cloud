@@ -36,7 +36,6 @@ public class Constants {
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String PORTFOLIO_ASSESSMENT = "Portfolio Assessment";
 	public static final String SIMILAR_PATENT_SEARCH = "Similar Patent Search";
-	public static final String ASSIGNEE_ASSESSMENT = "Assignee Assessment";
 	public static final String SIMILAR_ASSIGNEE_SEARCH = "Similar Assignee Search";
 	public static final String LEAD_DEVELOPMENT_SEARCH = "Lead Development Search";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";

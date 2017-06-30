@@ -44,4 +44,7 @@ public class ValueThresholdFilter extends AbstractFilter {
     public String getName() {
         return Constants.VALUE_THRESHOLD_FILTER;
     }
+
+    public boolean isActive() { return threshold != null && threshold > 0; }
+
 }

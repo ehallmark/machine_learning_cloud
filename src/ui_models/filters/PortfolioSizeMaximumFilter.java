@@ -52,4 +52,7 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
     public String getName() {
         return Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER;
     }
+
+    public boolean isActive() { return limit > 0; }
+
 }

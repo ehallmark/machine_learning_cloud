@@ -44,4 +44,7 @@ public class TechnologyFilter extends AbstractFilter {
     public String getName() {
         return Constants.TECHNOLOGY;
     }
+
+    public boolean isActive() { return technologies.size() > 0; }
+
 }

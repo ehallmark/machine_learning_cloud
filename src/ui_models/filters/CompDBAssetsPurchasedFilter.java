@@ -49,4 +49,6 @@ public class CompDBAssetsPurchasedFilter extends AbstractFilter {
     public String getName() {
         return Constants.COMPDB_ASSETS_PURCHASED;
     }
+
+    public boolean isActive() { return limit > 0; }
 }

@@ -51,4 +51,7 @@ public class PortfolioSizeMinimumFilter extends AbstractFilter {
     public String getName() {
         return Constants.PORTFOLIO_SIZE_MINIMUM_FILTER;
     }
+
+    public boolean isActive() { return limit > 0; }
+
 }

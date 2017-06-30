@@ -8,6 +8,7 @@ import server.SimilarPatentServer;
 import similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import ui_models.filters.AbstractFilter;
+import ui_models.filters.LabelFilter;
 import ui_models.portfolios.PortfolioList;
 
 import java.util.*;
@@ -24,9 +25,9 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     private AbstractSimilarityModel firstFinder;
     private Collection<AbstractFilter> preFilters;
     protected boolean searchEntireDatabase;
+    private PortfolioList.Type portfolioType;
     @Getter
     protected PortfolioList portfolioList;
-
     @Getter
     private List<AbstractSimilarityEngine> engines;
     public SimilarityEngine(List<AbstractSimilarityEngine> engines) {
@@ -46,9 +47,6 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     }
 
     protected Collection<String> getInputsToSearchIn(Request req) {
-        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(searchType);
-
         if(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").isEmpty()&&extractString(req, PATENTS_TO_SEARCH_IN_FIELD, "").isEmpty()) {
             searchEntireDatabase=true;
             return Collections.emptyList();
@@ -72,7 +70,25 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        preFilters = preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
+        preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList()));
+        preFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
+        preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
+
+        // get labels to remove (if any)
+        Collection<String> labelsToRemove = new HashSet<>();
+        if(portfolioType.equals(PortfolioList.Type.patents)) {
+            // remove any patents in the search for category
+            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
+            labelsToRemove.addAll(patents);
+        } else {
+            // remove any assignees
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+            labelsToRemove.addAll(assignees);
+        }
+
+        if(labelsToRemove.size()>0) {
+            preFilters.add(new LabelFilter(labelsToRemove));
+        }
     }
 
 
@@ -81,9 +97,10 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
+        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+        portfolioType = PortfolioList.Type.valueOf(searchType);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         setPrefilters(req);
-        PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(extractString(req,SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString()));
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString());
 
         System.out.println("Found finder prototype...");
@@ -91,7 +108,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         Collection<String> toSearchIn = getInputsToSearchIn(req);
         System.out.println("Found to search in...");
         setFirstFinder(finderPrototype,toSearchIn);
-        System.out.println("Set first finder...");
+        System.out.println("Finished setting first finder...");
 
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
@@ -108,15 +125,13 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         portfolioList = new PortfolioList(firstFinder.getItemList());
         boolean dupScope = false;
         if(!preFilters.isEmpty()) {
-            System.out.println("Should duplicate scope 1...");
-            System.out.println("Item list: "+portfolioList.getItemList());
             portfolioList.applyFilters(preFilters);
             System.out.println("Applied prefilters...");
             dupScope=true;
         }
 
         if(!comparator.equals(Constants.SIMILARITY)) {
-            System.out.println("Should duplicate scope 2...");
+            System.out.println("Non similarity comparator...");
             portfolioList.init(comparator,limit);
             dupScope=true;
         }
