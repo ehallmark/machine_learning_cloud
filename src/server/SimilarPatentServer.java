@@ -413,8 +413,8 @@ public class SimilarPatentServer {
 
                 System.out.println(" ... Filters");
                 // Get filters
-                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
-                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
+                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
+                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).filter(model->model!=null&&model.isActive()).collect(Collectors.toList());
                 List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
 
                 // Update filters based on params
