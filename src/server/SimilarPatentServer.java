@@ -75,10 +75,10 @@ public class SimilarPatentServer {
     public static final String LIMIT_FIELD = "limit";
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
-    public static final String DOWNLOAD_EXCEL_FIELD = "downloadExcelField";
     public static final String SEARCH_TYPE_FIELD = "searchType";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
+    public static final String DOWNLOAD_URL = "/excel_generation";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -369,131 +369,133 @@ public class SimilarPatentServer {
             return response.body();
         });
 
-        post(REPORT_URL, (req, res) -> {
-            try {
-                System.out.println("Handling back button handler...");
-                // handle navigation
-                BackButtonHandler<String> navigator;
-                if (req.session().attribute("navigator") == null) {
-                    navigator = new BackButtonHandler<>();
-                    req.session().attribute("navigator", navigator);
-                } else {
-                    navigator = req.session().attribute("navigator");
-                }
+        post(DOWNLOAD_URL, (req, res) -> handleReport(req,res,true));
+        post(REPORT_URL, (req, res) -> handleReport(req,res,false));
+    }
 
-                if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
-                    String tmp = navigator.goBack();
-                    if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
-                    return tmp;
-                } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
-                    String tmp = navigator.goForward();
-                    if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
-                    return tmp;
-                }
 
-                System.out.println("Getting parameters...");
-                // get meta parameters
-                int limit = extractInt(req, LIMIT_FIELD, 10);
-                int maxResultLimit = 10000;
-                if(limit > maxResultLimit) {
-                    return new Gson().toJson(new AjaxChartMessage("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit,Collections.emptyList()));
-                }
-
-                System.out.println("Getting models...");
-                // Get Models to use
-                List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
-                List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
-                List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
-                List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
-                List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
-                List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
-
-                System.out.println(" ... Attributes");
-                // Get data attributes
-                List<AbstractAttribute> attributes = itemAttributes.stream().map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
-
-                System.out.println(" ... Filters");
-                // Get filters
-                List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
-                List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
-                List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
-
-                // Update filters based on params
-                postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
-                postFilters=postFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
-                similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
-
-                System.out.println(" ... Evaluators");
-                // Get value models
-
-                Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
-                // get portfolio list from similarity engine
-                similarityEngine.extractRelevantInformationFromParams(req);
-                PortfolioList portfolioList = similarityEngine.getPortfolioList();
-
-                System.out.println("Applying necessary prerequisite attributes for post filters...");
-                // Add necessary attributes for post filters
-                portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
-
-                System.out.println("Applying post filters...");
-                // Run filters
-                portfolioList.applyFilters(postFilters);
-
-                // Apply attributes
-                System.out.println("Applying attributes...");
-                portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
-                appliedAttributes.addAll(itemAttributes);
-
-                List<String> tableHeaders = new ArrayList<>(itemAttributes);
-                if(similarityEngines.size()>0) {
-                    tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
-                }
-
-                if(extractBool(req,DOWNLOAD_EXCEL_FIELD)) {
-                    HttpServletResponse raw = res.raw();
-                    res.header("Content-Disposition", "attachment; filename=download.xls");
-                    res.type("application/force-download");
-                    ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", portfolioList,  tableHeaders);
-                    return raw;
-
-                } else { // default
-                    res.type("application/json");
-                    List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
-                    charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
-                    System.out.println("Applying pre chart attributes...");
-                    portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
-
-                    List<AbstractChart> finishedCharts = new ArrayList<>();
-                    // adding charts
-                    charts.forEach(chartModel->{
-                        finishedCharts.addAll(chartModel.create(portfolioList));
-                    });
-
-                    System.out.println("Rendering table...");
-                    AtomicInteger chartCnt = new AtomicInteger(0);
-                    String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                            finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
-                                    h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
-                                    span().withId("data-charts").withClass("collapse show").with(
-                                            finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                    ),br()
-                            ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
-                                    h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                    tableFromPatentList(portfolioList.getItemList(), tableHeaders)
-                            )
-                    ).render(), finishedCharts));
-
-                    navigator.addRequest(html);
-                    return html;
-                }
-
-            } catch (Exception e) {
-                System.out.println(e.getClass().getName() + ": " + e.getMessage());
-                return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
+    private static Object handleReport(Request req, Response res, boolean toExcel) {
+        try {
+            System.out.println("Handling back button handler...");
+            // handle navigation
+            BackButtonHandler<String> navigator;
+            if (req.session().attribute("navigator") == null) {
+                navigator = new BackButtonHandler<>();
+                req.session().attribute("navigator", navigator);
+            } else {
+                navigator = req.session().attribute("navigator");
             }
-        });
 
+            if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
+                String tmp = navigator.goBack();
+                if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
+                return tmp;
+            } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
+                String tmp = navigator.goForward();
+                if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
+                return tmp;
+            }
 
+            System.out.println("Getting parameters...");
+            // get meta parameters
+            int limit = extractInt(req, LIMIT_FIELD, 10);
+            int maxResultLimit = 10000;
+            if(limit > maxResultLimit) {
+                return new Gson().toJson(new AjaxChartMessage("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit,Collections.emptyList()));
+            }
+
+            System.out.println("Getting models...");
+            // Get Models to use
+            List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
+            List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
+            List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
+            List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+            List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
+            List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
+
+            System.out.println(" ... Attributes");
+            // Get data attributes
+            List<AbstractAttribute> attributes = itemAttributes.stream().map(attr -> attributesMap.get(attr)).collect(Collectors.toList());
+
+            System.out.println(" ... Filters");
+            // Get filters
+            List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
+            List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
+            List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
+
+            // Update filters based on params
+            postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
+            postFilters=postFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
+            similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
+
+            System.out.println(" ... Evaluators");
+            // Get value models
+
+            Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
+            // get portfolio list from similarity engine
+            similarityEngine.extractRelevantInformationFromParams(req);
+            PortfolioList portfolioList = similarityEngine.getPortfolioList();
+
+            System.out.println("Applying necessary prerequisite attributes for post filters...");
+            // Add necessary attributes for post filters
+            portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
+
+            System.out.println("Applying post filters...");
+            // Run filters
+            portfolioList.applyFilters(postFilters);
+
+            // Apply attributes
+            System.out.println("Applying attributes...");
+            portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
+            appliedAttributes.addAll(itemAttributes);
+
+            List<String> tableHeaders = new ArrayList<>(itemAttributes);
+            if(similarityEngines.size()>0) {
+                tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
+            }
+
+            if(toExcel) {
+                HttpServletResponse raw = res.raw();
+                res.header("Content-Disposition", "attachment; filename=download.xls");
+                res.type("application/force-download");
+                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", portfolioList,  tableHeaders);
+                return raw;
+
+            } else { // default
+                res.type("application/json");
+                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+                System.out.println("Applying pre chart attributes...");
+                portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
+
+                List<AbstractChart> finishedCharts = new ArrayList<>();
+                // adding charts
+                charts.forEach(chartModel->{
+                    finishedCharts.addAll(chartModel.create(portfolioList));
+                });
+
+                System.out.println("Rendering table...");
+                AtomicInteger chartCnt = new AtomicInteger(0);
+                String html = new Gson().toJson(new AjaxChartMessage(div().with(
+                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
+                                h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
+                                span().withId("data-charts").withClass("collapse show").with(
+                                        finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                ),br()
+                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
+                                h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
+                                tableFromPatentList(portfolioList.getItemList(), tableHeaders)
+                        )
+                ).render(), finishedCharts));
+
+                navigator.addRequest(html);
+                return html;
+            }
+
+        } catch (Exception e) {
+            System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
+        }
     }
 
     static String ajaxSubmitWithChartsScript(String ID, String url, String buttonText, String buttonTextWhileSearching) {
@@ -639,7 +641,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report...")).with(
+                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).attr("onsubmit", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report...")).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -655,7 +657,7 @@ public class SimilarPatentServer {
                                                 )
                                         )
                                 ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid; padding: 0px;").with(
-                                        button("Excel Download").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit"),
+                                        button("Excel Download").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withType("submit"),
                                         button("Generate Report").attr("style","width: 50%; margin: 0px; border: none; border-radius: 0px; font-weight: bolder;").withClass("btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button").withType("submit")
                                 )
                         )
