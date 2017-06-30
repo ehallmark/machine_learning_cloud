@@ -662,7 +662,7 @@ public class SimilarPatentServer {
                                                         div().with(h5("Excel Download")).withClass("div-button btn btn-secondary").withType("submit")
                                                                 .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').submit();")
                                                 ),div().withClass("col-6 form-right").attr("style","padding: 0px;").with(
-                                                        div().with(h5("Generate Report")).withClass("div-button btn btn-secondary").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                                        div().with(h5("Generate Report")).withClass("div-button btn btn-secondary").withType("submit").withId(GENERATE_REPORTS_FORM_ID+"-button")
                                                                 .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
 
                                                 )
