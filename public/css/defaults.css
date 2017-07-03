@@ -174,4 +174,5 @@ input.form-control {
     border-radius: 0px;
     padding-bottom: 0px;
     padding-top: 0px;
+    -webkit-appearance: inherit;
 }
