@@ -79,6 +79,7 @@ public class SimilarPatentServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
     public static final String DOWNLOAD_URL = "/excel_generation";
+    public static final String SAVE_SEARCH_URL = "/save-search";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -658,13 +659,15 @@ public class SimilarPatentServer {
                                         )
                                 ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").attr("style","padding-top: 0px; padding-bottom: 0px;").with(
                                         div().withClass("row").with(
-                                                div().withClass("col-6 form-left").attr("style","padding: 0px;").with(
-                                                        div().with(h5("Excel Download")).withClass("div-button btn btn-secondary").withType("submit")
-                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').submit();")
-                                                ),div().withClass("col-6 form-right").attr("style","padding: 0px;").with(
-                                                        div().with(h5("Generate Report")).withClass("div-button btn btn-secondary").withType("submit").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                                div().withClass("col-3").with(
+                                                        div().withText("Excel Download").withClass("div-buttonbtn btn-secondary").withType("submit")
+                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+DOWNLOAD_URL+"').submit();")
+                                                ), div().withClass("col-6").with(
+                                                        div().withText("Generate Report").withClass("btn btn-secondary").withType("submit").withId(GENERATE_REPORTS_FORM_ID+"-button")
                                                                 .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
-
+                                                ), div().withClass("col-3").with(
+                                                        div().withText("Save Search").withClass("btn btn-secondary").withType("submit")
+                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+SAVE_SEARCH_URL+"').submit();")
                                                 )
                                         )
                                 )
