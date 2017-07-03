@@ -79,7 +79,6 @@ public class SimilarPatentServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
     public static final String DOWNLOAD_URL = "/excel_generation";
-    public static final String SAVE_SEARCH_URL = "/save-search";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -437,13 +436,13 @@ public class SimilarPatentServer {
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
-            System.out.println("Applying necessary prerequisite attributes for post filters...");
-            // Add necessary attributes for post filters
-            portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
-
-            System.out.println("Applying post filters...");
             // Run filters
-            portfolioList.applyFilters(postFilters);
+            if(postFilters.size()>0) {
+                System.out.println("Applying necessary prerequisite attributes for post filters...");
+                portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
+                System.out.println("Applying post filters...");
+                portfolioList.applyFilters(postFilters);
+            }
 
             // Apply attributes
             System.out.println("Applying attributes...");
@@ -657,18 +656,12 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").attr("style","border-bottom: 1px rgba(0,0,0,.1) solid;").attr("style","padding-top: 0px; padding-bottom: 0px;").with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-3").with(
-                                                        div().withText("Excel Download").withClass("btn btn-secondary").withType("submit")
-                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+DOWNLOAD_URL+"').submit();")
-                                                ), div().withClass("col-6").with(
-                                                        div().withText("Generate Report").withClass("btn btn-secondary").withType("submit").withId(GENERATE_REPORTS_FORM_ID+"-button")
-                                                                .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
-                                                ), div().withClass("col-3").with(
-                                                        div().withText("Save Search").withClass("btn btn-secondary").withType("submit")
-                                                                .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+SAVE_SEARCH_URL+"').submit();")
-                                                )
+                                ),div().withClass("col-12").with(
+                                        div().withClass("btn-group").with(
+                                                div().withText("Excel Download").withClass("btn btn-secondary div-button")
+                                                        .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+DOWNLOAD_URL+"').submit();"),
+                                                div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                                        .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                         )
                                 )
                         )

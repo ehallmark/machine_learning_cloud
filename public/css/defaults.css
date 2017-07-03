@@ -167,12 +167,5 @@ input.form-control {
 }
 
 .div-button {
-    width: 100%;
     cursor: default;
-    margin: 0px;
-    border: none;
-    border-radius: 0px;
-    padding-bottom: 0px;
-    padding-top: 0px;
-    -webkit-appearance: inherit;
 }

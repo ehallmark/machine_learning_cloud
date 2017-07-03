@@ -10,6 +10,7 @@ import spark.Request;
 import ui_models.filters.AbstractFilter;
 import ui_models.filters.LabelFilter;
 import ui_models.portfolios.PortfolioList;
+import ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -101,6 +102,17 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
         portfolioType = PortfolioList.Type.valueOf(searchType);
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+
+        List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
+        List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
+
+        // check degenerate case
+        if(relevantEngines.isEmpty() && comparator.equals(Constants.SIMILARITY)) {
+            // bad
+            portfolioList = new PortfolioList(new Item[]{});
+            return;
+        }
+
         setPrefilters(req);
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString());
 
@@ -111,8 +123,6 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         setFirstFinder(finderPrototype,toSearchIn);
         System.out.println("Finished setting first finder...");
 
-        List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
-        List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
 
         System.out.println("Getting second finders...");
         // second finder
