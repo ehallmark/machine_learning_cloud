@@ -272,12 +272,16 @@ var hideDraggable = function(elem) {
 var downloadTable = function(selector) {
     var $table = $(selector);
     var $headers = $table.find('thead th').map(function() { return $(this).text(); }).get();
-    alert($headers.join());
     var $dataRows = $table.find('tbody tr').map(function() {
         var $row = $(this);
         var $data = $row.find('td').map(function() { return $(this).text(); }).get();
-        alert($data.join());
         return $data;
     });
-
+    var $results = {
+        data: {
+            headers: $headers,
+            rows: $dataRows
+        }
+    };
+    window.location.href = $table.attr("data-url")+"?"+JSON.stringify($results);
 };

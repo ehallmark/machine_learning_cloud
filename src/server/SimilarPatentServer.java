@@ -487,7 +487,7 @@ public class SimilarPatentServer {
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
                                 a("Download to Excel").attr("onclick", "downloadTable('#"+tableId+"');"),
-                                tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId)
+                                tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
                         )
                 ).render(), finishedCharts));
 
@@ -543,9 +543,9 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag tableFromPatentList(Item[] items, List<String> attributes, String tableId) {
+    static Tag tableFromPatentList(Item[] items, List<String> attributes, String tableId, String dataURL) {
         return span().withClass("collapse show").withId("data-table").with(
-                 table().withId(tableId).withClass("table table-striped").attr("style","margin-left: 15px; margin-right: 15px; width: auto;").with(
+                 table().withId(tableId).attr("data-url",dataURL).withClass("table table-striped").attr("style","margin-left: 15px; margin-right: 15px; width: auto;").with(
                         thead().with(
                                 tr().with(
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
