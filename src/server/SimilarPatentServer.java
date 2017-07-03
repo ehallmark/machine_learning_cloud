@@ -641,7 +641,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px; border-bottom: 1px rgba(0,0,0,.1) solid;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -656,13 +656,9 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").with(
-                                        div().withClass("btn-group").with(
-                                                div().withText("Excel Download").withClass("btn btn-secondary div-button")
-                                                        .attr("onclick","$('#"+GENERATE_REPORTS_FORM_ID+"').attr('action', '"+DOWNLOAD_URL+"').submit();"),
-                                                div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
-                                                        .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
-                                        )
+                                ),div().withClass("col-12").attr("style","padding-top: 20px; padding-bottom: 20px;").with(
+                                        div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                                .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                 )
                         )
                 ),
