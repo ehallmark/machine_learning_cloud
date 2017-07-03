@@ -283,5 +283,18 @@ var downloadTable = function(selector) {
             rows: $dataRows
         }
     };
-    window.location.href = $table.attr("data-url")+"?"+JSON.stringify($results);
+
+    var action = $table.attr("data-url");
+
+    var form = document.createElement("form");
+    form.setAttribute("method","post");
+    form.setAttribute("action",action);
+    form.setAttribute("target","_blank");
+    form.style.display="none";
+    var input = document.createElement('input');
+    input.setAttribute("name","data");
+    input.setAttribute("value", JSON.stringify($results));
+    document.body.appendChild(form);
+    $(form).submit();
+    $(form).remove();
 };
