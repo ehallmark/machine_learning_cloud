@@ -369,13 +369,13 @@ public class SimilarPatentServer {
             return response.body();
         });
 
-        post(REPORT_URL, (req, res) -> handleReport(req,res,false));
+        post(REPORT_URL, (req, res) -> handleReport(req,res));
 
-        post(DOWNLOAD_URL, (req, res) -> handleReport(req,res,true));
+        post(DOWNLOAD_URL, (req, res) -> handleExcel(req,res));
     }
 
 
-    private static Object handleReport(Request req, Response res, boolean toExcel) {
+    private static Object handleReport(Request req, Response res) {
         try {
             System.out.println("Handling back button handler...");
             // handle navigation
