@@ -167,8 +167,8 @@ input.form-control {
 }
 
 .div-button {
-    cursor: default;
-    margin-left: 30%;
-    margin-right: 30%;
-    width: 40%;
+    margin-top: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
 }

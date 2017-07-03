@@ -151,8 +151,6 @@ var applyParams = function(params,searchOptions,special=[]) {
 
     if(special.length==0) return null;
 
-    //
-
     // add other params
     $.each(params, function(key,value){
         var $input = $('[name="'+key+'"]');
@@ -181,12 +179,12 @@ var applyParams = function(params,searchOptions,special=[]) {
     });
 };
 
-var findByValue= function(inputs, value) {
+var findByValue = function(inputs, value) {
     for(var i = 0; i < inputs.length; i++) {
         if(inputs[i].value == value) return inputs[i];
     }
     return null;
-}
+};
 
 
 var paramsHelper = function(input,value) {
@@ -222,12 +220,6 @@ var setCollapsibleHeaders = function(selector) {
             }, 500);
         }
     });
-}
-
-var doubleClickTable = function(e) {
-    $(e).find('tbody').dblclick(function(event) {
-        selectElementContents(e);
-    });
 };
 
 var resetCheckbox = function(elem,target,shouldShow) {
@@ -249,7 +241,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
     $draggable.find('input').prop("disabled",!shouldShow);
     $draggable.find('textarea').prop("disabled",!shouldShow);
     $draggable.find('select').prop("disabled",!shouldShow);
-}
+};
 
 var showDraggable = function(elem) {
     var $draggable = $(elem);
@@ -277,23 +269,15 @@ var hideDraggable = function(elem) {
     }
 };
 
+var downloadTable = function(selector) {
+    var $table = $(selector);
+    var $headers = $table.find('thead th').map(function() { return $(this).text(); }).get();
+    alert($headers.join());
+    var $dataRows = $table.find('tbody tr').map(function() {
+        var $row = $(this);
+        var $data = $row.find('td').map(function() { return $(this).text(); }).get();
+        alert($data.join());
+        return $data;
+    });
 
-var selectElementContents = function(el) {
-    var body = document.body, range, sel;
-    if (document.createRange && window.getSelection) {
-        range = document.createRange();
-        sel = window.getSelection();
-        sel.removeAllRanges();
-        try {
-            range.selectNodeContents(el);
-            sel.addRange(range);
-        } catch (e) {
-            range.selectNode(el);
-            sel.addRange(range);
-        }
-    } else if (body.createTextRange) {
-        range = body.createTextRange();
-        range.moveToElementText(el);
-        range.select();
-    }
 };

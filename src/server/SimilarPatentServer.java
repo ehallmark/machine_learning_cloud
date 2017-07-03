@@ -369,8 +369,9 @@ public class SimilarPatentServer {
             return response.body();
         });
 
-        post(DOWNLOAD_URL, (req, res) -> handleReport(req,res,true));
         post(REPORT_URL, (req, res) -> handleReport(req,res,false));
+
+        post(DOWNLOAD_URL, (req, res) -> handleReport(req,res,true));
     }
 
 
@@ -476,6 +477,7 @@ public class SimilarPatentServer {
 
                 System.out.println("Rendering table...");
                 AtomicInteger chartCnt = new AtomicInteger(0);
+                String tableId = "portfolio-list-data-table";
                 String html = new Gson().toJson(new AjaxChartMessage(div().with(
                         finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                                 h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
@@ -484,7 +486,8 @@ public class SimilarPatentServer {
                                 ),br()
                         ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                                 h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                tableFromPatentList(portfolioList.getItemList(), tableHeaders)
+                                a("Download to Excel").attr("onclick", "downloadTable('#"+tableId+"');"),
+                                tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId)
                         )
                 ).render(), finishedCharts));
 
@@ -524,7 +527,6 @@ public class SimilarPatentServer {
                 + "    $('#results').html(data.message); "
                 + "    setupDataTable($('#results #data-table').get(0));   "
                 + "    setCollapsibleHeaders('#results .collapsible-header');   "
-                + "    doubleClickTable($('#results table').get(0));   "
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
@@ -541,9 +543,9 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag tableFromPatentList(Item[] items, List<String> attributes) {
+    static Tag tableFromPatentList(Item[] items, List<String> attributes, String tableId) {
         return span().withClass("collapse show").withId("data-table").with(
-                 table().withClass("table table-striped").with(
+                 table().withId(tableId).withClass("table table-striped").attr("style","margin-left: 15px; margin-right: 15px; width: auto;").with(
                         thead().with(
                                 tr().with(
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
@@ -641,7 +643,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px; border-bottom: 1px rgba(0,0,0,.1) solid;").withId(GENERATE_REPORTS_FORM_ID).with(
+                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").with(
@@ -656,7 +658,7 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").attr("style","padding-top: 20px; padding-bottom: 20px;").with(
+                                ),div().withClass("col-12").with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
                                                 .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                 )
