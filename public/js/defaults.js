@@ -275,7 +275,7 @@ var downloadTable = function(selector) {
     var $dataRows = $table.find('tbody tr').map(function() {
         var $row = $(this);
         var $data = $row.find('td').map(function() { return $(this).text(); }).get();
-        return $data;
+        return [$data];
     }).get();
     var $results = {
         headers: $headers,
