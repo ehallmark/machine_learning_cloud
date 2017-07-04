@@ -374,6 +374,22 @@ public class SimilarPatentServer {
         post(DOWNLOAD_URL, (req, res) -> handleExcel(req,res));
     }
 
+    private static Object handleExcel(Request req, Response res) {
+        try {
+            HttpServletResponse raw = res.raw();
+            res.header("Content-Disposition", "attachment; filename=download.xls");
+            res.type("application/force-download");
+            List<String> headers = new ArrayList<>();
+            List<List<String>> data = new ArrayList<>();
+
+            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", data,  headers);
+            return raw;
+        } catch (Exception e) {
+            System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
+        }
+    }
+
 
     private static Object handleReport(Request req, Response res) {
         try {
@@ -455,46 +471,37 @@ public class SimilarPatentServer {
                 tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
             }
 
-            if(toExcel) {
-                HttpServletResponse raw = res.raw();
-                res.header("Content-Disposition", "attachment; filename=download.xls");
-                res.type("application/force-download");
-                ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", portfolioList,  tableHeaders);
-                return raw;
 
-            } else { // default
-                res.type("application/json");
-                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
-                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
-                System.out.println("Applying pre chart attributes...");
-                portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
+            res.type("application/json");
+            List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+            charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+            System.out.println("Applying pre chart attributes...");
+            portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
-                List<AbstractChart> finishedCharts = new ArrayList<>();
-                // adding charts
-                charts.forEach(chartModel->{
-                    finishedCharts.addAll(chartModel.create(portfolioList));
-                });
+            List<AbstractChart> finishedCharts = new ArrayList<>();
+            // adding charts
+            charts.forEach(chartModel->{
+                finishedCharts.addAll(chartModel.create(portfolioList));
+            });
 
-                System.out.println("Rendering table...");
-                AtomicInteger chartCnt = new AtomicInteger(0);
-                String tableId = "portfolio-list-data-table";
-                String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
-                                h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
-                                span().withId("data-charts").withClass("collapse show").with(
-                                        finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                ),br()
-                        ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
-                                h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                                a("Download to Excel").attr("onclick", "downloadTable('#"+tableId+"');"),
-                                tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
-                        )
-                ).render(), finishedCharts));
+            System.out.println("Rendering table...");
+            AtomicInteger chartCnt = new AtomicInteger(0);
+            String tableId = "portfolio-list-data-table";
+            String html = new Gson().toJson(new AjaxChartMessage(div().with(
+                    finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
+                            h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
+                            span().withId("data-charts").withClass("collapse show").with(
+                                    finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                            ),br()
+                    ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
+                            h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
+                            a("Download to Excel").attr("onclick", "downloadTable('#"+tableId+"');"),
+                            tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
+                    )
+            ).render(), finishedCharts));
 
-                navigator.addRequest(html);
-                return html;
-            }
-
+            navigator.addRequest(html);
+            return html;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
             return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));

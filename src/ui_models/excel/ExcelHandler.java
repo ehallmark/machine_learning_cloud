@@ -215,11 +215,11 @@ public class ExcelHandler {
         CellFormatMap.put("summaryStyle",cellFormat);
     }
 
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, PortfolioList portfolioList, List<String> attributes) throws Exception {
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<List<String>> data, List<String> headers) throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         WritableWorkbook workbook = Workbook.createWorkbook(os);
 
-        createSheetWithTemplate(workbook, sheetName, sheetTitle, portfolioList, attributes);
+        createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
 
         workbook.write();
         workbook.close();
@@ -229,18 +229,18 @@ public class ExcelHandler {
         raw.getOutputStream().close();
     }
 
-    private static int[] computeColWidths(PortfolioList portfolioList, List<String> attributes) {
+    private static int[] computeColWidths(List<List<String>> data, List<String> attributes) {
         int[] widths = new int[attributes.size()];
         for(int i = 0; i < attributes.size(); i++) {
-            String attr = attributes.get(i);
-            widths[i] = Arrays.stream(portfolioList.getItemList()).map(item->charToPixelLength(item.getData(attr).toString().length())).max(Integer::compareTo).get();
+            final int idx = i;
+            widths[i] = data.stream().map(row->charToPixelLength(row.get(idx).toString().length())).max(Integer::compareTo).get();
         }
         return widths;
     }
 
     private static int charToPixelLength(int numChars) { return numChars + 8; }
 
-    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, PortfolioList portfolioList, List<String> attributes) throws Exception{
+    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<List<String>> data, List<String> headers) throws Exception{
         try {
             setupExcelFormats();
         } catch(Exception e) {
@@ -259,7 +259,7 @@ public class ExcelHandler {
         sheet.setColumnView(col, width);
         sheet.addCell(new Label(col, 0, ""));
 
-        int[] colWidths = computeColWidths(portfolioList, attributes);
+        int[] colWidths = computeColWidths(data, headers);
         for(int i = 0; i < colWidths.length; i++) {
             sheet.setColumnView(1+i, colWidths[i]);
         }
@@ -289,13 +289,13 @@ public class ExcelHandler {
         sheet.addCell(new Label(1, row, "Privileged and Confidential Work Product", CellFormatMap.get("disclaimerStyle")));
 
 
-        writeHeadersAndData(sheet,  portfolioList, row, attributes);
+        writeHeadersAndData(sheet,  data, row, headers);
 
         return sheet;
     }
 
-    private static void writeHeadersAndData(WritableSheet sheet, PortfolioList portfolioList, int rowOffset, List<String> attributes) throws Exception {
-        System.out.println("Starting sheet with "+portfolioList.getItemList().length+ " elements");
+    private static void writeHeadersAndData(WritableSheet sheet, List<List<String>> data, int rowOffset, List<String> attributes) throws Exception {
+        System.out.println("Starting sheet with "+data.size()+ " elements");
 
         //int headerRow = 6 + rowOffset;
         int headerRow = rowOffset;
@@ -307,9 +307,9 @@ public class ExcelHandler {
             sheet.addCell(new Label(1 + c, headerRow, SimilarPatentServer.humanAttributeFor(attributes.get(c)), CellFormatMap.get("headerStyle")));
         }
 
-        for (int r = 0; r < portfolioList.getItemList().length; r++) {
-            Item item = portfolioList.getItemList()[r];
-            List<ExcelCell> excelRow = attributes.stream().map(attr->new ExcelCell(getDefaultFormat(),item.getData(attr))).collect(Collectors.toList());
+        for (int r = 0; r < data.size(); r++) {
+            List<String> rowData = data.get(r);
+            List<ExcelCell> excelRow = rowData.stream().map(attr->new ExcelCell(getDefaultFormat(),attr)).collect(Collectors.toList());
             for (int c = 0; c < attributes.size(); c++) {
                 int col = c + 1;
                 int row = headerRow + 1 + r;
