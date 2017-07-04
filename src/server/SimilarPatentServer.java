@@ -379,9 +379,14 @@ public class SimilarPatentServer {
             HttpServletResponse raw = res.raw();
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
-            List<String> headers = new ArrayList<>();
-            List<List<String>> data = new ArrayList<>();
-
+            Gson gson = new Gson();
+            String json = extractString(req,"data","{}");
+            Map<String,Object> map = new HashMap<String,Object>();
+            map = (Map<String,Object>) gson.fromJson(json, map.getClass());
+            System.out.println("Size of map: "+map.size());
+            List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+            System.out.println("Number of excel headers: "+headers.size());
+            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", data,  headers);
             return raw;
         } catch (Exception e) {

@@ -278,10 +278,8 @@ var downloadTable = function(selector) {
         return $data;
     });
     var $results = {
-        data: {
-            headers: $headers,
-            rows: $dataRows
-        }
+        headers: $headers,
+        rows: $dataRows
     };
 
     var action = $table.attr("data-url");
