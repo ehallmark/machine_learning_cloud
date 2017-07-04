@@ -381,7 +381,8 @@ public class SimilarPatentServer {
             res.type("application/force-download");
             Gson gson = new Gson();
             String json = extractString(req,"data","{}");
-            Map<String,Object> map = new HashMap<String,Object>();
+            System.out.println("JSON: "+json);
+            Map<String,Object> map = new HashMap<>();
             map = (Map<String,Object>) gson.fromJson(json, map.getClass());
             System.out.println("Size of map: "+map.size());
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
@@ -500,7 +501,7 @@ public class SimilarPatentServer {
                             ),br()
                     ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                             h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                            a("Download to Excel").attr("onclick", "downloadTable('#"+tableId+"');"),
+                            a("Download to Excel").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%;").attr("onclick", "downloadTable('#"+tableId+"');"),
                             tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
                     )
             ).render(), finishedCharts));
