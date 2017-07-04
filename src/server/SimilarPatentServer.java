@@ -377,17 +377,16 @@ public class SimilarPatentServer {
     private static Object handleExcel(Request req, Response res) {
         try {
             HttpServletResponse raw = res.raw();
-            res.header("Content-Disposition", "attachment; filename=download.xls");
-            res.type("application/force-download");
             Gson gson = new Gson();
             String json = extractString(req,"data","{}");
-            System.out.println("JSON: "+json);
             Map<String,Object> map = new HashMap<>();
             map = (Map<String,Object>) gson.fromJson(json, map.getClass());
             System.out.println("Size of map: "+map.size());
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of excel headers: "+headers.size());
             List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
+            res.header("Content-Disposition", "attachment; filename=download.xls");
+            res.type("application/force-download");
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", data,  headers);
             return raw;
         } catch (Exception e) {
@@ -671,7 +670,7 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("col-12").with(
+                                ),div().with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
                                                 .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                 )
