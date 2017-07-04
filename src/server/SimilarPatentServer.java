@@ -169,7 +169,6 @@ public class SimilarPatentServer {
             templates.add(new PortfolioAssessment());
             templates.add(new SimilarPatentSearch());
             templates.add(new SimilarAssigneeSearch());
-            templates.add(new LeadDevelopmentSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall(),Collections.emptyList()));
         }
     }
