@@ -501,7 +501,7 @@ public class SimilarPatentServer {
                             ),br()
                     ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                             h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                            a("Download to Excel").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%;").attr("onclick", "downloadTable('#"+tableId+"');"),
+                            a("Download to Excel").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;").attr("onclick", "downloadTable('#"+tableId+"');"),
                             tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
                     )
             ).render(), finishedCharts));

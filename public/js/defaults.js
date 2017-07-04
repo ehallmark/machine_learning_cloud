@@ -293,7 +293,6 @@ var downloadTable = function(selector) {
     input.setAttribute("type","hidden");
     input.setAttribute("name","data");
     input.setAttribute("value", JSON.stringify($results));
-    alert(JSON.stringify($results));
     form.appendChild(input);
     document.body.appendChild(form);
     $(form).submit();

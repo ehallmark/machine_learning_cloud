@@ -23,6 +23,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 1/27/2017.
@@ -230,11 +231,19 @@ public class ExcelHandler {
     }
 
     private static int[] computeColWidths(List<List<String>> data, List<String> attributes) {
-        int[] widths = new int[attributes.size()];
-        for(int i = 0; i < attributes.size(); i++) {
-            final int idx = i;
-            widths[i] = data.stream().map(row->charToPixelLength(row.get(idx).toString().length())).max(Integer::compareTo).get();
-        }
+        Stream<int[]> stream = data.parallelStream().map(row->{
+            int[] rowWidths = new int[attributes.size()];
+            for(int i = 0; i < attributes.size(); i++) {
+                rowWidths[i] = charToPixelLength(row.get(i).toString().length());
+            }
+            return rowWidths;
+        });
+        int[] widths = stream.reduce((w1,w2)->{
+            for(int i = 0; i < w1.length; i++) {
+                w1[i]=Math.max(w1[i],w2[i]);
+            }
+            return w1;
+        }).get();
         return widths;
     }
 
