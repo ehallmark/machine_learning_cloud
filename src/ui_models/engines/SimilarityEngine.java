@@ -127,7 +127,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Getting second finders...");
         // second finder
         relevantEngines.forEach(engine->{
-            Collection<String> toSearchFor = engine.getInputsToSearchFor(req);
+            Collection<String> toSearchFor = engine.getInputsToSearchFor(req, portfolioType);
             engine.setSecondFinder(finderPrototype,toSearchFor);
         });
 
@@ -154,6 +154,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         }
 
         // check similarity threshold filter
+        List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
         if(!relevantEngines.isEmpty()) {
             // if scope was reduced
             if(dupScope){
@@ -161,19 +162,19 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
                 firstFinder = firstFinder.duplicateWithScope(portfolioList.getItemList());
             }
 
-            List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
-
             System.out.println("Running similarity model...");
             // run full similarity model
             portfolioList = relevantEngines.parallelStream()
                     .map(engine->firstFinder.similarFromCandidateSet(engine.secondFinder, limit, similarityFilters))
                     .reduce((list1,list2)->list1.merge(list2,comparator,limit))
                     .get();
+        } else if(!similarityFilters.isEmpty()) {
+            throw new RuntimeException("Applying a similarity filter without a similarity engine.");
         }
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req) {
+    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
         throw new UnsupportedOperationException();
     }
 

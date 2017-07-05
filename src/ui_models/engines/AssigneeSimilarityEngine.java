@@ -6,6 +6,7 @@ import seeding.Database;
 import server.SimilarPatentServer;
 import spark.Request;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,16 +26,20 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req) {
+    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> inputsToSearchFor = new HashSet<>();
-        preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]").forEach(patent->{
-            inputsToSearchFor.addAll(Database.assigneesFor(patent));
-        });
-        preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> {
-            inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
-        });
+        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+        if(searchType.equals(PortfolioList.Type.patents)) {
+            assignees.forEach(assignee -> {
+                inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
+            });
+        } else {
+            assignees.forEach(assignee -> {
+                inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
+            });
+        }
         return inputsToSearchFor;
     }
 

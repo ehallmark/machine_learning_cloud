@@ -29,14 +29,16 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req) {
+    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> inputsToSearchFor = new HashSet<>();
-        inputsToSearchFor.addAll(preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]"));
-        preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]").forEach(assignee -> {
-            inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
-        });
+        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+        if(searchType.equals(PortfolioList.Type.patents)) {
+            inputsToSearchFor.addAll(patents);
+        } else {
+            patents.forEach(patent->inputsToSearchFor.addAll(Database.assigneesFor(patent)));
+        }
         return inputsToSearchFor;
     }
 

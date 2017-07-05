@@ -6,6 +6,7 @@ import seeding.Database;
 import server.SimilarPatentServer;
 import spark.Request;
 import ui_models.attributes.classification.SimilarityGatherTechTagger;
+import ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +26,7 @@ public class TechnologySimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req) {
+    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
         System.out.println("Collecting inputs to search for...");
         List<String> technologies = SimilarPatentServer.extractArray(req, SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD);
         // get input data
