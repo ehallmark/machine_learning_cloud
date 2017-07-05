@@ -132,6 +132,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Minimum Remaining Life (Years)",Constants.REMAINING_LIFE_FILTER);
+            humanAttrToJavaAttrMap.put("Patent Family", Constants.PATENT_FAMILY);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -247,6 +248,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
+            attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
 
             // similarity engine
             similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(),new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
