@@ -28,6 +28,7 @@ public class Database {
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
+	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
 	@Getter
 	private static Set<String> expiredPatentSet;
 	@Getter
@@ -60,6 +61,7 @@ public class Database {
 	private static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	private static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
 	private static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
+	private static File patentToRelatedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://data.gttgrp.com/compdb_production?user=postgres&password=&tcpKeepAlive=true";
 	private static final String gatherDBUrl = "jdbc:postgresql://localhost/gather_production?user=postgres&password=&tcpKeepAlive=true";
@@ -107,8 +109,16 @@ public class Database {
 	public synchronized static int getLifeRemaining(String patent) {
 		if(!valuablePatents.contains(patent)) return 0;
 
-		LocalDate priorityDate = getPatentToPriorityDateMap().get(patent);
-		if(priorityDate==null) return 0;
+		Set<String> related = new HashSet<>();
+		Collection<String> family = Database.getPatentToRelatedPatentsMap().get(patent);
+		related.add(patent);
+		related.addAll(family);
+
+		Collection<LocalDate> dates = related.stream().map(rel->Database.getPatentToPriorityDateMap().get(rel)).filter(date->date!=null).collect(Collectors.toList());
+
+		if(dates.isEmpty()) return 0;
+
+		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
 
 		// determine life remaining
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
@@ -351,6 +361,13 @@ public class Database {
 			classCodeToClassTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(classCodeToClassTitleMapFile));
 		}
 		return classCodeToClassTitleMap;
+	}
+
+	public synchronized static Map<String,Collection<String>> getPatentToRelatedPatentsMap() {
+		if(patentToRelatedPatentsMap==null) {
+			patentToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(patentToRelatedPatentsMapFile));
+		}
+		return patentToRelatedPatentsMap;
 	}
 
 	public synchronized static String getClassTitleFromClassCode(String formattedCode) {
