@@ -110,13 +110,13 @@ public class Database {
 		if(!valuablePatents.contains(patent)) return 0;
 
 		Set<String> related = new HashSet<>();
-		Collection<String> family = Database.getPatentToRelatedPatentsMap().get(patent);
 		related.add(patent);
-		related.addAll(family);
+		Collection<String> family = Database.getPatentToRelatedPatentsMap().get(patent);
+		if (family!=null) related.addAll(family);
 
 		Collection<LocalDate> dates = related.stream().map(rel->Database.getPatentToPriorityDateMap().get(rel)).filter(date->date!=null).collect(Collectors.toList());
 
-		if(dates.isEmpty()) return 0;
+		if (dates.isEmpty()) return 0;
 
 		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
 
