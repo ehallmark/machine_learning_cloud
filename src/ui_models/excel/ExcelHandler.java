@@ -170,7 +170,7 @@ public class ExcelHandler {
         sheet.addCell(new Label(1, row, "Prepared at the Direction of Counsel", CellFormatMap.get("disclaimerStyle")));
         row++;
         sheet.addCell(new Label(1, row, "Privileged and Confidential Work Product", CellFormatMap.get("disclaimerStyle")));
-
+        row++;
 
         writeHeadersAndData(sheet,  data, row, headers);
 

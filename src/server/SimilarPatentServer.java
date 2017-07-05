@@ -386,7 +386,7 @@ public class SimilarPatentServer {
             List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
-            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "data", "Data", data,  headers);
+            ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
             return raw;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
