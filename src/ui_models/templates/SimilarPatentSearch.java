@@ -22,6 +22,7 @@ public class SimilarPatentSearch extends FormTemplate {
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.SIMILARITY,Constants.AI_VALUE));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY,Constants.ASSIGNEE));
         map.put(Constants.REMAINING_LIFE_FILTER, 5);
+        map.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER, 10);
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,"");
