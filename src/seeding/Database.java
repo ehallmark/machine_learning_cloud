@@ -452,18 +452,9 @@ public class Database {
 		}
 	}
 
-	public synchronized static boolean isPatent(String patent) {
-		if(patent.length()<7||patent.length()>8)return false;
-		return lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)||valuablePatents.contains(patent);
-	}
-
 	public synchronized static boolean isAssignee(String assignee) {
 		if(assignee.replaceAll("[0-9]","").trim().isEmpty()) return false;
 		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
-	}
-
-	public synchronized static LocalDate getPubDateFor(String patent) {
-		return getPatentToPubDateMap().get(patent);
 	}
 
 	public synchronized static String getInventionTitleFor(String patent) {
