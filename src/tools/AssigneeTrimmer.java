@@ -8,7 +8,7 @@ import java.util.*;
  * Created by Evan on 1/22/2017.
  */
 public class AssigneeTrimmer {
-    private static List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," LLP"," CO."," LIMITED"," CORPORATION"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
+    private static List<String> suffixes = Arrays.asList(" CO"," CORP"," CORPS"," CORPORATION"," LLP", " CO.", " I", " II", " III", " IV", " V", " AG", " AB", " OY"," INCORPORATED"," LTD", " LIMITED", " INC", " CO LTD", " LLC");
     private static Map<String,String> standardizedAssigneeMap = new HashMap<>();
 
     // ASSIGNEE NAME STANDARDIZATION MAP CREATION HERE
@@ -122,7 +122,7 @@ public class AssigneeTrimmer {
         return assignee;
     }
 
-    private static String cleanAssignee(String toExtract) {
+    public static String cleanAssignee(String toExtract) {
         String data = toExtract.toUpperCase().replaceAll("[^A-Z0-9 ]","");
         while(data.contains("   ")) data=data.replaceAll("   "," "); // strip triple spaces (might be faster)
         while(data.contains("  ")) data=data.replaceAll("  "," "); // strip double spaces
