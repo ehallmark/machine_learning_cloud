@@ -26,9 +26,7 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class ParagraphVectorModel {
-    public static File claimsParagraphVectorFile = new File(Constants.DATA_FOLDER+"claims_skipgram.paragraphvectors");
-    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"all_paragraphs.paragraphvectors");
-    public static File allSentencesModelFile = new File(Constants.DATA_FOLDER+"all_sentences_skipgram.paragraphvectors");
+    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"all_paragraphs2017.paragraphvectors");
     public static File testParagraphsModelFile = new File(Constants.DATA_FOLDER+"simple.pv");
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
