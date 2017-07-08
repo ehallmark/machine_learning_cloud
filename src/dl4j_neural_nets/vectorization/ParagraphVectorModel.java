@@ -36,108 +36,9 @@ public class ParagraphVectorModel {
     }
 
     private ParagraphVectors net;
-    private int minElementFrequency = 15;
-    private int windowSize = 4;
-    private int layerSize = 500;
-    private double sampling = 0.00001;
     private double learningRate = 0.05;
     private double negativeSampling = -1;//30;
 
-
-
-   /* public void trainAndSaveClaimModel() throws SQLException {
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentClaimSequenceIterator();
-        net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(100)
-                .epochs(100)
-                .windowSize(windowSize)
-                .layerSize(layerSize)
-                .sampling(sampling)
-                .negativeSample(negativeSampling)
-                .learningRate(learningRate)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(minElementFrequency)
-                .workers(8)
-                .iterations(3)
-                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
-                .trainWordVectors(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(claimsParagraphVectorFile,"Claim Paragraph Vectors",1000000,null,"claim","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
-                .iterate(sentenceIterator)
-                .build();
-        net.fit();
-        WordVectorSerializer.writeWordVectors(net, claimsParagraphVectorFile.getAbsolutePath());
-    }
-    public void trainAndSaveDescriptionModel() throws SQLException {
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentSequenceIterator();
-        net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(100)
-                .epochs(100)
-                .windowSize(windowSize)
-                .layerSize(layerSize)
-                .sampling(sampling)
-                .negativeSample(negativeSampling)
-                .learningRate(learningRate)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(minElementFrequency)
-                .workers(8)
-                .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.STOP_WORD_SET))
-                .trainWordVectors(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(descriptionsParagraphVectorFile,"Description Paragraph Vectors",1000000,null,"claim","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
-                .iterate(sentenceIterator)
-                .build();
-        net.fit();
-        WordVectorSerializer.writeWordVectors(net, descriptionsParagraphVectorFile.getAbsolutePath());
-    }
-    public void trainAndSaveAllSentencesModel() throws SQLException {
-        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentSentenceSequenceIterator();
-        net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(100)
-                .epochs(1)
-                .windowSize(4)
-                .layerSize(300)
-                .sampling(0.0001)
-                .negativeSample(negativeSampling)
-                .learningRate(learningRate)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(150)
-                .workers(6)
-                .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
-                .trainWordVectors(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allSentencesModelFile,"Paragraph Vectors All Sentences",10000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
-                .iterate(sentenceIterator)
-                .build();
-        net.fit();
-        WordVectorSerializer.writeWordVectors(net, allSentencesModelFile.getAbsolutePath());
-    }*/
 
     public static void runTestModel() throws Exception {
         int numThreads = 30;
@@ -173,7 +74,6 @@ public class ParagraphVectorModel {
         WordVectorSerializer.writeParagraphVectors(net, testParagraphsModelFile.getAbsolutePath());
     }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        //CudaEnvironment.getInstance().getConfiguration().allowMultiGPU(true);
         int numEpochs = 3;
         int numThreads = 60;
 
@@ -210,59 +110,6 @@ public class ParagraphVectorModel {
         net.fit();
         WordVectorSerializer.writeParagraphVectors(net, allParagraphsModelFile.getAbsolutePath());
     }
-
-    public void trainAndSaveSparkParagraphVectorModel() throws Exception {
-        throw new RuntimeException("NOT YET IMPLEMENTED" );
-
-        /*
-        int numEpochs = 3;
-        int numThreads = 60;
-
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),numThreads/2);
-
-        net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(1000)
-                .epochs(1) // hard coded to avoid learning rate from resetting
-                .windowSize(6)
-                .layerSize(300)
-                .sampling(0.00005)
-                .negativeSample(negativeSampling)
-                .learningRate(learningRate)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(30)
-                .workers(numThreads/2)
-                .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
-                .trainWordVectors(true)
-                .useHierarchicSoftmax(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",100000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
-                .iterate(sentenceIterator)
-                .build();
-
-        net.fit();
-        WordVectorSerializer.writeParagraphVectors(net, allParagraphsModelFile.getAbsolutePath());
-        */
-    }
-
-    public static ParagraphVectors loadAllSentencesModel() throws IOException {
-        // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(allSentencesModelFile.getAbsolutePath());
-    }
-
-    public static ParagraphVectors loadAllClaimsModel() throws IOException {
-        // Write word vectors to file
-        return WordVectorSerializer.readParagraphVectorsFromText(claimsParagraphVectorFile.getAbsolutePath());
-    }
-
 
     public static ParagraphVectors loadParagraphsModel() throws IOException {
         return loadModel(allParagraphsModelFile.getAbsolutePath()+1000000000);

@@ -7,11 +7,9 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import seeding.Constants;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +31,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
     protected int numEpochs = 1;
     protected AtomicInteger epochCounter = new AtomicInteger(0);
     protected AtomicInteger sequenceCounter;
+    protected Map<Integer,Function<String,String>> labelPreprocessors;
 
     // used to tag each sequence with own Id
     private DatabaseSequenceIterator(String query, String databaseURL) throws SQLException {
@@ -44,6 +43,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         labelArrayIndices = new ArrayList<>();
         documentQueue = new LinkedList<>();
         sequenceCounter = new AtomicInteger(0);
+        this.labelPreprocessors=new HashMap<>();
     }
 
     public void init() throws SQLException {
@@ -63,12 +63,16 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
                     String[] mLabels = (String[]) resultSet.getArray(i).getArray();
                     for(int m = 0; m < mLabels.length; m++) {
                         String label = mLabels[m];
+                        if(label==null) continue;
+                        label = labelPreprocessors.getOrDefault(i,l->l).apply(label);
                         if(label!=null&&label.length() > 0) labels.add(label);
                     }
                 }
                 for (int i : labelIndices) {
                     String label = resultSet.getString(i);
-                   if(label!=null&&label.length() > 0) labels.add(label);
+                    if(label==null) continue;
+                    label = labelPreprocessors.getOrDefault(i,l->l).apply(label);
+                    if(label!=null&&label.length() > 0) labels.add(label);
                 }
                 for (int i : textIndices) {
                     String[] text = (String[]) resultSet.getArray(i).getArray();
@@ -167,9 +171,13 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
             databaseIterator.labelIndices.add(idx);
             return this;
         }
-        public Builder addLabelArrayIndex(int idx) {
+        public Builder addLabelArrayIndex(int idx, Function<String,String> labelPreprocessor) {
             databaseIterator.labelArrayIndices.add(idx);
+            if(labelPreprocessor!=null) databaseIterator.labelPreprocessors.put(idx,labelPreprocessor);
             return this;
+        }
+        public Builder addLabelArrayIndex(int idx) {
+            return addLabelArrayIndex(idx,null);
         }
         public Builder addTextIndex(int idx) {
             databaseIterator.textIndices.add(idx);
@@ -178,15 +186,6 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         public DatabaseSequenceIterator build() throws SQLException {
             databaseIterator.init();
             return databaseIterator;
-        }
-    }
-
-    private class Document {
-        private List<String> labels;
-        private String words;
-        private Document(List<String> labels, String words) {
-            this.labels=labels;
-            this.words=words;
         }
     }
 

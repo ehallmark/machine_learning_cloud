@@ -8,6 +8,7 @@ import org.deeplearning4j.text.sentenceiterator.labelaware.LabelAwareSentenceIte
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFactory;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
+import tools.AssigneeTrimmer;
 
 import java.sql.SQLException;
 import java.sql.SQLType;
@@ -18,16 +19,15 @@ import java.util.List;
  * Created by ehallmark on 11/19/16.
  */
 public class DatabaseIteratorFactory {
-    private static final String PatentDBUrl = "jdbc:postgresql://data.gttgrp.com/patentdb?user=readonly&password=&tcpKeepAlive=true";
+    private static final String PatentDBUrl = "jdbc:postgresql://localhost/patentdb?user=readonly&password=&tcpKeepAlive=true";
     //private static final String CompDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=&tcpKeepAlive=true";
     private static final String GatherDBUrl = "jdbc:postgresql://localhost/gather_production?user=postgres&password=&tcpKeepAlive=true";
 
-    private static final String ParagraphTokensQuery = "select pub_doc_number, classifications, assignees, tokens from paragraph_tokens";
+    private static final String ParagraphTokensQuery = "select pub_doc_number, assignees, tokens from paragraph_tokens";
     private static final String PatentTextQuery = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]',' ','g'),regexp_replace(lower(substring(description from 1 for 10000)),'[^a-z ]','','g') from patent_grant where pub_doc_number=ANY(?)";
     private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(?)";
     private static final String ParagraphSampleTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens limit ?";
     private static final String GatherTechnologyQuery="select upper(name), array_remove(string_to_array(regexp_replace(lower(unnest(avals(claims))),'[^a-z ]',' ','g'), ' '),'') from patents as p join assessments as a on (p.id=a.patent_id) join assessment_technologies as at on (a.id=at.assessment_id) join technologies as t on (at.technology_id=t.id) order by random() limit ? offset ?";
-    private static final String GatherValueQuery = "";
 
     public static SequenceIterator<VocabWord> PatentParagraphSamplingSequenceIterator(int numEpochs, int limit) throws SQLException {
         return new DatabaseSequenceIterator.Builder(ParagraphSampleTokensQuery,PatentDBUrl)
@@ -44,9 +44,8 @@ public class DatabaseIteratorFactory {
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addLabelIndex(1)
-                .addLabelArrayIndex(2)
-                .addLabelArrayIndex(3)
-                .addTextIndex(4)
+                .addLabelArrayIndex(2, label-> AssigneeTrimmer.standardizedAssignee(label))
+                .addTextIndex(3)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)
                 .build();
@@ -78,33 +77,12 @@ public class DatabaseIteratorFactory {
                         .build();
     }
 
-    public static DatabaseSequenceIterator PatentSequenceIterator() throws SQLException {
-        return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
-                .addTextIndex(4)
-                .addLabelIndex(1)
-                .setFetchSize(5)
-                .build();
-
-    }
-
 
     public static DatabaseSequenceIterator SamplePatentSequenceIterator() throws SQLException {
         return new DatabaseSequenceIterator.Builder(PatentSampleSequenceQuery,PatentDBUrl)
                 .addTextIndex(2)
                 .addLabelIndex(1)
                 .setFetchSize(5)
-                .build();
-
-    }
-
-
-    public static DatabaseTextIterator GatherValueTextIterator(int offset, int limit) throws SQLException {
-        return new DatabaseTextIterator.Builder(GatherValueQuery,GatherDBUrl)
-                .addTextIndex(2)
-                .addLabelIndex(1)
-                .setFetchSize(5)
-                .setParameterAsInt(1,offset)
-                .setParameterAsInt(2,limit)
                 .build();
 
     }
