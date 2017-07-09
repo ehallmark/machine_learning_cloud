@@ -306,12 +306,12 @@ public class Database {
 
     public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {
         if(patentNumber==null||documents.isEmpty())return;
-        String query = "INSERT INTO patents_and_assignments (pub_doc_number,doc_type,tokens) VALUES (?,?,(";
+        String query = "INSERT INTO patents_and_applications (pub_doc_number,doc_type,tokens) VALUES (?,?,to_tsvector('english', ";
         for(int i = 0; i < documents.size(); i++) {
             query += "coalesce(?,' ')";
             if(i!=documents.size()-1) query += " || ";
         }
-        query+= ")::tsvector) ON CONFLICT DO NOTHING";
+        query+= ")) ON CONFLICT DO NOTHING";
         System.out.println("Query: "+query);
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setString(1,patentNumber);
