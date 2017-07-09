@@ -15,7 +15,7 @@ import java.util.*;
  * Created by ehallmark on 1/3/17.
  */
 public class Database {
-    private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
+    private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
     private static Connection conn;
     private static String CPC_ZIP_FILE_NAME = "patent_grant_classifications.zip";
     private static String CPC_DESTINATION_FILE_NAME = "patent_grant_classifications_folder";

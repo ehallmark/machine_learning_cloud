@@ -15,4 +15,4 @@ CREATE INDEX paragraph_tokens_random_idx on paragraph_tokens (randomizer);
 CLUSTER paragraph_tokens USING paragraph_tokens_random_idx;
 DROP INDEX paragraph_tokens_random_idx;
 
-pg_dump -Fc -d paragraph_tokens > paragraph_tokens.dump
+pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t paragraph_tokens > data/paragraph_tokens.dump
