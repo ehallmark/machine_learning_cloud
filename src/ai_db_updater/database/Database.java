@@ -312,12 +312,14 @@ public class Database {
             if(i!=documents.size()-1) query += " || ";
         }
         query+= ")) ON CONFLICT DO NOTHING";
+        System.out.println("Query: "+query);
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setString(1,patentNumber);
         ps.setString(2,type.toString());
         for(int i = 0; i < documents.size(); i++) {
             ps.setString(3+i, documents.get(i));
         }
+        System.out.println("Prepared Query: "+ps);
         ps.executeUpdate();
         ps.close();
     }
