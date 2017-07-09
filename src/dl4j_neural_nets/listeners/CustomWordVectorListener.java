@@ -1,7 +1,6 @@
 package dl4j_neural_nets.listeners;
 
 import dl4j_neural_nets.tests.ModelEvaluator;
-import dl4j_neural_nets.tests.TestAnalogies;
 import edu.stanford.nlp.util.Triple;
 import org.deeplearning4j.models.embeddings.loader.WordVectorSerializer;
 import org.deeplearning4j.models.glove.Glove;
@@ -82,17 +81,10 @@ public class CustomWordVectorListener implements VectorsListener<VocabWord> {
             } catch(Exception e) {
                 e.printStackTrace();
             }
-            log.info("Line: " + argument);
-            // Prints out the closest 10 words to "day". An example on what to do with these Word Vectors.
-            log.info("Closest Words:");
             for (String word : words) {
                 Collection<String> lst = sequenceVectors.wordsNearest(word, 10);
                 System.out.println("10 Words closest to '" + word + "': " + lst);
 
-            }
-            if (analogies != null) {
-                TestAnalogies test = new TestAnalogies(sequenceVectors, analogies, 10);
-                test.printAnalogies();
             }
         }
     }
