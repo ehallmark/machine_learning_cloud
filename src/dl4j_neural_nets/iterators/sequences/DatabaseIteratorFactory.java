@@ -1,6 +1,5 @@
 package dl4j_neural_nets.iterators.sequences;
 
-import ai_db_updater.UpdateItemToIndexMap;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
