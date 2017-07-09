@@ -40,6 +40,7 @@ public class SAXFullTextHandler extends CustomHandler{
                 Database.ingestTextRecords(pubDocNumber, type, fullDocuments);
             } catch(Exception e) {
                 e.printStackTrace();
+                throw new RuntimeException();
             }
         }
     }
