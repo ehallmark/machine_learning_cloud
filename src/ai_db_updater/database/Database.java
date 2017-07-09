@@ -306,12 +306,12 @@ public class Database {
 
     public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {
         if(patentNumber==null||documents.isEmpty())return;
-        String query = "INSERT INTO patents_and_assignments (pub_doc_number,doc_type,tokens) VALUES (?,?,to_tsvector('english',";
+        String query = "INSERT INTO patents_and_assignments (pub_doc_number,doc_type,tokens) VALUES (?,?,(";
         for(int i = 0; i < documents.size(); i++) {
             query += "coalesce(?,' ')";
             if(i!=documents.size()-1) query += " || ";
         }
-        query+= ")) ON CONFLICT DO NOTHING";
+        query+= ")::tsvector) ON CONFLICT DO NOTHING";
         System.out.println("Query: "+query);
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setString(1,patentNumber);
@@ -319,7 +319,7 @@ public class Database {
         for(int i = 0; i < documents.size(); i++) {
             ps.setString(3+i, documents.get(i));
         }
-       // System.out.println("Prepared Query: "+ps);
+       //    System.out.println("Prepared Query: "+ps);
         ps.executeUpdate();
         ps.close();
     }
