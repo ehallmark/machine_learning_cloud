@@ -139,7 +139,7 @@ public class SAXFullTextHandler extends CustomHandler{
     }
 
     private static String extractTokens(String toExtract) {
-        return toExtract.toLowerCase().replaceAll("[^a-z.]","");
+        return toExtract.toLowerCase().replaceAll("[.,-]"," ").replaceAll("[^a-z ]","");
     }
 
 }

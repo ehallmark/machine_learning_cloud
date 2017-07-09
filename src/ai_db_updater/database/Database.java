@@ -319,7 +319,7 @@ public class Database {
         for(int i = 0; i < documents.size(); i++) {
             ps.setString(3+i, documents.get(i));
         }
-        System.out.println("Prepared Query: "+ps);
+       // System.out.println("Prepared Query: "+ps);
         ps.executeUpdate();
         ps.close();
     }
