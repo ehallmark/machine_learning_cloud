@@ -117,11 +117,26 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString());
 
         System.out.println("Found finder prototype...");
+
         // first finder
         Collection<String> toSearchIn = getInputsToSearchIn(req);
         System.out.println("Found to search in...");
         setFirstFinder(finderPrototype,toSearchIn);
         System.out.println("Finished setting first finder...");
+
+        // handle keywords
+        String keywordsToRequire = extractString(req,Constants.REQUIRE_KEYWORD_FILTER,null);
+        if(keywordsToRequire!=null) {
+            keywordsToRequire=keywordsToRequire.toLowerCase();
+            System.out.println("Handling keywords to require...");
+            try {
+                firstFinder=firstFinder.duplicateWithScope(
+                        SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(Arrays.stream(firstFinder.getItemList()).map(item -> item.getName()).collect(Collectors.toList()), portfolioType, keywordsToRequire))
+                );
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
 
 
         System.out.println("Getting second finders...");

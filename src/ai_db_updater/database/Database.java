@@ -2,6 +2,7 @@ package ai_db_updater.database;
 
 import ai_db_updater.tools.*;
 import net.lingala.zip4j.core.ZipFile;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.*;
 import java.net.URL;
@@ -298,6 +299,24 @@ public class Database {
             ps.setString(1+(i*3), patentNumber);
             ps.setArray(2+(i*3), assigneeArray);
             ps.setArray(3+(i*3), conn.createArrayOf("varchar", doc.toArray()));
+        }
+        ps.executeUpdate();
+        ps.close();
+    }
+
+    public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {
+        if(patentNumber==null||documents.isEmpty())return;
+        String query = "INSERT INTO patents_and_assignments (pub_doc_number,doc_type,tokens) VALUES (?,?,to_tsvector('english',";
+        for(int i = 0; i < documents.size(); i++) {
+            query += "coalesce(?,' ')";
+            if(i!=documents.size()-1) query += " || ";
+        }
+        query+= ")) ON CONFLICT DO NOTHING";
+        PreparedStatement ps = conn.prepareStatement(query);
+        ps.setString(1,patentNumber);
+        ps.setString(2,type.toString());
+        for(int i = 0; i < documents.size(); i++) {
+            ps.setString(3+i, documents.get(i));
         }
         ps.executeUpdate();
         ps.close();

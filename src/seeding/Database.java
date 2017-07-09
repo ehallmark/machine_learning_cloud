@@ -8,6 +8,7 @@ import lombok.Getter;
 import similarity_models.class_vectors.CPCSimilarityFinder;
 import tools.AssigneeTrimmer;
 import ui_models.attributes.classification.TechTaggerNormalizer;
+import ui_models.portfolios.PortfolioList;
 
 import java.io.*;
 import java.sql.*;
@@ -621,30 +622,13 @@ public class Database {
 	}
 
 
-	public synchronized static Set<String> patentsWithKeywords(List<String> patents, String[] keywords) throws SQLException {
+	public synchronized static Set<String> patentsWithKeywords(List<String> patents, PortfolioList.Type type, String keywords) throws SQLException {
 		Set<String> validPatents = new HashSet<>();
-		List<String> cleanKeywords = Arrays.stream(keywords).filter(keyword->keyword!=null&&keyword.trim().length()>0).map(keyword->keyword.trim().toLowerCase()).collect(Collectors.toList());
-		PreparedStatement ps = seedConn.prepareStatement("SELECT distinct pub_doc_number FROM paragraph_tokens WHERE pub_doc_number=ANY(?) and tokens && ?");
-		ps.setFetchSize(5);
+		PreparedStatement ps = seedConn.prepareStatement("SELECT pub_doc_number FROM paragraph_tokens WHERE pub_doc_number=ANY(?) and doc_type=? and tokens @@ to_tsquery('english',?)");
+		ps.setFetchSize(10);
 		ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
-		ps.setArray(2,seedConn.createArrayOf("varchar",cleanKeywords.toArray()));
-		System.out.println(ps.toString());
-
-		ResultSet rs = ps.executeQuery();
-		while(rs.next()) {
-			String patent = rs.getString(1);
-			validPatents.add(patent);
-		}
-		return validPatents;
-	}
-
-	public synchronized static Set<String> patentsWithAllKeywords(List<String> patents, String[] keywords) throws SQLException {
-		Set<String> validPatents = new HashSet<>();
-		List<String> cleanKeywords = Arrays.stream(keywords).filter(keyword->keyword!=null&&keyword.trim().length()>0).map(keyword->keyword.trim().toLowerCase()).collect(Collectors.toList());
-		PreparedStatement ps = seedConn.prepareStatement("SELECT pub_doc_number FROM paragraph_tokens WHERE pub_doc_number=ANY(?) and tokens @> ?");
-		ps.setFetchSize(5);
-		ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
-		ps.setArray(2,seedConn.createArrayOf("varchar",cleanKeywords.toArray()));
+		ps.setString(2, type.toString());
+		ps.setString(3,keywords);
 		System.out.println(ps.toString());
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {

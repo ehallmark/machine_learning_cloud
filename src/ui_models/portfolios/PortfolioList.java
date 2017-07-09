@@ -20,7 +20,7 @@ public class PortfolioList implements Comparable<PortfolioList> {
     @Getter
     private Item[] itemList;
     private double avgSimilarity;
-    public enum Type { patents, assignees }
+    public enum Type { patents, applications, assignees }
     private boolean init = false;
 
     public PortfolioList(Item[] itemList) {

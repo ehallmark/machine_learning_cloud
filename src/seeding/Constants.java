@@ -43,7 +43,7 @@ public class Constants {
 	public static final String REMAINING_LIFE = "remainingLife";
 	public static final String REMAINING_LIFE_FILTER = "remainingLifeFilter";
 	public static final String PATENT_FAMILY = "patentFamily";
-
+	public static final String REQUIRE_KEYWORD_FILTER = "requireKeywordFilter";
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
 
