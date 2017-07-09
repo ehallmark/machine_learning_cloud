@@ -1,5 +1,6 @@
 package dl4j_neural_nets.iterators.sequences;
 
+import ai_db_updater.UpdateItemToIndexMap;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
@@ -19,7 +20,7 @@ import java.util.List;
  * Created by ehallmark on 11/19/16.
  */
 public class DatabaseIteratorFactory {
-    private static final String PatentDBUrl = "jdbc:postgresql://localhost/patentdb?user=readonly&password=&tcpKeepAlive=true";
+    private static final String PatentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=&tcpKeepAlive=true";
     //private static final String CompDBUrl = "jdbc:postgresql://localhost/compdb_production?user=postgres&password=&tcpKeepAlive=true";
     private static final String GatherDBUrl = "jdbc:postgresql://localhost/gather_production?user=postgres&password=&tcpKeepAlive=true";
 
