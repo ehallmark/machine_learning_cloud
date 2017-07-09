@@ -102,6 +102,7 @@ public class PatentGrantIterator implements WebIterator {
                                                 saxParser.parse(new ByteArrayInputStream(data), handler);
                                             } catch (Exception e) {
                                                 e.printStackTrace();
+                                                throw new RuntimeException();
                                             } finally {
                                                 handler.reset();
                                             }
@@ -123,6 +124,7 @@ public class PatentGrantIterator implements WebIterator {
                                             saxParser.parse(new ByteArrayInputStream(data), handler);
                                         } catch (Exception e) {
                                             e.printStackTrace();
+                                            throw new RuntimeException();
                                         } finally {
                                             handler.reset();
                                         }
