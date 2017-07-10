@@ -126,6 +126,7 @@ label {
 }
 
 .form-top {
+    padding-top: 20px;
     border-bottom: 1px rgba(0,0,0,.1) solid;
 }
 
@@ -143,6 +144,8 @@ label {
 .header-top {
     position: fixed;
     width: 100%;
+    padding-top: 30px;
+    padding-bottom: 0px;
     border-bottom: 1px lightgray solid;
     margin-left: 0;
     top: 0;

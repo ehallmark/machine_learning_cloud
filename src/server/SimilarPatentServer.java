@@ -622,7 +622,7 @@ public class SimilarPatentServer {
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 15px;").with(
                                                 br(),br(),br(),
-                                                h4("Templates"),br(),
+                                                h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                     templates.stream().map(template->{
                                                         return li().withClass("nav-item").with(
@@ -690,7 +690,7 @@ public class SimilarPatentServer {
         return div().withClass("row header-main header-top").with(
                 div().withClass("col-3").with(
                         a().attr("href", "/").with(
-                                img().attr("style","display: block; margin-left: auto; margin-right: auto;")
+                                img().attr("style","display: block; margin-left: auto; margin-right: auto; margin-top: -20px")
                                         .attr("src", "/images/brand.png")
                         )
                 ),div().withClass("col-9").with(
@@ -699,11 +699,12 @@ public class SimilarPatentServer {
                                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Previous Report","Previous..."))
                                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                                 input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                                button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                                button("Previous Report").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                                         )
                                 ), div().withClass("col-8").with(
-                                        h4("Artificial Intelligence Platform").withClass("collapsible-header")
+                                        h3("Artificial Intelligence Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
+                                                .attr("style","margin-top: -5px;")
                                 ), div().withClass("col-2").with(
                                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Next Report","Next..."))
                                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
