@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by Evan on 7/6/2017.
@@ -23,18 +24,20 @@ import java.util.List;
 public class AssignmentIterator implements WebIterator {
     private File zipFolderPrefix;
     private String destinationPrefix;
-
+    private AtomicInteger cnt;
     public AssignmentIterator(File zipFolderPrefix, String destinationPrefix) {
         this.zipFolderPrefix=zipFolderPrefix;
         this.destinationPrefix=destinationPrefix;
+        this.cnt=new AtomicInteger(0);
     }
 
     @Override
     public void applyHandlers(CustomHandler... handlers) {
         Arrays.stream(zipFolderPrefix.listFiles()).parallel().forEach(zipFile->{
+            String destinationFilename = destinationPrefix+cnt.getAndIncrement();
             // Ingest data for each file
             try {
-                new ZipFile(zipFile).extractAll(destinationPrefix);
+                new ZipFile(zipFile).extractAll(destinationFilename);
 
                 SAXParserFactory factory = SAXParserFactory.newInstance();
                 factory.setNamespaceAware(false);
@@ -44,7 +47,7 @@ public class AssignmentIterator implements WebIterator {
                 factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
                 SAXParser saxParser = factory.newSAXParser();
 
-                for (File file : new File(destinationPrefix).listFiles()) {
+                for (File file : new File(destinationFilename).listFiles()) {
                     if (!file.getName().endsWith(".xml")) {
                         file.delete();
                         continue;
@@ -66,7 +69,7 @@ public class AssignmentIterator implements WebIterator {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                File xmlFile = new File(destinationPrefix);
+                File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) xmlFile.delete();
             }
         });

@@ -43,15 +43,9 @@ public class PatentGrantIterator implements WebIterator {
                 bis.close();
                 bos.close();
 
-            } catch (Exception e) {
-                System.out.println("... Unable to unzip file");
-            }
-
-            File xmlFile = new File(destinationFilename);
-            if (xmlFile.exists()) {
-                System.out.println("Success!");
-                // Ingest data for each file
-                try {
+                File xmlFile = new File(destinationFilename);
+                if (xmlFile.exists()) {
+                    System.out.println("Success!");
 
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     factory.setNamespaceAware(false);
@@ -103,14 +97,15 @@ public class PatentGrantIterator implements WebIterator {
                         }
                         lines.clear();
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-
-                } finally {
-                    // cleanup
-                    if (xmlFile.exists()) xmlFile.delete();
                 }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+
+            } finally {
+                // cleanup
+                File xmlFile = new File(destinationFilename);
+                if (xmlFile.exists()) xmlFile.delete();
             }
 
         });

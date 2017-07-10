@@ -14,7 +14,7 @@ public class IngestUSPTOData {
         patentIterator.run();
 
         IngestUSPTOIterator appIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, Constants.APP_ZIP_FOLDER, Constants.GOOGLE_APP_URL_CREATOR, Constants.USPTO_APP_URL_CREATOR);
-        appIterator.run();
+        //appIterator.run();
 
         IngestUSPTOAssignmentIterator assignmentIterator = new IngestUSPTOAssignmentIterator(Constants.ASSIGNMENT_ZIP_FOLDER);
         assignmentIterator.run();

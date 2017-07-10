@@ -15,7 +15,7 @@ public class UpdatePatentsAndApplicationsTable {
         patentIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.patents));
 
         PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
-        applicationIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.applications));
+        //applicationIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.applications));
     }
 
 }
