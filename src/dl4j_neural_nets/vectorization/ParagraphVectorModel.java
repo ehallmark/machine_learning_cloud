@@ -88,6 +88,7 @@ public class ParagraphVectorModel {
                 .sampling(0.000005)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
+                .minLearningRate(0.00001)
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(100)
@@ -102,7 +103,7 @@ public class ParagraphVectorModel {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",100000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",20000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
