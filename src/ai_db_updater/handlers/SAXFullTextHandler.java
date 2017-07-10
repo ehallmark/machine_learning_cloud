@@ -68,7 +68,7 @@ public class SAXFullTextHandler extends CustomHandler{
         // do nothing
         try {
             Database.commit();
-            Database.close();
+            //Database.close();
         } catch(Exception e) {
             e.printStackTrace();
         }
