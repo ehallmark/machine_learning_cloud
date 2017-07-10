@@ -13,7 +13,7 @@ import java.util.Arrays;
  */
 public class SIE {
     public static void main(String[] args) throws Exception {
-        File file = new File("sie_patents.csv");
+        File file = new File("data/sie_patents.csv");
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
         RemainingLifeAttribute attr = new RemainingLifeAttribute();
