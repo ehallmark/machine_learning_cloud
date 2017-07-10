@@ -143,6 +143,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
             } catch(Exception e) {
                 System.out.println("Error with keywords: "+e.getMessage());
+                throw new RuntimeException("Unable to connect to database.");
             } finally {
                 try {
                     Database.seedConn.close();
