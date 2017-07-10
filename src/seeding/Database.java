@@ -628,7 +628,7 @@ public class Database {
 		Set<String> validPatents = new HashSet<>();
 		PreparedStatement ps;
 		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number form patents_and_applications WHERE doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+limit);
 			ps.setString(1, type.toString());
 			ps.setString(2,keywords);
 		}

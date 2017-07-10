@@ -149,6 +149,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
                 } catch(Exception e) {
                     System.out.println("Error closing seedConn.");
                 }
+                Database.seedConn=null;
             }
         }
 
