@@ -688,12 +688,12 @@ public class SimilarPatentServer {
 
     private static Tag customFormHeader() {
         return div().withClass("row header-main header-top").with(
-                div().withClass("col-3").with(
+                div().withClass("col-3").attr("style","padding-top: 30px; border-right: 1px lightgray solid;").with(
                         a().attr("href", "/").with(
                                 img().attr("style","display: block; margin-left: auto; margin-right: auto; margin-top: -20px")
                                         .attr("src", "/images/brand.png")
                         )
-                ),div().withClass("col-9").with(
+                ),div().withClass("col-9").attr("style","padding-top: 30px; background-color: #c4c4c4;").with(
                         div().withClass("row").with(
                                 div().withClass("col-2").with(
                                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Previous Report","Previous..."))
