@@ -1,10 +1,7 @@
 package ai_db_updater;
 
-import ai_db_updater.handlers.CitationSAXHandler;
-import ai_db_updater.handlers.InventionTitleSAXHandler;
 import ai_db_updater.iterators.IngestUSPTOAssignmentIterator;
 import ai_db_updater.iterators.IngestUSPTOIterator;
-import ai_db_updater.iterators.PatentGrantIterator;
 import ai_db_updater.tools.Constants;
 
 /**
@@ -13,13 +10,13 @@ import ai_db_updater.tools.Constants;
 public class IngestUSPTOData {
 
     public static void main(String[] args) {
-        IngestUSPTOIterator patentIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, "data/patents/", Constants.GOOGLE_URL_CREATOR, Constants.USPTO_URL_CREATOR);
-        //patentIterator.run();
+        IngestUSPTOIterator patentIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, Constants.PATENT_ZIP_FOLDER, Constants.GOOGLE_URL_CREATOR, Constants.USPTO_URL_CREATOR);
+        patentIterator.run();
 
-        IngestUSPTOIterator appIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, "data/applications/", Constants.GOOGLE_APP_URL_CREATOR, Constants.USPTO_APP_URL_CREATOR);
-        //appIterator.run();
+        IngestUSPTOIterator appIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, Constants.APP_ZIP_FOLDER, Constants.GOOGLE_APP_URL_CREATOR, Constants.USPTO_APP_URL_CREATOR);
+        appIterator.run();
 
-        IngestUSPTOAssignmentIterator assignmentIterator = new IngestUSPTOAssignmentIterator("data/assignments/");
+        IngestUSPTOAssignmentIterator assignmentIterator = new IngestUSPTOAssignmentIterator(Constants.ASSIGNMENT_ZIP_FOLDER);
         assignmentIterator.run();
     }
 }

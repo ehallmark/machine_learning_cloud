@@ -4,6 +4,7 @@ import ai_db_updater.iterators.AssignmentIterator;
 import ai_db_updater.iterators.PatentGrantIterator;
 import ai_db_updater.iterators.url_creators.UrlCreator;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -22,11 +23,13 @@ public class Constants {
     public static final UrlCreator USPTO_APP_URL_CREATOR = defaultAppUrlCreator(USPTO_APP_URL);
 
     public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);
-    public static final String ZIP_PREFIX = "patent-grant-zips";
     public static final String DESTINATION_PREFIX = "patent-grant-destinations";
-    public static final PatentGrantIterator DEFAULT_PATENT_GRANT_ITERATOR = new PatentGrantIterator(DEFAULT_START_DATE, ZIP_PREFIX, DESTINATION_PREFIX, GOOGLE_URL_CREATOR, USPTO_URL_CREATOR);
-    public static final PatentGrantIterator DEFAULT_PATENT_APPLICATION_ITERATOR = new PatentGrantIterator(DEFAULT_START_DATE, ZIP_PREFIX, DESTINATION_PREFIX, GOOGLE_APP_URL_CREATOR, USPTO_APP_URL_CREATOR);
-    public static final AssignmentIterator DEFAULT_ASSIGNMENT_ITERATOR = new AssignmentIterator(ZIP_PREFIX, DESTINATION_PREFIX);
+    public static final String PATENT_ZIP_FOLDER = "data/patents/";
+    public static final String APP_ZIP_FOLDER = "data/applications/";
+    public static final String ASSIGNMENT_ZIP_FOLDER = "data/assignments/";
+    public static final PatentGrantIterator DEFAULT_PATENT_GRANT_ITERATOR = new PatentGrantIterator(new File(PATENT_ZIP_FOLDER), DESTINATION_PREFIX);
+    public static final PatentGrantIterator DEFAULT_PATENT_APPLICATION_ITERATOR = new PatentGrantIterator(new File(APP_ZIP_FOLDER), DESTINATION_PREFIX);
+    public static final AssignmentIterator DEFAULT_ASSIGNMENT_ITERATOR = new AssignmentIterator(new File(ASSIGNMENT_ZIP_FOLDER), DESTINATION_PREFIX);
 
     private static UrlCreator defaultPatentUrlCreator(String baseUrl) {
         return defaultCreator(baseUrl, "ipg");

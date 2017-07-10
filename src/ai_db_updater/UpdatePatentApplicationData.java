@@ -13,6 +13,5 @@ public class UpdatePatentApplicationData {
     public static void main(String[] args) {
         PatentGrantIterator iterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
         iterator.applyHandlers(new ApplicationCitationSAXHandler(), new ApplicationInventionTitleSAXHandler());
-        System.out.println("FINAL DATE: "+ iterator.startDate.toString());
     }
 }

@@ -89,7 +89,7 @@ public class SAXFullTextHandler extends CustomHandler{
             inPublicationReference=true;
         }
 
-        if(qName.equals("claim")||qName.equals("abstract")||qName.equals("description")){
+        if(qName.equals("claim")||qName.equals("abstract")){
             isWithinDocument=true;
         }
 
@@ -117,7 +117,7 @@ public class SAXFullTextHandler extends CustomHandler{
             inPublicationReference=false;
         }
 
-        if(qName.equals("claim")||qName.equals("abstract")||qName.equals("description")){
+        if(qName.equals("claim")||qName.equals("abstract")){
             isWithinDocument = false;
             String text = String.join(" ",documentPieces);
             if (text.length() > 5) {
