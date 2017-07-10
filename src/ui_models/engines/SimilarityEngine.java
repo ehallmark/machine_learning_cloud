@@ -132,11 +132,13 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             try {
                 Database.setupSeedConn();
                 Item[] scope;
-                Collection<String> patents = null;
-                if(!searchEntireDatabase) {
-                    patents = Arrays.stream(firstFinder.getItemList()).map(item -> item.getName()).collect(Collectors.toList());
+                if(searchEntireDatabase) {
+                    scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(null, portfolioType, keywordsToRequire));
+                } else {
+                    Map<String,Item> patentMap = Arrays.stream(firstFinder.getItemList()).collect(Collectors.toMap(e->e.getName(),e->e));
+                    scope = Database.patentsWithKeywords(patentMap.keySet(), portfolioType, keywordsToRequire).stream()
+                            .map(patent->patentMap.get(patent)).toArray(size->new Item[size]);
                 }
-                scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(patents, portfolioType, keywordsToRequire));
                 firstFinder=firstFinder.duplicateWithScope(scope);
 
             } catch(Exception e) {
