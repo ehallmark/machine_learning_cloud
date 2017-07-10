@@ -11,7 +11,7 @@ import ui_models.portfolios.PortfolioList;
  */
 public class UpdatePatentsAndApplicationsTable {
     public static void main(String[] args) throws Exception {
-        PatentGrantIterator patentIterator = ai_db_updater.tools.Constants.DEFAULT_PATENT_GRANT_ITERATOR;
+        PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
         patentIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.patents));
 
         PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
