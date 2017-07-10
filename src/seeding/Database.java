@@ -628,12 +628,12 @@ public class Database {
 		Set<String> validPatents = new HashSet<>();
 		PreparedStatement ps;
 		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number form patents_and_applications WHERE doc_type=? and tokens @@ to_tsquery('english',?) limit "+limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number form patents_and_applications WHERE doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+limit);
 			ps.setString(1, type.toString());
 			ps.setString(2,keywords);
 		}
 		else {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and tokens @@ to_tsquery('english',?) limit "+ limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+ limit);
 			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
 			ps.setString(2, type.toString());
 			ps.setString(3,keywords);
@@ -645,6 +645,7 @@ public class Database {
 			String patent = rs.getString(1);
 			validPatents.add(patent);
 		}
+		ps.close();
 		return validPatents;
 	}
 

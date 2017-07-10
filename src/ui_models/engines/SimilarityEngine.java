@@ -142,7 +142,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
                 firstFinder=firstFinder.duplicateWithScope(scope);
 
             } catch(Exception e) {
-                e.printStackTrace();
+                System.out.println("Error with keywords: "+e.getMessage());
             } finally {
                 try {
                     Database.seedConn.close();
