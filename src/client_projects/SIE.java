@@ -13,6 +13,7 @@ import java.util.Arrays;
  */
 public class SIE {
     public static void main(String[] args) throws Exception {
+        Database.initializeDatabase();
         File file = new File("data/sie_patents.csv");
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
