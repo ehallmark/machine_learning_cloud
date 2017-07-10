@@ -69,7 +69,7 @@ public class IngestUSPTOAssignmentIterator {
                 URL website = new URL(finalUrlString);
                 System.out.println("Trying: " + website.toString());
                 ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                FileOutputStream fos = new FileOutputStream(zipFilePrefix);
+                FileOutputStream fos = new FileOutputStream(zipFilePrefix+lastIngestedDate);
                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                 fos.close();
 

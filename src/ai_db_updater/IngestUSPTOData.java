@@ -10,7 +10,7 @@ import ai_db_updater.tools.Constants;
 /**
  * Created by Evan on 1/22/2017.
  */
-public class IngestUPTOData {
+public class IngestUSPTOData {
 
     public static void main(String[] args) {
         IngestUSPTOIterator patentIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, "data/patents/", Constants.GOOGLE_URL_CREATOR, Constants.USPTO_URL_CREATOR);

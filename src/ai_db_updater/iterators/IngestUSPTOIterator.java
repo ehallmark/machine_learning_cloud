@@ -34,31 +34,31 @@ public class IngestUSPTOIterator {
         List<RecursiveAction> tasks = new ArrayList<>();
         while (startDate.isBefore(LocalDate.now())) {
             final String zipFilename = zipFilePrefix + startDate;
-            final LocalDate date = startDate;
-            RecursiveAction action = new RecursiveAction() {
-                @Override
-                protected void compute() {
-                    for (UrlCreator urlCreator : urlCreators) {
-                        try {
-                            URL website = new URL(urlCreator.create(date));
-                            System.out.println("Trying: " + website.toString());
-                            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                            FileOutputStream fos = new FileOutputStream(zipFilename);
-                            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                            fos.close();
+            if(!new File(zipFilename).exists()) {
+                final LocalDate date = startDate;
+                RecursiveAction action = new RecursiveAction() {
+                    @Override
+                    protected void compute() {
+                        for (UrlCreator urlCreator : urlCreators) {
+                            try {
+                                URL website = new URL(urlCreator.create(date));
+                                System.out.println("Trying: " + website.toString());
+                                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                FileOutputStream fos = new FileOutputStream(zipFilename);
+                                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                                fos.close();
 
-                        } catch (Exception e) {
-                            System.out.println("... Failed");
+                            } catch (Exception e) {
+                                System.out.println("... Failed");
+                            }
                         }
                     }
-                }
-            };
-
+                };
+                action.fork();
+                tasks.add(action);
+            }
             startDate = startDate.plusDays(1);
-            action.fork();
-            tasks.add(action);
-
-            while(tasks.size()>Runtime.getRuntime().availableProcessors()) {
+            while(tasks.size()>Runtime.getRuntime().availableProcessors()*4) {
                 tasks.remove(0).join();
             }
         }
