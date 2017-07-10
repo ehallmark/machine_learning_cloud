@@ -115,10 +115,14 @@ label {
 }
 
 .form-right {
+    padding-left: 30px;
+    padding-right: 30px;
 }
 
 .form-left {
     border-right: 1px rgba(0,0,0,.1) solid;
+    padding-left: 30px;
+    padding-right: 30px;
 }
 
 .form-top {
@@ -130,16 +134,17 @@ label {
 }
 
 .header-main {
-    color: whitesmoke;
-    background-color: #0b1141;
+    color: black;
+    background-color: #ccc;
     padding-top: 15px;
     z-index: 50000 !important;
 }
 
 .header-top {
     position: fixed;
-    width: 75%;
-    margin-left: 25%;
+    width: 100%;
+    border-bottom: 1px lightgray solid;
+    margin-left: 0;
     top: 0;
     left: 0;
     z-index: 999;
