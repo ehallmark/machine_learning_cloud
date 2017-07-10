@@ -70,6 +70,8 @@ public class ParagraphVectorModel {
 
         net.fit();
         WordVectorSerializer.writeParagraphVectors(net, testParagraphsModelFile.getAbsolutePath());
+        net = WordVectorSerializer.readParagraphVectors(testParagraphsModelFile.getAbsolutePath());
+        System.out.println("Sample vector: "+net.getLookupTable().vectors().next());
     }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 3;
