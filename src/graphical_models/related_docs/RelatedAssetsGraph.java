@@ -22,7 +22,7 @@ public class RelatedAssetsGraph implements Serializable {
 
     public String relativesOf(String token) {
         Node node = graph.findNode(token);
-        if(token==null) return "";
+        if(node==null) return "";
         return String.join("; ",node.getNeighbors().stream().map(n->n.getLabel()).collect(Collectors.toList()));
     }
 
