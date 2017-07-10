@@ -7,6 +7,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -27,11 +28,13 @@ public class RelatedAssetsGraph implements Serializable {
 
     public void init() {
         graph = new MarkovNet();
+        AtomicInteger cnt = new AtomicInteger(0);
         Database.getPatentToRelatedPatentsMap().forEach((asset,related)->{
             Node n = graph.addNode(asset,1);
             related.forEach(rel->{
                 graph.connectNodes(n, graph.addNode(rel,1));
             });
+            if(cnt.getAndIncrement()%10000==0) System.out.println("Adding node: "+cnt.get());
         });
     }
 
@@ -47,5 +50,9 @@ public class RelatedAssetsGraph implements Serializable {
             }
         }
         return SELF;
+    }
+
+    public static void main(String[] args) {
+        get();
     }
 }
