@@ -136,11 +136,9 @@ public class Database {
                             String maintenanceCode = line.substring(46, 51).trim();
                             if (patNum != null && maintenanceCode != null ) {
                                 if(maintenanceCode.equals("EXP.")) {
-                                    System.out.println(patNum + " has expired... Updating database now.");
                                     expiredPatentsSet.add(patNum);
                                 } else if (maintenanceCode.equals("EXPX")) {
                                     // reinstated
-                                    System.out.println(patNum+" was reinstated!");
                                     if(expiredPatentsSet.contains(patNum)) {
                                         expiredPatentsSet.remove(patNum);
                                     }
