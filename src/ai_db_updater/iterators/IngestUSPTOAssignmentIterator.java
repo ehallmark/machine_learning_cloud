@@ -64,18 +64,20 @@ public class IngestUSPTOAssignmentIterator {
                 finalUrlString = base_url + backYearDates.remove(0) + ".zip";
                 finalUrlString = finalUrlString.replaceFirst("---", "1980-2015");
             }
-            try {
-                // Unzip file
-                URL website = new URL(finalUrlString);
-                System.out.println("Trying: " + website.toString());
-                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                FileOutputStream fos = new FileOutputStream(zipFilePrefix+lastIngestedDate);
-                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                fos.close();
+            if(! new File(zipFilePrefix+lastIngestedDate).exists()) {
+                try {
+                    // Unzip file
+                    URL website = new URL(finalUrlString);
+                    System.out.println("Trying: " + website.toString());
+                    ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                    FileOutputStream fos = new FileOutputStream(zipFilePrefix + lastIngestedDate);
+                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                    fos.close();
 
-            } catch (Exception e) {
-                System.out.println("Unable to get file");
-                continue;
+                } catch (Exception e) {
+                    System.out.println("Unable to get file");
+                    continue;
+                }
             }
         }
     }
