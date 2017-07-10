@@ -75,23 +75,23 @@ public class ParagraphVectorModel {
     }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 3;
-        int numThreads = 60;
+        int numThreads = 40;
 
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),numThreads/2);
+        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),5);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
                 .batchSize(1000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
-                .windowSize(6)
-                .layerSize(300)
-                .sampling(0.00005)
+                .windowSize(4)
+                .layerSize(150)
+                .sampling(0.000005)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
                 .useAdaGrad(true)
                 .resetModel(true)
-                .minWordFrequency(30)
-                .workers(numThreads/2)
+                .minWordFrequency(100)
+                .workers(numThreads)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
                 .trainWordVectors(true)
