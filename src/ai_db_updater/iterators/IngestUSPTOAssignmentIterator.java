@@ -49,6 +49,7 @@ public class IngestUSPTOAssignmentIterator {
         String base_url = "http://patents.reedtech.com/downloads/PatentAssignmentText/---/ad20";
         while (lastIngestedDate <= endDateInt||backYearDates.size()>0) {
             String finalUrlString;
+            String zipDate;
             if (backYearDates.isEmpty()) {
                 lastIngestedDate = lastIngestedDate + 1;
                 // don't over search days
@@ -60,17 +61,20 @@ public class IngestUSPTOAssignmentIterator {
                 }
                 finalUrlString = base_url + String.format("%06d", lastIngestedDate) + ".zip";
                 finalUrlString = finalUrlString.replace("---", "20" + String.format("%02d", lastIngestedDate / 10000));
+                zipDate=String.valueOf(lastIngestedDate);
             } else {
-                finalUrlString = base_url + backYearDates.remove(0) + ".zip";
+                zipDate = backYearDates.remove(0);
+                finalUrlString = base_url + zipDate + ".zip";
                 finalUrlString = finalUrlString.replaceFirst("---", "1980-2015");
+
             }
-            if(! new File(zipFilePrefix+lastIngestedDate).exists()) {
+            if(! new File(zipFilePrefix+zipDate).exists()) {
                 try {
                     // Unzip file
                     URL website = new URL(finalUrlString);
                     System.out.println("Trying: " + website.toString());
                     ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                    FileOutputStream fos = new FileOutputStream(zipFilePrefix + lastIngestedDate);
+                    FileOutputStream fos = new FileOutputStream(zipFilePrefix + zipDate);
                     fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                     fos.close();
 
