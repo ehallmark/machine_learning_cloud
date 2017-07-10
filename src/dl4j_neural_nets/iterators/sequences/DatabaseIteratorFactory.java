@@ -26,15 +26,14 @@ public class DatabaseIteratorFactory {
     private static final String ParagraphTokensQuery = "select pub_doc_number, assignees, tokens from paragraph_tokens";
     private static final String PatentTextQuery = "select pub_doc_number,regexp_replace(lower(abstract),'[^a-z ]',' ','g'),regexp_replace(lower(substring(description from 1 for 10000)),'[^a-z ]','','g') from patent_grant where pub_doc_number=ANY(?)";
     private static final String PatentSampleSequenceQuery = "select pub_doc_number,tokens from paragraph_tokens tablesample system(?)";
-    private static final String ParagraphSampleTokensQuery = "select pub_doc_number, classifications, inventors, tokens from paragraph_tokens limit ?";
+    private static final String ParagraphSampleTokensQuery = "select pub_doc_number, assignees, tokens from paragraph_tokens limit ?";
     private static final String GatherTechnologyQuery="select upper(name), array_remove(string_to_array(regexp_replace(lower(unnest(avals(claims))),'[^a-z ]',' ','g'), ' '),'') from patents as p join assessments as a on (p.id=a.patent_id) join assessment_technologies as at on (a.id=at.assessment_id) join technologies as t on (at.technology_id=t.id) order by random() limit ? offset ?";
 
     public static SequenceIterator<VocabWord> PatentParagraphSamplingSequenceIterator(int numEpochs, int limit) throws SQLException {
         return new DatabaseSequenceIterator.Builder(ParagraphSampleTokensQuery,PatentDBUrl)
                 .addLabelIndex(1)
-                .addLabelArrayIndex(2) // classification vectors
-                .addLabelArrayIndex(3) // inventors
-                .addTextIndex(4)
+                .addLabelArrayIndex(2) // inventors
+                .addTextIndex(3)
                 .setParameterAsInt(1,limit)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)
