@@ -693,7 +693,7 @@ public class SimilarPatentServer {
                                 img().attr("style","display: block; margin-left: auto; margin-right: auto;")
                                         .attr("src", "/images/brand.png")
                         )
-                ),div().withClass("col 9").with(
+                ),div().withClass("col-9").with(
                         div().withClass("row").with(
                                 div().withClass("col-2").with(
                                         form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Previous Report","Previous..."))
@@ -712,6 +712,7 @@ public class SimilarPatentServer {
                                         )
                                 )
                         )
+                )
 
         );
     }
