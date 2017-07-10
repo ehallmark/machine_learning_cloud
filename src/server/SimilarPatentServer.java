@@ -72,6 +72,7 @@ public class SimilarPatentServer {
     public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
     public static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
+    public static final String DO_NOTHING_FILTER_ARRAY_FIELD = "doNothingFilters[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
@@ -84,6 +85,7 @@ public class SimilarPatentServer {
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngine similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
+    public static Map<String,AbstractFilter> doNothingFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
@@ -132,6 +134,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Minimum Remaining Life (Years)",Constants.REMAINING_LIFE_FILTER);
+            humanAttrToJavaAttrMap.put("Require Keywords", Constants.REQUIRE_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Patent Family", Constants.PATENT_FAMILY);
 
             // inverted version to get human readables back
@@ -175,8 +178,13 @@ public class SimilarPatentServer {
     }
 
     public static void loadFilterModels() {
-        if(preFilterModelMap.isEmpty()&&postFilterModelMap.isEmpty()) {
+        if(preFilterModelMap.isEmpty()&&postFilterModelMap.isEmpty()&&doNothingFilterModelMap.isEmpty()) {
             try {
+                // Do nothing filters
+                doNothingFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
+                doNothingFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
+                doNothingFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
+
                 // Pre filters
                 preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
@@ -186,8 +194,6 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
                 preFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
-                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER,new PatentSearchScopeFilter());
-                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
                 preFilterModelMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyFilter());
@@ -668,7 +674,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-bottom").with(
                                                         customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
                                                 ),div().withClass("col-6 form-right form-bottom").with(
-                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
                                                 )
                                         )
                                 ),div().with(

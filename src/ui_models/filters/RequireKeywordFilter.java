@@ -26,4 +26,6 @@ public class RequireKeywordFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item obj) {
         return true;
     }
+
+    public boolean isActive() { return false; }
 }
