@@ -14,10 +14,10 @@ public class IngestUSPTOData {
 
     public static void main(String[] args) {
         IngestUSPTOIterator patentIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, "data/patents/", Constants.GOOGLE_URL_CREATOR, Constants.USPTO_URL_CREATOR);
-        patentIterator.run();
+        //patentIterator.run();
 
         IngestUSPTOIterator appIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, "data/applications/", Constants.GOOGLE_APP_URL_CREATOR, Constants.USPTO_APP_URL_CREATOR);
-        appIterator.run();
+        //appIterator.run();
 
         IngestUSPTOAssignmentIterator assignmentIterator = new IngestUSPTOAssignmentIterator("data/assignments/");
         assignmentIterator.run();
