@@ -130,11 +130,18 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             keywordsToRequire=keywordsToRequire.toLowerCase();
             System.out.println("Handling keywords to require...");
             try {
+                Database.setupSeedConn();
                 firstFinder=firstFinder.duplicateWithScope(
                         SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(Arrays.stream(firstFinder.getItemList()).map(item -> item.getName()).collect(Collectors.toList()), portfolioType, keywordsToRequire))
                 );
             } catch(Exception e) {
                 e.printStackTrace();
+            } finally {
+                try {
+                    Database.seedConn.close();
+                } catch(Exception e) {
+                    System.out.println("Error closing seedConn.");
+                }
             }
         }
 
