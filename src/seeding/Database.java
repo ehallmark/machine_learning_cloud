@@ -622,7 +622,7 @@ public class Database {
 	}
 
 
-	public synchronized static Set<String> patentsWithKeywords(List<String> patents, PortfolioList.Type type, String keywords) throws SQLException {
+	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String keywords) throws SQLException {
 		int limit = 10000;
 		boolean searchFullDatabase = patents==null;
 		Set<String> validPatents = new HashSet<>();

@@ -131,9 +131,14 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             System.out.println("Handling keywords to require...");
             try {
                 Database.setupSeedConn();
-                firstFinder=firstFinder.duplicateWithScope(
-                        SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(Arrays.stream(firstFinder.getItemList()).map(item -> item.getName()).collect(Collectors.toList()), portfolioType, keywordsToRequire))
-                );
+                Item[] scope;
+                Collection<String> patents = null;
+                if(!searchEntireDatabase) {
+                    patents = Arrays.stream(firstFinder.getItemList()).map(item -> item.getName()).collect(Collectors.toList());
+                }
+                scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(patents, portfolioType, keywordsToRequire));
+                firstFinder=firstFinder.duplicateWithScope(scope);
+
             } catch(Exception e) {
                 e.printStackTrace();
             } finally {
