@@ -2,7 +2,7 @@ package user_interface.ui_models.portfolios.items;
 
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
-import user_interface.ui_models.attributes.value.ValueMapNormalizer;
+import models.value_models.ValueMapNormalizer;
 
 import java.util.*;
 import java.util.stream.Collectors;

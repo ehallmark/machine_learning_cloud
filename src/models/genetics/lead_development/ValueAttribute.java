@@ -1,6 +1,6 @@
 package models.genetics.lead_development;
 
-import user_interface.ui_models.attributes.value.ValueAttr;
+import models.value_models.ValueAttr;
 
 /**
  * Created by Evan on 2/25/2017.

@@ -10,7 +10,7 @@ import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
-import user_interface.ui_models.attributes.value.ValueMapNormalizer;
+import models.value_models.ValueMapNormalizer;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 

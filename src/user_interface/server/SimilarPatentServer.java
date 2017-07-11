@@ -27,7 +27,6 @@ import models.similarity_models.sim_rank.SimRankSimilarityModel;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import models.classification_models.ClassificationAttr;
 import models.classification_models.TechTaggerNormalizer;
-import user_interface.ui_models.attributes.value.*;
 import user_interface.ui_models.filters.*;
 import user_interface.ui_models.portfolios.items.Item;
 import spark.QueryParamsMap;

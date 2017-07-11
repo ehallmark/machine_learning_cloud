@@ -4,8 +4,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
-import user_interface.ui_models.attributes.value.PageRankEvaluator;
-import user_interface.ui_models.attributes.value.ValueAttr;
+import models.value_models.PageRankEvaluator;
+import models.value_models.ValueAttr;
 
 import java.util.ArrayList;
 import java.util.List;

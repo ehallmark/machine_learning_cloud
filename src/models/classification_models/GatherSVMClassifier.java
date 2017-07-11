@@ -11,11 +11,11 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.class_vectors.CPCSimilarityFinder;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
-import models.svm.SVMHelper;
-import models.svm.genetics.SVMSolution;
-import models.svm.genetics.SVMSolutionCreator;
-import models.svm.libsvm.svm_model;
-import models.svm.libsvm.svm_parameter;
+import models.classification_models.svm.SVMHelper;
+import models.classification_models.svm.genetics.SVMSolution;
+import models.classification_models.svm.genetics.SVMSolutionCreator;
+import models.classification_models.svm.libsvm.svm_model;
+import models.classification_models.svm.libsvm.svm_parameter;
 
 import java.io.File;
 import java.util.*;
