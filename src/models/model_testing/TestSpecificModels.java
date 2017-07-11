@@ -46,10 +46,6 @@ public class TestSpecificModels {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather Bayesian CPC Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr tagger = NaiveGatherClassifierWithWIPO.get();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
-                    testModel("Gather Bayesian CPC and WIPO Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == (testIdx++)) {
                     ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);
