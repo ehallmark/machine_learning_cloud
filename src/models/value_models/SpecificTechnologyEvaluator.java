@@ -2,6 +2,7 @@ package models.value_models;
 
 import org.deeplearning4j.berkeley.Pair;
 import models.classification_models.ClassificationAttr;
+import user_interface.ui_models.attributes.ValueAttr;
 
 import java.util.*;
 import java.util.stream.Collectors;

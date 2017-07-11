@@ -3,7 +3,7 @@ package user_interface.ui_models.engines;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
-import models.value_models.ValueAttr;
+import user_interface.ui_models.attributes.ValueAttr;
 import models.value_models.ValueMapNormalizer;
 import user_interface.ui_models.portfolios.PortfolioList;
 

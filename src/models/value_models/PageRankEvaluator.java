@@ -4,6 +4,7 @@ import models.graphical_models.page_rank.PageRank;
 import models.graphical_models.page_rank.PageRankHelper;
 import seeding.Database;
 import tools.DateHelper;
+import user_interface.ui_models.attributes.ValueAttr;
 
 import java.util.Arrays;
 import java.util.HashMap;

@@ -3,6 +3,7 @@ package models.value_models;
 import seeding.Constants;
 import seeding.Database;
 import tools.DateHelper;
+import user_interface.ui_models.attributes.ValueAttr;
 
 import java.io.File;
 import java.util.*;

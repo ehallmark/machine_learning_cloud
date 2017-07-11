@@ -4,6 +4,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import tools.DateHelper;
+import user_interface.ui_models.attributes.ValueAttr;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

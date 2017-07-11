@@ -1,12 +1,12 @@
-package models.value_models;
+package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
 import user_interface.ui_models.attributes.AbstractAttribute;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import models.value_models.*;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
