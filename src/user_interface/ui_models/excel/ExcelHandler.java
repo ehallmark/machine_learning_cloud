@@ -147,8 +147,8 @@ public class ExcelHandler {
         BufferedImage logoImage = ImageIO.read(logoFile);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(logoImage, "PNG", baos);
-        WritableImage img = new WritableImage(1.0,0.3,25.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
-                new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
+        WritableImage img = new WritableImage(1.0,0.3,30.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
+                1.2 * new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
         sheet.addImage(img);
 
         // Create the label, specifying content and format
