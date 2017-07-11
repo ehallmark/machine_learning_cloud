@@ -365,7 +365,7 @@ public class Database {
 		String query = "INSERT INTO patents_and_applications (pub_doc_number,doc_type,tokens) VALUES (?,?,to_tsvector('english', ";
 		for(int i = 0; i < documents.size(); i++) {
 			query += "coalesce(?,' ')";
-			if(i!=documents.size()-1) query += " || ";
+			if(i!=documents.size()-1) query += " || ' ' || ";
 		}
 		query+= ")) ON CONFLICT DO NOTHING";
 		PreparedStatement ps = conn.prepareStatement(query);
