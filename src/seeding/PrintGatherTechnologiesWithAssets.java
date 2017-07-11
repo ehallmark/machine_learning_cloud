@@ -1,10 +1,9 @@
 package seeding;
 
-import model_testing.SplitModelData;
+import models.model_testing.SplitModelData;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**

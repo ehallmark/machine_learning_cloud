@@ -1,7 +1,7 @@
 package client_projects;
 
 import seeding.Database;
-import ui_models.portfolios.attributes.RemainingLifeAttribute;
+import user_interface.ui_models.portfolios.attributes.RemainingLifeAttribute;
 
 import java.io.BufferedReader;
 import java.io.File;

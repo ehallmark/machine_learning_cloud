@@ -183,11 +183,11 @@ public class PCA_Analysis{
             }
         }
 
-        // Perform similarity_models.analysis
+        // Perform models.similarity_models.analysis
         pca.analysis(outputName);
 
         message = "Input File Name = '" + inputName + "'\n\n";
-        message += "The similarity_models.analysis has been written to the output file '" + outputName + "'\n\n";
+        message += "The models.similarity_models.analysis has been written to the output file '" + outputName + "'\n\n";
         message += "Do you wish to close the scree plot?\n\n";
         message += "If you answer NO the program must then be terminated later by clicking on the\nclose icon (white cross on red background in the top right hand corner) on any of the plots\n";
 

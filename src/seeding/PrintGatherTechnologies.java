@@ -1,11 +1,7 @@
 package seeding;
 
-import model_testing.SplitModelData;
-import seeding.Constants;
-import seeding.Database;
+import models.model_testing.SplitModelData;
 
-import java.io.File;
-import java.sql.SQLException;
 import java.util.*;
 
 /**

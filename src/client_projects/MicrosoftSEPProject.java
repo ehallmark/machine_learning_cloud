@@ -1,8 +1,8 @@
 package client_projects;
 
 import seeding.patent_view_api.PatentAPIHandler;
-import dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
-import dl4j_neural_nets.iterators.sequences.DatabaseTextIterator;
+import models.dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
+import models.dl4j_neural_nets.iterators.sequences.DatabaseTextIterator;
 
 import java.io.*;
 import java.sql.SQLException;

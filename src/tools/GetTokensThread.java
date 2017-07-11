@@ -1,6 +1,6 @@
 package tools;
 
-import dl4j_neural_nets.tools.PhrasePreprocessor;
+import models.dl4j_neural_nets.tools.PhrasePreprocessor;
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 
 import java.util.List;
