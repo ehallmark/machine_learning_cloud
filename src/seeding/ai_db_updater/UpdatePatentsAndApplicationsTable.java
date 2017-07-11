@@ -11,11 +11,11 @@ import user_interface.ui_models.portfolios.PortfolioList;
  */
 public class UpdatePatentsAndApplicationsTable {
     public static void main(String[] args) throws Exception {
-        PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
-        patentIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.patents));
+        //PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
+        //patentIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.patents));
 
         PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
-        //applicationIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.applications));
+        applicationIterator.applyHandlers(new SAXFullTextHandler(PortfolioList.Type.applications));
     }
 
 }
