@@ -33,9 +33,7 @@ public class Database {
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
 	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
-	@Getter
 	private static Set<String> expiredPatentSet;
-	@Getter
 	private static Set<String> lapsedPatentSet;
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
@@ -499,8 +497,6 @@ public class Database {
 		// gather value
 		gatherValueMap = (Map<String, Boolean>) Database.tryLoadObject(gatherValueMapFile);
 
-		expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
-		lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
@@ -601,6 +597,16 @@ public class Database {
 			seedConn = DriverManager.getConnection(patentDBUrl);
 			seedConn.setAutoCommit(false);
 		}
+	}
+
+	public synchronized static Set<String> getLapsedPatentSet() {
+		if(lapsedPatentSet==null) lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
+		return lapsedPatentSet;
+	}
+
+	public synchronized static Set<String> getExpiredPatentSet() {
+		if(expiredPatentSet==null) expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
+		return expiredPatentSet;
 	}
 
 	public synchronized static void setupCompDBConn() throws SQLException {
@@ -1096,13 +1102,12 @@ public class Database {
 		});
 		trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
 
-
 		System.out.println("Starting to build valuable patents...");
 		Set<String> allPatents = new HashSet<>();
 		allPatents.addAll(getPatentToInventionTitleMap().keySet());
 		allPatents.addAll(getPatentToPubDateMap().keySet());
 		allPatents.addAll(getPatentToOriginalAssigneeMap().keySet());
-		valuablePatents=allPatents.stream().filter(patent -> !(expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent))).collect(Collectors.toSet());
+		valuablePatents=allPatents.stream().filter(patent -> !(getExpiredPatentSet().contains(patent)||getLapsedPatentSet().contains(patent))).collect(Collectors.toSet());
 		trySaveObject(valuablePatents,valuablePatentsFile);
 	}
 
