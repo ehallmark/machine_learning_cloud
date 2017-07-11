@@ -14,7 +14,6 @@ import java.util.*;
  * Created by Evan on 6/8/2017.
  */
 public abstract class AbstractClassSimilarityFinder {
-
     public static void trainAndSave(Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
         ClassVectorizer vectorizer = new ClassVectorizer(dataMap);
         List<String> orderedClassifications = vectorizer.getClassifications(Database.getCopyOfAllPatents(),classDepth,true);
@@ -46,6 +45,7 @@ public abstract class AbstractClassSimilarityFinder {
             data.add(new Pair<>(names,Nd4j.vstack(list)));
             System.out.println("i: "+i);
         }
+
         // Done batching
         System.out.println("Adding to map");
         data.parallelStream().forEach(pair->{

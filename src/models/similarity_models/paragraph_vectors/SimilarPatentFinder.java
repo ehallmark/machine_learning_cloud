@@ -37,8 +37,6 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
             }
         } catch(Exception e) {
             e.printStackTrace();
-            //paragraphVectors = ParagraphVectorModel.loadAllClaimsModel();
-            System.out.println("DEFAULTING TO OLDER MODEL");
         }
     }
 
@@ -54,19 +52,15 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
     }
     public static void main(String[] args) {
         WeightLookupTable<VocabWord> lookupTable = getWeightLookupTable();
-
-        Map<String,INDArray> toSave = new HashMap<>();
-
-        Database.getCopyOfAllPatents().forEach(patent->{
+        Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
+        Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
             INDArray vec = lookupTable.vector(patent);
             if(vec!=null) toSave.put(patent,vec);
         });
-
-        Database.getAssignees().forEach(assignee->{
+        Database.getAssignees().parallelStream().forEach(assignee->{
             INDArray vec = lookupTable.vector(assignee);
             if(vec!=null) toSave.put(assignee,vec);
         });
-
         Database.trySaveObject(toSave,file);
     }
 }
