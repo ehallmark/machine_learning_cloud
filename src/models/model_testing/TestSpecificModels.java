@@ -1,6 +1,6 @@
 package models.model_testing;
 
-import user_interface.ui_models.attributes.classification.*;
+import models.classification_models.*;
 import seeding.Database;
 
 import java.util.*;
@@ -16,6 +16,7 @@ public class TestSpecificModels {
         Database.initializeDatabase();
         int numPredictions = 5;
         Map<String,Collection<String>> testData = SplitModelData.getBroadDataMap(SplitModelData.testFile);
+        if(args.length==0) args = new String[]{"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"};
         for(String arg : args) {
             for(int i = 1; i <= numPredictions; i+=2) {
                 int testIdx=0;

@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.classification.broad_technology;
+package models.classification_models.broad_technology;
 
 import models.genetics.Listener;
 import models.genetics.Solution;

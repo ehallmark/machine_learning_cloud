@@ -1,6 +1,5 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
-import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import user_interface.ui_models.portfolios.attributes.WIPOClassificationAttribute;

@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
 import j2html.tags.Tag;
 import model.functions.normalization.DivideByPartition;

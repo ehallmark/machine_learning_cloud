@@ -1,5 +1,6 @@
 package models.similarity_models.class_vectors;
 
+import models.graphical_models.classification.CPCKMeans;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.BaseSimilarityModel;
@@ -38,7 +39,7 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
     public static void main(String[] args) throws IOException {
         Database.initializeDatabase();
 
-        int classDepth = 6;
+        int classDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
         Map<String,Set<String>> dataMap = Database.getPatentToClassificationMap();
 
         AbstractClassSimilarityFinder.trainAndSave(dataMap,classDepth,rawFile);

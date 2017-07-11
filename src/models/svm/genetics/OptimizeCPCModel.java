@@ -1,6 +1,6 @@
 package models.svm.genetics;
 
-import user_interface.ui_models.attributes.classification.GatherSVMClassifier;
+import models.classification_models.GatherSVMClassifier;
 
 /**
  * Created by Evan on 6/8/2017.

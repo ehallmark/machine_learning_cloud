@@ -14,7 +14,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 5/31/17.
  */
 public class CPCKMeans {
-    public static final int DEFAULT_CPC_DEPTH = 5;
+    public static final int DEFAULT_CPC_DEPTH = 6;
     public static void main(String[] args) {
         Database.initializeDatabase();
         Map<String,Collection<String>> specificData = SplitModelData.getRawDataMap(SplitModelData.trainFile);
@@ -59,7 +59,6 @@ public class CPCKMeans {
         }
 
         GatherClassificationOptimizer.writeToCSV(newTechMap,new File("data/ai_grouped_gather_technologies.csv"));
-
     }
 
     public static double[] classVectorForPatents(Collection<String> patents, List<String> classifications, int cpcDepth) {

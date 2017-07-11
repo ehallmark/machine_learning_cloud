@@ -1,6 +1,6 @@
 package models.model_testing;
 
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.util.Arrays;
 import java.util.Collection;

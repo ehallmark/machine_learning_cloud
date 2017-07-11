@@ -1,6 +1,5 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
-import models.classification_models.WIPOHelper;
 import model.functions.normalization.DivideByPartition;
 import model.graphs.BayesianNet;
 import model.learning.algorithms.BayesianLearningAlgorithm;

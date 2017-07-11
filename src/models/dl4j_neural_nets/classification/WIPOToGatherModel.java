@@ -20,7 +20,7 @@ import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.ops.transforms.Transforms;
 import models.similarity_models.class_vectors.WIPOSimilarityFinder;
 import models.similarity_models.class_vectors.vectorizer.ClassVectorizer;
-import user_interface.ui_models.attributes.classification.NaiveGatherClassifier;
+import models.classification_models.NaiveGatherClassifier;
 
 import java.io.File;
 import java.util.*;

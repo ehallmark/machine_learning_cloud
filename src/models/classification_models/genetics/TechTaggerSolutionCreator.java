@@ -1,7 +1,7 @@
-package user_interface.ui_models.attributes.classification.genetics;
+package models.classification_models.genetics;
 
 import models.genetics.SolutionCreator;
-import user_interface.ui_models.attributes.classification.*;
+import models.classification_models.*;
 
 import java.util.*;
 

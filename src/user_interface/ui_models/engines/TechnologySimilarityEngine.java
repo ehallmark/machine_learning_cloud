@@ -4,7 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
-import user_interface.ui_models.attributes.classification.SimilarityGatherTechTagger;
+import models.classification_models.SimilarityGatherTechTagger;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;

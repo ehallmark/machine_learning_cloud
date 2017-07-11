@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
 import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;
@@ -9,8 +9,8 @@ import seeding.Database;
 import models.similarity_models.paragraph_vectors.WordFrequencyPair;
 import org.deeplearning4j.berkeley.Pair;
 import tools.MinHeap;
-import user_interface.ui_models.attributes.classification.genetics.TechTaggerSolution;
-import user_interface.ui_models.attributes.classification.genetics.TechTaggerSolutionCreator;
+import models.classification_models.genetics.TechTaggerSolution;
+import models.classification_models.genetics.TechTaggerSolutionCreator;
 
 import java.io.File;
 import java.util.*;

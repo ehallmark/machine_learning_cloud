@@ -1,11 +1,11 @@
-package user_interface.ui_models.attributes.classification.broad_technology;
+package models.classification_models.broad_technology;
 
 import models.genetics.Solution;
 import lombok.Getter;
 import models.model_testing.GatherClassificationOptimizer;
 import models.model_testing.GatherTechnologyScorer;
 import models.model_testing.SplitModelData;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.util.*;
 import java.util.stream.Collectors;

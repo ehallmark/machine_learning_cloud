@@ -6,9 +6,9 @@ import seeding.Database;
 import user_interface.server.tools.SimpleAjaxMessage;
 import spark.Request;
 import spark.Response;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
-import user_interface.ui_models.attributes.classification.TechTaggerNormalizer;
-import user_interface.ui_models.attributes.classification.WIPOTechnologyClassifier;
+import models.classification_models.ClassificationAttr;
+import models.classification_models.TechTaggerNormalizer;
+import models.classification_models.WIPOTechnologyClassifier;
 
 import java.util.*;
 import java.util.stream.Collectors;

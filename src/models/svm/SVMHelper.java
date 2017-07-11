@@ -3,7 +3,7 @@ package models.svm;
 import models.graphical_models.classification.CPCKMeans;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
-import user_interface.ui_models.attributes.classification.NaiveGatherClassifier;
+import models.classification_models.NaiveGatherClassifier;
 import org.deeplearning4j.berkeley.Pair;
 import models.svm.libsvm.*;
 

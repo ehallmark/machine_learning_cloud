@@ -3,7 +3,7 @@ package user_interface.ui_models.portfolios.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
 import models.genetics.GeneticAlgorithm;
 import models.genetics.Listener;

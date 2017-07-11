@@ -7,7 +7,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 import lombok.Getter;
 import net.lingala.zip4j.core.ZipFile;
 import tools.AssigneeTrimmer;
-import user_interface.ui_models.attributes.classification.TechTaggerNormalizer;
+import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.io.*;

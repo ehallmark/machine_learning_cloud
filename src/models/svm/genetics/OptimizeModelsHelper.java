@@ -6,7 +6,7 @@ import models.genetics.SolutionCreator;
 import models.model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
 import models.svm.SVMHelper;
-import user_interface.ui_models.attributes.classification.GatherSVMClassifier;
+import models.classification_models.GatherSVMClassifier;
 
 import java.util.Collection;
 import java.util.Map;

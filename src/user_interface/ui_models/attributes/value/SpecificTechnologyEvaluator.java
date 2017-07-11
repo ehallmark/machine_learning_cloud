@@ -1,7 +1,7 @@
 package user_interface.ui_models.attributes.value;
 
 import org.deeplearning4j.berkeley.Pair;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.util.*;
 import java.util.stream.Collectors;

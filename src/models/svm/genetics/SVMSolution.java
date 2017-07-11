@@ -5,11 +5,11 @@ import lombok.Getter;
 import models.model_testing.GatherTechnologyScorer;
 import org.deeplearning4j.berkeley.Pair;
 import org.nd4j.linalg.api.ndarray.INDArray;
-import user_interface.ui_models.attributes.classification.GatherSVMClassifier;
+import models.classification_models.GatherSVMClassifier;
 import models.svm.SVMHelper;
 import models.svm.libsvm.svm_parameter;
 import models.svm.libsvm.svm_model;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.io.File;
 import java.util.Collection;

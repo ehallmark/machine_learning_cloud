@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.classification;
+package models.classification_models;
 
 import org.deeplearning4j.berkeley.Pair;
 import user_interface.ui_models.attributes.AbstractAttribute;

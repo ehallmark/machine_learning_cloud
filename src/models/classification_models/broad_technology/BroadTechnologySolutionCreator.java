@@ -1,8 +1,8 @@
-package user_interface.ui_models.attributes.classification.broad_technology;
+package models.classification_models.broad_technology;
 
 import models.genetics.SolutionCreator;
 import models.model_testing.GatherClassificationOptimizer;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
+import models.classification_models.ClassificationAttr;
 
 import java.util.*;
 

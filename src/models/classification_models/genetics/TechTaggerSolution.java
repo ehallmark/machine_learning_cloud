@@ -1,10 +1,10 @@
-package user_interface.ui_models.attributes.classification.genetics;
+package models.classification_models.genetics;
 
 import models.genetics.Solution;
 import lombok.Getter;
 import models.model_testing.GatherTechnologyScorer;
-import user_interface.ui_models.attributes.classification.ClassificationAttr;
-import user_interface.ui_models.attributes.classification.TechTaggerNormalizer;
+import models.classification_models.ClassificationAttr;
+import models.classification_models.TechTaggerNormalizer;
 
 import java.util.*;
 
