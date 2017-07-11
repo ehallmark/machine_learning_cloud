@@ -497,6 +497,8 @@ public class Database {
 		// gather value
 		gatherValueMap = (Map<String, Boolean>) Database.tryLoadObject(gatherValueMapFile);
 
+		getExpiredPatentSet();
+		getLapsedPatentSet();
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
