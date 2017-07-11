@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import seeding.Constants;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
 import seeding.ai_db_updater.handlers.SAXHandler;
 
@@ -9,8 +10,11 @@ import seeding.ai_db_updater.handlers.SAXHandler;
  */
 public class UpdateParagraphTokensTable {
     public static void main(String[] args) throws Exception {
-        PatentGrantIterator iterator = seeding.Constants.DEFAULT_PATENT_GRANT_ITERATOR;
-        iterator.applyHandlers(new SAXHandler());
+        PatentGrantIterator patentIterator = seeding.Constants.DEFAULT_PATENT_GRANT_ITERATOR;
+        patentIterator.applyHandlers(new SAXHandler());
+
+        PatentGrantIterator appIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
+        appIterator.applyHandlers(new SAXHandler());
     }
 
 }
