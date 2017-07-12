@@ -45,6 +45,7 @@ public class RelatedAssetsGraph implements Serializable {
         AtomicInteger index = new AtomicInteger(0);
         Database.getAllPatentsAndApplications().forEach(asset->{
             if(!assetToIndexMap.containsKey(asset)) {
+                System.out.println("Node: "+asset);
                 Node node = graph.findNode(asset);
                 Set<String> set = new HashSet<>();
                 if (node != null) {
@@ -53,7 +54,7 @@ public class RelatedAssetsGraph implements Serializable {
                     });
                     set.addAll(node.getNeighbors().stream().map(n->n.getLabel()).collect(Collectors.toList()));
                 }
-                set.add(node.getLabel());
+                set.add(asset);
                 assetToIndexMap.put(asset,index.get());
                 indexToAssetsMap.put(index.get(),set);
                 index.getAndIncrement();

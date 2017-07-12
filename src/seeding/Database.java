@@ -96,8 +96,6 @@ public class Database {
 
 
 	private static Connection conn;
-	private static String CPC_ZIP_FILE_NAME = "patent_grant_classifications.zip";
-	private static String CPC_DESTINATION_FILE_NAME = "patent_grant_classifications_folder";
 	public static File patentToReferencedByMapFile = new File("patent_to_referenced_by_map.jobj");
 	public static File patentToAppDateMapFile = new File("patent_to_appdate_map_file.jobj");
 	public static File patentToRelatedDocMapFile = new File("patent_to_related_docs_map_file.jobj");
@@ -370,6 +368,13 @@ public class Database {
 		getPatentToLatestAssigneeMap();
 		getPatentToOriginalAssigneeMap();
 		getCopyOfAllPatents();
+		getCopyOfAllApplications();
+		getLapsedAppSet();
+		getAppToClassificationMap();
+		getAppToOriginalAssigneeMap();
+		getAppToInventionTitleMap();
+		getAppToPriorityDateMap();
+		getAppToPubDateMap();
 		getLapsedPatentSet();
 		getExpiredPatentSet();
 		getJapaneseCompanies();
