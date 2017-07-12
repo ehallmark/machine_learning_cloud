@@ -146,7 +146,7 @@ public class CitationSAXHandler extends CustomHandler{
         Database.saveObject(patentToAppDateMap,Database.patentToAppDateMapFile);
         Database.saveObject(patentToPubDateMap,Database.patentToPubDateMapFile);
         Database.saveObject(patentToPriorityDateMap,Database.patentToPriorityDateMapFile);
-        Database.saveObject(lapsedPatentsSet,Database.lapsedPatentsSetFile);
+        Database.saveObject(lapsedPatentsSet,Database.lapsedPatentSetFile);
     }
 
     public void startElement(String uri,String localName,String qName,

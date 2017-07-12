@@ -10,16 +10,16 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by Evan on 7/9/2017.
  */
-public class RequireKeywordFilter extends AbstractFilter {
+public class ExcludeKeywordFilter extends AbstractFilter {
     @Override
     public String getName() {
-        return Constants.REQUIRE_KEYWORD_FILTER;
+        return Constants.EXCLUDE_KEYWORD_FILTER;
     }
 
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","Enter keywords to require").withName(Constants.REQUIRE_KEYWORD_FILTER)
+                textarea().withClass("form-control").attr("placeholder","Enter keywords to exclude").withName(Constants.EXCLUDE_KEYWORD_FILTER)
         );
     }
     @Override

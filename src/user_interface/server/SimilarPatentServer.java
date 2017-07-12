@@ -134,6 +134,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Minimum Remaining Life (Years)",Constants.REMAINING_LIFE_FILTER);
             humanAttrToJavaAttrMap.put("Require Keywords", Constants.REQUIRE_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Patent Family", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Exclude Keywords", Constants.EXCLUDE_KEYWORD_FILTER);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -181,6 +182,7 @@ public class SimilarPatentServer {
             try {
                 // Do nothing filters
                 doNothingFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
+                doNothingFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
                 doNothingFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
                 doNothingFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
 

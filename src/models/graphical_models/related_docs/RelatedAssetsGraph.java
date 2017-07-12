@@ -7,6 +7,7 @@ import seeding.Database;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,9 @@ import java.util.stream.Collectors;
  */
 public class RelatedAssetsGraph implements Serializable {
     private static RelatedAssetsGraph SELF;
-    private static final File FILE = new File("data/related_assets_graph.jobj");
+    private static final File graphFile = new File("data/related_assets_graph.jobj");
+    private Map<Integer,Collection<String>> indexToAssetsMap;
+    private Map<String,Integer> assetToIndexMap;
     private Graph graph;
 
     private RelatedAssetsGraph() {}
@@ -36,23 +39,55 @@ public class RelatedAssetsGraph implements Serializable {
             });
             if(cnt.getAndIncrement()%10000==0) System.out.println("Adding node: "+cnt.get());
         });
+        // construct maps
+        assetToIndexMap = new HashMap<>();
+        indexToAssetsMap = new HashMap<>();
+        AtomicInteger index = new AtomicInteger(0);
+        Database.getAllPatentsAndApplications().forEach(asset->{
+            if(!assetToIndexMap.containsKey(asset)) {
+                Node node = graph.findNode(asset);
+                Set<String> set = new HashSet<>();
+                if (node != null) {
+                    node.getNeighbors().forEach(n->{
+                        assetToIndexMap.put(n.getLabel(), index.get());
+                    });
+                    set.addAll(node.getNeighbors().stream().map(n->n.getLabel()).collect(Collectors.toList()));
+                }
+                set.add(node.getLabel());
+                assetToIndexMap.put(asset,index.get());
+                indexToAssetsMap.put(index.get(),set);
+                index.getAndIncrement();
+            }
+        });
     }
 
 
     public static RelatedAssetsGraph get() {
         if(SELF==null) {
-            if(FILE.exists()) {
-                SELF = (RelatedAssetsGraph) Database.tryLoadObject(FILE);
-            } else {
-                SELF = new RelatedAssetsGraph();
-                SELF.init();
-                Database.trySaveObject(SELF,FILE);
-            }
+            SELF = (RelatedAssetsGraph) Database.tryLoadObject(graphFile);
         }
         return SELF;
     }
 
+    public Collection<String> assetsFromIndex(int idx) {
+        if(indexToAssetsMap.containsKey(idx)) {
+            return new ArrayList<>(indexToAssetsMap.get(idx));
+        }
+        return Collections.emptyList();
+    }
+
+    public int indexForAsset(String asset) {
+        if(assetToIndexMap.containsKey(asset)) {
+            return assetToIndexMap.get(asset);
+        }
+        return -1;
+    }
+
+
+
     public static void main(String[] args) {
-        get();
+        SELF = new RelatedAssetsGraph();
+        SELF.init();
+        Database.trySaveObject(SELF,graphFile);
     }
 }

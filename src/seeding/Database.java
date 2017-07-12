@@ -24,7 +24,9 @@ import java.util.stream.Collectors;
 
 public class Database {
 	private static Map<String,Set<String>> patentToClassificationMap;
+	private static Map<String,List<String>> appToOriginalAssigneeMap;
 	private static Map<String,List<String>> patentToOriginalAssigneeMap;
+	private static Map<String,String> appToInventionTitleMap;
 	private static Map<String,String> patentToInventionTitleMap;
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
@@ -35,8 +37,11 @@ public class Database {
 	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
 	private static Set<String> expiredPatentSet;
 	private static Set<String> lapsedPatentSet;
+	private static Set<String> expiredAppSet;
+	private static Set<String> lapsedAppSet;
 	private static Set<String> allAssignees;
 	private static Set<String> valuablePatents;
+	private static Set<String> valuableApps;
 	private static Set<String> allClassCodes;
 	private static Set<String> smallEntityPatents;
 	private static Set<String> largeEntityPatents;
@@ -50,6 +55,8 @@ public class Database {
 	private static Map<String,Set<String>> classCodeToPatentMap;
 	private static Map<String,LocalDate> patentToPubDateMap;
 	public static Map<String,LocalDate> patentToPriorityDateMap;
+	private static Map<String,LocalDate> appToPubDateMap;
+	public static Map<String,LocalDate> appToPriorityDateMap;
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static final File patentToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_priority_date_map.jobj");
 	public static final File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
@@ -57,11 +64,15 @@ public class Database {
 	public static final File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
 	private static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
 	public static final File patentToOriginalAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_original_assignee_map.jobj");
+	private static File assigneeToAppsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_apps_map.jobj");
+	private static File expiredAppSetFile = new File(Constants.DATA_FOLDER+"expired_apps_set.jobj");
 	private static File assigneeToPatentsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_patents_map.jobj");
-	private static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
-	private static File lapsedPatentSetFile = new File(Constants.DATA_FOLDER+"lapsed_patents_set.jobj");
+	private static File lapsedAppSetFile = new File(Constants.DATA_FOLDER+"lapsed_apps_set.jobj");
+	public static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
+	public static File lapsedPatentSetFile = new File(Constants.DATA_FOLDER+"lapsed_patents_set.jobj");
 	private static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	private static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
+	private static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
 	private static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static File patentToRelatedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
@@ -91,8 +102,6 @@ public class Database {
 	public static File patentToRelatedDocMapFile = new File("patent_to_related_docs_map_file.jobj");
 	public static File pubDateToPatentMapFile = new File("pubdate_to_patent_map.jobj");
 	public static File patentToCitedPatentsMapFile = new File("patent_to_cited_patents_map.jobj");
-	public static File lapsedPatentsSetFile = new File("lapsed_patents_set.jobj");
-	public static File expiredAppsSetFile = new File("expired_apps_set.jobj");
 	public static File appToClassificationMapFile = new File("app_to_classification_map.jobj");
 	public static File appToInventionTitleMapFile = new File("app_to_invention_title_map.jobj");
 	public static File appToOriginalAssigneeMapFile = new File("app_to_original_assignee_map.jobj");
@@ -155,6 +164,12 @@ public class Database {
 			oos.flush();
 			oos.close();
 		}
+	}
+
+	public static Collection<String> getAllPatentsAndApplications() {
+		Collection<String> all = getCopyOfAllPatents();
+		all.addAll(getCopyOfAllApplications());
+		return all;
 	}
 
 	public static void loadAndIngestMaintenanceFeeData() throws Exception {
@@ -573,11 +588,26 @@ public class Database {
 	}
 
 
+	public synchronized static Map<String,LocalDate> getAppToPubDateMap() {
+		if(appToPubDateMap==null) {
+			appToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(appToPubDateMapFile));
+		}
+		return appToPubDateMap;
+	}
+
+
 	public synchronized static Map<String,LocalDate> getPatentToPriorityDateMap() {
 		if(patentToPriorityDateMap==null) {
 			patentToPriorityDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(patentToPriorityDateMapFile));
 		}
 		return patentToPriorityDateMap;
+	}
+
+	public synchronized static Map<String,LocalDate> getAppToPriorityDateMap() {
+		if(appToPriorityDateMap==null) {
+			appToPriorityDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(appToPriorityDateMapFile));
+		}
+		return appToPriorityDateMap;
 	}
 
 	public synchronized static Map<String,List<String>> getPatentToOriginalAssigneeMap() {
@@ -587,11 +617,25 @@ public class Database {
 		return patentToOriginalAssigneeMap;
 	}
 
+	public synchronized static Map<String,List<String>> getAppToOriginalAssigneeMap() {
+		if(appToOriginalAssigneeMap==null) {
+			appToOriginalAssigneeMap = Collections.unmodifiableMap((Map<String,List<String>>)tryLoadObject(appToOriginalAssigneeMapFile));
+		}
+		return appToOriginalAssigneeMap;
+	}
+
 	public synchronized static Map<String,String> getPatentToInventionTitleMap() {
 		if(patentToInventionTitleMap==null) {
 			patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
 		}
 		return patentToInventionTitleMap;
+	}
+
+	public synchronized static Map<String,String> getAppToInventionTitleMap() {
+		if(appToInventionTitleMap==null) {
+			appToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(appToInventionTitleMapFile));
+		}
+		return appToInventionTitleMap;
 	}
 
 	public synchronized static void setupSeedConn() throws SQLException {
@@ -606,9 +650,20 @@ public class Database {
 		return lapsedPatentSet;
 	}
 
+	public synchronized static Set<String> getLapsedAppSet() {
+		if(lapsedAppSet==null) lapsedAppSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedAppSetFile));
+		return lapsedAppSet;
+	}
+
+
 	public synchronized static Set<String> getExpiredPatentSet() {
 		if(expiredPatentSet==null) expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		return expiredPatentSet;
+	}
+
+	public synchronized static Set<String> getExpiredAppSet() {
+		if(expiredAppSet==null) expiredAppSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredAppSetFile));
+		return expiredAppSet;
 	}
 
 	public synchronized static void setupCompDBConn() throws SQLException {
@@ -751,6 +806,16 @@ public class Database {
 		return everything;
 	}
 
+
+	public static Collection<String> getCopyOfAllApplications() {
+		if(valuableApps==null||lapsedAppSet==null||expiredAppSet==null) initializeDatabase();
+		Set<String> everything = new HashSet<>(valuableApps.size()+lapsedAppSet.size()+expiredAppSet.size());
+		everything.addAll(valuableApps);
+		everything.addAll(lapsedAppSet);
+		everything.addAll(expiredAppSet);
+		return everything;
+	}
+
 	public synchronized static Set<String> classificationsFor(String patent) {
 		Set<String> classifications = new HashSet<>();
 		if(getPatentToClassificationMap().containsKey(patent)) {
@@ -881,23 +946,30 @@ public class Database {
 	}
 
 
-	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String keywords) throws SQLException {
+	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String keywordsToInclude, String keywordsToExclude) throws SQLException {
 		int limit = 10000;
 		boolean searchFullDatabase = patents==null;
 		Set<String> validPatents = new HashSet<>();
 		PreparedStatement ps;
+		String keywordQuery = "(char_length(?)=0 or tokens @@ plainto_tsquery('english',?)) and (char_length(?)=0 or tokens @@ !!plainto_tsquery('english',?))";
 		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE doc_type=? and "+keywordQuery+" limit "+limit);
 			ps.setString(1, type.toString());
-			ps.setString(2,keywords);
+			ps.setString(2,keywordsToInclude);
+			ps.setString(3,keywordsToInclude);
+			ps.setString(4,keywordsToExclude);
+			ps.setString(5,keywordsToExclude);
 		}
 		else {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and tokens @@ plainto_tsquery('english',?) limit "+ limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and "+keywordQuery+" limit "+ limit);
 			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
 			ps.setString(2, type.toString());
-			ps.setString(3,keywords);
+			ps.setString(3,keywordsToInclude);
+			ps.setString(4,keywordsToInclude);
+			ps.setString(5,keywordsToExclude);
+			ps.setString(6,keywordsToExclude);
 		}
-		ps.setFetchSize(10);
+		ps.setFetchSize(100);
 
 		ResultSet rs = ps.executeQuery();
 		while(rs.next()) {
@@ -1111,6 +1183,14 @@ public class Database {
 		allPatents.addAll(getPatentToOriginalAssigneeMap().keySet());
 		valuablePatents=allPatents.stream().filter(patent -> !(getExpiredPatentSet().contains(patent)||getLapsedPatentSet().contains(patent))).collect(Collectors.toSet());
 		trySaveObject(valuablePatents,valuablePatentsFile);
+
+
+		Set<String> allApplications = new HashSet<>();
+		allApplications.addAll(getAppToInventionTitleMap().keySet());
+		allApplications.addAll(getAppToPubDateMap().keySet());
+		allApplications.addAll(getAppToOriginalAssigneeMap().keySet());
+		valuableApps=allApplications.stream().filter(patent -> !(getExpiredAppSet().contains(patent)||getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
+		trySaveObject(valuableApps,valuableAppsFile);
 	}
 
 }
