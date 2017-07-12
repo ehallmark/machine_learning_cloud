@@ -14,10 +14,10 @@ public class SimRankHelper {
 
     // run sim rank algorithm
     public static void main(String[] args) {
-        Map<String,Set<String>> patentToCitedPatentsMap = new HashMap<>(SimRankSimilarityModel.getPatentToCitedPatentsMap());
-        patentToCitedPatentsMap.putAll(SimRankSimilarityModel.getAppToCitedPatentsMap());
+        Map<String,Set<String>> citedPatentsMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
+        citedPatentsMap.putAll(Database.getAppToCitedPatentsMap());
 
-        SimRank algorithm = new SimRank(patentToCitedPatentsMap, new ArrayList<>(patentToCitedPatentsMap.keySet()),0.75);
+        SimRank algorithm = new SimRank(citedPatentsMap, new ArrayList<>(citedPatentsMap.keySet()),0.75);
         int numEpochs = 50;
         for(int i = 0; i < numEpochs; i++) {
             long t1 = System.currentTimeMillis();
@@ -25,10 +25,10 @@ public class SimRankHelper {
             long t2 = System.currentTimeMillis();
             System.out.println("Time to complete EPOCH "+i+": "+(t2-t1)/1000+" seconds");
             if(i%5==4) {
-                saveRankTable(new File(similarityMapFile.getAbsolutePath()+"-epoch-"+i),patentToCitedPatentsMap,algorithm);
+                saveRankTable(new File(similarityMapFile.getAbsolutePath()+"-epoch-"+i),citedPatentsMap,algorithm);
             }
         }
-        saveRankTable(similarityMapFile,patentToCitedPatentsMap,algorithm);
+        saveRankTable(similarityMapFile,citedPatentsMap,algorithm);
     }
 
 

@@ -32,7 +32,9 @@ public class RelatedAssetsGraph implements Serializable {
     public void init() {
         graph = new MarkovNet();
         AtomicInteger cnt = new AtomicInteger(0);
-        Database.getPatentToRelatedPatentsMap().forEach((asset,related)->{
+        Map<String,Collection<String>> combinedMap = new HashMap<>(Database.getPatentToRelatedPatentsMap());
+        combinedMap.putAll(Database.getAppToRelatedPatentsMap());
+        combinedMap.forEach((asset,related)->{
             Node n = graph.addNode(asset,1);
             related.forEach(rel->{
                 graph.connectNodes(n, graph.addNode(rel,1));
@@ -83,7 +85,6 @@ public class RelatedAssetsGraph implements Serializable {
         }
         return -1;
     }
-
 
 
     public static void main(String[] args) {

@@ -1,8 +1,10 @@
 package models.graphical_models.page_rank;
 
 import models.similarity_models.sim_rank.SimRankSimilarityModel;
+import seeding.Database;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,8 +17,10 @@ public class PageRankHelper {
     // run sim rank algorithm
     public static void main(String[] args) {
         long t1 = System.currentTimeMillis();
-        Map<String,Set<String>> patentToCitedPatentsMap = SimRankSimilarityModel.getPatentToCitedPatentsMap();
-        PageRank algorithm = new PageRank(patentToCitedPatentsMap,0.75);
+        Map<String,Set<String>> citedPatentMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
+        citedPatentMap.putAll(Database.getAppToCitedPatentsMap());
+
+        PageRank algorithm = new PageRank(citedPatentMap,0.75);
         algorithm.solve(100);
         algorithm.save(file);
         Map<String,Float> rankTable = new PageRank.Loader().loadRankTable(file);

@@ -22,8 +22,6 @@ import java.util.stream.Stream;
  * Created by ehallmark on 4/20/17.
  */
 public class SimRankSimilarityModel implements AbstractSimilarityModel {
-    private static Map<String,Set<String>> patentToCitedPatentsMap;
-    private static Map<String,Set<String>> appToCitedPatentsMap;
     private static Map<String,List<Pair<String,Float>>> similarityMap;
     static {
         if(SimRankHelper.similarityMapFile.exists()) {
@@ -32,20 +30,6 @@ public class SimRankSimilarityModel implements AbstractSimilarityModel {
             System.out.println("WARNING: Rank table file does not exist");
             similarityMap=null;
         }
-    }
-
-    public static Map<String,Set<String>> getPatentToCitedPatentsMap() {
-        if(patentToCitedPatentsMap==null) {
-            patentToCitedPatentsMap=(Map<String,Set<String>>) Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
-        }
-        return patentToCitedPatentsMap;
-    }
-
-    public static Map<String,Set<String>> getAppToCitedPatentsMap() {
-        if(appToCitedPatentsMap==null) {
-            appToCitedPatentsMap=(Map<String,Set<String>>) Database.tryLoadObject(new File("app_to_cited_patents_map.jobj"));
-        }
-        return appToCitedPatentsMap;
     }
 
     @Getter

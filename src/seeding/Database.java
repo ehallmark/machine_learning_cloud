@@ -55,6 +55,8 @@ public class Database {
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsPurchasedCountMap;
+	private static Map<String,Set<String>> patentToCitedPatentsMap;
+	private static Map<String,Set<String>> appToCitedPatentsMap;
 	@Getter
 	public static Map<String,Set<String>> classCodeToPatentMap;
 	public static Map<String,LocalDate> patentToPubDateMap;
@@ -588,6 +590,27 @@ public class Database {
 			patentToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(patentToRelatedPatentsMapFile));
 		}
 		return patentToRelatedPatentsMap;
+	}
+
+	public synchronized static Map<String,Collection<String>> getAppToRelatedPatentsMap() {
+		if(patentToRelatedPatentsMap==null) {
+			patentToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(appToRelatedDocMapFile));
+		}
+		return patentToRelatedPatentsMap;
+	}
+
+	public static Map<String,Set<String>> getPatentToCitedPatentsMap() {
+		if(patentToCitedPatentsMap==null) {
+			patentToCitedPatentsMap=(Map<String,Set<String>>) Database.tryLoadObject(Database.patentToCitedPatentsMapFile);
+		}
+		return patentToCitedPatentsMap;
+	}
+
+	public static Map<String,Set<String>> getAppToCitedPatentsMap() {
+		if(appToCitedPatentsMap==null) {
+			appToCitedPatentsMap=(Map<String,Set<String>>) Database.tryLoadObject(Database.appToCitedPatentsMapFile);
+		}
+		return appToCitedPatentsMap;
 	}
 
 	public synchronized static String getClassTitleFromClassCode(String formattedCode) {

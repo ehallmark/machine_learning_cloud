@@ -94,7 +94,6 @@ public class SimRank extends RankGraph<Edge<String>> {
     public class Algorithm implements LearningAlgorithm {
         @Override
         public boolean runAlgorithm() {
-            AtomicInteger cnt = new AtomicInteger(0);
             Collection<Edge<String>> rankTableKeysCopy = new HashSet<>(rankTable.keySet());
             AtomicDouble delta = new AtomicDouble(0d);
             AtomicInteger deltaCount = new AtomicInteger(0);
