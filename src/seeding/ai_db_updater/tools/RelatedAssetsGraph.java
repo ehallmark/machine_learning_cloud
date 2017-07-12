@@ -45,7 +45,6 @@ public class RelatedAssetsGraph implements Serializable {
         AtomicInteger index = new AtomicInteger(0);
         Database.getAllPatentsAndApplications().forEach(asset->{
             if(!assetToIndexMap.containsKey(asset)) {
-                System.out.println("Node: "+asset);
                 Node node = graph.findNode(asset);
                 Set<String> set = new HashSet<>();
                 if (node != null) {
@@ -90,6 +89,7 @@ public class RelatedAssetsGraph implements Serializable {
         Database.initializeDatabase();
         SELF = new RelatedAssetsGraph();
         SELF.init();
+        System.out.println("Done initializing... Saving model now.");
         Database.trySaveObject(SELF,graphFile);
     }
 }
