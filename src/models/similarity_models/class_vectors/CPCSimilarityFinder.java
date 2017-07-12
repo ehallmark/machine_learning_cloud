@@ -40,7 +40,9 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         Database.initializeDatabase();
 
         int classDepth = CPCKMeans.DEFAULT_CPC_DEPTH;
+        System.out.println("Starting to add patent data...");
         Map<String,Set<String>> dataMap = new HashMap<>(Database.getPatentToClassificationMap());
+        System.out.println("Starting to add app data...");
         dataMap.putAll(Database.getAppToCitedPatentsMap());
         System.out.println("Starting to train and save...");
         AbstractClassSimilarityFinder.trainAndSave(dataMap,classDepth,rawFile);
