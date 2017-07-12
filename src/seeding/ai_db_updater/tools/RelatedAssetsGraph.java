@@ -57,6 +57,7 @@ public class RelatedAssetsGraph implements Serializable {
                 assetToIndexMap.put(asset,index.get());
                 indexToAssetsMap.put(index.get(),set);
                 index.getAndIncrement();
+                if(index.getAndIncrement()%10000==0) System.out.println("Adding index: "+index.get());
             }
         });
     }
