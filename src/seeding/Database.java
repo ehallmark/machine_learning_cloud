@@ -98,19 +98,19 @@ public class Database {
 
 
 	private static Connection conn;
-	public static File patentToReferencedByMapFile = new File("patent_to_referenced_by_map.jobj");
-	public static File patentToAppDateMapFile = new File("patent_to_appdate_map_file.jobj");
-	public static File patentToRelatedDocMapFile = new File("patent_to_related_docs_map_file.jobj");
-	public static File pubDateToPatentMapFile = new File("pubdate_to_patent_map.jobj");
-	public static File patentToCitedPatentsMapFile = new File("patent_to_cited_patents_map.jobj");
-	public static File appToClassificationMapFile = new File("app_to_classification_map.jobj");
-	public static File appToInventionTitleMapFile = new File("app_to_invention_title_map.jobj");
-	public static File appToOriginalAssigneeMapFile = new File("app_to_original_assignee_map.jobj");
-	public static File appToPubDateMapFile = new File("app_to_pubdate_map_file.jobj");
-	public static File appToAppDateMapFile = new File("app_to_appdate_map_file.jobj");
-	public static File appToRelatedDocMapFile = new File("app_to_related_docs_map_file.jobj");
-	public static File appToCitedPatentsMapFile = new File("app_to_cited_patents_map.jobj");
-	public static File appToPriorityDateMapFile = new File("app_to_priority_date_map.jobj");
+	public static File patentToReferencedByMapFile = new File(Constants.DATA_FOLDER+"patent_to_referenced_by_map.jobj");
+	public static File patentToAppDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_appdate_map_file.jobj");
+	public static File patentToRelatedDocMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
+	public static File pubDateToPatentMapFile = new File(Constants.DATA_FOLDER+"pubdate_to_patent_map.jobj");
+	public static File patentToCitedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_cited_patents_map.jobj");
+	public static File appToClassificationMapFile = new File(Constants.DATA_FOLDER+"app_to_classification_map.jobj");
+	public static File appToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"app_to_invention_title_map.jobj");
+	public static File appToOriginalAssigneeMapFile = new File(Constants.DATA_FOLDER+"app_to_original_assignee_map.jobj");
+	public static File appToPubDateMapFile = new File(Constants.DATA_FOLDER+"app_to_pubdate_map_file.jobj");
+	public static File appToAppDateMapFile = new File(Constants.DATA_FOLDER+"app_to_appdate_map_file.jobj");
+	public static File appToRelatedDocMapFile = new File(Constants.DATA_FOLDER+"app_to_related_docs_map_file.jobj");
+	public static File appToCitedPatentsMapFile = new File(Constants.DATA_FOLDER+"app_to_cited_patents_map.jobj");
+	public static File appToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"app_to_priority_date_map.jobj");
 	static {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);
