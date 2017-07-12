@@ -2,7 +2,7 @@ package models.similarity_models.paragraph_vectors;
 
 
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
-import models.graphical_models.related_docs.RelatedAssetsGraph;
+import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;

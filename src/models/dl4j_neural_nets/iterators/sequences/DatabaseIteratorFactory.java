@@ -1,6 +1,6 @@
 package models.dl4j_neural_nets.iterators.sequences;
 
-import models.graphical_models.related_docs.RelatedAssetsGraph;
+import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;

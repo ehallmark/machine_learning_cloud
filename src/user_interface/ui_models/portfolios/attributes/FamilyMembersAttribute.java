@@ -1,6 +1,6 @@
 package user_interface.ui_models.portfolios.attributes;
 
-import models.graphical_models.related_docs.RelatedAssetsGraph;
+import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;

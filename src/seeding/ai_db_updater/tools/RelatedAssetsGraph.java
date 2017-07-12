@@ -1,4 +1,4 @@
-package models.graphical_models.related_docs;
+package seeding.ai_db_updater.tools;
 
 import model.graphs.Graph;
 import model.graphs.MarkovNet;

@@ -1,6 +1,5 @@
 package models;
 
-import models.graphical_models.related_docs.RelatedAssetsGraph;
 import models.model_testing.TestSpecificModels;
 
 /**
@@ -11,12 +10,13 @@ public class UpdateModels {
         // pre data
         seeding.ai_db_updater.UpdateAll.main(args);
         seeding.Database.main(args);
-        RelatedAssetsGraph.main(args); // updates related asset graph
 
         // models
         models.similarity_models.UpdateSimilarityModels.main(args);
+        models.graphical_models.UpdateGraphicalModels.main(args); // sim rank and page rank
         models.classification_models.UpdateClassificationModels.main(args);
-        models.graphical_models.UpdateGraphicalModels.main(args);
+        // TODO update value models
+        models.value_models.UpdateValueModels.main(args);
 
         // test
         TestSpecificModels.main(args); // test models
