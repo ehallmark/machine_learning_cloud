@@ -40,7 +40,6 @@ public class Database {
 	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
 	private static Set<String> expiredPatentSet;
 	private static Set<String> lapsedPatentSet;
-	public static Set<String> expiredAppSet;
 	public static Set<String> lapsedAppSet;
 	public static Set<String> allAssignees;
 	public static Set<String> valuablePatents;
@@ -68,7 +67,6 @@ public class Database {
 	public static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
 	public static final File patentToOriginalAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_original_assignee_map.jobj");
 	public static File assigneeToAppsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_apps_map.jobj");
-	public static File expiredAppSetFile = new File(Constants.DATA_FOLDER+"expired_apps_set.jobj");
 	public static File assigneeToPatentsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_patents_map.jobj");
 	public static File lapsedAppSetFile = new File(Constants.DATA_FOLDER+"lapsed_apps_set.jobj");
 	public static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
@@ -542,10 +540,6 @@ public class Database {
 		return expiredPatentSet;
 	}
 
-	public synchronized static Set<String> getExpiredAppSet() {
-		if(expiredAppSet==null) expiredAppSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredAppSetFile));
-		return expiredAppSet;
-	}
 
 	public synchronized static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
@@ -689,11 +683,10 @@ public class Database {
 
 
 	public static Collection<String> getCopyOfAllApplications() {
-		if(valuableApps==null||lapsedAppSet==null||expiredAppSet==null) initializeDatabase();
-		Set<String> everything = new HashSet<>(valuableApps.size()+lapsedAppSet.size()+expiredAppSet.size());
+		if(valuableApps==null||lapsedAppSet==null) initializeDatabase();
+		Set<String> everything = new HashSet<>(valuableApps.size()+lapsedAppSet.size());
 		everything.addAll(valuableApps);
 		everything.addAll(lapsedAppSet);
-		everything.addAll(expiredAppSet);
 		return everything;
 	}
 
@@ -1070,7 +1063,7 @@ public class Database {
 		allApplications.addAll(getAppToInventionTitleMap().keySet());
 		allApplications.addAll(getAppToPubDateMap().keySet());
 		allApplications.addAll(getAppToOriginalAssigneeMap().keySet());
-		valuableApps=allApplications.stream().filter(patent -> !(getExpiredAppSet().contains(patent)||getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
+		valuableApps=allApplications.stream().filter(patent -> !(getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
 		trySaveObject(valuableApps,valuableAppsFile);
 	}
 

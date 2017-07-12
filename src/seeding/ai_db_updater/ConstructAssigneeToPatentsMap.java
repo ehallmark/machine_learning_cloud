@@ -10,39 +10,33 @@ import java.util.*;
  * Created by ehallmark on 1/23/17.
  */
 public class ConstructAssigneeToPatentsMap {
-    public static File assigneeToPatentsMapFile = new File("assignee_to_patents_map.jobj");
-
-    public static Map<String,Set<String>> load() throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(assigneeToPatentsMapFile)));
-        Map<String,Set<String>> assigneeToPatentsMap = (Map<String,Set<String>>)ois.readObject();
-        ois.close();
-        return assigneeToPatentsMap;
-    }
-
-    public static void constructMap() throws Exception {
+    public static void constructMap(File latestAssigneeMapFile, File originalAssigneeMapFile, File newFile) throws Exception {
         // first load original assignee map and latest assignee map
-        System.out.println("Starting to load latest assignee map...");
-        Map<String,List<String>> latestAssigneeMap = (Map<String,List<String>>) Database.loadObject(AssignmentSAXHandler.patentToAssigneeMapFile);
+        Map<String, Set<String>> assigneeToPatentsMap = new HashMap<>();
+        Map<String, List<String>> latestAssigneeMap;
+        if(latestAssigneeMapFile!=null) {
+            System.out.println("Starting to load latest assignee map...");
+            latestAssigneeMap = (Map<String, List<String>>) Database.loadObject(latestAssigneeMapFile);
 
-        if(latestAssigneeMap==null) throw new RuntimeException("Latest Assignee Map is null");
-
-        System.out.println("Starting to read through latest assignee map...");
-        // then merge all into this map
-        Map<String,Set<String>> assigneeToPatentsMap = new HashMap<>();
-        latestAssigneeMap.forEach((patent,assignees)->{
-            assignees.forEach(assignee->{
-                if(assigneeToPatentsMap.containsKey(assignee)) {
-                    assigneeToPatentsMap.get(assignee).add(patent);
-                } else{
-                    Set<String> patents = new HashSet<String>();
-                    patents.add(patent);
-                    assigneeToPatentsMap.put(assignee,patents);
-                }
+            System.out.println("Starting to read through latest assignee map...");
+            // then merge all into this map
+            latestAssigneeMap.forEach((patent, assignees) -> {
+                assignees.forEach(assignee -> {
+                    if (assigneeToPatentsMap.containsKey(assignee)) {
+                        assigneeToPatentsMap.get(assignee).add(patent);
+                    } else {
+                        Set<String> patents = new HashSet<String>();
+                        patents.add(patent);
+                        assigneeToPatentsMap.put(assignee, patents);
+                    }
+                });
             });
-        });
+        } else {
+            latestAssigneeMap = new HashMap<>();
+        }
 
         System.out.println("Starting to load original assignee map...");
-        Map<String,List<String>> originalAssigneeMap = (Map<String,List<String>>) Database.loadObject(Database.patentToOriginalAssigneeMapFile);
+        Map<String,List<String>> originalAssigneeMap = (Map<String,List<String>>) Database.loadObject(originalAssigneeMapFile);
         if(originalAssigneeMap==null) throw new RuntimeException("Original Assignee Map is null");
 
         System.out.println("Starting to read through original assignee map...");
@@ -63,13 +57,14 @@ public class ConstructAssigneeToPatentsMap {
 
         System.out.println("Starting to save results...");
         // save
-        Database.saveObject(assigneeToPatentsMap,assigneeToPatentsMapFile);
+        Database.saveObject(assigneeToPatentsMap,newFile);
 
         System.out.println("Num assignees: "+assigneeToPatentsMap.size());
     }
 
     public static void main(String[] args) throws Exception {
-        constructMap();
+        constructMap(Database.patentToLatestAssigneeMapFile,Database.patentToOriginalAssigneeMapFile,Database.assigneeToPatentsMapFile);
+        constructMap(null,Database.appToOriginalAssigneeMapFile,Database.assigneeToAppsMapFile);
     }
 
 }
