@@ -87,6 +87,7 @@ public class RelatedAssetsGraph implements Serializable {
 
 
     public static void main(String[] args) {
+        Database.initializeDatabase();
         SELF = new RelatedAssetsGraph();
         SELF.init();
         Database.trySaveObject(SELF,graphFile);
