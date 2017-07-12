@@ -167,10 +167,15 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
             databaseIterator.numEpochs=epochs;
             return this;
         }
-        public Builder addLabelIndex(int idx) {
+        public Builder addLabelIndex(int idx, Function<String,String> labelPreprocessor) {
             databaseIterator.labelIndices.add(idx);
+            if(labelPreprocessor!=null) databaseIterator.labelPreprocessors.put(idx,labelPreprocessor);
             return this;
         }
+        public Builder addLabelIndex(int idx) {
+            return addLabelIndex(idx,null);
+        }
+
         public Builder addLabelArrayIndex(int idx, Function<String,String> labelPreprocessor) {
             databaseIterator.labelArrayIndices.add(idx);
             if(labelPreprocessor!=null) databaseIterator.labelPreprocessors.put(idx,labelPreprocessor);
@@ -179,6 +184,7 @@ public class DatabaseSequenceIterator implements SequenceIterator<VocabWord> {
         public Builder addLabelArrayIndex(int idx) {
             return addLabelArrayIndex(idx,null);
         }
+
         public Builder addTextIndex(int idx) {
             databaseIterator.textIndices.add(idx);
             return this;

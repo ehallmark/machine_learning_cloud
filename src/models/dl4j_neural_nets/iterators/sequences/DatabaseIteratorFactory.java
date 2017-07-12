@@ -1,5 +1,6 @@
 package models.dl4j_neural_nets.iterators.sequences;
 
+import models.graphical_models.related_docs.RelatedAssetsGraph;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.sequencevectors.iterators.AbstractSequenceIterator;
 import org.deeplearning4j.models.sequencevectors.transformers.impl.SentenceTransformer;
@@ -38,9 +39,10 @@ public class DatabaseIteratorFactory {
     }
 
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
+        RelatedAssetsGraph relatedAssetsGraph = RelatedAssetsGraph.get();
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
-                .addLabelIndex(1)
-                .addLabelArrayIndex(2, label-> AssigneeTrimmer.standardizedAssignee(label))
+                .addLabelIndex(1, label -> String.valueOf(relatedAssetsGraph.indexForAsset(label)))
+                .addLabelArrayIndex(2, label -> AssigneeTrimmer.standardizedAssignee(label))
                 .addTextIndex(3)
                 .setNumEpochs(numEpochs)
                 .setFetchSize(5)

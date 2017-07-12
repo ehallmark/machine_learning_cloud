@@ -91,7 +91,7 @@ public class ParagraphVectorModel {
                 .minLearningRate(0.00001)
                 .useAdaGrad(true)
                 .resetModel(true)
-                .minWordFrequency(100)
+                .minWordFrequency(500)
                 .workers(numThreads)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
@@ -103,7 +103,7 @@ public class ParagraphVectorModel {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",20000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",50000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();
