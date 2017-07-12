@@ -28,14 +28,10 @@ public abstract class AbstractClassSimilarityFinder {
 
         System.out.println("Starting assignees");
         Database.getAssignees().parallelStream().forEach(assignee->{
-            List patents = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
-            if(!patents.isEmpty()) {
-                collections.add(new Pair<>(assignee, patents));
-            }
-
-            List apps = new ArrayList(Database.selectApplicationNumbersFromExactAssignee(assignee));
-            if(apps.isEmpty()) return;
-            collections.add(new Pair<>(assignee,apps));
+            List assets = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
+            assets.addAll(Database.selectApplicationNumbersFromExactAssignee(assignee));
+            if(assets.isEmpty()) return;
+            collections.add(new Pair<>(assignee,assets));
         });
 
         int batchSize = 10000;
