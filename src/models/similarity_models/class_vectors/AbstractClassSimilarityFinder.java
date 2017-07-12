@@ -16,12 +16,13 @@ import java.util.*;
 public abstract class AbstractClassSimilarityFinder {
     public static void trainAndSave(Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
         ClassVectorizer vectorizer = new ClassVectorizer(dataMap);
-        List<String> orderedClassifications = vectorizer.getClassifications(Database.getAllPatentsAndApplications(),classDepth,true);
+        Collection<String> allAssets = Database.getAllPatentsAndApplications();
+        List<String> orderedClassifications = vectorizer.getClassifications(allAssets,classDepth,true);
         Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 
         // Batching
         List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
-        Database.getAllPatentsAndApplications().parallelStream().forEach(patent->{
+        allAssets.parallelStream().forEach(patent->{
             collections.add(new Pair<>(patent,Arrays.asList(patent)));
         });
 
