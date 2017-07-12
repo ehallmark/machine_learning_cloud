@@ -40,6 +40,7 @@ public class DatabaseIteratorFactory {
 
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         RelatedAssetsGraph relatedAssetsGraph = RelatedAssetsGraph.get();
+        if(relatedAssetsGraph==null) throw new RuntimeException("No related assets graph found");
         return new DatabaseSequenceIterator.Builder(ParagraphTokensQuery,PatentDBUrl)
                 .addLabelIndex(1, label -> String.valueOf(relatedAssetsGraph.indexForAsset(label)))
                 .addLabelArrayIndex(2, label -> AssigneeTrimmer.standardizedAssignee(label))
