@@ -22,6 +22,6 @@ public class ApplicationCitationSAXHandler extends CitationSAXHandler {
         Database.saveObject(patentToPubDateMap,Database.appToPubDateMapFile);
         Database.saveObject(patentToAppDateMap,Database.appToAppDateMapFile);
         Database.saveObject(patentToPriorityDateMap,Database.appToPriorityDateMapFile);
-        Database.saveObject(lapsedPatentsSet,Database.lapsedAppsSetFile);
+        Database.saveObject(lapsedPatentsSet,Database.lapsedAppSetFile);
     }
 }

@@ -1,7 +1,9 @@
 package seeding.ai_db_updater;
 
 import seeding.Database;
+import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -16,7 +18,7 @@ public class UpdateMaintenanceFeeData {
         try {
             // update latest assignees
             System.out.println("Starting to update latest maintenace fee data...");
-            Database.loadAndIngestMaintenanceFeeData();
+            Database.loadAndIngestMaintenanceFeeData(new File("maintenance-zip/"),new File("maintenance-dest/"), new MaintenanceEventHandler());
         } catch(Exception sql) {
             sql.printStackTrace();
         }

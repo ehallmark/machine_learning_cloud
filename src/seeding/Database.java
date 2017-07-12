@@ -6,6 +6,9 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 
 import lombok.Getter;
 import net.lingala.zip4j.core.ZipFile;
+import seeding.ai_db_updater.handlers.LineHandler;
+import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
+import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -37,43 +40,43 @@ public class Database {
 	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
 	private static Set<String> expiredPatentSet;
 	private static Set<String> lapsedPatentSet;
-	private static Set<String> expiredAppSet;
-	private static Set<String> lapsedAppSet;
-	private static Set<String> allAssignees;
-	private static Set<String> valuablePatents;
-	private static Set<String> valuableApps;
-	private static Set<String> allClassCodes;
-	private static Set<String> smallEntityPatents;
-	private static Set<String> largeEntityPatents;
-	private static Set<String> microEntityPatents;
-	private static Set<String> japaneseCompanies;
+	public static Set<String> expiredAppSet;
+	public static Set<String> lapsedAppSet;
+	public static Set<String> allAssignees;
+	public static Set<String> valuablePatents;
+	public static Set<String> valuableApps;
+	public static Set<String> allClassCodes;
+	public static Set<String> smallEntityPatents;
+	public static Set<String> largeEntityPatents;
+	public static Set<String> microEntityPatents;
+	public static Set<String> japaneseCompanies;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsPurchasedCountMap;
 	@Getter
-	private static Map<String,Set<String>> classCodeToPatentMap;
-	private static Map<String,LocalDate> patentToPubDateMap;
+	public static Map<String,Set<String>> classCodeToPatentMap;
+	public static Map<String,LocalDate> patentToPubDateMap;
 	public static Map<String,LocalDate> patentToPriorityDateMap;
-	private static Map<String,LocalDate> appToPubDateMap;
+	public static Map<String,LocalDate> appToPubDateMap;
 	public static Map<String,LocalDate> appToPriorityDateMap;
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static final File patentToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_priority_date_map.jobj");
 	public static final File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
 	public static final File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
 	public static final File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
-	private static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
+	public static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
 	public static final File patentToOriginalAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_original_assignee_map.jobj");
-	private static File assigneeToAppsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_apps_map.jobj");
-	private static File expiredAppSetFile = new File(Constants.DATA_FOLDER+"expired_apps_set.jobj");
-	private static File assigneeToPatentsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_patents_map.jobj");
-	private static File lapsedAppSetFile = new File(Constants.DATA_FOLDER+"lapsed_apps_set.jobj");
+	public static File assigneeToAppsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_apps_map.jobj");
+	public static File expiredAppSetFile = new File(Constants.DATA_FOLDER+"expired_apps_set.jobj");
+	public static File assigneeToPatentsMapFile = new File(Constants.DATA_FOLDER+"assignee_to_patents_map.jobj");
+	public static File lapsedAppSetFile = new File(Constants.DATA_FOLDER+"lapsed_apps_set.jobj");
 	public static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
 	public static File lapsedPatentSetFile = new File(Constants.DATA_FOLDER+"lapsed_patents_set.jobj");
-	private static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
-	private static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
-	private static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
-	private static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
+	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
+	public static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
+	public static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
+	public static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static File patentToRelatedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://data.gttgrp.com/compdb_production?user=postgres&password=&tcpKeepAlive=true";
@@ -95,8 +98,6 @@ public class Database {
 	private static Connection conn;
 	private static String CPC_ZIP_FILE_NAME = "patent_grant_classifications.zip";
 	private static String CPC_DESTINATION_FILE_NAME = "patent_grant_classifications_folder";
-	private static String MAINT_ZIP_FILE_NAME = "patent_grant_maint_fees.zip";
-	private static String MAINT_DESTINATION_FILE_NAME = "patent_grant_maint_fees_folder";
 	public static File patentToReferencedByMapFile = new File("patent_to_referenced_by_map.jobj");
 	public static File patentToAppDateMapFile = new File("patent_to_appdate_map_file.jobj");
 	public static File patentToRelatedDocMapFile = new File("patent_to_related_docs_map_file.jobj");
@@ -109,7 +110,6 @@ public class Database {
 	public static File appToAppDateMapFile = new File("app_to_appdate_map_file.jobj");
 	public static File appToRelatedDocMapFile = new File("app_to_related_docs_map_file.jobj");
 	public static File appToCitedPatentsMapFile = new File("app_to_cited_patents_map.jobj");
-	public static File lapsedAppsSetFile = new File("lapsed_apps_set.jobj");
 	public static File appToPriorityDateMapFile = new File("app_to_priority_date_map.jobj");
 	static {
 		try {
@@ -121,50 +121,13 @@ public class Database {
 	}
 
 	public static Object loadObject(File file) {
-		System.out.println("Starting to load file: "+file.getName()+"...");
-		try {
-			if(!file.exists() && new File(Constants.DATA_FOLDER+file.getName()).exists()) file = new File(Constants.DATA_FOLDER+file.getName());
-			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
-			Object toReturn = ois.readObject();
-			ois.close();
-			System.out.println("Successfully loaded "+file.getName()+".");
-			return toReturn;
-		} catch(Exception e) {
-			e.printStackTrace();
-			//throw new RuntimeException("Unable to open file: "+file.getPath());
-			return null;
-		}
+		return tryLoadObject(file);
 	}
 
 	public static void saveObject(Object obj, File file) {
-		try {
-			file = new File(Constants.DATA_FOLDER+file.getName());
-			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-			oos.writeObject(obj);
-			oos.flush();
-			oos.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		trySaveObject(obj,file);
 	}
 
-	public static void saveExpiredPatentsSet(Set<String> expiredPatentsSet) throws IOException {
-		if(expiredPatentsSet!=null) {
-			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(expiredPatentSetFile)));
-			oos.writeObject(expiredPatentsSet);
-			oos.flush();
-			oos.close();
-		}
-	}
-
-	public static void savePatentToClassificationHash(Map<String,Set<String>> patentToClassificationHash) throws IOException {
-		if(patentToClassificationHash!=null) {
-			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(patentToClassificationMapFile)));
-			oos.writeObject(patentToClassificationHash);
-			oos.flush();
-			oos.close();
-		}
-	}
 
 	public static Collection<String> getAllPatentsAndApplications() {
 		Collection<String> all = getCopyOfAllPatents();
@@ -172,97 +135,42 @@ public class Database {
 		return all;
 	}
 
-	public static void loadAndIngestMaintenanceFeeData() throws Exception {
+	public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {
 		// should be one at least every other month
 		// Load file from Google
-		Map<String,Integer> patentToMaintenanceFeeReminderCount = new HashMap<>();
-		Set<String> expiredPatentsSet = new HashSet<>();
-		Set<String> largeEntityPatents = new HashSet<>();
-		Set<String> smallEntityPatents = new HashSet<>();
-		Set<String> microEntityPatents = new HashSet<>();
-		if (!(new File(MAINT_DESTINATION_FILE_NAME).exists())) {
-			try {
-				String url = "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
-				URL website = new URL(url);
-				System.out.println("Trying: " + website.toString());
-				ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-				FileOutputStream fos = new FileOutputStream(MAINT_ZIP_FILE_NAME);
-				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				fos.close();
+		try {
+			String url = handler.getUrl(); // "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
+			URL website = new URL(url);
+			System.out.println("Trying: " + website.toString());
+			ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+			FileOutputStream fos = new FileOutputStream(zipFile);
+			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+			fos.close();
 
-				ZipFile zipFile = new ZipFile(MAINT_ZIP_FILE_NAME);
-				zipFile.extractAll(MAINT_DESTINATION_FILE_NAME);
+			new ZipFile(zipFile).extractAll(destinationFile.getAbsolutePath());
 
-			} catch (Exception e) {
-				//e.printStackTrace();
-				System.out.println("Not found");
-			}
+		} catch (Exception e) {
+			//e.printStackTrace();
+			System.out.println("Not found");
 		}
-		Arrays.stream(new File(MAINT_DESTINATION_FILE_NAME).listFiles()).forEach(file -> {
-			if (!file.getName().endsWith(".txt")) return;
+		Arrays.stream(destinationFile.listFiles()).forEach(file -> {
+			if (!file.getName().endsWith(".txt")) {
+				file.delete();
+				return;
+			}
 			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 				String line = reader.readLine();
 				while (line != null) {
-					if (line.length() >= 50) {
-						String patNum = line.substring(0, 7);
-						try {
-							String maintenanceCode = line.substring(46, 51).trim();
-							if (patNum != null && maintenanceCode != null ) {
-								if(maintenanceCode.equals("EXP.")) {
-									expiredPatentsSet.add(patNum);
-								} else if (maintenanceCode.equals("EXPX")) {
-									// reinstated
-									if(expiredPatentsSet.contains(patNum)) {
-										expiredPatentsSet.remove(patNum);
-									}
-								} else if (maintenanceCode.equals("REM.")) {
-									// reminder
-									if(patentToMaintenanceFeeReminderCount.containsKey(patNum)) {
-										patentToMaintenanceFeeReminderCount.put(patNum,patentToMaintenanceFeeReminderCount.get(patNum)+1);
-									} else {
-										patentToMaintenanceFeeReminderCount.put(patNum,1);
-									}
-								} else if (maintenanceCode.startsWith("M2")||maintenanceCode.startsWith("SM")||maintenanceCode.equals("LTOS")||maintenanceCode.equals("MTOS")) {
-									smallEntityPatents.add(patNum);
-									if(largeEntityPatents.contains(patNum)) largeEntityPatents.remove(patNum);
-									if(microEntityPatents.contains(patNum)) microEntityPatents.remove(patNum);
-								} else if (maintenanceCode.startsWith("M1")||maintenanceCode.startsWith("LSM")) {
-									largeEntityPatents.add(patNum);
-									if(smallEntityPatents.contains(patNum)) smallEntityPatents.remove(patNum);
-									if(microEntityPatents.contains(patNum)) microEntityPatents.remove(patNum);
-								} else if(maintenanceCode.startsWith("M3")||maintenanceCode.equals("STOM")) {
-									microEntityPatents.add(patNum);
-									if(largeEntityPatents.contains(patNum)) largeEntityPatents.remove(patNum);
-									if(smallEntityPatents.contains(patNum)) smallEntityPatents.remove(patNum);
-								}
-							}
-						} catch (NumberFormatException nfe) {
-							// not a utility patent
-							// skip...
-						}
-					}
+					handler.handleLine(line);
 					line = reader.readLine();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+			} finally {
+				file.delete();
 			}
 		});
-
-		saveExpiredPatentsSet(expiredPatentsSet);
-
-		File largeEntityPatentFile = new File("large_entity_patents_set.jobj");
-		Database.saveObject(largeEntityPatents,largeEntityPatentFile);
-
-		File smallEntityPatentFile = new File("small_entity_patents_set.jobj");
-		Database.saveObject(smallEntityPatents,smallEntityPatentFile);
-
-		File microEntityPatentFile = new File("micro_entity_patents_set.jobj");
-		Database.saveObject(microEntityPatents,microEntityPatentFile);
-
-		File patentToFeeReminderMapFile = new File("patent_to_fee_reminder_count_map.jobj");
-		Database.saveObject(patentToMaintenanceFeeReminderCount,patentToFeeReminderMapFile);
-
-
+		handler.save();
 	}
 
 	public static Map<String,Set<String>> loadPatentToClassificationMap() throws IOException,ClassNotFoundException {
@@ -281,65 +189,38 @@ public class Database {
 		return set;
 	}
 
-	public static void setupClassificationsHash() throws Exception{
+	public static void setupClassificationsHash(File zipFile, File destinationFile, UrlCreator urlCreator, LineHandler handler) {
 		// should be one at least every other month
 		// Load file from Google
-		Map<String,Set<String>> patentToClassificationHash = new HashMap<>();
-		if (!(new File(CPC_DESTINATION_FILE_NAME).exists())) {
-			boolean found = false;
-			LocalDate date = LocalDate.now();
-			while (!found) {
-				try {
-					String dateStr = String.format("%04d", date.getYear()) + "-" + String.format("%02d", date.getMonthValue()) + "-" + String.format("%02d", date.getDayOfMonth());
-					String url = "http://patents.reedtech.com/downloads/PatentClassInfo/ClassData/US_Grant_CPC_MCF_Text_" + dateStr + ".zip";
-					URL website = new URL(url);
-					System.out.println("Trying: " + website.toString());
-					ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-					FileOutputStream fos = new FileOutputStream(CPC_ZIP_FILE_NAME);
-					fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-					fos.close();
+		boolean found = false;
+		LocalDate date = LocalDate.now();
+		while (!found) {
+			try {
+				// String dateStr = String.format("%04d", date.getYear()) + "-" + String.format("%02d", date.getMonthValue()) + "-" + String.format("%02d", date.getDayOfMonth());
+				String url = urlCreator.create(date); //"http://patents.reedtech.com/downloads/PatentClassInfo/ClassData/US_Grant_CPC_MCF_Text_" + dateStr + ".zip";
+				URL website = new URL(url);
+				System.out.println("Trying: " + website.toString());
+				ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+				FileOutputStream fos = new FileOutputStream(zipFile);
+				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+				fos.close();
 
-					ZipFile zipFile = new ZipFile(CPC_ZIP_FILE_NAME);
-					zipFile.extractAll(CPC_DESTINATION_FILE_NAME);
+				new ZipFile(zipFile).extractAll(destinationFile.getAbsolutePath());
 
-					found = true;
-				} catch (Exception e) {
-					//e.printStackTrace();
-					System.out.println("Not found");
-				}
-				date = date.minusDays(1);
+				found = true;
+			} catch (Exception e) {
+				//e.printStackTrace();
+				System.out.println("Not found");
 			}
+			date = date.minusDays(1);
+			if(date.isBefore(LocalDate.now().minusYears(20))) throw new RuntimeException("Url does not work: "+urlCreator.create(date));
 		}
 
-		Arrays.stream(new File(CPC_DESTINATION_FILE_NAME).listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
+		Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
 			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
 				String line = reader.readLine();
 				while (line != null) {
-					if (line.length() >= 32) {
-						String patNum = line.substring(10, 17).trim();
-						try {
-							if (Integer.valueOf(patNum) >= 6000000) {
-								String cpcSection = line.substring(17, 18);
-								String cpcClass = cpcSection + line.substring(18, 20);
-								String cpcSubclass = cpcClass + line.substring(20, 21);
-								String cpcMainGroup = cpcSubclass + line.substring(21, 25);
-								String cpcSubGroup = cpcMainGroup + line.substring(26, 32);
-								System.out.println("Data for " + patNum + ": " + String.join(", ", cpcSubGroup));
-								if (patentToClassificationHash != null) {
-									if (patentToClassificationHash.containsKey(patNum)) {
-										patentToClassificationHash.get(patNum).add(cpcSubGroup);
-									} else {
-										Set<String> data = new HashSet<>();
-										data.add(cpcSubGroup);
-										patentToClassificationHash.put(patNum, data);
-									}
-								}
-							}
-						} catch (NumberFormatException nfe) {
-							// not a utility patent
-							// skip...
-						}
-					}
+					handler.handleLine(line);
 					line = reader.readLine();
 				}
 			} catch (Exception e) {
@@ -347,7 +228,7 @@ public class Database {
 			}
 		});
 
-		savePatentToClassificationHash(patentToClassificationHash);
+		handler.save();
 
 	}
 

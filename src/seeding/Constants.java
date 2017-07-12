@@ -70,6 +70,8 @@ public class Constants {
 	public static final UrlCreator USPTO_URL_CREATOR = defaultPatentUrlCreator(USPTO_URL);
 	public static final UrlCreator GOOGLE_APP_URL_CREATOR = defaultAppUrlCreator(GOOGLE_APP_URL);
 	public static final UrlCreator USPTO_APP_URL_CREATOR = defaultAppUrlCreator(USPTO_APP_URL);
+	public static final UrlCreator PATENT_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_Grant_CPC_MCF_Text_");
+	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
 
 	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);
 	public static final String DESTINATION_PREFIX = "patent-grant-destinations";
@@ -90,5 +92,12 @@ public class Constants {
 
 	private static UrlCreator defaultCreator(String baseUrl, String prefix) {
 		return date -> baseUrl + "/" + date.getYear() + "/" + prefix + date.toString().replace("-", "").substring(2) + ".zip";
+	}
+
+	private static UrlCreator maintenanceUrlCreator(String baseUrl) {
+		return date -> {
+			String dateStr = String.format("%04d", date.getYear()) + "-" + String.format("%02d", date.getMonthValue()) + "-" + String.format("%02d", date.getDayOfMonth());
+			return baseUrl + dateStr + ".zip";
+		};
 	}
 }
