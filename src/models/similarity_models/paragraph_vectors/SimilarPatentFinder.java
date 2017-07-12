@@ -2,6 +2,7 @@ package models.similarity_models.paragraph_vectors;
 
 
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
+import models.graphical_models.related_docs.RelatedAssetsGraph;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
@@ -51,9 +52,10 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         return LOOKUP_TABLE;
     }
     public static void main(String[] args) {
+        RelatedAssetsGraph relatedAssetsGraph = RelatedAssetsGraph.get();
         WeightLookupTable<VocabWord> lookupTable = getWeightLookupTable();
         Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
-        Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
+        Database.getAllPatentsAndApplications().parallelStream().forEach(patent->{
             INDArray vec = lookupTable.vector(patent);
             if(vec!=null) toSave.put(patent,vec);
         });

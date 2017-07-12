@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 public class Database {
 	private static Map<String,Set<String>> patentToClassificationMap;
+	private static Map<String,Set<String>> appToClassificationMap;
 	private static Map<String,List<String>> appToOriginalAssigneeMap;
 	private static Map<String,List<String>> patentToOriginalAssigneeMap;
 	private static Map<String,String> appToInventionTitleMap;
@@ -34,6 +35,7 @@ public class Database {
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
+	private static Map<String,Set<String>> assigneeToAppsMap;
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
@@ -393,6 +395,7 @@ public class Database {
 
 		getExpiredPatentSet();
 		getLapsedPatentSet();
+		getLapsedAppSet();
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
@@ -411,8 +414,8 @@ public class Database {
 
 		// assignee stuff
 		{
-			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
-			allAssignees=new HashSet<>(assigneeToPatentsMap.keySet());
+			allAssignees=new HashSet<>(getAssigneeToAppsMap().keySet());
+			allAssignees.addAll(getAssigneeToPatentsMap().keySet());
 			// prefix trie for assignees
 			System.out.println("Building assignee trie...");
 			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
@@ -422,7 +425,22 @@ public class Database {
 		}
 
 		valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
+		valuableApps=(Set<String>)tryLoadObject(valuableAppsFile);
 
+	}
+
+	public static Map<String,Set<String>> getAssigneeToPatentsMap() {
+		if(assigneeToPatentsMap==null) {
+			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
+		}
+		return assigneeToPatentsMap;
+	}
+
+	public static Map<String,Set<String>> getAssigneeToAppsMap() {
+		if(assigneeToAppsMap==null) {
+			assigneeToAppsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToAppsMapFile));
+		}
+		return assigneeToAppsMap;
 	}
 
 	public synchronized static boolean hasClassifications(String pat) {
@@ -450,6 +468,13 @@ public class Database {
 			patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
 		}
 		return patentToClassificationMap;
+	}
+
+	public synchronized static Map<String,Set<String>> getAppToClassificationMap() {
+		if(appToClassificationMap==null) {
+			appToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(appToClassificationMapFile));
+		}
+		return appToClassificationMap;
 	}
 
 	public synchronized static Map<String,List<String>> getPatentToLatestAssigneeMap() {
@@ -813,10 +838,18 @@ public class Database {
 
 	public synchronized static Collection<String> selectPatentNumbersFromExactAssignee(String assignee){
 		Set<String> patents = new HashSet<>();
-		if(assigneeToPatentsMap.containsKey(assignee)) {
-			patents.addAll(assigneeToPatentsMap.get(assignee));
+		if(getAssigneeToPatentsMap().containsKey(assignee)) {
+			patents.addAll(getAssigneeToPatentsMap().get(assignee));
 		}
 		return patents;
+	}
+
+	public synchronized static Collection<String> selectApplicationNumbersFromExactAssignee(String assignee) {
+		Set<String> apps = new HashSet<>();
+		if(getAssigneeToAppsMap().containsKey(assignee)) {
+			apps.addAll(getAssigneeToAppsMap().get(assignee));
+		}
+		return apps;
 	}
 
 

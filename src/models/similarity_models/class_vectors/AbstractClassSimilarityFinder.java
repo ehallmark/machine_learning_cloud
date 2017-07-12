@@ -16,20 +16,25 @@ import java.util.*;
 public abstract class AbstractClassSimilarityFinder {
     public static void trainAndSave(Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
         ClassVectorizer vectorizer = new ClassVectorizer(dataMap);
-        List<String> orderedClassifications = vectorizer.getClassifications(Database.getCopyOfAllPatents(),classDepth,true);
+        List<String> orderedClassifications = vectorizer.getClassifications(Database.getAllPatentsAndApplications(),classDepth,true);
         Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 
         // Batching
         List<Pair<String,List<String>>> collections = Collections.synchronizedList(new ArrayList<>());
-        Database.getCopyOfAllPatents().parallelStream().forEach(patent->{
+        Database.getAllPatentsAndApplications().parallelStream().forEach(patent->{
             collections.add(new Pair<>(patent,Arrays.asList(patent)));
         });
 
         System.out.println("Starting assignees");
         Database.getAssignees().parallelStream().forEach(assignee->{
-            List assets = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
-            if(assets==null||assets.isEmpty()) return;
-            collections.add(new Pair<>(assignee,assets));
+            List patents = new ArrayList(Database.selectPatentNumbersFromExactAssignee(assignee));
+            if(!patents.isEmpty()) {
+                collections.add(new Pair<>(assignee, patents));
+            }
+
+            List apps = new ArrayList(Database.selectApplicationNumbersFromExactAssignee(assignee));
+            if(apps.isEmpty()) return;
+            collections.add(new Pair<>(assignee,apps));
         });
 
         int batchSize = 10000;

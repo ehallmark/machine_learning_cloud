@@ -11,6 +11,5 @@ public class UpdateGraphicalModels {
     public static void main(String[] args) {
         PageRankHelper.main(args);
         SimRankHelper.main(args);
-        RelatedAssetsGraph.main(args);
     }
 }

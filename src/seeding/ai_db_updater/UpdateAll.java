@@ -11,5 +11,7 @@ public class UpdateAll {
         ConstructAssigneeToPatentsMap.main(args);
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
+        UpdatePatentsAndApplicationsTable.main(args);
+        UpdateParagraphTokensTable.main(args);
     }
 }
