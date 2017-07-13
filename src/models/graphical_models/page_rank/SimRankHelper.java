@@ -2,7 +2,6 @@ package models.graphical_models.page_rank;
 
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
-import models.similarity_models.sim_rank.SimRankSimilarityModel;
 import java.io.File;
 import java.util.*;
 
