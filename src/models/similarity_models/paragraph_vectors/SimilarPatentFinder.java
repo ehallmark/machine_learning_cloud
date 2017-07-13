@@ -56,8 +56,11 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         WeightLookupTable<VocabWord> lookupTable = getWeightLookupTable();
         Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
         Database.getAllPatentsAndApplications().parallelStream().forEach(patent->{
-            INDArray vec = lookupTable.vector(patent);
-            if(vec!=null) toSave.put(patent,vec);
+            int idx = relatedAssetsGraph.indexForAsset(patent);
+            if(idx>=0) {
+                INDArray vec = lookupTable.vector(String.valueOf(idx));
+                if (vec != null) toSave.put(patent, vec);
+            }
         });
         Database.getAssignees().parallelStream().forEach(assignee->{
             INDArray vec = lookupTable.vector(assignee);
