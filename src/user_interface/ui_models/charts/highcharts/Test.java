@@ -1,4 +1,4 @@
-package user_interface.highcharts;
+package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import com.googlecode.wickedcharts.highcharts.options.*;
@@ -58,7 +58,7 @@ public class Test {
         return options;
     }
     public static void main(String[] args) {
-        // user_interface.highcharts test
+        // user_interface.ui_models.charts.highcharts test
         Options options = getTestOptions();
         System.out.println(new JsonRenderer().toJson(options).toString());
     }

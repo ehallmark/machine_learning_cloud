@@ -1,10 +1,10 @@
-package user_interface.ui_models.attributes.charts;
+package user_interface.ui_models.charts;
 
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import user_interface.highcharts.AbstractChart;
-import user_interface.highcharts.PieChart;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.PieChart;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;

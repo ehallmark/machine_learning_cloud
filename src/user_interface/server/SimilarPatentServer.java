@@ -1,12 +1,12 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
-import user_interface.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.BackButtonHandler;
 import models.similarity_models.class_vectors.WIPOSimilarityFinder;
-import user_interface.ui_models.attributes.charts.*;
+import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.exceptions.AttributeException;
@@ -606,7 +606,7 @@ public class SimilarPatentServer {
                 head().with(
                         script().withSrc("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"),
                         script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
-                        script().withSrc("http://code.user_interface.highcharts.com/user_interface.highcharts.js"),
+                        script().withSrc("http://code.user_interface.ui_models.charts.highcharts.com/user_interface.ui_models.charts.highcharts.js"),
                         script().withSrc("/js/customEvents.js"),
                         script().withSrc("/js/defaults.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),

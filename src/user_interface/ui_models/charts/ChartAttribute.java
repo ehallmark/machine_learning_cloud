@@ -1,6 +1,6 @@
-package user_interface.ui_models.attributes.charts;
+package user_interface.ui_models.charts;
 
-import user_interface.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.attributes.DependentAttribute;
 

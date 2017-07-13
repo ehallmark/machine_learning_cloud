@@ -1,10 +1,10 @@
-package user_interface.ui_models.attributes.charts;
+package user_interface.ui_models.charts;
 
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import user_interface.highcharts.AbstractChart;
-import user_interface.highcharts.ColumnChart;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.ColumnChart;
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
@@ -15,6 +15,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.option;
@@ -27,6 +28,12 @@ public class AbstractHistogramChart implements ChartAttribute {
     protected String searchType;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
+
+    private final Map<String,Function<List<Item>,ColumnChart>> attrToChartMap = new HashMap<>();
+    //private final Function<List<Item>,ColumnChart> defaultFunction = list -> new ColumnChart(title, collectDistributionData(list,MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
+    {
+      //  attrToChartMap.put()
+    }
 
     @Override
     public Tag getOptionsTag() {
@@ -48,6 +55,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
+
             String humanSearchType = SimilarPatentServer.humanAttributeFor(searchType);
             String title = humanAttr + " Histogram";
             return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);

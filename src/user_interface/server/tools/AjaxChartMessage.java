@@ -1,7 +1,7 @@
 package user_interface.server.tools;
 
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
-import user_interface.highcharts.AbstractChart;
+import user_interface.ui_models.charts.highcharts.AbstractChart;
 
 import java.util.List;
 import java.util.stream.Collectors;

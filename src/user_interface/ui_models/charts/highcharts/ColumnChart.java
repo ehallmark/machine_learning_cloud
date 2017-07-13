@@ -1,4 +1,4 @@
-package user_interface.highcharts;
+package user_interface.ui_models.charts.highcharts;
 
 import com.googlecode.wickedcharts.highcharts.options.SeriesType;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
