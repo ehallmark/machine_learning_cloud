@@ -19,8 +19,8 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
     private static final File rawFile = new File("data/wipo_similarity_finder_lookup_table.jobj");
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
-    public WIPOSimilarityFinder(Collection<Item> candidateSet, String name) {
-        super(candidateSet,name,getLookupTable());
+    public WIPOSimilarityFinder(Collection<Item> candidateSet) {
+        super(candidateSet,getLookupTable());
     }
 
     public static Map<String,INDArray> getRawLookupTable() {

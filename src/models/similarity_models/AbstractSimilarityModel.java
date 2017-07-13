@@ -13,13 +13,11 @@ import java.util.Collection;
 public interface AbstractSimilarityModel {
     double similarityTo(String label);
 
-    PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters);
+    PortfolioList findSimilarPatentsTo(INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters);
 
     int numItems();
 
     PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters);
-
-    String getName();
 
     AbstractSimilarityModel duplicateWithScope(Item[] scope);
 

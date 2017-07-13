@@ -695,6 +695,18 @@ public class Database {
 		}
 	}
 
+	public synchronized static boolean isApplication(String application) {
+		if(application.length()!=11) return false;
+		try {
+			Integer.valueOf(application);
+		} catch(Exception e) {
+			return false;
+		}
+		return true;
+	}
+	public synchronized static boolean isPatent(String patent) {
+		return !(isAssignee(patent) || isApplication(patent));
+	}
 	public synchronized static boolean isAssignee(String assignee) {
 		if(assignee.replaceAll("[0-9]","").trim().isEmpty()) return false;
 		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
@@ -745,8 +757,14 @@ public class Database {
 
 	public synchronized static Set<String> classificationsFor(String patent) {
 		Set<String> classifications = new HashSet<>();
-		if(getPatentToClassificationMap().containsKey(patent)) {
-			classifications.addAll(patentToClassificationMap.get(patent));
+		if(isApplication(patent)) {
+			if(getAppToClassificationMap().containsKey(patent)) {
+				classifications.addAll(appToClassificationMap.get(patent));
+			}
+		} else {
+			if (getPatentToClassificationMap().containsKey(patent)) {
+				classifications.addAll(patentToClassificationMap.get(patent));
+			}
 		}
 		return classifications;
 	}
@@ -842,10 +860,16 @@ public class Database {
 
 	public synchronized static Set<String> assigneesFor(String patent) {
 		Set<String> assignees = new HashSet<>();
-		if(getPatentToLatestAssigneeMap().containsKey(patent)) {
-			assignees.addAll(patentToLatestAssigneeMap.get(patent));
-		} else if (getPatentToOriginalAssigneeMap().containsKey(patent)) {
-			assignees.addAll(patentToOriginalAssigneeMap.get(patent));
+		if(isApplication(patent)) {
+			if(getAppToOriginalAssigneeMap().containsKey(patent)) {
+				assignees.addAll(appToOriginalAssigneeMap.get(patent));
+			}
+		} else {
+			if (getPatentToLatestAssigneeMap().containsKey(patent)) {
+				assignees.addAll(patentToLatestAssigneeMap.get(patent));
+			} else if (getPatentToOriginalAssigneeMap().containsKey(patent)) {
+				assignees.addAll(patentToOriginalAssigneeMap.get(patent));
+			}
 		}
 		return assignees;
 	}

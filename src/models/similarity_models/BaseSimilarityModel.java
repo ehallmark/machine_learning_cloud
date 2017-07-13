@@ -23,14 +23,10 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     protected Map<String,VectorizedItemWrapper> itemMap;
     protected Item[] itemList;
 
-    @Getter @Setter
-    protected String name;
-
-    public BaseSimilarityModel(Collection<Item> candidateSet, String name, Map<String,INDArray> lookupTable) {
+    public BaseSimilarityModel(Collection<Item> candidateSet, Map<String,INDArray> lookupTable) {
         this.lookupTable=lookupTable;
         // construct lists
         if(candidateSet==null) throw new NullPointerException("candidateSet");
-        this.name=name;
         try {
             itemMap = candidateSet.parallelStream().map(item->new VectorizedItemWrapper(item,lookupTable.get(item.getName())))
                     .filter(vec->vec.getVec()!=null).collect(Collectors.toMap(e->e.getItem().getName(),e->e));
@@ -61,12 +57,12 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters)  {
         if(other.numItems()==0) return new PortfolioList(new Item[]{});
         INDArray otherAvg = ((BaseSimilarityModel)other).computeAvg();
-        return findSimilarPatentsTo(other.getName(),otherAvg,limit,filters);
+        return findSimilarPatentsTo(otherAvg,limit,filters);
     }
 
     @Override
     public AbstractSimilarityModel duplicateWithScope(Item[] scope) {
-        return new BaseSimilarityModel(Arrays.asList(scope), name, lookupTable);
+        return new BaseSimilarityModel(Arrays.asList(scope), lookupTable);
     }
 
     @Override
@@ -79,7 +75,7 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
 
     // returns null if patentNumber not found
     @Override
-    public PortfolioList findSimilarPatentsTo(String patentNumber, INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
+    public PortfolioList findSimilarPatentsTo(INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
         assert itemList!=null : "Item list is null!";
         if(avgVector==null) return new PortfolioList(new Item[]{});
         long startTime = System.currentTimeMillis();

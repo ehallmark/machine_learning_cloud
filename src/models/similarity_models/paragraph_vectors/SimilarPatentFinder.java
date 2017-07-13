@@ -41,8 +41,8 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         }
     }
 
-    public SimilarPatentFinder(Collection<Item> candidateSet, String name) {
-        super(candidateSet,name,getLookupTable());
+    public SimilarPatentFinder(Collection<Item> candidateSet) {
+        super(candidateSet,getLookupTable());
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {

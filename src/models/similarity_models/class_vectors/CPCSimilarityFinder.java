@@ -18,8 +18,8 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
     private static final File rawFile = new File("data/cpc_similarity_finder_lookup_table.jobj");
     private static Map<String,INDArray> LOOKUP_TABLE;
     private static Map<String,INDArray> RAW_LOOKUP_TABLE;
-    public CPCSimilarityFinder(Collection<Item> candidateSet, String name) {
-        super(candidateSet,name,getLookupTable());
+    public CPCSimilarityFinder(Collection<Item> candidateSet) {
+        super(candidateSet,getLookupTable());
     }
 
     public static Map<String,INDArray> getRawLookupTable() {

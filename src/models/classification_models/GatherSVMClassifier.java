@@ -120,7 +120,7 @@ public class GatherSVMClassifier implements ClassificationAttr {
     @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
         System.out.println("Building models.svm data...");
-        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,orderedTechnologies,this.lookupTable);
+        Pair<double[][],double[][]> training = SVMHelper.mapToSVMData(trainingData,this.orderedTechnologies,this.lookupTable);
 
         System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new SVMSolutionCreator(training,validationData,orderedTechnologies, lookupTable);

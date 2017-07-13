@@ -5,7 +5,6 @@ import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
 import user_interface.server.tools.BackButtonHandler;
-import models.similarity_models.class_vectors.WIPOSimilarityFinder;
 import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
@@ -14,7 +13,6 @@ import user_interface.ui_models.portfolios.attributes.*;
 import user_interface.templates.*;
 import util.Pair;
 import models.similarity_models.AbstractSimilarityModel;
-import models.similarity_models.class_vectors.CPCSimilarityFinder;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
 import j2html.tags.Tag;
@@ -23,7 +21,6 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
-import models.similarity_models.sim_rank.SimRankSimilarityModel;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import models.classification_models.ClassificationAttr;
 import models.classification_models.TechTaggerNormalizer;
@@ -42,7 +39,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.OutputStream;
 import java.util.*;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -91,6 +87,7 @@ public class SimilarPatentServer {
     static List<FormTemplate> templates = new ArrayList<>();
     static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
     static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
+    static List<Item> allApplications = Collections.synchronizedList(new ArrayList<>());
     static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
     static Collection<? extends AbstractAttribute> preComputedAttributes;
 
@@ -217,29 +214,9 @@ public class SimilarPatentServer {
     public static void loadSimilarityModels() {
         loadAllItems();
         if(similarityModelMap.isEmpty()) {
-            boolean test = true;
-            try {
-                ForkJoinPool pool = new ForkJoinPool();
-                pool.execute(()->{
-                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_patents",new SimilarPatentFinder(allPatents, "** Paragraph Vector Model **"));
-                    similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_assignees", new SimilarPatentFinder(allAssignees, "** Paragraph Vector Model **"));
-                });
-                if(!test) {
-                    pool.execute(() -> similarityModelMap.put(Constants.SIM_RANK_MODEL + "_patents", new SimRankSimilarityModel(allPatents, "** SimRank Model **")));
-                    pool.execute(() -> {
-                        similarityModelMap.put(Constants.CPC_MODEL + "_patents", new CPCSimilarityFinder(allPatents, "** CPC Model **"));
-                        similarityModelMap.put(Constants.CPC_MODEL + "_assignees", new CPCSimilarityFinder(allAssignees, "** CPC Model **"));
-                    });
-                    pool.execute(() -> {
-                        similarityModelMap.put(Constants.WIPO_MODEL + "_patents", new WIPOSimilarityFinder(allPatents, "** WIPO Model **"));
-                        similarityModelMap.put(Constants.WIPO_MODEL + "_assignees", new WIPOSimilarityFinder(allAssignees, "** WIPO Model **"));
-                    });
-                }
-                pool.shutdown();
-                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.patents, new SimilarPatentFinder(allPatents));
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assignees, new SimilarPatentFinder(allAssignees));
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.applications, new SimilarPatentFinder(allApplications));
         }
     }
 
@@ -258,32 +235,25 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
 
             // similarity engine
-            similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(),new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
+            similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
         }
     }
 
     public static void loadAllItems() {
-        if(allPatents.isEmpty()) {
-            Database.getCopyOfAllPatents().parallelStream().forEach(patent -> {
-                Item item = new Item(patent);
-                preComputedAttributes.forEach(model -> {
-                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
-                });
-                allPatents.add(item);
-                nameToItemMap.put(patent,item);
-            });
-        }
+        if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents());
+        if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees());
+        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications());
+    }
 
-        if(allAssignees.isEmpty()) {
-            Database.getAssignees().parallelStream().forEach(assignee -> {
-                Item item = new Item(assignee);
-                preComputedAttributes.forEach(model -> {
-                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
-                });
-                allAssignees.add(item);
-                nameToItemMap.put(assignee,item);
+    private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs) {
+        inputs.parallelStream().forEach(assignee -> {
+            Item item = new Item(assignee);
+            preComputedAttributes.forEach(model -> {
+                item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
             });
-        }
+            itemList.add(item);
+            nameToItemMap.put(assignee,item);
+        });
     }
 
     public static Item[] findItemsByName(Collection<String> names) {
