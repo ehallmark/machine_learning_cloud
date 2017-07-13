@@ -1,6 +1,5 @@
 package models.graphical_models.page_rank;
 
-import models.similarity_models.sim_rank.SimRankSimilarityModel;
 import seeding.Database;
 
 import java.io.File;
