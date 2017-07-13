@@ -576,7 +576,7 @@ public class SimilarPatentServer {
                 head().with(
                         script().withSrc("https://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"),
                         script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
-                        script().withSrc("http://code.highcharts.com/user_interface.ui_models.charts.highcharts.js"),
+                        script().withSrc("http://code.highcharts.com/highcharts.js"),
                         script().withSrc("/js/customEvents.js"),
                         script().withSrc("/js/defaults.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),
