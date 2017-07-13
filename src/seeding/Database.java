@@ -915,18 +915,14 @@ public class Database {
 			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE doc_type=? and "+keywordQuery+" limit "+limit);
 			ps.setString(1, type.toString());
 			ps.setString(2,keywordsToInclude);
-			ps.setString(3,keywordsToInclude);
-			ps.setString(4,keywordsToExclude);
-			ps.setString(5,keywordsToExclude);
+			ps.setString(3,keywordsToExclude);
 		}
 		else {
 			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and "+keywordQuery+" limit "+ limit);
 			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
 			ps.setString(2, type.toString());
 			ps.setString(3,keywordsToInclude);
-			ps.setString(4,keywordsToInclude);
-			ps.setString(5,keywordsToExclude);
-			ps.setString(6,keywordsToExclude);
+			ps.setString(4,keywordsToExclude);
 		}
 		ps.setFetchSize(100);
 
