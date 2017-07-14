@@ -309,7 +309,7 @@ public class Database {
 	}
 
 	public synchronized static int getLifeRemaining(String patent) {
-		if(lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
+		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
 		Collection<String> family = Database.getRelatedAssetsFor(patent);
@@ -670,44 +670,15 @@ public class Database {
 	}
 
 	public synchronized static int getAssetCountFor(String assignee) {
-		AtomicInteger count = new AtomicInteger(0);
-		// try fuzzy search thru trie
-		possibleNamesForAssignee(assignee).forEach(name->{
-			if(assigneeToPatentsMap.containsKey(name)) {
-				count.getAndAdd(assigneeToPatentsMap.get(name).size());
-			}
-		});
-		return count.get();
+		return getAssigneeToAppsMap().getOrDefault(assignee,Collections.emptySet()).size() + getAssigneeToPatentsMap().getOrDefault(assignee,Collections.emptySet()).size();
 	}
 
 	public synchronized static int getAssetsSoldCountFor(String assignee) {
-		AtomicInteger count = new AtomicInteger(0);
-		// try fuzzy search thru trie
-		possibleNamesForAssignee(assignee).forEach(name->{
-			if(getAssigneeToAssetsSoldCountMap().containsKey(name)) {
-				count.getAndAdd(getAssigneeToAssetsSoldCountMap().get(name));
-			}
-		});
-		return count.get();
+		return getAssigneeToAssetsSoldCountMap().getOrDefault(assignee,0);
 	}
 
 	public synchronized static int getAssetsPurchasedCountFor(String assignee) {
-		AtomicInteger count = new AtomicInteger(0);
-		// try fuzzy search thru trie
-		possibleNamesForAssignee(assignee).forEach(name->{
-			if(getAssigneeToAssetsPurchasedCountMap().containsKey(name)) {
-				count.getAndAdd(getAssigneeToAssetsPurchasedCountMap().get(name));
-			}
-		});
-		return count.get();
-	}
-
-	public synchronized static int getExactAssetCountFor(String assignee) {
-		if(getAssigneeToPatentsMap().containsKey(assignee)) {
-			return assigneeToPatentsMap.get(assignee).size();
-		} else {
-			return 0;
-		}
+		return getAssigneeToAssetsPurchasedCountMap().getOrDefault(assignee, 0);
 	}
 
 	public synchronized static boolean isApplication(String application) {
@@ -723,8 +694,9 @@ public class Database {
 		return !(isAssignee(patent) || isApplication(patent));
 	}
 	public synchronized static boolean isAssignee(String assignee) {
-		if(assignee.replaceAll("[0-9]","").trim().isEmpty()) return false;
-		return assigneePrefixTrie.getValuesForKeysStartingWith(assignee).iterator().hasNext();
+		String content = assignee.replaceAll("[0-9]","").trim();
+		if(content.isEmpty() || Arrays.asList("RE","P","H","D").contains(content)) return false;
+		return true;
 	}
 
 	public synchronized static String getInventionTitleFor(String patent) {
@@ -878,20 +850,18 @@ public class Database {
 		return set;
 	}
 
-	public synchronized static Set<String> assigneesFor(String patent) {
-		Set<String> assignees = new HashSet<>();
+	public synchronized static Collection<String> assigneesFor(String patent) {
+		List<String> assignees;
 		if(isApplication(patent)) {
-			if(getAppToOriginalAssigneeMap().containsKey(patent)) {
-				assignees.addAll(appToOriginalAssigneeMap.get(patent));
-			}
+			assignees=appToOriginalAssigneeMap.get(patent);
 		} else {
-			if (getPatentToLatestAssigneeMap().containsKey(patent)) {
-				assignees.addAll(patentToLatestAssigneeMap.get(patent));
-			} else if (getPatentToOriginalAssigneeMap().containsKey(patent)) {
-				assignees.addAll(patentToOriginalAssigneeMap.get(patent));
+			assignees = patentToLatestAssigneeMap.get(patent);
+			if(assignees==null) {
+				assignees = patentToOriginalAssigneeMap.get(patent);
 			}
 		}
-		return assignees;
+		if(assignees==null) assignees = Collections.emptyList();
+		return Collections.unmodifiableCollection(assignees);
 	}
 
 	public synchronized static Collection<String> getValuablePatents() {
