@@ -763,7 +763,7 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-4").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                        ), div().withClass("col-12").attr("style","margin-top: 8px;").with(
+                                        ), div().withClass("col-12").attr("style","margin-top: 8px; display: none;").with(
                                                 label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
                                                         option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
                                                         option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),

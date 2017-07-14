@@ -309,7 +309,7 @@ public class Database {
 	}
 
 	public synchronized static int getLifeRemaining(String patent) {
-		if(!valuablePatents.contains(patent)) return 0;
+		if(!(valuablePatents.contains(patent)||valuableApps.contains(patent))) return 0;
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
 		Collection<String> family = Database.getRelatedAssetsFor(patent);
