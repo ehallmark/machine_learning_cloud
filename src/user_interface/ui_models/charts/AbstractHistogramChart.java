@@ -63,8 +63,9 @@ public class AbstractHistogramChart implements ChartAttribute {
                 xAxisSuffix = " Years";
             }
             List<String> categories = new ArrayList<>();
-            for(int i = 0; i <= max; i += (max-min)/nBins) {
-                categories.add(String.valueOf(i));
+            double step = (max-min)/nBins;
+            for(int i = 0; i < max; i += step) {
+                categories.add(String.valueOf(i) + "-" + String.valueOf(i+(step)));
             }
             return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, 0,categories);
         }).collect(Collectors.toList());
