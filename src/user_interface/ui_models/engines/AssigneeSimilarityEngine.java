@@ -41,6 +41,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
                 inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
             });
         }
+        System.out.println("Found assignees to search for.");
         return inputsToSearchFor;
     }
 
