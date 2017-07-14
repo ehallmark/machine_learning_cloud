@@ -10,6 +10,11 @@ import java.util.List;
  * Created by ehallmark on 2/14/17.
  */
 public class PieChart extends AbstractChart {
+    @Override
+    public String getType() {
+        return "pie";
+    }
+
     public PieChart(String title, List<Series<?>> data, String yLabel) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);

@@ -298,3 +298,9 @@ var downloadTable = function(selector) {
     $(form).submit();
     $(form).remove();
 };
+
+
+var loadEvent = function(){
+    var ticks = $.map(this.axes[0].ticks, function(t){return t;});
+    ticks[ticks.length-2].render(0);
+};

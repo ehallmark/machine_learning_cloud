@@ -15,6 +15,8 @@ public abstract class AbstractChart {
 
     public Options getOptions() { return options; }
 
+    public abstract String getType();
+
     @Override
     public String toString() {
         return new JsonRenderer().toJson(getOptions());

@@ -476,7 +476,7 @@ public class SimilarPatentServer {
                     finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                             h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
                             span().withId("data-charts").withClass("collapse show").with(
-                                    finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%; margin-bottom: 30px;").withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                    finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                             ),br()
                     ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                             h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
@@ -522,6 +522,9 @@ public class SimilarPatentServer {
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
                 + "         for(var i = 0; i<charts.length; i++) {  "
+                + "             if( $('#'+'chart-'+i.toString()).hasClass('column') ) { "
+                + "                 charts[i]['chart']['events'] = { load: loadEvent }; "
+                + "             }   "
                 + "             var chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
                 + "             chart.reflow();             "
                 + "         }                        "

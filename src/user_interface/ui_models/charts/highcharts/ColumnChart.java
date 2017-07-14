@@ -10,6 +10,11 @@ import java.util.List;
  * Created by ehallmark on 2/14/17.
  */
 public class ColumnChart extends AbstractChart {
+    @Override
+    public String getType() {
+        return "column";
+    }
+
     public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int xDecimals, int yDecimals, List<String> categories) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.x:."+xDecimals+"f}"+xAxisSuffix;
