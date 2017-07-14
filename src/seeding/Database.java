@@ -39,6 +39,7 @@ public class Database {
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
+	private static Map<String,Collection<String>> appToRelatedPatentsMap;
 	private static Map<String,Collection<String>> patentToRelatedPatentsMap;
 	private static Set<String> expiredPatentSet;
 	private static Set<String> lapsedPatentSet;
@@ -309,20 +310,37 @@ public class Database {
 
 	public synchronized static int getLifeRemaining(String patent) {
 		if(!valuablePatents.contains(patent)) return 0;
-
 		Set<String> related = new HashSet<>();
-		related.add(patent);
-		Collection<String> family = Database.getPatentToRelatedPatentsMap().get(patent);
+		related.add(patent); // add self
+		Collection<String> family = Database.getRelatedAssetsFor(patent);
 		if (family!=null) related.addAll(family);
-
-		Collection<LocalDate> dates = related.stream().map(rel->Database.getPatentToPriorityDateMap().get(rel)).filter(date->date!=null).collect(Collectors.toList());
-
+		Collection<LocalDate> dates = related.stream().map(rel->Database.getPriorityDateFor(rel)).filter(date->date!=null).collect(Collectors.toList());
 		if (dates.isEmpty()) return 0;
-
 		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
-
 		// determine life remaining
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
+	}
+
+	public synchronized static LocalDate getPriorityDateFor(String patent) {
+		if(isApplication(patent)) {
+			return getAppToPriorityDateMap().get(patent);
+		} else {
+			return getPatentToPriorityDateMap().get(patent);
+		}
+	}
+
+	public synchronized static Collection<String> getRelatedAssetsFor(String patent) {
+		Collection<String> collection = new HashSet<>();
+		if(isApplication(patent)) {
+			if(getAppToRelatedPatentsMap().containsKey(patent)) {
+				collection.addAll(appToRelatedPatentsMap.get(patent));
+			}
+		} else {
+			if(getPatentToRelatedPatentsMap().containsKey(patent)) {
+				collection.addAll(patentToRelatedPatentsMap.get(patent));
+			}
+		}
+		return collection;
 	}
 
 	public synchronized static boolean isJapaneseAssignee(String assignee) {
@@ -593,10 +611,10 @@ public class Database {
 	}
 
 	public synchronized static Map<String,Collection<String>> getAppToRelatedPatentsMap() {
-		if(patentToRelatedPatentsMap==null) {
-			patentToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(appToRelatedDocMapFile));
+		if(appToRelatedPatentsMap==null) {
+			appToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(appToRelatedDocMapFile));
 		}
-		return patentToRelatedPatentsMap;
+		return appToRelatedPatentsMap;
 	}
 
 	public static Map<String,Set<String>> getPatentToCitedPatentsMap() {
@@ -688,7 +706,7 @@ public class Database {
 	}
 
 	public synchronized static int getExactAssetCountFor(String assignee) {
-		if(assigneeToPatentsMap.containsKey(assignee)) {
+		if(getAssigneeToPatentsMap().containsKey(assignee)) {
 			return assigneeToPatentsMap.get(assignee).size();
 		} else {
 			return 0;
@@ -713,11 +731,16 @@ public class Database {
 	}
 
 	public synchronized static String getInventionTitleFor(String patent) {
-		if(getPatentToInventionTitleMap().containsKey(patent)) {
-			return patentToInventionTitleMap.get(patent);
+		if(isApplication(patent)) {
+			if(getAppToInventionTitleMap().containsKey(patent)) {
+				return appToInventionTitleMap.get(patent);
+			}
 		} else {
-			return "";
+			if (getPatentToInventionTitleMap().containsKey(patent)) {
+				return patentToInventionTitleMap.get(patent);
+			}
 		}
+		return "";
 	}
 
 	public synchronized static Set<String> possibleNamesForAssignee(String base) {
