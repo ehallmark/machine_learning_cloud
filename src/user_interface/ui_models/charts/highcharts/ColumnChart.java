@@ -22,11 +22,11 @@ public class ColumnChart extends AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+" "+xLabel+" Range<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Total: "+yFormatStr+" "+yLabel+"</b><br/>"))
+                .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
-        options.setxAxis(new Axis().setTitle(new Title(xLabel)).setMin(-0.5).setMax(0.5+categories.size()).setShowFirstLabel(true).setShowLastLabel(true).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.BETWEEN).setCategories(categories));
+        options.setxAxis(new Axis().setTitle(new Title(xLabel)).setMin(-0.5).setMax(-0.5+categories.size()).setShowFirstLabel(true).setShowLastLabel(true).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.BETWEEN).setCategories(categories));
         options.setyAxis(new Axis().setTitle(new Title(yLabel)));
         options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix)).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);

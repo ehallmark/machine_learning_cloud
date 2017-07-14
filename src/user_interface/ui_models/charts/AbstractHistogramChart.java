@@ -84,7 +84,7 @@ public class AbstractHistogramChart implements ChartAttribute {
         series.setShowInLegend(false);
         Map<Range,Long> countMap = scores.stream().map(score->ranges.stream().filter(range->range.contains(score.getSecond().doubleValue())).findAny().orElse(null)).filter(range->range!=null).collect(Collectors.groupingBy(r->r,Collectors.counting()));
         ranges.forEach(range->{
-            Point point = new Point(String.valueOf(range.start),countMap.containsKey(range)?countMap.get(range):0);
+            Point point = new Point(countMap.containsKey(range)?countMap.get(range):0);
             series.addPoint(point);
         });
         seriesList.add(series);
