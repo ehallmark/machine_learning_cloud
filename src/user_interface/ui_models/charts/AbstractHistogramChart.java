@@ -15,6 +15,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -67,11 +68,11 @@ public class AbstractHistogramChart implements ChartAttribute {
             for(int i = 0; i < max; i += step) {
                 categories.add(String.valueOf(i) + "-" + String.valueOf(i+step));
             }
-            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0,categories);
+            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title, categories), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0,categories);
         }).collect(Collectors.toList());
     }
 
-    private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title) {
+    private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title, List<String> categories) {
         List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();
@@ -83,8 +84,9 @@ public class AbstractHistogramChart implements ChartAttribute {
         series.setName(title);
         series.setShowInLegend(false);
         Map<Range,Long> countMap = scores.stream().map(score->ranges.stream().filter(range->range.contains(score.getSecond().doubleValue())).findAny().orElse(null)).filter(range->range!=null).collect(Collectors.groupingBy(r->r,Collectors.counting()));
+        AtomicInteger index = new AtomicInteger(0);
         ranges.forEach(range->{
-            Point point = new Point(countMap.containsKey(range)?countMap.get(range):0);
+            Point point = new Point(categories.get(index.getAndIncrement()), countMap.containsKey(range)?countMap.get(range):0);
             series.addPoint(point);
         });
         seriesList.add(series);

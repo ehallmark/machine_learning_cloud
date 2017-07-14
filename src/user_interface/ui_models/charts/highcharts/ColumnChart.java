@@ -17,7 +17,7 @@ public class ColumnChart extends AbstractChart {
 
     public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
-        String xFormatStr = "{point.category}"+xAxisSuffix;
+        String xFormatStr = "{point.name}"+xAxisSuffix;
         SeriesType type = SeriesType.COLUMN;
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
