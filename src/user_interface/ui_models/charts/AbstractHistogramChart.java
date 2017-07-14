@@ -29,15 +29,9 @@ public class AbstractHistogramChart implements ChartAttribute {
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
-    private final Map<String,Function<List<Item>,ColumnChart>> attrToChartMap = new HashMap<>();
-    //private final Function<List<Item>,ColumnChart> defaultFunction = list -> new ColumnChart(title, collectDistributionData(list,MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
-    {
-      //  attrToChartMap.put()
-    }
-
     @Override
     public Tag getOptionsTag() {
-        return SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY));
+        return SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE));
     }
 
     @Override
@@ -55,10 +49,20 @@ public class AbstractHistogramChart implements ChartAttribute {
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
-
             String humanSearchType = SimilarPatentServer.humanAttributeFor(searchType);
             String title = humanAttr + " Histogram";
-            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),MIN,MAX,5, attribute, title), 0d, null, "", 0, humanAttr, humanSearchType);
+            double min = MIN;
+            double max = MAX;
+            int nBins = 5;
+            String xAxisSuffix = "%";
+            String yAxisSuffix = "";
+            if(attribute.equals(Constants.REMAINING_LIFE)) {
+                // slightly change params
+                nBins = 4;
+                max = 20;
+                xAxisSuffix = " Years";
+            }
+            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, 0);
         }).collect(Collectors.toList());
     }
 

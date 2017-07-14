@@ -10,8 +10,18 @@ import java.util.List;
  * Created by ehallmark on 2/14/17.
  */
 public class PieChart extends AbstractChart {
-    public PieChart(String title, List<Series<?>> data, String searchType) {
-        super(title, data, SeriesType.PIE,1,"%",null,searchType);
+    public PieChart(String title, List<Series<?>> data, String yLabel) {
+        SeriesType type = SeriesType.PIE;
+        System.out.println("Starting to build: "+type);
+        options=new Options()
+                .setChartOptions(new ChartOptions().setHeight(450).setType(type))
+                .setTitle(new Title(title))
+                .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"))
+                .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
+                .setSeries(data)
+                .setyAxis(new Axis())
+                .setxAxis(new Axis())
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
@@ -21,6 +31,5 @@ public class PieChart extends AbstractChart {
                     .setY(-5)
             );
         }
-        options.setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"));
     }
 }
