@@ -250,7 +250,7 @@ public class SimilarPatentServer {
     private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs) {
         inputs.parallelStream().forEach(assignee -> {
             Item item = new Item(assignee);
-            if(itemList.equals(allApplications)) System.out.println("App: "+assignee);
+            if(itemList.equals(allApplications) && !Database.isApplication(assignee)) return;
             preComputedAttributes.forEach(model -> {
                 item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
             });
