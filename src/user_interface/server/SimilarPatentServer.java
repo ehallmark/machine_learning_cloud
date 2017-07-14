@@ -242,9 +242,9 @@ public class SimilarPatentServer {
     }
 
     public static void loadAllItems() {
+        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications());
         if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents());
         if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees());
-        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications());
     }
 
     private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs) {
