@@ -18,7 +18,7 @@ public class PortfolioAssessment extends FormTemplate {
 
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
-        map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE));
+        map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE, Constants.REMAINING_LIFE));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
