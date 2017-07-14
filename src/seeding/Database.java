@@ -435,8 +435,6 @@ public class Database {
 			classCodesPrefixTrie.put(code,code);
 		});
 
-		classCodeToPatentMap = (HashMap<String,Set<String>>)tryLoadObject(classCodeToPatentMapFile);
-
 		// assignee stuff
 		{
 			allAssignees=new HashSet<>(getAssigneeToAppsMap().keySet());
@@ -589,7 +587,6 @@ public class Database {
 		if(expiredPatentSet==null) expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
 		return expiredPatentSet;
 	}
-
 
 	public synchronized static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
