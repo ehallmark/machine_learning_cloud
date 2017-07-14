@@ -112,6 +112,8 @@ public class Database {
 	public static File appToRelatedDocMapFile = new File(Constants.DATA_FOLDER+"app_to_related_docs_map_file.jobj");
 	public static File appToCitedPatentsMapFile = new File(Constants.DATA_FOLDER+"app_to_cited_patents_map.jobj");
 	public static File appToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"app_to_priority_date_map.jobj");
+
+	public static final Set<String> PATENT_PREFIXES = new HashSet<>(Arrays.asList("RE","P","H","D"));
 	static {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);
@@ -312,26 +314,27 @@ public class Database {
 		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
-		Collection<String> family = Database.getRelatedAssetsFor(patent);
+		boolean isApplication = isApplication(patent);
+		Collection<String> family = Database.getRelatedAssetsFor(patent,isApplication);
 		if (family!=null) related.addAll(family);
-		Collection<LocalDate> dates = related.stream().map(rel->Database.getPriorityDateFor(rel)).filter(date->date!=null).collect(Collectors.toList());
+		Collection<LocalDate> dates = related.stream().map(rel->Database.getPriorityDateFor(rel,isApplication)).filter(date->date!=null).collect(Collectors.toList());
 		if (dates.isEmpty()) return 0;
 		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
 		// determine life remaining
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
 	}
 
-	public synchronized static LocalDate getPriorityDateFor(String patent) {
-		if(isApplication(patent)) {
+	public synchronized static LocalDate getPriorityDateFor(String patent, boolean isApplication) {
+		if(isApplication) {
 			return getAppToPriorityDateMap().get(patent);
 		} else {
 			return getPatentToPriorityDateMap().get(patent);
 		}
 	}
 
-	public synchronized static Collection<String> getRelatedAssetsFor(String patent) {
+	public synchronized static Collection<String> getRelatedAssetsFor(String patent, boolean isApplication) {
 		Collection<String> collection = new HashSet<>();
-		if(isApplication(patent)) {
+		if(isApplication) {
 			if(getAppToRelatedPatentsMap().containsKey(patent)) {
 				collection.addAll(appToRelatedPatentsMap.get(patent));
 			}
@@ -695,7 +698,7 @@ public class Database {
 	}
 	public synchronized static boolean isAssignee(String assignee) {
 		String content = assignee.replaceAll("[0-9]","").trim();
-		if(content.isEmpty() || Arrays.asList("RE","P","H","D").contains(content)) return false;
+		if(content.isEmpty() || PATENT_PREFIXES.contains(content)) return false;
 		return true;
 	}
 
