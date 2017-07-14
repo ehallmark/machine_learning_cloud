@@ -301,7 +301,5 @@ var downloadTable = function(selector) {
 
 
 var loadEvent = function(){
-    alert("LOAD EVENT FUNCTION TRIGGERED!!!!!!");
-    var ticks = $.map(this.axes[0].ticks, function(t){return t;});
-    ticks[ticks.length-2].render(0);
+ // do nothing :(
 };

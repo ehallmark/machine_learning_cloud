@@ -697,9 +697,14 @@ public class Database {
 		return !(isAssignee(patent) || isApplication(patent));
 	}
 	public synchronized static boolean isAssignee(String assignee) {
-		String content = assignee.replaceAll("[0-9]","").trim();
-		if(content.isEmpty() || PATENT_PREFIXES.contains(content)) return false;
-		return true;
+		if(assignee.length() > 11 || assignee.length() < 7) return true;
+		for(int i = 2; i < assignee.length(); i++) {
+			char c = assignee.charAt(i);
+			if(Character.isAlphabetic(c)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public synchronized static String getInventionTitleFor(String patent) {
