@@ -62,7 +62,11 @@ public class AbstractHistogramChart implements ChartAttribute {
                 max = 20;
                 xAxisSuffix = " Years";
             }
-            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, 0);
+            List<String> categories = new ArrayList<>();
+            for(int i = 0; i <= max; i += (max-min)/nBins) {
+                categories.add(String.valueOf(i));
+            }
+            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, 0, 0,categories);
         }).collect(Collectors.toList());
     }
 
@@ -70,17 +74,16 @@ public class AbstractHistogramChart implements ChartAttribute {
         List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();
-        for(double start = min; start <= max; start += step) {
-            ranges.add(new Range(start,step));
+        for(double start = min; start < max; start += step) {
+            ranges.add(new Range(start,start+step));
         }
-
         List<Series<?>> seriesList = new ArrayList<>();
         PointSeries series = new PointSeries();
         series.setName(title);
         series.setShowInLegend(false);
         Map<Range,Long> countMap = scores.stream().map(score->ranges.stream().filter(range->range.contains(score.getSecond().doubleValue())).findAny().orElse(null)).filter(range->range!=null).collect(Collectors.groupingBy(r->r,Collectors.counting()));
         ranges.forEach(range->{
-            Point point = new Point(range.mean(),countMap.containsKey(range)?countMap.get(range):0);
+            Point point = new Point(String.valueOf(range.start),countMap.containsKey(range)?countMap.get(range):0);
             series.addPoint(point);
         });
         seriesList.add(series);
@@ -90,17 +93,12 @@ public class AbstractHistogramChart implements ChartAttribute {
     class Range {
         private double start;
         private double end;
-        private double mean;
-        Range(double mean, double step) {
-            this.mean = mean;
-            this.start = mean - step/2d;
-            this.end = mean + step/2d;
+        Range(double start, double end) {
+            this.start=start;
+            this.end=end;
         }
         boolean contains(double score) {
             return score > start && score <= end;
-        }
-        double mean() {
-            return mean;
         }
     }
 }
