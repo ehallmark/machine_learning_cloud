@@ -906,7 +906,7 @@ public class Database {
 		Set<String> patents = new HashSet<>();
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			if(getAssigneeToPatentsMap().containsKey(assignee)) {
+			if(getAssigneeToPatentsMap().containsKey(name)) {
 				patents.addAll(getAssigneeToPatentsMap().get(name));
 			}
 		});
@@ -917,7 +917,7 @@ public class Database {
 		Set<String> apps = new HashSet<>();
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			if(getAssigneeToAppsMap().containsKey(assignee)) {
+			if(getAssigneeToAppsMap().containsKey(name)) {
 				apps.addAll(getAssigneeToAppsMap().get(name));
 			}
 		});
