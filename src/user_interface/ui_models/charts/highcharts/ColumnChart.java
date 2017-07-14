@@ -17,7 +17,7 @@ public class ColumnChart extends AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
-                .setTooltip(new Tooltip().setEnabled(true).setFormatter(new CustomFunction( "highchartsHistogramLabelFunction()")).setHeaderFormat(xFormatStr+" "+xLabel+" Range<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name} <b> Total: "+yFormatStr+" "+yLabel+"</b><br/>"))
+                .setTooltip(new Tooltip().setEnabled(true).setFormatter(new CustomFunction( "highchartsHistogramLabelFunction()")))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
                 .setyAxis(new Axis())
