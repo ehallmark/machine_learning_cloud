@@ -51,7 +51,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         } else {
             Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
             Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-            Collection<String> applications = preProcess(extractString(req, APPLICATIONS_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\\s+", "[^0-9]");
+            Collection<String> applications = preProcess(extractString(req, APPLICATIONS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
             searchEntireDatabase=false;
             // Get scope of search
             Collection<String> inputsToSearchIn = new HashSet<>();
