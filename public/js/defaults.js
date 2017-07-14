@@ -298,3 +298,6 @@ var downloadTable = function(selector) {
     $(form).submit();
     $(form).remove();
 };
+
+
+var highchartsHistogramLabelFunction = function() {return this.x+"  IT WORKED!!!!!!!! "+ this.y; };
