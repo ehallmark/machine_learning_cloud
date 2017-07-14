@@ -309,7 +309,7 @@ public class Database {
 	}
 
 	public synchronized static int getLifeRemaining(String patent) {
-		if(!(valuablePatents.contains(patent)||valuableApps.contains(patent))) return 0;
+		if(lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
 		Collection<String> family = Database.getRelatedAssetsFor(patent);
@@ -480,7 +480,7 @@ public class Database {
 
 	public synchronized static Set<String> getAssignees() {
 		if(allAssignees==null) initializeDatabase();
-		return new HashSet<>(allAssignees);
+		return Collections.unmodifiableSet(allAssignees);
 	}
 
 	public synchronized static void setupGatherConn() throws SQLException {
@@ -748,7 +748,7 @@ public class Database {
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
 		if(cleanBase.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
-		if(allAssignees.contains(cleanBase)) possible.add(cleanBase);
+		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
 		assigneePrefixTrie.getValuesForKeysStartingWith(cleanBase+" ").forEach(a->possible.add(a));
 		return possible;
 	}
@@ -906,9 +906,22 @@ public class Database {
 		Set<String> patents = new HashSet<>();
 		// try fuzzy search thru trie
 		possibleNamesForAssignee(assignee).forEach(name->{
-			patents.addAll(assigneeToPatentsMap.get(name));
+			if(getAssigneeToPatentsMap().containsKey(assignee)) {
+				patents.addAll(getAssigneeToPatentsMap().get(name));
+			}
 		});
 		return patents;
+	}
+
+	public synchronized static Collection<String> selectApplicationNumbersFromAssignee(String assignee){
+		Set<String> apps = new HashSet<>();
+		// try fuzzy search thru trie
+		possibleNamesForAssignee(assignee).forEach(name->{
+			if(getAssigneeToAppsMap().containsKey(assignee)) {
+				apps.addAll(getAssigneeToAppsMap().get(name));
+			}
+		});
+		return apps;
 	}
 
 	public synchronized static Collection<String> selectPatentNumbersFromExactAssignee(String assignee){

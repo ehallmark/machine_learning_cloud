@@ -45,22 +45,26 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     }
 
     protected Collection<String> getInputsToSearchIn(Request req) {
-        if(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").isEmpty()&&extractString(req, PATENTS_TO_SEARCH_IN_FIELD, "").isEmpty()) {
+        if(extractString(req, APPLICATIONS_TO_SEARCH_IN_FIELD, "").isEmpty()&&extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").isEmpty()&&extractString(req, PATENTS_TO_SEARCH_IN_FIELD, "").isEmpty()) {
             searchEntireDatabase=true;
             return Collections.emptyList();
         } else {
             Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
             Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+            Collection<String> applications = preProcess(extractString(req, APPLICATIONS_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\\s+", "[^0-9]");
             searchEntireDatabase=false;
             // Get scope of search
             Collection<String> inputsToSearchIn = new HashSet<>();
             if (portfolioType.equals(PortfolioList.Type.patents)) {
                 inputsToSearchIn.addAll(patents);
                 assignees.forEach(assignee -> inputsToSearchIn.addAll(Database.selectPatentNumbersFromAssignee(assignee)));
+            } else if (portfolioType.equals(PortfolioList.Type.applications)) {
+                inputsToSearchIn.addAll(applications);
+                assignees.forEach(assignee -> inputsToSearchIn.addAll(Database.selectApplicationNumbersFromAssignee(assignee)));
             } else {
                 patents.forEach(patent -> inputsToSearchIn.addAll(Database.assigneesFor(patent)));
+                applications.forEach(app -> inputsToSearchIn.addAll(Database.assigneesFor(app)));
                 assignees.forEach(assignee -> inputsToSearchIn.addAll(Database.possibleNamesForAssignee(assignee)));
-
             }
             return inputsToSearchIn;
         }
@@ -77,6 +81,9 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             // remove any patents in the search for category
             Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
             labelsToRemove.addAll(patents);
+        } else if(portfolioType.equals(PortfolioList.Type.applications)) {
+            Collection<String> apps = preProcess(extractString(req, APPLICATIONS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+            labelsToRemove.addAll(apps);
         } else {
             // remove any assignees
             Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
@@ -111,9 +118,10 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         }
 
         setPrefilters(req);
-        AbstractSimilarityModel finderPrototype = similarityModelMap.get(extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString());
+        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString();
+        AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
 
-        System.out.println("Found finder prototype...");
+        System.out.println("Found finder prototype: "+similarityModelStr);
 
         // first finder
         Collection<String> toSearchIn = getInputsToSearchIn(req);

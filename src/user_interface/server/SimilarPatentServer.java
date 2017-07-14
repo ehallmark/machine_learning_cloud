@@ -57,8 +57,10 @@ public class SimilarPatentServer {
     private static ClassificationAttr tagger;
     public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
+    public static final String APPLICATIONS_TO_SEARCH_IN_FIELD = "applicationsToSearchIn";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
+    public static final String APPLICATIONS_TO_SEARCH_FOR_FIELD = "applicationsToSearchFor";
     public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
     public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
@@ -535,7 +537,7 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(Item[] items, List<String> attributes, String tableId, String dataURL) {
         return span().withClass("collapse show").withId("data-table").with(
                 a("Download to Excel").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;").attr("onclick", "downloadTable('#"+tableId+"');"),
-                table().withId(tableId).attr("data-url",dataURL).withClass("table table-striped").attr("style","margin-left: 15px; margin-right: 15px; width: auto;").with(
+                table().withId(tableId).attr("data-url",dataURL).withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(
                                 tr().with(
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
