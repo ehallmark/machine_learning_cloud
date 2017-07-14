@@ -853,11 +853,11 @@ public class Database {
 	public synchronized static Collection<String> assigneesFor(String patent) {
 		List<String> assignees;
 		if(isApplication(patent)) {
-			assignees=appToOriginalAssigneeMap.get(patent);
+			assignees=getAppToOriginalAssigneeMap().get(patent);
 		} else {
-			assignees = patentToLatestAssigneeMap.get(patent);
+			assignees = getPatentToLatestAssigneeMap().get(patent);
 			if(assignees==null) {
-				assignees = patentToOriginalAssigneeMap.get(patent);
+				assignees = getPatentToOriginalAssigneeMap().get(patent);
 			}
 		}
 		if(assignees==null) assignees = Collections.emptyList();
