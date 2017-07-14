@@ -841,7 +841,7 @@ public class SimilarPatentServer {
     public static void main(String[] args) throws Exception {
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
-        boolean preLoad = true;
+        boolean preLoad = false;
         Database.initializeDatabase();
         System.out.println("Starting to load base finder...");
         initialize();
