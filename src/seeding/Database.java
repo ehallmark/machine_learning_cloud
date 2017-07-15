@@ -860,7 +860,9 @@ public class Database {
 	public synchronized static Collection<String> assigneesFor(String patent) {
 		List<String> assignees;
 		if(isApplication(patent)) {
+			System.out.println("Searching for assignees of application: "+patent);
 			assignees=getAppToOriginalAssigneeMap().get(patent);
+			System.out.println("Assignees: "+assignees);
 		} else {
 			assignees = getPatentToLatestAssigneeMap().get(patent);
 			if(assignees==null) {
