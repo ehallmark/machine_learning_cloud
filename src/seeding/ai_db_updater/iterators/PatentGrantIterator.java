@@ -30,6 +30,7 @@ public class PatentGrantIterator implements WebIterator {
         Arrays.stream(zipFileFolder.listFiles()).parallel().forEach(zipFile->{
             final String destinationFilename = destinationPrefix + cnt.getAndIncrement();
             try {
+                System.out.println("Starting to unzip: "+zipFile.getName());
                 // Unzip file
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zipFile));
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(destinationFilename)));
