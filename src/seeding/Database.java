@@ -113,7 +113,6 @@ public class Database {
 	public static File appToCitedPatentsMapFile = new File(Constants.DATA_FOLDER+"app_to_cited_patents_map.jobj");
 	public static File appToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"app_to_priority_date_map.jobj");
 
-	public static final Set<String> PATENT_PREFIXES = new HashSet<>(Arrays.asList("RE","P","H","D"));
 	static {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);

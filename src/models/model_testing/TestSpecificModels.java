@@ -7,9 +7,10 @@ import java.util.*;
 
 /**
  * Created by Evan on 5/4/2017.
+ *
  */
 public class TestSpecificModels {
-    static SortedMap<String,Double> scoreMap = new TreeMap<>();
+    private static SortedMap<String,Double> scoreMap = new TreeMap<>();
 
     public static void main(String[] args) throws Exception {
         // tests models
@@ -49,6 +50,9 @@ public class TestSpecificModels {
                     ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Combined Model [n=" + i + "]", scorer, testData, i);
+                } else if (test == (testIdx++)) {
+                    RandomTechnologyScorer scorer = new RandomTechnologyScorer();
+                    testModel("Random Model [n=" + i + "]", scorer, testData, i);
                 }
             }
         }

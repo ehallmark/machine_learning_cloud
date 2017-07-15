@@ -1,8 +1,6 @@
 package models.model_testing;
 
-import j2html.tags.Tag;
 import models.classification_models.ClassificationAttr;
-import org.deeplearning4j.berkeley.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,30 +8,34 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 5/4/2017.
  */
-public class GatherTechnologyScorer {
-    protected ClassificationAttr model;
-    public GatherTechnologyScorer(ClassificationAttr model) {
-        this.model=model;
+public class RandomTechnologyScorer extends GatherTechnologyScorer {
+    private static final Random rand = new Random(69);
+
+    public RandomTechnologyScorer() {
+        super(null);
     }
 
     public double accuracyOn(Map<String,Collection<String>> testSet,int numPredictions) {
         if(testSet.isEmpty()) return 0d;
+        List<String> labels = new ArrayList<>(testSet.keySet());
         double averageAccuracy = testSet.entrySet().parallelStream().collect(Collectors.averagingDouble(e->{
             String tech = e.getKey();
             Collection<String> assets = e.getValue();
-            double accuracy = scoreAssets(model,tech,assets,numPredictions);
+            double accuracy = scoreAssets(labels,tech,assets,numPredictions);
             return accuracy;
         }));
         return averageAccuracy;
     }
 
-    public static double scoreAssets(ClassificationAttr model, String tech, Collection<String> assets, int numPredictions) {
+    public static double scoreAssets(List<String> labels, String tech, Collection<String> assets, int numPredictions) {
         if(assets.isEmpty()) return 0d;
         return ((double)(assets.stream().map(asset->{
-            Collection<String> predictions = model.attributesFor(Arrays.asList(asset),numPredictions).stream().limit(numPredictions).map(pair->pair.getFirst()).collect(Collectors.toSet());
-            if(predictions==null||predictions.isEmpty()) return Collections.emptyList();
+            Collection<String> predictions = new ArrayList<>(numPredictions);
+            for(int i = 0; i < numPredictions; i++) predictions.add(labels.get(rand.nextInt(labels.size())));
+            if(predictions.isEmpty()) return Collections.emptyList();
             //System.out.println("Predictions for "+asset+" (Should be "+tech+" ): "+ String.join("; ",predictions));
             return predictions;
         }).filter(collection->collection.contains(tech)).count()))/assets.size();
     }
+
 }
