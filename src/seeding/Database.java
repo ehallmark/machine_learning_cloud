@@ -1156,11 +1156,11 @@ public class Database {
 		allApplications.addAll(getAppToOriginalAssigneeMap().keySet());
 		valuableApps=allApplications.stream().filter(patent -> !(getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
 		trySaveObject(valuableApps,valuableAppsFile);
-		check("Invention Title",getAppToInventionTitleMap().keySet());
-		check("Assignee",getAppToOriginalAssigneeMap().keySet());
-		check("PubDate", getAppToPubDateMap().keySet());
-		check("All Apps",valuableApps);
-		check("Classifications",getAppToClassificationMap().keySet());
+		//check("Invention Title",getAppToInventionTitleMap().keySet());
+		//check("Assignee",getAppToOriginalAssigneeMap().keySet());
+		//check("PubDate", getAppToPubDateMap().keySet());
+		//check("All Apps",valuableApps);
+		//check("Classifications",getAppToClassificationMap().keySet());
 	}
 
 	public static void check(String name, Collection<String> collection) {
