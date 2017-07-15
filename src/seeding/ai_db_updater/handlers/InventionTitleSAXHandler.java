@@ -15,8 +15,8 @@ import java.util.*;
 
  */
 public class InventionTitleSAXHandler extends CustomHandler{
-    protected static Map<String,String> patentToInventionTitleMap = Collections.synchronizedMap(new HashMap<>());
-    protected  static Map<String,List<String>> patentToOriginalAssigneeMap = Collections.synchronizedMap(new HashMap<>());
+    protected Map<String,String> patentToInventionTitleMap;
+    protected  Map<String,List<String>> patentToOriginalAssigneeMap;
 
     protected boolean inPublicationReference=false;
     protected boolean isDocNumber=false;
@@ -38,9 +38,19 @@ public class InventionTitleSAXHandler extends CustomHandler{
         }
     }
 
+    public InventionTitleSAXHandler() {
+        patentToInventionTitleMap = Collections.synchronizedMap(new HashMap<>());
+        patentToOriginalAssigneeMap = Collections.synchronizedMap(new HashMap<>());
+    }
+
+    protected InventionTitleSAXHandler(Map<String,String> patentToInventionTitleMap, Map<String,List<String>> patentToOriginalAssigneeMap) {
+        this.patentToOriginalAssigneeMap=patentToOriginalAssigneeMap;
+        this.patentToInventionTitleMap=patentToInventionTitleMap;
+    }
+
     @Override
     public CustomHandler newInstance() {
-        return new InventionTitleSAXHandler();
+        return new InventionTitleSAXHandler(patentToInventionTitleMap,patentToOriginalAssigneeMap);
     }
 
     @Override

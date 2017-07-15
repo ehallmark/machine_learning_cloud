@@ -16,12 +16,12 @@ import java.util.*;
 
  */
 public class CitationSAXHandler extends CustomHandler{
-    protected static Map<String,LocalDate> patentToPubDateMap = Collections.synchronizedMap(new HashMap<>());
-    protected static Map<String,LocalDate> patentToAppDateMap = Collections.synchronizedMap(new HashMap<>());
-    protected static Map<String,Set<String>> patentToCitedPatentsMap = Collections.synchronizedMap(new HashMap<>());
-    protected static Map<String,Set<String>> patentToRelatedDocMap = Collections.synchronizedMap(new HashMap());
-    protected static Map<String,LocalDate> patentToPriorityDateMap = Collections.synchronizedMap(new HashMap<>());
-    protected static Set<String> lapsedPatentsSet = Collections.synchronizedSet(new HashSet<>());
+    protected Map<String,LocalDate> patentToPubDateMap;
+    protected Map<String,LocalDate> patentToAppDateMap;
+    protected Map<String,Set<String>> patentToCitedPatentsMap;
+    protected Map<String,Set<String>> patentToRelatedDocMap;
+    protected Map<String,LocalDate> patentToPriorityDateMap;
+    protected Set<String> lapsedPatentsSet;
 
     protected boolean inPublicationReference=false;
     protected boolean inApplicationReference=false;
@@ -50,9 +50,27 @@ public class CitationSAXHandler extends CustomHandler{
     protected Set<String> relatedDocuments = new HashSet<>();
     protected String docCountry;
 
+    public CitationSAXHandler() {
+        patentToPubDateMap = Collections.synchronizedMap(new HashMap<>());
+        patentToAppDateMap = Collections.synchronizedMap(new HashMap<>());
+        patentToCitedPatentsMap = Collections.synchronizedMap(new HashMap<>());
+        patentToRelatedDocMap = Collections.synchronizedMap(new HashMap());
+        patentToPriorityDateMap = Collections.synchronizedMap(new HashMap<>());
+        lapsedPatentsSet = Collections.synchronizedSet(new HashSet<>());
+    }
+
+    protected CitationSAXHandler(Map<String,LocalDate> patentToPubDateMap, Map<String,LocalDate> patentToAppDateMap, Map<String,LocalDate> patentToPriorityDateMap, Map<String,Set<String>> patentToCitedPatentsMap, Map<String,Set<String>> patentToRelatedDocMap, Set<String> lapsedPatentsSet) {
+        this.patentToAppDateMap=patentToAppDateMap;
+        this.patentToPriorityDateMap=patentToPriorityDateMap;
+        this.patentToPubDateMap=patentToPubDateMap;
+        this.patentToCitedPatentsMap=patentToCitedPatentsMap;
+        this.patentToRelatedDocMap=patentToRelatedDocMap;
+        this.lapsedPatentsSet=lapsedPatentsSet;
+    }
+
     @Override
     public CustomHandler newInstance() {
-        return new CitationSAXHandler();
+        return new CitationSAXHandler(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet);
     }
 
     private void update() {

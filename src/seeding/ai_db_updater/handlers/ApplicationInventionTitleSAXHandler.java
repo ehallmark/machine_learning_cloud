@@ -6,13 +6,25 @@ package seeding.ai_db_updater.handlers;
 
 import seeding.Database;
 
+import java.util.List;
+import java.util.Map;
+
 /**
 
  */
 public class ApplicationInventionTitleSAXHandler extends InventionTitleSAXHandler{
+
+    protected ApplicationInventionTitleSAXHandler(Map<String,String> patentToInventionTitleMap, Map<String,List<String>> patentToOriginalAssigneeMap) {
+        super(patentToInventionTitleMap,patentToOriginalAssigneeMap);
+    }
+
+    public ApplicationInventionTitleSAXHandler() {
+        super();
+    }
+
     @Override
     public CustomHandler newInstance() {
-        return new ApplicationInventionTitleSAXHandler();
+        return new ApplicationInventionTitleSAXHandler(patentToInventionTitleMap,patentToOriginalAssigneeMap);
     }
 
     @Override

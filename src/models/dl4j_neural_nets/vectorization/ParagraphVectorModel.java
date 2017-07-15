@@ -74,7 +74,7 @@ public class ParagraphVectorModel {
         System.out.println("Sample vector: "+net.getLookupTable().vectors().next());
     }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        int numEpochs = 3;
+        int numEpochs = 5;
         int numThreads = 40;
 
         SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),5);
@@ -88,7 +88,7 @@ public class ParagraphVectorModel {
                 .sampling(0.000005)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
-                .minLearningRate(0.00001)
+                .minLearningRate(0.0001)
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(500)

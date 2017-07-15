@@ -9,8 +9,7 @@ CREATE TABLE patents_and_applications (
 );
 
 -- TEXT INDEX
-CREATE INDEX patents_and_applications_tokens_idx on patents_and_applications USING GIN (tokens);
-CREATE INDEX patents_and_applications_patents_idx on patents_and_applications(pub_doc_number) WHERE doc_type='patents';
-CREATE INDEX patents_and_applications_applications_idx on patents_and_applications(pub_doc_number) WHERE doc_type='applications';
+CREATE INDEX patents_and_applications_tokens_patents_idx on patents_and_applications USING GIN (tokens) where doc_type='patents';
+CREATE INDEX patents_and_applications_tokens_applications_idx on patents_and_applications USING GIN (tokens) where doc_type='applications';
 
 pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t patents_and_applications > data/patents_and_applications.dump
