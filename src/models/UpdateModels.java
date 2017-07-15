@@ -1,5 +1,6 @@
 package models;
 
+import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import models.model_testing.TestSpecificModels;
 
 /**
@@ -10,6 +11,8 @@ public class UpdateModels {
         // pre data
         seeding.ai_db_updater.UpdateAll.main(args);
         seeding.Database.main(args);
+
+        ParagraphVectorModel.main(args);
 
         // models
         models.similarity_models.UpdateSimilarityModels.main(args);

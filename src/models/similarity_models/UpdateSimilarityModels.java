@@ -14,9 +14,6 @@ public class UpdateSimilarityModels {
         // Latest Database
         Database.main(args);
 
-        // Rerun paragraph vector model
-        ParagraphVectorModel.main(args);
-
         // Update lookup tables
         SimilarPatentFinder.main(args);
         CPCSimilarityFinder.main(args);
