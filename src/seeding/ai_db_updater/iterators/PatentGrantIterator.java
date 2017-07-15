@@ -30,7 +30,7 @@ public class PatentGrantIterator implements WebIterator {
         Arrays.stream(zipFileFolder.listFiles()).parallel().forEach(zipFile->{
             final String destinationFilename = destinationPrefix + cnt.getAndIncrement();
             try {
-                System.out.println("Starting to unzip: "+zipFile.getName());
+                System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
                 BufferedInputStream bis = new BufferedInputStream(new FileInputStream(zipFile));
                 BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(destinationFilename)));
@@ -40,8 +40,8 @@ public class PatentGrantIterator implements WebIterator {
 
                 File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) {
-                    System.out.println("Success!");
-
+                    System.out.println(" Success!");
+                    System.out.print("Parsing now...");
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     factory.setNamespaceAware(false);
                     factory.setValidating(false);
@@ -94,6 +94,8 @@ public class PatentGrantIterator implements WebIterator {
                     }
                 }
 
+                System.out.print(" Parsed successfully!");
+
             } catch (Exception e) {
                 e.printStackTrace();
 
@@ -101,6 +103,7 @@ public class PatentGrantIterator implements WebIterator {
                 // cleanup
                 File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) xmlFile.delete();
+                System.out.println();
             }
 
         });

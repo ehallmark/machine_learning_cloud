@@ -102,6 +102,7 @@ public class InventionTitleSAXHandler extends CustomHandler{
             pubDocNumber=String.join("",documentPieces).replaceAll("[^A-Z0-9]","");
             if(pubDocNumber.startsWith("0"))pubDocNumber = pubDocNumber.substring(1,pubDocNumber.length());
             if(pubDocNumber.length()!=11) {
+                System.out.println("EEEEEEERRRRRRRRRRROOOOOOOOOOOOORRRRRRRRRRRRRRRRR!!!!!!!!!!!!!!!!!!!!!!!!");
                 throw new RuntimeException("Not 11: "+pubDocNumber);
             }
             if(pubDocNumber.isEmpty()) {
