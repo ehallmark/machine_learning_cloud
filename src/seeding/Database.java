@@ -1160,7 +1160,7 @@ public class Database {
 		check("Assignee",getAppToOriginalAssigneeMap().keySet());
 		check("PubDate", getAppToPubDateMap().keySet());
 		check("All Apps",valuableApps);
-		check("Classifications",getAppToClassificationMap());
+		check("Classifications",getAppToClassificationMap().keySet());
 	}
 
 	public static void check(String name, Collection<String> collection) {
