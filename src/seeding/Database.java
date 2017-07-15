@@ -1160,7 +1160,7 @@ public class Database {
 		//check("Invention Title",getAppToInventionTitleMap().keySet());
 		//check("Assignee",getAppToOriginalAssigneeMap().keySet());
 		//check("PubDate", getAppToPubDateMap().keySet());
-		//check("All Apps",valuableApps);
+		check("All Apps",valuableApps);
 		//check("Classifications",getAppToClassificationMap().keySet());
 	}
 
