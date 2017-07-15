@@ -685,15 +685,14 @@ public class Database {
 
 	public synchronized static boolean isApplication(String application) {
 		if(application.length()!=11) return false;
-		try {
-			Integer.valueOf(application);
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.out.println("in application!");
-			return false;
+		for(int i = 0; i < application.length(); i++) {
+			if(!Character.isDigit(application.charAt(i))) {
+				return false;
+			}
 		}
 		return true;
 	}
+
 	public synchronized static boolean isPatent(String patent) {
 		return !(isAssignee(patent) || isApplication(patent));
 	}
