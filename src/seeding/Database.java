@@ -1104,7 +1104,7 @@ public class Database {
 
 
 	public static void main(String[] args) {
-		// updates the database
+		/*// updates the database
 		try {
 			gatherTechMap = loadGatherTechMap();
 			Database.trySaveObject(gatherTechMap,gatherTechMapFile);
@@ -1155,7 +1155,13 @@ public class Database {
 		allApplications.addAll(getAppToPubDateMap().keySet());
 		allApplications.addAll(getAppToOriginalAssigneeMap().keySet());
 		valuableApps=allApplications.stream().filter(patent -> !(getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
-		trySaveObject(valuableApps,valuableAppsFile);
+		trySaveObject(valuableApps,valuableAppsFile);*/
+		check("Invention Title",getAppToInventionTitleMap().keySet());
+		check("Assignee",getAppToOriginalAssigneeMap().keySet());
+		check("PubDate", getAppToPubDateMap().keySet());
 	}
 
+	public static void check(String name, Collection<String> collection) {
+		System.out.println(name+": "+collection.stream().collect(Collectors.summingInt(str->str.length()==11?1:0)));
+	}
 }
