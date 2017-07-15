@@ -1162,6 +1162,6 @@ public class Database {
 	}
 
 	public static void check(String name, Collection<String> collection) {
-		System.out.println(name+": "+collection.stream().collect(Collectors.summingInt(str->str.length()==11?1:0)));
+		System.out.println(name+": "+collection.stream().collect(Collectors.summingInt(str->str.length()!=11?1:0))+ ", Total: "+collection.size());
 	}
 }
