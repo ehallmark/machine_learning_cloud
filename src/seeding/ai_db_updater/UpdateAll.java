@@ -13,7 +13,7 @@ public class UpdateAll {
         ConstructAssigneeToPatentsMap.main(args);
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
-        UpdateRelatedAssetsGraph.main(args); // updates related asset graph
+        UpdateRelatedAssetsGraph.main(args);
         UpdatePatentsAndApplicationsTable.main(args);
         UpdateParagraphTokensTable.main(args);
     }
