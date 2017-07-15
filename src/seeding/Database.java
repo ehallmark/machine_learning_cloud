@@ -688,6 +688,8 @@ public class Database {
 		try {
 			Integer.valueOf(application);
 		} catch(Exception e) {
+			e.printStackTrace();
+			System.out.println("in application!");
 			return false;
 		}
 		return true;
