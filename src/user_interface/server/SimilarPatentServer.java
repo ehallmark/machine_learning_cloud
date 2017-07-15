@@ -242,16 +242,17 @@ public class SimilarPatentServer {
     }
 
     public static void loadAllItems() {
-        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications());
-        if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents());
-        if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees());
+        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications(), true);
+        if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents(), false);
+        if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees(), false);
     }
 
-    private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs) {
+    private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs, boolean debug) {
         inputs.parallelStream().forEach(assignee -> {
             Item item = new Item(assignee);
             preComputedAttributes.forEach(model -> {
                 item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
+                System.out.println(model.getName()+" ["+item.getName()+"]: "+item.getData(model.getName()));
             });
             itemList.add(item);
             nameToItemMap.put(assignee,item);
