@@ -81,7 +81,7 @@ public class ParagraphVectorModel {
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
-                .batchSize(1000)
+                .batchSize(5000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(6)
                 .layerSize(100)
