@@ -27,7 +27,7 @@ public class ColumnChart extends AbstractChart {
                 .setSeries(data)
                 .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         options.setxAxis(new Axis().setTitle(new Title(xLabel)).setMin(-0.5).setMax(-0.5+categories.size()).setShowFirstLabel(true).setShowLastLabel(true).setStartOnTick(false).setEndOnTick(false).setTickmarkPlacement(TickmarkPlacement.BETWEEN).setCategories(categories));
-        options.setyAxis(new Axis().setTitle(new Title(yLabel)));
+        options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
         options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix)).setType(AxisType.CATEGORY);
         options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);
         for(Series<?> series : options.getSeries()) {
@@ -44,6 +44,11 @@ public class ColumnChart extends AbstractChart {
         }
         if(min!=null) options.getSingleYAxis().setMin(min);
         if(max!=null&&max>min) options.getSingleYAxis().setMax(max);
+    }
+
+    private static String capitalize(String str) {
+        if(str==null||str.isEmpty()) return str;
+        return str.substring(0,1).toUpperCase()+str.substring(1);
     }
 }
 
