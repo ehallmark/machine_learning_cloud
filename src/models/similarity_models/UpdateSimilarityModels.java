@@ -12,10 +12,10 @@ import seeding.Database;
 public class UpdateSimilarityModels {
     public static void main(String[] args) throws Exception {
         // Latest Database
-        //Database.main(args);
+        Database.main(args);
 
         // Update lookup tables
-        //SimilarPatentFinder.main(args);
+        SimilarPatentFinder.main(args);
         CPCSimilarityFinder.main(args);
         WIPOSimilarityFinder.main(args);
     }

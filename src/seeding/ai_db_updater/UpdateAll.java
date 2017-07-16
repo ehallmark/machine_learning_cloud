@@ -1,5 +1,7 @@
 package seeding.ai_db_updater;
 
+import models.classification_models.WIPOHelper;
+
 /**
  * Created by Evan on 7/6/2017.
  */
@@ -12,5 +14,6 @@ public class UpdateAll {
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
         UpdateRelatedAssetsGraph.main(args);
+        WIPOHelper.main(args);
     }
 }
