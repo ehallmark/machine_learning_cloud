@@ -18,8 +18,6 @@ public class TechTaggerSolutionCreator implements SolutionCreator<TechTaggerSolu
             taggers = Arrays.asList(
                     NaiveGatherClassifier.get(),
                     SimilarityGatherTechTagger.getParagraphVectorModel(),
-                    //SimilarityGatherTechTagger.getCPCModel(),
-                    //GatherSVMClassifier.getCPCModel(),
                     GatherSVMClassifier.getParagraphVectorModel()
             );
         }

@@ -27,14 +27,6 @@ public class TestSpecificModels {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Paragraph Vector Simple Average [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr tagger = SimilarityGatherTechTagger.getCPCModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
-                    testModel("CPC Similarity Vector Simple Average [n=" + i + "]", scorer, testData, i);
-                } else if (test == (testIdx++)) {
-                    ClassificationAttr tagger = SimilarityGatherTechTagger.getWIPOMOdel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
-                    testModel("WIPO Similarity Vector Simple Average [n=" + i + "]", scorer, testData, i);
-                } else if (test == (testIdx++)) {
                     ClassificationAttr tagger = GatherSVMClassifier.getParagraphVectorModel();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather SVM P-Vector Model [n=" + i + "]", scorer, testData, i);
