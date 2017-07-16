@@ -14,9 +14,8 @@ import java.util.*;
  * Created by Evan on 6/8/2017.
  */
 public abstract class AbstractClassSimilarityFinder {
-    public static void trainAndSave(Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
+    public static void trainAndSave(Collection<String> allAssets, Map<String,? extends Collection<String>> dataMap, int classDepth, File file) throws IOException {
         ClassVectorizer vectorizer = new ClassVectorizer(dataMap);
-        Collection<String> allAssets = new HashSet<>(dataMap.keySet());
         List<String> orderedClassifications = vectorizer.getClassifications(allAssets,classDepth,true);
         Map<String,INDArray> lookupTable = Collections.synchronizedMap(new HashMap<>());
 

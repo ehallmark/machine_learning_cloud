@@ -44,6 +44,6 @@ public class CPCSimilarityFinder extends BaseSimilarityModel {
         System.out.println("Starting to add app data...");
         dataMap.putAll(Database.getAppToClassificationMap());
         System.out.println("Starting to train and save...");
-        AbstractClassSimilarityFinder.trainAndSave(dataMap,classDepth,rawFile);
+        AbstractClassSimilarityFinder.trainAndSave(Database.getAllPatentsAndApplications(),dataMap,classDepth,rawFile);
     }
 }

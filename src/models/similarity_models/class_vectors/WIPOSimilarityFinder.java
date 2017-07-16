@@ -43,7 +43,7 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
         int classDepth = -1; // not using
         Map<String,Collection<String>> dataMap = WIPOHelper.getWIPOMap().entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->Arrays.asList(e.getValue())));
 
-        AbstractClassSimilarityFinder.trainAndSave(dataMap,classDepth,rawFile);
+        AbstractClassSimilarityFinder.trainAndSave(Database.getCopyOfAllPatents(),dataMap,classDepth,rawFile);
 
     }
 }
