@@ -225,8 +225,8 @@ public class GatherSVMClassifier implements ClassificationAttr {
         Map<String,Collection<String>> gatherTrainingMap = SplitModelData.getBroadDataMap(SplitModelData.trainFile);
         List<String> orderedTechnologies = new ArrayList<>(gatherTrainingMap.keySet());
 
-        System.out.println("Starting cpc model");
-        trainCPCVectorModel(gatherTrainingMap,orderedTechnologies);
+        //System.out.println("Starting cpc model");
+        //trainCPCVectorModel(gatherTrainingMap,orderedTechnologies);
 
         System.out.println("Starting paragraph model");
         trainParagraphVectorModel(gatherTrainingMap, orderedTechnologies);

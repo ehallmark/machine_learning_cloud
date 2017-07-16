@@ -16,7 +16,7 @@ public class UpdateSimilarityModels {
 
         // Update lookup tables
         SimilarPatentFinder.main(args);
-        CPCSimilarityFinder.main(args);
-        WIPOSimilarityFinder.main(args);
+        //CPCSimilarityFinder.main(args);
+        //WIPOSimilarityFinder.main(args);
     }
 }

@@ -39,10 +39,6 @@ public class TestSpecificModels {
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather SVM P-Vector Model [n=" + i + "]", scorer, testData, i);
                 } else if (test == (testIdx++)) {
-                    ClassificationAttr tagger = GatherSVMClassifier.getCPCModel();
-                    GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
-                    testModel("Gather SVM CPC Model [n=" + i + "]", scorer, testData, i);
-                } else if (test == (testIdx++)) {
                     ClassificationAttr tagger = NaiveGatherClassifier.get();
                     GatherTechnologyScorer scorer = new GatherTechnologyScorer(tagger);
                     testModel("Gather Bayesian CPC Model [n=" + i + "]", scorer, testData, i);
