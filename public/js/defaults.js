@@ -228,6 +228,7 @@ var setCollapsibleHeaders = function(selector) {
                 duration: 400,
                 always: function() {
                     $content.removeClass("show");
+                    $content.css("max-height","");
                 }
             });
 
@@ -244,7 +245,7 @@ var setCollapsibleHeaders = function(selector) {
             }, {
                 duration: 400,
                 always: function() {
-                    $content.css("max-height", "none");
+                    $content.css("max-height", "");
                 }
             });
         }
