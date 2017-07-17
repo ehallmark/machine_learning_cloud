@@ -213,11 +213,34 @@ var setCollapsibleHeaders = function(selector) {
         $header = $(this);
         //getting the next element
         $content = $($header.attr("data-target"));
-        $content.toggleClass("show");
         if($content.hasClass("show") && $content.attr("id")==="main-content-id") {
             $("html, body").animate({
                 scrollTop: 0
             }, 500);
+        }
+        if($content.hasClass("show")) {
+            $content.animate({
+                maxHeight: 0,
+                overflowY: 'hidden',
+                overflowX: 'hidden'
+            }).always(function() {
+                $content.removeClass("show");
+            });
+        } else {
+            // get height
+            $content.css("max-height", "none");
+            var height = $el.outerHeight();
+
+            // reset to 0 then animate with small delay
+            $content.css("max-height", "0");
+
+            $content.animate({
+                maxHeight: height
+                overflowY: 'auto',
+                overflowX: 'hidden'
+            }).always(function() {
+                $content.addClass("show");
+            });
         }
     });
 };
