@@ -223,9 +223,12 @@ var setCollapsibleHeaders = function(selector) {
                 maxHeight: 0,
                 overflowY: 'hidden',
                 overflowX: 'hidden'
-            }, 400).always(function() {
-                $content.removeClass("show");
+            }, {
+                always: function() {
+                    $content.removeClass("show");
+                }
             });
+
         } else {
             // get height
             $content.css("max-height", "none");
@@ -238,8 +241,10 @@ var setCollapsibleHeaders = function(selector) {
                 maxHeight: height,
                 overflowY: 'auto',
                 overflowX: 'hidden'
-            }, 400).always(function() {
-                $content.addClass("show");
+            }, {
+                always: function() {
+                    $content.addClass("show");
+                }
             });
         }
     });
