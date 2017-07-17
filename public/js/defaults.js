@@ -219,13 +219,15 @@ var setCollapsibleHeaders = function(selector) {
             }, 500);
         }
         if($content.hasClass("show")) {
+            $content.css("max-height", "none");
             var height = $content.outerHeight();
-            $content.removeClass("show");
             $content.css("max-height",height);
+            alert(height);
+            $content.removeClass("show");
             $content.animate({
                 maxHeight: 0
             }, {
-                duration: 300
+                duration: 400
             });
 
         } else {
@@ -239,7 +241,7 @@ var setCollapsibleHeaders = function(selector) {
             $content.animate({
                 maxHeight: height
             }, {
-                duration: 300,
+                duration: 400,
                 always: function() {
                     $content.css("max-height", "none");
                 }
