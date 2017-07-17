@@ -223,22 +223,22 @@ var setCollapsibleHeaders = function(selector) {
                 maxHeight: 0,
                 overflowY: 'hidden',
                 overflowX: 'hidden'
-            }).always(function() {
+            }, 400).always(function() {
                 $content.removeClass("show");
             });
         } else {
             // get height
             $content.css("max-height", "none");
-            var height = $el.outerHeight();
+            var height = $content.outerHeight();
 
             // reset to 0 then animate with small delay
             $content.css("max-height", "0");
 
             $content.animate({
-                maxHeight: height
+                maxHeight: height,
                 overflowY: 'auto',
                 overflowX: 'hidden'
-            }).always(function() {
+            }, 400).always(function() {
                 $content.addClass("show");
             });
         }
