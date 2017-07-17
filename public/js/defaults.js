@@ -222,7 +222,7 @@ var setCollapsibleHeaders = function(selector) {
             $content.removeClass("show");
             $content.css("max-height",$content.outerHeight());
             $content.animate({
-                maxHeight: 0,
+                maxHeight: 0
             }, {
                 duration: 300
             });
@@ -236,7 +236,7 @@ var setCollapsibleHeaders = function(selector) {
             $content.addClass("show");
             $content.css("max-height", "0");
             $content.animate({
-                maxHeight: height,
+                maxHeight: height
             }, {
                 duration: 300,
                 always: function() {
