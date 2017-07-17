@@ -22,6 +22,7 @@ public class ColumnChart extends AbstractChart {
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
+                .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)

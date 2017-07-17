@@ -19,6 +19,7 @@ public class PieChart extends AbstractChart {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
         options=new Options()
+                .setExporting(new ExportingOptions().setEnabled(true))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
                 .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"))
