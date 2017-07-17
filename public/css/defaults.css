@@ -69,6 +69,8 @@ body {
 .collapse {
     width: 100%;
     display: none;
+    -webkit-transition: height .3s linear, padding-top .3s linear, padding-bottom .3s linear, border-top-width .3s linear, border-top-width .3s linear;
+    transition: height .3s linear, padding-top .3s linear, padding-bottom .3s linear, border-top-width .3s linear, border-top-width .3s linear;
 }
 
 .collapse.show {
