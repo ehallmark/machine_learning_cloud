@@ -239,7 +239,7 @@ var setCollapsibleHeaders = function(selector) {
                 maxHeight: height
             }, {
                 duration: 300,
-                always: function() {
+                complete: function() {
                     $content.css("max-height", "none");
                 }
             });
