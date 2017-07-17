@@ -19,7 +19,7 @@ public class AssigneeFilter extends AbstractFilter {
 
     public AssigneeFilter() {}
 
-    protected AssigneeFilter(Collection<String> assigneesToRemove) {
+    public AssigneeFilter(Collection<String> assigneesToRemove) {
         this.assigneesToRemove=assigneesToRemove;
     }
 

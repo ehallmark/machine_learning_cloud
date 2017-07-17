@@ -99,7 +99,7 @@ public class FormTemplate {
         Map<String,Object> map = new HashMap<>();
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.applications.toString());
+        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
         return map;
     }

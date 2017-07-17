@@ -7,6 +7,7 @@ import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AssigneeFilter;
 import user_interface.ui_models.filters.LabelFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
@@ -81,18 +82,24 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
         // get labels to remove (if any)
         Collection<String> labelsToRemove = new HashSet<>();
-        if(portfolioType.equals(PortfolioList.Type.patents)) {
+        Collection<String> assigneesToRemove = new HashSet<>();
+        if(!portfolioType.equals(PortfolioList.Type.assignees)) {
             // remove any patents in the search for category
             Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
             labelsToRemove.addAll(patents);
+            assignees.forEach(assignee->assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
         } else {
             // remove any assignees
             Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-            labelsToRemove.addAll(assignees);
+            assignees.forEach(assignee->labelsToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
         }
 
         if(labelsToRemove.size()>0) {
             preFilters.add(new LabelFilter(labelsToRemove));
+        }
+        if(assigneesToRemove.size()>0) {
+            preFilters.add(new AssigneeFilter(assigneesToRemove));
         }
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
