@@ -169,6 +169,7 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
+            templates.add(new KeywordSearch());
             templates.add(new SimilarSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall(),Collections.emptyList()));
         }
@@ -625,8 +626,8 @@ public class SimilarPatentServer {
             );
         } else {
             return li().withClass("nav-item").with(
-                    a(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").withHref(template.getHref()),
-                    ul().withClass("nav nav-pills flex-column").with(
+                    button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").attr("onclick","$(this).next().slideToggle();"),
+                    ul().withClass("nav nav-pills flex-column").attr("style","display: none;").with(
                             template.nestedForms().stream().map(nested->{
                                 return templateHelper(nested,width-5);
                             }).collect(Collectors.toList())

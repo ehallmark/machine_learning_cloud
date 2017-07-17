@@ -922,18 +922,17 @@ public class Database {
 		Set<String> validPatents = new HashSet<>();
 		PreparedStatement ps;
 		String keywordQuery = "(tokens @@ (plainto_tsquery('english',?) && !!plainto_tsquery('english',?)))";
+		String docTypeWhere = type.equals(PortfolioList.Type.assets) ? " (doc_type='patents' or doc_type='applications') " : " doc_type = '"+type+"' ";
 		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE doc_type=? and "+keywordQuery+" limit "+limit);
-			ps.setString(1, type.toString());
-			ps.setString(2,keywordsToInclude);
-			ps.setString(3,keywordsToExclude);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE "+docTypeWhere+" and "+keywordQuery+" limit "+limit);
+			ps.setString(1,keywordsToInclude);
+			ps.setString(2,keywordsToExclude);
 		}
 		else {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and doc_type=? and "+keywordQuery+" limit "+ limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and "+docTypeWhere+" and "+keywordQuery+" limit "+ limit);
 			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
-			ps.setString(2, type.toString());
-			ps.setString(3,keywordsToInclude);
-			ps.setString(4,keywordsToExclude);
+			ps.setString(2,keywordsToInclude);
+			ps.setString(3,keywordsToExclude);
 		}
 		ps.setFetchSize(100);
 

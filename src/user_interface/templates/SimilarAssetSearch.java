@@ -11,10 +11,10 @@ import java.util.Map;
 /**
  * Created by Evan on 6/24/2017.
  */
-public class SimilarApplicationSearch extends FormTemplate {
+public class SimilarAssetSearch extends FormTemplate {
 
-    public SimilarApplicationSearch() {
-        super(Constants.SIMILAR_APPLICATION_SEARCH, getParams(), FormTemplate.similarityApplicationSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
+    public SimilarAssetSearch() {
+        super(Constants.SIMILAR_PATENT_SEARCH, getParams(), FormTemplate.similarityAssetSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
     }
 
     private static Map<String,Object> getParams() {

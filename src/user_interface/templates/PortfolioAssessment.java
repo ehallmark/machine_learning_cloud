@@ -27,8 +27,4 @@ public class PortfolioAssessment extends FormTemplate {
         return map;
     }
 
-    @Override
-    public List<FormTemplate> nestedForms() {
-        return Arrays.asList(new PatentAssessment(), new ApplicationAssessment());
-    }
 }
