@@ -221,13 +221,14 @@ var setCollapsibleHeaders = function(selector) {
         if($content.hasClass("show")) {
             $content.css("max-height", "none");
             var height = $content.outerHeight();
-            $content.css("max-height",height);
-            alert(height);
-            $content.removeClass("show");
+            $content.css("max-height",height.toString());
             $content.animate({
                 maxHeight: 0
             }, {
-                duration: 400
+                duration: 400,
+                always: function() {
+                    $content.removeClass("show");
+                }
             });
 
         } else {
