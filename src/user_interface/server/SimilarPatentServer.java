@@ -57,10 +57,8 @@ public class SimilarPatentServer {
     private static ClassificationAttr tagger;
     public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
-    public static final String APPLICATIONS_TO_SEARCH_IN_FIELD = "applicationsToSearchIn";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    public static final String APPLICATIONS_TO_SEARCH_FOR_FIELD = "applicationsToSearchFor";
     public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
     public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
@@ -219,6 +217,8 @@ public class SimilarPatentServer {
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.patents, new SimilarPatentFinder(allPatents));
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assignees, new SimilarPatentFinder(allAssignees));
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.applications, new SimilarPatentFinder(allApplications));
+            List<Item> allAssets = Arrays.asList(allPatents,allAssignees).parallelStream().flatMap(list->list.stream()).collect(Collectors.toList());
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assets, new SimilarPatentFinder(allAssets));
         }
     }
 

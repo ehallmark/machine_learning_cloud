@@ -8,6 +8,7 @@ import spark.Request;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
 import static user_interface.server.SimilarPatentServer.*;
@@ -27,10 +28,16 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         // get input data
         Collection<String> inputsToSearchFor = new HashSet<>();
         Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-        if(searchType.equals(PortfolioList.Type.patents)) {
-            inputsToSearchFor.addAll(patents);
-        } else {
+        if(searchType.equals(PortfolioList.Type.assignees)) {
             patents.forEach(patent->inputsToSearchFor.addAll(Database.assigneesFor(patent)));
+        } else {
+            if(searchType.equals(PortfolioList.Type.applications)) {
+                inputsToSearchFor.addAll(patents.stream().filter(patent->Database.isApplication(patent)).collect(Collectors.toList()));
+            } else if(searchType.equals(PortfolioList.Type.patents)) {
+                inputsToSearchFor.addAll(patents.stream().filter(patent->!Database.isApplication(patent)).collect(Collectors.toList()));
+            } else {
+                inputsToSearchFor.addAll(patents);
+            }
         }
         return inputsToSearchFor;
     }

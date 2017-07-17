@@ -36,6 +36,11 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
             assignees.forEach(assignee -> {
                 inputsToSearchFor.addAll(Database.selectApplicationNumbersFromAssignee(assignee));
             });
+        } else if(searchType.equals(PortfolioList.Type.assets)) {
+            assignees.forEach(assignee -> {
+                inputsToSearchFor.addAll(Database.selectApplicationNumbersFromAssignee(assignee));
+                inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
+            });
         } else {
             assignees.forEach(assignee -> {
                 inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
