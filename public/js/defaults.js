@@ -213,7 +213,7 @@ var setCollapsibleHeaders = function(selector) {
         $header = $(this);
         //getting the next element
         $content = $($header.attr("data-target"));
-        if($content.hasClass("show") && $content.attr("id")==="main-content-id") {
+        if((! $content.hasClass("show")) && $content.attr("id")==="main-content-id") {
             $("html, body").animate({
                 scrollTop: 0
             }, 500);
