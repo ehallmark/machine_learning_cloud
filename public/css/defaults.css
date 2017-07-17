@@ -75,8 +75,6 @@ body {
 
 .collapse.show {
     max-height: none;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 button.multiselect.dropdown-toggle {

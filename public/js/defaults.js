@@ -221,9 +221,8 @@ var setCollapsibleHeaders = function(selector) {
         if($content.hasClass("show")) {
             $content.animate({
                 maxHeight: 0,
-                overflowY: 'hidden',
-                overflowX: 'hidden'
             }, {
+                duration: 300,
                 always: function() {
                     $content.removeClass("show");
                 }
@@ -239,11 +238,11 @@ var setCollapsibleHeaders = function(selector) {
 
             $content.animate({
                 maxHeight: height,
-                overflowY: 'auto',
-                overflowX: 'hidden'
             }, {
+                duration: 300,
                 always: function() {
                     $content.addClass("show");
+                    $content.css("max-height", "none");
                 }
             });
         }
