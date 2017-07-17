@@ -99,11 +99,11 @@ public class SimilarPatentServer {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
         { // Attrs
             humanAttrToJavaAttrMap = new HashMap<>();
-            humanAttrToJavaAttrMap.put("Patent Number", Constants.NAME);
+            humanAttrToJavaAttrMap.put("Asset Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
-            humanAttrToJavaAttrMap.put("Patent Similarity", Constants.PATENT_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
@@ -120,10 +120,12 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Japanese",Constants.NO_JAPANESE_FILTER);
             humanAttrToJavaAttrMap.put("Remove Expired Assets", Constants.EXPIRATION_FILTER);
             humanAttrToJavaAttrMap.put("Remove Assignees", Constants.ASSIGNEES_TO_REMOVE_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Patents", Constants.LABEL_FILTER);
+            humanAttrToJavaAttrMap.put("Remove Assets", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Assignees",PortfolioList.Type.assignees.toString());
+            humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
+            humanAttrToJavaAttrMap.put("Patents and Applications",PortfolioList.Type.assets.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
@@ -169,9 +171,7 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
-            templates.add(new SimilarPatentSearch());
-            templates.add(new SimilarAssigneeSearch());
-            templates.add(new KeywordSearch());
+            templates.add(new SimilarSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarityPatentSmall(),Collections.emptyList()));
         }
     }
@@ -601,11 +601,7 @@ public class SimilarPatentServer {
                                                 br(),br(),br(),
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
-                                                    templates.stream().map(template->{
-                                                        return li().withClass("nav-item").with(
-                                                                a(template.getName()).withClass("btn btn-secondary").attr("style","width: 80%;").withHref(template.getHref())
-                                                        );
-                                                    }).collect(Collectors.toList())
+                                                    templates.stream().map(template->templateHelper(template,80)).collect(Collectors.toList())
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
@@ -618,6 +614,23 @@ public class SimilarPatentServer {
                         )
                 )
         );
+    }
+
+    public static Tag templateHelper(FormTemplate template, int width) {
+        if(template.nestedForms().isEmpty()) {
+            return li().withClass("nav-item").with(
+                    a(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").withHref(template.getHref())
+            );
+        } else {
+            return li().withClass("nav-item").with(
+                    a(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").withHref(template.getHref()),
+                    ul().withClass("nav nav-pills flex-column").with(
+                            template.nestedForms().stream().map(nested->{
+                                return templateHelper(nested,width-5);
+                            }).collect(Collectors.toList())
+                    )
+            );
+        }
     }
 
 

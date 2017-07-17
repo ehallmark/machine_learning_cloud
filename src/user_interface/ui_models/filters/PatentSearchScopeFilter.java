@@ -16,7 +16,7 @@ public class PatentSearchScopeFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","1 patent per line (eg. 800000)").withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD)
+                textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withName(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD)
         );
     }
 

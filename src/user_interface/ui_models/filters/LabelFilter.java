@@ -28,7 +28,7 @@ public class LabelFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","1 patent per line (eg. 800000)").withName(Constants.LABEL_FILTER)
+                textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withName(Constants.LABEL_FILTER)
         );
     }
 

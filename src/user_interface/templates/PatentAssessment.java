@@ -5,16 +5,15 @@ import user_interface.server.SimilarPatentServer;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Created by Evan on 6/24/2017.
  */
-public class PortfolioAssessment extends FormTemplate {
+public class PatentAssessment extends FormTemplate {
 
-    public PortfolioAssessment() {
-        super(Constants.PORTFOLIO_ASSESSMENT, getParams(), FormTemplate.valueAssetSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
+    public PatentAssessment() {
+        super(Constants.PATENT_ASSESSMENT, getParams(), FormTemplate.valuePatentSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
     }
 
     private static Map<String,Object> getParams() {
@@ -25,10 +24,5 @@ public class PortfolioAssessment extends FormTemplate {
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD,"");
         return map;
-    }
-
-    @Override
-    public List<FormTemplate> nestedForms() {
-        return Arrays.asList(new PatentAssessment(), new ApplicationAssessment());
     }
 }
