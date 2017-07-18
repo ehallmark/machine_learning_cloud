@@ -13,3 +13,6 @@ CREATE INDEX patents_and_applications_tokens_patents_idx on patents_and_applicat
 CREATE INDEX patents_and_applications_tokens_applications_idx on patents_and_applications USING GIN (tokens) where doc_type='applications';
 
 pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t patents_and_applications > data/patents_and_applications.dump
+
+-- To restore
+pg_restore -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t patents_and_applications data/patents_and_applications.dump
