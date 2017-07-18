@@ -7,5 +7,6 @@ public class UpdateClassificationModels {
     public static void main(String[] args) throws Exception {
         NaiveGatherClassifier.main(args);
         GatherSVMClassifier.main(args);
+        UpdateTechnologyMap.main(args);
     }
 }

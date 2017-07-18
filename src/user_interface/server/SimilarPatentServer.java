@@ -197,12 +197,12 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
                 preFilterModelMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyFilter());
                 preFilterModelMap.put(Constants.REMAINING_LIFE_FILTER, new RemainingLifeFilter());
+                preFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
 
                 // During filters
                 similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
                 // Post filters
-                postFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
 
                 // pre computed attributes
                 preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
@@ -228,7 +228,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
-            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(getTechTagger()));
+            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
             attributesMap.put(Constants.NAME, new NameAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOClassificationAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());

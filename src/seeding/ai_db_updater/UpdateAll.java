@@ -14,6 +14,7 @@ public class UpdateAll {
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
         UpdateRelatedAssetsGraph.main(args);
+        UpdateLifeRemainingMap.main(args);
         WIPOHelper.main(args);
     }
 }

@@ -18,7 +18,7 @@ public class RemainingLifeAttribute implements AbstractAttribute<Integer> {
     public Integer attributesFor(Collection<String> portfolio, int limit) {
         if(portfolio.isEmpty()) return 0;
         String item = portfolio.stream().findAny().get();
-        return Database.getLifeRemaining(item);
+        return Database.getLifeRemainingMap().getOrDefault(item,0);
     }
 
     @Override

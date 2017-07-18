@@ -33,6 +33,7 @@ public class Database {
 	private static Map<String,String> appToInventionTitleMap;
 	private static Map<String,String> patentToInventionTitleMap;
 	private static Map<String,String> classCodeToClassTitleMap;
+	private static Map<String,String> technologyMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
 	private static Map<String,Set<String>>  assigneeToPatentsMap;
 	private static Map<String,Set<String>> assigneeToAppsMap;
@@ -58,6 +59,7 @@ public class Database {
 	private static Map<String,Integer> compDBAssigneeToAssetsPurchasedCountMap;
 	private static Map<String,Set<String>> patentToCitedPatentsMap;
 	private static Map<String,Set<String>> appToCitedPatentsMap;
+	private static Map<String,Integer> lifeRemainingMap;
 	@Getter
 	public static Map<String,Set<String>> classCodeToPatentMap;
 	public static Map<String,LocalDate> patentToPubDateMap;
@@ -79,6 +81,8 @@ public class Database {
 	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	public static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
 	public static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
+	public static File lifeRemainingMapFile = new File(Constants.DATA_FOLDER+"item_to_life_remaining_map.jobj");
+	public static File technologyMapFile = new File(Constants.DATA_FOLDER+"item_to_technology_map.jobj");
 	public static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static File patentToRelatedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
@@ -309,7 +313,7 @@ public class Database {
 		}
 	}
 
-	public synchronized static int getLifeRemaining(String patent) {
+	public synchronized static int calculateLifeRemaining(String patent) {
 		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
@@ -321,6 +325,13 @@ public class Database {
 		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
 		// determine life remaining
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
+	}
+
+	public synchronized static Map<String,Integer> getLifeRemainingMap() {
+		if(lifeRemainingMap==null) {
+			lifeRemainingMap = (Map<String,Integer>) tryLoadObject(lifeRemainingMapFile);
+		}
+		return lifeRemainingMap;
 	}
 
 	public synchronized static LocalDate getPriorityDateFor(String patent, boolean isApplication) {
@@ -522,6 +533,13 @@ public class Database {
 			appToPubDateMap = Collections.unmodifiableMap((Map<String,LocalDate>)tryLoadObject(appToPubDateMapFile));
 		}
 		return appToPubDateMap;
+	}
+
+	public synchronized static Map<String,String> getItemToTechnologyMap() {
+		if(technologyMap==null) {
+			technologyMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(technologyMapFile));
+		}
+		return technologyMap;
 	}
 
 

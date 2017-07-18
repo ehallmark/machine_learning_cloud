@@ -2,6 +2,7 @@ package user_interface.ui_models.portfolios.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
+import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import models.classification_models.ClassificationAttr;
 
@@ -14,13 +15,13 @@ import static j2html.TagCreator.div;
  * Created by Evan on 6/17/2017.
  */
 public class TechnologyAttribute implements AbstractAttribute<String> {
-    private ClassificationAttr tagger;
-    public TechnologyAttribute(ClassificationAttr tagger) {
-        this.tagger=tagger;
-    }
+
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
-        return String.join("; ",tagger.attributesFor(portfolio,limit).stream().map(p->p.getFirst()).collect(Collectors.toList()));
+        if(portfolio==null || portfolio.isEmpty()) return "";
+
+        String item = portfolio.stream().findAny().get();
+        return Database.getItemToTechnologyMap().getOrDefault(item, "");
     }
 
     @Override
