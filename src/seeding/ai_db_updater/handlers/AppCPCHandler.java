@@ -20,19 +20,21 @@ public class AppCPCHandler implements LineHandler {
 
     @Override
     public void handleLine(String line) {
-        if (line.length() >= 32) {
+        if (line.length() >= 35) {
             String patNum = line.substring(10, 21).trim();
-            String cpcSection = line.substring(21, 22);
-            String cpcClass = cpcSection + line.substring(22, 24);
-            String cpcSubclass = cpcClass + line.substring(24, 25);
-            String cpcMainGroup = cpcSubclass + line.substring(25, 29);
-            String cpcSubGroup = cpcMainGroup + line.substring(30, 36);
-            if (appToClassificationHash.containsKey(patNum)) {
-                appToClassificationHash.get(patNum).add(cpcSubGroup);
-            } else {
-                Set<String> data = new HashSet<>();
-                data.add(cpcSubGroup);
-                appToClassificationHash.put(patNum, data);
+            if(patNum.startsWith("20")) {
+                String cpcSection = line.substring(21, 22);
+                String cpcClass = cpcSection + line.substring(22, 24);
+                String cpcSubclass = cpcClass + line.substring(24, 25);
+                String cpcMainGroup = cpcSubclass + line.substring(25, 29);
+                String cpcSubGroup = cpcMainGroup + line.substring(30, 36);
+                if (appToClassificationHash.containsKey(patNum)) {
+                    appToClassificationHash.get(patNum).add(cpcSubGroup);
+                } else {
+                    Set<String> data = new HashSet<>();
+                    data.add(cpcSubGroup);
+                    appToClassificationHash.put(patNum, data);
+                }
             }
         }
     }
