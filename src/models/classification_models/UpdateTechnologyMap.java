@@ -13,13 +13,13 @@ public class UpdateTechnologyMap {
         Map<String,String> assetToTechnologyMap = Collections.synchronizedMap(new HashMap<>());
         ClassificationAttr tagger = TechTaggerNormalizer.getDefaultTechTagger();
         Database.getAllPatentsAndApplications().parallelStream().forEach(asset->{
-            String tech = tagger.attributesFor(Arrays.asList(asset),1).stream().map(p->p.getFirst()).findAny().orElseGet(null);
+            String tech = tagger.attributesFor(Arrays.asList(asset),1).stream().map(p->p.getFirst()).findAny().orElse(null);
             if(tech!=null&&tech.length()>0) {
                 assetToTechnologyMap.put(asset,tech);
             }
         });
         Database.getAssignees().parallelStream().forEach(assignee->{
-            String tech = tagger.attributesFor(Arrays.asList(assignee),1).stream().map(p->p.getFirst()).findAny().orElseGet(null);
+            String tech = tagger.attributesFor(Arrays.asList(assignee),1).stream().map(p->p.getFirst()).findAny().orElse(null);
             if(tech!=null&&tech.length()>0) {
                 assetToTechnologyMap.put(assignee,tech);
             }
