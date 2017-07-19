@@ -9,6 +9,8 @@ CREATE TABLE patents_and_applications (
 );
 
 -- TEXT INDEX
+CREATE INDEX patents_and_applications_tokens_idx on patents_and_applications USING GIN (tokens);
+CREATE INDEX patents_and_applications_doc_type_idx on patents_and_applications (doc_type);
 CREATE INDEX patents_and_applications_tokens_patents_idx on patents_and_applications USING GIN (tokens) where doc_type='patents';
 CREATE INDEX patents_and_applications_tokens_applications_idx on patents_and_applications USING GIN (tokens) where doc_type='applications';
 
