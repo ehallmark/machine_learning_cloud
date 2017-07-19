@@ -46,10 +46,7 @@ public class UpdateClassCodeToClassTitleMap {
         factory.setValidating(false);
         DocumentBuilder dBuilder = factory.newDocumentBuilder();
         Document doc = dBuilder.parse(file);
-        System.out.println("Root element :"
-                + doc.getDocumentElement().getNodeName());
         NodeList classifications = doc.getElementsByTagName("classification-item");
-        System.out.println("----------------------------");
         for (int temp = 0; temp < classifications.getLength(); temp++) {
             Node classification = classifications.item(temp);
             if (classification.getNodeType() == Node.ELEMENT_NODE) {
@@ -57,7 +54,7 @@ public class UpdateClassCodeToClassTitleMap {
                 Node symbol = classElement.getFirstChild();
                 if(symbol!=null) {
                     String classSymbol = symbol.getTextContent();
-                    if(classSymbol.length()==3) {
+                    if(classSymbol.length() <= 4) {
                         Node node = symbol.getNextSibling().getFirstChild();
                         List<String> titleParts = new ArrayList<>();
                         while (node != null) {
