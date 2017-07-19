@@ -24,10 +24,8 @@ public class UpdateClassCodeToClassTitleMap {
         Map<String,String> classCodeToTitleMap = Collections.synchronizedMap(new HashMap<>());
 
         // parse html data
-        System.out.println("File exists? "+cpcInputDataFile.exists());
         Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).parallel().forEach(file->{
             try {
-                System.out.println("Parsing file: "+file.getName());
                 parse(file, classCodeToTitleMap);
             } catch(Exception e) {
                 System.out.println("Error parsing file: "+file.getName());
@@ -71,19 +69,12 @@ public class UpdateClassCodeToClassTitleMap {
                             }
                             node = node.getNextSibling();
                         }
-                        String title = String.join("; ",titleParts);
-                        System.out.println(classSymbol+": " + title);
+                        String title = String.join("; ",titleParts).replaceAll("[^A-Z ]","").trim();
+                        System.out.println(classSymbol+"," + title);
                         map.put(classSymbol, title);
                     }
                 }
             }
         }
     }
-
-    public static String getFullClassTitleFromClassCode(String formattedCode, Map<String,String> classCodeToClassTitleMap) {
-        formattedCode=formattedCode.toUpperCase().replaceAll(" ","");
-        if(classCodeToClassTitleMap.containsKey(formattedCode)) return classCodeToClassTitleMap.get(formattedCode);
-        return "";
-    }
-
 }
