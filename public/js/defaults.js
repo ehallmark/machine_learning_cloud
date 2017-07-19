@@ -133,6 +133,7 @@ var resetSearchForm = function() {
         $(this).closest('.collapse').removeClass("show");
     });
     $('.draggable .multiselect').val(null).trigger("change");
+    $('#results').html('');
 };
 
 var applyParams = function(params,searchOptions,special=[]) {

@@ -122,8 +122,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Assignees",PortfolioList.Type.assignees.toString());
-            humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
-            humanAttrToJavaAttrMap.put("Patents and Applications",PortfolioList.Type.assets.toString());
+            humanAttrToJavaAttrMap.put("Apps",PortfolioList.Type.applications.toString());
+            humanAttrToJavaAttrMap.put("Patents and Apps",PortfolioList.Type.assets.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
@@ -132,7 +132,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Minimum Remaining Life (Years)",Constants.REMAINING_LIFE_FILTER);
             humanAttrToJavaAttrMap.put("Require Keywords", Constants.REQUIRE_KEYWORD_FILTER);
-            humanAttrToJavaAttrMap.put("Patent Family", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Exclude Keywords", Constants.EXCLUDE_KEYWORD_FILTER);
 
             // inverted version to get human readables back
