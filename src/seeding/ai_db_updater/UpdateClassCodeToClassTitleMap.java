@@ -38,10 +38,7 @@ public class UpdateClassCodeToClassTitleMap {
         // save object
         Database.saveObject(classCodeToTitleMap,mapFile);
 
-        // test
-        String testClass = "H04W4/00";
-        String fullTitle = getFullClassTitleFromClassCode(testClass,classCodeToTitleMap);
-        System.out.println("Title for "+testClass+": "+fullTitle);
+        System.out.println("Total size: "+classCodeToTitleMap.size());
     }
 
     private static void parse(File file, Map<String,String> map) throws Exception {
