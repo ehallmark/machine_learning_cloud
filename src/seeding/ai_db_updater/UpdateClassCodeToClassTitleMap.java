@@ -21,10 +21,10 @@ public class UpdateClassCodeToClassTitleMap {
     // the file is located here: http://www.cooperativepatentclassification.org/Archive.html
 
     public static void main(String[] args) {
-        Map<String,String> classCodeToTitleMap = new HashMap<>();
+        Map<String,String> classCodeToTitleMap = Collections.synchronizedMap(new HashMap<>());
 
         // parse html data
-        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).forEach(file->{
+        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).parallel().forEach(file->{
             try {
                 System.out.println("Parsing file: "+file.getName());
                 parse(file, classCodeToTitleMap);
