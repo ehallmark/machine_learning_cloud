@@ -24,13 +24,9 @@ public class UpdateClassCodeToClassTitleMap {
         Map<String,String> classCodeToTitleMap = new HashMap<>();
 
         // parse html data
-        Arrays.stream(cpcInputDataFile.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".xml");
-            }
-        })).forEach(file->{
+        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).forEach(file->{
             try {
+                System.out.println("Parsing file: "+file.getName());
                 parse(file, classCodeToTitleMap);
             } catch(Exception e) {
                 System.out.println("Error parsing file: "+file.getName());
@@ -40,7 +36,7 @@ public class UpdateClassCodeToClassTitleMap {
 
         // save object
         Database.saveObject(classCodeToTitleMap,mapFile);
-  
+
         // test
         String testClass = "H04W4/00";
         String fullTitle = getFullClassTitleFromClassCode(testClass,classCodeToTitleMap);
