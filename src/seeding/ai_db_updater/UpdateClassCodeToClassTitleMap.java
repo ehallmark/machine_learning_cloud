@@ -4,6 +4,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import seeding.Constants;
+import seeding.Database;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -14,8 +16,8 @@ import java.util.*;
  * Created by ehallmark on 1/25/17.
  */
 public class UpdateClassCodeToClassTitleMap {
-    public static final File mapFile = new File("class_code_to_class_title_map.jobj");
-    private static final File cpcInputDataFile = new File("cpc_xml/");
+    public static final File mapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
+    private static final File cpcInputDataFile = new File(Constants.DATA_FOLDER+"CPCSchemeXML201705");
     // the file is located here: http://www.cooperativepatentclassification.org/Archive.html
 
     public static void main(String[] args) {
@@ -37,14 +39,8 @@ public class UpdateClassCodeToClassTitleMap {
         });
 
         // save object
-        try {
-            ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(mapFile)));
-            oos.writeObject(classCodeToTitleMap);
-            oos.flush();
-            oos.close();
-        }catch(IOException e) {
-            e.printStackTrace();
-        }
+        Database.saveObject(classCodeToTitleMap,mapFile);
+  
         // test
         String testClass = "H04W4/00";
         String fullTitle = getFullClassTitleFromClassCode(testClass,classCodeToTitleMap);
