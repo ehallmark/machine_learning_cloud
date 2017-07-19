@@ -24,6 +24,8 @@ public class UpdateClassCodeToClassTitleMap {
         Map<String,String> classCodeToTitleMap = Collections.synchronizedMap(new HashMap<>());
 
         // parse html data
+        System.out.println("File exists? "+cpcInputDataFile.exists());
+        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).forEach(file->System.out.println("File: "+file.getName()));
         Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).parallel().forEach(file->{
             try {
                 System.out.println("Parsing file: "+file.getName());
