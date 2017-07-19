@@ -56,7 +56,7 @@ public class UpdateClassCodeToClassTitleMap {
                 Node symbol = classElement.getFirstChild();
                 if(symbol!=null) {
                     String classSymbol = symbol.getTextContent();
-                    if(classSymbol.length()==4) {
+                    if(classSymbol.length()==3) {
                         Node node = symbol.getNextSibling().getFirstChild();
                         List<String> titleParts = new ArrayList<>();
                         while (node != null) {
@@ -69,7 +69,7 @@ public class UpdateClassCodeToClassTitleMap {
                             }
                             node = node.getNextSibling();
                         }
-                        String title = String.join("; ",titleParts).replaceAll("[^A-Z ]","").trim();
+                        String title = String.join("; ",titleParts).replaceAll("[^A-Z ]"," ").trim();
                         System.out.println(classSymbol+"," + title);
                         map.put(classSymbol, title);
                     }
