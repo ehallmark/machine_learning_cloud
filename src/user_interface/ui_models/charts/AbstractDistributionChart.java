@@ -69,6 +69,7 @@ public class AbstractDistributionChart implements ChartAttribute {
         }
         itemPairs.forEach(e->{
             String tech = e.getFirst();
+            if(tech.isEmpty()) tech = "Unknown";
             double prob = e.getSecond();
             Point point = new Point(tech,prob);
             series.addPoint(point);

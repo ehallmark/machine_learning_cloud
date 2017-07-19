@@ -68,20 +68,22 @@ public class UpdateClassCodeToClassTitleMap {
                 Node symbol = classElement.getFirstChild();
                 if(symbol!=null) {
                     String classSymbol = symbol.getTextContent();
-                    Node node = symbol.getNextSibling().getFirstChild();
-                    List<String> titleParts = new ArrayList<>();
-                    while(node!=null) {
-                        if(node.getNodeType() == Node.ELEMENT_NODE) {
-                            Element elem = (Element) node;
-                            if(elem.getTagName().equals("title-part")) {
-                                titleParts.add(elem.getTextContent());
+                    if(classSymbol.length()==3) {
+                        Node node = symbol.getNextSibling().getFirstChild();
+                        List<String> titleParts = new ArrayList<>();
+                        while (node != null) {
+                            if (node.getNodeType() == Node.ELEMENT_NODE) {
+                                Element elem = (Element) node;
+                                if (elem.getTagName().equals("title-part")) {
+                                    titleParts.add(elem.getTextContent());
+                                }
                             }
+                            node = node.getNextSibling();
                         }
-                        node = node.getNextSibling();
+                        System.out.println("Symbol: " + classSymbol);
+                        System.out.println("Title: " + String.join("; ", titleParts));
+                        map.put(classSymbol, String.join("; ", titleParts));
                     }
-                    System.out.println("Symbol: " + classSymbol);
-                    System.out.println("Title: " + String.join("; ", titleParts));
-                    map.put(classSymbol, String.join("; ", titleParts));
                 }
             }
         }
