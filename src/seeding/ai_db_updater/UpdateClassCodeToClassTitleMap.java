@@ -25,7 +25,6 @@ public class UpdateClassCodeToClassTitleMap {
 
         // parse html data
         System.out.println("File exists? "+cpcInputDataFile.exists());
-        Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).forEach(file->System.out.println("File: "+file.getName()));
         Arrays.stream(cpcInputDataFile.listFiles((dir,name)->name.endsWith(".xml")&&!name.chars().anyMatch(c->Character.isDigit(c)))).parallel().forEach(file->{
             try {
                 System.out.println("Parsing file: "+file.getName());
@@ -70,13 +69,14 @@ public class UpdateClassCodeToClassTitleMap {
                                 Element elem = (Element) node;
                                 if (elem.getTagName().equals("title-part")) {
                                     titleParts.add(elem.getTextContent());
+                                    break;
                                 }
                             }
                             node = node.getNextSibling();
                         }
-                        System.out.println("Symbol: " + classSymbol);
-                        System.out.println("Title: " + String.join("; ", titleParts));
-                        map.put(classSymbol, String.join("; ", titleParts));
+                        String title = String.join("; ",titleParts);
+                        System.out.println(classSymbol+": " + title);
+                        map.put(classSymbol, title);
                     }
                 }
             }
