@@ -6,6 +6,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import seeding.Constants;
 import seeding.Database;
+import tools.AssigneeTrimmer;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -63,13 +64,17 @@ public class UpdateClassCodeToClassTitleMap {
                             if (node.getNodeType() == Node.ELEMENT_NODE) {
                                 Element elem = (Element) node;
                                 if (elem.getTagName().equals("title-part")) {
+                                    NodeList references = elem.getElementsByTagName("reference");
+                                    for(int i = 0; i < references.getLength(); i++) {
+                                        elem.removeChild(references.item(i));
+                                    }
                                     titleParts.add(elem.getTextContent());
                                     break;
                                 }
                             }
                             node = node.getNextSibling();
                         }
-                        String title = String.join("; ",titleParts).replaceAll("[^A-Z ]"," ").trim();
+                        String title = String.join("; ",titleParts);
                         System.out.println(classSymbol+"," + title);
                         map.put(classSymbol, title);
                     }
