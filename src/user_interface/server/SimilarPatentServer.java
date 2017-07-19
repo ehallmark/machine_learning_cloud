@@ -772,7 +772,7 @@ public class SimilarPatentServer {
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                            ContainerTag option = option(type.toString().substring(0,1).toUpperCase()+type.toString().substring(1)).withValue(type.toString());
+                                                            ContainerTag option = option(humanAttributeFor(type.toString())).withValue(type.toString());
                                                             if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
                                                             return option;
                                                         }).collect(Collectors.toList())
