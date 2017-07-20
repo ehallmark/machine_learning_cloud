@@ -15,8 +15,8 @@ import java.util.Set;
  */
 public class ApplicationCitationSAXHandler extends CitationSAXHandler {
 
-    private ApplicationCitationSAXHandler(Map<String,LocalDate> patentToPubDateMap, Map<String,LocalDate> patentToAppDateMap, Map<String,LocalDate> patentToPriorityDateMap, Map<String,Set<String>> patentToCitedPatentsMap, Map<String,Set<String>> patentToRelatedDocMap, Set<String> lapsedPatentsSet) {
-        super(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet);
+    private ApplicationCitationSAXHandler(Map<String,LocalDate> patentToPubDateMap, Map<String,LocalDate> patentToAppDateMap, Map<String,LocalDate> patentToPriorityDateMap, Map<String,Set<String>> patentToCitedPatentsMap, Map<String,Set<String>> patentToRelatedDocMap, Set<String> lapsedPatentsSet, Map<String,String> patentToAppRefMap) {
+        super(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet, patentToAppRefMap);
     }
 
     public ApplicationCitationSAXHandler() {
@@ -25,7 +25,7 @@ public class ApplicationCitationSAXHandler extends CitationSAXHandler {
 
     @Override
     public CustomHandler newInstance() {
-        return new ApplicationCitationSAXHandler(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet);
+        return new ApplicationCitationSAXHandler(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet,patentToAppRefMap);
     }
 
     @Override
@@ -36,5 +36,6 @@ public class ApplicationCitationSAXHandler extends CitationSAXHandler {
         Database.saveObject(patentToAppDateMap,Database.appToAppDateMapFile);
         Database.saveObject(patentToPriorityDateMap,Database.appToPriorityDateMapFile);
         Database.saveObject(lapsedPatentsSet,Database.lapsedAppSetFile);
+        Database.saveObject(patentToAppRefMap,Database.appToAppRefMapFile);
     }
 }

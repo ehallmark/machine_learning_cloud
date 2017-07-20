@@ -21,6 +21,7 @@ public class CitationSAXHandler extends CustomHandler{
     protected Map<String,Set<String>> patentToCitedPatentsMap;
     protected Map<String,Set<String>> patentToRelatedDocMap;
     protected Map<String,LocalDate> patentToPriorityDateMap;
+    protected Map<String,String> patentToAppRefMap;
     protected Set<String> lapsedPatentsSet;
 
     protected boolean inPublicationReference=false;
@@ -40,6 +41,7 @@ public class CitationSAXHandler extends CustomHandler{
     protected boolean isRelatedDocCountry = false;
     protected boolean isCitedDocCountry = false;
     protected String pubDocNumber;
+    protected String appDocNumber;
     protected String docNumber;
     protected String docKind;
     protected LocalDate appDate;
@@ -57,20 +59,22 @@ public class CitationSAXHandler extends CustomHandler{
         patentToRelatedDocMap = Collections.synchronizedMap(new HashMap());
         patentToPriorityDateMap = Collections.synchronizedMap(new HashMap<>());
         lapsedPatentsSet = Collections.synchronizedSet(new HashSet<>());
+        patentToAppRefMap = Collections.synchronizedMap(new HashMap<>());
     }
 
-    protected CitationSAXHandler(Map<String,LocalDate> patentToPubDateMap, Map<String,LocalDate> patentToAppDateMap, Map<String,LocalDate> patentToPriorityDateMap, Map<String,Set<String>> patentToCitedPatentsMap, Map<String,Set<String>> patentToRelatedDocMap, Set<String> lapsedPatentsSet) {
+    protected CitationSAXHandler(Map<String,LocalDate> patentToPubDateMap, Map<String,LocalDate> patentToAppDateMap, Map<String,LocalDate> patentToPriorityDateMap, Map<String,Set<String>> patentToCitedPatentsMap, Map<String,Set<String>> patentToRelatedDocMap, Set<String> lapsedPatentsSet, Map<String,String> patentToAppRefMap) {
         this.patentToAppDateMap=patentToAppDateMap;
         this.patentToPriorityDateMap=patentToPriorityDateMap;
         this.patentToPubDateMap=patentToPubDateMap;
         this.patentToCitedPatentsMap=patentToCitedPatentsMap;
         this.patentToRelatedDocMap=patentToRelatedDocMap;
         this.lapsedPatentsSet=lapsedPatentsSet;
+        this.patentToAppRefMap=patentToAppRefMap;
     }
 
     @Override
     public CustomHandler newInstance() {
-        return new CitationSAXHandler(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet);
+        return new CitationSAXHandler(patentToPubDateMap,patentToAppDateMap,patentToPriorityDateMap,patentToCitedPatentsMap,patentToRelatedDocMap,lapsedPatentsSet,patentToAppRefMap);
     }
 
     private void update() {
@@ -94,6 +98,9 @@ public class CitationSAXHandler extends CustomHandler{
             if (!relatedDocuments.isEmpty()) {
                 //System.out.println(patNum+ " has "+related.size()+" related documents");
                 patentToRelatedDocMap.put(pubDocNumber, relatedDocuments);
+            }
+            if(appDocNumber != null) {
+                patentToAppRefMap.put(pubDocNumber, appDocNumber);
             }
         }
     }
@@ -122,6 +129,7 @@ public class CitationSAXHandler extends CustomHandler{
         isRelatedDocNumber=false;
         isPriorityDate=false;
         priorityDate=null;
+        appDocNumber=null;
         pubDocNumber=null;
         documentPieces.clear();
         citedDocuments = new HashSet<>();
@@ -165,6 +173,7 @@ public class CitationSAXHandler extends CustomHandler{
         Database.saveObject(patentToPubDateMap,Database.patentToPubDateMapFile);
         Database.saveObject(patentToPriorityDateMap,Database.patentToPriorityDateMapFile);
         Database.saveObject(lapsedPatentsSet,Database.lapsedPatentSetFile);
+        Database.saveObject(patentToAppRefMap,Database.patentToAppRefMapFile);
     }
 
     public void startElement(String uri,String localName,String qName,
@@ -229,6 +238,10 @@ public class CitationSAXHandler extends CustomHandler{
             isCitedDocCountry=true;
         }
 
+        if(inApplicationReference && qName.equals("doc-number")) {
+            isDocNumber=true;
+        }
+
         if(qName.contains("related-doc")||qName.equals("relation")||qName.equals("us-relation")) {
             inRelatedDoc=true;
         }
@@ -283,6 +296,13 @@ public class CitationSAXHandler extends CustomHandler{
 
         if(qName.equals("publication-reference")){
             inPublicationReference=false;
+        }
+
+        if(inApplicationReference && qName.equals("doc-number")) {
+            isDocNumber=false;
+            appDocNumber=String.join("",documentPieces).replaceAll("[^A-Z0-9]","");
+            appDocNumber=appDocNumber.substring(0,2)+"/"+appDocNumber.substring(2);
+            documentPieces.clear();
         }
 
         if(qName.equals("patcit")) {

@@ -79,6 +79,8 @@ public class Database {
 	public static File lapsedAppSetFile = new File(Constants.DATA_FOLDER+"lapsed_apps_set.jobj");
 	public static File expiredPatentSetFile = new File(Constants.DATA_FOLDER+"expired_patents_set.jobj");
 	public static File lapsedPatentSetFile = new File(Constants.DATA_FOLDER+"lapsed_patents_set.jobj");
+	public static File patentToAppRefMapFile = new File(Constants.DATA_FOLDER+"patent_to_app_ref_map.jobj");
+	public static File appToAppRefMapFile = new File(Constants.DATA_FOLDER+"app_to_app_ref_map.jobj");
 	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	public static File valuablePatentsFile = new File(Constants.DATA_FOLDER+"valuable_patents.jobj");
 	public static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
