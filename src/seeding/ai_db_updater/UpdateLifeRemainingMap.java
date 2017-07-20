@@ -17,7 +17,7 @@ public class UpdateLifeRemainingMap {
 
         Map<String,Integer> lifeRemainingMap = Collections.synchronizedMap(new HashMap<>());
         Map<String,LocalDate> expirationDateMap = Collections.synchronizedMap(new HashMap<>());
-        Database.getAllPatentsAndApplications().parallelStream().forEach(asset->{
+        Database.getAllPatentsAndApplications().forEach(asset->{
             LocalDate priorityDate = Database.calculatePriorityDate(asset);
             if(termAdjustmentMap.containsKey(asset)) {
                 priorityDate = priorityDate.plusDays(termAdjustmentMap.get(asset));

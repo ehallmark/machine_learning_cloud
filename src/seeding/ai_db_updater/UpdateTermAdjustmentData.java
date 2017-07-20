@@ -28,7 +28,7 @@ public class UpdateTermAdjustmentData {
         File dataFolder = new File("data/patent_term_adjustments/");
         Arrays.stream(dataFolder.listFiles()).forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                reader.lines().parallel().forEach(line->{
+                reader.lines().forEach(line->{
                     if(cnt.getAndIncrement()%10000==0) System.out.println("Cnt: "+cnt.get());
                     handler.handleLine(line);
                 });
@@ -36,6 +36,7 @@ public class UpdateTermAdjustmentData {
                 e.printStackTrace();
             }
         });
+        System.out.println(".. done");
         handler.save();
 
         Map<String,Integer> appRefTermAdjustmentMap = handler.getPatentToTermAdjustmentMap();
@@ -44,10 +45,11 @@ public class UpdateTermAdjustmentData {
         Map<String,String> appToAppRefMap = (Map<String,String>) Database.tryLoadObject(Database.appToAppRefMapFile);
 
         // Update patents and applications
+        System.out.println("Handling patents...");
         handleAssets(assetTermAdjustmentMap,Database.getCopyOfAllPatents(),patentToAppRefMap,appRefTermAdjustmentMap);
+        System.out.println("Handling applications...");
         handleAssets(assetTermAdjustmentMap,Database.getCopyOfAllApplications(),appToAppRefMap,appRefTermAdjustmentMap);
-
-
+        System.out.println("saving...");
         Database.saveObject(assetTermAdjustmentMap, Database.updatedTermAdjustmentFile);
     }
 
