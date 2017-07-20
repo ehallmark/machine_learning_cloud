@@ -44,6 +44,7 @@ public class Constants {
 	public static final String PATENT_SEARCH_SCOPE_FILTER = "patentSearchScopeFilter";
 	public static final String ASSIGNEE_SEARCH_SCOPE_FILTER = "assigneeSearchScopeFilter";
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
+	public static final String CPC_TECHNOLOGY = "cpcTechnology";
 	public static final String PORTFOLIO_ASSESSMENT = "Portfolio Assessment";
 	public static final String SIMILAR_SEARCH = "Similarity Search";
 	public static final String SIMILAR_PATENT_SEARCH = "Similar Asset Search";

@@ -60,6 +60,7 @@ public class SimilarPatentServer {
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
+    public static final String CPC_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "cpcTechnologiesToFilter[]";
     public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
@@ -136,7 +137,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Exclude Keywords", Constants.EXCLUDE_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Advanced Keyword Filter", Constants.ADVANCED_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
-            humanAttrToJavaAttrMap.put("Term Adjustments", Constants.PATENT_TERM_ADJUSTMENT);
+            humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
+            humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -200,6 +202,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
                 preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
                 preFilterModelMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyFilter());
+                preFilterModelMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyFilter());
                 preFilterModelMap.put(Constants.REMAINING_LIFE_FILTER, new RemainingLifeFilter());
                 preFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
 
@@ -234,7 +237,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
             attributesMap.put(Constants.NAME, new NameAttribute());
-            attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOClassificationAttribute());
+            attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
@@ -242,6 +245,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
+            attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
 
             // similarity engine
             similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
@@ -648,7 +652,7 @@ public class SimilarPatentServer {
     }
 
 
-    public static Tag technologySelect(String name, List<String> orderedClassifications) {
+    public static Tag technologySelect(String name, Collection<String> orderedClassifications) {
         return select().attr("style","width:100%;").withName(name).withClass("multiselect").attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));

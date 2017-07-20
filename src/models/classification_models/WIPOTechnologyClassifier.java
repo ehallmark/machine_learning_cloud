@@ -2,7 +2,7 @@ package models.classification_models;
 
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
-import user_interface.ui_models.portfolios.attributes.WIPOClassificationAttribute;
+import user_interface.ui_models.portfolios.attributes.WIPOTechnologyAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
  * Created by Evan on 3/4/2017.
  */
 public class WIPOTechnologyClassifier implements ClassificationAttr {
-    private static WIPOClassificationAttribute attribute = new WIPOClassificationAttribute();
+    private static WIPOTechnologyAttribute attribute = new WIPOTechnologyAttribute();
 
     @Override
     public Tag getOptionsTag() {

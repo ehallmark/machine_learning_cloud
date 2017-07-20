@@ -17,35 +17,8 @@ import static j2html.TagCreator.*;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class WIPOTechnologyFilter extends AbstractFilter {
-    private Set<String> wipoTechnologies;
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        wipoTechnologies = new HashSet<>(SimilarPatentServer.extractArray(params, SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD));
+public class WIPOTechnologyFilter extends AbstractTechnologyFilter {
+    public WIPOTechnologyFilter() {
+        super(WIPOHelper.getOrderedClassifications(), Constants.WIPO_TECHNOLOGY, SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD);
     }
-
-    @Override
-    public Tag getOptionsTag() {
-        return div().with(
-                SimilarPatentServer.technologySelect(SimilarPatentServer.WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD, WIPOHelper.getOrderedClassifications())
-        );
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return  wipoTechnologies.isEmpty() || wipoTechnologies.contains(item.getData(Constants.WIPO_TECHNOLOGY).toString());
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.WIPO_TECHNOLOGY);
-    }
-
-    @Override
-    public String getName() {
-        return Constants.WIPO_TECHNOLOGY;
-    }
-
-    public boolean isActive() { return wipoTechnologies.size()>0; }
-
 }

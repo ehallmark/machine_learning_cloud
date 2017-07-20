@@ -91,7 +91,7 @@ public class Database {
 	public static File valuableAppsFile = new File(Constants.DATA_FOLDER+"valuable_apps.jobj");
 	public static File lifeRemainingMapFile = new File(Constants.DATA_FOLDER+"item_to_life_remaining_map.jobj");
 	public static File technologyMapFile = new File(Constants.DATA_FOLDER+"item_to_technology_map.jobj");
-	public static File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
+	public static final File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
 	private static File patentToRelatedPatentsMapFile = new File(Constants.DATA_FOLDER+"patent_to_related_docs_map_file.jobj");
 	private static final String patentDBUrl = "jdbc:postgresql://localhost/patentdb?user=postgres&password=password&tcpKeepAlive=true";
 	private static final String compDBUrl = "jdbc:postgresql://data.gttgrp.com/compdb_production?user=postgres&password=&tcpKeepAlive=true";

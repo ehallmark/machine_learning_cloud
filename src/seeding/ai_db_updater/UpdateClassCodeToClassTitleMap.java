@@ -17,7 +17,6 @@ import java.util.*;
  * Created by ehallmark on 1/25/17.
  */
 public class UpdateClassCodeToClassTitleMap {
-    public static final File mapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
     private static final File cpcInputDataFile = new File(Constants.DATA_FOLDER+"CPCSchemeXML201705/");
     // the file is located here: http://www.cooperativepatentclassification.org/Archive.html
 
@@ -35,7 +34,7 @@ public class UpdateClassCodeToClassTitleMap {
         });
 
         // save object
-        Database.saveObject(classCodeToTitleMap,mapFile);
+        Database.saveObject(classCodeToTitleMap,Database.classCodeToClassTitleMapFile);
 
         System.out.println("Total size: "+classCodeToTitleMap.size());
     }
