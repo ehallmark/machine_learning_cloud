@@ -38,6 +38,7 @@ public class Constants {
 	public static final String PIE_CHART = "pieChart[]";
 	public static final String HISTOGRAM = "histogram[]";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
+	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
 	public static final String PATENT_SEARCH_SCOPE_FILTER = "patentSearchScopeFilter";
 	public static final String ASSIGNEE_SEARCH_SCOPE_FILTER = "assigneeSearchScopeFilter";
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";

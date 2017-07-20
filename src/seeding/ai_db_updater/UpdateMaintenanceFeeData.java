@@ -11,9 +11,6 @@ import java.util.Set;
  * Created by ehallmark on 1/19/17.
  */
 public class UpdateMaintenanceFeeData {
-    public static Set<String> load() throws IOException,ClassNotFoundException {
-        return Database.loadExpiredPatentsSet();
-    }
     public static void main(String[] args) {
         try {
             // update latest assignees

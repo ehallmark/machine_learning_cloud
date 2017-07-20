@@ -69,6 +69,7 @@ public class Database {
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static final File patentToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_priority_date_map.jobj");
 	public static final File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
+	public static final File patentToTermAdjustmentMap = new File(Constants.DATA_FOLDER+"term_adjustment_map.jobj");
 	public static final File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
 	public static final File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
 	public static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
