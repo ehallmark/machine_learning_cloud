@@ -15,6 +15,6 @@ public class UpdateAppReferences {
         patentIterator.applyHandlers(new CitationSAXHandler());
 
         PatentGrantIterator appIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
-        patentIterator.applyHandlers(new ApplicationCitationSAXHandler());
+        appIterator.applyHandlers(new ApplicationCitationSAXHandler());
     }
 }
