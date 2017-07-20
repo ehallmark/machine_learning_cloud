@@ -54,6 +54,7 @@ public class Database {
 	public static Set<String> largeEntityPatents;
 	public static Set<String> microEntityPatents;
 	public static Set<String> japaneseCompanies;
+	private static Map<String,Integer> itemToTermAdjustmentMap;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
 	private static Map<String,Integer> assigneeToAssetsPurchasedCountMap;
 	private static Map<String,Integer> compDBAssigneeToAssetsSoldCountMap;
@@ -70,7 +71,8 @@ public class Database {
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
 	public static final File patentToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_priority_date_map.jobj");
 	public static final File patentToClassificationMapFile = new File(Constants.DATA_FOLDER+"patent_to_classification_map.jobj");
-	public static final File patentToTermAdjustmentMap = new File(Constants.DATA_FOLDER+"term_adjustment_map.jobj");
+	public static final File patentToTermAdjustmentMapFile = new File(Constants.DATA_FOLDER+"term_adjustment_map.jobj");
+	public static final File updatedTermAdjustmentFile = new File(Constants.DATA_FOLDER+"updated_term_adjustment_map.jobj");
 	public static final File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
 	public static final File patentToInventionTitleMapFile = new File(Constants.DATA_FOLDER+"patent_to_invention_title_map.jobj");
 	public static File patentToLatestAssigneeMapFile = new File(Constants.DATA_FOLDER+"patent_to_assignee_map_latest.jobj");
@@ -143,6 +145,17 @@ public class Database {
 		Collection<String> all = getCopyOfAllPatents();
 		all.addAll(getCopyOfAllApplications());
 		return all;
+	}
+
+	public static int termAdjustmentFor(String item) {
+		return getItemToTermAdjustmentMap().getOrDefault(item,0);
+	}
+
+	public static Map<String,Integer> getItemToTermAdjustmentMap() {
+		if(itemToTermAdjustmentMap==null) {
+			itemToTermAdjustmentMap = (Map<String,Integer>) loadObject(updatedTermAdjustmentFile);
+		}
+		return itemToTermAdjustmentMap;
 	}
 
 	public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {

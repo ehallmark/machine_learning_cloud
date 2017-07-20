@@ -17,7 +17,7 @@ public class TermAdjustmentHandler implements LineHandler {
 
     @Override
     public void save() {
-        Database.saveObject(patentToTermAdjustmentMap,Database.patentToTermAdjustmentMap);
+        Database.saveObject(patentToTermAdjustmentMap,Database.patentToTermAdjustmentMapFile);
     }
 
     @Override

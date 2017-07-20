@@ -17,7 +17,8 @@ public class PatentTermAdjustmentAttribute implements AbstractAttribute<Integer>
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
-        return null;
+        String item = portfolio.stream().findAny().get();
+        return Database.termAdjustmentFor(item);
     }
 
     @Override

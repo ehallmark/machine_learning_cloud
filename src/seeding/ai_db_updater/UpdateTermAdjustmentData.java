@@ -24,10 +24,10 @@ public class UpdateTermAdjustmentData {
     public static void main(String[] args) {
         // Get term adjustment data
         TermAdjustmentHandler handler = new TermAdjustmentHandler();
+        AtomicInteger cnt = new AtomicInteger(0);
         File dataFolder = new File("data/patent_term_adjustments/");
         Arrays.stream(dataFolder.listFiles()).forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                AtomicInteger cnt = new AtomicInteger(0);
                 reader.lines().parallel().forEach(line->{
                     if(cnt.getAndIncrement()%10000==0) System.out.println("Cnt: "+cnt.get());
                     handler.handleLine(line);
@@ -48,10 +48,11 @@ public class UpdateTermAdjustmentData {
         handleAssets(assetTermAdjustmentMap,Database.getCopyOfAllApplications(),appToAppRefMap,appRefTermAdjustmentMap);
 
 
+        Database.saveObject(assetTermAdjustmentMap, Database.updatedTermAdjustmentFile);
     }
 
     private static void handleAssets(Map<String,Integer> newMap, Collection<String> assets, Map<String,String> assetToAppRefMap, Map<String,Integer> termAdjustmentMap) {
-        assets.parallelStream().forEach(asset->{
+        assets.forEach(asset->{
             String appRef = assetToAppRefMap.get(asset);
             if(appRef!=null) {
                 Integer term = termAdjustmentMap.get(appRef);
