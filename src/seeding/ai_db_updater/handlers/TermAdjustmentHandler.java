@@ -25,7 +25,11 @@ public class TermAdjustmentHandler implements LineHandler {
             String app = row[0];
             String termAdjustment = row[4];
             try {
-                patentToTermAdjustmentMap.put(app,Integer.valueOf(termAdjustment));
+                int ta = Integer.valueOf(termAdjustment);
+                if(ta>0) {
+                    System.out.println(app+": "+ta);
+                    patentToTermAdjustmentMap.put(app, ta);
+                }
             } catch(Exception e) {
 
             }
