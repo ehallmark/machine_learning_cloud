@@ -107,7 +107,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
-            humanAttrToJavaAttrMap.put("Gather Technology", Constants.TECHNOLOGY);
+            humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD);
             humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED);
