@@ -141,7 +141,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         String keywordsToRequire = extractString(req,Constants.REQUIRE_KEYWORD_FILTER,null);
         String keywordsToExclude = extractString(req,Constants.EXCLUDE_KEYWORD_FILTER,null);
         String advancedKeywords = extractString(req,Constants.ADVANCED_KEYWORD_FILTER,null);
-        if(keywordsToRequire!=null || keywordsToExclude!=null) {
+        if(keywordsToRequire!=null || keywordsToExclude!=null || advancedKeywords != null) {
             keywordsToRequire = keywordsToRequire==null ? "" : keywordsToRequire.toLowerCase();
             keywordsToExclude = keywordsToExclude==null ? "" : keywordsToExclude.toLowerCase();
             advancedKeywords = advancedKeywords==null ? "" : advancedKeywords.toLowerCase();
