@@ -23,11 +23,11 @@ public class TermAdjustmentHandler implements LineHandler {
         String[] row = line.split(",");
         if(row.length>4) {
             String app = row[0];
+            app = app.substring(0,2)+"/"+app.substring(2);
             String termAdjustment = row[4];
             try {
                 int ta = Integer.valueOf(termAdjustment);
                 if(ta>0) {
-                    System.out.println(app+": "+ta);
                     patentToTermAdjustmentMap.put(app, ta);
                 }
             } catch(Exception e) {
