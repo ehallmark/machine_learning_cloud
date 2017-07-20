@@ -15,7 +15,6 @@ public class UpdateAll {
         UpdateClassificationHash.main(args);
         UpdateRelatedAssetsGraph.main(args);
         UpdateLifeRemainingMap.main(args);
-        UpdateTermAdjustmentData.main(args);
         WIPOHelper.main(args);
     }
 }
