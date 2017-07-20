@@ -15,17 +15,21 @@ public class UpdateLifeRemainingMap {
         UpdateTermAdjustmentData.main(args);
         Map<String,Integer> termAdjustmentMap = UpdateTermAdjustmentData.assetTermAdjustmentMap;
 
-        Map<String,Integer> map = Collections.synchronizedMap(new HashMap<>());
+        Map<String,Integer> lifeRemainingMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,LocalDate> expirationDateMap = Collections.synchronizedMap(new HashMap<>());
         Database.getAllPatentsAndApplications().parallelStream().forEach(asset->{
             LocalDate priorityDate = Database.calculatePriorityDate(asset);
             if(termAdjustmentMap.containsKey(asset)) {
                 priorityDate = priorityDate.plusDays(termAdjustmentMap.get(asset));
             }
-            int lifeRemaining = Database.expirationDateFromPriorityDate(priorityDate);
+            LocalDate expirationDate = priorityDate.plusYears(20);
+            int lifeRemaining = Database.lifeRemainingFromPriorityDate(priorityDate);
             if(lifeRemaining>0) {
-                map.put(asset,lifeRemaining);
+                lifeRemainingMap.put(asset,lifeRemaining);
+                expirationDateMap.put(asset,expirationDate);
             }
         });
-        Database.saveObject(map,Database.lifeRemainingMapFile);
+        Database.saveObject(lifeRemainingMap,Database.lifeRemainingMapFile);
+        Database.saveObject(expirationDateMap,Database.expirationDateMapFile);
     }
 }

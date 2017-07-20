@@ -53,6 +53,8 @@ public class Database {
 	public static Set<String> smallEntityPatents;
 	public static Set<String> largeEntityPatents;
 	public static Set<String> microEntityPatents;
+	public static Map<String,LocalDate> expirationDateMap;
+	public static final File expirationDateMapFile = new File(Constants.DATA_FOLDER+"expiration_date_map.jobj");
 	public static Set<String> japaneseCompanies;
 	private static Map<String,Integer> itemToTermAdjustmentMap;
 	private static Map<String,Integer> assigneeToAssetsSoldCountMap;
@@ -156,6 +158,19 @@ public class Database {
 			itemToTermAdjustmentMap = (Map<String,Integer>) loadObject(updatedTermAdjustmentFile);
 		}
 		return itemToTermAdjustmentMap;
+	}
+
+	public static String expirationDateFor(String item) {
+		LocalDate date = getExpirationDateMap().get(item);
+		if(date==null) return "";
+		return date.toString();
+	}
+
+	public static Map<String,LocalDate> getExpirationDateMap() {
+		if(expirationDateMap==null) {
+			expirationDateMap = (Map<String,LocalDate>) loadObject(expirationDateMapFile);
+		}
+		return expirationDateMap;
 	}
 
 	public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {
@@ -345,7 +360,7 @@ public class Database {
 		return priorityDate;
 	}
 
-	public static int expirationDateFromPriorityDate(LocalDate priorityDate) {
+	public static int lifeRemainingFromPriorityDate(LocalDate priorityDate) {
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
 	}
 
