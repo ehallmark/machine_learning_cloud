@@ -433,7 +433,7 @@ public class Database {
 
 	public static void preLoad() {
 		getAssignees();
-		//getClassCodeToClassTitleMap();
+		getClassCodeToClassTitleMap();
 		getPatentToClassificationMap();
 		getPatentToLatestAssigneeMap();
 		getPatentToOriginalAssigneeMap();
@@ -448,8 +448,10 @@ public class Database {
 		getLapsedPatentSet();
 		getExpiredPatentSet();
 		getJapaneseCompanies();
-		//getCompDBAssigneeToAssetsPurchasedCountMap();
-		//getCompDBAssigneeToAssetsSoldCountMap();
+		getCompDBAssigneeToAssetsPurchasedCountMap();
+		getCompDBAssigneeToAssetsSoldCountMap();
+		getExpirationDateMap();
+		getItemToTermAdjustmentMap();
 		TechTaggerNormalizer.getDefaultTechTagger();
 	}
 
