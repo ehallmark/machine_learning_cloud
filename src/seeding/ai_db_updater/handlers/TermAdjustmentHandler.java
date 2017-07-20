@@ -1,5 +1,6 @@
 package seeding.ai_db_updater.handlers;
 
+import lombok.Getter;
 import seeding.Database;
 
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.Set;
  * Created by ehallmark on 7/12/17.
  */
 public class TermAdjustmentHandler implements LineHandler {
+    @Getter
     protected Map<String,Integer> patentToTermAdjustmentMap = new HashMap<>();
 
     @Override

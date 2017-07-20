@@ -18,6 +18,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.sql.*;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -316,17 +317,22 @@ public class Database {
 		}
 	}
 
-	public synchronized static int calculateLifeRemaining(String patent) {
-		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) return 0;
+	public synchronized static LocalDate calculatePriorityDate(String patent) {
+		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) {
+			return null;
+		}
 		Set<String> related = new HashSet<>();
 		related.add(patent); // add self
 		boolean isApplication = isApplication(patent);
 		Collection<String> family = Database.getRelatedAssetsFor(patent,isApplication);
 		if (family!=null) related.addAll(family);
 		Collection<LocalDate> dates = related.stream().map(rel->Database.getPriorityDateFor(rel,isApplication)).filter(date->date!=null).collect(Collectors.toList());
-		if (dates.isEmpty()) return 0;
+		if (dates.isEmpty()) return null;
 		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
-		// determine life remaining
+		return priorityDate;
+	}
+
+	public static int expirationDateFromPriorityDate(LocalDate priorityDate) {
 		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
 	}
 
