@@ -19,9 +19,9 @@ public class UpdateTermAdjustmentData {
     public static void main(String[] args) {
         LineHandler handler = new TermAdjustmentHandler();
         File dataFolder = new File("data/patent_term_adjustments/");
-        AtomicInteger cnt = new AtomicInteger(0);
-        Arrays.stream(dataFolder.listFiles()).parallel().forEach(file -> {
+        Arrays.stream(dataFolder.listFiles()).forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                AtomicInteger cnt = new AtomicInteger(0);
                 reader.lines().parallel().forEach(line->{
                     if(cnt.getAndIncrement()%10000==0) System.out.println("Cnt: "+cnt.get());
                     handler.handleLine(line);
