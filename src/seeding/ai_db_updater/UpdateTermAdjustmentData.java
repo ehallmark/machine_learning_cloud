@@ -57,7 +57,6 @@ public class UpdateTermAdjustmentData {
             if(appRef!=null) {
                 Integer term = termAdjustmentMap.get(appRef);
                 if(term!=null) {
-                    System.out.println("FOUND!");
                     newMap.put(asset,term);
                 }
             }
