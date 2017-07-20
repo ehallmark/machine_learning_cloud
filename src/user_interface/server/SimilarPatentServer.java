@@ -134,6 +134,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Require Keywords", Constants.REQUIRE_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Exclude Keywords", Constants.EXCLUDE_KEYWORD_FILTER);
+            humanAttrToJavaAttrMap.put("Advanced Keyword Filter", Constants.ADVANCED_KEYWORD_FILTER);
+            humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
+            humanAttrToJavaAttrMap.put("Term Adjustments", Constants.PATENT_TERM_ADJUSTMENT);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -181,6 +184,7 @@ public class SimilarPatentServer {
                 // Do nothing filters
                 doNothingFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
                 doNothingFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
+                doNothingFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
                 doNothingFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
                 doNothingFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
 
@@ -236,6 +240,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
+            attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
+            attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
 
             // similarity engine
             similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));

@@ -140,18 +140,20 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // handle keywords
         String keywordsToRequire = extractString(req,Constants.REQUIRE_KEYWORD_FILTER,null);
         String keywordsToExclude = extractString(req,Constants.EXCLUDE_KEYWORD_FILTER,null);
+        String advancedKeywords = extractString(req,Constants.ADVANCED_KEYWORD_FILTER,null);
         if(keywordsToRequire!=null || keywordsToExclude!=null) {
             keywordsToRequire = keywordsToRequire==null ? "" : keywordsToRequire.toLowerCase();
             keywordsToExclude = keywordsToExclude==null ? "" : keywordsToExclude.toLowerCase();
+            advancedKeywords = advancedKeywords==null ? "" : advancedKeywords.toLowerCase();
             System.out.println("Handling keywords to require...");
             try {
                 Database.setupSeedConn();
                 Item[] scope;
                 if(searchEntireDatabase) {
-                    scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(null, portfolioType, keywordsToRequire, keywordsToExclude));
+                    scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(null, portfolioType, advancedKeywords, keywordsToRequire, keywordsToExclude));
                 } else {
                     Map<String,Item> patentMap = Arrays.stream(firstFinder.getItemList()).collect(Collectors.toMap(e->e.getName(),e->e));
-                    scope = Database.patentsWithKeywords(patentMap.keySet(), portfolioType, keywordsToRequire, keywordsToExclude).stream()
+                    scope = Database.patentsWithKeywords(patentMap.keySet(), portfolioType, advancedKeywords, keywordsToRequire, keywordsToExclude).stream()
                             .map(patent->patentMap.get(patent)).toArray(size->new Item[size]);
                 }
                 firstFinder=firstFinder.duplicateWithScope(scope);

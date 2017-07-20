@@ -625,7 +625,7 @@ public class Database {
 	public synchronized static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
-			seedConn.setAutoCommit(false);
+			//seedConn.setAutoCommit(false);
 		}
 	}
 
@@ -970,24 +970,44 @@ public class Database {
 		return apps;
 	}
 
+	private static String convertToPGTextSearch(String keywords) {
+		return keywords.replace(" not ", " ! ").replace(" and ", " & ").replace(" or ", " | ");
+	}
 
-	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String keywordsToInclude, String keywordsToExclude) throws SQLException {
-		int limit = 10000;
+
+	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String advancedKeywords, String keywordsToInclude, String keywordsToExclude) throws SQLException {
+		int limit = 1000;
 		boolean searchFullDatabase = patents==null;
 		Set<String> validPatents = new HashSet<>();
 		PreparedStatement ps;
-		String keywordQuery = "(tokens @@ (plainto_tsquery('english',?) && !!plainto_tsquery('english',?)))";
-		String docTypeWhere = type.equals(PortfolioList.Type.assets) ? " (doc_type='patents' or doc_type='applications') " : " doc_type = '"+type+"' ";
+		StringJoiner keywordJoiner = new StringJoiner(" && ", "(", ")");
+		List<String> keywordList = new ArrayList<>();
+		for(String phrase : keywordsToInclude.split("\n")) {
+			keywordJoiner.add("phraseto_tsquery('english', ?)");
+			keywordList.add(phrase);
+		}
+		for(String phrase : keywordsToExclude.split("\n")) {
+			keywordJoiner.add("!!phraseto_tsquery('english', ?)");
+			keywordList.add(phrase);
+		}
+		if(advancedKeywords!=null) {
+			keywordJoiner.add("to_tsquery('english', ?)");
+			keywordList.add(convertToPGTextSearch(advancedKeywords));
+		}
+		String keywordQuery = "(tokens @@ " + keywordJoiner.toString() + ")";
+		String docTypeWhere = type.equals(PortfolioList.Type.assets) ? " " : " doc_type = '"+type+"' and ";
+		int startIndex;
 		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE "+docTypeWhere+" and "+keywordQuery+" limit "+limit);
-			ps.setString(1,keywordsToInclude);
-			ps.setString(2,keywordsToExclude);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE "+docTypeWhere+keywordQuery+" limit "+limit);
+			startIndex = 1;
 		}
 		else {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and "+docTypeWhere+" and "+keywordQuery+" limit "+ limit);
+			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and "+docTypeWhere+keywordQuery+" limit "+ limit);
 			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
-			ps.setString(2,keywordsToInclude);
-			ps.setString(3,keywordsToExclude);
+			startIndex = 2;
+		}
+		for(int i = 0; i < keywordList.size(); i++) {
+			ps.setString(startIndex + i, keywordList.get(i));
 		}
 		ps.setFetchSize(100);
 

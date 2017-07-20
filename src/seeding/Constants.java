@@ -17,6 +17,7 @@ public class Constants {
 	public static final String SIMILARITY = "similarity";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
+	public static final String ADVANCED_KEYWORD_FILTER = "advancedKeywordFilter";
 	public static final String AI_VALUE = "aiValue";
 	public static final String COMPDB_ASSETS_PURCHASED = "compdbAssetsPurchased";
 	public static final String COMPDB_ASSETS_SOLD = "compDBAssetsSold";
