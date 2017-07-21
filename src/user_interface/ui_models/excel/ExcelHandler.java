@@ -139,10 +139,13 @@ public class ExcelHandler {
         sheet.setColumnView(col, width);
         sheet.addCell(new Label(col, 0, ""));
 
+        long t0 = System.currentTimeMillis();
         int[] colWidths = computeColWidths(data, headers);
         for(int i = 0; i < colWidths.length; i++) {
             sheet.setColumnView(1+i, colWidths[i]);
         }
+        long t1 = System.currentTimeMillis();
+        System.out.println("Time to compute col widths: "+(t1-t0)/1000+ " seconds");
 
         // gtt logo
         String pathToImage = "images/brand.png";
