@@ -91,6 +91,7 @@ public class ExcelHandler {
 
         createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
 
+        long t0 = System.currentTimeMillis();
 
         workbook.write();
         workbook.close();
@@ -99,6 +100,10 @@ public class ExcelHandler {
         //raw.getOutputStream().write(os.toByteArray());
         //raw.getOutputStream().flush();
         //raw.getOutputStream().close();
+
+
+        long t1 = System.currentTimeMillis();
+        System.out.println("Time to write sheet to outputstream: "+(t1-t0)/1000+ " seconds");
     }
 
     private static int[] computeColWidths(List<List<Object>> data, List<String> attributes) {
