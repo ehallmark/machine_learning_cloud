@@ -103,7 +103,7 @@ public class ExcelHandler {
     }
 
     private static int[] computeColWidths(List<List<String>> data, List<String> attributes) {
-        Stream<int[]> stream = data.parallelStream().limit(10).map(row->{
+        Stream<int[]> stream = data.parallelStream().limit(100).map(row->{
             int[] rowWidths = new int[attributes.size()];
             for(int i = 0; i < attributes.size(); i++) {
                 rowWidths[i] = charToPixelLength(row.get(i).toString().length());

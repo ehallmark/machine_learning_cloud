@@ -422,7 +422,6 @@ public class SimilarPatentServer {
 
             System.out.println("Getting models...");
             // Get Models to use
-            List<String> preFilterModels = extractArray(req, PRE_FILTER_ARRAY_FIELD);
             List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
             List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
