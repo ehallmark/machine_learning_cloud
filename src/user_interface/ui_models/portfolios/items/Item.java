@@ -7,6 +7,8 @@ import models.value_models.ValueMapNormalizer;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static j2html.TagCreator.td;
+
 /**
  * Created by ehallmark on 11/19/16.
  */
@@ -43,8 +45,11 @@ public class Item implements Comparable<Item> {
         return name;
     }
 
-    public List<Object> getDataAsRow(List<String> attributes) {
-        return attributes.stream().map(attr->dataMap.get(attr)).collect(Collectors.toList());
+    public List<String> getDataAsRow(List<String> attributes) {
+        return attributes.stream().map(attr->{
+            Object cell = dataMap.get(attr);
+            return cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString());
+        }).collect(Collectors.toList());
     }
 
     public Object getData(String param) {

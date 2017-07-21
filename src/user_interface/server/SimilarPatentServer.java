@@ -376,7 +376,7 @@ public class SimilarPatentServer {
             if(map==null) return null;
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of excel headers: "+headers.size());
-            List<List<Object>> data = (List<List<Object>>)map.getOrDefault("rows",Collections.emptyList());
+            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
@@ -436,7 +436,6 @@ public class SimilarPatentServer {
             System.out.println(" ... Filters");
             // Get filters
             List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
-            List<AbstractFilter> preFilters = preFilterModels.stream().map(modelName -> preFilterModelMap.get(modelName)).collect(Collectors.toList());
             List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
 
             // Update filters based on params
@@ -484,7 +483,7 @@ public class SimilarPatentServer {
             });
 
             System.out.println("Rendering table...");
-            List<List<Object>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
+            List<List<String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
             AtomicInteger chartCnt = new AtomicInteger(0);
             String html = new Gson().toJson(new AjaxChartMessage(div().with(
                     finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
@@ -557,7 +556,7 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag tableFromPatentList(List<List<Object>> data, List<String> attributes) {
+    static Tag tableFromPatentList(List<List<String>> data, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
                         button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;")
@@ -569,7 +568,7 @@ public class SimilarPatentServer {
                         ), tbody().with(
                                 data.stream().map(results -> {
                                     return addAttributesToRow(tr().with(
-                                            results.stream().map(value -> createItemCell(value)).collect(Collectors.toList())
+                                            results.stream().map(value -> td(value)).collect(Collectors.toList())
                                     ), results, attributes);
                                 }).collect(Collectors.toList())
                         )
@@ -577,22 +576,17 @@ public class SimilarPatentServer {
         );
     }
 
-    static List<List<Object>> getTableRowData(Item[] items, List<String> attributes) {
+    static List<List<String>> getTableRowData(Item[] items, List<String> attributes) {
         return Arrays.stream(items).map(item -> item.getDataAsRow(attributes)).collect(Collectors.toList());
     }
 
-    public static Tag addAttributesToRow(ContainerTag tag, List<Object> data, List<String> headers) {
+    public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {
         AtomicReference<ContainerTag> ref = new AtomicReference<>(tag);
         for(int i = 0; i < data.size(); i++) {
             ref.set(ref.get().attr("data-"+headers.get(i),data.get(i).toString()));
         }
         return ref.get();
     }
-
-    public static ContainerTag createItemCell(Object cell) {
-        return cell==null?td(""): ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? td(String.valueOf(((Number)cell).intValue())) : td(String.format("%.1f",cell))) : td(cell.toString()));
-    }
-
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
