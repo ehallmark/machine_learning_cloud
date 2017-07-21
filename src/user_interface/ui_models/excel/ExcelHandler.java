@@ -86,7 +86,6 @@ public class ExcelHandler {
     }
 
     public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<List<Object>> data, List<String> headers) throws Exception {
-        //ByteArrayOutputStream os = new ByteArrayOutputStream();
         WritableWorkbook workbook = Workbook.createWorkbook(raw.getOutputStream());
 
         createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
@@ -96,11 +95,8 @@ public class ExcelHandler {
         workbook.write();
         workbook.close();
 
-
-        //raw.getOutputStream().write(os.toByteArray());
-        //raw.getOutputStream().flush();
-        //raw.getOutputStream().close();
-
+        raw.getOutputStream().flush();
+        raw.getOutputStream().close();
 
         long t1 = System.currentTimeMillis();
         System.out.println("Time to write sheet to outputstream: "+(t1-t0)/1000+ " seconds");
@@ -116,7 +112,7 @@ public class ExcelHandler {
         });
         int[] widths = stream.reduce((w1,w2)->{
             for(int i = 0; i < w1.length; i++) {
-                w1[i]=Math.max(w1[i],w2[i]);
+                w1[i]=(w1[i]+w2[i])/2;
             }
             return w1;
         }).get();
