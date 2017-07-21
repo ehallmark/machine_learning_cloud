@@ -124,8 +124,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Assignees",PortfolioList.Type.assignees.toString());
-            humanAttrToJavaAttrMap.put("Apps",PortfolioList.Type.applications.toString());
-            humanAttrToJavaAttrMap.put("Patents and Apps",PortfolioList.Type.assets.toString());
+            humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
+            humanAttrToJavaAttrMap.put("Patents and Applications",PortfolioList.Type.assets.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
@@ -789,7 +789,7 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().withClass("col-4").with(
+                                        div().attr("style", "margin-bottom: 10px;").withClass("col-12").with(
                                                 label("Result Type"),br(),
                                                 select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
                                                         Arrays.stream(PortfolioList.Type.values()).map(type->{
@@ -799,13 +799,13 @@ public class SimilarPatentServer {
                                                         }).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("col-4").with(
+                                        div().withClass("col-6").with(
                                                 label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
                                                         option("AI Value").withValue(Constants.AI_VALUE)
                                                 )
                                         ),
-                                        div().withClass("col-4").with(
+                                        div().withClass("col-6").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         ), div().withClass("col-12").attr("style","margin-top: 8px; display: none;").with(
                                                 label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
