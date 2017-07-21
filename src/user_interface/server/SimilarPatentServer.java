@@ -55,6 +55,7 @@ import models.value_models.*;
 public class SimilarPatentServer {
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
+    public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
@@ -369,14 +370,11 @@ public class SimilarPatentServer {
     private static Object handleExcel(Request req, Response res) {
         try {
             HttpServletResponse raw = res.raw();
-            Gson gson = new Gson();
-            String json = extractString(req,"data","{}");
-            Map<String,Object> map = new HashMap<>();
-            map = (Map<String,Object>) gson.fromJson(json, map.getClass());
-            System.out.println("Size of map: "+map.size());
+            Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
+            if(map==null) return null;
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of excel headers: "+headers.size());
-            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
+            List<List<Object>> data = (List<List<Object>>)map.getOrDefault("rows",Collections.emptyList());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
@@ -482,8 +480,8 @@ public class SimilarPatentServer {
             });
 
             System.out.println("Rendering table...");
+            List<List<Object>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
             AtomicInteger chartCnt = new AtomicInteger(0);
-            String tableId = "portfolio-list-data-table";
             String html = new Gson().toJson(new AjaxChartMessage(div().with(
                     finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
                             h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
@@ -492,11 +490,16 @@ public class SimilarPatentServer {
                             ),br()
                     ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
                             h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                            tableFromPatentList(portfolioList.getItemList(), tableHeaders, tableId, DOWNLOAD_URL)
+                            tableFromPatentList(tableData, tableHeaders)
                     )
             ).render(), finishedCharts));
 
             navigator.addRequest(html);
+            Map<String,Object> excelRequestMap = new HashMap<>();
+            excelRequestMap.put("headers", tableHeaders);
+            excelRequestMap.put("rows", tableData);
+            req.session().attribute(EXCEL_SESSION, excelRequestMap);
+
             return html;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
@@ -550,31 +553,35 @@ public class SimilarPatentServer {
                 + "return false; ";
     }
 
-    static Tag tableFromPatentList(Item[] items, List<String> attributes, String tableId, String dataURL) {
+    static Tag tableFromPatentList(List<List<Object>> data, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
-                a("Download to Excel").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;").attr("onclick", "downloadTable('#"+tableId+"');"),
-                table().withId(tableId).attr("data-url",dataURL).withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+                form().withMethod("post").withAction(DOWNLOAD_URL).with(
+                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;")
+                ), table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(
                                 tr().with(
                                         attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
                                 )
                         ), tbody().with(
-                                Arrays.stream(items).map(item -> {
-                                    List<org.deeplearning4j.berkeley.Pair<String, Object>> results = item.getDataAsRow(attributes);
+                                data.stream().map(results -> {
                                     return addAttributesToRow(tr().with(
-                                            results.stream().map(pair -> createItemCell(pair.getSecond())).collect(Collectors.toList())
-                                    ), results);
+                                            results.stream().map(value -> createItemCell(value)).collect(Collectors.toList())
+                                    ), results, attributes);
                                 }).collect(Collectors.toList())
                         )
                 )
         );
     }
 
-    public static Tag addAttributesToRow(ContainerTag tag, List<org.deeplearning4j.berkeley.Pair<String,Object>> data) {
+    static List<List<Object>> getTableRowData(Item[] items, List<String> attributes) {
+        return Arrays.stream(items).map(item -> item.getDataAsRow(attributes)).collect(Collectors.toList());
+    }
+
+    public static Tag addAttributesToRow(ContainerTag tag, List<Object> data, List<String> headers) {
         AtomicReference<ContainerTag> ref = new AtomicReference<>(tag);
-        data.forEach(pair->{
-            ref.set(ref.get().attr("data-"+pair.getFirst(),pair.getSecond().toString()));
-        });
+        for(int i = 0; i < data.size(); i++) {
+            ref.set(ref.get().attr("data-"+headers.get(i),data.get(i).toString()));
+        }
         return ref.get();
     }
 

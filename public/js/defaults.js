@@ -300,37 +300,6 @@ var hideDraggable = function(elem) {
     }
 };
 
-var downloadTable = function(selector) {
-    var $table = $(selector);
-    var $headers = $table.find('thead th').map(function() { return $(this).text(); }).get();
-    var $dataRows = $table.find('tbody tr').map(function() {
-        var $row = $(this);
-        var $data = $row.find('td').map(function() { return $(this).text(); }).get();
-        return [$data];
-    }).get();
-    var $results = {
-        headers: $headers,
-        rows: $dataRows
-    };
-
-    var action = $table.attr("data-url");
-
-    var form = document.createElement("form");
-    form.setAttribute("method","post");
-    form.setAttribute("action",action);
-    form.setAttribute("target","_blank");
-    form.style.display="none";
-    var input = document.createElement('input');
-    input.setAttribute("type","hidden");
-    input.setAttribute("name","data");
-    input.setAttribute("value", JSON.stringify($results));
-    form.appendChild(input);
-    document.body.appendChild(form);
-    $(form).submit();
-    $(form).remove();
-};
-
-
 var loadEvent = function(){
  // do nothing :(
 };

@@ -43,8 +43,8 @@ public class Item implements Comparable<Item> {
         return name;
     }
 
-    public List<Pair<String,Object>> getDataAsRow(List<String> attributes) {
-        return attributes.stream().map(attr->new Pair<>(attr,dataMap.get(attr))).collect(Collectors.toList());
+    public List<Object> getDataAsRow(List<String> attributes) {
+        return attributes.stream().map(attr->dataMap.get(attr)).collect(Collectors.toList());
     }
 
     public Object getData(String param) {
