@@ -96,7 +96,7 @@ public class SimilarPatentServer {
     protected static Map<String,String> javaAttrToHumanAttrMap;
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
-        { // Attrs
+        { // Attributes
             humanAttrToJavaAttrMap = new HashMap<>();
             humanAttrToJavaAttrMap.put("Asset Number", Constants.NAME);
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
