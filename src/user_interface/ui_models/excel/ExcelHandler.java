@@ -112,7 +112,7 @@ public class ExcelHandler {
         });
         int[] widths = stream.reduce((w1,w2)->{
             for(int i = 0; i < w1.length; i++) {
-                w1[i]=(w1[i]+w2[i])/2;
+                w1[i]=Math.max(w1[i],w2[i]);
             }
             return w1;
         }).get();
@@ -140,13 +140,11 @@ public class ExcelHandler {
         sheet.setColumnView(col, width);
         sheet.addCell(new Label(col, 0, ""));
 
-        long t0 = System.currentTimeMillis();
         int[] colWidths = computeColWidths(data, headers);
         for(int i = 0; i < colWidths.length; i++) {
+            System.out.println("Col widths: "+Arrays.toString(colWidths));
             sheet.setColumnView(1+i, colWidths[i]);
         }
-        long t1 = System.currentTimeMillis();
-        System.out.println("Time to compute col widths: "+(t1-t0)/1000+ " seconds");
 
         // gtt logo
         String pathToImage = "images/brand.png";
@@ -155,7 +153,7 @@ public class ExcelHandler {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(logoImage, "PNG", baos);
         WritableImage img = new WritableImage(1.0,0.3,30.0*new Double(logoImage.getWidth()) / sheet.getColumnView(1).getSize(),
-                1.2 * new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
+                1.3 * new Double(logoImage.getHeight()) / CELL_DEFAULT_HEIGHT,baos.toByteArray());
         sheet.addImage(img);
 
         // Create the label, specifying content and format
