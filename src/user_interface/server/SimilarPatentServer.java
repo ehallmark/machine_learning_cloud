@@ -369,6 +369,8 @@ public class SimilarPatentServer {
 
     private static Object handleExcel(Request req, Response res) {
         try {
+            System.out.println("Received excel request");
+            long t0 = System.currentTimeMillis();
             HttpServletResponse raw = res.raw();
             Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
             if(map==null) return null;
@@ -378,6 +380,8 @@ public class SimilarPatentServer {
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
+            long t1 = System.currentTimeMillis();
+            System.out.println("Time to create excel sheet: "+(t1-t0)/1000+ " seconds");
             return raw;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());

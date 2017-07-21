@@ -14,6 +14,7 @@ import user_interface.server.SimilarPatentServer;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.*;
@@ -85,21 +86,23 @@ public class ExcelHandler {
     }
 
     public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<List<Object>> data, List<String> headers) throws Exception {
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        WritableWorkbook workbook = Workbook.createWorkbook(os);
+        //ByteArrayOutputStream os = new ByteArrayOutputStream();
+        WritableWorkbook workbook = Workbook.createWorkbook(raw.getOutputStream());
 
         createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
+
 
         workbook.write();
         workbook.close();
 
-        raw.getOutputStream().write(os.toByteArray());
-        raw.getOutputStream().flush();
-        raw.getOutputStream().close();
+
+        //raw.getOutputStream().write(os.toByteArray());
+        //raw.getOutputStream().flush();
+        //raw.getOutputStream().close();
     }
 
     private static int[] computeColWidths(List<List<Object>> data, List<String> attributes) {
-        Stream<int[]> stream = data.parallelStream().map(row->{
+        Stream<int[]> stream = data.parallelStream().limit(10).map(row->{
             int[] rowWidths = new int[attributes.size()];
             for(int i = 0; i < attributes.size(); i++) {
                 rowWidths[i] = charToPixelLength(row.get(i).toString().length());
