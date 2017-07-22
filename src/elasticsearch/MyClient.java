@@ -35,7 +35,7 @@ public class MyClient {
     }
 
     public static TransportClient get() {
-        if(CLIENT!=null) {
+        if(CLIENT==null) {
             init();
         }
         return CLIENT;
