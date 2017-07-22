@@ -26,12 +26,7 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
     @Override
     protected void update() {
         if (pubDocNumber != null && !fullDocuments.isEmpty() && !shouldTerminate) {
-            try {
-                DataIngester.ingestAsset(pubDocNumber, type, String.join(" ", fullDocuments));
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException();
-            }
+            DataIngester.ingestAsset(pubDocNumber, type, String.join(" ", fullDocuments));
         }
     }
 
