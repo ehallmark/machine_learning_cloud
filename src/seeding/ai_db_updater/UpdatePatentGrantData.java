@@ -1,10 +1,7 @@
 package seeding.ai_db_updater;
 
-import seeding.ai_db_updater.handlers.InventionTitleSAXHandler;
-import seeding.ai_db_updater.handlers.SAXFullTextHandler;
-import seeding.ai_db_updater.handlers.SAXHandler;
+import seeding.ai_db_updater.handlers.*;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
-import seeding.ai_db_updater.handlers.CitationSAXHandler;
 import seeding.Constants;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -15,6 +12,6 @@ public class UpdatePatentGrantData {
 
     public static void main(String[] args) {
         PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
-        patentIterator.applyHandlers(new InventionTitleSAXHandler(), new CitationSAXHandler(), new SAXHandler(), new SAXFullTextHandler(PortfolioList.Type.patents));
+        patentIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.patents), new InventionTitleSAXHandler(), new CitationSAXHandler(), new SAXHandler(), new SAXFullTextHandler(PortfolioList.Type.patents));
     }
 }

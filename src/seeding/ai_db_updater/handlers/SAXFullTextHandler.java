@@ -19,19 +19,25 @@ public class SAXFullTextHandler extends CustomHandler{
     private boolean inPublicationReference=false;
     private boolean isDocNumber=false;
     private boolean isWithinDocument=false;
-    private boolean shouldTerminate = false;
-    private String pubDocNumber;
-    private List<String> fullDocuments=new ArrayList<>();
+    protected boolean shouldTerminate = false;
+    protected String pubDocNumber;
+    protected List<String> fullDocuments=new ArrayList<>();
     private List<String> documentPieces=new ArrayList<>();
     private static AtomicInteger cnt = new AtomicInteger(0);
     private static final int wordLimit = 500;
     protected PortfolioList.Type type;
+    protected boolean commit;
 
     public SAXFullTextHandler(PortfolioList.Type type) {
-        this.type=type;
+        this(type,true);
     }
 
-    private void update() {
+    protected SAXFullTextHandler(PortfolioList.Type type, boolean commit) {
+        this.type=type;
+        this.commit=commit;
+    }
+
+    protected void update() {
         if (pubDocNumber != null && !fullDocuments.isEmpty() && !shouldTerminate) {
             try {
                 Database.ingestTextRecords(pubDocNumber, type, fullDocuments);
@@ -52,22 +58,26 @@ public class SAXFullTextHandler extends CustomHandler{
         documentPieces.clear();
         pubDocNumber=null;
         if (cnt.getAndIncrement()%10000==0)
-            try {
-                Database.commit();
-                System.out.println("Committed: "+cnt.get());
-            } catch(Exception e) {
-                e.printStackTrace();
+            if(commit) {
+                try {
+                    Database.commit();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+            System.out.println("Committed: "+cnt.get());
     }
 
     @Override
     public void save() {
-        // do nothing
-        try {
-            Database.commit();
-            //Database.close();
-        } catch(Exception e) {
-            e.printStackTrace();
+        if(commit) {
+            try {
+                Database.commit();
+                //Database.close();
+            } catch(Exception e) {
+                e.printStackTrace();
+
+            }
         }
     }
 
