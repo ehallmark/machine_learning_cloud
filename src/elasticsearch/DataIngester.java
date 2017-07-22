@@ -37,7 +37,7 @@ public class DataIngester {
             ).get();
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("name: "+name+"\nType: "+type);
+            System.out.println("ERROR ON: \n\tname: "+name+"\n\tType: "+type);
             throw new RuntimeException();
         }
     }
