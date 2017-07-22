@@ -21,6 +21,8 @@ public class DataIngester {
             jsonBuilder = XContentFactory.jsonBuilder();
         } catch(Exception e) {
             e.printStackTrace();
+            System.out.println("Unable to get json builder");
+            System.exit(1);
         }
     }
 
