@@ -57,15 +57,16 @@ public class SAXFullTextHandler extends CustomHandler{
         fullDocuments.clear();
         documentPieces.clear();
         pubDocNumber=null;
-        if (cnt.getAndIncrement()%10000==0)
-            if(commit) {
+        if (cnt.getAndIncrement()%10000==0) {
+            if (commit) {
                 try {
                     Database.commit();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
-            System.out.println("Committed: "+cnt.get());
+            System.out.println("Committed: " + cnt.get());
+        }
     }
 
     @Override

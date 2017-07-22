@@ -34,7 +34,8 @@ public class DataIngester {
                     .endObject()
             ).get();
         } catch(Exception e) {
-            e.printStackTrace();
+            System.out.println("name: "+name+"\nType: "+type+"\nText: "+text);
+            throw new RuntimeException();
         }
     }
 }
