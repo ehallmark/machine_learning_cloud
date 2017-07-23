@@ -28,10 +28,13 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
 
-    public static List<Item> searchForAssets(PortfolioList.Type type, String advancedKeywords, String keywordsToInclude, String keywordsToExclude, int limit, Collection<String> attributes) {
+    public static Item[] searchForAssets(String[] ids, PortfolioList.Type type, String advancedKeywords, String keywordsToInclude, String keywordsToExclude, int limit, Collection<String> attributes) {
         try {
             // includes
             BoolQueryBuilder query = QueryBuilders.boolQuery();
+            if(ids!=null) {
+                query.must(QueryBuilders.idsQuery(TYPE_NAME).addIds(ids));
+            }
             String[] includePhrases = keywordsToInclude.split("\\n");
             for(String phrase: includePhrases) {
                 query = query.must(QueryBuilders.matchPhraseQuery("tokens",phrase.trim()));
@@ -64,7 +67,7 @@ public class DataSearcher {
             }
             request = request.setPostFilter(filter);
             SearchResponse response = request.get();
-            return Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).collect(Collectors.toList());
+            return Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]);
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error during keyword search: "+e.getMessage());

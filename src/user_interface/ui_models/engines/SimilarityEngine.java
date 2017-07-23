@@ -1,5 +1,6 @@
 package user_interface.ui_models.engines;
 
+import elasticsearch.DataSearcher;
 import lombok.Getter;
 import seeding.Constants;
 import seeding.Database;
@@ -147,27 +148,19 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             advancedKeywords = advancedKeywords==null ? "" : advancedKeywords.toLowerCase();
             System.out.println("Handling keywords to require...");
             try {
-                Database.setupSeedConn();
                 Item[] scope;
-                if(searchEntireDatabase) {
-                    scope = SimilarPatentServer.findItemsByName(Database.patentsWithKeywords(null, portfolioType, advancedKeywords, keywordsToRequire, keywordsToExclude));
-                } else {
-                    Map<String,Item> patentMap = Arrays.stream(firstFinder.getItemList()).collect(Collectors.toMap(e->e.getName(),e->e));
-                    scope = Database.patentsWithKeywords(patentMap.keySet(), portfolioType, advancedKeywords, keywordsToRequire, keywordsToExclude).stream()
-                            .map(patent->patentMap.get(patent)).toArray(size->new Item[size]);
+                String[] ids = null;
+                if(!searchEntireDatabase) {
+                    // add scope to ids array
+                    ids=Arrays.stream(firstFinder.getItemList()).map(item->item.getName()).toArray(size->new String[size]);
                 }
+                scope = DataSearcher.searchForAssets(ids, portfolioType, advancedKeywords, keywordsToRequire, keywordsToExclude, limit*10, SimilarPatentServer.getAllAttributeNames());
                 firstFinder=firstFinder.duplicateWithScope(scope);
 
             } catch(Exception e) {
+                e.printStackTrace();
                 System.out.println("Error with keywords: "+e.getMessage());
-                throw new RuntimeException("Unable to connect to database.");
-            } finally {
-                try {
-                    Database.seedConn.close();
-                } catch(Exception e) {
-                    System.out.println("Error closing seedConn.");
-                }
-                Database.seedConn=null;
+                throw new RuntimeException("Error while searching for keywords: "+e.getMessage());
             }
         }
 

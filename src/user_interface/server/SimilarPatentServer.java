@@ -96,6 +96,8 @@ public class SimilarPatentServer {
     static List<Item> allApplications = Collections.synchronizedList(new ArrayList<>());
     static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
     static Collection<? extends AbstractAttribute> preComputedAttributes;
+    @Getter
+    static Collection<String> allAttributeNames;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -214,10 +216,9 @@ public class SimilarPatentServer {
                 // During filters
                 similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
-                // Post filters
-
                 // pre computed attributes
                 preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
+                allAttributeNames = preComputedAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
             }catch(Exception e) {
                 e.printStackTrace();
             }
