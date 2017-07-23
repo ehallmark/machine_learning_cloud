@@ -1,5 +1,6 @@
 package user_interface.ui_models.portfolios.items;
 
+import lombok.Getter;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import models.value_models.ValueMapNormalizer;
@@ -13,6 +14,7 @@ import static j2html.TagCreator.td;
  * Created by ehallmark on 11/19/16.
  */
 public class Item implements Comparable<Item> {
+    @Getter
     protected Map<String,Object> dataMap = new HashMap<>();
     protected Double similarityCache;
     protected String name;

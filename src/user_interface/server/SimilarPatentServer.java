@@ -1,6 +1,7 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -87,8 +88,11 @@ public class SimilarPatentServer {
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();
+    @Getter
     static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
+    @Getter
     static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
+    @Getter
     static List<Item> allApplications = Collections.synchronizedList(new ArrayList<>());
     static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
     static Collection<? extends AbstractAttribute> preComputedAttributes;

@@ -984,13 +984,13 @@ public class Database {
 		PreparedStatement ps;
 		StringJoiner keywordJoiner = new StringJoiner(" && ", "(", ")");
 		List<String> keywordList = new ArrayList<>();
-		for(String phrase : keywordsToInclude.split("\n")) {
+		for(String phrase : keywordsToInclude.split("\\n")) {
 			keywordJoiner.add("phraseto_tsquery('english', ?)");
-			keywordList.add(phrase);
+			keywordList.add(phrase.trim());
 		}
-		for(String phrase : keywordsToExclude.split("\n")) {
+		for(String phrase : keywordsToExclude.split("\\n")) {
 			keywordJoiner.add("!!phraseto_tsquery('english', ?)");
-			keywordList.add(phrase);
+			keywordList.add(phrase.trim());
 		}
 		if(advancedKeywords!=null) {
 			keywordJoiner.add("to_tsquery('english', ?)");
