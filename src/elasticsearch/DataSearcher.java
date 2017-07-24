@@ -28,14 +28,15 @@ public class DataSearcher {
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
+    private static final int MAX_LIMIT = 10000;
 
-    public static Item[] searchForAssets(int limit, Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
         try {
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
                     .storedFields(attributes.toArray(new String[attributes.size()]))
                     //.setQuery(queryBuilder)
-                    .setSize(limit)
+                    .setSize(MAX_LIMIT)
                     .setFrom(0);
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             // other filters
