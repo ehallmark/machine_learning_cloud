@@ -452,7 +452,6 @@ public class Database {
 
 		// gather tech
 		gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
-
 		gatherPatentSet = new HashSet<>();
 		gatherTechMap.forEach((tech,patents)->{
 			gatherPatentSet.addAll(patents);
@@ -461,9 +460,6 @@ public class Database {
 		// gather value
 		gatherValueMap = (Map<String, Boolean>) Database.tryLoadObject(gatherValueMapFile);
 
-		getExpiredPatentSet();
-		getLapsedPatentSet();
-		getLapsedAppSet();
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
