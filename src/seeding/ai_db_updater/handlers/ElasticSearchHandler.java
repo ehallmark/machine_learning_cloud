@@ -10,28 +10,43 @@ import org.xml.sax.SAXException;
 import seeding.Database;
 import user_interface.ui_models.portfolios.PortfolioList;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
 
  */
 public class ElasticSearchHandler extends SAXFullTextHandler {
-    public ElasticSearchHandler(PortfolioList.Type type) {
+    private final Map<String,String> dataMap;
+    private ElasticSearchHandler(PortfolioList.Type type, Map<String,String> dataMap) {
         super(type, false);
+        this.dataMap=dataMap;
+    }
+
+    public ElasticSearchHandler(PortfolioList.Type type) {
+        this(type, Collections.synchronizedMap(new HashMap<>()));
     }
 
     @Override
     protected void update() {
         if (pubDocNumber != null && !fullDocuments.isEmpty() && !shouldTerminate) {
-            DataIngester.ingestAsset(pubDocNumber, type, String.join(" ", fullDocuments));
+            dataMap.put(pubDocNumber, String.join(" ", fullDocuments));
+            if(dataMap.size()> 5000) {
+                DataIngester.ingestAssets(dataMap, type);
+                dataMap.clear();
+            }
         }
     }
 
     @Override
     public CustomHandler newInstance() {
-        return new ElasticSearchHandler(type);
+        return new ElasticSearchHandler(type,dataMap);
+    }
+
+    @Override
+    public void save() {
+        if(dataMap.size() > 0) {
+            DataIngester.ingestAssets(dataMap,type);
+        }
     }
 }

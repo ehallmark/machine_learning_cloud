@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.sun.deploy.security.ValidationState;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -21,18 +22,24 @@ public class DataIngester {
     static final String INDEX_NAME = "patentdb";
     static final String TYPE_NAME = "patents_and_applications";
 
-    public static void ingestAsset(String name, PortfolioList.Type type, String text) {
+    public static void ingestAssets(Map<String,String> labelToTextMap, PortfolioList.Type type) {
         try {
-            client.prepareIndex(INDEX_NAME, TYPE_NAME, name).setSource(
-                    XContentFactory.jsonBuilder().startObject()
-                            .field("pub_doc_number", name)
-                            .field("tokens", text)
-                            .field("doc_type", type.toString())
-                    .endObject()
-            ).get();
+            BulkRequestBuilder request = client.prepareBulk();
+            for(Map.Entry<String,String> e : labelToTextMap.entrySet()) {
+                XContentBuilder json = XContentFactory.jsonBuilder().startObject()
+                        .field("pub_doc_number", e.getKey())
+                        .field("doc_type",type.toString())
+                        .field("tokens", e.getValue())
+                        .endObject();
+                request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, e.getKey())
+                        .setSource(json));
+            }
+            BulkResponse response = request.get();
+            System.out.println("Update had failures: "+response.hasFailures());
+
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("ERROR ON: \n\tname: "+name+"\n\tType: "+type);
+            System.out.println("ERROR UPDATING BATCH");
             throw new RuntimeException();
         }
     }
