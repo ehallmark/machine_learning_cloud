@@ -2,6 +2,9 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import models.classification_models.WIPOHelper;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -17,8 +20,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractTechnologyFilter extends AbstractFilter {
-    private Set<String> technologies;
+public class AbstractTechnologyFilter extends AbstractIncludeFilter {
     private Collection<String> allTechnologies;
     private String attrName;
     private String filterName;
@@ -30,7 +32,7 @@ public class AbstractTechnologyFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        technologies = new HashSet<>(SimilarPatentServer.extractArray(params, filterName));
+        labels = new HashSet<>(SimilarPatentServer.extractArray(params, filterName));
     }
 
     @Override
@@ -41,13 +43,8 @@ public class AbstractTechnologyFilter extends AbstractFilter {
     }
 
     @Override
-    public boolean shouldKeepItem(Item item) {
-        return technologies==null||technologies.isEmpty()||technologies.contains(item.getData(attrName));
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(attrName);
+    public String getPrerequisite() {
+        return attrName;
     }
 
     @Override
@@ -55,6 +52,5 @@ public class AbstractTechnologyFilter extends AbstractFilter {
         return attrName;
     }
 
-    public boolean isActive() { return technologies.size() > 0; }
 
 }

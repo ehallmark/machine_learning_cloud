@@ -15,14 +15,12 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class LabelFilter extends AbstractFilter {
-    private Collection<String> labelsToRemove;
-
-    public LabelFilter() {super();};
+public class LabelFilter extends AbstractExcludeFilter {
+    public LabelFilter() {super();}
 
     public LabelFilter(Collection<String> labelsToRemove) {
         super();
-        this.labelsToRemove=labelsToRemove;
+        this.labels=labelsToRemove;
     }
 
     @Override
@@ -34,12 +32,7 @@ public class LabelFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        labelsToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return !labelsToRemove.contains(item.getName());
+        labels = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
     }
 
     @Override
@@ -47,6 +40,11 @@ public class LabelFilter extends AbstractFilter {
         return Constants.LABEL_FILTER;
     }
 
-    public boolean isActive() { return labelsToRemove.size()>0; }
+
+    @Override
+    public String getPrerequisite() {
+        return Constants.NAME;
+    }
+
 
 }

@@ -12,6 +12,7 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -28,44 +29,30 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
 
-    public static Item[] searchForAssets(String[] ids, PortfolioList.Type type, String advancedKeywords, String keywordsToInclude, String keywordsToExclude, int limit, Collection<String> attributes) {
+    public static Item[] searchForAssets(PortfolioList.Type type, int limit, Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
         try {
-            // includes
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
-            if(ids!=null) {
-                query.must(QueryBuilders.idsQuery(TYPE_NAME).addIds(ids));
-            }
-            String[] includePhrases = keywordsToInclude.split("\\n");
-            for(String phrase: includePhrases) {
-                query = query.must(QueryBuilders.matchPhraseQuery("tokens",phrase.trim()));
-            }
-            // excludes
-            String[] excludePhrases = keywordsToExclude.split("\\n");
-            for(String phrase: excludePhrases) {
-                query = query.mustNot(QueryBuilders.matchPhraseQuery("tokens",phrase.trim()));
-            }
-            // advanced
-            query = query.must(QueryBuilders.simpleQueryStringQuery(advancedKeywords)
-                    .defaultOperator(Operator.AND)
-                    .analyzeWildcard(false)
-                    .field("tokens"));
-
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
                     .storedFields(attributes.toArray(new String[attributes.size()]))
-                    .setQuery(query)
+                    //.setQuery(queryBuilder)
                     .setSize(limit)
                     .setFrom(0);
             // check for full asset search
-            QueryBuilder filter;
+            BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             if(type.equals(PortfolioList.Type.assets)) {
-                filter = QueryBuilders.boolQuery()
+                filterBuilder = filterBuilder
                         .should(QueryBuilders.termQuery("doc_type", PortfolioList.Type.applications.toString()))
                         .should(QueryBuilders.termQuery("doc_type", PortfolioList.Type.patents.toString()));
             } else {
-                filter = QueryBuilders.termQuery("doc_type", type.toString());
+                filterBuilder = filterBuilder
+                        .must(QueryBuilders.termQuery("doc_type", type.toString()));
             }
-            request = request.setPostFilter(filter);
+            // other filters
+            for(AbstractFilter filter : filters) {
+                filterBuilder = filterBuilder
+                        .must(filter.getFilterQuery());
+            }
+            request = request.setPostFilter(filterBuilder);
             SearchResponse response = request.get();
             return Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]);
         } catch(Exception e) {

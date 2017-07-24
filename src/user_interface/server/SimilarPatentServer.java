@@ -67,7 +67,6 @@ public class SimilarPatentServer {
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
-    public static final String POST_FILTER_ARRAY_FIELD = "postFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String DO_NOTHING_FILTER_ARRAY_FIELD = "doNothingFilters[]";
     public static final String LIMIT_FIELD = "limit";
@@ -83,7 +82,6 @@ public class SimilarPatentServer {
     public static SimilarityEngine similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> doNothingFilterModelMap = new HashMap<>();
-    public static Map<String,AbstractFilter> postFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
@@ -188,16 +186,18 @@ public class SimilarPatentServer {
     }
 
     public static void loadFilterModels() {
-        if(preFilterModelMap.isEmpty()&&postFilterModelMap.isEmpty()&&doNothingFilterModelMap.isEmpty()) {
+        if(preFilterModelMap.isEmpty()&&doNothingFilterModelMap.isEmpty()&&similarityFilterModelMap.isEmpty()) {
             try {
                 // Do nothing filters
-                doNothingFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
-                doNothingFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
-                doNothingFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
-                doNothingFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
-                doNothingFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
+                    // None exist at the moment...
+                    // Use doNothingFilterModelMap
 
                 // Pre filters
+                preFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
+                preFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
+                preFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
+                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
+                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
                 preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
@@ -325,7 +325,7 @@ public class SimilarPatentServer {
     }
 
     public static Collection<? extends AbstractAttribute> getAttributesFromPrerequisites(Collection<? extends DependentAttribute> dependentAttributes, Collection<String> appliedAttributes) {
-        return dependentAttributes.stream().flatMap(dependency ->(Stream<String>)dependency.getPrerequisites().stream()).distinct().filter(preReq -> !appliedAttributes.contains(preReq)).map(preReq -> {
+        return dependentAttributes.stream().flatMap(dependency ->(Stream<String>)dependency.getPrerequisites().stream().filter(r->r!=null)).distinct().filter(preReq -> !appliedAttributes.contains(preReq)).map(preReq -> {
             AbstractAttribute attr = attributesMap.get(preReq);
             if (attr != null) {
                 appliedAttributes.add(preReq);
@@ -428,7 +428,6 @@ public class SimilarPatentServer {
             System.out.println("Getting models...");
             // Get Models to use
             List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
-            List<String> postFilterModels = extractArray(req, POST_FILTER_ARRAY_FIELD);
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
             List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
             List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
@@ -439,12 +438,9 @@ public class SimilarPatentServer {
 
             System.out.println(" ... Filters");
             // Get filters
-            List<AbstractFilter> postFilters = postFilterModels.stream().map(modelName -> postFilterModelMap.get(modelName)).collect(Collectors.toList());
             List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
 
             // Update filters based on params
-            postFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
-            postFilters=postFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
             similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
             System.out.println(" ... Evaluators");
@@ -454,14 +450,6 @@ public class SimilarPatentServer {
             // get portfolio list from similarity engine
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
-
-            // Run filters
-            if(postFilters.size()>0) {
-                System.out.println("Applying necessary prerequisite attributes for post filters...");
-                portfolioList.applyAttributes(getAttributesFromPrerequisites(postFilters,appliedAttributes));
-                System.out.println("Applying post filters...");
-                portfolioList.applyFilters(postFilters);
-            }
 
             // Apply attributes
             System.out.println("Applying attributes...");
@@ -684,7 +672,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-bottom").with(
                                                         customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
                                                 ),div().withClass("col-6 form-right form-bottom").with(
-                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, postFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,POST_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
                                                 )
                                         )
                                 ),div().with(

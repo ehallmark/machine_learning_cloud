@@ -14,8 +14,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class ValueThresholdFilter extends AbstractFilter {
-    private Double threshold;
+public class ValueThresholdFilter extends AbstractGreaterThanFilter {
 
     @Override
     public Tag getOptionsTag() {
@@ -26,17 +25,7 @@ public class ValueThresholdFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        threshold = Double.valueOf(req.queryParams(Constants.VALUE_THRESHOLD_FILTER));
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : ((Number)item.getData(Constants.AI_VALUE)).doubleValue()>threshold;
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.AI_VALUE);
+        limit = Double.valueOf(req.queryParams(Constants.VALUE_THRESHOLD_FILTER));
     }
 
     @Override
@@ -44,6 +33,10 @@ public class ValueThresholdFilter extends AbstractFilter {
         return Constants.VALUE_THRESHOLD_FILTER;
     }
 
-    public boolean isActive() { return threshold != null && threshold > 0; }
+
+    @Override
+    public String getPrerequisite() {
+        return Constants.AI_VALUE;
+    }
 
 }

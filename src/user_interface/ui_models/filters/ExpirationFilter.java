@@ -1,6 +1,8 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;
@@ -20,6 +22,12 @@ public class ExpirationFilter extends AbstractFilter {
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         // do nothing
+
+    }
+
+    @Override
+    public QueryBuilder getFilterQuery() {
+        return QueryBuilders.boolQuery();
     }
 
     @Override
@@ -32,5 +40,12 @@ public class ExpirationFilter extends AbstractFilter {
     public String getName() {
         return Constants.EXPIRATION_FILTER;
     }
+
+
+    @Override
+    public String getPrerequisite() {
+        return null;
+    }
+
 
 }

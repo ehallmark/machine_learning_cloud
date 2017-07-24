@@ -14,8 +14,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class CompDBAssetsPurchasedFilter extends AbstractFilter {
-    private int limit = 0;
+public class CompDBAssetsPurchasedFilter extends AbstractGreaterThanFilter {
 
     @Override
     public Tag getOptionsTag() {
@@ -30,19 +29,8 @@ public class CompDBAssetsPurchasedFilter extends AbstractFilter {
     }
 
     @Override
-    public boolean shouldKeepItem(Item obj) {
-        if(limit <= 0) return true;
-
-        try {
-            return Integer.valueOf(obj.getData(Constants.COMPDB_ASSETS_PURCHASED).toString()) >= limit;
-        } catch(Exception e) {
-            return false;
-        }
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.COMPDB_ASSETS_PURCHASED);
+    public String getPrerequisite() {
+        return Constants.COMPDB_ASSETS_PURCHASED;
     }
 
     @Override
@@ -50,5 +38,4 @@ public class CompDBAssetsPurchasedFilter extends AbstractFilter {
         return Constants.COMPDB_ASSETS_PURCHASED;
     }
 
-    public boolean isActive() { return limit > 0; }
 }

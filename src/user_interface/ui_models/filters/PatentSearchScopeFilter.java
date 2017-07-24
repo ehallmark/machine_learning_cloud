@@ -6,12 +6,17 @@ import user_interface.server.SimilarPatentServer;
 import spark.Request;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.Collection;
+
 import static j2html.TagCreator.*;
+import static user_interface.server.SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD;
+import static user_interface.server.SimilarPatentServer.extractString;
+import static user_interface.server.SimilarPatentServer.preProcess;
 
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PatentSearchScopeFilter extends AbstractFilter {
+public class PatentSearchScopeFilter extends AbstractIncludeFilter {
 
     @Override
     public Tag getOptionsTag() {
@@ -22,11 +27,7 @@ public class PatentSearchScopeFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return true;
+        labels = preProcess(extractString(req, PATENTS_TO_SEARCH_IN_FIELD, ""), "\\s+", "[^0-9]");
     }
 
     @Override
@@ -34,6 +35,11 @@ public class PatentSearchScopeFilter extends AbstractFilter {
         return Constants.PATENT_SEARCH_SCOPE_FILTER;
     }
 
-    public boolean isActive() { return false; }
+
+    @Override
+    public String getPrerequisite() {
+        return Constants.NAME;
+    }
+
 
 }

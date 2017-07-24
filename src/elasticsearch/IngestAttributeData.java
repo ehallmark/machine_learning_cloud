@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IngestAttributeData {
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
-       // ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications);
+        ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications);
         ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents);
         ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees);
     }

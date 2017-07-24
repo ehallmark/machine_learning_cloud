@@ -14,9 +14,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class SimilarityThresholdFilter extends AbstractFilter {
-    private Double threshold;
-
+public class SimilarityThresholdFilter extends AbstractGreaterThanFilter {
 
     @Override
     public Tag getOptionsTag() {
@@ -27,17 +25,7 @@ public class SimilarityThresholdFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        threshold = Double.valueOf(req.queryParams(Constants.SIMILARITY_THRESHOLD_FILTER));
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return threshold==null ? true : item.getSimilarity()>threshold;
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.SIMILARITY);
+        limit = Double.valueOf(req.queryParams(Constants.SIMILARITY_THRESHOLD_FILTER));
     }
 
     @Override
@@ -45,6 +33,11 @@ public class SimilarityThresholdFilter extends AbstractFilter {
         return Constants.SIMILARITY_THRESHOLD_FILTER;
     }
 
-    public boolean isActive() { return threshold!=null && threshold > 0; }
+
+    @Override
+    public String getPrerequisite() {
+        return Constants.SIMILARITY;
+    }
+
 
 }

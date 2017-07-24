@@ -14,13 +14,11 @@ import java.util.HashSet;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class AssigneeFilter extends AbstractFilter {
-    protected Collection<String> assigneesToRemove;
-
+public class AssigneeFilter extends AbstractExcludeFilter {
     public AssigneeFilter() {}
 
     public AssigneeFilter(Collection<String> assigneesToRemove) {
-        this.assigneesToRemove=assigneesToRemove;
+        this.labels=assigneesToRemove;
     }
 
     @Override
@@ -32,25 +30,18 @@ public class AssigneeFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        assigneesToRemove = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.ASSIGNEES_TO_REMOVE_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+        labels = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.ASSIGNEES_TO_REMOVE_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
     }
+
 
     @Override
-    public boolean shouldKeepItem(Item item) {
-        return !assigneesToRemove.contains(item.getData(Constants.ASSIGNEE));
+    public String getPrerequisite() {
+        return Constants.ASSIGNEE;
     }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.ASSIGNEE);
-    }
-
 
     @Override
     public String getName() {
         return Constants.ASSIGNEES_TO_REMOVE_FILTER;
     }
-
-    public boolean isActive() { return assigneesToRemove.size()>0; }
 
 }

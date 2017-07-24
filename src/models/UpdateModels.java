@@ -1,5 +1,6 @@
 package models;
 
+import elasticsearch.IngestAttributeData;
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import models.model_testing.TestSpecificModels;
 
@@ -21,6 +22,8 @@ public class UpdateModels {
         // TODO update value models
         models.value_models.UpdateValueModels.main(args);
 
+        // update elasticsearch attributes
+        IngestAttributeData.main(args);
 
         // test
         TestSpecificModels.main(args); // test models

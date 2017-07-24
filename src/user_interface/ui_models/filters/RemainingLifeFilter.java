@@ -14,9 +14,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class RemainingLifeFilter extends AbstractFilter {
-    private int limit = 0;
-
+public class RemainingLifeFilter extends AbstractGreaterThanFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
@@ -30,26 +28,13 @@ public class RemainingLifeFilter extends AbstractFilter {
     }
 
     @Override
-    public boolean shouldKeepItem(Item obj) {
-        if(limit <= 0) return true;
-
-        try {
-            return Integer.valueOf(obj.getData(Constants.REMAINING_LIFE).toString()) >= limit;
-        } catch(Exception e) {
-            return false;
-        }
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.REMAINING_LIFE);
-    }
-
-    @Override
     public String getName() {
         return Constants.REMAINING_LIFE_FILTER;
     }
 
-    public boolean isActive() { return limit > 0; }
 
+    @Override
+    public String getPrerequisite() {
+        return Constants.REMAINING_LIFE;
+    }
 }

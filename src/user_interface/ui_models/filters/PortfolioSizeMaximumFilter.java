@@ -14,8 +14,7 @@ import static j2html.TagCreator.input;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PortfolioSizeMaximumFilter extends AbstractFilter {
-    private int limit = 0;
+public class PortfolioSizeMaximumFilter extends AbstractLessThanFilter {
 
     @Override
     public Tag getOptionsTag() {
@@ -30,26 +29,14 @@ public class PortfolioSizeMaximumFilter extends AbstractFilter {
     }
 
     @Override
-    public boolean shouldKeepItem(Item obj) {
-        if(limit <= 0) return true;
-
-        try {
-            return Integer.valueOf(obj.getData(Constants.PORTFOLIO_SIZE).toString()) <= limit;
-        } catch(Exception e) {
-            return false;
-        }
-    }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(Constants.PORTFOLIO_SIZE);
-    }
-
-    @Override
     public String getName() {
         return Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER;
     }
 
-    public boolean isActive() { return limit > 0; }
+
+    @Override
+    public String getPrerequisite() {
+        return Constants.PORTFOLIO_SIZE;
+    }
 
 }

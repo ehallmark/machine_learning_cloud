@@ -1,9 +1,11 @@
 package user_interface.ui_models.filters;
 
+import org.elasticsearch.index.query.QueryBuilder;
 import spark.Request;
 import user_interface.ui_models.portfolios.attributes.DependentAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -11,7 +13,6 @@ import java.util.Collections;
  * Created by Evan on 5/9/2017.
  */
 public abstract class AbstractFilter implements DependentAttribute {
-
     @Override
     public Object attributesFor(Collection portfolio, int limit) {
         throw new UnsupportedOperationException("Filter shouldn't use attributesFor method.");
@@ -21,13 +22,12 @@ public abstract class AbstractFilter implements DependentAttribute {
 
     @Override
     public Collection<String> getPrerequisites() {
-        return Collections.emptyList();
+        return Arrays.asList(getPrerequisite());
     }
 
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-
-    }
+    public abstract String getPrerequisite();
 
     public boolean isActive() { return true; }
+
+    public abstract QueryBuilder getFilterQuery();
 }
