@@ -336,17 +336,6 @@ public class SimilarPatentServer {
         }).filter(model -> model != null).collect(Collectors.toList());
     }
 
-    public static void applyTechnologyAttributes(Collection<String> technologies, PortfolioList portfolioList) throws AttributeException {
-        System.out.println("Applying technology values...");
-        // Apply technology values
-        List<SpecificTechnologyEvaluator> technologyEvaluators = new ArrayList<>();
-        technologies.forEach(technology->{
-            SpecificTechnologyEvaluator evaluator = new SpecificTechnologyEvaluator(technology,getTechTagger());
-            technologyEvaluators.add(evaluator);
-        });
-        portfolioList.applyAttributes(technologyEvaluators);
-    }
-
     public static void server() {
         port(4568);
 

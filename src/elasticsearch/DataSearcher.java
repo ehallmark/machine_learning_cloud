@@ -59,8 +59,8 @@ public class DataSearcher {
 
     private static Item hitToItem(SearchHit hit) {
         Item item = new Item(hit.getId());
-        System.out.println("Hit id: "+item.getName());
-        System.out.println(" Source: "+hit.getSourceAsString());
+        //System.out.println("Hit id: "+item.getName());
+        //System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
             item.addData(k,v);
         });

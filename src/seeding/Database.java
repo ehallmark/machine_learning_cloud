@@ -450,42 +450,15 @@ public class Database {
 		if(init==true)return;
 		init=true;
 
-		// gather tech
-		gatherTechMap = (Map<String, Collection<String>>) Database.tryLoadObject(gatherTechMapFile);
-		gatherPatentSet = new HashSet<>();
-		gatherTechMap.forEach((tech,patents)->{
-			gatherPatentSet.addAll(patents);
-		});
-
-		// gather value
-		gatherValueMap = (Map<String, Boolean>) Database.tryLoadObject(gatherValueMapFile);
 
 		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
 		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
 		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
 
-		// load dependent objects
-		allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
 
-		System.out.println("Building class code trie...");
-		// class codes trie
-		classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
-		allClassCodes.forEach(code->{
-			classCodesPrefixTrie.put(code,code);
-		});
 
-		// assignee stuff
-		{
-			allAssignees=new HashSet<>(getAssigneeToAppsMap().keySet());
-			allAssignees.addAll(getAssigneeToPatentsMap().keySet());
-			// prefix trie for assignees
-			System.out.println("Building assignee trie...");
-			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
-			allAssignees.forEach(assignee->{
-				assigneePrefixTrie.put(assignee,assignee);
-			});
-		}
 	}
+
 
 	public static Map<String,Set<String>> getAssigneeToPatentsMap() {
 		if(assigneeToPatentsMap==null) {
@@ -506,13 +479,19 @@ public class Database {
 	}
 
 	public synchronized static Set<String> getClassCodes() {
-		if(allClassCodes==null) initializeDatabase();
+		if(allClassCodes==null) {
+			// load dependent objects
+			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
+		}
 		return new HashSet<>(allClassCodes);
 	}
 
 
 	public synchronized static Set<String> getAssignees() {
-		if(allAssignees==null) initializeDatabase();
+		if(allAssignees==null) {
+			allAssignees=new HashSet<>(getAssigneeToAppsMap().keySet());
+			allAssignees.addAll(getAssigneeToPatentsMap().keySet());
+		}
 		return Collections.unmodifiableSet(allAssignees);
 	}
 
@@ -770,13 +749,37 @@ public class Database {
 		return "";
 	}
 
+	public static RadixTree<String> getAssigneePrefixTrie() {
+		// prefix trie for assignees
+		if(assigneePrefixTrie==null) {
+			System.out.println("Building assignee trie...");
+			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			getAssignees().forEach(assignee -> {
+				assigneePrefixTrie.put(assignee, assignee);
+			});
+		}
+		return assigneePrefixTrie;
+	}
+
+	public static RadixTree<String> getClassCodesPrefixTrie() {
+		if(classCodesPrefixTrie==null) {
+			System.out.println("Building class code trie...");
+			// class codes trie
+			classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+			getClassCodes().forEach(code->{
+				classCodesPrefixTrie.put(code,code);
+			});
+		}
+		return classCodesPrefixTrie;
+	}
+
 	public synchronized static Set<String> possibleNamesForAssignee(String base) {
 		if(base==null||base.isEmpty()) return new HashSet<>();
 		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
 		if(cleanBase.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
 		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
-		assigneePrefixTrie.getValuesForKeysStartingWith(cleanBase+" ").forEach(a->possible.add(a));
+		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase+" ").forEach(a->possible.add(a));
 		return possible;
 	}
 
@@ -1009,7 +1012,13 @@ public class Database {
 	}
 
 	public synchronized static Collection<String> getGatherPatents() {
-		return new ArrayList<>(gatherPatentSet);
+		if(gatherPatentSet==null) {
+			gatherPatentSet = new HashSet<>();
+			getGatherTechMap().forEach((tech,patents)->{
+				gatherPatentSet.addAll(patents);
+			});
+		}
+		return Collections.unmodifiableCollection(gatherPatentSet);
 	}
 
 	public synchronized static boolean isExpired(String patent) {

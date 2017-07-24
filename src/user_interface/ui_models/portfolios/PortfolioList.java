@@ -27,12 +27,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public void applyFilters(Collection<AbstractFilter> filters) {
-        itemList=Arrays.stream(itemList).parallel().filter(obj->filters.stream().allMatch(filter->{
-            return filter.shouldKeepItem(obj);
-        })).toArray(size-> new Item[size]);
-    }
-
     public void applyAttributes(Collection<? extends AbstractAttribute> attributes)  {
         for(Item item : itemList) {
             for(AbstractAttribute attribute : attributes) {
