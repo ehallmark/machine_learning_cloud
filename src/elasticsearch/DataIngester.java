@@ -55,9 +55,8 @@ public class DataIngester {
                     json=json.field(e.getKey(),e.getValue());
                 }
                 json=json.endObject();
-                request = request.add(client.prepareIndex(INDEX_NAME,TYPE_NAME,item.getName())
-                        .setSource(json));
-
+                request = request.add(client.prepareUpdate(INDEX_NAME,TYPE_NAME,item.getName())
+                        .setDoc(json));
             }
             BulkResponse response = request.get();
             System.out.println("Update had failures: "+response.hasFailures());
