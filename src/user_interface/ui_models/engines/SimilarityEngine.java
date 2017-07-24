@@ -88,6 +88,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
 
         // Run elasticsearch
         Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters);
+        System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString();
         AtomicReference<AbstractSimilarityModel> finderPrototype = new AtomicReference<>(similarityModelMap.get(similarityModelStr));

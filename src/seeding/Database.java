@@ -489,10 +489,6 @@ public class Database {
 				assigneePrefixTrie.put(assignee,assignee);
 			});
 		}
-
-		valuablePatents=(Set<String>)tryLoadObject(valuablePatentsFile);
-		valuableApps=(Set<String>)tryLoadObject(valuableAppsFile);
-
 	}
 
 	public static Map<String,Set<String>> getAssigneeToPatentsMap() {
@@ -630,6 +626,16 @@ public class Database {
 	public synchronized static Set<String> getLapsedAppSet() {
 		if(lapsedAppSet==null) lapsedAppSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedAppSetFile));
 		return lapsedAppSet;
+	}
+
+	public synchronized static Collection<String> getValuablePatents() {
+		if(valuablePatents==null) valuablePatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(valuablePatentsFile));
+		return valuablePatents;
+	}
+
+	public synchronized static Collection<String> getValuableApplications() {
+		if(valuableApps==null) valuableApps = Collections.unmodifiableSet((Set<String>)tryLoadObject(valuableAppsFile));
+		return valuableApps;
 	}
 
 
@@ -786,8 +792,7 @@ public class Database {
 	}
 
 	public static Collection<String> getCopyOfAllPatents() {
-		if(valuablePatents==null||lapsedPatentSet==null||expiredPatentSet==null) initializeDatabase();
-		Set<String> everything = new HashSet<>(valuablePatents.size()+lapsedPatentSet.size()+expiredPatentSet.size());
+		Set<String> everything = new HashSet<>(getValuablePatents().size()+getLapsedPatentSet().size()+getExpiredPatentSet().size());
 		everything.addAll(valuablePatents);
 		everything.addAll(expiredPatentSet);
 		everything.addAll(lapsedPatentSet);
@@ -796,8 +801,7 @@ public class Database {
 
 
 	public static Collection<String> getCopyOfAllApplications() {
-		if(valuableApps==null||lapsedAppSet==null) initializeDatabase();
-		Set<String> everything = new HashSet<>(valuableApps.size()+lapsedAppSet.size());
+		Set<String> everything = new HashSet<>(getValuableApplications().size()+getLapsedAppSet().size());
 		everything.addAll(valuableApps);
 		everything.addAll(lapsedAppSet);
 		return everything;
@@ -918,11 +922,6 @@ public class Database {
 		}
 		if(assignees==null) assignees = Collections.emptyList();
 		return Collections.unmodifiableCollection(assignees);
-	}
-
-	public synchronized static Collection<String> getValuablePatents() {
-		if(valuablePatents==null) initializeDatabase();
-		return valuablePatents;
 	}
 
 	public synchronized static Collection<String> selectPatentNumbersFromAssignee(String assignee){
