@@ -172,6 +172,10 @@ var applyParams = function(params,searchOptions,special=[]) {
                     }
                 }
             }
+            // trigger change
+            if($input.hasClass("single-select2")) {
+                $input.trigger('change');
+            }
         }
     });
     // open search forms

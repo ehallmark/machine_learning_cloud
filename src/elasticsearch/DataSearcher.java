@@ -35,7 +35,7 @@ public class DataSearcher {
             String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
-                    .setFetchSource(true)
+                    //.setFetchSource(true)
                     .setFetchSource(attrArray, null)
                     .storedFields("_source")
                     //.setQuery(queryBuilder)
@@ -59,6 +59,8 @@ public class DataSearcher {
 
     private static Item hitToItem(SearchHit hit) {
         Item item = new Item(hit.getId());
+        System.out.println("Hit id: "+item.getName());
+        System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
             item.addData(k,v);
         });
