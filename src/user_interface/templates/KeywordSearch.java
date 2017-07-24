@@ -2,6 +2,7 @@ package user_interface.templates;
 
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -13,7 +14,7 @@ import java.util.Map;
 public class KeywordSearch extends FormTemplate {
 
     public KeywordSearch() {
-        super(Constants.KEYWORD_SEARCH, getParams(), FormTemplate.valueAssetSmall(), Arrays.asList(Constants.ADVANCED_KEYWORD_FILTER,Constants.REQUIRE_KEYWORD_FILTER, Constants.EXCLUDE_KEYWORD_FILTER));
+        super(Constants.KEYWORD_SEARCH, getParams(), FormTemplate.value(), Arrays.asList(Constants.ADVANCED_KEYWORD_FILTER,Constants.REQUIRE_KEYWORD_FILTER, Constants.EXCLUDE_KEYWORD_FILTER));
     }
 
     private static Map<String,Object> getParams() {
@@ -24,6 +25,7 @@ public class KeywordSearch extends FormTemplate {
         map.put(Constants.ADVANCED_KEYWORD_FILTER,"");
         map.put(Constants.REQUIRE_KEYWORD_FILTER,"");
         map.put(Constants.EXCLUDE_KEYWORD_FILTER,"");
+        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
         return map;
     }
 }

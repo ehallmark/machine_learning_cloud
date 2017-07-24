@@ -31,75 +31,19 @@ public class FormTemplate {
         return "javascript:resetSearchForm();applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+");";
     }
 
-
-    public static Map<String,Object> similarityAssigneeSmall() {
+    public static Map<String,Object> similarity() {
         Map<String,Object> map = new HashMap<>();
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assignees.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
         return map;
     }
 
-    public static Map<String,Object> similarityPatentSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
 
-    public static Map<String,Object> similarityAssetSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
-
-    public static Map<String,Object> similarityApplicationSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.applications.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
-
-    public static Map<String,Object> valueAssigneeSmall() {
+    public static Map<String,Object> value() {
         Map<String,Object> map = new HashMap<>();
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assignees.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
-
-    public static Map<String,Object> valuePatentSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
-
-    public static Map<String,Object> valueApplicationSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.applications.toString());
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        return map;
-    }
-
-    public static Map<String,Object> valueAssetSmall() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
         return map;
     }

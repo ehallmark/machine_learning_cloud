@@ -2,6 +2,7 @@ package user_interface.templates;
 
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class PortfolioAssessment extends FormTemplate {
 
     public PortfolioAssessment() {
-        super(Constants.PORTFOLIO_ASSESSMENT, getParams(), FormTemplate.valueAssetSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
+        super(Constants.PORTFOLIO_ASSESSMENT, getParams(), FormTemplate.value(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
     }
 
     private static Map<String,Object> getParams() {
@@ -24,6 +25,7 @@ public class PortfolioAssessment extends FormTemplate {
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD,"");
+        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
         return map;
     }
 

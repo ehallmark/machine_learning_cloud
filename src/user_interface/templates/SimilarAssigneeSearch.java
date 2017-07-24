@@ -2,6 +2,7 @@ package user_interface.templates;
 
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.Map;
 public class SimilarAssigneeSearch extends FormTemplate {
 
     public SimilarAssigneeSearch() {
-        super(Constants.SIMILAR_ASSIGNEE_SEARCH, getParams(), FormTemplate.similarityAssigneeSmall(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
+        super(Constants.SIMILAR_ASSIGNEE_SEARCH, getParams(), FormTemplate.similarity(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
     }
 
     private static Map<String,Object> getParams() {
@@ -26,6 +27,7 @@ public class SimilarAssigneeSearch extends FormTemplate {
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,new ArrayList<>());
+        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assignees.toString());
         return map;
     }
 }

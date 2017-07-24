@@ -32,11 +32,11 @@ public class DataSearcher {
 
     public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
         try {
-            //String[] attrArray = attributes.toArray(new String[attributes.size()]);
+            String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
-                    //.setFetchSource(true)
-                    //.setFetchSource(attrArray, null)
+                    .setFetchSource(true)
+                    .setFetchSource(attrArray, null)
                     .storedFields("_source")
                     //.setQuery(queryBuilder)
                     .setSize(MAX_LIMIT)
@@ -59,11 +59,8 @@ public class DataSearcher {
 
     private static Item hitToItem(SearchHit hit) {
         Item item = new Item(hit.getId());
-        System.out.println("Hit id: "+item.getName());
-        System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
             item.addData(k,v);
-            System.out.println(" Adding "+k+": "+v);
         });
         return item;
     }
