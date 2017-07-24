@@ -16,11 +16,8 @@ public abstract class AbstractExcludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        BoolQueryBuilder builder = QueryBuilders.boolQuery();
-        for(String tech : labels) {
-            builder = builder
-                    .mustNot(QueryBuilders.termQuery(getPrerequisite(),tech));
-        }
+        BoolQueryBuilder builder = QueryBuilders.boolQuery()
+                    .mustNot(QueryBuilders.termsQuery(getPrerequisite(),labels));
         return builder;
     }
 

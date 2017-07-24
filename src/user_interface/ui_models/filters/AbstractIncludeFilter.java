@@ -24,11 +24,7 @@ public abstract class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        BoolQueryBuilder builder = QueryBuilders.boolQuery();
-        for(String tech : labels) {
-            builder = builder
-                    .should(QueryBuilders.termQuery(getPrerequisite(),tech));
-        }
+        QueryBuilder builder = QueryBuilders.termsQuery(getPrerequisite(),labels);
         return builder;
     }
 
