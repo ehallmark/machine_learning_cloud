@@ -91,6 +91,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
         if(scope.length>0) {
             System.out.println(String.join("; ", scope[0].getDataMap().entrySet().stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
+            System.out.println("All attributes: "+String.join("; ",SimilarPatentServer.getAllAttributeNames()));
         }
 
         String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString();
