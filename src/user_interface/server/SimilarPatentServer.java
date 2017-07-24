@@ -92,7 +92,6 @@ public class SimilarPatentServer {
     static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
     @Getter
     static List<Item> allApplications = Collections.synchronizedList(new ArrayList<>());
-    static Map<String,Item> nameToItemMap = Collections.synchronizedMap(new HashMap<>());
     static Collection<? extends AbstractAttribute> preComputedAttributes;
     @Getter
     static Collection<String> allAttributeNames;
@@ -169,7 +168,7 @@ public class SimilarPatentServer {
         loadTechTaggerModel();
         loadChartModels();
         loadTemplates();
-        loadAllItems();
+        //loadAllItems();
         loadSimilarityModels();
     }
 
@@ -230,12 +229,14 @@ public class SimilarPatentServer {
     }
 
     public static void loadSimilarityModels() {
-        loadAllItems();
         if(similarityModelMap.isEmpty()) {
-            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.patents, new SimilarPatentFinder(allPatents));
-            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assignees, new SimilarPatentFinder(allAssignees));
-            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.applications, new SimilarPatentFinder(allApplications));
-            List<Item> allAssets = Arrays.asList(allPatents,allAssignees).parallelStream().flatMap(list->list.stream()).collect(Collectors.toList());
+            Collection<String> patents = Database.getCopyOfAllPatents();
+            Collection<String> applications = Database.getCopyOfAllApplications();
+            Collection<String> assignees = Database.getAssignees();
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.patents, new SimilarPatentFinder(patents));
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assignees, new SimilarPatentFinder(assignees));
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.applications, new SimilarPatentFinder(applications));
+            Collection<String> allAssets = Arrays.asList(patents,applications).parallelStream().flatMap(list->list.stream()).collect(Collectors.toList());
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL+"_"+PortfolioList.Type.assets, new SimilarPatentFinder(allAssets));
         }
     }
@@ -278,12 +279,7 @@ public class SimilarPatentServer {
                 if (debug) System.out.println(model.getName()+" ["+item.getName()+"]: "+item.getData(model.getName()));
             });
             itemList.add(item);
-            nameToItemMap.put(assignee,item);
         });
-    }
-
-    public static Item[] findItemsByName(Collection<String> names) {
-        return names.stream().map(name->nameToItemMap.get(name)).filter(item->item!=null).toArray(size->new Item[size]);
     }
 
     public static void loadTechTaggerModel() {

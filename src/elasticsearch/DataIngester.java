@@ -1,7 +1,9 @@
 package elasticsearch;
 
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -48,7 +50,8 @@ public class DataIngester {
                         .setSource(json));
 
             }
-            System.out.println("Update had failures: "+request.get().hasFailures());
+            BulkResponse response = request.get();
+            System.out.println("Update had failures: "+response.hasFailures());
 
         } catch(Exception e) {
             e.printStackTrace();

@@ -21,5 +21,7 @@ public interface AbstractSimilarityModel {
 
     AbstractSimilarityModel duplicateWithScope(Item[] scope);
 
+    AbstractSimilarityModel duplicateWithScopeFromLabels(Collection<String> scope);
+
     Item[] getItemList();
 }

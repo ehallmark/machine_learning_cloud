@@ -13,6 +13,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 7/26/16.
@@ -41,8 +42,8 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         }
     }
 
-    public SimilarPatentFinder(Collection<Item> candidateSet) {
-        super(candidateSet,getLookupTable());
+    public SimilarPatentFinder(Collection<String> candidateSet) {
+        super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()), getLookupTable());
     }
 
     public synchronized static Map<String,INDArray> getLookupTable() {

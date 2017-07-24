@@ -66,6 +66,11 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     }
 
     @Override
+    public AbstractSimilarityModel duplicateWithScopeFromLabels(Collection<String> scope) {
+        return new BaseSimilarityModel(scope.stream().map(item->new Item(item)).collect(Collectors.toList()), lookupTable);
+    }
+
+    @Override
     public double similarityTo(String label) {
         INDArray avg = computeAvg();
         INDArray thisVec = lookupTable.get(label);
@@ -76,7 +81,6 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
     // returns null if patentNumber not found
     @Override
     public PortfolioList findSimilarPatentsTo(INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
-        assert itemList!=null : "Item list is null!";
         if(avgVector==null) return new PortfolioList(new Item[]{});
         long startTime = System.currentTimeMillis();
         PortfolioList list = similarPatentsHelper(avgVector, limit, filters);

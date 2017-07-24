@@ -1,5 +1,6 @@
 package user_interface.ui_models.engines;
 
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
@@ -24,8 +25,8 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
 
     protected abstract Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type resultType);
 
-    protected AbstractSimilarityModel setSecondFinder(AbstractSimilarityModel finderPrototype, Collection<String> inputsToSearchFor) {
-        secondFinder = finderPrototype.duplicateWithScope(SimilarPatentServer.findItemsByName(inputsToSearchFor));
+    protected AbstractSimilarityModel setSecondFinder(SimilarPatentFinder finderPrototype, Collection<String> inputsToSearchFor) {
+        secondFinder = finderPrototype.duplicateWithScopeFromLabels(inputsToSearchFor);
         return secondFinder;
     }
 

@@ -16,6 +16,7 @@ public class IngestAttributeData {
     private static final int batchSize = 5000;
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
+        SimilarPatentServer.loadAllItems();
         ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications);
         ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents);
         ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees);
