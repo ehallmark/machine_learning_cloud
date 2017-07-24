@@ -10,10 +10,10 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class RemoveJapaneseAssigneeFilter extends AssigneeFilter {
-
-    public RemoveJapaneseAssigneeFilter() {
-        super(Database.getJapaneseCompanies());
+public class RemoveJapaneseAssigneeFilter extends AbstractBooleanExcludeFilter {
+    @Override
+    public String getPrerequisite() {
+        return Constants.JAPANESE_ASSIGNEE;
     }
 
     @Override

@@ -87,7 +87,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         setPrefilters(req);
 
         // Run elasticsearch
-        Item[] scope = DataSearcher.searchForAssets(portfolioType, 100000, SimilarPatentServer.getAllAttributeNames(), preFilters);
+        Item[] scope = DataSearcher.searchForAssets(100000, SimilarPatentServer.getAllAttributeNames(), preFilters);
 
         String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString();
         AtomicReference<AbstractSimilarityModel> finderPrototype = new AtomicReference<>(similarityModelMap.get(similarityModelStr));

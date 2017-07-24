@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/13/2017.
  */
-public class ExpirationFilter extends AbstractBooleanExcludeFilter {
+public abstract class AbstractBooleanIncludeFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div();
@@ -26,14 +26,13 @@ public class ExpirationFilter extends AbstractBooleanExcludeFilter {
     }
 
     @Override
-    public String getName() {
-        return Constants.EXPIRATION_FILTER;
+    public QueryBuilder getFilterQuery() {
+        return QueryBuilders.termQuery(getPrerequisite(), true);
     }
 
-
     @Override
-    public String getPrerequisite() {
-        return Constants.EXPIRED;
+    public boolean shouldKeepItem(Item obj) {
+        return (Boolean)obj.getData(getPrerequisite());
     }
 
 

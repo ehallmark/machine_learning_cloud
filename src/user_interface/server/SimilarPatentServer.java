@@ -112,6 +112,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
+            humanAttrToJavaAttrMap.put("Result Type", Constants.RESULT_TYPE_FILTER);
+            humanAttrToJavaAttrMap.put("Is Expired", Constants.EXPIRED);
+            humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD);
@@ -193,6 +196,7 @@ public class SimilarPatentServer {
                     // Use doNothingFilterModelMap
 
                 // Pre filters
+                preFilterModelMap.put(Constants.RESULT_TYPE_FILTER, new ResultTypeFilter());
                 preFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
                 preFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
                 preFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
@@ -238,6 +242,8 @@ public class SimilarPatentServer {
 
     public static void loadAttributes() {
         if(attributesMap.isEmpty()) {
+            attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
+            attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
@@ -775,16 +781,6 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().attr("style", "margin-bottom: 10px;").withClass("col-12").with(
-                                                label("Result Type"),br(),
-                                                select().withClass("form-control single-select2").withName(SEARCH_TYPE_FIELD).with(
-                                                        Arrays.stream(PortfolioList.Type.values()).map(type->{
-                                                            ContainerTag option = option(humanAttributeFor(type.toString())).withValue(type.toString());
-                                                            if(type.equals(PortfolioList.Type.patents)) option=option.attr("selected","selected");
-                                                            return option;
-                                                        }).collect(Collectors.toList())
-                                                )
-                                        ),
                                         div().withClass("col-6").with(
                                                 label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),

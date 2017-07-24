@@ -29,7 +29,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
 
-    public static Item[] searchForAssets(PortfolioList.Type type, int limit, Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
+    public static Item[] searchForAssets(int limit, Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
         try {
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setTypes(TYPE_NAME)
@@ -37,16 +37,7 @@ public class DataSearcher {
                     //.setQuery(queryBuilder)
                     .setSize(limit)
                     .setFrom(0);
-            // check for full asset search
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
-            if(type.equals(PortfolioList.Type.assets)) {
-                filterBuilder = filterBuilder
-                        .should(QueryBuilders.termQuery("doc_type", PortfolioList.Type.applications.toString()))
-                        .should(QueryBuilders.termQuery("doc_type", PortfolioList.Type.patents.toString()));
-            } else {
-                filterBuilder = filterBuilder
-                        .must(QueryBuilders.termQuery("doc_type", type.toString()));
-            }
             // other filters
             for(AbstractFilter filter : filters) {
                 filterBuilder = filterBuilder

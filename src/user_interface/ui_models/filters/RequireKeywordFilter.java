@@ -34,9 +34,6 @@ public class RequireKeywordFilter extends AbstractFilter {
     }
 
     @Override
-    public boolean isActive() { return true; }
-
-    @Override
     public QueryBuilder getFilterQuery() {
         if(queryStr==null) {
             return QueryBuilders.boolQuery();

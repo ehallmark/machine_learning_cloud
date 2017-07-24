@@ -394,17 +394,8 @@ public class Database {
 	}
 
 	public synchronized static boolean isJapaneseAssignee(String assignee) {
-		if(japaneseCompanies==null) {
-			// japanese companies
-			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
-		}
-		return japaneseCompanies.contains(assignee);
-	}
-
-	public synchronized static Collection<String> getNonJapaneseCompanies() {
-		Set<String> allCompanies = new HashSet<>(allAssignees);
-		allCompanies.removeAll(getJapaneseCompanies());
-		return allCompanies;
+		// check other assignees
+		return getJapaneseCompanies().contains(assignee) || assigneesFor(assignee).stream().anyMatch(other->getJapaneseCompanies().contains(other));
 	}
 
 	public synchronized static Set<String> getJapaneseCompanies() {
@@ -412,7 +403,7 @@ public class Database {
 			// japanese companies
 			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
 		}
-		return new HashSet<>(japaneseCompanies);
+		return Collections.unmodifiableSet(japaneseCompanies);
 	}
 
 	public synchronized static Set<String> loadJapaneseCompaniesSetFromDB() throws SQLException {

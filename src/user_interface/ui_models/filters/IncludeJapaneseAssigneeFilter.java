@@ -11,10 +11,10 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class IncludeJapaneseAssigneeFilter extends AssigneeFilter {
-
-    public IncludeJapaneseAssigneeFilter() {
-        super(Database.getJapaneseCompanies());
+public class IncludeJapaneseAssigneeFilter extends AbstractBooleanIncludeFilter {
+    @Override
+    public String getPrerequisite() {
+        return Constants.JAPANESE_ASSIGNEE;
     }
 
     @Override
@@ -28,11 +28,6 @@ public class IncludeJapaneseAssigneeFilter extends AssigneeFilter {
     @Override
     public String getName() {
         return Constants.JAPANESE_ONLY_FILTER;
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item item) {
-        return !super.shouldKeepItem(item);
     }
 
 }

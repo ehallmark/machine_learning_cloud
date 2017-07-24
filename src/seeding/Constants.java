@@ -25,10 +25,13 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE_MINIMUM_FILTER = "portfolioSizeMinimumFilter";
 	public static final String PORTFOLIO_SIZE_MAXIMUM_FILTER = "portfolioSizeMaximumFilter";
 	public static final String EXPIRATION_FILTER = "expirationFilter";
+	public static final String EXPIRED = "expired";
+	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String LABEL_FILTER = "labelFilter";
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";
 	public static final String SIM_RANK_MODEL = "simRankModel";
 	public static final String CPC_MODEL = "cpcModel";
+	public static final String RESULT_TYPE_FILTER = "resultTypeFilter";
 	public static final String WIPO_MODEL = "wipoModel";
 	public static final String TECHNOLOGY = "technologyValue";
 	public static final String EXPIRATION_DATE = "expirationDate";

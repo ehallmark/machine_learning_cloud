@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -33,18 +34,25 @@ public class DataIngester {
             throw new RuntimeException();
         }
     }
-    public static void ingestItem(Item item, PortfolioList.Type type) {
+    public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
         try {
-            XContentBuilder json = XContentFactory.jsonBuilder().startObject()
-                    .field("doc_type",type.toString());
-            for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
-                json=json.field(e.getKey(),e.getValue());
+            BulkRequestBuilder request = client.prepareBulk();
+            for(Item item : items) {
+                XContentBuilder json = XContentFactory.jsonBuilder().startObject()
+                        .field("doc_type",type.toString());
+                for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
+                    json=json.field(e.getKey(),e.getValue());
+                }
+                json=json.endObject();
+                request = request.add(client.prepareIndex(INDEX_NAME,TYPE_NAME,item.getName())
+                        .setSource(json));
+
             }
-            json=json.endObject();
-            client.prepareIndex(INDEX_NAME, TYPE_NAME, item.getName()).setSource(json).get();
+            System.out.println("Update had failures: "+request.get().hasFailures());
+
         } catch(Exception e) {
             e.printStackTrace();
-            System.out.println("ERROR ON: "+item.getName());
+            System.out.println("ERROR UPDATING BATCH");
             throw new RuntimeException();
         }
     }
