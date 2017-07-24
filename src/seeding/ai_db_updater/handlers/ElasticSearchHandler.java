@@ -30,9 +30,11 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
     @Override
     protected void update() {
         if (pubDocNumber != null && !fullDocuments.isEmpty() && !shouldTerminate) {
-            dataMap.put(pubDocNumber, String.join(" ", fullDocuments));
-            if(dataMap.size()> 5000) {
-                DataIngester.ingestAssets(dataMap, type);
+            synchronized (dataMap) {
+                dataMap.put(pubDocNumber, String.join(" ", fullDocuments));
+                if (dataMap.size() > 5000) {
+                    DataIngester.ingestAssets(dataMap, type);
+                }
             }
         }
     }
