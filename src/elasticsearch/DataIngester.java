@@ -1,6 +1,5 @@
 package elasticsearch;
 
-import com.sun.deploy.security.ValidationState;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexResponse;
