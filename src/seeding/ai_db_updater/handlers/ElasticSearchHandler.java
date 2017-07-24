@@ -33,7 +33,6 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
             dataMap.put(pubDocNumber, String.join(" ", fullDocuments));
             if(dataMap.size()> 5000) {
                 DataIngester.ingestAssets(dataMap, type);
-                dataMap.clear();
             }
         }
     }

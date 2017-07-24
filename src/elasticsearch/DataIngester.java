@@ -22,24 +22,29 @@ public class DataIngester {
     static final String TYPE_NAME = "patents_and_applications";
 
     public static void ingestAssets(Map<String,String> labelToTextMap, PortfolioList.Type type) {
-        try {
-            BulkRequestBuilder request = client.prepareBulk();
-            for(Map.Entry<String,String> e : labelToTextMap.entrySet()) {
-                XContentBuilder json = XContentFactory.jsonBuilder().startObject()
-                        .field("pub_doc_number", e.getKey())
-                        .field("doc_type",type.toString())
-                        .field("tokens", e.getValue())
-                        .endObject();
-                request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, e.getKey())
-                        .setSource(json));
-            }
-            BulkResponse response = request.get();
-            System.out.println("Update had failures: "+response.hasFailures());
+        synchronized (labelToTextMap) {
+            try {
+                BulkRequestBuilder request = client.prepareBulk();
+                for (Map.Entry<String, String> e : labelToTextMap.entrySet()) {
+                    XContentBuilder json = XContentFactory.jsonBuilder().startObject()
+                            .field("pub_doc_number", e.getKey())
+                            .field("doc_type", type.toString())
+                            .field("tokens", e.getValue())
+                            .endObject();
+                    request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, e.getKey())
+                            .setSource(json));
+                }
+                BulkResponse response = request.get();
+                if(!response.hasFailures()) {
+                    labelToTextMap.clear();
+                }
+                System.out.println("Update had failures: " + response.hasFailures());
 
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("ERROR UPDATING BATCH");
-            throw new RuntimeException();
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.out.println("ERROR UPDATING BATCH");
+                throw new RuntimeException();
+            }
         }
     }
     public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
