@@ -17,15 +17,15 @@ public class IngestAttributeData {
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
         SimilarPatentServer.loadAllItems();
-        ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications);
-        ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents);
-        ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees);
+        ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications, false);
+        ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents, false);
+        ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
     }
 
-    private static void ingest(List<Item> items, PortfolioList.Type type) {
+    public static void ingest(List<Item> items, PortfolioList.Type type, boolean index) {
         AtomicInteger cnt = new AtomicInteger(0);
         chunked(items).parallelStream().forEach(itemList->{
-            DataIngester.ingestItems(itemList,type);
+            DataIngester.ingestItems(itemList,type,index);
             cnt.getAndAdd(batchSize);
             System.out.println("Seen "+cnt.get()+" "+type.toString());
         });

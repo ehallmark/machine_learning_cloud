@@ -5,6 +5,7 @@ import elasticsearch.IngestAttributeData;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.*;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 /**
@@ -14,16 +15,23 @@ public class UpdateElasticSearch {
 
     public static void main(String[] args) {
         // setup index
-        CreatePatentDBIndex.main(args);
+       // CreatePatentDBIndex.main(args);
 
         // add tokens
-        PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
-        patentIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.patents));
+       // PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
+       // patentIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.patents));
 
-        PatentGrantIterator appIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
-        appIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.applications));
+       // PatentGrantIterator appIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
+       // appIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.applications));
 
         // add attribute data
-        IngestAttributeData.main(args);
+        //IngestAttributeData.main(args);
+
+
+        SimilarPatentServer.initialize();
+        SimilarPatentServer.loadAllItems();
+        IngestAttributeData.ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications, false);
+        IngestAttributeData.ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents, false);
+        IngestAttributeData.ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
     }
 }

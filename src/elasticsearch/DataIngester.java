@@ -45,7 +45,7 @@ public class DataIngester {
             throw new RuntimeException();
         }
     }
-    public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
+    public static void ingestItems(Collection<Item> items, PortfolioList.Type type, boolean index) {
         try {
             BulkRequestBuilder request = client.prepareBulk();
             for(Item item : items) {
@@ -55,8 +55,13 @@ public class DataIngester {
                     json=json.field(e.getKey(),e.getValue());
                 }
                 json=json.endObject();
-                request = request.add(client.prepareUpdate(INDEX_NAME,TYPE_NAME,item.getName())
-                        .setDoc(json));
+                if(index) {
+                    request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, item.getName())
+                            .setSource(json));
+                } else {
+                    request = request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, item.getName())
+                            .setDoc(json));
+                }
             }
             BulkResponse response = request.get();
             System.out.println("Update had failures: "+response.hasFailures());
