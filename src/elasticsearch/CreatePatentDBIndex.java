@@ -22,7 +22,9 @@ public class CreatePatentDBIndex {
         mapping.put("name","keyword");
         mapping.put("cpcTechnology","keyword");
         mapping.put("technologyValue","keyword");
-        builder.addMapping(DataIngester.TYPE_NAME, mapping);
+        Map<String,Object> properties = new HashMap<>();
+        properties.put("properties",mapping);
+        builder.addMapping(DataIngester.TYPE_NAME, properties);
         builder.get();
     }
 }
