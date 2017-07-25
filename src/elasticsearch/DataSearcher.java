@@ -14,6 +14,8 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
@@ -31,16 +33,15 @@ public class DataSearcher {
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
-    private static final int MAX_LIMIT = 200000;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, SortBuilder comparator, int maxLimit) {
         try {
             String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
-                    //.setFetchSource(true)
+                    .addSort(comparator)
                     .setFetchSource(attrArray, null)
                     .storedFields("_source")
                     //.setQuery(queryBuilder)
@@ -62,7 +63,7 @@ public class DataSearcher {
                 System.out.println("Starting new batch. Num items = " + items.length);
                 items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]));
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-            } while(response.getHits().getHits().length != 0 && items.length < MAX_LIMIT); // Zero hits mark the end of the scroll and the while loop.
+            } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
             return items;
         } catch(Exception e) {
             e.printStackTrace();

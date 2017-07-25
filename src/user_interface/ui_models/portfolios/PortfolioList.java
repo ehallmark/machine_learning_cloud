@@ -1,6 +1,7 @@
 package user_interface.ui_models.portfolios;
 
 import lombok.Getter;
+import lombok.Setter;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.items.Item;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 8/1/16.
  */
 public class PortfolioList implements Comparable<PortfolioList> {
-    @Getter
+    @Getter @Setter
     private Item[] itemList;
     private double avgSimilarity;
     public enum Type { patents, applications, assignees }

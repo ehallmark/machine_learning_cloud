@@ -14,10 +14,10 @@ import java.util.HashSet;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class AssigneeFilter extends AbstractExcludeFilter {
-    public AssigneeFilter() {}
+public class RemoveAssigneeFilter extends AbstractExcludeFilter {
+    public RemoveAssigneeFilter() {}
 
-    public AssigneeFilter(Collection<String> assigneesToRemove) {
+    public RemoveAssigneeFilter(Collection<String> assigneesToRemove) {
         this.labels=assigneesToRemove;
     }
 

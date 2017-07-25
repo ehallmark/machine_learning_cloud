@@ -17,7 +17,7 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class AssigneeSearchScopeFilter extends AbstractIncludeFilter {
+public class IncludeAssigneeFilter extends AbstractIncludeFilter {
 
     @Override
     public Tag getOptionsTag() {

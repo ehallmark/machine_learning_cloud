@@ -1,6 +1,9 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
@@ -15,10 +18,10 @@ import static j2html.TagCreator.textarea;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class LabelFilter extends AbstractExcludeFilter {
-    public LabelFilter() {super();}
+public class RemoveLabelFilter extends AbstractExcludeFilter {
+    public RemoveLabelFilter() {super();}
 
-    public LabelFilter(Collection<String> labelsToRemove) {
+    public RemoveLabelFilter(Collection<String> labelsToRemove) {
         super();
         this.labels=labelsToRemove;
     }

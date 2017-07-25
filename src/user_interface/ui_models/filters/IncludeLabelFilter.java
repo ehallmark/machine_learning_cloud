@@ -1,6 +1,8 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
@@ -16,7 +18,12 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 /**
  * Created by ehallmark on 5/10/17.
  */
-public class PatentSearchScopeFilter extends AbstractIncludeFilter {
+public class IncludeLabelFilter extends AbstractIncludeFilter {
+    public IncludeLabelFilter() {}
+
+    public IncludeLabelFilter(Collection<String> labels) {
+        this.labels=labels;
+    }
 
     @Override
     public Tag getOptionsTag() {
@@ -41,5 +48,11 @@ public class PatentSearchScopeFilter extends AbstractIncludeFilter {
         return Constants.NAME;
     }
 
+
+    @Override
+    public QueryBuilder getFilterQuery() {
+        QueryBuilder builder = QueryBuilders.idsQuery().addIds(labels.toArray(new String[labels.size()]));
+        return builder;
+    }
 
 }

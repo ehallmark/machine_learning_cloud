@@ -2,14 +2,17 @@ package user_interface.ui_models.engines;
 
 import elasticsearch.DataSearcher;
 import lombok.Getter;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AssigneeFilter;
-import user_interface.ui_models.filters.LabelFilter;
+import user_interface.ui_models.filters.IncludeLabelFilter;
+import user_interface.ui_models.filters.RemoveAssigneeFilter;
+import user_interface.ui_models.filters.RemoveLabelFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -58,10 +61,10 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         }
 
         if(labelsToRemove.size()>0) {
-            preFilters.add(new LabelFilter(labelsToRemove));
+            preFilters.add(new RemoveLabelFilter(labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
-            preFilters.add(new AssigneeFilter(assigneesToRemove));
+            preFilters.add(new RemoveAssigneeFilter(assigneesToRemove));
         }
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
@@ -93,11 +96,20 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         setPrefilters(req);
 
         // Run elasticsearch
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters);
+        int maxLimit;
+        SortBuilder sortBuilder;
+        if(comparator.equals(Constants.SIMILARITY)) { // need to get more results to do similarity
+            maxLimit = 100000;
+            sortBuilder = SortBuilders.scoreSort();
+        } else {
+            maxLimit = limit; // don't need extras
+            sortBuilder = SortBuilders.fieldSort(comparator);
+        }
+        // only pull ids by setting first parameter to empty list
+        Item[] scope = DataSearcher.searchForAssets(Collections.emptyList(), preFilters, sortBuilder, maxLimit);
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
         if(scope.length>0) {
             System.out.println(String.join("; ", scope[0].getDataMap().entrySet().stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
-            System.out.println("All attributes: "+String.join("; ",SimilarPatentServer.getAllAttributeNames()));
         }
 
         String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
@@ -138,6 +150,15 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
                     .get();
         } else if(!similarityFilters.isEmpty()) {
             throw new RuntimeException("Applying a similarity filter without a similarity engine.");
+        }
+
+        // Now we have the final portfolio list
+        // So we need to pull all attributes for this list
+        if(portfolioList.getItemList().length > 0) {
+            System.out.println("Pulling attributes from elasticsearch...");
+            AbstractFilter idFilter = new IncludeLabelFilter(Arrays.stream(portfolioList.getItemList()).map(item->item.getName()).collect(Collectors.toList()));
+            portfolioList = new PortfolioList(DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(),Arrays.asList(idFilter),sortBuilder,limit));
+            if(comparator.equals(Constants.SIMILARITY)) portfolioList.init(comparator,limit);
         }
     }
 

@@ -29,7 +29,7 @@ public class UpdateElasticSearch {
 
 
         SimilarPatentServer.initialize();
-        SimilarPatentServer.loadAllItems();
+        SimilarPatentServer.loadAllItemsWithAttributes();
         IngestAttributeData.ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
     }
 }

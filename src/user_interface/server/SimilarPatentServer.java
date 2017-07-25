@@ -9,7 +9,6 @@ import user_interface.server.tools.BackButtonHandler;
 import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.exceptions.AttributeException;
 import user_interface.ui_models.portfolios.attributes.*;
 import user_interface.templates.*;
 import util.Pair;
@@ -167,7 +166,7 @@ public class SimilarPatentServer {
         loadTechTaggerModel();
         loadChartModels();
         loadTemplates();
-        //loadAllItems();
+        //loadAllItemsWithAttributes();
         loadSimilarityModels();
     }
 
@@ -198,12 +197,12 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
                 preFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
                 preFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
-                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new PatentSearchScopeFilter());
-                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new AssigneeSearchScopeFilter());
-                preFilterModelMap.put(Constants.LABEL_FILTER,new LabelFilter());
+                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new IncludeLabelFilter());
+                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new IncludeAssigneeFilter());
+                preFilterModelMap.put(Constants.LABEL_FILTER,new RemoveLabelFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
                 preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
-                preFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new AssigneeFilter());
+                preFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new RemoveAssigneeFilter());
                 preFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
                 preFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
@@ -261,7 +260,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAllItems() {
+    public static void loadAllItemsWithAttributes() {
         if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications(), false);
         if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents(), false);
         if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees(), false);
@@ -764,8 +763,8 @@ public class SimilarPatentServer {
                                 div().withClass("row collapsible-form").with(
                                         div().withClass("col-6").with(
                                                 label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                        option("Similarity").attr("selected","selected").withValue(Constants.SIMILARITY),
-                                                        option("AI Value").withValue(Constants.AI_VALUE)
+                                                        Arrays.asList(Constants.SIMILARITY, Constants.AI_VALUE, Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
+                                                                .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         ),
                                         div().withClass("col-6").with(
