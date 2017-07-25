@@ -1022,7 +1022,11 @@ public class Database {
 	}
 
 	public synchronized static boolean isExpired(String patent) {
-		return expiredPatentSet.contains(patent)||lapsedPatentSet.contains(patent);
+		if(isApplication(patent)) {
+			return getLapsedAppSet().contains(patent);
+		} else {
+			return getExpiredPatentSet().contains(patent) || getLapsedPatentSet().contains(patent);
+		}
 	}
 
 	public synchronized static void close(){
