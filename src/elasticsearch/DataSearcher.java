@@ -31,7 +31,8 @@ public class DataSearcher {
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
-    private static final int MAX_LIMIT = 10000;
+    private static final int MAX_LIMIT = 200000;
+    private static final int PAGE_LIMIT = 10000;
 
     public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters) {
         try {
@@ -43,7 +44,7 @@ public class DataSearcher {
                     .setFetchSource(attrArray, null)
                     .storedFields("_source")
                     //.setQuery(queryBuilder)
-                    .setSize(MAX_LIMIT)
+                    .setSize(PAGE_LIMIT)
                     .setFrom(0);
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             // other filters
@@ -59,7 +60,7 @@ public class DataSearcher {
                 System.out.println("Starting new batch. Num items = " + items.length);
                 items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]));
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-            } while(response.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
+            } while(response.getHits().getHits().length != 0 && items.length < MAX_LIMIT); // Zero hits mark the end of the scroll and the while loop.
             return items;
         } catch(Exception e) {
             e.printStackTrace();
