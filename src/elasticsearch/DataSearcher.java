@@ -47,8 +47,7 @@ public class DataSearcher {
                     //.setQuery(queryBuilder)
                     .setSize(PAGE_LIMIT)
                     .setFrom(0);
-            BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery()
-                    .must(QueryBuilders.existsQuery("tokens"));
+            BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             // other filters
             for(AbstractFilter filter : filters) {
                 filterBuilder = filterBuilder
