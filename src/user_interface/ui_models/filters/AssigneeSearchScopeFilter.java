@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.*;
-import static user_interface.server.SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD;
 import static user_interface.server.SimilarPatentServer.extractString;
 import static user_interface.server.SimilarPatentServer.preProcess;
 
@@ -29,7 +28,7 @@ public class AssigneeSearchScopeFilter extends AbstractIncludeFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        labels = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+        labels = preProcess(extractString(req, SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
         labels = labels.stream().flatMap(label-> Database.possibleNamesForAssignee(label).stream()).collect(Collectors.toList());
     }
 
