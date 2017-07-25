@@ -55,6 +55,7 @@ public class DataSearcher {
             request = request.setPostFilter(filterBuilder);
             SearchResponse response = request.get();
             //Scroll until no hits are returned
+            System.out.println("Query: "+request.toString());
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
