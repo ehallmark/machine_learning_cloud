@@ -56,6 +56,7 @@ public class DataSearcher {
             //Scroll until no hits are returned
             Item[] items = new Item[]{};
             do {
+                System.out.println("Starting new batch. Num items = " + items.length);
                 items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]));
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
             } while(response.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
