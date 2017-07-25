@@ -25,7 +25,7 @@ public class KeywordSearch extends FormTemplate {
         map.put(Constants.ADVANCED_KEYWORD_FILTER,"");
         map.put(Constants.REQUIRE_KEYWORD_FILTER,"");
         map.put(Constants.EXCLUDE_KEYWORD_FILTER,"");
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
+        map.put(SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD, Arrays.asList(PortfolioList.Type.patents,PortfolioList.Type.applications));
         return map;
     }
 }

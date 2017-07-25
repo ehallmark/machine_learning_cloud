@@ -28,7 +28,7 @@ public class SimilarAssetSearch extends FormTemplate {
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,new ArrayList<>());
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
+        map.put(SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD, Arrays.asList(PortfolioList.Type.patents,PortfolioList.Type.applications));
         return map;
     }
 }

@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  */
 public class AbstractDistributionChart implements ChartAttribute {
     protected List<String> attributes;
-    protected String searchType;
+    protected Collection<String> searchTypes;
 
     @Override
     public Tag getOptionsTag() {
@@ -30,8 +30,12 @@ public class AbstractDistributionChart implements ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.attributes = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
-        this.searchType = SimilarPatentServer.extractString(params, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+        attributes = SimilarPatentServer.extractArray(params, Constants.PIE_CHART);
+        searchTypes = SimilarPatentServer.extractArray(params, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        // what to do if not present?
+        if(searchTypes.isEmpty()) {
+            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -43,8 +47,14 @@ public class AbstractDistributionChart implements ChartAttribute {
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
-            return new PieChart(title, collectDistributionData(portfolioList, attribute, title), SimilarPatentServer.humanAttributeFor(searchType));
+            return new PieChart(title, collectDistributionData(portfolioList, attribute, title), combineTypesToString(searchTypes));
         }).collect(Collectors.toList());
+    }
+
+    protected static String combineTypesToString(Collection<String> types) {
+        if(types.isEmpty()) return "";
+        types = types.stream().map(type-> SimilarPatentServer.humanAttributeFor(type)).collect(Collectors.toList());
+        return String.join(" and ", types);
     }
 
     private List<Series<?>> collectDistributionData(PortfolioList portfolio, String attribute, String title) {

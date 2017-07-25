@@ -26,7 +26,7 @@ import static j2html.TagCreator.option;
  */
 public class AbstractHistogramChart implements ChartAttribute {
     protected List<String> attributes;
-    protected String searchType;
+    protected Collection<String> searchTypes;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
@@ -37,8 +37,12 @@ public class AbstractHistogramChart implements ChartAttribute {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
-        this.searchType = SimilarPatentServer.extractString(params, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
+        attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
+        searchTypes = SimilarPatentServer.extractArray(params, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        // what to do if not present?
+        if(searchTypes.isEmpty()) {
+            searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
+        }
     }
 
     @Override
@@ -50,7 +54,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
-            String humanSearchType = SimilarPatentServer.humanAttributeFor(searchType);
+            String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
             double min = MIN;
             double max = MAX;
@@ -70,6 +74,12 @@ public class AbstractHistogramChart implements ChartAttribute {
             }
             return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title, categories), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0,categories);
         }).collect(Collectors.toList());
+    }
+
+    protected static String combineTypesToString(Collection<String> types) {
+        if(types.isEmpty()) return "";
+        types = types.stream().map(type-> SimilarPatentServer.humanAttributeFor(type)).collect(Collectors.toList());
+        return String.join(" and ", types);
     }
 
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title, List<String> categories) {

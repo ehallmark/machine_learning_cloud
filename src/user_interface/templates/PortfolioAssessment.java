@@ -25,7 +25,7 @@ public class PortfolioAssessment extends FormTemplate {
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.NAME,Constants.AI_VALUE,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD,"");
-        map.put(SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.assets.toString());
+        map.put(SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD, Arrays.asList(PortfolioList.Type.patents,PortfolioList.Type.applications));
         return map;
     }
 

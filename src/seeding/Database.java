@@ -986,7 +986,7 @@ public class Database {
 			keywordList.add(convertToPGTextSearch(advancedKeywords));
 		}
 		String keywordQuery = "(tokens @@ " + keywordJoiner.toString() + ")";
-		String docTypeWhere = type.equals(PortfolioList.Type.assets) ? " " : " doc_type = '"+type+"' and ";
+		String docTypeWhere = " doc_type = '"+type+"' and ";
 		int startIndex;
 		if(searchFullDatabase) {
 			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE "+docTypeWhere+keywordQuery+" limit "+limit);

@@ -24,7 +24,7 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class SimilarityEngine extends AbstractSimilarityEngine {
     private Collection<AbstractFilter> preFilters;
-    private PortfolioList.Type portfolioType;
+    private Collection<String> resultTypes;
     @Getter
     protected PortfolioList portfolioList;
     @Getter
@@ -42,16 +42,19 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // get labels to remove (if any)
         Collection<String> labelsToRemove = new HashSet<>();
         Collection<String> assigneesToRemove = new HashSet<>();
-        if(!portfolioType.equals(PortfolioList.Type.assignees)) {
-            // remove any patents in the search for category
-            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-            labelsToRemove.addAll(patents);
-            assignees.forEach(assignee->assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
-        } else {
-            // remove any assignees
-            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-            assignees.forEach(assignee->labelsToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
+        for(String resultType : resultTypes) {
+            PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(resultType);
+            if (!portfolioType.equals(PortfolioList.Type.assignees)) {
+                // remove any patents in the search for category
+                Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+                Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+                labelsToRemove.addAll(patents);
+                assignees.forEach(assignee -> assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
+            } else {
+                // remove any assignees
+                Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+                assignees.forEach(assignee -> labelsToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
+            }
         }
 
         if(labelsToRemove.size()>0) {
@@ -70,8 +73,11 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
-        String searchType = SimilarPatentServer.extractString(req, SimilarPatentServer.SEARCH_TYPE_FIELD, PortfolioList.Type.patents.toString());
-        portfolioType = PortfolioList.Type.valueOf(searchType);
+        resultTypes = SimilarPatentServer.extractArray(req, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        // what to do if not present?
+        if(resultTypes.isEmpty()) {
+            resultTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
+        }
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
 
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
@@ -94,7 +100,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
             System.out.println("All attributes: "+String.join("; ",SimilarPatentServer.getAllAttributeNames()));
         }
 
-        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL)+"_"+portfolioType.toString();
+        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
         AtomicReference<AbstractSimilarityModel> finderPrototype = new AtomicReference<>(similarityModelMap.get(similarityModelStr));
 
         // set scope
@@ -103,7 +109,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Getting second finders...");
         // second finder
         relevantEngines.forEach(engine->{
-            Collection<String> toSearchFor = engine.getInputsToSearchFor(req, portfolioType);
+            Collection<String> toSearchFor = engine.getInputsToSearchFor(req, resultTypes);
             engine.setSecondFinder(finderPrototype.get(),toSearchFor);
         });
 
@@ -136,7 +142,7 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
+    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         throw new UnsupportedOperationException();
     }
 

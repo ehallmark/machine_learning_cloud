@@ -23,28 +23,26 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     }
 
     @Override
-    protected Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type searchType) {
+    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> inputsToSearchFor = new HashSet<>();
         Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-        if(searchType.equals(PortfolioList.Type.patents)) {
-            assignees.forEach(assignee -> {
-                inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
-            });
-        } else if(searchType.equals(PortfolioList.Type.applications)) {
-            assignees.forEach(assignee -> {
-                inputsToSearchFor.addAll(Database.selectApplicationNumbersFromAssignee(assignee));
-            });
-        } else if(searchType.equals(PortfolioList.Type.assets)) {
-            assignees.forEach(assignee -> {
-                inputsToSearchFor.addAll(Database.selectApplicationNumbersFromAssignee(assignee));
-                inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
-            });
-        } else {
-            assignees.forEach(assignee -> {
-                inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
-            });
+        for(String resultType : resultTypes) {
+            PortfolioList.Type searchType = PortfolioList.Type.valueOf(resultType);
+            if (searchType.equals(PortfolioList.Type.patents)) {
+                assignees.forEach(assignee -> {
+                    inputsToSearchFor.addAll(Database.selectPatentNumbersFromAssignee(assignee));
+                });
+            } else if (searchType.equals(PortfolioList.Type.applications)) {
+                assignees.forEach(assignee -> {
+                    inputsToSearchFor.addAll(Database.selectApplicationNumbersFromAssignee(assignee));
+                });
+            } else {
+                assignees.forEach(assignee -> {
+                    inputsToSearchFor.addAll(Database.possibleNamesForAssignee(assignee));
+                });
+            }
         }
         System.out.println("Found assignees to search for.");
         return inputsToSearchFor;

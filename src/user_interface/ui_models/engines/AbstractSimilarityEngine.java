@@ -23,7 +23,7 @@ public abstract class AbstractSimilarityEngine extends ValueAttr {
     }
 
 
-    protected abstract Collection<String> getInputsToSearchFor(Request req, PortfolioList.Type resultType);
+    protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
 
     protected AbstractSimilarityModel setSecondFinder(AbstractSimilarityModel finderPrototype, Collection<String> inputsToSearchFor) {
         secondFinder = finderPrototype.duplicateWithScopeFromLabels(inputsToSearchFor);
