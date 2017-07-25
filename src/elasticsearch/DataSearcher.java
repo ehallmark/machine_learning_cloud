@@ -1,10 +1,12 @@
 package elasticsearch;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -16,6 +18,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -34,6 +37,7 @@ public class DataSearcher {
         try {
             String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
+                    .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
                     //.setFetchSource(true)
                     .setFetchSource(attrArray, null)
@@ -49,11 +53,21 @@ public class DataSearcher {
             }
             request = request.setPostFilter(filterBuilder);
             SearchResponse response = request.get();
-            return Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]);
+            //Scroll until no hits are returned
+            Item[] items = new Item[]{};
+            do {
+                items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]));
+                response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+            } while(response.getHits().getHits().length != 0); // Zero hits mark the end of the scroll and the while loop.
+            return items;
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error during keyword search: "+e.getMessage());
         }
+    }
+
+    private static Item[] merge(Item[] v1, Item[] v2) {
+        return (Item[]) ArrayUtils.addAll(v1, v2);
     }
 
 
