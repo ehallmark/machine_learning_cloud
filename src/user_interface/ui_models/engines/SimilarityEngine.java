@@ -4,6 +4,7 @@ import elasticsearch.DataSearcher;
 import lombok.Getter;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
@@ -100,10 +101,10 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         SortBuilder sortBuilder;
         if(comparator.equals(Constants.SIMILARITY)) { // need to get more results to do similarity
             maxLimit = 100000;
-            sortBuilder = SortBuilders.scoreSort();
+            sortBuilder = SortBuilders.scoreSort().order(SortOrder.DESC);
         } else {
             maxLimit = limit; // don't need extras
-            sortBuilder = SortBuilders.fieldSort(comparator);
+            sortBuilder = SortBuilders.fieldSort(comparator).order(SortOrder.DESC);
         }
         // only pull ids by setting first parameter to empty list
         Item[] scope = DataSearcher.searchForAssets(Collections.emptyList(), preFilters, sortBuilder, maxLimit);
