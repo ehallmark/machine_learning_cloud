@@ -71,6 +71,7 @@ public class SimilarPatentServer {
     public static final String LIMIT_FIELD = "limit";
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
+    public static final String SORT_DIRECTION_FIELD = "sortDirection";
     public static final String SEARCH_TYPE_ARRAY_FIELD = "searchType";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
@@ -761,10 +762,17 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().withClass("col-6").with(
-                                                label("Maximization"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
+                                        div().withClass("col-12").with(
+                                                label("Sort By"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Arrays.asList(Constants.SIMILARITY, Constants.AI_VALUE, Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
+                                                )
+                                        ),
+                                        div().withClass("col-6").with(
+                                                label("Sort Direction"),br(),
+                                                select().withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
+                                                        option("Ascending").withValue("asc"),
+                                                        option("Descending").withValue("desc").attr("selected","selected")
                                                 )
                                         ),
                                         div().withClass("col-6").with(

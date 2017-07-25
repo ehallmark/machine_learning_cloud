@@ -99,12 +99,13 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         // Run elasticsearch
         int maxLimit;
         SortBuilder sortBuilder;
+        SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
         if(comparator.equals(Constants.SIMILARITY)) { // need to get more results to do similarity
             maxLimit = 100000;
-            sortBuilder = SortBuilders.scoreSort().order(SortOrder.DESC);
+            sortBuilder = SortBuilders.scoreSort().order(sortOrder);
         } else {
             maxLimit = limit; // don't need extras
-            sortBuilder = SortBuilders.fieldSort(comparator).order(SortOrder.DESC);
+            sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
         }
         // only pull ids by setting first parameter to empty list
         Item[] scope = DataSearcher.searchForAssets(Collections.emptyList(), preFilters, sortBuilder, maxLimit);
