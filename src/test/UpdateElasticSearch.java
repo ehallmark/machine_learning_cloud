@@ -30,8 +30,6 @@ public class UpdateElasticSearch {
 
         SimilarPatentServer.initialize();
         SimilarPatentServer.loadAllItems();
-        IngestAttributeData.ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications, false);
-        IngestAttributeData.ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents, false);
         IngestAttributeData.ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
     }
 }
