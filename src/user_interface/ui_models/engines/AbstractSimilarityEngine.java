@@ -48,7 +48,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
         }
     }
 
-    static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = doc['vector'].values; " +
+    static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = params['_source']['vector']; " +
             "double a = 0d;" +
             "double b = 0d;" +
             "double ab = 0d;" +
