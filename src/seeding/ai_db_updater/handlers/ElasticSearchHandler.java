@@ -17,8 +17,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
  */
 public class ElasticSearchHandler extends SAXFullTextHandler {
-    private final Map<String,String> dataMap;
-    private ElasticSearchHandler(PortfolioList.Type type, Map<String,String> dataMap) {
+    private final Map<String,Map<String,Object>> dataMap;
+    private ElasticSearchHandler(PortfolioList.Type type, Map<String,Map<String,Object>> dataMap) {
         super(type, false);
         this.dataMap=dataMap;
     }
@@ -31,9 +31,13 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
     protected void update() {
         if (pubDocNumber != null && !fullDocuments.isEmpty() && !shouldTerminate) {
             synchronized (dataMap) {
-                dataMap.put(pubDocNumber, String.join(" ", fullDocuments));
+                Map<String,Object> itemData = new HashMap<>(3);
+                itemData.put("pub_doc_number",pubDocNumber);
+                itemData.put("doc_type",type.toString());
+                itemData.put("tokens", String.join(" ", fullDocuments));
+                dataMap.put(pubDocNumber, itemData);
                 if (dataMap.size() > 5000) {
-                    DataIngester.ingestAssets(dataMap, type);
+                    DataIngester.ingestAssets(dataMap);
                 }
             }
         }
@@ -47,7 +51,7 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
     @Override
     public void save() {
         if(dataMap.size() > 0) {
-            DataIngester.ingestAssets(dataMap,type);
+            DataIngester.ingestAssets(dataMap);
         }
     }
 }

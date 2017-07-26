@@ -227,10 +227,6 @@ public class SimilarPatentServer {
 
     public static void loadSimilarityModels() {
         if(similarityModelMap.isEmpty()) {
-            //Collection<String> patents = Database.getCopyOfAllPatents();
-            //Collection<String> applications = Database.getCopyOfAllApplications();
-            //Collection<String> assignees = Database.getAssignees();
-            //Collection<String> allAssets = Arrays.asList(patents,applications,assignees).parallelStream().flatMap(list->list.stream()).collect(Collectors.toList());
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
         }
@@ -262,12 +258,12 @@ public class SimilarPatentServer {
     }
 
     public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize) {
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, false);
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, false);
-        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, true);
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications);
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents);
+        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees);
     }
 
-    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, boolean index) {
+    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type) {
         AtomicInteger cnt = new AtomicInteger(0);
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.stream().map(label->{
@@ -282,7 +278,7 @@ public class SimilarPatentServer {
                 return item;
             }).collect(Collectors.toList());
 
-            DataIngester.ingestItems(items, type, index);
+            DataIngester.ingestItems(items, type);
             cnt.getAndAdd(items.size());
             System.out.println("Seen "+cnt.get()+" "+type.toString());
         });
