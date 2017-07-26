@@ -3,23 +3,15 @@ package user_interface.ui_models.engines;
 import lombok.Getter;
 import lombok.Setter;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.Script;
-import org.elasticsearch.script.ScriptType;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
+
 import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.ValueAttr;
-import models.value_models.ValueMapNormalizer;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
 
-import static j2html.TagCreator.label;
 
 /**
  * Created by ehallmark on 2/28/17.
@@ -62,7 +54,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "    ab+=(x*y);" +
             "}" +
             "if(a != 0d && b != 0d) {" +
-            "    return ab/(Math.sqrt(a)*Math.sqrt(b));" +
+            "    return (ab/(Math.sqrt(a)*Math.sqrt(b))) * 100d;" +
             "} else {" +
             "    return 0d;" +
             "}";
