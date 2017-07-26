@@ -48,14 +48,14 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
         }
     }
 
-    static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = params['_source']['vector']; " +
+    static final String DEFAULT_SIMILARITY_SCRIPT = "List vector = params['_source']['vector']; " +
             "double a = 0d;" +
             "double b = 0d;" +
             "double ab = 0d;" +
-            "for(int i = 0; i < vector.length; i++) " +
+            "for(int i = 0; i < vector.size(); i++) " +
             "{" +
-            "    double x = (double) vector[i];" +
-            "    double y = (double) params.avg_vector[i];" +
+            "    double x = (double) vector.get(i);" +
+            "    double y = (double) params.get(i);" +
             "    a+=(x*x);" +
             "    b+=(y*y);" +
             "    ab+=(x*y);" +
