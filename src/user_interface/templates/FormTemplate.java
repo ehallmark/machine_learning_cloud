@@ -36,6 +36,7 @@ public class FormTemplate {
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
+        map.put(SimilarPatentServer.SORT_DIRECTION_FIELD, "desc");
         return map;
     }
 
@@ -45,6 +46,7 @@ public class FormTemplate {
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
         map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
+        map.put(SimilarPatentServer.SORT_DIRECTION_FIELD, "desc");
         return map;
     }
 
