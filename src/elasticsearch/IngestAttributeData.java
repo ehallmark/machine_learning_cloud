@@ -23,6 +23,4 @@ public class IngestAttributeData {
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize);
     }
 
-
-
 }
