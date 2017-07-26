@@ -39,7 +39,7 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Collection<? extends AbstractSimilarityEngine> searchEngines, SortBuilder comparator, int maxLimit) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script script, SortBuilder comparator, int maxLimit) {
         try {
             String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
@@ -47,33 +47,23 @@ public class DataSearcher {
                     .setTypes(TYPE_NAME)
                     .addSort(comparator)
                     .setFetchSource(attrArray, null)
-                    .storedFields("_source","_score")
+                    .storedFields("_source", "_score")
                     .setSize(PAGE_LIMIT)
                     .setFrom(0);
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             // filters
-            for(AbstractFilter filter : filters) {
+            for (AbstractFilter filter : filters) {
                 filterBuilder = filterBuilder
                         .must(filter.getFilterQuery());
             }
             request = request.setPostFilter(filterBuilder);
             // scripts
-            Collection<Script> scripts = new ArrayList<>();
-            for(AbstractSimilarityEngine engine : searchEngines) {
-                Script script = engine.getScriptQuery();
-                if(script!=null) {
-                    scripts.add(script);
-                }
-            }
-            if(scripts.size()>0) {
-                Script script = mergeScripts(scripts);
-                if(script!=null) {
-                    QueryBuilder queryBuilder = QueryBuilders.functionScoreQuery(QueryBuilders.existsQuery("tokens"), ScoreFunctionBuilders.scriptFunction(script))
-                            .boostMode(CombineFunction.REPLACE)
-                            .boost(5f)
-                            .scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM);
-                    request = request.setQuery(queryBuilder);
-                }
+            if (script != null) {
+                QueryBuilder queryBuilder = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(script))
+                        .boostMode(CombineFunction.REPLACE)
+                        .boost(5f)
+                        .scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM);
+                request = request.setQuery(queryBuilder);
             }
 
             SearchResponse response = request.get();
@@ -94,16 +84,6 @@ public class DataSearcher {
 
     private static Item[] merge(Item[] v1, Item[] v2) {
         return (Item[]) ArrayUtils.addAll(v1, v2);
-    }
-
-    private static Script mergeScripts(Collection<Script> scripts) {
-        return scripts.stream().reduce((x,y)->{
-            String code = "("+x.getIdOrCode()+")+("+y.getIdOrCode()+")";
-            Map<String,Object> params = new HashMap<>();
-            params.putAll(x.getParams());
-            params.putAll(y.getParams());
-            return new Script(ScriptType.INLINE,"painless",code,params);
-        }).orElse(null);
     }
 
     private static Item hitToItem(SearchHit hit) {

@@ -1,5 +1,6 @@
 package user_interface.ui_models.engines;
 
+import lombok.Getter;
 import lombok.Setter;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -27,6 +28,8 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
     @Setter
     protected AbstractSimilarityModel similarityModel;
     protected Collection<String> inputs;
+    @Getter
+    protected INDArray avg;
 
     public AbstractSimilarityEngine(AbstractSimilarityModel similarityModel) {
         this.similarityModel=similarityModel;
@@ -37,27 +40,15 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
     public void extractRelevantInformationFromParams(Request req) {
         List<String> resultTypes = SimilarPatentServer.extractArray(req, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
         inputs = getInputsToSearchFor(req,resultTypes);
-    }
-
-    public Script getScriptQuery() {
         if(inputs!=null&&inputs.size()>0) {
             SimilarPatentFinder finder = new SimilarPatentFinder(inputs);
-            if(finder.getItemList().length>0) {
-                float[] avg = finder.computeAvg().data().asFloat();
-                Map<String,Object> params = new HashMap<>();
-                params.put("avg_vector",avg);
-                return new Script(
-                        ScriptType.INLINE,
-                        "painless",
-                        DEFAULT_SIMILARITY_SCRIPT,
-                        params
-                );
+            if (finder.getItemList().length > 0) {
+                avg = finder.computeAvg();
             }
         }
-        return null;
     }
 
-    private static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = doc['vector']; " +
+    static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = doc['vector']; " +
             "double a = 0d;" +
             "double b = 0d;" +
             "double ab = 0d;" +

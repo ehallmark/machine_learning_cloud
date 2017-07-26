@@ -2,9 +2,13 @@ package user_interface.ui_models.engines;
 
 import elasticsearch.DataSearcher;
 import lombok.Getter;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
@@ -86,13 +90,14 @@ public class SimilarityEngineController {
 
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
-        relevantEngines.forEach(engine->{
+        List<INDArray> simVectors = relevantEngines.stream().map(engine->{
             engine.setSimilarityModel(finderPrototype);
             engine.extractRelevantInformationFromParams(req);
-        });
+            return engine.getAvg();
+        }).filter(avg->avg!=null).collect(Collectors.toList());
 
         // check degenerate case
-        if(relevantEngines.isEmpty() && comparator.equals(Constants.SIMILARITY)) {
+        if(simVectors.isEmpty() && comparator.equals(Constants.SIMILARITY)) {
             // bad
             portfolioList = new PortfolioList(new Item[]{});
             return;
@@ -109,7 +114,20 @@ public class SimilarityEngineController {
         } else {
             sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
         }
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, relevantEngines, sortBuilder, limit);
+
+        Script searchScript = null;
+        if(simVectors.size()>0) {
+            Map<String,Object> params = new HashMap<>();
+            params.put("avg_vector", Nd4j.vstack(simVectors).mean(0).data().asFloat());
+            searchScript =  new Script(
+                    ScriptType.INLINE,
+                    "painless",
+                    AbstractSimilarityEngine.DEFAULT_SIMILARITY_SCRIPT,
+                    params
+            );
+        }
+
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, sortBuilder, limit);
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);
