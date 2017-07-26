@@ -1,6 +1,7 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
+import models.similarity_models.AbstractSimilarityModel;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
@@ -18,8 +19,13 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
 
-    public AssigneeSimilarityEngine() {
-        super(Constants.ASSIGNEE_SIMILARITY);
+    @Override
+    public String getName() {
+        return Constants.ASSIGNEE_SIMILARITY;
+    }
+
+    public AssigneeSimilarityEngine(AbstractSimilarityModel model) {
+        super(model);
     }
 
     @Override

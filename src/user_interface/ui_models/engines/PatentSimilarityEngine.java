@@ -1,6 +1,7 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
+import models.similarity_models.AbstractSimilarityModel;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
@@ -18,8 +19,8 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class PatentSimilarityEngine extends AbstractSimilarityEngine {
 
-    public PatentSimilarityEngine() {
-        super(Constants.PATENT_SIMILARITY);
+    public PatentSimilarityEngine(AbstractSimilarityModel model) {
+        super(model);
     }
 
     @Override
@@ -45,6 +46,11 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         return inputsToSearchFor;
     }
 
+
+    @Override
+    public String getName() {
+        return Constants.PATENT_SIMILARITY;
+    }
 
     @Override
     public Tag getOptionsTag() {

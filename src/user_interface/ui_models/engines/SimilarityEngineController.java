@@ -26,15 +26,14 @@ import static user_interface.server.SimilarPatentServer.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public class SimilarityEngine extends AbstractSimilarityEngine {
+public class SimilarityEngineController {
     private Collection<AbstractFilter> preFilters;
     private Collection<String> resultTypes;
     @Getter
     protected PortfolioList portfolioList;
     @Getter
     private List<AbstractSimilarityEngine> engines;
-    public SimilarityEngine(List<AbstractSimilarityEngine> engines) {
-        super(Constants.SIMILARITY);
+    public SimilarityEngineController(List<AbstractSimilarityEngine> engines) {
         this.engines=engines;
     }
 
@@ -71,8 +70,6 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());
     }
 
-
-    @Override
     public void extractRelevantInformationFromParams(Request req) {
         System.out.println("Beginning extract relevant info...");
         // init
@@ -84,8 +81,15 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         }
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
 
+        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
+        AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
+
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
+        relevantEngines.forEach(engine->{
+            engine.setSimilarityModel(finderPrototype);
+            engine.extractRelevantInformationFromParams(req);
+        });
 
         // check degenerate case
         if(relevantEngines.isEmpty() && comparator.equals(Constants.SIMILARITY)) {
@@ -97,76 +101,18 @@ public class SimilarityEngine extends AbstractSimilarityEngine {
         setPrefilters(req);
 
         // Run elasticsearch
-        int maxLimit;
-        SortBuilder sortBuilder;
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        if(comparator.equals(Constants.SIMILARITY)) { // need to get more results to do similarity
-            maxLimit = 100000;
+        SortBuilder sortBuilder;
+        // only pull ids by setting first parameter to empty list
+        if(comparator.equals(Constants.SIMILARITY)) {
             sortBuilder = SortBuilders.scoreSort().order(sortOrder);
         } else {
-            maxLimit = limit; // don't need extras
             sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
         }
-        // only pull ids by setting first parameter to empty list
-        Item[] scope = DataSearcher.searchForAssets(Collections.emptyList(), preFilters, sortBuilder, maxLimit);
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, relevantEngines, sortBuilder, limit);
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
-        if(scope.length>0) {
-            System.out.println(String.join("; ", scope[0].getDataMap().entrySet().stream().map(e->e.getKey()+": "+e.getValue()).collect(Collectors.toList())));
-        }
 
-        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
-        AtomicReference<AbstractSimilarityModel> finderPrototype = new AtomicReference<>(similarityModelMap.get(similarityModelStr));
-
-        // set scope
-        finderPrototype.set(finderPrototype.get().duplicateWithScope(scope));
-
-        System.out.println("Getting second finders...");
-        // second finder
-        relevantEngines.forEach(engine->{
-            Collection<String> toSearchFor = engine.getInputsToSearchFor(req, resultTypes);
-            engine.setSecondFinder(finderPrototype.get(),toSearchFor);
-        });
-
-        if(relevantEngines.size()>0 && relevantEngines.stream().map(engine->engine.secondFinder.numItems()).collect(Collectors.summingInt(i->i))==0) {
-            throw new RuntimeException("Unable to find patents or assignees to search for.");
-        }
-
-        // only keep relevant engines with items
-        relevantEngines = relevantEngines.stream().filter(engine->engine.secondFinder.numItems()>0).collect(Collectors.toList());
-
-        portfolioList = new PortfolioList(finderPrototype.get().getItemList());
-        if(!comparator.equals(Constants.SIMILARITY)) {
-            System.out.println("Non similarity comparator...");
-            portfolioList.init(comparator,limit);
-            finderPrototype.set(finderPrototype.get().duplicateWithScope(portfolioList.getItemList()));
-        }
-
-        // check similarity threshold filter
-        List<AbstractFilter> similarityFilters = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD).stream().map(filterStr->similarityFilterModelMap.get(filterStr)).collect(Collectors.toList());
-        if(!relevantEngines.isEmpty()) {
-            System.out.println("Running similarity model...");
-            // run full similarity model
-            portfolioList = relevantEngines.parallelStream()
-                    .map(engine->finderPrototype.get().similarFromCandidateSet(engine.secondFinder, limit, similarityFilters))
-                    .reduce((list1,list2)->list1.merge(list2,comparator,limit))
-                    .get();
-        } else if(!similarityFilters.isEmpty()) {
-            throw new RuntimeException("Applying a similarity filter without a similarity engine.");
-        }
-
-        // Now we have the final portfolio list
-        // So we need to pull all attributes for this list
-        if(portfolioList.getItemList().length > 0) {
-            System.out.println("Pulling attributes from elasticsearch...");
-            AbstractFilter idFilter = new IncludeLabelFilter(Arrays.stream(portfolioList.getItemList()).map(item->item.getName()).collect(Collectors.toList()));
-            portfolioList = new PortfolioList(DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(),Arrays.asList(idFilter),sortBuilder,limit));
-            if(comparator.equals(Constants.SIMILARITY)) portfolioList.init(comparator,limit);
-        }
-    }
-
-    @Override
-    protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
-        throw new UnsupportedOperationException();
+        portfolioList = new PortfolioList(scope);
     }
 
     public Map<String,AbstractSimilarityEngine> getEngineMap() {

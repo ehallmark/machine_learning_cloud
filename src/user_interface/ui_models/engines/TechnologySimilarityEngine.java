@@ -1,6 +1,7 @@
 package user_interface.ui_models.engines;
 
 import j2html.tags.Tag;
+import models.similarity_models.AbstractSimilarityModel;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
@@ -19,8 +20,8 @@ import static j2html.TagCreator.*;
  */
 public class TechnologySimilarityEngine extends AbstractSimilarityEngine {
 
-    public TechnologySimilarityEngine() {
-        super(Constants.TECHNOLOGY_SIMILARITY);
+    public TechnologySimilarityEngine(AbstractSimilarityModel model) {
+        super(model);
     }
 
     @Override
@@ -31,6 +32,11 @@ public class TechnologySimilarityEngine extends AbstractSimilarityEngine {
         Collection<String> inputsToSearchFor = new HashSet<>();
         inputsToSearchFor.addAll(technologies.stream().filter(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().containsKey(technology)).flatMap(technology-> SimilarityGatherTechTagger.getParagraphVectorModel().getNameToInputMap().get(technology).stream()).collect(Collectors.toSet()));
         return inputsToSearchFor;
+    }
+
+    @Override
+    public String getName() {
+        return Constants.TECHNOLOGY_SIMILARITY;
     }
 
     @Override

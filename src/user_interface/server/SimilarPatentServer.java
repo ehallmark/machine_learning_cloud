@@ -1,7 +1,9 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import elasticsearch.DataIngester;
 import lombok.Getter;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -77,21 +79,17 @@ public class SimilarPatentServer {
     public static final String REPORT_URL = "/patent_recommendation_engine";
     public static final String DOWNLOAD_URL = "/excel_generation";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
+    private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
-    public static SimilarityEngine similarityEngine;
+    public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> doNothingFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();
-    @Getter
-    static List<Item> allPatents = Collections.synchronizedList(new ArrayList<>());
-    @Getter
-    static List<Item> allAssignees = Collections.synchronizedList(new ArrayList<>());
-    @Getter
-    static List<Item> allApplications = Collections.synchronizedList(new ArrayList<>());
+
     static Collection<? extends AbstractAttribute> preComputedAttributes;
     @Getter
     static Collection<String> allAttributeNames;
@@ -233,7 +231,8 @@ public class SimilarPatentServer {
             //Collection<String> applications = Database.getCopyOfAllApplications();
             //Collection<String> assignees = Database.getAssignees();
             //Collection<String> allAssets = Arrays.asList(patents,applications,assignees).parallelStream().flatMap(list->list.stream()).collect(Collectors.toList());
-            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, new SimilarPatentFinder(Collections.emptyList()));
+            if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
+            similarityModelMap.put(Constants.PARAGRAPH_VECTOR_MODEL, DEFAULT_SIMILARITY_MODEL);
         }
     }
 
@@ -256,26 +255,49 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
 
+            if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
-            similarityEngine = new SimilarityEngine(Arrays.asList(new PatentSimilarityEngine(), new AssigneeSimilarityEngine(), new TechnologySimilarityEngine()));
+            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new TechnologySimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
         }
     }
 
-    public static void loadAllItemsWithAttributes() {
-        if(allApplications.isEmpty()) handleItemsList(allApplications,Database.getCopyOfAllApplications(), false);
-        if(allPatents.isEmpty()) handleItemsList(allPatents,Database.getCopyOfAllPatents(), false);
-        if(allAssignees.isEmpty()) handleItemsList(allAssignees,Database.getAssignees(), false);
+    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize) {
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, false);
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, false);
+        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, true);
     }
 
-    private static void handleItemsList(Collection<Item> itemList, Collection<String> inputs, boolean debug) {
-        inputs.parallelStream().forEach(assignee -> {
-            Item item = new Item(assignee);
-            preComputedAttributes.forEach(model -> {
-                item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
-                if (debug) System.out.println(model.getName()+" ["+item.getName()+"]: "+item.getData(model.getName()));
-            });
-            itemList.add(item);
+    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, boolean index) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        chunked(inputs,batchSize).parallelStream().forEach(batch -> {
+            Collection<Item> items = batch.stream().map(label->{
+                Item item = new Item(label);
+                preComputedAttributes.forEach(model -> {
+                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
+                });
+                INDArray vector = lookupTable.get(label);
+                if(vector!=null) {
+                    item.addData("vector", vector);
+                }
+                return item;
+            }).collect(Collectors.toList());
+
+            DataIngester.ingestItems(items, type, index);
+            cnt.getAndAdd(items.size());
+            System.out.println("Seen "+cnt.get()+" "+type.toString());
         });
+    }
+
+    private static List<Collection<String>> chunked(List<String> items, int batchSize) {
+        List<Collection<String>> chunks = new ArrayList<>((items.size()+1)/batchSize);
+        for(int i = 0; i < items.size(); i+= batchSize) {
+            List<String> chunk = new ArrayList<>(batchSize);
+            for(int j = i; j < (Math.min(i+ batchSize, items.size())); j++) {
+                chunk.add(items.get(j));
+            }
+            if(chunk.size() > 0) chunks.add(chunk);
+        }
+        return chunks;
     }
 
     public static void loadTechTaggerModel() {

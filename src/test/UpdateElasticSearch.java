@@ -2,6 +2,7 @@ package test;
 
 import elasticsearch.CreatePatentDBIndex;
 import elasticsearch.IngestAttributeData;
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.*;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
@@ -29,7 +30,6 @@ public class UpdateElasticSearch {
 
 
         SimilarPatentServer.initialize();
-        SimilarPatentServer.loadAllItemsWithAttributes();
-        IngestAttributeData.ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentFinder.getLookupTable(), 5000);
     }
 }

@@ -1,5 +1,7 @@
 package elasticsearch;
 
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
@@ -7,6 +9,7 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -16,30 +19,10 @@ public class IngestAttributeData {
     private static final int batchSize = 5000;
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
-        SimilarPatentServer.loadAllItemsWithAttributes();
-        ingest(SimilarPatentServer.getAllApplications(), PortfolioList.Type.applications, false);
-        ingest(SimilarPatentServer.getAllPatents(), PortfolioList.Type.patents, false);
-        ingest(SimilarPatentServer.getAllAssignees(), PortfolioList.Type.assignees, true);
+        Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize);
     }
 
-    public static void ingest(List<Item> items, PortfolioList.Type type, boolean index) {
-        AtomicInteger cnt = new AtomicInteger(0);
-        chunked(items).parallelStream().forEach(itemList->{
-            DataIngester.ingestItems(itemList,type,index);
-            cnt.getAndAdd(batchSize);
-            System.out.println("Seen "+cnt.get()+" "+type.toString());
-        });
-    }
 
-    private static List<Collection<Item>> chunked(List<Item> items) {
-        List<Collection<Item>> chunks = new ArrayList<>((items.size()+1)/batchSize);
-        for(int i = 0; i < items.size(); i+= batchSize) {
-            List<Item> chunk = new ArrayList<>(batchSize);
-            for(int j = i; j < (Math.min(i+ batchSize, items.size())); j++) {
-                chunk.add(items.get(j));
-            }
-            if(chunk.size() > 0) chunks.add(chunk);
-        }
-        return chunks;
-    }
+
 }
