@@ -423,27 +423,7 @@ public class Database {
 	}
 
 	public static void preLoad() {
-		getAssignees();
-		getClassCodeToClassTitleMap();
-		getPatentToClassificationMap();
-		getPatentToLatestAssigneeMap();
-		getPatentToOriginalAssigneeMap();
-		getCopyOfAllPatents();
-		getCopyOfAllApplications();
-		getLapsedAppSet();
-		getAppToClassificationMap();
-		getAppToOriginalAssigneeMap();
-		getAppToInventionTitleMap();
-		getAppToPriorityDateMap();
-		getAppToPubDateMap();
-		getLapsedPatentSet();
-		getExpiredPatentSet();
-		getJapaneseCompanies();
-		getCompDBAssigneeToAssetsPurchasedCountMap();
-		getCompDBAssigneeToAssetsSoldCountMap();
-		getExpirationDateMap();
-		getItemToTermAdjustmentMap();
-		TechTaggerNormalizer.getDefaultTechTagger();
+		getAssigneePrefixTrie();
 	}
 
 	public synchronized static void initializeDatabase() {

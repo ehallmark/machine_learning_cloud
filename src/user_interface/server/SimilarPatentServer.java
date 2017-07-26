@@ -870,7 +870,7 @@ public class SimilarPatentServer {
     public static void main(String[] args) throws Exception {
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
-        boolean preLoad = false;
+        boolean preLoad = true;
         boolean initDatabase = false;
 
         if(initDatabase) Database.initializeDatabase();
