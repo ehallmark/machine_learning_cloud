@@ -48,7 +48,7 @@ public class DataSearcher {
                     .addSort(comparator)
                     .setFetchSource(attrArray, null)
                     .storedFields("_source", "_score")
-                    .setSize(PAGE_LIMIT)
+                    .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
             // filters
@@ -68,7 +68,6 @@ public class DataSearcher {
 
             SearchResponse response = request.get();
             //Scroll until no hits are returned
-            System.out.println("\"query\": "+request.toString().replace("\n","\t"));
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
