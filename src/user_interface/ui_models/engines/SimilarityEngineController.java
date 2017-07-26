@@ -118,7 +118,7 @@ public class SimilarityEngineController {
         Script searchScript = null;
         if(simVectors.size()>0) {
             Map<String,Object> params = new HashMap<>();
-            params.put("avg_vector", Nd4j.vstack(simVectors).mean(0).data().asFloat());
+            params.put("avg_vector", simVectors.size()==1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
             searchScript =  new Script(
                     ScriptType.INLINE,
                     "painless",

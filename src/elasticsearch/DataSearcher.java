@@ -68,7 +68,7 @@ public class DataSearcher {
 
             SearchResponse response = request.get();
             //Scroll until no hits are returned
-            System.out.println("\"query\": "+request.toString());
+            System.out.println("\"query\": "+request.toString().replace("\n","\t"));
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
