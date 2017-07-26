@@ -56,16 +56,19 @@ public class DataSearcher {
                 filterBuilder = filterBuilder
                         .must(filter.getFilterQuery());
             }
-            request = request.setPostFilter(filterBuilder);
+            // Add filter to query
+            BoolQueryBuilder query = QueryBuilders.boolQuery()
+                    .filter(filterBuilder);
             // scripts
             if (script != null) {
-                QueryBuilder queryBuilder = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(script))
+                QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(script))
                         .boostMode(CombineFunction.REPLACE)
-                        .boost(5f)
                         .scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM);
-                request = request.setQuery(queryBuilder);
+                // add script to query
+                query = query.must(scoreFunction);
             }
-
+            // Set query
+            request = request.setQuery(query);
             SearchResponse response = request.get();
             //Scroll until no hits are returned
             Item[] items = new Item[]{};
