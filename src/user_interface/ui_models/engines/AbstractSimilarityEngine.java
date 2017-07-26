@@ -64,7 +64,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "for(int i = 0; i < vector.length; i++) " +
             "{" +
             "    float x = vector[i];" +
-            "    float y = avg_vector[i];" +
+            "    float y = params.avg_vector[i];" +
             "    a+=(x*x);" +
             "    b+=(y*y);" +
             "    ab+=(x*y);" +
