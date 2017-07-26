@@ -58,21 +58,21 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
     }
 
     private static final String DEFAULT_SIMILARITY_SCRIPT = "float[] vector = doc['vector']; " +
-            "double a = 0d;" +
-            "double b = 0d;" +
-            "double ab = 0d;" +
+            "float a = 0d;" +
+            "float b = 0d;" +
+            "float ab = 0d;" +
             "for(int i = 0; i < vector.length; i++) " +
             "{" +
-            "    float x = vector[i];" +
-            "    float y = params.avg_vector[i];" +
+            "    float x = (float) vector[i];" +
+            "    float y = (float) params.avg_vector[i];" +
             "    a+=(x*x);" +
             "    b+=(y*y);" +
             "    ab+=(x*y);" +
             "}" +
-            "if(a !=0 && b != 0) {" +
+            "if(a != 0f && b != 0f) {" +
             "    return ab/(Math.sqrt(a)*Math.sqrt(b));" +
             "} else {" +
-            "    return 0d;" +
+            "    return 0f;" +
             "}";
 
     @Override
