@@ -63,7 +63,7 @@ public class ConstructAssigneeToPatentsMap {
     }
 
     public static void main(String[] args) throws Exception {
-        constructMap(Database.patentToLatestAssigneeMapFile,Database.patentToOriginalAssigneeMapFile,Database.assigneeToPatentsMapFile);
+        constructMap(null,Database.patentToOriginalAssigneeMapFile,Database.assigneeToPatentsMapFile);
         constructMap(null,Database.appToOriginalAssigneeMapFile,Database.assigneeToAppsMapFile);
     }
 
