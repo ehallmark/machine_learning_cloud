@@ -59,7 +59,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "    return 0f;" +
             "}";
 
-    static final String TEST_SIMILARITY_SCRIPT = "if(vector_str.value == null || params.avg_vector == null) { return 0d; }" +
+    static final String TEST_SIMILARITY_SCRIPT = "if(doc['vector_str'].value == null || params.avg_vector == null) { return 0d; }" +
             "String[] vecStr = doc['vector_str'].value.split(\",\");" +
             "float a = 0f;" +
             "float b = 0f;" +
