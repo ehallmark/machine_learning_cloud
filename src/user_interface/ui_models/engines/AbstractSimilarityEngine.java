@@ -59,14 +59,15 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "    return 0f;" +
             "}";
 
-    static final String TEST_SIMILARITY_SCRIPT = "if(doc['vector_str'].value == null || params.avg_vector == null) { return 0d; }" +
-            "String[] vecStr = doc['vector_str'].value.split(\",\");" +
+    static final String TEST_SIMILARITY_SCRIPT = "String vecStr = doc['vector_str'].value; " +
+            "if(vecStr == null || params.avg_vector == null) { return 0d; }" +
+            "String[] vec = vecStr.split(\",\");" +
             "float a = 0f;" +
             "float b = 0f;" +
             "float ab = 0f;" +
             "float[] avg_vector = params.avg_vector;" +
-            "for(int i = 0; i < vector.size(); i++) {" +
-            "    float x = Float.valueOf(vecStr[i]);" +
+            "for(int i = 0; i < vec.length; i++) {" +
+            "    float x = Float.valueOf(vec[i]);" +
             "    float y = avg_vector[i];" +
             "    a+=(x*x);" +
             "    b+=(y*y);" +
