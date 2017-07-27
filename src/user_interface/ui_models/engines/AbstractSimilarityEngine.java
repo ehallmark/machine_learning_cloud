@@ -62,6 +62,26 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "    return 0f;" +
             "}";
 
+
+    static final String TEST_SIMILARITY_SCRIPT = "" +
+            "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
+            "float a = 0f;" +
+            "float b = 0f;" +
+            "float ab = 0f;" +
+            "int length = params.avg_vector.length;" +
+            "for(int i = 0; i < length; i++) {" +
+            "    float x = (float) doc['vector_obj.'+i].value;" +
+            "    float y = params.avg_vector[i];" +
+            "    a+=(x*x);" +
+            "    b+=(y*y);" +
+            "    ab+=(x*y);" +
+            "}" +
+            "if(a != 0f && b != 0f) {" +
+            "    return (ab/(Math.sqrt(a)*Math.sqrt(b))) * 100f;" +
+            "} else {" +
+            "    return 0f;" +
+            "}";
+
     @Override
     public Object attributesFor(Collection portfolio, int limit) {
         return null;

@@ -23,7 +23,7 @@ public class DataIngester {
     static final String INDEX_NAME = "patentdb";
     static final String TYPE_NAME = "patents_and_applications";
 
-    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap) {
+    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean create) {
         try {
             BulkRequestBuilder request = client.prepareBulk();
             for (Map.Entry<String, Map<String,Object>> e : labelToTextMap.entrySet()) {
@@ -32,7 +32,7 @@ public class DataIngester {
                         .setDoc(json));
             }
             BulkResponse response = request.get();
-            if(response.hasFailures()) {
+            if(create&&response.hasFailures()) {
                 int numFailures = 0;
                 request = client.prepareBulk();
                 for(BulkItemResponse itemResponse : response.getItems()) {
@@ -76,12 +76,12 @@ public class DataIngester {
         for(Item item : items) {
             Map<String,Object> itemData = new HashMap<>();
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
-                itemData.put(e.getKey(),e.getValue());
+                itemData.put(e.getKey(), e.getValue());
             }
             itemData.put("doc_type",type.toString());
             data.put(item.getName(),itemData);
         }
-        ingestAssets(data);
+        ingestAssets(data,false);
     }
 
 }

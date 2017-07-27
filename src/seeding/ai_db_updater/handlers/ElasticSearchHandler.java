@@ -37,7 +37,7 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
                 itemData.put("tokens", String.join(" ", fullDocuments));
                 dataMap.put(pubDocNumber, itemData);
                 if (dataMap.size() > 5000) {
-                    DataIngester.ingestAssets(dataMap);
+                    DataIngester.ingestAssets(dataMap,true);
                 }
             }
         }
@@ -51,7 +51,7 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
     @Override
     public void save() {
         if(dataMap.size() > 0) {
-            DataIngester.ingestAssets(dataMap);
+            DataIngester.ingestAssets(dataMap,true);
         }
     }
 }
