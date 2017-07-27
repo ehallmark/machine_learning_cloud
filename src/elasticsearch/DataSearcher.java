@@ -69,6 +69,7 @@ public class DataSearcher {
             }
             // Set query
             request = request.setQuery(query);
+            System.out.println("\"query\": "+request.toString().replace("\n",""));
             SearchResponse response = request.get();
             //Scroll until no hits are returned
             Item[] items = new Item[]{};
