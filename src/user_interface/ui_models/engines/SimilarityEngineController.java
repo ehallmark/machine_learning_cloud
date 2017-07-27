@@ -122,7 +122,7 @@ public class SimilarityEngineController {
             searchScript =  new Script(
                     ScriptType.INLINE,
                     "painless",
-                    AbstractSimilarityEngine.TEST_SIMILARITY_SCRIPT,
+                    AbstractSimilarityEngine.DEFAULT_SIMILARITY_SCRIPT,
                     params
             );
         }

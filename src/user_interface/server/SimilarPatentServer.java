@@ -278,9 +278,7 @@ public class SimilarPatentServer {
                     for(int i = 0; i < data.length; i++) {
                         dataArray[i] = String.valueOf(data[i]);
                     }
-                    String dataStr = String.join(",",dataArray);
                     item.addData("vector", vector);
-                    item.addData("vector_str",dataStr);
                 }
                 return item;
             }).collect(Collectors.toList());
