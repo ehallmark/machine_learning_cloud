@@ -2,9 +2,11 @@ package user_interface.ui_models.engines;
 
 import lombok.Getter;
 import lombok.Setter;
+import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
+import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
@@ -42,8 +44,8 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
 
     static final String DEFAULT_SIMILARITY_SCRIPT = "String vectorStr = doc['vector_str'].value;" +
             "if(vectorStr == null || params.avg_vector == null) { return 0f; }" +
-            "String[] vector = /\\,/.split(vectorStr);" +
-            "if(vector.length!=150) { return 0f; }" + // REMOVE THIS!!!!!
+            "String[] vector = /[,]/.split(vectorStr);" +
+            "if(vector.length!="+ ParagraphVectorModel.VECTOR_SIZE+") { return 0f; }" + // REMOVE THIS!!!!!
             "float a = 0f;" +
             "float b = 0f;" +
             "float ab = 0f;" +

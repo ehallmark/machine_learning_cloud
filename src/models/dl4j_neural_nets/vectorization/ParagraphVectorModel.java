@@ -28,6 +28,7 @@ import java.util.Arrays;
 public class ParagraphVectorModel {
     public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"all_paragraphs2017.paragraphvectors");
     public static File testParagraphsModelFile = new File(Constants.DATA_FOLDER+"simple.pv");
+    public static final int VECTOR_SIZE = 100;
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -84,7 +85,7 @@ public class ParagraphVectorModel {
                 .batchSize(5000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(6)
-                .layerSize(100)
+                .layerSize(VECTOR_SIZE)
                 .sampling(0.000001)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
