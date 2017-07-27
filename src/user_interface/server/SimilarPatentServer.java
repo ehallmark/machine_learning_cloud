@@ -279,7 +279,7 @@ public class SimilarPatentServer {
                     for(int i = 0; i < data.length; i++) {
                         obj.put(String.valueOf(i),data[i]);
                     }
-                    item.addData("vector", data);
+                    //item.addData("vector", data);
                     item.addData("vector_obj",obj);
                 }
                 return item;
