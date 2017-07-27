@@ -69,9 +69,9 @@ public class DataSearcher {
             }
             // Set query
             request = request.setQuery(query);
-            String queryStr = request.toString().replace("\n","").replace("\t","");
-            while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
-            System.out.println("\"query\": "+queryStr);
+            //String queryStr = request.toString().replace("\n","").replace("\t","");
+            //while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
+            //System.out.println("\"query\": "+queryStr);
             SearchResponse response = request.get();
             //Scroll until no hits are returned
             Item[] items = new Item[]{};
