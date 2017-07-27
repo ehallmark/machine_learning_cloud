@@ -69,7 +69,7 @@ public class DataSearcher {
             }
             // Set query
             request = request.setQuery(query);
-            String queryStr = request.toString().replace("[\n\t]","");
+            String queryStr = request.toString().replace("\n","").replace("\t","");
             while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
             System.out.println("\"query\": "+queryStr);
             SearchResponse response = request.get();
