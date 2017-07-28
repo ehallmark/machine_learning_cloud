@@ -22,6 +22,6 @@ public class UpdateElasticSearch {
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,10000, Collections.emptyList());
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,1000, Collections.emptyList());
     }
 }
