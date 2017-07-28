@@ -15,13 +15,14 @@ public class ColumnChart extends AbstractChart {
         return "column";
     }
 
-    public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, List<String> categories) {
+    public ColumnChart(String title, List<Series<?>> data, Double min, Double max, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, String subTitle, int yDecimals, List<String> categories) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         SeriesType type = SeriesType.COLUMN;
         options=new Options()
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
+                .setSubtitle(new Title(subTitle))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))

@@ -98,7 +98,7 @@ public class DataSearcher {
         hit.getSource().forEach((k,v)->{
             item.addData(k,v);
         });
-        item.addData(Constants.SIMILARITY,hit.getScore());
+        item.addData(Constants.SIMILARITY,hit.getScore()*100f);
         return item;
     }
 }

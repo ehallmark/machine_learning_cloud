@@ -51,7 +51,7 @@ public class AbstractHistogramChart implements ChartAttribute {
     }
 
     @Override
-    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
+    public List<? extends AbstractChart> create(PortfolioList portfolioList, String groupedByName) {
         return attributes.stream().map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
@@ -72,7 +72,7 @@ public class AbstractHistogramChart implements ChartAttribute {
             for(int i = 0; i < max; i += step) {
                 categories.add(String.valueOf(i) + "-" + String.valueOf(i+step));
             }
-            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title, categories), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0,categories);
+            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title, categories), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, groupedByName,  0,categories);
         }).collect(Collectors.toList());
     }
 

@@ -74,6 +74,7 @@ public class SimilarPatentServer {
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String SORT_DIRECTION_FIELD = "sortDirection";
+    public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
     public static final String SEARCH_TYPE_ARRAY_FIELD = "searchType";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
@@ -271,7 +272,7 @@ public class SimilarPatentServer {
                 Item item = new Item(label);
                 INDArray vector = lookupTable.get(label);
                 if(vector==null) return null;
-                float[] data = vector.data().asFloat();
+                float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
                 Map<String,Float> obj = new HashMap<>();
                 for(int i = 0; i < data.length; i++) {
                     obj.put(String.valueOf(i),data[i]);
@@ -481,8 +482,13 @@ public class SimilarPatentServer {
 
             List<AbstractChart> finishedCharts = new ArrayList<>();
             // adding charts
+            String groupedBy = extractString(req, CHARTS_GROUPED_BY_FIELD, null);
             charts.forEach(chartModel->{
-                finishedCharts.addAll(chartModel.create(portfolioList));
+                portfolioList.groupedBy(groupedBy).forEach(groupPair->{
+                    String name = groupPair.getFirst();
+                    PortfolioList group = groupPair.getSecond();
+                    finishedCharts.addAll(chartModel.create(group,name));
+                });
             });
 
             System.out.println("Rendering table...");
@@ -788,7 +794,7 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().withClass("col-12").with(
+                                        div().withClass("col-6").with(
                                                 label("Sort By"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Arrays.asList(Constants.SIMILARITY, Constants.AI_VALUE, Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
@@ -803,6 +809,15 @@ public class SimilarPatentServer {
                                         ),
                                         div().withClass("col-6").with(
                                                 label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        ), div().withClass("col-6").with(
+                                                label("Group Charts By"),br(),select().withClass("form-control single-select2").withName(CHARTS_GROUPED_BY_FIELD).with(
+                                                        option("No Group (default)").attr("selected","selected").withValue(""),
+                                                        span().with(
+                                                                Arrays.asList(Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY, Constants.CPC_TECHNOLOGY).stream()
+                                                                        .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
+                                                        )
+                                                )
+
                                         ), div().withClass("col-12").attr("style","margin-top: 8px; display: none;").with(
                                                 label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
                                                         option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),

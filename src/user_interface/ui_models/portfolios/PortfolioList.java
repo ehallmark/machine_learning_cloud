@@ -2,12 +2,14 @@ package user_interface.ui_models.portfolios;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.deeplearning4j.berkeley.Pair;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 8/1/16.
@@ -34,6 +36,12 @@ public class PortfolioList implements Comparable<PortfolioList> {
                 item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
             }
         }
+    }
+
+    public Stream<Pair<String,PortfolioList>> groupedBy(String field) {
+        if(field==null) return Arrays.asList(new Pair<>("",this)).stream();
+        return Arrays.stream(itemList).collect(Collectors.groupingBy((item)->(item).getData(field))).entrySet()
+                .stream().map(e->new Pair<>(e.getKey().toString(),new PortfolioList(e.getValue().toArray(new Item[e.getValue().size()]))));
     }
 
     public PortfolioList merge(PortfolioList other, String comparator, int limit) {

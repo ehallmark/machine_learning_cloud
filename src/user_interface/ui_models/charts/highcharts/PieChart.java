@@ -15,13 +15,14 @@ public class PieChart extends AbstractChart {
         return "pie";
     }
 
-    public PieChart(String title, List<Series<?>> data, String yLabel) {
+    public PieChart(String title, String subTitle, List<Series<?>> data, String yLabel) {
         SeriesType type = SeriesType.PIE;
         System.out.println("Starting to build: "+type);
         options=new Options()
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setChartOptions(new ChartOptions().setHeight(450).setType(type))
                 .setTitle(new Title(title))
+                .setSubtitle(new Title(subTitle))
                 .setTooltip(new Tooltip().setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> {point.name}:<b> {point.percentage:.1f}%</b><br/>Count: <b> {point.y} "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data)
