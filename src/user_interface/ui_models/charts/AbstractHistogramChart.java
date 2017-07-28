@@ -19,20 +19,31 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static j2html.TagCreator.option;
+import static j2html.TagCreator.*;
+import static j2html.TagCreator.select;
+import static j2html.TagCreator.span;
 
 /**
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart implements ChartAttribute {
     protected List<String> attributes;
+    protected String groupedBy;
     protected Collection<String> searchTypes;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
     @Override
     public Tag getOptionsTag() {
-        return SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE));
+        return div().with(
+                label("Group By"),br(),select().withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
+                        option("No Group (default)").attr("selected","selected").withValue(""),
+                        span().with(
+                                Arrays.asList(Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY, Constants.CPC_TECHNOLOGY).stream()
+                                        .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
+                        )
+                ),SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE))
+        );
     }
 
     @Override
@@ -43,6 +54,7 @@ public class AbstractHistogramChart implements ChartAttribute {
         if(searchTypes.isEmpty()) {
             searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
+        groupedBy = SimilarPatentServer.extractString(params, SimilarPatentServer.CHARTS_GROUPED_BY_FIELD, null);
     }
 
     @Override
@@ -51,8 +63,8 @@ public class AbstractHistogramChart implements ChartAttribute {
     }
 
     @Override
-    public List<? extends AbstractChart> create(PortfolioList portfolioList, String groupedByName) {
-        return attributes.stream().map(attribute->{
+    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
+        return attributes.stream().flatMap(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
@@ -72,7 +84,15 @@ public class AbstractHistogramChart implements ChartAttribute {
             for(int i = 0; i < max; i += step) {
                 categories.add(String.valueOf(i) + "-" + String.valueOf(i+step));
             }
-            return new ColumnChart(title, collectDistributionData(Arrays.asList(portfolioList.getItemList()),min,max,nBins, attribute, title, categories), 0d, null, xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, groupedByName,  0,categories);
+            final double _min = min;
+            final double _max = max;
+            final int _nBins = nBins;
+            final String _xAxisSuffix = xAxisSuffix;
+            return portfolioList.groupedBy(groupedBy).map(groupPair->{
+                String name = groupPair.getFirst();
+                PortfolioList group = groupPair.getSecond();
+                return new ColumnChart(title, collectDistributionData(Arrays.asList(group.getItemList()),_min,_max,_nBins, attribute, title, categories), 0d, null, _xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType, name,  0,categories);
+            });
         }).collect(Collectors.toList());
     }
 
