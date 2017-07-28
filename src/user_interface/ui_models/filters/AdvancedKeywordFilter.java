@@ -8,6 +8,7 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.portfolios.items.Item;
 
+import static j2html.TagCreator.button;
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
 import static user_interface.server.SimilarPatentServer.extractString;
@@ -42,7 +43,8 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                textarea().withClass("form-control").attr("placeholder","Example: (( smart <-> home ) | ( home <-> automation )) & ! lighting").withName(Constants.ADVANCED_KEYWORD_FILTER)
+                button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
+                textarea().withClass("form-control").attr("placeholder","Example: (\"smart home\" | \"home automation\") & ! \"smart lighting\"").withName(Constants.ADVANCED_KEYWORD_FILTER)
         );
     }
 
