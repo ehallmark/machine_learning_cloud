@@ -42,7 +42,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
         }
     }
 
-    static final String DEFAULT_SIMILARITY_SCRIPT = "String vectorStr = doc['vector_str'].value;" +
+    static final String TEST_SIMILARITY_SCRIPT = "String vectorStr = doc['vector_str'].value;" +
             "if(vectorStr == null || params.avg_vector == null) { return 0f; }" +
             "String[] vector = /[,]/.split(vectorStr);" +
             "if(vector.length!="+ ParagraphVectorModel.VECTOR_SIZE+") { return 0f; }" + // REMOVE THIS!!!!!
@@ -63,7 +63,7 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
             "}";
 
 
-    static final String TEST_SIMILARITY_SCRIPT = "" +
+    static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
             "float a = 0f;" +
             "float b = 0f;" +
