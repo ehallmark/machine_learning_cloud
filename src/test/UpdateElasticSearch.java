@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -21,6 +22,6 @@ public class UpdateElasticSearch {
     public static void main(String[] args) {
         SimilarPatentServer.initialize();
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,10000, Arrays.asList("vector_obj"));
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,10000, Collections.emptyList());
     }
 }
