@@ -44,7 +44,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         return div().with(
                 button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
-                textarea().withClass("form-control").attr("placeholder","Example: (\"smart home\" | \"home automation\") & ! \"smart lighting\"").withName(Constants.ADVANCED_KEYWORD_FILTER)
+                textarea().withClass("form-control").attr("placeholder","Example: (\"virtual reality\" | \"augmented reality\") +gaming").withName(Constants.ADVANCED_KEYWORD_FILTER)
         );
     }
 

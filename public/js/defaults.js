@@ -189,7 +189,7 @@ var applyParams = function(params,searchOptions,special=[]) {
         content: "<p>+ signifies AND operation</p>"+
                  "<p>| signifies OR operation</p>"+
                  "<p>- negates a single token</p>"+
-                 " wraps a number of tokens to signify a phrase for searching</p>"+
+                 "\"\" wraps a number of tokens to signify a phrase for searching</p>"+
                  "<p>* at the end of a term signifies a prefix query</p>"+
                  "<p>( and ) signify precedence</p>"+
                  "<p>~N after a word signifies edit distance (fuzziness)</p>"+
