@@ -709,20 +709,20 @@ public class SimilarPatentServer {
                 ),div().withClass("col-9").attr("style","padding-top: 30px; background-color: #c4c4c4;").with(
                         div().withClass("row").with(
                                 div().withClass("col-2").with(
-                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Previous Report","Previous..."))
+                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Back"))
                                                 .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
                                                 input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                                button("Previous Report").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
+                                                button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
                                         )
                                 ), div().withClass("col-8").with(
                                         h3("Artificial Intelligence Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
                                                 .attr("style","margin-top: -5px;")
                                 ), div().withClass("col-2").with(
-                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Next Report","Next..."))
+                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Next","Next"))
                                                 .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
                                                 input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                                button("Next Report").withClass("btn btn-sm btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
+                                                button("Next").withClass("btn btn-sm btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
                                         )
                                 )
                         )
