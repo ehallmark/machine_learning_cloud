@@ -125,7 +125,7 @@ public class DataSearcher {
         });
         SearchHitField similarityField = hit.getField(Constants.SIMILARITY);
         if(similarityField!=null) {
-            Double similarityScore = similarityField.getValue();
+            Number similarityScore = similarityField.getValue();
             if (similarityScore != null) {
                 item.addData(Constants.SIMILARITY,similarityScore);
             }

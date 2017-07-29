@@ -50,9 +50,7 @@ public class Constants {
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String CPC_TECHNOLOGY = "cpcTechnology";
 	public static final String PORTFOLIO_ASSESSMENT = "Portfolio Assessment";
-	public static final String SIMILAR_SEARCH = "Similarity Search";
 	public static final String SIMILAR_PATENT_SEARCH = "Similar Asset Search";
-	public static final String KEYWORD_SEARCH = "Keyword Search";
 	public static final String SIMILAR_ASSIGNEE_SEARCH = "Similar Assignee Search";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";

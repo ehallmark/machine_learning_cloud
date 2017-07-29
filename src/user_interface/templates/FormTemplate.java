@@ -6,10 +6,7 @@ import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.portfolios.PortfolioList;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Evan on 6/24/2017.
@@ -20,11 +17,11 @@ public class FormTemplate {
     protected Map<String,Object> params;
     protected Map<String,Object> searchOptions;
     protected List<String> special;
-    public FormTemplate(String name, Map<String,Object> params, Map<String,Object> searchOptions, List<String> special) {
+    public FormTemplate(String name, Map<String,Object> params, Map<String,Object> searchOptions) {
         this.params=params;
         this.searchOptions=searchOptions;
         this.name=name;
-        this.special = special;
+        this.special=new ArrayList<>(params.keySet());
     }
 
     public String getHref() {

@@ -74,7 +74,7 @@ public class SimilarPatentServer {
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String SORT_DIRECTION_FIELD = "sortDirection";
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
-    public static final String SEARCH_TYPE_ARRAY_FIELD = "searchType";
+    public static final String SEARCH_TYPE_ARRAY_FIELD = "searchType[]";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = "/patent_recommendation_engine";
     public static final String DOWNLOAD_URL = "/excel_generation";
