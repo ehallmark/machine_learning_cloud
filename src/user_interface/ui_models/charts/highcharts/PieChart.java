@@ -27,7 +27,7 @@ public class PieChart extends AbstractChart {
                 .setSeries(data)
                 .setyAxis(new Axis())
                 .setxAxis(new Axis())
-                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
+                .setPlotOptions(new PlotOptionsChoice().setSeries(new PlotOptions().setSize(new PixelOrPercent(80, PixelOrPercent.Unit.PERCENT)).setGroupPadding(0f).setPointPadding(0f).setPointPlacement(PointPlacement.ON)));
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
