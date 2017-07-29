@@ -58,6 +58,7 @@ public class ExcludeKeywordFilter extends AbstractFilter {
         queryStr = extractString(req,Constants.EXCLUDE_KEYWORD_FILTER,null);
     }
 
-
+    @Override
+    public boolean contributesToScore() { return true; }
 
 }

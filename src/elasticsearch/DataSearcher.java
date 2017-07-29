@@ -69,10 +69,10 @@ public class DataSearcher {
             // filters
             for (AbstractFilter filter : filters) {
                 if (filter.contributesToScore()&&isOverallScore) {
-                    query = query.must(filter.getFilterQuery());
+                    query = query.must(filter.getFilterQuery().boost(10));
                 } else {
                     filterBuilder = filterBuilder
-                            .must(filter.getFilterQuery());
+                            .must(filter.getFilterQuery().boost(0));
                 }
             }
             // Add filter to query
@@ -127,7 +127,7 @@ public class DataSearcher {
         if(similarityField!=null) {
             Number similarityScore = similarityField.getValue();
             if (similarityScore != null) {
-                item.addData(Constants.SIMILARITY,similarityScore);
+                item.addData(Constants.SIMILARITY,similarityScore.floatValue()*100f);
             }
         }
         item.addData(Constants.OVERALL_SCORE,hit.getScore());

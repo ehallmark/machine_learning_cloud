@@ -59,4 +59,7 @@ public class RequireKeywordFilter extends AbstractFilter {
         return null;
     }
 
+    @Override
+    public boolean contributesToScore() { return true; }
+
 }

@@ -57,4 +57,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public String getPrerequisite() {
         return Constants.PORTFOLIO_SIZE;
     }
+
+    @Override
+    public boolean contributesToScore() { return true; }
 }
