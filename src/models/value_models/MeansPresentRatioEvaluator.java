@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
  * Created by Evan on 1/27/2017.
  */
 public class MeansPresentRatioEvaluator extends ValueAttr {
-    public MeansPresentRatioEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Uniform,"Means Present Value");
+    public MeansPresentRatioEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Uniform,"Means Present Value", loadData);
     }
 
     @Override

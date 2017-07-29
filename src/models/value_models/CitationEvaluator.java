@@ -14,8 +14,8 @@ import java.util.*;
 public class CitationEvaluator extends ValueAttr {
     static final File file = new File("data/citation_value_model.jobj");
 
-    public CitationEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Citation Value");
+    public CitationEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Citation Value",loadData);
     }
 
     @Override

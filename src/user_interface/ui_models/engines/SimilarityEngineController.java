@@ -83,7 +83,7 @@ public class SimilarityEngineController {
         if(resultTypes.isEmpty()) {
             resultTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
-        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
+        String comparator = extractString(req, COMPARATOR_FIELD, Constants.OVERALL_SCORE);
 
         String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
@@ -105,16 +105,6 @@ public class SimilarityEngineController {
 
         setPrefilters(req);
 
-        // Run elasticsearch
-        SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        SortBuilder sortBuilder;
-        // only pull ids by setting first parameter to empty list
-        if(comparator.equals(Constants.SIMILARITY)) {
-            sortBuilder = SortBuilders.scoreSort().order(sortOrder);
-        } else {
-            sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
-        }
-
         Script searchScript = null;
         if(simVectors.size()>0) {
             Map<String,Object> params = new HashMap<>();
@@ -126,8 +116,8 @@ public class SimilarityEngineController {
                     params
             );
         }
-
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, sortBuilder, limit);
+        SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, comparator, sortOrder, limit);
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);

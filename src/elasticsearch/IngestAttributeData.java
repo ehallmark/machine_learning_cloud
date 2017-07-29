@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class IngestAttributeData {
     private static final int batchSize = 5000;
     public static void main(String[] args) {
-        SimilarPatentServer.initialize();
+        SimilarPatentServer.initialize(true);
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllAttributeNames());
     }

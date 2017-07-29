@@ -31,20 +31,10 @@ public class FormTemplate {
         return "javascript:resetSearchForm();applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+");";
     }
 
-    public static Map<String,Object> similarity() {
+    public static Map<String,Object> defaultOptions() {
         Map<String,Object> map = new HashMap<>();
         map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.SIMILARITY);
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        map.put(SimilarPatentServer.SORT_DIRECTION_FIELD, "desc");
-        return map;
-    }
-
-
-    public static Map<String,Object> value() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.AI_VALUE);
+        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.OVERALL_SCORE);
         map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
         map.put(SimilarPatentServer.SORT_DIRECTION_FIELD, "desc");
         return map;

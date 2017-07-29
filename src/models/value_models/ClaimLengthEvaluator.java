@@ -11,8 +11,8 @@ import java.util.Map;
  * Created by Evan on 1/27/2017.
  */
 public class ClaimLengthEvaluator extends ValueAttr {
-    public ClaimLengthEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Claim Length Value");
+    public ClaimLengthEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Claim Length Value", loadData);
     }
 
     @Override

@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 public class OverallEvaluator extends ValueAttr {
     private static final File mergedValueModelFile = new File("data/merged_value_model_map.jobj");
 
-    public OverallEvaluator() {
-        super(null, Constants.AI_VALUE);
-        model=(Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
+    public OverallEvaluator(boolean loadData) {
+        super(null, Constants.AI_VALUE, loadData);
+        if(loadData)model=(Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
     }
 
     @Override
@@ -27,9 +27,9 @@ public class OverallEvaluator extends ValueAttr {
 
     private static void runAndSaveOverallModel() {
         List<ValueAttr> evaluators = Arrays.asList(
-                new CitationEvaluator(),
-                new ClaimRatioEvaluator(),
-                new PageRankEvaluator()
+                new CitationEvaluator(true),
+                new ClaimRatioEvaluator(true),
+                new PageRankEvaluator(true)
         );
 
         List<Double> weights = Arrays.asList(10d,9d,4d);

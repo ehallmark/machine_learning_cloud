@@ -9,8 +9,8 @@ import java.util.*;
  * Created by Evan on 1/27/2017.
  */
 public class AssetsPurchasedEvaluator extends ValueAttr {
-    public AssetsPurchasedEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Assets Purchased Value");
+    public AssetsPurchasedEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Assets Purchased Value",loadData);
     }
 
     @Override

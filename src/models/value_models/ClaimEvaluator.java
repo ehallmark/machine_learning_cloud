@@ -28,8 +28,8 @@ public class ClaimEvaluator extends ValueAttr {
             claimRatioModelFile
     };
 
-    public ClaimEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Claim Value");
+    public ClaimEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Claim Value", loadData);
 
     }
 

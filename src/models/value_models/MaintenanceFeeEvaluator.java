@@ -11,8 +11,8 @@ import java.util.Map;
  * Created by Evan on 1/27/2017.
  */
 public class MaintenanceFeeEvaluator extends ValueAttr {
-    public MaintenanceFeeEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Maintenance Fee Value");
+    public MaintenanceFeeEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Maintenance Fee Value", loadData);
     }
 
     @Override

@@ -15,6 +15,7 @@ public class Constants {
 	public static final String ASSIGNEE = "assignee";
 	public static final String NAME = "name";
 	public static final String SIMILARITY = "similarity";
+	public static final String OVERALL_SCORE = "overallScore";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
 	public static final String ADVANCED_KEYWORD_FILTER = "advancedKeywordFilter";

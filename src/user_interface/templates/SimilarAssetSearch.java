@@ -15,7 +15,7 @@ import java.util.Map;
 public class SimilarAssetSearch extends FormTemplate {
 
     public SimilarAssetSearch() {
-        super(Constants.SIMILAR_PATENT_SEARCH, getParams(), FormTemplate.similarity(), Arrays.asList(Constants.RESULT_TYPE_FILTER,Constants.ADVANCED_KEYWORD_FILTER,Constants.REQUIRE_KEYWORD_FILTER, Constants.EXCLUDE_KEYWORD_FILTER,SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
+        super(Constants.SIMILAR_PATENT_SEARCH, getParams(), FormTemplate.defaultOptions(), Arrays.asList(Constants.RESULT_TYPE_FILTER,Constants.ADVANCED_KEYWORD_FILTER,Constants.REQUIRE_KEYWORD_FILTER, Constants.EXCLUDE_KEYWORD_FILTER,SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD));
     }
 
     private static Map<String,Object> getParams() {

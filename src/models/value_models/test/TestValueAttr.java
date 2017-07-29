@@ -13,7 +13,7 @@ public class TestValueAttr {
     public static void main(String[] args) {
 
         Database.initializeDatabase();
-        ValueAttr attr = new PageRankEvaluator();
+        ValueAttr attr = new PageRankEvaluator(true);
         Collection<String> patents = Database.getValuablePatents();
         patents.forEach(patent->{
             System.out.print("Patent "+patent+": ");

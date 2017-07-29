@@ -26,8 +26,8 @@ public class MarketEvaluator extends ValueAttr {
             maintenanceFeeValueModelFile
     };
 
-    public MarketEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Market Value");
+    public MarketEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Market Value", loadData);
     }
 
     @Override

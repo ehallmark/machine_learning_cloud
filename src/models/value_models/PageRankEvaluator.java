@@ -15,8 +15,8 @@ import java.util.Map;
  * Created by ehallmark on 5/9/17.
  */
 public class PageRankEvaluator extends ValueAttr {
-    public PageRankEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal, "Page Rank");
+    public PageRankEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal, "Page Rank", loadData);
         DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), model);
     }
 

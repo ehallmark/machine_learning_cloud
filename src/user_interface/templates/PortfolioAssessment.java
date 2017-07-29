@@ -15,7 +15,7 @@ import java.util.Map;
 public class PortfolioAssessment extends FormTemplate {
 
     public PortfolioAssessment() {
-        super(Constants.PORTFOLIO_ASSESSMENT, getParams(), FormTemplate.value(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
+        super(Constants.PORTFOLIO_ASSESSMENT, getParams(), FormTemplate.defaultOptions(), Arrays.asList(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD));
     }
 
     private static Map<String,Object> getParams() {

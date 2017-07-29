@@ -11,8 +11,8 @@ import java.util.Map;
  * Created by Evan on 1/27/2017.
  */
 public class ClaimRatioEvaluator extends ValueAttr {
-    public ClaimRatioEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal,"Claim Ratio Value");
+    public ClaimRatioEvaluator(boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,"Claim Ratio Value", loadData);
     }
 
     @Override

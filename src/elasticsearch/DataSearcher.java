@@ -19,8 +19,10 @@ import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -29,6 +31,9 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static user_interface.server.SimilarPatentServer.SORT_DIRECTION_FIELD;
+import static user_interface.server.SimilarPatentServer.extractString;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -39,33 +44,53 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script script, SortBuilder comparator, int maxLimit) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit) {
         try {
+            // Run elasticsearch
+            boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
+            SortBuilder sortBuilder;
+            // only pull ids by setting first parameter to empty list
+            if(isOverallScore||comparator.equals(Constants.SIMILARITY)) {
+                sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+            } else {
+                sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
+            }
             String[] attrArray = attributes.toArray(new String[attributes.size()]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
-                    .addSort(comparator)
+                    .addSort(sortBuilder)
                     .setFetchSource(attrArray, null)
-                    .storedFields("_source", "_score")
+                    .storedFields("_source", "_score","fields")
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
             BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
+            BoolQueryBuilder query = QueryBuilders.boolQuery();
             // filters
             for (AbstractFilter filter : filters) {
-                filterBuilder = filterBuilder
-                        .must(filter.getFilterQuery());
+                if (filter.contributesToScore()&&isOverallScore) {
+                    query = query.must(filter.getFilterQuery());
+                } else {
+                    filterBuilder = filterBuilder
+                            .must(filter.getFilterQuery());
+                }
             }
             // Add filter to query
-            BoolQueryBuilder query = QueryBuilders.boolQuery()
-                    .filter(filterBuilder);
+            query = query.filter(filterBuilder);
             // scripts
-            if (script != null) {
-                QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(script))
-                        .boostMode(CombineFunction.REPLACE)
-                        .scoreMode(FiltersFunctionScoreQuery.ScoreMode.SUM);
+            if (similarityScript != null) {
+                QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(similarityScript).setWeight(100))
+                        .boostMode(CombineFunction.AVG)
+                        .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
                 // add script to query
                 query = query.must(scoreFunction);
+                request = request.addScriptField(Constants.SIMILARITY,similarityScript);
+            }
+            if (isOverallScore) {
+                // add in AI Value
+                query = query.must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(Constants.AI_VALUE)
+                        .missing(0)
+                ));
             }
             // Set query
             request = request.setQuery(query);
@@ -98,7 +123,14 @@ public class DataSearcher {
         hit.getSource().forEach((k,v)->{
             item.addData(k,v);
         });
-        item.addData(Constants.SIMILARITY,hit.getScore()*100f);
+        SearchHitField similarityField = hit.getField(Constants.SIMILARITY);
+        if(similarityField!=null) {
+            Double similarityScore = similarityField.getValue();
+            if (similarityScore != null) {
+                item.addData(Constants.SIMILARITY,similarityScore);
+            }
+        }
+        item.addData(Constants.OVERALL_SCORE,hit.getScore());
         return item;
     }
 }

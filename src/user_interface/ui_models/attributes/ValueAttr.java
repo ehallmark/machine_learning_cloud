@@ -24,15 +24,15 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
     private static final double DEFAULT_VAL = (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
     protected double defaultVal;
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, double defaultVal) {
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, double defaultVal, boolean loadData) {
         this.name=modelName;
         this.defaultVal=defaultVal;
         this.distributionType=distributionType;
-        setModel();
+        if(loadData)setModel();
     }
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName) {
-        this(distributionType,modelName,DEFAULT_VAL);
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, boolean loadData) {
+        this(distributionType,modelName,DEFAULT_VAL, loadData);
     }
 
     public void setModel() {

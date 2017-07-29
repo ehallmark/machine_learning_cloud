@@ -143,6 +143,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
+            humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -159,8 +160,8 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void initialize() {
-        loadAttributes();
+    public static void initialize(boolean loadData) {
+        loadAttributes(loadData);
         loadFilterModels();
         loadTechTaggerModel();
         loadChartModels();
@@ -180,7 +181,7 @@ public class SimilarPatentServer {
             templates.add(new PortfolioAssessment());
             templates.add(new SimilarAssetSearch());
             templates.add(new SimilarAssigneeSearch());
-            templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarity(),Collections.emptyList()));
+            templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.defaultOptions(),Collections.emptyList()));
         }
     }
 
@@ -232,7 +233,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAttributes() {
+    public static void loadAttributes(boolean loadData) {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
@@ -244,7 +245,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
-            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
+            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator(loadData));
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
@@ -437,6 +438,8 @@ public class SimilarPatentServer {
             }
 
             System.out.println("Getting models...");
+            // Sorted by
+            String comparator = extractString(req,COMPARATOR_FIELD,Constants.OVERALL_SCORE);
             // Get Models to use
             List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
@@ -469,8 +472,12 @@ public class SimilarPatentServer {
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
             if(similarityEngines.size()>0) {
-                tableHeaders.add(Math.min(tableHeaders.size(),1),Constants.SIMILARITY);
+                tableHeaders.add(0,Constants.SIMILARITY);
             }
+            if(comparator.equals(Constants.OVERALL_SCORE)) {
+                tableHeaders.add(0,Constants.OVERALL_SCORE);
+            }
+
 
 
             res.type("application/json");
@@ -790,7 +797,7 @@ public class SimilarPatentServer {
                                 div().withClass("row collapsible-form").with(
                                         div().withClass("col-12").with(
                                                 label("Sort By"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                        Arrays.asList(Constants.SIMILARITY, Constants.AI_VALUE, Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
+                                                        Arrays.asList(Constants.OVERALL_SCORE,Constants.SIMILARITY, Constants.AI_VALUE, Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         ),
@@ -884,7 +891,7 @@ public class SimilarPatentServer {
         if(initDatabase) Database.initializeDatabase();
 
         System.out.println("Starting to load base finder...");
-        initialize();
+        initialize(false);
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
         server();

@@ -14,8 +14,8 @@ public class SpecificTechnologyEvaluator extends ValueAttr {
     private ClassificationAttr tagger;
     private String technology;
     public static final String TECHNOLOGY_SUFFIX = " Value";
-    public SpecificTechnologyEvaluator(String technology, ClassificationAttr tagger) {
-        super(ValueMapNormalizer.DistributionType.Normal,technology+TECHNOLOGY_SUFFIX);
+    public SpecificTechnologyEvaluator(String technology, ClassificationAttr tagger, boolean loadData) {
+        super(ValueMapNormalizer.DistributionType.Normal,technology+TECHNOLOGY_SUFFIX, loadData);
         this.tagger=tagger;
         this.technology=technology;
     }

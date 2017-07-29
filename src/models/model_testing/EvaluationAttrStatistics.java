@@ -17,7 +17,7 @@ import java.util.Map;
 public class EvaluationAttrStatistics {
     public static void main(String[] args) {
         Database.initializeDatabase();
-        ValueAttr attr = new PageRankEvaluator();
+        ValueAttr attr = new PageRankEvaluator(true);
         Map<String,Double> model = attr.getModel();
         List<String> keys = new ArrayList<>(model.keySet());
         List<Double> values = new ArrayList<>(keys.size());

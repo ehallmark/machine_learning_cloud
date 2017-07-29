@@ -20,7 +20,7 @@ import java.util.Map;
 public class UpdateElasticSearch {
 
     public static void main(String[] args) {
-        SimilarPatentServer.initialize();
+        SimilarPatentServer.initialize(true);
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
         SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,10000, Collections.emptyList());
     }

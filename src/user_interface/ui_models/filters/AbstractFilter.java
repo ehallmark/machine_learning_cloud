@@ -28,4 +28,6 @@ public abstract class AbstractFilter implements DependentAttribute {
     public boolean isActive() { return true; }
 
     public abstract QueryBuilder getFilterQuery();
+
+    public boolean contributesToScore() { return false; }
 }
