@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -12,17 +12,17 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class ExpiredAttribute implements AbstractAttribute<Boolean> {
+public class ExpirationDateAttribute implements AbstractAttribute<String> {
 
     @Override
-    public Boolean attributesFor(Collection<String> portfolio, int limit) {
+    public String attributesFor(Collection<String> portfolio, int limit) {
         String item = portfolio.stream().findAny().get();
-        return Database.isExpired(item);
+        return Database.expirationDateFor(item);
     }
 
     @Override
     public String getName() {
-        return Constants.EXPIRED;
+        return Constants.EXPIRATION_DATE;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;

@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -6,24 +6,24 @@ import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
 
 /**
- * Created by ehallmark on 6/15/17.
+ * Created by ehallmark on 7/20/17.
  */
-public class RemainingLifeAttribute implements AbstractAttribute<Integer> {
+public class PatentTermAdjustmentAttribute implements AbstractAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
-        if(portfolio.isEmpty()) return 0;
         String item = portfolio.stream().findAny().get();
-        return Database.getLifeRemainingMap().getOrDefault(item,0);
+        return Database.termAdjustmentFor(item);
     }
 
     @Override
     public String getName() {
-        return Constants.REMAINING_LIFE;
+        return Constants.PATENT_TERM_ADJUSTMENT;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -10,19 +10,19 @@ import java.util.Collection;
 import static j2html.TagCreator.div;
 
 /**
- * Created by ehallmark on 7/20/17.
+ * Created by ehallmark on 6/15/17.
  */
-public class ExpirationDateAttribute implements AbstractAttribute<String> {
+public class InventionTitleAttribute implements AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        return Database.expirationDateFor(item);
+        if(portfolio.isEmpty()) return "";
+        return Database.getInventionTitleFor(portfolio.stream().findAny().get());
     }
 
     @Override
     public String getName() {
-        return Constants.EXPIRATION_DATE;
+        return Constants.INVENTION_TITLE;
     }
 
     @Override

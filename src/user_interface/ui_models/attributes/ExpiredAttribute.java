@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -12,17 +12,17 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class JapaneseAttribute implements AbstractAttribute<Boolean> {
+public class ExpiredAttribute implements AbstractAttribute<Boolean> {
 
     @Override
     public Boolean attributesFor(Collection<String> portfolio, int limit) {
         String item = portfolio.stream().findAny().get();
-        return Database.isJapaneseAssignee(item);
+        return Database.isExpired(item);
     }
 
     @Override
     public String getName() {
-        return Constants.JAPANESE_ASSIGNEE;
+        return Constants.EXPIRED;
     }
 
     @Override

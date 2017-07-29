@@ -2,7 +2,7 @@ package models.classification_models;
 
 import j2html.tags.Tag;
 import org.deeplearning4j.berkeley.Pair;
-import user_interface.ui_models.portfolios.attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;

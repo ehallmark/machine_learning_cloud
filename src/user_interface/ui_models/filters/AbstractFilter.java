@@ -1,13 +1,11 @@
 package user_interface.ui_models.filters;
 
 import org.elasticsearch.index.query.QueryBuilder;
-import spark.Request;
-import user_interface.ui_models.portfolios.attributes.DependentAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Created by Evan on 5/9/2017.

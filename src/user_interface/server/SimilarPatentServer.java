@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -11,7 +12,6 @@ import user_interface.server.tools.BackButtonHandler;
 import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.ui_models.portfolios.attributes.*;
 import user_interface.templates.*;
 import util.Pair;
 import models.similarity_models.AbstractSimilarityModel;
@@ -23,7 +23,6 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.DefaultTokenizerFac
 import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.AbstractAttribute;
 import models.classification_models.ClassificationAttr;
 import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.filters.*;
@@ -179,8 +178,8 @@ public class SimilarPatentServer {
     public static void loadTemplates() {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
-            templates.add(new KeywordSearch());
-            templates.add(new SimilarSearch());
+            templates.add(new SimilarAssetSearch());
+            templates.add(new SimilarAssigneeSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.similarity(),Collections.emptyList()));
         }
     }

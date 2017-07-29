@@ -1,4 +1,4 @@
-package user_interface.ui_models.portfolios.attributes;
+package user_interface.ui_models.attributes;
 
 import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
