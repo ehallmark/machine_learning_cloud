@@ -261,27 +261,29 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes) {
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes);
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes);
-        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, onlyAttributes);
+    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes, boolean loadVectors) {
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,loadVectors);
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,loadVectors);
+        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, onlyAttributes,loadVectors);
     }
 
-    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes) {
+    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors) {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = preComputedAttributes.stream().filter(attr->onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.stream().map(label->{
                 Item item = new Item(label);
-                INDArray vector = lookupTable.get(label);
-                if(vector==null) return null;
-                float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
-                Map<String,Float> obj = new HashMap<>();
-                for(int i = 0; i < data.length; i++) {
-                    obj.put(String.valueOf(i),data[i]);
+                if(loadVectors) {
+                    INDArray vector = lookupTable.get(label);
+                    if (vector == null) return null;
+                    float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
+                    Map<String, Float> obj = new HashMap<>();
+                    for (int i = 0; i < data.length; i++) {
+                        obj.put(String.valueOf(i), data[i]);
+                    }
+                    //item.addData("vector", data);
+                    item.addData("vector_obj", obj);
                 }
-                //item.addData("vector", data);
-                item.addData("vector_obj",obj);
                 attributes.forEach(model -> {
                     item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
                 });
