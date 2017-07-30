@@ -12,6 +12,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -72,7 +73,7 @@ public class DataIngester {
     }
 
     public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
-        Map<String,Map<String,Object>> data = new HashMap<>(items.size());
+        Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {

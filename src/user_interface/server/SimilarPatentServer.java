@@ -267,7 +267,7 @@ public class SimilarPatentServer {
         handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, onlyAttributes,loadVectors);
     }
 
-    private static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors) {
+    public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors) {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = preComputedAttributes.stream().filter(attr->onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
