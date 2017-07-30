@@ -8,6 +8,7 @@ import seeding.Database;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -32,8 +33,9 @@ public class DateHelper {
 
     public static void addScoresToAssigneesFromPatents(Collection<String> assignees, Map<String,Double> model) {
         System.out.println("Adding scores to assignees...");
-        assignees.forEach(assignee->{
-            Collection<String> assigneePatents = Database.selectPatentNumbersFromAssignee(assignee);
+        (assignees.stream()).parallel().forEach(assignee->{
+            Collection<String> assigneePatents = Arrays.asList(Database.selectPatentNumbersFromAssignee(assignee),Database.selectApplicationNumbersFromAssignee(assignee)).stream()
+                    .flatMap(list->list.stream()).collect(Collectors.toList());
             double score = 0.0;
             int toDivide = 0;
             for (String patent : assigneePatents) {

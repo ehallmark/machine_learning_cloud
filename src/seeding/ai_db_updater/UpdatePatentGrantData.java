@@ -12,6 +12,6 @@ public class UpdatePatentGrantData {
 
     public static void main(String[] args) {
         PatentGrantIterator patentIterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
-        patentIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.patents), new InventionTitleSAXHandler(), new CitationSAXHandler(), new SAXHandler(), new SAXFullTextHandler(PortfolioList.Type.patents));
+        patentIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.patents), new ClaimDataSAXHandler(), new InventionTitleSAXHandler(), new CitationSAXHandler(), new SAXHandler());
     }
 }

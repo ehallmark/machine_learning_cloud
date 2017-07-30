@@ -3,6 +3,8 @@ package models.value_models;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
+import seeding.ai_db_updater.handlers.AppClaimDataSAXHandler;
+import seeding.ai_db_updater.handlers.ClaimDataSAXHandler;
 import tools.DateHelper;
 import user_interface.ui_models.attributes.ValueAttr;
 
@@ -20,11 +22,9 @@ import java.util.stream.Collectors;
  */
 public class ClaimEvaluator extends ValueAttr {
     static final File claimLengthModelFile = new File("independent_claim_length_value_model.jobj");
-    static final File pendencyModelFile = new File("pendency_value_model.jobj");
     static final File claimRatioModelFile = new File("independent_claim_ratio_value_model.jobj");
     private static final File[] files = new File[]{
             claimLengthModelFile,
-            pendencyModelFile,
             claimRatioModelFile
     };
 
@@ -38,17 +38,17 @@ public class ClaimEvaluator extends ValueAttr {
         return Arrays.stream(files).map(file->((Map<String,Double>)Database.tryLoadObject(file))).collect(Collectors.toList());
     }
 
-    private static Map<File,Map<String,Double>> runModel(){
-        Map<File,Map<String,Double>> fileToModelMaps = new HashMap<>();
+    private static void runModel(){
         System.out.println("Starting to load claim evaluator...");
-        List<String> patents = new ArrayList<>(Database.getValuablePatents());
         Collection<String> assignees = Database.getAssignees();
 
         // ind claim length model
         System.out.println("Claim length model...");
         Map<String,Double> indClaimLengthModel = new HashMap<>();
         {
-            Map<String,Integer> indClaimLengthMap = (Map<String,Integer>)Database.tryLoadObject(new File("patent_to_independent_claim_length_map.jobj"));
+            Map<String,Integer> indClaimLengthMap = new HashMap<>((Map<String,Integer>)Database.tryLoadObject(ClaimDataSAXHandler.patentToIndependentClaimLengthFile));
+            Map<String,Integer> indAppClaimLengthMap = (Map<String,Integer>)Database.tryLoadObject(AppClaimDataSAXHandler.appToIndependentClaimLengthFile);
+            indClaimLengthMap.putAll(indAppClaimLengthMap);
             INDArray claimLengthVector = Nd4j.create(indClaimLengthMap.size());
             AtomicInteger cnt = new AtomicInteger(0);
             indClaimLengthMap.forEach((patent,intVal)->{
@@ -61,60 +61,28 @@ public class ClaimEvaluator extends ValueAttr {
             });
         }
 
-        System.out.println("Calculating scores for patents...");
-        // pendency model
-        System.out.println("Pendency model...");
-        Map<String,Double> pendencyModel = new HashMap<>();
-        {
-            Map<String,LocalDate> patentToPubDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_pubdate_map_file.jobj"));
-            Map<String,LocalDate> patentToAppDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_appdate_map_file.jobj"));
-            patents.forEach(patent->{
-                if(patentToPubDateMap.containsKey(patent)&&patentToAppDateMap.containsKey(patent)) {
-                    LocalDate pubDate = patentToPubDateMap.get(patent);
-                    LocalDate appDate = patentToAppDateMap.get(patent);
-                    double pendencyScore = pubDate.getYear()+(new Double(pubDate.getMonthValue()-1)/12)
-                            - (appDate.getYear()+(new Double(appDate.getMonthValue()-1)/12));
-                    System.out.println("Score for patent "+patent+": "+pendencyScore);
-                    pendencyModel.put(patent,pendencyScore);
-                }
-            });
-        }
-
         // ind claim ratio model
         System.out.println("Claim ratio model...");
-        Map<String,Double> indClaimRatioModel = (Map<String,Double>)Database.tryLoadObject(new File("patent_to_independent_claim_ratio_map.jobj"));
+        Map<String,Double> indClaimRatioModel = new HashMap<>((Map<String,Double>)Database.tryLoadObject(ClaimDataSAXHandler.patentToIndependentClaimRatioFile));
+        Map<String,Double> appIndClaimRatioModel = (Map<String,Double>)Database.tryLoadObject(AppClaimDataSAXHandler.appToIndependentClaimRatioFile);
+        indClaimRatioModel.putAll(appIndClaimRatioModel);
 
 
         try {
-            DateHelper.addScoresToAssigneesFromPatents(assignees, pendencyModel);
             DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimLengthModel);
             DateHelper.addScoresToAssigneesFromPatents(assignees, indClaimRatioModel);
         } catch(Exception e) {
             e.printStackTrace();
         }
 
-        fileToModelMaps.put(pendencyModelFile,pendencyModel);
-        fileToModelMaps.put(claimLengthModelFile,indClaimLengthModel);
-        fileToModelMaps.put(claimRatioModelFile,indClaimRatioModel);
+        Database.trySaveObject(indClaimLengthModel,claimLengthModelFile);
+        Database.trySaveObject(indClaimRatioModel,claimRatioModelFile);
 
         System.out.println("Finished evaluator...");
-        return fileToModelMaps;
     }
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting to run model.");
-        Map<File,Map<String,Double>> maps = runModel();
-        System.out.println("Finished... Now writing model to file...");
-        maps.forEach((file,map)->{
-            try {
-                ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-                oos.writeObject(map);
-                oos.flush();
-                oos.close();
-                System.out.println("Finished successfully.");
-            }catch(Exception e) {
-                e.printStackTrace();
-            }
-        });
+        System.out.println("Starting to run claim value model.");
+        runModel();
     }
 }

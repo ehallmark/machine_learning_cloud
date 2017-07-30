@@ -144,6 +144,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
+            humanAttrToJavaAttrMap.put("Entity Type Filter", Constants.ENTITY_TYPE_FILTER_ARRAY);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -213,6 +214,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyFilter());
                 preFilterModelMap.put(Constants.REMAINING_LIFE_FILTER, new RemainingLifeFilter());
                 preFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+                preFilterModelMap.put(Constants.ENTITY_TYPE_FILTER_ARRAY, new EntityTypeFilter());
 
                 // During filters
                 similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
@@ -251,6 +253,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
+            attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine

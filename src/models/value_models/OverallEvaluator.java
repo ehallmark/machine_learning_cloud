@@ -46,6 +46,13 @@ public class OverallEvaluator extends ValueAttr {
             mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
         });
 
+        Database.getValuableApplications().forEach(asset->{
+            mergedModel.put(asset,average(asset,evaluators,weights));
+        });
+        Database.getLapsedAppSet().forEach(asset->{
+            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
+        });
+
         DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), mergedModel);
 
         Database.trySaveObject(mergedModel,mergedValueModelFile);

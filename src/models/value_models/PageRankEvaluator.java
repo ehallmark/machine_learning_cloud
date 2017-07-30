@@ -29,7 +29,6 @@ public class PageRankEvaluator extends ValueAttr {
                 doubleMap.put(k, v.doubleValue());
             //}
         });
-
         return Arrays.asList(doubleMap);
     }
 

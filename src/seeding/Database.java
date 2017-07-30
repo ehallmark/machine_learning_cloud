@@ -9,6 +9,7 @@ import net.lingala.zip4j.core.ZipFile;
 import seeding.ai_db_updater.handlers.LineHandler;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
+import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -814,6 +815,25 @@ public class Database {
 		if(microEntityPatents.contains(patent)) return "Micro";
 		if(smallEntityPatents.contains(patent)) return "Small";
 		if(largeEntityPatents.contains(patent)) return "Large";
+		return "Unknown";
+	}
+	public synchronized static String entityTypeForApplication(String application) {
+		// check patents
+		Collection<String> relatives = RelatedAssetsGraph.get().relatives(application);
+		for(String rel : relatives) {
+			String type = entityTypeForPatent(rel);
+			if(!type.equals("Unknown")) {
+				return type;
+			}
+		}
+		// check assignees
+		Collection<String> assignees = assigneesFor(application);
+		for(String assignee : assignees) {
+			String type = assigneeEntityType(assignee);
+			if(!type.equals("Unknown")) {
+				return type;
+			}
+		}
 		return "Unknown";
 	}
 	public synchronized static String assigneeEntityType(String assignee) {

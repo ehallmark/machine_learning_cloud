@@ -24,9 +24,13 @@ public class RelatedAssetsGraph implements Serializable {
     private RelatedAssetsGraph() {}
 
     public String relativesOf(String token) {
+        return String.join("; ",relatives(token));
+    }
+
+    public Collection<String> relatives(String token) {
         Node node = graph.findNode(token);
-        if(node==null) return "";
-        return String.join("; ",node.getNeighbors().stream().map(n->n.getLabel()).collect(Collectors.toList()));
+        if(node==null)return Collections.emptyList();
+        return node.getNeighbors().stream().map(n->n.getLabel()).collect(Collectors.toList());
     }
 
     public void init() {

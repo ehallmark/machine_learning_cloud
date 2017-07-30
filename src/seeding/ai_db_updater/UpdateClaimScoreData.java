@@ -1,7 +1,6 @@
 package seeding.ai_db_updater;
 
-import seeding.Database;
-import seeding.ai_db_updater.tools.ClassDataSAXHandler;
+import seeding.ai_db_updater.handlers.ClaimDataSAXHandler;
 import seeding.ai_db_updater.tools.ZipHelper;
 
 import javax.xml.parsers.SAXParser;
@@ -116,7 +115,7 @@ public class UpdateClaimScoreData {
                                 factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
                                 SAXParser saxParser = factory.newSAXParser();
 
-                                ClassDataSAXHandler handler = new ClassDataSAXHandler();
+                                ClaimDataSAXHandler handler = new ClaimDataSAXHandler();
 
 
                                 FileReader fr = new FileReader(new File(DESTINATION_FILE_NAME + finalLastIngestedDate));
@@ -160,25 +159,6 @@ public class UpdateClaimScoreData {
                                 if (!lines.isEmpty()) {
                                     // stop
                                     saxParser.parse(new ByteArrayInputStream(String.join("", lines).getBytes()), handler);
-
-                                    if (handler.getPatentNumber() != null) {
-                                        System.out.print("Results for "+handler.getPatentNumber()+": ");
-                                        int iClaimLength= handler.getIndependentClaimLength();
-                                        if(iClaimLength>0) {
-                                            System.out.print(iClaimLength+ " ");
-                                            patentToIndependentClaimLengthMap.put(handler.getPatentNumber(), iClaimLength);
-                                        }
-                                        double iClaimRatio = handler.getIndependentClaimRatio();
-                                        if(iClaimRatio>0) {
-                                            System.out.println(iClaimRatio);
-                                            patentToIndependentClaimRatioMap.put(handler.getPatentNumber(), iClaimRatio);
-                                        }
-                                        double meansPresentRatio = handler.getMeansPresentCountRatio();
-                                        System.out.println(meansPresentRatio);
-                                        patentToMeansPresentRatioMap.put(handler.getPatentNumber(), meansPresentRatio);
-                                        System.out.println();
-                                    }
-
                                     lines.clear();
                                     handler.reset();
                                 }
@@ -219,11 +199,6 @@ public class UpdateClaimScoreData {
             e.printStackTrace();
         }
 
-        System.out.println("Saving results...");
-        // save maps
-        Database.saveObject(patentToIndependentClaimLengthMap,new File("patent_to_independent_claim_length_map.jobj"));
-        Database.saveObject(patentToIndependentClaimRatioMap,new File("patent_to_independent_claim_ratio_map.jobj"));
-        Database.saveObject(patentToMeansPresentRatioMap,new File("patent_to_means_present_ratio_map.jobj"));
 
     }
 

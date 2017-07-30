@@ -1,4 +1,4 @@
-package seeding.ai_db_updater.tools;
+package seeding.ai_db_updater.handlers;
 
 /**
  * Created by ehallmark on 1/3/17.
@@ -6,27 +6,43 @@ package seeding.ai_db_updater.tools;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import seeding.Database;
+import seeding.ai_db_updater.tools.PhrasePreprocessor;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
 
  */
-public class ClassDataSAXHandler extends DefaultHandler{
-    boolean isClaimText=false;
-    int claimLevel=0;
-    boolean inPublicationReference=false;
-    boolean isDocNumber=false;
-    boolean shouldTerminate = false;
-    String pubDocNumber;
-    int independentClaimLength=0;
-    int independentClaimCount=0;
-    int totalClaimCount=0;
-    int meansPresentCount=0;
-    List<String>documentPieces=new ArrayList<>();
+public class AppClaimDataSAXHandler extends ClaimDataSAXHandler{
     private static PhrasePreprocessor phrasePreprocessor = new PhrasePreprocessor();
+    public static final File appToIndependentClaimLengthFile = new File("app_to_independent_claim_length_map.jobj");
+    public static final File appToIndependentClaimRatioFile = new File("app_to_independent_claim_ratio_map.jobj");
+    public static final File appToMeansPresentRatioFile = new File("app_to_means_present_ratio_map.jobj");
+
+    protected AppClaimDataSAXHandler(Map<String,Integer> patentToIndependentClaimLengthMap, Map<String,Double> patentToIndependentClaimRatioMap, Map<String,Double> patentToMeansPresentRatioMap) {
+        super(patentToIndependentClaimLengthMap,patentToIndependentClaimRatioMap,patentToMeansPresentRatioMap);
+    }
+
+    public AppClaimDataSAXHandler() {
+        super();
+    }
+
+    @Override
+    public void save() {
+        System.out.println("Saving results...");
+        // save maps
+        Database.saveObject(patentToIndependentClaimLengthMap,appToIndependentClaimLengthFile);
+        Database.saveObject(patentToIndependentClaimRatioMap,appToIndependentClaimRatioFile);
+        Database.saveObject(patentToMeansPresentRatioMap,appToMeansPresentRatioFile);
+    }
+
+    @Override
+    public CustomHandler newInstance() {
+        return new AppClaimDataSAXHandler(patentToIndependentClaimLengthMap,patentToIndependentClaimRatioMap,patentToMeansPresentRatioMap);
+    }
 
     public String getPatentNumber() {
         return pubDocNumber;
@@ -40,7 +56,24 @@ public class ClassDataSAXHandler extends DefaultHandler{
 
     public int getIndependentClaimLength() { return independentClaimLength; }
 
+    protected void update() {
+        if (pubDocNumber != null) {
+            if(independentClaimLength>0) {
+                patentToIndependentClaimLengthMap.put(pubDocNumber, independentClaimLength);
+            }
+            double iClaimRatio = getIndependentClaimRatio();
+            if(iClaimRatio>0) {
+                patentToIndependentClaimRatioMap.put(pubDocNumber, iClaimRatio);
+            }
+            double meansPresentRatio = getMeansPresentCountRatio();
+            System.out.println(meansPresentRatio);
+            patentToMeansPresentRatioMap.put(pubDocNumber, meansPresentRatio);
+        }
+
+    }
+
     public void reset() {
+        update();
         inPublicationReference=false;
         isClaimText=false;
         claimLevel=0;
