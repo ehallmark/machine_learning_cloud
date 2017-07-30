@@ -871,11 +871,11 @@ public class Database {
 			}
 			if(shouldStop.get()) return;
 
-			if (microEntityPatents.contains(asset)) {
+			if (getMicroEntityPatents().contains(asset)) {
 				entityTypeToScoreMap.get("Micro").getAndIncrement();
-			} else if(smallEntityPatents.contains(asset)) {
+			} else if(getSmallEntityPatents().contains(asset)) {
 				entityTypeToScoreMap.get("Small").getAndIncrement();
-			} else if(largeEntityPatents.contains(asset)) {
+			} else if(getLargeEntityPatents().contains(asset)) {
 				entityTypeToScoreMap.get("Large").getAndIncrement();
 			}
 		});
