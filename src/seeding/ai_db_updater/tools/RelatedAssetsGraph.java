@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 7/10/2017.
  */
 public class RelatedAssetsGraph implements Serializable {
+    private static final long serialVersionUID = 1;
     private static RelatedAssetsGraph SELF;
     private static final File graphFile = new File("data/related_assets_graph.jobj");
     private Map<Integer,Collection<String>> indexToAssetsMap;
