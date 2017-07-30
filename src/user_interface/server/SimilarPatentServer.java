@@ -271,7 +271,7 @@ public class SimilarPatentServer {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = preComputedAttributes.stream().filter(attr->onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
-            Collection<Item> items = batch.stream().map(label->{
+            Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
                 if(loadVectors) {
                     INDArray vector = lookupTable.get(label);

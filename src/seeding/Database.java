@@ -850,7 +850,7 @@ public class Database {
 		return "Unknown";
 	}
 	public synchronized static String assigneeEntityType(String assignee) {
-		int sampleSize = 100;
+		int sampleSize = 30;
 		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
 		Map<String,AtomicInteger> entityTypeToScoreMap = new HashMap<>();
 		entityTypeToScoreMap.put("Small",new AtomicInteger(0));
@@ -858,7 +858,7 @@ public class Database {
 		entityTypeToScoreMap.put("Micro",new AtomicInteger(0));
 		if(assets.isEmpty()) return "Unknown";
 		AtomicBoolean shouldStop = new AtomicBoolean(false);
-		assets.stream().sorted((a1,a2)->a2.compareTo(a1)).forEach(asset-> {
+		assets.stream().sorted((a1,a2)->Integer.compare(a1.hashCode(),a2.hashCode())).forEach(asset-> {
 			// stop conditions
 			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
 				shouldStop.set(true);

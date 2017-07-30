@@ -73,14 +73,14 @@ public class DataIngester {
 
     public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
         Map<String,Map<String,Object>> data = new HashMap<>(items.size());
-        for(Item item : items) {
+        items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
                 itemData.put(e.getKey(), e.getValue());
             }
             itemData.put("doc_type",type.toString());
             data.put(item.getName(),itemData);
-        }
+        });
         ingestAssets(data,false);
     }
 
