@@ -423,7 +423,7 @@ public class Database {
 		return japanese;
 	}
 
-	public static void preLoad() {
+	public synchronized static void preLoad() {
 		getAssigneePrefixTrie();
 	}
 
@@ -431,24 +431,37 @@ public class Database {
 		if(init==true)return;
 		init=true;
 
-
-		largeEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"large_entity_patents_set.jobj")));
-		smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
-		microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
-
-
-
 	}
 
 
-	public static Map<String,Set<String>> getAssigneeToPatentsMap() {
+	public synchronized static Collection<String> getLargeEntityPatents() {
+		if(largeEntityPatents==null) {
+			largeEntityPatents = Collections.unmodifiableSet((Set<String>) tryLoadObject(new File(Constants.DATA_FOLDER + "large_entity_patents_set.jobj")));
+		}
+		return largeEntityPatents;
+	}
+
+	public synchronized static Collection<String> getSmallEntityPatents() {
+		if(smallEntityPatents==null) {
+			smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
+		}
+		return smallEntityPatents;
+	}
+	public synchronized static Collection<String> getMicroEntityPatents() {
+		if(microEntityPatents==null) {
+			microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
+		}
+		return microEntityPatents;
+	}
+
+	public synchronized static Map<String,Set<String>> getAssigneeToPatentsMap() {
 		if(assigneeToPatentsMap==null) {
 			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
 		}
 		return assigneeToPatentsMap;
 	}
 
-	public static Map<String,Set<String>> getAssigneeToAppsMap() {
+	public synchronized static Map<String,Set<String>> getAssigneeToAppsMap() {
 		if(assigneeToAppsMap==null) {
 			assigneeToAppsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToAppsMapFile));
 		}
@@ -812,9 +825,9 @@ public class Database {
 
 	public synchronized static String entityTypeForPatent(String patent) {
 		if(patent==null) throw new NullPointerException("patent");
-		if(microEntityPatents.contains(patent)) return "Micro";
-		if(smallEntityPatents.contains(patent)) return "Small";
-		if(largeEntityPatents.contains(patent)) return "Large";
+		if(getMicroEntityPatents().contains(patent)) return "Micro";
+		if(getSmallEntityPatents().contains(patent)) return "Small";
+		if(getLargeEntityPatents().contains(patent)) return "Large";
 		return "Unknown";
 	}
 	public synchronized static String entityTypeForApplication(String application) {
