@@ -82,7 +82,6 @@ public class ClaimDataSAXHandler extends CustomHandler{
                 patentToIndependentClaimRatioMap.put(pubDocNumber, iClaimRatio);
             }
             double meansPresentRatio = getMeansPresentCountRatio();
-            System.out.println(meansPresentRatio);
             patentToMeansPresentRatioMap.put(pubDocNumber, meansPresentRatio);
         }
 
