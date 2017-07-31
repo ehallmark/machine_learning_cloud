@@ -17,8 +17,7 @@ services:
     ports:
       - 9200:9200
     networks:
-      esnet:
-        ipv4_address: 172.16.238.10
+      - esnet
 
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
@@ -35,8 +34,7 @@ services:
     volumes:
       - esdata2:/usr/share/elasticsearch/data
     networks:
-      esnet:
-        ipv4_address: 172.16.238.11
+      - esnet
 
 volumes:
   esdata1:
@@ -46,8 +44,3 @@ volumes:
 
 networks:
   esnet:
-    driver: default
-    ipam:
-      config:
-      -
-        subnet: 172.16.238.0/24
