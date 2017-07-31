@@ -25,8 +25,8 @@ public class MyClient {
                     .put("client.transport.sniff", sniff).build();
 
             TransportClient client = new PreBuiltTransportClient(settings)
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("elasticsearch1"), port))
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("elasticsearch_elasticsearch2_1"), port));
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("172.16.238.10"), port))
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("172.16.238.11"), port));
             CLIENT = client;
         } catch (UnknownHostException e) {
             e.printStackTrace();
