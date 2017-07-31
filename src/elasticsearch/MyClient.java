@@ -20,7 +20,6 @@ public class MyClient {
         boolean sniff = false;
         try {
             Settings settings = Settings.builder()
-                    .put("cluster.name", "docker-cluster")
                     .put("client.transport.sniff", sniff).build();
 
             TransportClient client = new PreBuiltTransportClient(settings)
