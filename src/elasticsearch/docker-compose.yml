@@ -5,6 +5,8 @@ services:
     container_name: elasticsearch1
     environment:
       - bootstrap.memory_lock=true
+      - network.bind_host=0
+      - network.host=0.0.0.0
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
     ulimits:
       memlock:
@@ -23,6 +25,8 @@ services:
     container_name: elasticsearch2
     environment:
       - bootstrap.memory_lock=true
+      - network.host=0.0.0.0
+      - network.bind_host=0
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
     ulimits:
