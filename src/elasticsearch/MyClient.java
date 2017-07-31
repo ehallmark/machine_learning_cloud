@@ -17,21 +17,21 @@ public class MyClient {
     private static TransportClient CLIENT;
     private MyClient() {}
     private static void init() {
-        boolean sniff = false;
+        boolean sniff = true;
         int port = 9300;
-        InetAddress host;
         try {
-            host = InetAddress.getByName("localhost");
+            Settings settings = Settings.builder()
+                    .put("cluster.name", "docker-cluster")
+                    .put("client.transport.sniff", sniff).build();
+
+            TransportClient client = new PreBuiltTransportClient(settings)
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("elasticsearch1"), port))
+                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("elasticsearch_elasticsearch2_1"), port));
+            CLIENT = client;
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            throw new RuntimeException("Unable to find local host");
+            throw new RuntimeException("Unable to find host");
         }
-        Settings settings = Settings.builder()
-                .put("client.transport.sniff", sniff).build();
-
-        TransportClient client = new PreBuiltTransportClient(settings)
-                .addTransportAddress(new InetSocketTransportAddress(host,port));
-        CLIENT=client;
     }
 
     public static TransportClient get() {
