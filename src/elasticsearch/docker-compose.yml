@@ -6,8 +6,8 @@ services:
     environment:
       - xpack.security.enabled=false
       - bootstrap.memory_lock=true
-      - network.bind_host=0
-      - network.host=0.0.0.0
+      - network.host=127.0.0.1
+      - network.publish_host=35.197.93.105
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
     ulimits:
       memlock:
@@ -27,8 +27,8 @@ services:
     environment:
       - xpack.security.enabled=false
       - bootstrap.memory_lock=true
-      - network.host=0.0.0.0
-      - network.bind_host=0
+      - network.host=127.0.0.1
+      - network.publish_host=35.197.93.105
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
     ulimits:

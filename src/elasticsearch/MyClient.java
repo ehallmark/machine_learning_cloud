@@ -20,8 +20,8 @@ public class MyClient {
         boolean sniff = false;
         try {
             Settings settings = Settings.builder()
-                    .put("client.transport.sniff", sniff).build();
-
+                    .put("client.transport.sniff", sniff)
+                    .put("cluster.name","elasticsearch").build();
             TransportClient client = new PreBuiltTransportClient(settings)
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("172.18.0.2"), 9300))
                     .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("172.18.0.3"), 9300));
