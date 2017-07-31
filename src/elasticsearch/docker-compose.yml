@@ -4,6 +4,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
     environment:
+      - xpack.security.enabled=false
       - bootstrap.memory_lock=true
       - network.bind_host=0
       - network.host=0.0.0.0
@@ -24,6 +25,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
     environment:
+      - xpack.security.enabled=false
       - bootstrap.memory_lock=true
       - network.host=0.0.0.0
       - network.bind_host=0
