@@ -6,12 +6,12 @@ services:
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 1g
+    mem_limit: 30g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
@@ -23,13 +23,13 @@ services:
     environment:
       - cluster.name=docker-cluster
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 1g
+    mem_limit: 30g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
     networks:
