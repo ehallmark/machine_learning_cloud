@@ -17,7 +17,7 @@ public class MyClient {
     private static TransportClient CLIENT;
     private MyClient() {}
     private static void init() {
-        boolean sniff = true;
+        boolean sniff = false;
         try {
             Settings settings = Settings.builder()
                     .put("cluster.name", "docker-cluster")

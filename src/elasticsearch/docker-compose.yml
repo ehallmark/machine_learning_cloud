@@ -35,8 +35,6 @@ services:
     mem_limit: 50g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
-    ports:
-      - 9301:9300
     networks:
       - esnet
 
