@@ -29,7 +29,7 @@ services:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: -1
+    mem_limit: 50g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
     networks:
