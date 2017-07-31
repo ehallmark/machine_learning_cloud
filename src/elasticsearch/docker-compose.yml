@@ -46,6 +46,7 @@ volumes:
 
 networks:
   esnet:
+    driver: default
     ipam:
       config:
       -
