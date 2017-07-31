@@ -18,7 +18,6 @@ public class MyClient {
     private MyClient() {}
     private static void init() {
         boolean sniff = true;
-        int port = 9300;
         try {
             Settings settings = Settings.builder()
                     .put("cluster.name", "docker-cluster")
