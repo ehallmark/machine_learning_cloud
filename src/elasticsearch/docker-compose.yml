@@ -43,8 +43,7 @@ services:
       - 9301:9300
     networks:
       - esnet
-
-  elasticsearch2:
+  elasticsearch3:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch3
     environment:
