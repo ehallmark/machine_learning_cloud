@@ -23,7 +23,6 @@ public class UpdateElasticSearch {
 
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true);
-        SimilarPatentServer.handleItemsList(new ArrayList<>(Database.getAssignees()), null, 10000, PortfolioList.Type.assignees, Arrays.asList(Constants.ASSIGNEE_ENTITY_TYPE,Constants.AI_VALUE), false);
-
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(null,10000,Arrays.asList(Constants.ASSIGNEE,Constants.CPC_CODES),false);
     }
 }
