@@ -22,9 +22,8 @@ public class CreatePatentDBIndex {
         mapping.put(Constants.WIPO_TECHNOLOGY,typeMap("keyword"));
         mapping.put(Constants.NAME,typeMap("keyword"));
         mapping.put(Constants.CPC_TECHNOLOGY,typeMap("keyword"));
+        mapping.put(Constants.CPC_CODES,typeMap("keyword"));
         mapping.put(Constants.TECHNOLOGY,typeMap("keyword"));
-        mapping.put("vector",typeMap("float"));
-        mapping.put("vector_str",typeMap("keyword"));
         mapping.put("vector_obj",typeMap("object"));
         mapping.put(Constants.ASSIGNEE_ENTITY_TYPE,typeMap("keyword"));
         Map<String,Object> properties = new HashMap<>();
