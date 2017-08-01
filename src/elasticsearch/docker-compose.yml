@@ -20,7 +20,8 @@ services:
       - 9200:9200
       - 9300:9300
     networks:
-      - esnet
+      esnet:
+        ipv4_address: 10.5.0.5
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
@@ -41,7 +42,9 @@ services:
     ports:
       - 9301:9300
     networks:
-      - esnet
+      esnet:
+        ipv4_address: 10.5.0.6
+
 
 volumes:
   esdata1:
@@ -51,3 +54,8 @@ volumes:
 
 networks:
   esnet:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
