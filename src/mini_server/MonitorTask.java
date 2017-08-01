@@ -2,6 +2,7 @@ package mini_server;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.util.TimerTask;
 
@@ -27,22 +28,28 @@ public class MonitorTask extends TimerTask {
             System.out.println("Checking if already on...");
             if (!ping(url)) {
                 // turn on
+                System.out.println("Not on.");
                 try {
                     turnOn();
                 } catch(Exception e) {
                     System.out.println("Error turning on: "+e.getMessage());
                 }
+            } else {
+                System.out.println("Yes.");
             }
         } else {
             // check if already off
             System.out.println("Checking if already off...");
             if (ping(url)) {
                 // turn off
+                System.out.println("Not off.");
                 try {
                     turnOff();
                 } catch(Exception e) {
                     System.out.println("Error turning off: "+e.getMessage());
                 }
+            } else {
+                System.out.println("Yes.");
             }
         }
     }
@@ -63,16 +70,10 @@ public class MonitorTask extends TimerTask {
 
     private static boolean ping(String url) {
         try {
-            HttpURLConnection.setFollowRedirects(false);
-            // note : you may also need
-            //        HttpURLConnection.setInstanceFollowRedirects(false)
-            HttpURLConnection con =
-                    (HttpURLConnection) new URL(url).openConnection();
-            con.setRequestMethod("HEAD");
-            con.setInstanceFollowRedirects(false);
-            return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
+            return InetAddress.getByName(url).isReachable(60 * 1000);
         } catch (Exception e) {
-            return false;
+            e.printStackTrace();
+            throw new RuntimeException("Inet Address is invalid: "+url);
         }
     }
 }
