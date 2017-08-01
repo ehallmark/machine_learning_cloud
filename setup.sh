@@ -9,7 +9,7 @@ sudo -u ehallmark1122 bash -c '    gcsfuse machine_learning_cloud_data data'
 sudo -u ehallmark1122 bash -c '    echo "Finished gcsfuse"'
 cd /home/ehallmark1122/machine_learning_cloud/src/elasticsearch
 sudo -u ehallmark1122 bash -c '    echo "in elasticsearch"'
-#sudo -u ehallmark1122 bash -c '    docker-compose up -d'
+sudo -u ehallmark1122 bash -c '    docker-compose up -d'
 sudo -u ehallmark1122 bash -c '    echo "Docker compose up"'
 cd /home/ehallmark1122/machine_learning_cloud
 sudo -u ehallmark1122 bash -c '    echo "Back to src dir" '
