@@ -20,8 +20,8 @@ services:
       - 9200:9200
       - 9300:9300
     networks:
-      esnet:
-        ipv4_address: 10.5.0.5
+      - esnet
+
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
@@ -31,7 +31,7 @@ services:
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=[10.5.0.5]"
+      - "discovery.zen.ping.unicast.hosts=[elasticsearch1]"
     ulimits:
       memlock:
         soft: -1
@@ -42,8 +42,7 @@ services:
     ports:
       - 9301:9300
     networks:
-      esnet:
-        ipv4_address: 10.5.0.6
+      - esnet
 
 
 volumes:
@@ -54,9 +53,3 @@ volumes:
 
 networks:
   esnet:
-    driver: bridge
-    ipam:
-     config:
-     -
-       subnet: 10.5.0.0/16
-       gateway: 10.5.0.1
