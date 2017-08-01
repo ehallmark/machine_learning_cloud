@@ -4,38 +4,40 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
     environment:
-      - xpack.security.enabled=false
+      - cluster.name=elasticsearch
+      - node.name=elasticsearch1
       - bootstrap.memory_lock=true
-      - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 50g
+    mem_limit: 1g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
+      - 9300:9300
     networks:
       - esnet
-
   elasticsearch2:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
     environment:
-      - xpack.security.enabled=false
+      - cluster.name=elasticsearch
+      - node.name=elasticsearch2
       - bootstrap.memory_lock=true
-      - network.host=0.0.0.0
-      - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch1"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.zen.ping.unicast.hosts=[elasticsearch1]"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 50g
+    mem_limit: 1g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
+    ports:
+      - 9301:9300
     networks:
       - esnet
 
