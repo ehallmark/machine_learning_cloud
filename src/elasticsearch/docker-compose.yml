@@ -53,7 +53,7 @@ services:
       - node.name=elasticsearch3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=[elasticsearch1,elasticsearch2]"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch1,elasticsearch2"
     ulimits:
       memlock:
         soft: -1
