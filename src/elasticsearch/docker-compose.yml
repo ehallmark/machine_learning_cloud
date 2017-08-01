@@ -5,6 +5,7 @@ services:
     container_name: elasticsearch1
     environment:
       - cluster.name=elasticsearch
+      - xpack.security.enabled=false
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
@@ -25,6 +26,7 @@ services:
     container_name: elasticsearch2
     environment:
       - cluster.name=elasticsearch
+      - xpack.security.enabled=false
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
