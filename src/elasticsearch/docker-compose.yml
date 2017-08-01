@@ -4,7 +4,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch1
     environment:
-      - network.host=_site_
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
       - node.name=elasticsearch1
@@ -27,13 +26,12 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.5.1
     container_name: elasticsearch2
     environment:
-      - network.host=_site_
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - "discovery.zen.ping.unicast.hosts=[172.18.0.3,172.18.0.2]"
+      - "discovery.zen.ping.unicast.hosts=[172.18.0.3:9300,172.18.0.2:9300]"
     ulimits:
       memlock:
         soft: -1
