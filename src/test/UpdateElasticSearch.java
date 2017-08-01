@@ -27,7 +27,6 @@ public class UpdateElasticSearch {
         PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
         applicationIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.applications));
 
-        SimilarPatentServer.initialize(true);
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(null,10000,Arrays.asList(Constants.ASSIGNEE,Constants.CPC_CODES),false);
+        IngestAttributeData.main(args);
     }
 }

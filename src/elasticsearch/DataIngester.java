@@ -72,7 +72,7 @@ public class DataIngester {
         return builder;
     }
 
-    public static void ingestItems(Collection<Item> items, PortfolioList.Type type) {
+    public static void ingestItems(Collection<Item> items, PortfolioList.Type type, boolean create) {
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
@@ -82,7 +82,7 @@ public class DataIngester {
             itemData.put("doc_type",type.toString());
             data.put(item.getName(),itemData);
         });
-        ingestAssets(data,false);
+        ingestAssets(data,create);
     }
 
 }
