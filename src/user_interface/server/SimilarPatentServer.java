@@ -145,6 +145,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
             humanAttrToJavaAttrMap.put("Entity Type Filter", Constants.ENTITY_TYPE_FILTER_ARRAY);
+            humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
+            humanAttrToJavaAttrMap.put("CPC Code Filter", Constants.CPC_CODE_FILTER);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -214,6 +216,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyFilter());
                 preFilterModelMap.put(Constants.REMAINING_LIFE_FILTER, new RemainingLifeFilter());
                 preFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
+                preFilterModelMap.put(Constants.CPC_CODE_FILTER, new IncludeCPCFilter());
                 preFilterModelMap.put(Constants.ENTITY_TYPE_FILTER_ARRAY, new EntityTypeFilter());
 
                 // During filters
@@ -249,6 +252,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator(loadData));
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
+            attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());

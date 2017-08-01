@@ -20,6 +20,7 @@ public class Constants {
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
 	public static final String ADVANCED_KEYWORD_FILTER = "advancedKeywordFilter";
 	public static final String AI_VALUE = "aiValue";
+	public static final String CPC_CODE_FILTER = "cpcCodeFilter";
 	public static final String COMPDB_ASSETS_PURCHASED = "compdbAssetsPurchased";
 	public static final String COMPDB_ASSETS_SOLD = "compDBAssetsSold";
 	public static final String SIMILARITY_THRESHOLD_FILTER = "similarityThresholdFilter";
@@ -27,6 +28,7 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE_MAXIMUM_FILTER = "portfolioSizeMaximumFilter";
 	public static final String EXPIRATION_FILTER = "expirationFilter";
 	public static final String EXPIRED = "expired";
+	public static final String CPC_CODES = "cpcCodes";
 	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String LABEL_FILTER = "labelFilter";
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";

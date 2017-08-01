@@ -121,6 +121,11 @@ public class DataSearcher {
         //System.out.println("Hit id: "+item.getName());
         //System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
+            if(v instanceof String[]) {
+                v = String.join("; ", (String[]) v);
+            } else if (v instanceof List) {
+                v = String.join("; ", (List)v);
+            }
             item.addData(k,v);
         });
         SearchHitField similarityField = hit.getField(Constants.SIMILARITY);

@@ -780,7 +780,7 @@ public class Database {
 	public synchronized static Set<String> subClassificationsForClass(String formattedCPC) {
 		if(formattedCPC==null||formattedCPC.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
-		classCodesPrefixTrie.getValuesForKeysStartingWith(formattedCPC).forEach(a->possible.add(a));
+		getClassCodesPrefixTrie().getValuesForKeysStartingWith(formattedCPC).forEach(a->possible.add(a));
 		return possible;
 	}
 
