@@ -10,10 +10,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Created by ehallmark on 8/1/17.
  */
 public class Server {
-    public static final AtomicBoolean keepOn = new AtomicBoolean(false);
-    private static final String DEFAULT_URL = "35.197.93.105";
-    private static final String DEFAULT_ZONE = "us-west1-a";
-    private static final String DEFAULT_INSTANCE_NAME = "instance-8-highmem";
+    public static final AtomicBoolean keepOn = new AtomicBoolean(true);
+    private static final String DEFAULT_URL = "35.184.53.203";
+    private static final String DEFAULT_ZONE = "us-central1-a";
+    private static final String DEFAULT_INSTANCE_NAME = "instance-2";
     public static void main(String[] args) {
         Timer timer = new Timer();
         LocalDate today = LocalDate.now();
