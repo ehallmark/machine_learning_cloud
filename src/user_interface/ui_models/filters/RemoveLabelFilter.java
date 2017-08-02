@@ -11,6 +11,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.textarea;
@@ -35,7 +36,8 @@ public class RemoveLabelFilter extends AbstractExcludeFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        labels = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]"));
+        labels = new HashSet<>(SimilarPatentServer.preProcess(SimilarPatentServer.extractString(req, Constants.LABEL_FILTER, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]")).stream()
+                .map(label->label.startsWith("US")?label.replaceFirst("US",""):label).collect(Collectors.toList());
     }
 
     @Override
