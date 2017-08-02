@@ -367,7 +367,7 @@ public class SimilarPatentServer {
     }
 
     public static void server() {
-        port(4568);
+        port(8080);
 
         // HOST ASSETS
         hostPublicAssets();
