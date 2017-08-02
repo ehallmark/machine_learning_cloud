@@ -465,19 +465,8 @@ public class SimilarPatentServer {
 
             // Update filters based on params
             similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
-
-            System.out.println(" ... Evaluators");
-            // Get value models
-
-            Set<String> appliedAttributes = new HashSet<>(preComputedAttributes.stream().map(model->model.getName()).collect(Collectors.toList()));
-            // get portfolio list from similarity engine
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
-
-            // Apply attributes
-            System.out.println("Applying attributes...");
-            portfolioList.applyAttributes(attributes.stream().filter(attr->!appliedAttributes.contains(attr.getName())).collect(Collectors.toList()));
-            appliedAttributes.addAll(itemAttributes);
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
             if(similarityEngines.size()>0) {
@@ -487,13 +476,9 @@ public class SimilarPatentServer {
                 tableHeaders.add(0,Constants.OVERALL_SCORE);
             }
 
-
-
             res.type("application/json");
             List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
             charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
-            System.out.println("Applying pre chart attributes...");
-            portfolioList.applyAttributes(getAttributesFromPrerequisites(charts,appliedAttributes));
 
             List<AbstractChart> finishedCharts = new ArrayList<>();
             // adding charts
@@ -533,11 +518,6 @@ public class SimilarPatentServer {
         return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"');"
                 + "var url = '"+ url +"'; "
                 + "var tempScrollTop = $(window).scrollTop();"
-                //+ "window.onerror = function(errorMsg, url, lineNumber) {"
-                //+ "    $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + errorMsg + '</div>');"
-                //+ "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
-                //+ "    return false;"
-                //+ "};"
                 + "$('#results').html('');       " // clears results div
                 + "$.ajax({"
                 + "  type: 'POST', "
@@ -559,10 +539,6 @@ public class SimilarPatentServer {
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
                 + "         for(var i = 0; i<charts.length; i++) {  "
-                // No longer using custom function
-                //+ "             if( $('#'+'chart-'+i.toString()).hasClass('column') ) { "
-                //+ "                 charts[i].chart.events = { render: loadEvent }; "
-                //+ "             }   "
                 + "             var chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
                 + "             chart.redraw();             "
                 + "         }                        "
