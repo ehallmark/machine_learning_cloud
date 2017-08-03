@@ -3,6 +3,17 @@ package user_interface.server;
 import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Getter;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.config.Ini;
+import org.apache.shiro.config.IniSecurityManagerFactory;
+import org.apache.shiro.mgt.DefaultSecurityManager;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.Realm;
+import org.apache.shiro.subject.Subject;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
@@ -56,6 +67,7 @@ import models.value_models.*;
 public class SimilarPatentServer {
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
+    private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
@@ -76,8 +88,9 @@ public class SimilarPatentServer {
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
     public static final String SEARCH_TYPE_ARRAY_FIELD = "searchType[]";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
-    public static final String REPORT_URL = "/patent_recommendation_engine";
-    public static final String DOWNLOAD_URL = "/excel_generation";
+    public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
+    public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
+    public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -321,41 +334,6 @@ public class SimilarPatentServer {
         return tagger;
     }
 
-    static void hostPublicAssets() {
-        File dir = new File("public/");
-        hostAssetsHelper(dir,"");
-    }
-
-    private static void hostAssetsHelper(File file, String path) {
-        if(file.isDirectory()) {
-            for(File child : file.listFiles()) {
-                hostAssetsHelper(child, path+"/"+child.getName());
-            }
-        } else {
-            System.out.println("HOSTING ASSETS AT URL: "+path);
-            get(path,(request, response) -> {
-                String pathToFile = "public"+path;
-                File f = new File(pathToFile);
-
-                OutputStream out = response.raw().getOutputStream();
-                BufferedReader reader = new BufferedReader(new FileReader(f));
-                reader.lines().forEach(line->{
-                    try {
-                        out.write(line.getBytes());
-                        out.write("\n".getBytes());
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-
-
-                out.close();
-                response.status(200);
-                return response.body();
-            });
-        }
-    }
-
     public static Collection<? extends AbstractAttribute> getAttributesFromPrerequisites(Collection<? extends DependentAttribute> dependentAttributes, Collection<String> appliedAttributes) {
         return dependentAttributes.stream().flatMap(dependency ->(Stream<String>)dependency.getPrerequisites().stream().filter(r->r!=null)).distinct().filter(preReq -> !appliedAttributes.contains(preReq)).map(preReq -> {
             AbstractAttribute attr = attributesMap.get(preReq);
@@ -368,17 +346,66 @@ public class SimilarPatentServer {
 
     public static void server() {
         port(8080);
-
         // HOST ASSETS
-        hostPublicAssets();
+        staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
+
+        Ini ini = new Ini();
+        Ini.Section users = ini.addSection("users");
+        users.put("ehallmark","Evan1040");
+        users.put("gtt","password");
+
+        SecurityManager securityManager =  new IniSecurityManagerFactory(ini).getInstance();
+        SecurityUtils.setSecurityManager(securityManager);
+
+        before(PROTECTED_URL_PREFIX+"/*", (req,res)->{
+            Subject currentUser = SecurityUtils.getSubject();
+            if(!currentUser.isAuthenticated()) {
+                halt("You do not have access!");
+            }
+        });
+
+        post("/login", (req,res)->{
+            Subject currentUser = SecurityUtils.getSubject();
+            if(!currentUser.isAuthenticated()) {
+                String username = extractString(req, "username", "");
+                String password = extractString(req, "password", "");
+                UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+                token.setRememberMe(true);
+                try {
+                    currentUser.login(token);
+                } catch (Exception e) {
+                    System.out.println("Error logging in: " + e.getMessage());
+                    halt("Error logging in.");
+                }
+            }
+            res.status(200);
+            res.redirect(HOME_URL);
+            return null;
+        });
+
+        post("/logout", (req,res)->{
+            Subject currentUser = SecurityUtils.getSubject();
+            if(currentUser.isAuthenticated()||currentUser.isRemembered()) {
+                currentUser.logout();
+            }
+            res.redirect("/");
+            res.status(200);
+            return null;
+        });
 
         // GET METHODS
-        get("/", (req, res) -> templateWrapper(res, candidateSetModelsForm()));
+        redirect.get("/",HOME_URL);
+        get(HOME_URL, (req, res) -> templateWrapper(res, candidateSetModelsForm()));
+
+        post(REPORT_URL, (req, res) -> handleReport(req,res));
+
+        post(DOWNLOAD_URL, (req, res) -> handleExcel(req,res));
+
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
-            String pathToImage = Constants.DATA_FOLDER+"images/brand.png";
+            String pathToImage = "public/images/brand.png";
             File f = new File(pathToImage);
             BufferedImage bi = ImageIO.read(f);
             OutputStream out = response.raw().getOutputStream();
@@ -387,10 +414,6 @@ public class SimilarPatentServer {
             response.status(200);
             return response.body();
         });
-
-        post(REPORT_URL, (req, res) -> handleReport(req,res));
-
-        post(DOWNLOAD_URL, (req, res) -> handleExcel(req,res));
     }
 
     private static Object handleExcel(Request req, Response res) {
@@ -882,6 +905,7 @@ public class SimilarPatentServer {
         server();
         System.out.println("Finished starting user_interface.server.");
         if(preLoad)Database.preLoad();
+        GatherClassificationServer.StartServer();
         long t2 = System.currentTimeMillis();
         System.out.println("Time to start user_interface.server: "+ ((t2-t1)/(1000*60)) + " minutes");
     }
