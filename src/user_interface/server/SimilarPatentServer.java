@@ -344,6 +344,13 @@ public class SimilarPatentServer {
         }).filter(model -> model != null).collect(Collectors.toList());
     }
 
+    private static void authorize(Subject subject, Request req) {
+        Subject currentUser = SecurityUtils.getSubject();
+        if(!currentUser.isAuthenticated()) {
+            halt("You do not have access!");
+        }
+    }
+
     public static void server() {
         port(8080);
         // HOST ASSETS
@@ -356,14 +363,6 @@ public class SimilarPatentServer {
 
         SecurityManager securityManager =  new IniSecurityManagerFactory(ini).getInstance();
         SecurityUtils.setSecurityManager(securityManager);
-
-        before(PROTECTED_URL_PREFIX+"/*", (req,res)->{
-            Subject currentUser = SecurityUtils.getSubject();
-            if(!currentUser.isAuthenticated()) {
-                res.redirect("/");
-                halt("You do not have access!");
-            }
-        });
 
         post("/login", (req,res)->{
             Subject currentUser = SecurityUtils.getSubject();
@@ -407,11 +406,20 @@ public class SimilarPatentServer {
             ));
         });
 
-        get(HOME_URL, (req, res) -> templateWrapper(res, candidateSetModelsForm()));
+        get(HOME_URL, (req, res) -> {
+            authorize(SecurityUtils.getSubject(),req);
+            return templateWrapper(res, candidateSetModelsForm());
+        });
 
-        post(REPORT_URL, (req, res) -> handleReport(req,res));
+        post(REPORT_URL, (req, res) -> {
+            authorize(SecurityUtils.getSubject(),req);
+            return handleReport(req,res);
+        });
 
-        post(DOWNLOAD_URL, (req, res) -> handleExcel(req,res));
+        post(DOWNLOAD_URL, (req, res) -> {
+            authorize(SecurityUtils.getSubject(),req);
+            return handleExcel(req,res);
+        });
 
 
         // Host my own image asset!
