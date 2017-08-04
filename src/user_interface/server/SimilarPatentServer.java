@@ -394,7 +394,7 @@ public class SimilarPatentServer {
         });
 
         // GET METHODS
-        redirect.get("/",HOME_URL);
+        //redirect.get("/",HOME_URL);
         get(HOME_URL, (req, res) -> templateWrapper(res, candidateSetModelsForm()));
 
         post(REPORT_URL, (req, res) -> handleReport(req,res));
