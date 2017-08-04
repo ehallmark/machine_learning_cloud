@@ -262,6 +262,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
             attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
+            attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
@@ -465,13 +466,6 @@ public class SimilarPatentServer {
             }
 
             System.out.println("Getting parameters...");
-            // get meta parameters
-            int limit = extractInt(req, LIMIT_FIELD, 10);
-            int maxResultLimit = 10000;
-            if(limit > maxResultLimit) {
-                return new Gson().toJson(new AjaxChartMessage("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit,Collections.emptyList()));
-            }
-
             System.out.println("Getting models...");
             // Sorted by
             String comparator = extractString(req,COMPARATOR_FIELD,Constants.OVERALL_SCORE);
@@ -479,7 +473,6 @@ public class SimilarPatentServer {
             List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
             List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
-            List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
 
             System.out.println(" ... Filters");
             // Get filters
@@ -491,9 +484,6 @@ public class SimilarPatentServer {
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
-            if(similarityEngines.size()>0) {
-                tableHeaders.add(0,Constants.SIMILARITY);
-            }
             if(comparator.equals(Constants.OVERALL_SCORE)) {
                 tableHeaders.add(0,Constants.OVERALL_SCORE);
             }
@@ -607,7 +597,7 @@ public class SimilarPatentServer {
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str.trim()).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
     static Tag templateWrapper(Response res, Tag form) {
@@ -697,9 +687,9 @@ public class SimilarPatentServer {
                                                 )
                                         ), div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-bottom").with(
-                                                        customFormRow("attributes", Arrays.asList(similarityEngine.getEngineMap(),attributesMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,ATTRIBUTES_ARRAY_FIELD))
+                                                        customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD)
                                                 ),div().withClass("col-6 form-right form-bottom").with(
-                                                        customFormRow("filters", Arrays.asList(similarityFilterModelMap, preFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
                                                 )
                                         )
                                 ),div().with(

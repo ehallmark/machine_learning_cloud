@@ -1,5 +1,6 @@
 package user_interface.ui_models.engines;
 
+import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import lombok.Getter;
 import org.elasticsearch.script.Script;
@@ -14,6 +15,7 @@ import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
+import user_interface.server.tools.AjaxChartMessage;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.IncludeLabelFilter;
 import user_interface.ui_models.filters.RemoveAssigneeFilter;
@@ -78,6 +80,10 @@ public class SimilarityEngineController {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
+        int maxResultLimit = 50000;
+        if(limit > maxResultLimit) {
+            throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
+        }
         resultTypes = SimilarPatentServer.extractArray(req, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
         // what to do if not present?
         if(resultTypes.isEmpty()) {
