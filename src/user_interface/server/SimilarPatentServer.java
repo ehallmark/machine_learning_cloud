@@ -360,6 +360,7 @@ public class SimilarPatentServer {
         before(PROTECTED_URL_PREFIX+"/*", (req,res)->{
             Subject currentUser = SecurityUtils.getSubject();
             if(!currentUser.isAuthenticated()) {
+                res.redirect("/");
                 halt("You do not have access!");
             }
         });
@@ -395,6 +396,17 @@ public class SimilarPatentServer {
 
         // GET METHODS
         //redirect.get("/",HOME_URL);
+        get("/", (req, res)->{
+            return templateWrapper(res, form().withClass("form-group").withAction("/login").with(
+                    p("Log in"),
+                    label("Username").with(
+                            input().withType("text").withClass("form-control").withName("username")
+                    ), label("Password").with(
+                            input().withType("password").withClass("form-control").withName("password")
+                    )
+            ));
+        });
+
         get(HOME_URL, (req, res) -> templateWrapper(res, candidateSetModelsForm()));
 
         post(REPORT_URL, (req, res) -> handleReport(req,res));
