@@ -147,7 +147,7 @@ public class ExcelHandler {
         }
 
         // gtt logo
-        String pathToImage = "images/brand.png";
+        String pathToImage = "public/images/brand.png";
         File logoFile = new File(pathToImage);
         BufferedImage logoImage = ImageIO.read(logoFile);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
