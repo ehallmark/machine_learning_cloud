@@ -337,10 +337,11 @@ public class SimilarPatentServer {
 
     private static void authorize(Request req) {
         try {
-            if (req.attribute("authorized") == null || ! (boolean) req.attribute("authorized")) {
+            if (req.session().attribute("authorized") == null || ! (Boolean) req.session().attribute("authorized")) {
                 halt("You do not have access!");
             }
         } catch(Exception e) {
+            e.printStackTrace();
             halt("Error during authentication.");
         }
     }
