@@ -3,18 +3,9 @@ package user_interface.server;
 import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Getter;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.config.Ini;
-import org.apache.shiro.config.IniSecurityManagerFactory;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-import org.apache.shiro.subject.Subject;
+
 import org.nd4j.linalg.api.ndarray.INDArray;
+import spark.Session;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
@@ -344,10 +335,13 @@ public class SimilarPatentServer {
         }).filter(model -> model != null).collect(Collectors.toList());
     }
 
-    private static void authorize(Subject subject, Request req) {
-        Subject currentUser = SecurityUtils.getSubject();
-        if(!currentUser.isAuthenticated()) {
-            halt("You do not have access!");
+    private static void authorize(Request req) {
+        try {
+            if (req.attribute("authorized") == null || ! (boolean) req.attribute("authorized")) {
+                halt("You do not have access!");
+            }
+        } catch(Exception e) {
+            halt("Error during authentication.");
         }
     }
 
@@ -356,27 +350,18 @@ public class SimilarPatentServer {
         // HOST ASSETS
         staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
 
-        Ini ini = new Ini();
-        Ini.Section users = ini.addSection("users");
+        Map<String,String> users = new HashMap<>();
         users.put("ehallmark","Evan1040");
         users.put("gtt","password");
 
-        SecurityManager securityManager =  new IniSecurityManagerFactory(ini).getInstance();
-        SecurityUtils.setSecurityManager(securityManager);
-
         post("/login", (req,res)->{
-            Subject currentUser = SecurityUtils.getSubject();
-            if(!currentUser.isAuthenticated()) {
-                String username = extractString(req, "username", "");
-                String password = extractString(req, "password", "");
-                UsernamePasswordToken token = new UsernamePasswordToken(username, password);
-                token.setRememberMe(true);
-                try {
-                    currentUser.login(token);
-                } catch (Exception e) {
-                    System.out.println("Error logging in: " + e.getMessage());
-                    halt("Error logging in.");
-                }
+            Session session = req.session(true);
+            String username = extractString(req, "username", "");
+            String password = extractString(req, "password", "");
+            boolean authorized = users.containsKey(username)&&users.get(username).equals(password);
+            session.attribute("authorized",authorized);
+            if(!authorized) {
+                halt("User not found.");
             }
             res.status(200);
             res.redirect(HOME_URL);
@@ -384,10 +369,7 @@ public class SimilarPatentServer {
         });
 
         post("/logout", (req,res)->{
-            Subject currentUser = SecurityUtils.getSubject();
-            if(currentUser.isAuthenticated()||currentUser.isRemembered()) {
-                currentUser.logout();
-            }
+            req.session(true).attribute("authorized",false);
             res.redirect("/");
             res.status(200);
             return null;
@@ -396,7 +378,7 @@ public class SimilarPatentServer {
         // GET METHODS
         //redirect.get("/",HOME_URL);
         get("/", (req, res)->{
-            return templateWrapper(res, form().withClass("form-group").withAction("/login").attr("style","margin-top: 100px;").with(
+            return templateWrapper(res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
@@ -407,17 +389,17 @@ public class SimilarPatentServer {
         });
 
         get(HOME_URL, (req, res) -> {
-            authorize(SecurityUtils.getSubject(),req);
+            authorize(req);
             return templateWrapper(res, candidateSetModelsForm());
         });
 
         post(REPORT_URL, (req, res) -> {
-            authorize(SecurityUtils.getSubject(),req);
+            authorize(req);
             return handleReport(req,res);
         });
 
         post(DOWNLOAD_URL, (req, res) -> {
-            authorize(SecurityUtils.getSubject(),req);
+            authorize(req);
             return handleExcel(req,res);
         });
 
