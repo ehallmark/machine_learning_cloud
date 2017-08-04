@@ -396,13 +396,13 @@ public class SimilarPatentServer {
         // GET METHODS
         //redirect.get("/",HOME_URL);
         get("/", (req, res)->{
-            return templateWrapper(res, form().withClass("form-group").withAction("/login").with(
+            return templateWrapper(res, form().withClass("form-group").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
                     ), label("Password").with(
                             input().withType("password").withClass("form-control").withName("password")
-                    )
+                    ),button("Login").withType("submit").withClass("btn btn-secondary")
             ));
         });
 
