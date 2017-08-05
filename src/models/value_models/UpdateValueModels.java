@@ -3,7 +3,6 @@ package models.value_models;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.*;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 /**
  * Created by ehallmark on 7/12/17.

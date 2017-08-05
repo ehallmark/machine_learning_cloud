@@ -148,16 +148,8 @@ public class InventionTitleSAXHandler extends CustomHandler{
     }
 
     public void characters(char ch[],int start,int length)throws SAXException{
-
-        // Example
-        // if (bfname) {
-        //    System.out.println("First Name : " + new String(ch, start, length));
-        //    bfname = false;
-        // }
-
         if((!shouldTerminate)&&(isInventionTitle||isDocNumber||isOrgname)){
             documentPieces.add(new String(ch,start,length));
         }
-
     }
 }

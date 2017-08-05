@@ -1,10 +1,7 @@
 package seeding.ai_db_updater;
 
-import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.*;
-import seeding.ai_db_updater.iterators.PatentGrantIterator;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.io.BufferedReader;
 import java.io.File;

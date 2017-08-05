@@ -6,6 +6,7 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 
 import lombok.Getter;
 import net.lingala.zip4j.core.ZipFile;
+import pair_bulk_data.PAIRHandler;
 import seeding.ai_db_updater.handlers.LineHandler;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
@@ -290,6 +291,27 @@ public class Database {
 			ps.setString(1+(i*3), patentNumber);
 			ps.setArray(2+(i*3), assigneeArray);
 			ps.setArray(3+(i*3), conn.createArrayOf("varchar", doc.toArray()));
+		}
+		ps.executeUpdate();
+		ps.close();
+	}
+
+
+	public static void ingestPairRecords(Map<String,String> data, List<PAIRHandler.Flag> leafFlags, String tableName) throws SQLException {
+		List<PAIRHandler.Flag> availableFlags = leafFlags.stream().filter(flag->data.containsKey(flag.dbName)).collect(Collectors.toList());
+		List<String> types = availableFlags.stream().map(flag->flag.type).collect(Collectors.toList());
+		List<String> keys = availableFlags.stream().map(flag->flag.dbName).collect(Collectors.toList());
+
+		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",keys)+") VALUES ";
+		String querySuffix = " ON CONFLICT DO NOTHING";
+		StringJoiner joiner = new StringJoiner(",","(",")");
+		for(int i = 0; i < keys.size(); i++) {
+			joiner.add("?::"+types.get(i));
+		}
+		String query = queryPrefix + joiner.toString() + querySuffix;
+		PreparedStatement ps = conn.prepareStatement(query);
+		for(int i = 0; i < keys.size(); i++) {
+			ps.setString(i, data.get(keys.get(i)));
 		}
 		ps.executeUpdate();
 		ps.close();
