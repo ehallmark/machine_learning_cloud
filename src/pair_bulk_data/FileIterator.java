@@ -26,7 +26,12 @@ public class FileIterator implements WebIterator {
 
     @Override
     public void applyHandlers(CustomHandler... handlers) {
-        Arrays.stream(fileFolder.listFiles()).parallel().forEach(xmlFile->{
+        Arrays.stream(fileFolder.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("20")&&name.length()==8;
+            }
+        })).parallel().forEach(xmlFile->{
             try {
                 if (xmlFile.exists()) {
                     System.out.print("Parsing "+xmlFile.getName()+" now...");
