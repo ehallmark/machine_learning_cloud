@@ -91,11 +91,23 @@ public class PAIRHandler extends CustomHandler{
                         Database.ingestPairRecords(map, inventorLeafFlags, "pair_application_inventors");
                     } catch(Exception e) {
                         e.printStackTrace();
+                        try {
+                            Database.commit();
+                            Database.resetConn();
+                        } catch(Exception e2) {
+                            e2.printStackTrace();
+                        }
                     }
                 });
             }
         } catch(Exception e) {
             e.printStackTrace();
+            try {
+                Database.commit();
+                Database.resetConn();
+            } catch(Exception e2) {
+                e2.printStackTrace();
+            }
         }
         applicationMap = new HashMap<>();
         inventorMap = new HashMap<>();

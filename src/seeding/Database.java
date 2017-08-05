@@ -128,9 +128,13 @@ public class Database {
 	public static File appToPriorityDateMapFile = new File(Constants.DATA_FOLDER+"app_to_priority_date_map.jobj");
 
 	static {
+		resetConn();
+	}
+
+	public static void resetConn() {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);
-			conn.setAutoCommit(true);
+			conn.setAutoCommit(false);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
