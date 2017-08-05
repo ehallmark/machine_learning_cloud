@@ -77,7 +77,7 @@ public class PAIRHandler extends CustomHandler{
 
     @Override
     public CustomHandler newInstance() {
-        return this;
+        return new PAIRHandler();
     }
 
     @Override

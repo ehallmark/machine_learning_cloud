@@ -311,7 +311,7 @@ public class Database {
 		String query = queryPrefix + joiner.toString() + querySuffix;
 		PreparedStatement ps = conn.prepareStatement(query);
 		for(int i = 0; i < keys.size(); i++) {
-			ps.setString(i, data.get(keys.get(i)));
+			ps.setString(i+1, data.get(keys.get(i)));
 		}
 		ps.executeUpdate();
 		ps.close();

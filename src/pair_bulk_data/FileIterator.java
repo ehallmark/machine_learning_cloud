@@ -36,11 +36,11 @@ public class FileIterator implements WebIterator {
                     // security vulnerable
                     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-                    SAXParser saxParser = factory.newSAXParser();
 
                     for (CustomHandler handler : handlers) {
+                        SAXParser saxParser = factory.newSAXParser();
                         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
-                            saxParser.parse(bis, handler);
+                            saxParser.parse(bis, handler.newInstance());
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {
