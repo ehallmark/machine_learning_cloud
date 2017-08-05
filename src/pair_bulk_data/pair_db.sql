@@ -19,10 +19,10 @@ CREATE TABLE pair_applications (
     applicant_file_reference text
 );
 
-CREATE TABLE pair_application_inventors {
+CREATE TABLE pair_application_inventors (
     first_name text,
     last_name text,
     city text,
-    country text
+    country text,
     application_number text references pair_applications
-}
+);
