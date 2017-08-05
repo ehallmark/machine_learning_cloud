@@ -130,7 +130,7 @@ public class Database {
 	static {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);
-			conn.setAutoCommit(false);
+			conn.setAutoCommit(true);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
