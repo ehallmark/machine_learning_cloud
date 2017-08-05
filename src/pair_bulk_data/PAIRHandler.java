@@ -27,7 +27,7 @@ public class PAIRHandler extends CustomHandler{
     protected Map<String,String> applicationMap = new HashMap<>();
     protected Map<String,String> inventorMap = new HashMap<>();
     protected List<Map<String,String>> inventorMaps = new ArrayList<>();
-    protected AtomicInteger cnt = new AtomicInteger(0);
+    protected static AtomicInteger cnt = new AtomicInteger(0);
     protected int batchSize = 10000;
 
 
