@@ -24,7 +24,7 @@ public class DataMassager {
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
 
-        PreparedStatement ps = conn.prepareStatement("select count(application_number), year from pair_applications where grant_number = any(?) or publication_number like any (?) group by date_part('year', filing_date)");
+        PreparedStatement ps = conn.prepareStatement("select count(application_number), date_part('year',filing_date) as year from pair_applications where grant_number = any(?) or publication_number like any (?) group by date_part('year', filing_date)");
         ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
         ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
 
