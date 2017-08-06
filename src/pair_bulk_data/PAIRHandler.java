@@ -88,8 +88,11 @@ public class PAIRHandler extends CustomHandler{
         applicationLeafFlags.add(new Flag("PublicationDate","publication_date","date",validDateFunction));
         applicationLeafFlags.add(new Flag("AdjustmentTotalQuantity","term_extension","int", validIntegerFunction));
         applicationLeafFlags.add(new Flag("ApplicantFileReference","applicant_file_reference","text"));
+        applicationLeafFlags.add(new Flag("ApplicantFileReference","applicant_file_reference","text"));
 
-        applicationFlags = applicationLeafFlags; // no nested fields
+        applicationFlags.addAll(applicationLeafFlags); // no nested fields
+
+        applicationLeafFlags.add(new Flag("OSIEDUJGLISDJGLKJDSGL","assignee","text"));
 
         // sll leaf flags
         leafFlags.addAll(applicationLeafFlags);
