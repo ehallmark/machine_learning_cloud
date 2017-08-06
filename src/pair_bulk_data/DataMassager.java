@@ -41,7 +41,7 @@ public class DataMassager {
         Connection conn = Database.getConn();
         Database.getAssigneeToAppsMap().entrySet().parallelStream().forEach(e->{
             try {
-                PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where ?::varchar[] && string_to_array(publication_number,' '))::varchar[]");
+                PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where ?::varchar[] && string_to_array(publication_number,' ')::varchar[]");
                 ps.setString(1, e.getKey());
                 ps.setArray(2, conn.createArrayOf("varchar", publications.toArray()));
                 System.out.println("Starting update...");
