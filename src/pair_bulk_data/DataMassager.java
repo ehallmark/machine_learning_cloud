@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        if(args.length < 2) throw new RuntimeException("Please include excel filename and assignee name");
+        if(args.length == 0) throw new RuntimeException("Please include excel filename");
         try {
-            getApplicationNumbersFromGrantsAndPublications(args[0], args[1]);
+            getApplicationNumbersFromGrantsAndPublications(args[0]);
         } finally {
             try {
                 Database.close();
@@ -32,7 +32,7 @@ public class DataMassager {
     private static final String whereGrantsAndPublicationsQuery = "( grant_number = any(?) or string_to_array(publication_number,' ')::varchar[] && (?::varchar[]) )";
     private static final String whereFilingsQuery = "( application_number = any(?) )";
 
-    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile, String assigneeName) throws Exception {
+    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile) throws Exception {
         final int offset = 7;
         final int colIdx = 2;
         Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(inputFile),offset,colIdx);
