@@ -29,7 +29,11 @@ public class FileIterator implements WebIterator {
         Arrays.stream(fileFolder.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
-                return name.startsWith("20")&&name.length()==8;
+                try {
+                    return Integer.valueOf(name.substring(0,4)) >= 2005;
+                } catch(Exception e) {
+                    return false;
+                }
             }
         })).parallel().forEach(xmlFile->{
             try {
