@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        getApplicationNumbersFromGrantsAndPublications(args);
+        getDistinctInventorData(args);
     }
 
     public static void getApplicationNumbersFromGrantsAndPublications(String[] args) throws Exception {
@@ -43,6 +43,30 @@ public class DataMassager {
         rs.close();
     }
 
+
+    public static void getDistinctInventorData(String[] args) throws Exception {
+        if(args.length == 0) throw new RuntimeException("Please include excel filename");
+        final int offset = 7;
+        final int colIdx = 2;
+        Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(args[0]),offset,colIdx);
+        Collection<String> patents = assets.stream().filter(asset->!Database.isApplication(asset)).collect(Collectors.toList());
+        Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
+        Connection conn = Database.getConn();
+
+        PreparedStatement ps = conn.prepareStatement("select distinct (first_name,last_name,city,country) from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and ( grant_number = any(?) or publication_number like any (?) )");
+        ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
+        ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
+        ps.setFetchSize(10);
+        System.out.println("Starting to run query");
+        ResultSet rs = ps.executeQuery();
+
+        System.out.println("First Name, Last Name, City, Country");
+        while(rs.next()) {
+            System.out.println(""+rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4));
+        }
+
+        rs.close();
+    }
 
     private static List<String> addWildCards(Collection<String> list) {
         return list.stream().map(item->"%"+item+"%").collect(Collectors.toList());
