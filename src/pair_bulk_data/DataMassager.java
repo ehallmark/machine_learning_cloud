@@ -32,7 +32,7 @@ public class DataMassager {
 
     public static void getApplicationNumbersFromGrantsAndPublications() throws Exception {
         Connection conn = Database.getConn();
-        Database.getAssigneeToAppsMap().entrySet().parallelStream().forEach(e->{
+        Database.getAssigneeToAppsMap().entrySet().forEach(e->{
             try {
                 PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where ?::varchar[] && string_to_array(publication_number,' ')::varchar[]");
                 ps.setString(1, e.getKey());
@@ -46,7 +46,7 @@ public class DataMassager {
         });
         Database.commit();
         System.out.println("Finished apps...");
-        Database.getAssigneeToPatentsMap().entrySet().parallelStream().forEach(e->{
+        Database.getAssigneeToPatentsMap().entrySet().forEach(e->{
             try {
                 PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where grant_number = any(?)");
                 ps.setString(1, e.getKey());
