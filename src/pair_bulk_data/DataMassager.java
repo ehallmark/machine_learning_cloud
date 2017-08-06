@@ -38,7 +38,7 @@ public class DataMassager {
         }
         rs.close();
         ps.close();
-s    }
+    }
 
 
     private static Collection<String> loadCSVColumn(File file, int colIdx) throws Exception {
