@@ -82,7 +82,7 @@ public class PAIRHandler extends CustomHandler{
         applicationLeafFlags.add(new Flag("InventionTitle","invention_title","text"));
         applicationLeafFlags.add(new Flag("ApplicationStatusCategory","application_status","text"));
         applicationLeafFlags.add(new Flag("ApplicationStatusDate","application_status_date","date",validDateFunction));
-        applicationLeafFlags.add(new Flag("PatentNumber","grant_number","text"));
+        applicationLeafFlags.add(new Flag("PatentNumber","grant_number","text",(str)->!str.equals("0")));
         applicationLeafFlags.add(new Flag("GrantDate","grant_date","date",validDateFunction));
         applicationLeafFlags.add(new Flag("PublicationNumber","publication_number","text",(str)->!str.equals("0")));
         applicationLeafFlags.add(new Flag("PublicationDate","publication_date","date",validDateFunction));
