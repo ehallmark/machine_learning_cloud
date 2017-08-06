@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        getDistinctInventorData(args);
+        getDistinctCorrespondenceAddressIds(args);
     }
 
     public static void getApplicationNumbersFromGrantsAndPublications(String[] args) throws Exception {
@@ -63,6 +63,30 @@ public class DataMassager {
         System.out.println("First Name, Last Name, City, Country");
         while(rs.next()) {
             System.out.println(""+rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4));
+        }
+
+        rs.close();
+    }
+
+    public static void getDistinctCorrespondenceAddressIds(String[] args) throws Exception {
+        if(args.length == 0) throw new RuntimeException("Please include excel filename");
+        final int offset = 7;
+        final int colIdx = 2;
+        Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(args[0]),offset,colIdx);
+        Collection<String> patents = assets.stream().filter(asset->!Database.isApplication(asset)).collect(Collectors.toList());
+        Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
+        Connection conn = Database.getConn();
+
+        PreparedStatement ps = conn.prepareStatement("select distinct (correspondence_address_id) from pair_applications where correspondence_address_id is not null and ( grant_number = any(?) or publication_number like any (?) )");
+        ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
+        ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
+        ps.setFetchSize(10);
+        System.out.println("Starting to run query");
+        ResultSet rs = ps.executeQuery();
+
+        System.out.println("Correspondence Address ID");
+        while(rs.next()) {
+            System.out.println(rs.getString(1));
         }
 
         rs.close();
