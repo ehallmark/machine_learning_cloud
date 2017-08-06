@@ -53,7 +53,7 @@ public class DataMassager {
 
     public static void getDistinctInventorData(String assignee) throws Exception {
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select count(distinct application_number), year  from (select (distinct(first_name,last_name,city,country)), a.application_number, date_part('year',a.filing_date) as year, from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereAssigneeQuery+") as temp group by year order by year ");
+        PreparedStatement ps = conn.prepareStatement("select count(a.application_number), date_part('year',a.filing_date) as year from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where (first_name,last_name,city,country) in (select distinct first_name,last_name,city,country from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereAssigneeQuery+") group by date_part('year',filing_date) order by date_part('year',filing_date) ");
         ps.setString(1, assignee);
         ps.setFetchSize(10);
         System.out.println("Starting to run query");
