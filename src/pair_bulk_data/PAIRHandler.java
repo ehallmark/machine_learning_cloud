@@ -24,7 +24,7 @@ public class PAIRHandler extends CustomHandler{
     // functions
     private static Function<String,Boolean> validDateFunction = (str) -> {
         try {
-            LocalDate.parse(str, DateTimeFormatter.BASIC_ISO_DATE);
+            LocalDate.parse(str, DateTimeFormatter.ISO_DATE);
             return true;
         } catch(Exception e) {
             return false;
