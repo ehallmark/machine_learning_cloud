@@ -28,7 +28,7 @@ public class DataMassager {
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
 
-        PreparedStatement ps = conn.prepareStatement("select application_number,filing_date from pair_applications where filing_date is not null and ( grant_number = any(?) or publication_number like any (?) )");
+        PreparedStatement ps = conn.prepareStatement("select application_number,filing_date from pair_applications where filing_date is not null and ( grant_number = any(?) or string_to_array(publication_number,' ') && (?) )");
         ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
         ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
         ps.setFetchSize(10);
@@ -53,7 +53,7 @@ public class DataMassager {
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
 
-        PreparedStatement ps = conn.prepareStatement("select distinct (first_name,last_name,city,country) from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and ( grant_number = any(?) or publication_number like any (?) )");
+        PreparedStatement ps = conn.prepareStatement("select distinct (first_name,last_name,city,country) from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and ( grant_number = any(?) or string_to_array(publication_number,' ') && (?) )");
         ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
         ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
         ps.setFetchSize(10);
@@ -77,7 +77,7 @@ public class DataMassager {
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
 
-        PreparedStatement ps = conn.prepareStatement("select distinct (correspondence_address_id) from pair_applications where correspondence_address_id is not null and ( grant_number = any(?) or publication_number like any (?) )");
+        PreparedStatement ps = conn.prepareStatement("select correspondence_address_id from pair_applications where correspondence_address_id is not null and ( grant_number = any(?) or string_to_array(publication_number,' ') && (?) )");
         ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
         ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
         ps.setFetchSize(10);
