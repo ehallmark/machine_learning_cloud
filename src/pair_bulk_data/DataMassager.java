@@ -17,44 +17,30 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        if(args.length < 2) throw new RuntimeException("Please include excel filename and output filename ");
-        getApplicationNumbersFromGrantsAndPublications(args[0],args[1]);
+        if(args.length < 2) throw new RuntimeException("Please include excel filename and assignee name");
+        getApplicationNumbersFromGrantsAndPublications(args[0], args[1]);
     }
 
     private static final String whereGrantsAndPublicationsQuery = "( grant_number = any(?) or string_to_array(publication_number,' ')::varchar[] && (?::varchar[]) )";
     private static final String whereFilingsQuery = "( application_number = any(?) )";
 
-    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile, String outputFile) throws Exception {
+    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile, String assigneeName) throws Exception {
         final int offset = 7;
         final int colIdx = 2;
         Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(inputFile),offset,colIdx);
         Collection<String> patents = assets.stream().filter(asset->!Database.isApplication(asset)).collect(Collectors.toList());
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
-
-        PreparedStatement ps = conn.prepareStatement("select application_number,filing_date from pair_applications where filing_date is not null and "+whereGrantsAndPublicationsQuery);
-        ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
-        ps.setArray(2, conn.createArrayOf("varchar",publications.toArray()));
-        ps.setFetchSize(10);
-        System.out.println("Starting to run query");
-        ResultSet rs = ps.executeQuery();
-
-        System.out.println("App Number,Date");
-        File file = new File(outputFile);
-        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        writer.write("App Number,Date\n");
-        AtomicInteger cnt = new AtomicInteger(0);
-        while(rs.next()) {
-            writer.write(rs.getString(1)+","+rs.getDate(2)+"\n");
-            if(cnt.getAndIncrement()%1000==999) {
-                System.out.println(cnt.get());
-                writer.flush();
-            }
-        }
-        writer.flush();
-        writer.close();
-
-        rs.close();
+        conn.setAutoCommit(true);
+        PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=? where "+whereGrantsAndPublicationsQuery);
+        ps.setString(1, assigneeName);
+        ps.setArray(2, conn.createArrayOf("varchar",patents.toArray()));
+        ps.setArray(3, conn.createArrayOf("varchar",publications.toArray()));
+        System.out.println("Starting update...");
+        ps.executeUpdate();
+        ps.close();
+        Database.commit();
+        System.out.println("Complete.");
     }
 
 
