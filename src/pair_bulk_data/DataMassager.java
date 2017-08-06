@@ -21,6 +21,7 @@ public class DataMassager {
         getApplicationNumbersFromGrantsAndPublications(args[0]);
         getDistinctCorrespondenceAddressIds((args[0]));
         getDistinctInventorData(args[0]);
+        getDistinct(args[0]);
     }
 
     private static final String whereAssigneeQuery = "( upper(assignee) like upper(?) || '%' )";
@@ -30,7 +31,7 @@ public class DataMassager {
         PreparedStatement ps = conn.prepareStatement("select count(application_number) as count,date_part('year',filing_date) as year from pair_applications where filing_date is not null and assignee is not null and "+whereAssigneeQuery+" group by date_part('year',filing_date) order by date_part('year',filing_date)");
         ps.setString(1,assignee);
         ps.setFetchSize(10);
-        System.out.println(ps);
+        System.out.println("\""+ps+"\"");
         ResultSet rs = ps.executeQuery();
         System.out.println("Count,Year");
         while(rs.next()) {
@@ -56,9 +57,8 @@ public class DataMassager {
         PreparedStatement ps = conn.prepareStatement("select count(a.application_number), date_part('year',a.filing_date) as year from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where (first_name,last_name,city,country) in (select distinct first_name,last_name,city,country from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereAssigneeQuery+") group by date_part('year',filing_date) order by date_part('year',filing_date) ");
         ps.setString(1, assignee);
         ps.setFetchSize(10);
-        System.out.println("Starting to run query");
+        System.out.println("\""+ps+"\"");
         ResultSet rs = ps.executeQuery();
-
         System.out.println("Count,Year");
         while(rs.next()) {
             System.out.println(""+rs.getString(1)+","+rs.getString(2));
@@ -72,9 +72,24 @@ public class DataMassager {
         PreparedStatement ps = conn.prepareStatement("select count(a.application_number), date_part('year',a.filing_date) as year from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where correspondence_address_id in (select distinct correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereAssigneeQuery+") group by date_part('year',filing_date) order by date_part('year', filing_date)" );
         ps.setString(1, assignee);
         ps.setFetchSize(10);
-        System.out.println("Starting to run query");
+        System.out.println("\""+ps+"\"");
         ResultSet rs = ps.executeQuery();
+        System.out.println("Count,Year");
+        while(rs.next()) {
+            System.out.println(""+rs.getString(1)+","+rs.getString(2));
+        }
+        rs.close();
+        ps.close();
+    }
 
+
+    public static void getDistinct(String assignee) throws Exception {
+        Connection conn = Database.getConn();
+        PreparedStatement ps = conn.prepareStatement("select count(a.application_number), date_part('year',a.filing_date) as year from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where correspondence_address_id in (select distinct correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereAssigneeQuery+") group by date_part('year',filing_date) or (first_name,last_name,city,country) in (select distinct first_name,last_name,city,country from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereAssigneeQuery+") order by date_part('year', filing_date)" );
+        ps.setString(1, assignee);
+        ps.setFetchSize(10);
+        System.out.println("\""+ps+"\"");
+        ResultSet rs = ps.executeQuery();
         System.out.println("Count,Year");
         while(rs.next()) {
             System.out.println(""+rs.getString(1)+","+rs.getString(2));
