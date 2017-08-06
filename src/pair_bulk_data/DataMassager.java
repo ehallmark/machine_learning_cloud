@@ -17,9 +17,8 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        if(args.length == 0) throw new RuntimeException("Please include excel filename");
         try {
-            getApplicationNumbersFromGrantsAndPublications(args[0]);
+            getApplicationNumbersFromGrantsAndPublications();
         } finally {
             try {
                 Database.close();
@@ -29,21 +28,15 @@ public class DataMassager {
         }
     }
 
-    private static final String whereGrantsAndPublicationsQuery = "( grant_number = any(?) or string_to_array(publication_number,' ')::varchar[] && (?::varchar[]) )";
     private static final String whereFilingsQuery = "( application_number = any(?) )";
 
-    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile) throws Exception {
-        final int offset = 7;
-        final int colIdx = 2;
-        Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(inputFile),offset,colIdx);
-        Collection<String> patents = assets.stream().filter(asset->!Database.isApplication(asset)).collect(Collectors.toList());
-        Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
+    public static void getApplicationNumbersFromGrantsAndPublications() throws Exception {
         Connection conn = Database.getConn();
         Database.getAssigneeToAppsMap().entrySet().parallelStream().forEach(e->{
             try {
                 PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where ?::varchar[] && string_to_array(publication_number,' ')::varchar[]");
                 ps.setString(1, e.getKey());
-                ps.setArray(2, conn.createArrayOf("varchar", publications.toArray()));
+                ps.setArray(2, conn.createArrayOf("varchar", e.getValue().toArray()));
                 System.out.println("Starting update...");
                 ps.executeUpdate();
                 ps.close();
@@ -53,11 +46,11 @@ public class DataMassager {
         });
         Database.commit();
         System.out.println("Finished apps...");
-        Database.getAssigneeToAppsMap().entrySet().parallelStream().forEach(e->{
+        Database.getAssigneeToPatentsMap().entrySet().parallelStream().forEach(e->{
             try {
                 PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where grant_number = any(?)");
                 ps.setString(1, e.getKey());
-                ps.setArray(2, conn.createArrayOf("varchar", patents.toArray()));
+                ps.setArray(2, conn.createArrayOf("varchar", e.getValue().toArray()));
                 System.out.println("Starting update...");
                 ps.executeUpdate();
                 ps.close();
