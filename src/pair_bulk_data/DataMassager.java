@@ -38,8 +38,7 @@ public class DataMassager {
         }
         rs.close();
         ps.close();
-        System.out.println("Complete.");
-    }
+s    }
 
 
     private static Collection<String> loadCSVColumn(File file, int colIdx) throws Exception {
@@ -66,6 +65,7 @@ public class DataMassager {
         }
 
         rs.close();
+        ps.close();
     }
 
     public static void getDistinctCorrespondenceAddressIds(String assignee) throws Exception {
@@ -82,5 +82,6 @@ public class DataMassager {
         }
 
         rs.close();
+        ps.close();
     }
 }
