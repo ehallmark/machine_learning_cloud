@@ -140,6 +140,10 @@ public class Database {
 		}
 	}
 
+	public static Connection getConn() {
+		return conn;
+	}
+
 	public static Object loadObject(File file) {
 		return tryLoadObject(file);
 	}

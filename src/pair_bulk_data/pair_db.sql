@@ -26,3 +26,11 @@ CREATE TABLE pair_application_inventors (
     country text,
     application_number text references pair_applications(application_number)
 );
+
+
+select count(distinct application_number) from
+    (select a.application_number, i.first_name,i.last_name,i.city,i.country from pair_applications as a
+        join pair_application_inventors as i on (a.application_number=i.application_number)
+        where first_name is not null and last_name is not null and city is not null and country is not null and filing_date is not null
+        and date_part('year', filing_date) = 2017
+    ) as temp;
