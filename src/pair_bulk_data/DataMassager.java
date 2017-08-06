@@ -19,7 +19,7 @@ public class DataMassager {
     public static void main(String[] args) throws Exception {
         if(args.length == 0) throw new RuntimeException("Please include assignee filename");
         getApplicationNumbersFromGrantsAndPublications(args[0]);
-        getDistinctCorrespondenceAddressIds((args[0]));
+        //getDistinctCorrespondenceAddressIds((args[0]));
         getDistinctInventorData(args[0]);
     }
 
@@ -34,7 +34,7 @@ public class DataMassager {
         ResultSet rs = ps.executeQuery();
         System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(rs.getString(1)+","+rs.getString(2));
+            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
         }
         rs.close();
         ps.close();
@@ -59,11 +59,10 @@ public class DataMassager {
         System.out.println("Starting to run query");
         ResultSet rs = ps.executeQuery();
 
-        System.out.println("First Name, Last Name, City, Country");
+        System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(""+rs.getString(1)+","+rs.getString(2)+","+rs.getString(3)+","+rs.getString(4));
+            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
         }
-
         rs.close();
         ps.close();
     }
@@ -76,11 +75,10 @@ public class DataMassager {
         System.out.println("Starting to run query");
         ResultSet rs = ps.executeQuery();
 
-        System.out.println("Correspondence Address ID");
+        System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(rs.getString(1));
+            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
         }
-
         rs.close();
         ps.close();
     }
