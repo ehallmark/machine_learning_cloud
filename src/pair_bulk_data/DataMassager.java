@@ -19,7 +19,7 @@ public class DataMassager {
         getApplicationNumbersFromGrantsAndPublications(args);
     }
 
-    private static final String whereQuery = "( grant_number = any(?) or string_to_array(publication_number::varchar,' ') && (?) )";
+    private static final String whereQuery = "( grant_number = any(?) or string_to_array(publication_number,' ')::varchar[] && (?::varchar[]) )";
 
     public static void getApplicationNumbersFromGrantsAndPublications(String[] args) throws Exception {
         if(args.length == 0) throw new RuntimeException("Please include excel filename");
