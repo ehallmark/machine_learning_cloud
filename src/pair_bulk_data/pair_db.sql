@@ -30,6 +30,16 @@ CREATE TABLE pair_application_inventors (
 );
 
 
+create index pair_applications_grant_date on pair_applications (grant_date);
+create index pair_applications_grant_number on pair_applications (grant_number);
+create index pair_applications_publication_number on pair_applications (publication_number);
+create index pair_applications_publication_date on pair_applications (publication_date);
+create index pair_applications_filing_date on pair_applications (filing_date);
+create index pair_applications_assignee on pair_applications (assignee);
+create index pair_applications_correspondence_address_id on pair_applications (correspondence_address_id);
+create index pair_application_inventors_application_number on pair_application_inventors (application_number);
+
+
 select count(distinct application_number) from
     (select a.application_number, i.first_name,i.last_name,i.city,i.country from pair_applications as a
         join pair_application_inventors as i on (a.application_number=i.application_number)
