@@ -106,6 +106,20 @@ public class PAIRHandler extends CustomHandler{
         try {
             String applicationNumber = applicationMap.get("application_number");
             if(applicationNumber!=null) {
+                Set<String> assignees = new HashSet<>();
+                if(applicationMap.containsKey("grant_number")) {
+                    assignees.addAll(Database.assigneesFor(applicationMap.get("grant_number")));
+                }
+                if(applicationMap.containsKey("publication_number")) {
+                    String standardizedPubNumber = applicationMap.get("publication_number");
+                    if(standardizedPubNumber.startsWith("US") && standardizedPubNumber.length()==15) {
+                        standardizedPubNumber = standardizedPubNumber.substring(2,13);
+                        assignees.addAll(Database.assigneesFor(standardizedPubNumber));
+                        applicationMap.put("publication_number",standardizedPubNumber);
+                    } else {
+                        applicationMap.remove("publication_number");
+                    }
+                }
                 Database.ingestPairRecords(applicationMap, applicationLeafFlags, "pair_applications");
                 inventorMaps.forEach(map->{
                     try {
