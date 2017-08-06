@@ -17,48 +17,24 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        try {
-            getApplicationNumbersFromGrantsAndPublications();
-        } finally {
-            try {
-                Database.close();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
+        if(args.length == 0) throw new RuntimeException("Please include assignee filename");
+        getApplicationNumbersFromGrantsAndPublications(args[0]);
     }
 
     private static final String whereFilingsQuery = "( application_number = any(?) )";
 
-    public static void getApplicationNumbersFromGrantsAndPublications() throws Exception {
+    public static void getApplicationNumbersFromGrantsAndPublications(String assignee) throws Exception {
         Connection conn = Database.getConn();
-        Database.getAssigneeToAppsMap().entrySet().parallelStream().forEach(e->{
-            try {
-                PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where ?::varchar[] && string_to_array(publication_number,' ')::varchar[]");
-                ps.setString(1, e.getKey());
-                ps.setArray(2, conn.createArrayOf("varchar", e.getValue().toArray()));
-                System.out.println("Starting update...");
-                ps.executeUpdate();
-                ps.close();
-            } catch(Exception e2) {
-                e2.printStackTrace();
-            }
-        });
-        Database.commit();
-        System.out.println("Finished apps...");
-        Database.getAssigneeToPatentsMap().entrySet().parallelStream().forEach(e->{
-            try {
-                PreparedStatement ps = conn.prepareStatement("update pair_applications set assignee=upper(?) where grant_number = any(?)");
-                ps.setString(1, e.getKey());
-                ps.setArray(2, conn.createArrayOf("varchar", e.getValue().toArray()));
-                System.out.println("Starting update...");
-                ps.executeUpdate();
-                ps.close();
-            } catch(Exception e2) {
-                e2.printStackTrace();
-            }
-        });
-        Database.commit();
+        PreparedStatement ps = conn.prepareStatement("select count(application_number),date_part('year',filing_date') from pair_applications where filing date is not null and assignee is not null and upper(assignee) like ? || '%' group by date_part('year',filing_date') order by date_part('year',filing_date')")
+        ps.setString(1,assignee);
+        ps.setFetchSize(10);
+        ResultSet rs = ps.executeQuery();
+        System.out.println("Count,Year");
+        while(rs.next()) {
+            System.out.println(rs.getString(1)+","+rs.getString(2));
+        }
+        rs.close();
+        ps.close();
         System.out.println("Complete.");
     }
 
