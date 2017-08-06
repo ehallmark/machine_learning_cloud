@@ -25,9 +25,10 @@ public class DataMassager {
 
     public static void getApplicationNumbersFromGrantsAndPublications(String assignee) throws Exception {
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select count(application_number),date_part('year',filing_date') from pair_applications where filing date is not null and assignee is not null and upper(assignee) like ? || '%' group by date_part('year',filing_date') order by date_part('year',filing_date')");
+        PreparedStatement ps = conn.prepareStatement("select count(application_number),date_part('year',filing_date') from pair_applications where filing_date is not null and assignee is not null and upper(assignee) like ? || '%' group by date_part('year',filing_date') order by date_part('year',filing_date')");
         ps.setString(1,assignee);
         ps.setFetchSize(10);
+        System.out.println(ps);
         ResultSet rs = ps.executeQuery();
         System.out.println("Count,Year");
         while(rs.next()) {
