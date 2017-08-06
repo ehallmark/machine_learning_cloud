@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -16,17 +17,17 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        getDistinctCorrespondenceAddressIds(args);
+        if(args.length < 2) throw new RuntimeException("Please include excel filename and output filename ");
+        getApplicationNumbersFromGrantsAndPublications(args[0],args[1]);
     }
 
     private static final String whereGrantsAndPublicationsQuery = "( grant_number = any(?) or string_to_array(publication_number,' ')::varchar[] && (?::varchar[]) )";
     private static final String whereFilingsQuery = "( application_number = any(?) )";
 
-    public static void getApplicationNumbersFromGrantsAndPublications(String[] args) throws Exception {
-        if(args.length == 0) throw new RuntimeException("Please include excel filename ");
+    public static void getApplicationNumbersFromGrantsAndPublications(String inputFile, String outputFile) throws Exception {
         final int offset = 7;
         final int colIdx = 2;
-        Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(args[0]),offset,colIdx);
+        Collection<String> assets = GetEtsiPatentsList.getExcelList(new File(inputFile),offset,colIdx);
         Collection<String> patents = assets.stream().filter(asset->!Database.isApplication(asset)).collect(Collectors.toList());
         Collection<String> publications = assets.stream().filter(asset->Database.isApplication(asset)).collect(Collectors.toList());
         Connection conn = Database.getConn();
@@ -39,9 +40,18 @@ public class DataMassager {
         ResultSet rs = ps.executeQuery();
 
         System.out.println("App Number,Date");
+        File file = new File(outputFile);
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
-            System.out.println(rs.getString(1)+","+rs.getDate(2));
+            writer.write(rs.getString(1)+","+rs.getDate(2)+"\n");
+            if(cnt.getAndIncrement()%1000==999) {
+                System.out.println(cnt.get());
+                writer.flush();
+            }
         }
+        writer.flush();
+        writer.close();
 
         rs.close();
     }
