@@ -24,5 +24,5 @@ CREATE TABLE pair_application_inventors (
     last_name text,
     city text,
     country text,
-    application_number text references pair_applications
+    application_number text references pair_applications(application_number)
 );

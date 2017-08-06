@@ -63,6 +63,7 @@ public class PAIRHandler extends CustomHandler{
         inventorLeafFlags.add(inventorLastName);
         inventorLeafFlags.add(inventorCity);
         inventorLeafFlags.add(inventorCountry);
+        inventorLeafFlags.add(new Flag("ApplicationNumberText","application_number","text"));
         Flag inventorFlag = new Flag("Inventor",null,null);
         inventorFlag.addChild(inventorFirstName);
         inventorFlag.addChild(inventorLastName);
