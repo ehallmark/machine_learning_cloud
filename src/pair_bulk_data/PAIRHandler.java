@@ -120,6 +120,9 @@ public class PAIRHandler extends CustomHandler{
                         applicationMap.remove("publication_number");
                     }
                 }
+                if(!assignees.isEmpty()) {
+                    applicationMap.put("assignee",assignees.stream().findAny().get());
+                }
                 Database.ingestPairRecords(applicationMap, applicationLeafFlags, "pair_applications");
                 inventorMaps.forEach(map->{
                     try {
