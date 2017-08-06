@@ -42,6 +42,7 @@ public class DataMassager {
         System.out.println("App Number,Date");
         File file = new File(outputFile);
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        writer.write("App Number,Date\n");
         AtomicInteger cnt = new AtomicInteger(0);
         while(rs.next()) {
             writer.write(rs.getString(1)+","+rs.getDate(2)+"\n");
