@@ -19,6 +19,8 @@ CREATE TABLE pair_applications (
     applicant_file_reference text
 );
 
+ALTER TABLE pair_applications ADD COLUMN assignee text;
+
 CREATE TABLE pair_application_inventors (
     first_name text,
     last_name text,
