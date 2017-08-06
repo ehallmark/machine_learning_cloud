@@ -19,13 +19,15 @@ public class DataMassager {
     public static void main(String[] args) throws Exception {
         if(args.length == 0) throw new RuntimeException("Please include assignee filename");
         getApplicationNumbersFromGrantsAndPublications(args[0]);
+        getDistinctInventorData(args[0]);
+        getDistinctCorrespondenceAddressIds((args[0]));
     }
 
-    private static final String whereFilingsQuery = "( application_number = any(?) )";
+    private static final String whereAssigneeQuery = "( upper(assignee) like upper(?) || '%' )";
 
     public static void getApplicationNumbersFromGrantsAndPublications(String assignee) throws Exception {
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select count(application_number) as count,date_part('year',filing_date) as year from pair_applications where filing_date is not null and assignee is not null and upper(assignee) like (upper(?) || '%') group by date_part('year',filing_date) order by date_part('year',filing_date)");
+        PreparedStatement ps = conn.prepareStatement("select count(application_number) as count,date_part('year',filing_date) as year from pair_applications where filing_date is not null and assignee is not null and "+whereAssigneeQuery+" group by date_part('year',filing_date) order by date_part('year',filing_date)");
         ps.setString(1,assignee);
         ps.setFetchSize(10);
         System.out.println(ps);
@@ -50,14 +52,10 @@ public class DataMassager {
         }).filter(field->field!=null).collect(Collectors.toList());
     }
 
-    public static void getDistinctInventorData(String[] args) throws Exception {
-        if(args.length == 0) throw new RuntimeException("Please include excel filename");
-        final int colIdx = 0;
-        Collection<String> assets = loadCSVColumn(new File(args[0]),colIdx);
+    public static void getDistinctInventorData(String assignee) throws Exception {
         Connection conn = Database.getConn();
-
-        PreparedStatement ps = conn.prepareStatement("select distinct (first_name,last_name,city,country) from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereFilingsQuery);
-        ps.setArray(1, conn.createArrayOf("varchar",assets.toArray()));
+        PreparedStatement ps = conn.prepareStatement("select distinct (first_name,last_name,city,country) from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where first_name is not null and last_name is not null and city is not null and country is not null and "+whereAssigneeQuery);
+        ps.setString(1, assignee);
         ps.setFetchSize(10);
         System.out.println("Starting to run query");
         ResultSet rs = ps.executeQuery();
@@ -70,14 +68,10 @@ public class DataMassager {
         rs.close();
     }
 
-    public static void getDistinctCorrespondenceAddressIds(String[] args) throws Exception {
-        if(args.length == 0) throw new RuntimeException("Please include excel filename");
-        final int colIdx = 0;
-        Collection<String> assets = loadCSVColumn(new File(args[0]),colIdx);
+    public static void getDistinctCorrespondenceAddressIds(String assignee) throws Exception {
         Connection conn = Database.getConn();
-
-        PreparedStatement ps = conn.prepareStatement("select correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereFilingsQuery);
-        ps.setArray(1, conn.createArrayOf("varchar",assets.toArray()));
+        PreparedStatement ps = conn.prepareStatement("select correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereAssigneeQuery);
+        ps.setString(1, assignee);
         ps.setFetchSize(10);
         System.out.println("Starting to run query");
         ResultSet rs = ps.executeQuery();
@@ -88,9 +82,5 @@ public class DataMassager {
         }
 
         rs.close();
-    }
-
-    private static List<String> addWildCards(Collection<String> list) {
-        return list.stream().map(item->"%"+item+"%").collect(Collectors.toList());
     }
 }
