@@ -19,7 +19,7 @@ public class DataMassager {
     public static void main(String[] args) throws Exception {
         if(args.length == 0) throw new RuntimeException("Please include assignee filename");
         getApplicationNumbersFromGrantsAndPublications(args[0]);
-        //getDistinctCorrespondenceAddressIds((args[0]));
+        getDistinctCorrespondenceAddressIds((args[0]));
         getDistinctInventorData(args[0]);
     }
 
@@ -69,7 +69,7 @@ public class DataMassager {
 
     public static void getDistinctCorrespondenceAddressIds(String assignee) throws Exception {
         Connection conn = Database.getConn();
-        PreparedStatement ps = conn.prepareStatement("select distinct correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereAssigneeQuery);
+        PreparedStatement ps = conn.prepareStatement("select count(a.application_number), date_part('year',a.filing_date) as year from pair_applications as a join pair_application_inventors as i on (a.application_number=i.application_number) where correspondence_address_id in (select distinct correspondence_address_id from pair_applications where correspondence_address_id is not null and "+whereAssigneeQuery+") group by date_part('year',filing_date) order by date_part('year', filing_date)" );
         ps.setString(1, assignee);
         ps.setFetchSize(10);
         System.out.println("Starting to run query");
