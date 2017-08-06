@@ -31,7 +31,7 @@ public class DataMassager {
         PreparedStatement ps = conn.prepareStatement("select application_number,filing_date from pair_applications where filing_date is not null and ( grant_number = any(?) or publication_number like any (?) )");
         ps.setArray(1, conn.createArrayOf("varchar",patents.toArray()));
         ps.setArray(2, conn.createArrayOf("varchar",addWildCards(publications).toArray()));
-
+        ps.setFetchSize(10);
         System.out.println("Starting to run query");
         ResultSet rs = ps.executeQuery();
 
