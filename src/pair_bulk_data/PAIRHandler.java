@@ -10,14 +10,36 @@ import seeding.Database;
 import seeding.ai_db_updater.handlers.CustomHandler;
 import tools.AssigneeTrimmer;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
 
  */
 public class PAIRHandler extends CustomHandler{
+    // functions
+    private static Function<String,Boolean> validDateFunction = (str) -> {
+        try {
+            LocalDate.parse(str, DateTimeFormatter.BASIC_ISO_DATE);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    };
+
+    private static Function<String,Boolean> validIntegerFunction = (str) -> {
+        try {
+            Integer.valueOf(str);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    };
+
     protected List<String> documentPieces = new ArrayList<>();
     protected List<Flag> applicationFlags = new ArrayList<>();
     protected List<Flag> inventorFlags = new ArrayList<>();
@@ -41,34 +63,32 @@ public class PAIRHandler extends CustomHandler{
         inventorLeafFlags.add(inventorLastName);
         inventorLeafFlags.add(inventorCity);
         inventorLeafFlags.add(inventorCountry);
-        inventorLeafFlags.add(new Flag("ApplicationNumberText","application_number","text"));
         Flag inventorFlag = new Flag("Inventor",null,null);
         inventorFlag.addChild(inventorFirstName);
         inventorFlag.addChild(inventorLastName);
         inventorFlag.addChild(inventorCity);
         inventorFlag.addChild(inventorCountry);
-        inventorFlags.addAll(inventorLeafFlags);
         inventorFlags.add(inventorFlag);
 
         // application flags
         applicationLeafFlags.add(new Flag("ApplicationNumberText","application_number","text"));
-        applicationLeafFlags.add(new Flag("FilingDate","filing_date","date"));
-        applicationLeafFlags.add(new Flag("ApplicationType","application_type","text"));
-        applicationLeafFlags.add(new Flag("PartyIdentifier","correspondence_address_id","text"));
+        applicationLeafFlags.add(new Flag("FilingDate","filing_date","date",validDateFunction));
+        applicationLeafFlags.add(new Flag("ApplicationTypeCategory","application_type","text"));
+        applicationLeafFlags.add(new Flag("PartyIdentifier","correspondence_address_id","text", (str)->!str.equalsIgnoreCase("null")));
         applicationLeafFlags.add(new Flag("GroupArtUnitNumber","group_art_unit_number","text"));
         applicationLeafFlags.add(new Flag("ApplicationConfirmationNumber","application_confirmation_number","text"));
         applicationLeafFlags.add(new Flag("BusinessEntityStatusCategory","entity_type","text"));
         applicationLeafFlags.add(new Flag("InventionTitle","invention_title","text"));
         applicationLeafFlags.add(new Flag("ApplicationStatusCategory","application_status","text"));
-        applicationLeafFlags.add(new Flag("ApplicationStatusDate","application_status_date","date"));
+        applicationLeafFlags.add(new Flag("ApplicationStatusDate","application_status_date","date",validDateFunction));
         applicationLeafFlags.add(new Flag("PatentNumber","grant_number","text"));
-        applicationLeafFlags.add(new Flag("GrantDate","grant_date","date"));
+        applicationLeafFlags.add(new Flag("GrantDate","grant_date","date",validDateFunction));
         applicationLeafFlags.add(new Flag("PublicationNumber","publication_number","text"));
-        applicationLeafFlags.add(new Flag("PublicationDate","publication_date","date"));
-        applicationLeafFlags.add(new Flag("AdjustmentTotalQuantity","term_extension","int"));
+        applicationLeafFlags.add(new Flag("PublicationDate","publication_date","date",validDateFunction));
+        applicationLeafFlags.add(new Flag("AdjustmentTotalQuantity","term_extension","int", validIntegerFunction));
         applicationLeafFlags.add(new Flag("ApplicantFileReference","applicant_file_reference","text"));
 
-        applicationFlags.addAll(applicationLeafFlags);
+        applicationFlags = applicationLeafFlags; // no nested fields
 
         // sll leaf flags
         leafFlags.addAll(applicationLeafFlags);
@@ -88,6 +108,7 @@ public class PAIRHandler extends CustomHandler{
                 Database.ingestPairRecords(applicationMap, applicationLeafFlags, "pair_applications");
                 inventorMaps.forEach(map->{
                     try {
+                        map.put("application_number",applicationNumber);
                         Database.ingestPairRecords(map, inventorLeafFlags, "pair_application_inventors");
                     } catch(Exception e) {
                         e.printStackTrace();
@@ -188,10 +209,12 @@ public class PAIRHandler extends CustomHandler{
                     if(item.isLeaf()) {
                         final String text = String.join("", documentPieces).trim();
                         shouldClear.set(true);
-                        if(inventor) {
-                            inventorMap.put(item.dbName, text);
-                        } else {
-                            applicationMap.put(item.dbName, text);
+                        if(item.validValue(text)) {
+                            if (inventor) {
+                                inventorMap.put(item.dbName, text);
+                            } else {
+                                applicationMap.put(item.dbName, text);
+                            }
                         }
                     }
                 }
@@ -212,12 +235,22 @@ public class PAIRHandler extends CustomHandler{
         AtomicBoolean flag;
         public List<Flag> children;
         public String type;
-        Flag(String localName, String dbName, String type) {
+       Function<String,Boolean> validValueFunction;
+        Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction) {
             this.dbName=dbName;
+            this.validValueFunction=validValueFunction;
             this.type=type;
             this.localName=localName;
             this.flag = new AtomicBoolean(false);
             this.children = new ArrayList<>();
+        }
+
+       Flag(String localName, String dbName, String type) {
+            this(localName,dbName,type,(str)->true);
+       }
+
+        public boolean validValue(String text) {
+            return validValueFunction.apply(text);
         }
 
         boolean get() {

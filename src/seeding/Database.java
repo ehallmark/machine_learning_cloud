@@ -131,7 +131,7 @@ public class Database {
 		resetConn();
 	}
 
-	public static void resetConn() {
+	public static synchronized void resetConn() {
 		try {
 			conn = DriverManager.getConnection(patentDBUrl);
 			conn.setAutoCommit(false);
