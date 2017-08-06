@@ -34,7 +34,7 @@ public class DataMassager {
         ResultSet rs = ps.executeQuery();
         System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
+            System.out.println(""+rs.getString(1)+","+rs.getString(2));
         }
         rs.close();
         ps.close();
@@ -61,7 +61,7 @@ public class DataMassager {
 
         System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
+            System.out.println(""+rs.getString(1)+","+rs.getString(2));
         }
         rs.close();
         ps.close();
@@ -77,7 +77,7 @@ public class DataMassager {
 
         System.out.println("Count,Year");
         while(rs.next()) {
-            System.out.println(""+rs.getInt(1)+","+rs.getDate(2));
+            System.out.println(""+rs.getString(1)+","+rs.getString(2));
         }
         rs.close();
         ps.close();
