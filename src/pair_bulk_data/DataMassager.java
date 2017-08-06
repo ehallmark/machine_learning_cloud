@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class DataMassager {
     public static void main(String[] args) throws Exception {
-        getDistinctCorrespondenceAddressIds(args);
+        getApplicationNumbersFromGrantsAndPublications(args);
     }
 
     public static void getApplicationNumbersFromGrantsAndPublications(String[] args) throws Exception {
