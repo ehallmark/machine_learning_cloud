@@ -409,6 +409,14 @@ public class Database {
 		}
 	}
 
+	public synchronized static LocalDate getPublicationDateFor(String patent, boolean isApplication) {
+		if(isApplication) {
+			return getAppToPubDateMap().get(patent);
+		} else {
+			return getPatentToPriorityDateMap().get(patent);
+		}
+	}
+
 	public synchronized static Collection<String> getRelatedAssetsFor(String patent, boolean isApplication) {
 		Collection<String> collection = new HashSet<>();
 		if(isApplication) {
@@ -454,6 +462,13 @@ public class Database {
 
 	public synchronized static void preLoad() {
 		getAssigneePrefixTrie();
+		getAssigneeToPatentsMap();
+		getAssigneeToAppsMap();
+		getAppToPubDateMap();
+		getPatentToPubDateMap();
+		getAppToPriorityDateMap();
+		getPatentToPriorityDateMap();
+		getExpirationDateMap();
 	}
 
 	public synchronized static void initializeDatabase() {

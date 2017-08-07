@@ -30,10 +30,12 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public void applyAttributes(Collection<? extends AbstractAttribute> attributes)  {
+    public void ensureAttributesArePresent(Collection<? extends AbstractAttribute> attributes)  {
         for(Item item : itemList) {
             for(AbstractAttribute attribute : attributes) {
-                item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
+                if(item.getData(attribute.getName())==null) {
+                    item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
+                }
             }
         }
     }
@@ -43,32 +45,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Arrays.stream(itemList).collect(Collectors.groupingBy((item)->(item).getData(field))).entrySet()
                 .stream().map(e->new Pair<>(e.getKey().toString(),new PortfolioList(e.getValue().toArray(new Item[e.getValue().size()]))));
     }
-
-    public PortfolioList merge(PortfolioList other, String comparator, int limit) {
-        PortfolioList newList;
-        if(other.itemList.length==0) {
-            newList = this;
-        } else if (itemList.length==0) {
-            newList = other;
-        } else {
-            Map<String, Item> scoreMap = new HashMap<>();
-            for(Item item : this.getItemList()) {
-                scoreMap.put(item.getName(), item);
-            }
-            for(Item item : other.getItemList()) {
-                if (scoreMap.containsKey(item.getName())) {
-                    Item dup = scoreMap.get(item.getName());
-                    dup.setSimilarity((dup.getSimilarity() + item.getSimilarity()) / 2d);
-                } else {
-                    scoreMap.put(item.getName(), item);
-                }
-            }
-            newList = new PortfolioList(scoreMap.values().toArray(new Item[scoreMap.size()]));
-        }
-        newList.init(comparator, limit);
-        return newList;
-    }
-
 
     public void init(String sortedBy, int limit) {
         if(!init) {

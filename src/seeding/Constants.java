@@ -28,6 +28,9 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE_MAXIMUM_FILTER = "portfolioSizeMaximumFilter";
 	public static final String EXPIRATION_FILTER = "expirationFilter";
 	public static final String EXPIRED = "expired";
+	public static final String LINE_CHART = "lineChart[]";
+	public static final String PRIORITY_DATE = "priorityDate";
+	public static final String PUBLICATION_DATE = "filingDate";
 	public static final String CPC_CODES = "cpcCodes";
 	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String LABEL_FILTER = "labelFilter";

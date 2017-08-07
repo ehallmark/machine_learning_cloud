@@ -37,9 +37,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.OutputStream;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -151,6 +149,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Entity Type Filter", Constants.ENTITY_TYPE_FILTER_ARRAY);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
             humanAttrToJavaAttrMap.put("CPC Code Filter", Constants.CPC_CODE_FILTER);
+            humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
+            humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
+            humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
 
             // inverted version to get human readables back
             javaAttrToHumanAttrMap = new HashMap<>();
@@ -180,6 +181,7 @@ public class SimilarPatentServer {
     public static void loadChartModels() {
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
+        chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart());
     }
 
 
@@ -263,6 +265,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
             attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
+            attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
+            attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
@@ -347,6 +351,20 @@ public class SimilarPatentServer {
         }
     }
 
+    private static boolean softAuthorize(Request req, Response res) {
+        try {
+            if (req.session().attribute("authorized") == null || ! (Boolean) req.session().attribute("authorized")) {
+                res.redirect("/");
+                return false;
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+            res.redirect("/");
+            return false;
+        }
+        return true;
+    }
+
     public static void server() {
         port(8080);
         // HOST ASSETS
@@ -391,8 +409,11 @@ public class SimilarPatentServer {
         });
 
         get(HOME_URL, (req, res) -> {
-            authorize(req);
-            return templateWrapper(res, candidateSetModelsForm());
+            if(softAuthorize(req,res)) {
+                return templateWrapper(res, candidateSetModelsForm());
+            } else {
+                return null;
+            }
         });
 
         post(REPORT_URL, (req, res) -> {
@@ -482,6 +503,7 @@ public class SimilarPatentServer {
             similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
+            portfolioList.ensureAttributesArePresent(itemAttributes.stream().map(attr->attributesMap.get(attr)).filter(attr->attr!=null).collect(Collectors.toList()));
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
             if(comparator.equals(Constants.OVERALL_SCORE)) {
@@ -550,10 +572,15 @@ public class SimilarPatentServer {
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
-                + "         for(var i = 0; i<charts.length; i++) {  "
-                + "             var chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
-                + "             chart.redraw();             "
-                + "         }                        "
+                + "         for(var i = 0; i<charts.length; i++) { "
+                + "             var chart = null;"
+                + "             if($('#chart-'+i.toString()).hasClass('line')) {"
+                + "                 chart = Highcahrts.stockChart('chart-'+i.toString(), charts[i]);"
+                + "             } else { "
+                + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
+                + "             } "
+                + "             chart.redraw();   "
+                + "         }      "
                 + "      } catch (err) {"
                 + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
                 + "      }            "
@@ -606,7 +633,7 @@ public class SimilarPatentServer {
                 head().with(
                         script().withSrc("https://code.jquery.com/jquery-3.1.0.js"),
                         script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
-                        script().withSrc("http://code.highcharts.com/highcharts.js"),
+                        script().withSrc("http://code.highcharts.com/stock/highstock.js"),
                         script().withSrc("http://code.highcharts.com/modules/exporting.js"),
                         script().withSrc("http://code.highcharts.com/modules/offline-exporting.js"),
                         script().withSrc("/js/customEvents.js"),
