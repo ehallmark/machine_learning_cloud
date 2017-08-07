@@ -45,6 +45,7 @@ public class PAIRHandler extends NestedHandler {
             public void save() {
                 String appNumber = dataMap.get(applicationNumber);
                 if (appNumber != null) {
+                    System.out.println("App: "+appNumber);
                     Set<String> assignees = new HashSet<>();
                     if (dataMap.containsKey(grantNumber)) {
                         assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber)));

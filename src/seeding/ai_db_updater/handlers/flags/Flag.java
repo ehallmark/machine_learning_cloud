@@ -95,5 +95,5 @@ public class Flag {
     public void reset() {
         flag.set(false);
     }
-    
+
 }
