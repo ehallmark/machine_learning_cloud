@@ -5,12 +5,14 @@ package seeding.ai_db_updater.handlers;
  */
 
 import org.xml.sax.SAXException;
+import pair_bulk_data.FileIterator;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.PatentGrantIterator;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +53,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
-        PatentGrantIterator iterator = Constants.DEFAULT_PATENT_GRANT_ITERATOR;
+        FileIterator iterator = new FileIterator(new File("data/patents"),(a,b)->true);
         iterator.applyHandlers(new USPTOHandler());
     }
 }

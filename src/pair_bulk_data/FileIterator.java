@@ -19,23 +19,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FileIterator implements WebIterator {
     public AtomicInteger cnt;
     private File fileFolder;
-    public FileIterator(File fileFolder) {
+    private FilenameFilter filter;
+    public FileIterator(File fileFolder, FilenameFilter filter) {
         this.cnt=new AtomicInteger(0);
         this.fileFolder=fileFolder;
+        this.filter=filter;
     }
 
     @Override
     public void applyHandlers(CustomHandler... handlers) {
-        Arrays.stream(fileFolder.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                try {
-                    return Integer.valueOf(name.substring(0,4)) >= 2005;
-                } catch(Exception e) {
-                    return false;
-                }
-            }
-        })).parallel().forEach(xmlFile->{
+        Arrays.stream(fileFolder.listFiles(filter)).parallel().forEach(xmlFile->{
             try {
                 if (xmlFile.exists()) {
                     System.out.print("Parsing "+xmlFile.getName()+" now...");
