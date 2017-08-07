@@ -45,8 +45,6 @@ public class FileIterator implements WebIterator {
                             saxParser.parse(bis, handler.newInstance());
                         } catch (Exception e) {
                             e.printStackTrace();
-                        } finally {
-                            handler.save();
                         }
                     }
                 }
@@ -60,7 +58,10 @@ public class FileIterator implements WebIterator {
 
         });
 
-
+        // save
+        for(CustomHandler handler : handlers) {
+            handler.save();
+        }
     }
 
 }

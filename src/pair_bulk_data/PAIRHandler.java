@@ -140,7 +140,6 @@ public class PAIRHandler extends NestedHandler {
         super.endElement(uri,localName,qName);
         // check for end document
         if(localName.equals("PatentData")) {
-            reset();
             if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                 System.out.println("Commit: "+cnt.get());
                 save();

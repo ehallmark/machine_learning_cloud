@@ -53,7 +53,6 @@ public class InventionTitleSAXHandler extends CustomHandler{
         return new InventionTitleSAXHandler(patentToInventionTitleMap,patentToOriginalAssigneeMap);
     }
 
-    @Override
     public void reset() {
         update();
         isInventionTitle=false;

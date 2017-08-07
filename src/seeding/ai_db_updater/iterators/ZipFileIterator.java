@@ -72,8 +72,6 @@ public class ZipFileIterator implements WebIterator {
                                     saxParser.parse(new ByteArrayInputStream(data), handler);
                                 } catch (Exception e) {
                                     e.printStackTrace();
-                                } finally {
-                                    handler.reset();
                                 }
                             }
                             lines.clear();
@@ -93,8 +91,6 @@ public class ZipFileIterator implements WebIterator {
                                 saxParser.parse(new ByteArrayInputStream(data), handler);
                             } catch (Exception e) {
                                 e.printStackTrace();
-                            } finally {
-                                handler.reset();
                             }
                         }
                         lines.clear();
@@ -114,7 +110,10 @@ public class ZipFileIterator implements WebIterator {
 
         });
 
-
+        // save
+        for(CustomHandler handler : handlers) {
+            handler.save();
+        }
     }
 
 }

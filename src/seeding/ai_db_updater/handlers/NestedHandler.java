@@ -47,12 +47,6 @@ public abstract class NestedHandler extends CustomHandler{
         }
     }
 
-    @Override
-    public void reset() {
-        endFlags.forEach(flag->{
-            resetAllDescendants(flag);
-        });
-    }
 
     protected void resetAllDescendants(Flag root) {
         root.reset();
