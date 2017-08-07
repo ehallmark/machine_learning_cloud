@@ -33,7 +33,7 @@ public class USPTOHandler extends NestedHandler {
         grantNumber.setEndFlag(documentFlag);
 
         Flag publicationReference = Flag.parentFlag("publication-reference", documentFlag);
-        publicationReference.compareFunction = (flag) -> (str) -> {
+        grantNumber.compareFunction = (flag) -> (str) -> {
             boolean equals = flag.localName.equals(str);
             if(equals) System.out.println("Found equals!");
             return equals;
