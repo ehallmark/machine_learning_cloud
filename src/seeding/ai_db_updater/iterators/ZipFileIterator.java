@@ -7,8 +7,10 @@ import seeding.ai_db_updater.tools.ZipHelper;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -53,26 +55,49 @@ public class ZipFileIterator implements WebIterator {
                     // security vulnerable
                     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
                     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+                    SAXParser saxParser = factory.newSAXParser();
 
-                    for (CustomHandler handler : handlers) {
-                        SAXParser saxParser = factory.newSAXParser();
-                        try(BufferedReader reader = new BufferedReader(new FileReader(xmlFile))) {
-                            InputStream stream = new InputStream() {
-                                Iterator<Integer> lineStream = reader.lines().filter(line -> !line.startsWith("<") && !line.startsWith("<?xml") && !line.startsWith("<!")).flatMapToInt(line -> line.chars()).iterator();
-
-                                @Override
-                                public int read() throws IOException {
-                                    if (lineStream.hasNext()) return lineStream.next();
-                                    else return 0;
+                    FileReader fr = new FileReader(xmlFile);
+                    BufferedReader br = new BufferedReader(fr);
+                    String line;
+                    boolean firstLine = true;
+                    List<String> lines = new ArrayList<>();
+                    while ((line = br.readLine()) != null) {
+                        if (line.contains("<?xml") && !firstLine) {
+                            // stop
+                            byte[] data = String.join("", lines).getBytes();
+                            for (CustomHandler _handler : handlers) {
+                                CustomHandler handler = _handler.newInstance();
+                                try {
+                                    saxParser.parse(new ByteArrayInputStream(data), handler);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                } finally {
+                                    handler.reset();
                                 }
-                            };
-                            saxParser.parse(stream, handler.newInstance());
-
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        } finally {
-                            handler.save();
+                            }
+                            lines.clear();
                         }
+                        if (firstLine) firstLine = false;
+                        lines.add(line);
+                    }
+                    br.close();
+                    fr.close();
+
+                    // get the last one
+                    if (!lines.isEmpty()) {
+                        byte[] data = String.join("", lines).getBytes();
+                        for (CustomHandler _handler : handlers) {
+                            CustomHandler handler = _handler.newInstance();
+                            try {
+                                saxParser.parse(new ByteArrayInputStream(data), handler);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            } finally {
+                                handler.reset();
+                            }
+                        }
+                        lines.clear();
                     }
                 }
 
