@@ -104,7 +104,7 @@ public class PAIRHandler extends NestedHandler {
             public void save() {
                 String appNum = applicationEndFlag.getDataMap().get(applicationNumber);
                 if(appNum!=null) {
-                    getDataMap().put(applicationNumber, appNum);
+                    dataMap.put(applicationNumber, appNum);
                     try {
                         Database.ingestPairRecords(dataMap, "pair_application_inventors");
                     } catch(Exception e) {
