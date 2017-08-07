@@ -58,15 +58,15 @@ public class Flag {
         return new Flag(localName,dbName,"text",(str)->true,endFlag);
     }
 
-    public static Flag dateFlag(@NonNull String localName,@NonNull String dbName,@NonNull EndFlag endFlag) {
+    public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
         return new Flag(localName,dbName,"date",validDateFunction,endFlag);
     }
 
-    public static Flag integerFlag(@NonNull String localName,@NonNull String dbName,@NonNull EndFlag endFlag) {
+    public static Flag integerFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
         return new Flag(localName,dbName,"int",validIntegerFunction,endFlag);
     }
 
-    public static Flag customFlag(@NonNull String localName,@NonNull String dbName,@NonNull String type, @NonNull Function<String,Boolean> validationFunction, @NonNull EndFlag endFlag) {
+    public static Flag customFlag(@NonNull String localName,@NonNull String dbName,@NonNull String type, @NonNull Function<String,Boolean> validationFunction, EndFlag endFlag) {
         return new Flag(localName,dbName,type,validationFunction,endFlag);
     }
 
