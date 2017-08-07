@@ -16,7 +16,7 @@ import java.util.function.Function;
  */
 public class Flag {
     // functions
-    private static final Function<Flag,Function<String,Boolean>> defaultCompareFunction = (flag) -> (str) ->{
+    protected static final Function<Flag,Function<String,Boolean>> defaultCompareFunction = (flag) -> (str) ->{
         return flag.localName.equals(str);
     };
 

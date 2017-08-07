@@ -14,7 +14,7 @@ public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
 
     public EndFlag(String localName) {
-        super(localName,null,null,null,null);
+        super(localName,null,null,null,defaultCompareFunction,null);
     }
 
     public abstract void save();
