@@ -36,7 +36,7 @@ public class PAIRHandler extends NestedHandler {
     protected void initAndAddFlagsAndEndFlags() {
 
         // application flags
-        Flag assigneeFlag = Flag.simpleFlag("assignee",null,null);
+        Flag assigneeFlag = Flag.simpleFlag(null,"assignee",null);
         Flag grantNumber = Flag.customFlag("PatentNumber","grant_number","text",(str)->!str.equals("0"),null);
         Flag publicationNumber = Flag.customFlag("PublicationNumber","publication_number","text",(str)->!str.equals("0"),null);
         Flag applicationNumber = Flag.simpleFlag("ApplicationNumberText","application_number",null);
@@ -68,6 +68,7 @@ public class PAIRHandler extends NestedHandler {
                         e.printStackTrace();
                     }
                 }
+                dataMap = new HashMap<>();
             }
         };
 
@@ -104,7 +105,7 @@ public class PAIRHandler extends NestedHandler {
                 if(appNum!=null) {
                     getDataMap().put(applicationNumber, appNum);
                     try {
-                        Database.ingestPairRecords(getDataMap(), "pair_application_inventors");
+                        Database.ingestPairRecords(dataMap, "pair_application_inventors");
                     } catch(Exception e) {
                         e.printStackTrace();
                     }

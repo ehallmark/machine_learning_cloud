@@ -50,14 +50,11 @@ public abstract class NestedHandler extends CustomHandler{
     @Override
     public void reset() {
         endFlags.forEach(flag->{
-            flag.save();
-        });
-        endFlags.forEach(flag->{
             resetAllDescendants(flag);
         });
     }
 
-    private void resetAllDescendants(Flag root) {
+    protected void resetAllDescendants(Flag root) {
         root.reset();
         if(!root.isLeaf()) {
             root.children.forEach(child->resetAllDescendants(child));
@@ -92,6 +89,7 @@ public abstract class NestedHandler extends CustomHandler{
         // check end flags
         endFlags.forEach(endFlag->{
             endFlag.save();
+            resetAllDescendants(endFlag);
         });
 
         // check if we need to clear documents
