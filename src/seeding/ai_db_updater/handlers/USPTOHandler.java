@@ -41,7 +41,7 @@ public class USPTOHandler extends NestedHandler {
 
         documentFlag.addChild(publicationReference);
         publicationReference.addChild(grantNumber);
-        documentFlag.addChild(Flag.simpleFlag("abstract","abstract",documentFlag));
+        //documentFlag.addChild(Flag.simpleFlag("abstract","abstract",documentFlag));
 
     }
 
