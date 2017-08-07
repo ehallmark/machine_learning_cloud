@@ -21,4 +21,5 @@ public abstract class EndFlag extends Flag {
     public Map<Flag,String> getDataMap() {
         return dataMap;
     }
+
 }

@@ -95,17 +95,5 @@ public class Flag {
     public void reset() {
         flag.set(false);
     }
-
-    @Override
-    public boolean equals(Object other) {
-        if(other instanceof Flag) {
-            return ((Flag) other).dbName.equals(dbName);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return dbName.hashCode();
-    }
+    
 }
