@@ -37,10 +37,6 @@ public class LineChart extends AbstractChart {
             );
         }
     }
-
-    private static String capitalize(String str) {
-        if(str==null||str.isEmpty()) return str;
-        return str.substring(0,1).toUpperCase()+str.substring(1);
-    }
+    
 }
 
