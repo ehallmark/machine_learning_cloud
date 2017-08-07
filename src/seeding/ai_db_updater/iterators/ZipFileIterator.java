@@ -50,7 +50,7 @@ public class ZipFileIterator implements WebIterator {
                 if (xmlFile.exists()) {
                     System.out.println("Parsing "+xmlFile.getName()+" now...");
                     SAXParserFactory factory = SAXParserFactory.newInstance();
-                    factory.setNamespaceAware(false);
+                    factory.setNamespaceAware(true);
                     factory.setValidating(false);
                     // security vulnerable
                     factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
