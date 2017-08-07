@@ -16,6 +16,14 @@ import java.util.function.Function;
  */
 public class Flag {
     // functions
+    private static final Function<Flag,Function<String,Boolean>> defaultCompareFunction = (flag) -> (str) ->{
+        return flag.localName.equals(str);
+    };
+
+    public static final Function<Flag,Function<String,Boolean>> endsWithCompareFunction = (flag) -> (str) ->{
+        return flag.localName.endsWith(str);
+    };
+
     private static Function<String,Boolean> validDateFunction = (str) -> {
         try {
             LocalDate.parse(str, DateTimeFormatter.ISO_DATE);
@@ -40,10 +48,12 @@ public class Flag {
     public final AtomicBoolean flag;
     public final List<Flag> children;
     public final String type;
-    public Function<String,Boolean> validValueFunction;
+    @Setter
+    public Function<Flag,Function<String,Boolean>> compareFunction;
+    public final Function<String,Boolean> validValueFunction;
     @Getter @Setter
     public EndFlag endFlag;
-    protected Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction, EndFlag endFlag) {
+    protected Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction, Function<Flag,Function<String,Boolean>> compareFunction, EndFlag endFlag) {
         this.dbName=dbName;
         this.validValueFunction=validValueFunction;
         this.type=type;
@@ -51,23 +61,35 @@ public class Flag {
         this.flag = new AtomicBoolean(false);
         this.children = new ArrayList<>();
         this.endFlag=endFlag;
+        this.compareFunction=compareFunction;
     }
 
+    public static Flag fakeFlag(@NonNull String dbName) {
+        return new Flag(null,dbName,null,null,null,null);
+    }
 
-    public static Flag simpleFlag(String localName, String dbName, EndFlag endFlag) {
-        return new Flag(localName,dbName,"text",(str)->true,endFlag);
+    public static Flag parentFlag(@NonNull String localName, EndFlag endFlag) {
+        return new Flag(localName,null,null,null,defaultCompareFunction,endFlag);
+    }
+
+    public static Flag simpleFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
+        return new Flag(localName,dbName,"text",(str)->true,defaultCompareFunction,endFlag);
     }
 
     public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
-        return new Flag(localName,dbName,"date",validDateFunction,endFlag);
+        return new Flag(localName,dbName,"date",validDateFunction,defaultCompareFunction,endFlag);
     }
 
     public static Flag integerFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
-        return new Flag(localName,dbName,"int",validIntegerFunction,endFlag);
+        return new Flag(localName,dbName,"int",validIntegerFunction,defaultCompareFunction,endFlag);
     }
 
     public static Flag customFlag(@NonNull String localName,@NonNull String dbName,@NonNull String type, @NonNull Function<String,Boolean> validationFunction, EndFlag endFlag) {
-        return new Flag(localName,dbName,type,validationFunction,endFlag);
+        return new Flag(localName,dbName,type,validationFunction,defaultCompareFunction,endFlag);
+    }
+
+    public boolean compareTag(String tag) {
+        return compareFunction.apply(this).apply(tag);
     }
 
     public boolean validValue(String text) {

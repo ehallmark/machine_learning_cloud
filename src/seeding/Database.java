@@ -320,9 +320,8 @@ public class Database {
 		for(int i = 0; i < entries.size(); i++) {
 			ps.setString(i+1, entries.get(i).getValue());
 		}
-		System.out.println(ps);
-//		ps.executeUpdate();
-//		ps.close();
+		ps.executeUpdate();
+		ps.close();
 	}
 
 	public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {

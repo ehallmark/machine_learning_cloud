@@ -28,15 +28,11 @@ public class PAIRHandler extends NestedHandler {
     protected static AtomicInteger cnt = new AtomicInteger(0);
     protected int batchSize = 10000;
 
-    public PAIRHandler() {
-
-    }
-
     @Override
     protected void initAndAddFlagsAndEndFlags() {
 
         // application flags
-        Flag assigneeFlag = Flag.simpleFlag(null,"assignee",null);
+        Flag assigneeFlag = Flag.fakeFlag("assignee");
         Flag grantNumber = Flag.customFlag("PatentNumber","grant_number","text",(str)->!str.equals("0"),null);
         Flag publicationNumber = Flag.customFlag("PublicationNumber","publication_number","text",(str)->!str.equals("0"),null);
         Flag applicationNumber = Flag.simpleFlag("ApplicationNumberText","application_number",null);
@@ -45,7 +41,6 @@ public class PAIRHandler extends NestedHandler {
             public void save() {
                 String appNumber = dataMap.get(applicationNumber);
                 if (appNumber != null) {
-                    System.out.println("App: "+appNumber);
                     Set<String> assignees = new HashSet<>();
                     if (dataMap.containsKey(grantNumber)) {
                         assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber)));
