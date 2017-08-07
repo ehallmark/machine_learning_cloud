@@ -1,4 +1,4 @@
-package pair_bulk_data;
+package seeding.ai_db_updater.iterators;
 
 import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.iterators.WebIterator;

@@ -4,19 +4,14 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
-import org.xml.sax.SAXException;
-import pair_bulk_data.FileIterator;
-import seeding.Constants;
-import seeding.Database;
+import seeding.ai_db_updater.iterators.FileIterator;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import seeding.ai_db_updater.iterators.PatentGrantIterator;
+import seeding.ai_db_updater.iterators.WebIterator;
+import seeding.ai_db_updater.iterators.ZipFileIterator;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
 
@@ -53,7 +48,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
-        FileIterator iterator = new FileIterator(new File("data/patents"),(a,b)->true);
+        WebIterator iterator = new ZipFileIterator(new File("data/patents"), "temp_dir_test",(a, b)->true);
         iterator.applyHandlers(new USPTOHandler());
     }
 }
