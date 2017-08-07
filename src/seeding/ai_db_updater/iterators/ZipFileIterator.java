@@ -48,7 +48,7 @@ public class ZipFileIterator implements WebIterator {
 
                 File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) {
-                    System.out.print("Parsing "+xmlFile.getName()+" now...");
+                    System.out.println("Parsing "+xmlFile.getName()+" now...");
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     factory.setNamespaceAware(false);
                     factory.setValidating(false);
@@ -105,7 +105,6 @@ public class ZipFileIterator implements WebIterator {
                 // cleanup
                 File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) xmlFile.delete();
-                System.out.println();
             }
 
         });

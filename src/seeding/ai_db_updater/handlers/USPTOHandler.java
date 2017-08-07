@@ -24,7 +24,9 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
-                System.out.println(dataMap.get(grantNumber));
+                dataMap.forEach((flag,val)->{
+                    System.out.println(flag.dbName+": "+val);
+                });
                 dataMap = new HashMap<>();
             }
         };
@@ -35,6 +37,8 @@ public class USPTOHandler extends NestedHandler {
         Flag publicationReference = Flag.parentFlag("publication-reference", documentFlag);
         documentFlag.addChild(publicationReference);
         publicationReference.addChild(grantNumber);
+        documentFlag.addChild(Flag.simpleFlag("abstract","abstract",documentFlag));
+
     }
 
     @Override
