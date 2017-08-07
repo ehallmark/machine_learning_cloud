@@ -58,7 +58,7 @@ public class ZipFileIterator implements WebIterator {
                         SAXParser saxParser = factory.newSAXParser();
                         try(BufferedReader reader = new BufferedReader(new FileReader(xmlFile))) {
                             InputStream stream = new InputStream() {
-                                Iterator<Integer> lineStream = reader.lines().filter(line -> line.contains("<?")).flatMapToInt(line -> line.chars()).iterator();
+                                Iterator<Integer> lineStream = reader.lines().filter(line -> !line.contains("<?")).flatMapToInt(line -> line.chars()).iterator();
 
                                 @Override
                                 public int read() throws IOException {
