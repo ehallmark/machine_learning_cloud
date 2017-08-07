@@ -8,7 +8,10 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 
 /**
@@ -53,8 +56,18 @@ public class ZipFileIterator implements WebIterator {
 
                     for (CustomHandler handler : handlers) {
                         SAXParser saxParser = factory.newSAXParser();
-                        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
-                            saxParser.parse(bis, handler.newInstance());
+                        try(BufferedReader reader = new BufferedReader(new FileReader(xmlFile))) {
+                            InputStream stream = new InputStream() {
+                                Iterator<Integer> lineStream = reader.lines().filter(line -> line.contains("<?")).flatMapToInt(line -> line.chars()).iterator();
+
+                                @Override
+                                public int read() throws IOException {
+                                    if (lineStream.hasNext()) return lineStream.next();
+                                    else return 0;
+                                }
+                            };
+                            saxParser.parse(stream, handler.newInstance());
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         } finally {
@@ -67,7 +80,6 @@ public class ZipFileIterator implements WebIterator {
 
             } catch (Exception e) {
                 e.printStackTrace();
-
             } finally {
                 // cleanup
                 File xmlFile = new File(destinationFilename);
