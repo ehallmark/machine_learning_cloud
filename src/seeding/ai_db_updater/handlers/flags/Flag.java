@@ -54,7 +54,7 @@ public class Flag {
     }
 
 
-    public static Flag simpleFlag(@NonNull String localName, String dbName, EndFlag endFlag) {
+    public static Flag simpleFlag(String localName, String dbName, EndFlag endFlag) {
         return new Flag(localName,dbName,"text",(str)->true,endFlag);
     }
 
