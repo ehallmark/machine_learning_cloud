@@ -575,7 +575,7 @@ public class SimilarPatentServer {
                 + "         for(var i = 0; i<charts.length; i++) { "
                 + "             var chart = null;"
                 + "             if($('#chart-'+i.toString()).hasClass('line')) {"
-                + "                 chart = Highcahrts.stockChart('chart-'+i.toString(), charts[i]);"
+                + "                 chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);"
                 + "             } else { "
                 + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
                 + "             } "

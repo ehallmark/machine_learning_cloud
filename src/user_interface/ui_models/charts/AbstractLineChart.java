@@ -35,7 +35,7 @@ public class AbstractLineChart implements ChartAttribute {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.EXPIRATION_DATE,Constants.PRIORITY_DATE))
+                SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.PUBLICATION_DATE,Constants.EXPIRATION_DATE,Constants.PRIORITY_DATE))
         );
     }
 
