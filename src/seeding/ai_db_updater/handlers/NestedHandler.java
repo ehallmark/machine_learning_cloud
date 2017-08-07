@@ -87,9 +87,11 @@ public abstract class NestedHandler extends CustomHandler{
         });
 
         // check end flags
-        endFlags.forEach(endFlag->{
-            endFlag.save();
-            resetAllDescendants(endFlag);
+        endFlags.forEach(flag->{
+            if(flag.localName.equals(localName)) {
+                flag.save();
+                resetAllDescendants(flag);
+            }
         });
 
         // check if we need to clear documents
@@ -99,17 +101,17 @@ public abstract class NestedHandler extends CustomHandler{
     }
 
 
-    private void endHelper(List<Flag> list, String localName, AtomicBoolean shouldClear) {
-        if(!list.isEmpty()) {
-            list.forEach(item->{
-                endHelper(item.children,localName,shouldClear);
-                if(item.localName.equals(localName)) {
-                    item.reset();
-                    if(item.isLeaf()) {
+    private void endHelper(List<Flag> flags, String localName, AtomicBoolean shouldClear) {
+        if(!flags.isEmpty()) {
+            flags.forEach(flag->{
+                endHelper(flag.children,localName,shouldClear);
+                if(flag.localName.equals(localName)) {
+                    flag.reset();
+                    if(flag.isLeaf()) {
                         final String text = String.join("", documentPieces).trim();
                         shouldClear.set(true);
-                        if(item.validValue(text)) {
-                            item.getEndFlag().getDataMap().put(item,text);
+                        if(flag.validValue(text)) {
+                            flag.getEndFlag().getDataMap().put(flag,text);
                         }
                     }
                 }
