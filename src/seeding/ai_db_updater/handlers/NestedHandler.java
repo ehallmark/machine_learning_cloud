@@ -98,15 +98,17 @@ public abstract class NestedHandler extends CustomHandler{
     private void endHelper(List<Flag> flags, String localName, AtomicBoolean shouldClear) {
         if(!flags.isEmpty()) {
             flags.forEach(flag->{
-                endHelper(flag.children,localName,shouldClear);
-                if(flag.compareTag(localName)) {
-                    flag.reset();
-                    if(flag.isLeaf()) {
-                        final String text = String.join("", documentPieces).trim();
-                        System.out.println("FOUND PATENT: "+text);
-                        shouldClear.set(true);
-                        if(flag.validValue(text)) {
-                            flag.getEndFlag().getDataMap().put(flag,text);
+                if(flag.get()) {
+                    endHelper(flag.children, localName, shouldClear);
+                    if (flag.compareTag(localName)) {
+                        flag.reset();
+                        if (flag.isLeaf()) {
+                            final String text = String.join("", documentPieces).trim();
+                            System.out.println("FOUND PATENT: " + text);
+                            shouldClear.set(true);
+                            if (flag.validValue(text)) {
+                                flag.getEndFlag().getDataMap().put(flag, text);
+                            }
                         }
                     }
                 }

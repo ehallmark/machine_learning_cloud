@@ -68,8 +68,8 @@ public class Flag {
         return new Flag(null,dbName,null,null,null,null);
     }
 
-    public static Flag parentFlag(@NonNull String localName, EndFlag endFlag) {
-        return new Flag(localName,null,null,null,defaultCompareFunction,endFlag);
+    public static Flag parentFlag(@NonNull String localName) {
+        return new Flag(localName,null,null,null,defaultCompareFunction,null);
     }
 
     public static Flag simpleFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
