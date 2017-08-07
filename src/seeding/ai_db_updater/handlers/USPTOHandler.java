@@ -19,12 +19,20 @@ import java.util.HashMap;
 public class USPTOHandler extends NestedHandler {
     @Override
     protected void initAndAddFlagsAndEndFlags() {
+        boolean debug = true;
+
         // application flags
         Flag grantNumber = Flag.simpleFlag("doc-number","pub_doc_number", null);
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
-                System.out.println(dataMap.get(grantNumber));
+                if(debug) {
+                    dataMap.forEach((flag, val) -> {
+                        String cleanVal = val.substring(Math.min(val.length(), 20));
+                        if (val.length() > 20) cleanVal += "...";
+                        System.out.println(flag.dbName + ": " + cleanVal);
+                    });
+                }
                 dataMap = new HashMap<>();
             }
         };
@@ -41,7 +49,7 @@ public class USPTOHandler extends NestedHandler {
 
         documentFlag.addChild(publicationReference);
         publicationReference.addChild(grantNumber);
-        //documentFlag.addChild(Flag.simpleFlag("abstract","abstract",documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("abstract","abstract",documentFlag));
 
     }
 

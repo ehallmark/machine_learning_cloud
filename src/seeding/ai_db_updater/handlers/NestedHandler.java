@@ -104,7 +104,6 @@ public abstract class NestedHandler extends CustomHandler{
                         flag.reset();
                         if (flag.isLeaf()) {
                             final String text = String.join("", documentPieces).trim();
-                            System.out.println("FOUND PATENT: " + text);
                             shouldClear.set(true);
                             if (flag.validValue(text)) {
                                 flag.getEndFlag().getDataMap().put(flag, text);
