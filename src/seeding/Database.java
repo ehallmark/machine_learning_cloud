@@ -6,9 +6,11 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 
 import lombok.Getter;
 import net.lingala.zip4j.core.ZipFile;
+import org.deeplearning4j.berkeley.Pair;
 import pair_bulk_data.PAIRHandler;
 import seeding.ai_db_updater.handlers.LineHandler;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
+import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import tools.AssigneeTrimmer;
@@ -305,24 +307,22 @@ public class Database {
 	}
 
 
-	public static void ingestPairRecords(Map<String,String> data, List<PAIRHandler.Flag> leafFlags, String tableName) throws SQLException {
-		List<PAIRHandler.Flag> availableFlags = leafFlags.stream().filter(flag->data.containsKey(flag.dbName)).collect(Collectors.toList());
-		List<String> types = availableFlags.stream().map(flag->flag.type).collect(Collectors.toList());
-		List<String> keys = availableFlags.stream().map(flag->flag.dbName).collect(Collectors.toList());
-
-		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",keys)+") VALUES ";
+	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {
+		List<Map.Entry<Flag,String>> entries = data.entrySet().stream().collect(Collectors.toList());
+		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",entries.stream().map(e->e.getKey().dbName).collect(Collectors.toList()))+") VALUES ";
 		String querySuffix = " ON CONFLICT DO NOTHING";
 		StringJoiner joiner = new StringJoiner(",","(",")");
-		for(int i = 0; i < keys.size(); i++) {
-			joiner.add("?::"+types.get(i));
+		for(int i = 0; i < entries.size(); i++) {
+			joiner.add("?::"+entries.get(i).getKey().type);
 		}
 		String query = queryPrefix + joiner.toString() + querySuffix;
 		PreparedStatement ps = conn.prepareStatement(query);
-		for(int i = 0; i < keys.size(); i++) {
-			ps.setString(i+1, data.get(keys.get(i)));
+		for(int i = 0; i < entries.size(); i++) {
+			ps.setString(i+1, data.get(entries.get(i).getValue()));
 		}
-		ps.executeUpdate();
-		ps.close();
+		System.out.println(ps);
+//		ps.executeUpdate();
+//		ps.close();
 	}
 
 	public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {
