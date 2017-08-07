@@ -26,9 +26,7 @@ public class LineChart extends AbstractChart {
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data);
         options.setxAxis(new Axis().setTitle(new Title(xLabel)));
-        options.setyAxis(new Axis().setTitle(new Title(capitalize(yLabel))));
-        options.getSingleXAxis().setLabels(new Labels().setFormat("{value}"+xAxisSuffix)).setType(AxisType.DATETIME);
-        options.getSingleYAxis().setLabels(new Labels().setFormat("{value}"+yAxisSuffix)).setType(AxisType.LINEAR);
+        options.setyAxis(new Axis().setTitle(new Title("Count")));
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
