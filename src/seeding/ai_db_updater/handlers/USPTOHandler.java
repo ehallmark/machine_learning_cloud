@@ -13,6 +13,8 @@ import seeding.ai_db_updater.iterators.ZipFileIterator;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -32,13 +34,15 @@ public class USPTOHandler extends NestedHandler {
         this.topLevelTag=topLevelTag;
     }
 
-    private static void debug(EndFlag endFlag, boolean debug) {
+    private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
             endFlag.getTransform().forEach((flag, val) -> {
-                String str = val.toString();
-                String cleanVal = str.substring(0,Math.min(str.length(), 20));
-                if (str.length() > 20) cleanVal += "...";
-                System.out.println(flag.dbName + ": " + cleanVal);
+                if(onlyAttrs.contains(flag.dbName)) {
+                    String str = val.toString();
+                    String cleanVal = str.substring(0, Math.min(str.length(), 20));
+                    if (str.length() > 20) cleanVal += "...";
+                    System.out.println(flag.dbName + ": " + cleanVal);
+                }
             });
         }
     }
@@ -50,7 +54,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
-                //debug(this,debug);
+                debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
             }
         };
         endFlags.add(documentFlag);
