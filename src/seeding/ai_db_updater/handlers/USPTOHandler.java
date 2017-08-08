@@ -61,7 +61,7 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
 
-        Flag citedDoc = Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler);
+        Flag citedDocName = Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler);
         EndFlag citationFlag = new EndFlag("us-citation") {
             @Override
             public void save() {
@@ -69,8 +69,9 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         endFlags.add(citationFlag);
-        citedDoc.setEndFlag(citationFlag);
+        citedDocName.setEndFlag(citationFlag);
         Flag patCit = Flag.parentFlag("patcit");
+        patCit.addChild(citedDocName);
         patCit.addChild(Flag.simpleFlag("country",Constants.COUNTRY,citationFlag));
         patCit.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,citationFlag));
         patCit.addChild(Flag.dateFlag("date",Constants.CITED_DATE,citationFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
