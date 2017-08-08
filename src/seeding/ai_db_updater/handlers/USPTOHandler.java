@@ -43,7 +43,7 @@ public class USPTOHandler extends NestedHandler {
 
         Flag publicationReference = Flag.parentFlag("publication-reference");
         documentFlag.addChild(publicationReference);
-        publicationReference.addChild(Flag.simpleFlag("doc-number",Constants.NAME, null).withTransformationFunction(Flag.unknownDocumentHandler));
+        publicationReference.addChild(Flag.simpleFlag("doc-number",Constants.NAME, documentFlag).withTransformationFunction(Flag.unknownDocumentHandler));
         publicationReference.addChild(Flag.dateFlag("date",Constants.PUBLICATION_DATE,documentFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         publicationReference.addChild(Flag.simpleFlag("country",Constants.COUNTRY,documentFlag));
         publicationReference.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,documentFlag));
@@ -65,7 +65,7 @@ public class USPTOHandler extends NestedHandler {
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(citationFlag);
         Flag patCit = Flag.parentFlag("patcit");
-        patCit.addChild(Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler));
+        patCit.addChild(Flag.simpleFlag("doc-number",Constants.NAME,citationFlag).withTransformationFunction(Flag.unknownDocumentHandler));
         patCit.addChild(Flag.simpleFlag("country",Constants.COUNTRY,citationFlag));
         patCit.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,citationFlag));
         patCit.addChild(Flag.dateFlag("date",Constants.CITED_DATE,citationFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
