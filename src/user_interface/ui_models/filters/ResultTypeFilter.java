@@ -31,6 +31,6 @@ public class ResultTypeFilter extends AbstractIncludeFilter {
 
     @Override
     public String getPrerequisite() {
-        return "doc_type";
+        return Constants.DOC_TYPE;
     }
 }

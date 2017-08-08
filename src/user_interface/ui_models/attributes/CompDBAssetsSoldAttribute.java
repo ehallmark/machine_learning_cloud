@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 1/27/2017.
  */
-public class CompDBAssetsSoldAttribute implements AbstractAttribute<Integer> {
+public class CompDBAssetsSoldAttribute extends AbstractAttribute<Integer> {
     private static Map<String,Integer> MODEL;
 
     @Override
@@ -44,4 +44,8 @@ public class CompDBAssetsSoldAttribute implements AbstractAttribute<Integer> {
         return assigneeToAssetsSoldCountMap;
     }
 
+    @Override
+    public String getType() {
+        return "integer";
+    }
 }

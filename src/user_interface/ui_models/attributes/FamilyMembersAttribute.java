@@ -12,14 +12,15 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class FamilyMembersAttribute implements AbstractAttribute<String> {
+public class FamilyMembersAttribute extends AbstractAttribute<String[]> {
     private static RelatedAssetsGraph graph = RelatedAssetsGraph.get();
 
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
-        if(portfolio.isEmpty()) return "";
+    public String[] attributesFor(Collection<String> portfolio, int limit) {
+        if(portfolio.isEmpty()) return new String[]{};
         String patent = portfolio.stream().findAny().get();
-        return graph.relativesOf(patent);
+        Collection<String> relatives = graph.relatives(patent);
+        return relatives.toArray(new String[relatives.size()]);
     }
 
     @Override
@@ -30,5 +31,10 @@ public class FamilyMembersAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "keyword";
     }
 }

@@ -35,5 +35,8 @@ public abstract class EndFlag extends Flag {
         dataMap = new HashMap<>();
     }
 
-
+    @Override
+    public EndFlag getEndFlag() {
+        return this;
+    }
 }

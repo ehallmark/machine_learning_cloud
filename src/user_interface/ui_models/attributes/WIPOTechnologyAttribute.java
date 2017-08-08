@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class WIPOTechnologyAttribute implements AbstractAttribute<String> {
+public class WIPOTechnologyAttribute extends AbstractAttribute<String> {
     public static Map<String,String> definitionMap;
     public static Map<String,String> wipoMap;
 
@@ -41,5 +41,10 @@ public class WIPOTechnologyAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "keyword";
     }
 }

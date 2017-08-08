@@ -23,31 +23,31 @@ public class ValueMapNormalizer {
         this.type=type;
     }
 
-    public Map<String,Double> normalizeAndMergeModels(Collection<Map<String,Double>> maps) {
-        Map<String,Double> merged = new HashMap<>();
+    public Map<String,Number> normalizeAndMergeModels(Collection<Map<String,Number>> maps) {
+        Map<String,Number> merged = new HashMap<>();
         maps.forEach(map->{
-            if(!type.equals(DistributionType.None)) {
+            if(type!=null&&!type.equals(DistributionType.None)) {
                 normalizeToRange(map);
             }
             map.forEach((k,v)->{
                 if(merged.containsKey(k)) {
-                    merged.put(k,merged.get(k)+v);
+                    merged.put(k,merged.get(k).doubleValue() + v.doubleValue());
                 } else {
-                    merged.put(k,v);
+                    merged.put(k,v.doubleValue());
                 }
             });
         });
         if(maps.size()>1) {
             merged.keySet().forEach(key -> {
-                merged.put(key, merged.get(key) / maps.size());
+                merged.put(key, merged.get(key).doubleValue() / maps.size());
             });
         }
         return merged;
     }
 
-    private void normalizeToRange(Map<String,Double> model) {
+    private void normalizeToRange(Map<String,Number> model) {
         List<String> keys = new ArrayList<>(model.keySet());
-        List<Double> values = new ArrayList<>(keys.size());
+        List<Number> values = new ArrayList<>(keys.size());
         for(String key : keys) {
             values.add(model.get(key));
         }

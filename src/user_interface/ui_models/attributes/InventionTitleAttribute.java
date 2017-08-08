@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class InventionTitleAttribute implements AbstractAttribute<String> {
+public class InventionTitleAttribute extends AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
@@ -28,5 +28,10 @@ public class InventionTitleAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "text";
     }
 }

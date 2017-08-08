@@ -21,10 +21,6 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 public class IncludeLabelFilter extends AbstractIncludeFilter {
     public IncludeLabelFilter() {}
 
-    public IncludeLabelFilter(Collection<String> labels) {
-        this.labels=labels;
-    }
-
     @Override
     public Tag getOptionsTag() {
         return div().with(

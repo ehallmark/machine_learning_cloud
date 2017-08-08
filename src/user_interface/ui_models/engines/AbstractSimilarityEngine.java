@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public abstract class AbstractSimilarityEngine implements AbstractAttribute {
+public abstract class AbstractSimilarityEngine extends AbstractAttribute {
     @Setter
     protected AbstractSimilarityModel similarityModel;
     protected Collection<String> inputs;
@@ -75,5 +75,10 @@ public abstract class AbstractSimilarityEngine implements AbstractAttribute {
     @Override
     public Object attributesFor(Collection portfolio, int limit) {
         return null;
+    }
+
+    @Override
+    public String getType() {
+        throw new UnsupportedOperationException("getType unsupported on similarity engines");
     }
 }

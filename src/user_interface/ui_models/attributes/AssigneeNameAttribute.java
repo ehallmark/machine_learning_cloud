@@ -12,7 +12,11 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssigneeNameAttribute implements AbstractAttribute<String[]> {
+public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
+    @Override
+    public String getType() {
+        return "text";
+    }
 
     @Override
     public String[] attributesFor(Collection<String> portfolio, int limit) {

@@ -26,7 +26,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 5/16/2017.
  */
-public class GatherSVMClassifier implements ClassificationAttr {
+public class GatherSVMClassifier extends ClassificationAttr {
     private static svm_model CPC_MODEL;
     private static svm_model PARAGRAPH_MODEL;
     private static List<String> ORDERED_TECHNOLOGIES;

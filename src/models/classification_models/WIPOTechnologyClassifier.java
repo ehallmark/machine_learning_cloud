@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class WIPOTechnologyClassifier implements ClassificationAttr {
+public class WIPOTechnologyClassifier extends ClassificationAttr {
     private static WIPOTechnologyAttribute attribute = new WIPOTechnologyAttribute();
 
     @Override

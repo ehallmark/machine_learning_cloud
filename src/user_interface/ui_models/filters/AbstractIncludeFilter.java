@@ -34,4 +34,5 @@ public abstract class AbstractIncludeFilter extends AbstractFilter {
     public boolean shouldKeepItem(Item item) {
         return labels==null||labels.isEmpty()||labels.contains(item.getData(getPrerequisite()));
     }
+
 }

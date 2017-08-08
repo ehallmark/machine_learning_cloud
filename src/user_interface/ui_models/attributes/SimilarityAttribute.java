@@ -10,7 +10,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class SimilarityAttribute implements AbstractAttribute<String> {
+public class SimilarityAttribute extends AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
@@ -25,5 +25,15 @@ public class SimilarityAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "double";
+    }
+
+    @Override
+    public boolean supportedByElasticSearch() {
+        return false;
     }
 }

@@ -3,7 +3,11 @@ package elasticsearch;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
+import seeding.Database;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,20 +16,15 @@ import java.util.Map;
  */
 public class CreatePatentDBIndex {
     public static void main(String[] args) {
+        SimilarPatentServer.initialize(false,true);
         TransportClient client = MyClient.get();
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Map<String,Object> mapping = new HashMap<>();
-        mapping.put("doc_type",typeMap("keyword"));
-        mapping.put("pub_doc_number",typeMap("keyword"));
-        mapping.put("tokens",typeMap("text"));
-        mapping.put(Constants.ASSIGNEE,typeMap("keyword"));
-        mapping.put(Constants.WIPO_TECHNOLOGY,typeMap("keyword"));
-        mapping.put(Constants.NAME,typeMap("keyword"));
-        mapping.put(Constants.CPC_TECHNOLOGY,typeMap("keyword"));
-        mapping.put(Constants.CPC_CODES,typeMap("keyword"));
-        mapping.put(Constants.TECHNOLOGY,typeMap("keyword"));
+        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes();
+        attributes.forEach(attribute->{
+            mapping.put(attribute.getName(),typeMap(attribute.getType()));
+        });
         mapping.put("vector_obj",typeMap("object"));
-        mapping.put(Constants.ASSIGNEE_ENTITY_TYPE,typeMap("keyword"));
         Map<String,Object> properties = new HashMap<>();
         properties.put("properties",mapping);
         builder.addMapping(DataIngester.TYPE_NAME, properties);

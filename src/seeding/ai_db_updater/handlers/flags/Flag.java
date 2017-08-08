@@ -131,6 +131,9 @@ public class Flag {
         return new Flag(localName,dbName,"text",(str)->true,defaultCompareFunction,defaultTransformationFunction,endFlag);
     }
 
+    public static Flag booleanFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
+        return new Flag(localName,dbName,"boolean",(str)->str.equals("true")||str.equals("false"),defaultCompareFunction,defaultTransformationFunction,endFlag);
+    }
     public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
         return dateFlag(localName,dbName,endFlag,DateTimeFormatter.ISO_DATE);
     }

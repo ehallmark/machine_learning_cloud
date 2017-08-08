@@ -7,6 +7,7 @@ package seeding.ai_db_updater.handlers;
 import elasticsearch.DataIngester;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
+import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.portfolios.PortfolioList;
 
@@ -33,7 +34,7 @@ public class ElasticSearchHandler extends SAXFullTextHandler {
             synchronized (dataMap) {
                 Map<String,Object> itemData = new HashMap<>(3);
                 itemData.put("pub_doc_number",pubDocNumber);
-                itemData.put("doc_type",type.toString());
+                itemData.put(Constants.DOC_TYPE,type.toString());
                 itemData.put("tokens", String.join(" ", fullDocuments));
                 dataMap.put(pubDocNumber, itemData);
                 if (dataMap.size() > 5000) {

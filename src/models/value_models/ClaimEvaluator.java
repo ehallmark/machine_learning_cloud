@@ -2,6 +2,7 @@ package models.value_models;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
+import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.AppClaimDataSAXHandler;
 import seeding.ai_db_updater.handlers.ClaimDataSAXHandler;
@@ -23,19 +24,19 @@ import java.util.stream.Collectors;
 public class ClaimEvaluator extends ValueAttr {
     static final File claimLengthModelFile = new File("independent_claim_length_value_model.jobj");
     static final File claimRatioModelFile = new File("independent_claim_ratio_value_model.jobj");
+
+    @Override
+    public String getName() {
+        return Constants.CLAIM_VALUE;
+    }
+
     private static final File[] files = new File[]{
             claimLengthModelFile,
             claimRatioModelFile
     };
 
-    public ClaimEvaluator(boolean loadData) {
-        super(ValueMapNormalizer.DistributionType.Normal,"Claim Value", loadData);
-
-    }
-
-    @Override
-    protected List<Map<String,Double>> loadModels() {
-        return Arrays.stream(files).map(file->((Map<String,Double>)Database.tryLoadObject(file))).collect(Collectors.toList());
+    public ClaimEvaluator() {
+        super(ValueMapNormalizer.DistributionType.Normal);
     }
 
     private static void runModel(){

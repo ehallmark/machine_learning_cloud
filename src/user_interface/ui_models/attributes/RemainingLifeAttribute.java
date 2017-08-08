@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class RemainingLifeAttribute implements AbstractAttribute<Integer> {
+public class RemainingLifeAttribute extends AbstractAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
@@ -29,5 +29,10 @@ public class RemainingLifeAttribute implements AbstractAttribute<Integer> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "integer";
     }
 }

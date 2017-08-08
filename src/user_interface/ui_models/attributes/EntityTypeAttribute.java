@@ -11,7 +11,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class EntityTypeAttribute implements AbstractAttribute<String> {
+public class EntityTypeAttribute extends AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
@@ -35,5 +35,10 @@ public class EntityTypeAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "keyword";
     }
 }

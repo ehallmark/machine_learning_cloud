@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class ExpiredAttribute implements AbstractAttribute<Boolean> {
+public class ExpiredAttribute extends AbstractAttribute<Boolean> {
 
     @Override
     public Boolean attributesFor(Collection<String> portfolio, int limit) {
@@ -28,5 +28,10 @@ public class ExpiredAttribute implements AbstractAttribute<Boolean> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "boolean";
     }
 }

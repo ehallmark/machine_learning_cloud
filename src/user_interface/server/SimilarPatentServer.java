@@ -94,9 +94,8 @@ public class SimilarPatentServer {
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();
 
-    static Collection<? extends AbstractAttribute> preComputedAttributes;
     @Getter
-    static Collection<String> allAttributeNames;
+    static Collection<? extends AbstractAttribute> allAttributes;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -161,6 +160,10 @@ public class SimilarPatentServer {
         }
     }
 
+    public static Collection<String> getAllAttributeNames() {
+        return allAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
+    }
+
     public static String humanAttributeFor(String attr) {
         if(javaAttrToHumanAttrMap.containsKey(attr))  {
             return javaAttrToHumanAttrMap.get(attr);
@@ -169,14 +172,15 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void initialize(boolean loadData) {
+    public static void initialize(boolean loadData, boolean onlyAttributes) {
         loadAttributes(loadData);
-        loadFilterModels();
-        loadTechTaggerModel();
-        loadChartModels();
-        loadTemplates();
-        //loadAllItemsWithAttributes();
-        loadSimilarityModels();
+        if(!onlyAttributes) {
+            loadFilterModels();
+            loadTechTaggerModel();
+            loadChartModels();
+            loadTemplates();
+            loadSimilarityModels();
+        }
     }
 
     public static void loadChartModels() {
@@ -228,9 +232,6 @@ public class SimilarPatentServer {
                 // During filters
                 similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
-                // pre computed attributes
-                preComputedAttributes = getAttributesFromPrerequisites(preFilterModelMap.values(), new HashSet<>());
-                allAttributeNames = preComputedAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -271,6 +272,8 @@ public class SimilarPatentServer {
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new TechnologySimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
+
+            allAttributes = new ArrayList<>(attributesMap.values());
         }
     }
 
@@ -281,7 +284,7 @@ public class SimilarPatentServer {
 
     public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
-        Collection<? extends AbstractAttribute> attributes = preComputedAttributes.stream().filter(attr->onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
+        Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
@@ -293,7 +296,6 @@ public class SimilarPatentServer {
                     for (int i = 0; i < data.length; i++) {
                         obj.put(String.valueOf(i), data[i]);
                     }
-                    //item.addData("vector", data);
                     item.addData("vector_obj", obj);
                 }
                 attributes.forEach(model -> {
@@ -918,7 +920,7 @@ public class SimilarPatentServer {
         if(initDatabase) Database.initializeDatabase();
 
         System.out.println("Starting to load base finder...");
-        initialize(false);
+        initialize(false,false);
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
         server();

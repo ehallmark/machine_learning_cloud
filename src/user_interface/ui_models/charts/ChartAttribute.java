@@ -10,16 +10,21 @@ import java.util.List;
 /*
  * Created by Evan on 6/17/2017.
  */
-public interface ChartAttribute extends DependentAttribute {
-    List<? extends AbstractChart> create(PortfolioList portfolioList);
+public abstract class ChartAttribute extends DependentAttribute {
+    public abstract List<? extends AbstractChart> create(PortfolioList portfolioList);
 
     @Override
-    default Object attributesFor(Collection portfolio, int limit) {
-        return "";
+    public Object attributesFor(Collection portfolio, int limit) {
+        throw new UnsupportedOperationException("AttributesFor not supported on charts.");
     }
 
     @Override
-    default String getName() {
-        return "";
+    public String getName() {
+        throw new UnsupportedOperationException("getName not defined for charts.");
+    }
+
+    @Override
+    public String getType() {
+        throw new UnsupportedOperationException("getType not defined for charts.");
     }
 }

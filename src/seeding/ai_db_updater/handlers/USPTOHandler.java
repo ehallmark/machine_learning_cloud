@@ -75,7 +75,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag citationFlag = new EndFlag("citation") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -120,7 +119,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag agentFlag = new EndFlag("agent") {
             @Override
             public void save() {
-
             }
         };
         agentFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -135,7 +133,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag assigneeFlag = new EndFlag("assignee") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -151,12 +148,10 @@ public class USPTOHandler extends NestedHandler {
         EndFlag claimFlag = new EndFlag("claim") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         endFlags.add(claimFlag);
-        Flag claim = Flag.simpleFlag("claim",Constants.CLAIM,claimFlag);
-        claimFlag.addChild(claim);
+        claimFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimFlag));
         claimFlag.addChild(Flag.integerFlag("num",Constants.CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
             try {
                 return Integer.valueOf(s);
@@ -164,6 +159,22 @@ public class USPTOHandler extends NestedHandler {
                 return null;
             }
         }));
+        claimFlag.addChild(Flag.integerFlag("claim",Constants.CLAIM_LENGTH,claimFlag).withTransformationFunction(f->s->s==null?0:s.length()));
+        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).withTransformationFunction(f->
+                s->{
+                    String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
+                    boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
+                    if(isIndependent) {
+                        String data = documentFlag.getDataMap().get(f);
+                        if (s == null) s = "";
+                        int length = s.length();
+                        if (data == null || data.isEmpty() || Integer.valueOf(data) > length) {
+                            documentFlag.getDataMap().put(f, String.valueOf(length));
+                        }
+                    }
+                    return null; // prevent default behavior
+                })
+        );
         Flag claimRefWrapper = Flag.parentFlag("claim-ref");
         claimFlag.addChild(claimRefWrapper);
         claimRefWrapper.addChild(Flag.integerFlag("idref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
@@ -172,6 +183,20 @@ public class USPTOHandler extends NestedHandler {
             } catch(Exception e) {
                 return null;
             }
+        }));
+        // means present data
+        claimFlag.addChild(Flag.booleanFlag("claim",Constants.MEANS_PRESENT,claimFlag).withTransformationFunction(f->s->{
+            String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
+            boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
+            if(isIndependent) {
+                boolean meansPresent = s!=null && s.contains(" means ");
+                String data = documentFlag.getDataMap().get(f);
+                if (data == null || data.equals("true")) {
+                    // add
+                    documentFlag.getDataMap().put(f, String.valueOf(meansPresent));
+                }
+            }
+            return null; // prevent default behavior
         }));
     }
 

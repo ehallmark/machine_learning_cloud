@@ -28,7 +28,7 @@ import static j2html.TagCreator.*;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class AbstractLineChart implements ChartAttribute {
+public class AbstractLineChart extends ChartAttribute {
     protected List<String> attributes;
     protected Collection<String> searchTypes;
     protected Integer max;

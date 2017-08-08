@@ -79,7 +79,6 @@ public class DataIngester {
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
                 itemData.put(e.getKey(), e.getValue());
             }
-            itemData.put("doc_type",type.toString());
             data.put(item.getName(),itemData);
         });
         ingestAssets(data,create);

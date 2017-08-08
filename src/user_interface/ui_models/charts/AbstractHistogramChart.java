@@ -26,7 +26,7 @@ import static j2html.TagCreator.span;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class AbstractHistogramChart implements ChartAttribute {
+public class AbstractHistogramChart extends ChartAttribute {
     protected List<String> attributes;
     protected String groupedBy;
     protected Collection<String> searchTypes;

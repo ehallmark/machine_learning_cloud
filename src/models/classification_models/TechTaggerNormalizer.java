@@ -20,7 +20,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class TechTaggerNormalizer implements ClassificationAttr {
+public class TechTaggerNormalizer extends ClassificationAttr {
     private List<Pair<ClassificationAttr,Double>> taggerPairs;
     private List<ClassificationAttr> taggers;
     private List<Double> weights;

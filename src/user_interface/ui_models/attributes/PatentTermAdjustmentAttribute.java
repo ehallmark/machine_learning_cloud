@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PatentTermAdjustmentAttribute implements AbstractAttribute<Integer> {
+public class PatentTermAdjustmentAttribute extends AbstractAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
@@ -29,5 +29,10 @@ public class PatentTermAdjustmentAttribute implements AbstractAttribute<Integer>
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "integer";
     }
 }

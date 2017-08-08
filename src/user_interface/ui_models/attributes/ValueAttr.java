@@ -2,7 +2,11 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import seeding.Constants;
+import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -14,35 +18,19 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class ValueAttr implements AbstractAttribute<Double> {
+public abstract class ValueAttr extends AbstractAttribute<Number> {
     // Instance class
-    @Getter
-    protected Map<String,Double> model;
-    @Getter
-    protected String name;
     protected ValueMapNormalizer.DistributionType distributionType;
     private static final double DEFAULT_VAL = (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
     protected double defaultVal;
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, double defaultVal, boolean loadData) {
-        this.name=modelName;
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, double defaultVal) {
         this.defaultVal=defaultVal;
         this.distributionType=distributionType;
-        if(loadData)setModel();
     }
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, String modelName, boolean loadData) {
-        this(distributionType,modelName,DEFAULT_VAL, loadData);
-    }
-
-    public void setModel() {
-        model=new ValueMapNormalizer(distributionType).normalizeAndMergeModels(loadModels());
-    }
-
-    protected abstract List<Map<String,Double>> loadModels();
-
-    public Map<String,Double> getMap() {
-        return model;
+    public ValueAttr(ValueMapNormalizer.DistributionType distributionType) {
+        this(distributionType, DEFAULT_VAL);
     }
 
     // Returns value between 1 and 5
@@ -52,9 +40,28 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
                 .collect(Collectors.averagingDouble(token->evaluate(token)));
     }
 
+    @Override
+    public Map<String,Number> getPatentDataMap() {
+        if(patentDataMap==null) {
+            patentDataMap = (Map<String,Number>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
+            if(distributionType!=null) patentDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(patentDataMap));
+        }
+        return patentDataMap;
+    }
+
+    @Override
+    public Map<String,Number> getApplicationDataMap() {
+        if(applicationDataMap==null) {
+            applicationDataMap = (Map<String,Number>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+            if(distributionType!=null) applicationDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(applicationDataMap));
+        }
+        return applicationDataMap;
+    }
+
     public double evaluate(String token) {
+        Map<String,Number> model = Database.isApplication(token) ? getApplicationDataMap() : getPatentDataMap();
         if(model.containsKey(token)) {
-            return model.get(token);
+            return model.get(token).doubleValue();
         } else {
             return defaultVal;
         }
@@ -63,5 +70,10 @@ public abstract class ValueAttr implements AbstractAttribute<Double> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "double";
     }
 }

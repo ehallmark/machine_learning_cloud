@@ -22,7 +22,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 5/1/17.
  */
-public class NaiveGatherClassifier implements ClassificationAttr, Serializable{
+public class NaiveGatherClassifier extends ClassificationAttr implements Serializable{
     private static final long serialVersionUID = 1l;
     static final File file = new File("gather_bayesian_classifier.jobj");
     private static NaiveGatherClassifier defaultClassifier;

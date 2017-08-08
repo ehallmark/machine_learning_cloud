@@ -2,7 +2,6 @@ package models.value_models;
 
 import seeding.Constants;
 import seeding.Database;
-import tools.DateHelper;
 import user_interface.ui_models.attributes.ValueAttr;
 
 import java.io.File;
@@ -15,21 +14,21 @@ import java.util.stream.Collectors;
 public class OverallEvaluator extends ValueAttr {
     private static final File mergedValueModelFile = new File("data/merged_value_model_map.jobj");
 
-    public OverallEvaluator(boolean loadData) {
-        super(null, Constants.AI_VALUE, loadData);
-        if(loadData)model=(Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
+    @Override
+    public String getName() {
+        return Constants.AI_VALUE;
     }
 
-    @Override
-    public void setModel() {
-        // do nothing
+    public OverallEvaluator(boolean loadData) {
+        super(null);
     }
 
     private static void runAndSaveOverallModel() {
         List<ValueAttr> evaluators = Arrays.asList(
-                new CitationEvaluator(true),
-                new ClaimRatioEvaluator(true),
-                new PageRankEvaluator(true)
+                new CitationEvaluator(),
+                new ClaimEvaluator(),
+                new PageRankEvaluator(),
+                new MeansPresentEvaluator()
         );
 
         List<Double> weights = Arrays.asList(10d,9d,4d);
@@ -53,8 +52,6 @@ public class OverallEvaluator extends ValueAttr {
             mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
         });
 
-        DateHelper.addScoresToAssigneesFromPatents(Database.getAssignees(), mergedModel);
-
         Database.trySaveObject(mergedModel,mergedValueModelFile);
     }
 
@@ -66,11 +63,6 @@ public class OverallEvaluator extends ValueAttr {
             score += (values.get(i).evaluate(item)) * (weights.get(i)/weightSum);
         }
         return score;
-    }
-
-    @Override
-    protected List<Map<String, Double>> loadModels() {
-        return null;
     }
 
 

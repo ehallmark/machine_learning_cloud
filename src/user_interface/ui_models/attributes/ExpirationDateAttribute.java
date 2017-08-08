@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class ExpirationDateAttribute implements AbstractAttribute<String> {
+public class ExpirationDateAttribute extends AbstractAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
@@ -28,5 +28,10 @@ public class ExpirationDateAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "date";
     }
 }

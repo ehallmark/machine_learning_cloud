@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractDistributionChart implements ChartAttribute {
+public class AbstractDistributionChart extends ChartAttribute {
     protected List<String> attributes;
     protected Collection<String> searchTypes;
 

@@ -24,7 +24,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 3/4/2017.
  */
-public class SimilarityGatherTechTagger implements ClassificationAttr {
+public class SimilarityGatherTechTagger extends ClassificationAttr {
     private List<INDArray> vectors;
     private List<String> names;
     private Map<String,INDArray> lookupTable;

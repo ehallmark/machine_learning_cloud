@@ -1,11 +1,14 @@
 package models.value_models;
 
+import seeding.Constants;
 import seeding.Database;
 import tools.DateHelper;
+import user_interface.ui_models.attributes.PublicationDateAttribute;
 import user_interface.ui_models.attributes.ValueAttr;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -14,22 +17,21 @@ import java.util.*;
 public class CitationEvaluator extends ValueAttr {
     static final File file = new File("data/citation_value_model.jobj");
 
-    public CitationEvaluator(boolean loadData) {
-        super(ValueMapNormalizer.DistributionType.Normal,"Citation Value",loadData);
+    public CitationEvaluator() {
+        super(ValueMapNormalizer.DistributionType.Normal);
     }
 
     @Override
-    protected List<Map<String,Double>> loadModels() {
-        return Arrays.asList((Map<String,Double>)Database.tryLoadObject(file));
+    public String getName() {
+        return Constants.CITATION_VALUE;
     }
 
-    private static Map<String,Double> runModel(){
+    protected static Map<String,Double> runModel(){
         System.out.println("Starting to load citation evaluator...");
         List<String> patents = new ArrayList<>(((Map<String,Set<String>>) Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"))).keySet());
-        Collection<String> assignees = Database.getAssignees();
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
-        Map<String,Set<String>> patentToCitationsMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"));
-        Map<String,LocalDate> patentToDateMap = (Map<String,LocalDate>)Database.tryLoadObject(new File("patent_to_pubdate_map_file.jobj"));
+        Map<String,Set<String>> patentToCitationsMap = Database.getPatentToCitedPatentsMap();
+        Map<String,String> patentToDateMap = new PublicationDateAttribute().getPatentDataMap();
 
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
@@ -48,7 +50,7 @@ public class CitationEvaluator extends ValueAttr {
                 score+=Math.log(1.0+patentToCitationsMap.get(patent).size());
             }
             if(patentToDateMap.containsKey(patent)) {
-                LocalDate date = patentToDateMap.get(patent);
+                LocalDate date = LocalDate.parse(patentToDateMap.get(patent), DateTimeFormatter.ISO_DATE);
                 double trend = (new Double(date.getYear())+new Double(date.getMonthValue()-1)/12.0)-beginningTrendValue;
                 score+=0.1*Math.pow(trend,2.0);
             }
@@ -85,11 +87,7 @@ public class CitationEvaluator extends ValueAttr {
             model.put(patent,totalScore);
 
         });
-        try {
-            DateHelper.addScoresToAssigneesFromPatents(assignees, model);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+
         System.out.println("Finished evaluator...");
         return model;
     }

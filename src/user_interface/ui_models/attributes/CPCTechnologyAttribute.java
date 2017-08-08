@@ -15,7 +15,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class CPCTechnologyAttribute implements AbstractAttribute<String> {
+public class CPCTechnologyAttribute extends AbstractAttribute<String> {
     public static Map<String,String> definitionMap;
 
     public CPCTechnologyAttribute() {
@@ -42,5 +42,10 @@ public class CPCTechnologyAttribute implements AbstractAttribute<String> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "keyword";
     }
 }

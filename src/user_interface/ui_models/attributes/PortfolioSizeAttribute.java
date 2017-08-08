@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class PortfolioSizeAttribute implements AbstractAttribute<Integer> {
+public class PortfolioSizeAttribute extends AbstractAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
@@ -33,5 +33,10 @@ public class PortfolioSizeAttribute implements AbstractAttribute<Integer> {
     @Override
     public Tag getOptionsTag() {
         return div();
+    }
+
+    @Override
+    public String getType() {
+        return "integer";
     }
 }

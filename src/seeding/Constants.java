@@ -11,26 +11,34 @@ import java.time.Month;
 import java.util.*;
 
 public class Constants {
-
+	public static final String PATENT_DATA_FOLDER = "patentDataFolder/";
+	public static final String APPLICATION_DATA_FOLDER = "applicationDataFolder/";
 	public static final String CLAIM_STATEMENT = "claimStatement";
 	public static final String CLAIM = "claim";
 	public static final String CLAIM_NUM = "claimNum";
 	public static final String PARENT_CLAIM_NUM = "parentClaimNum";
+	public static final String CLAIM_LENGTH = "claimLength";
+	public static final String SMALLEST_INDEPENDENT_CLAIM_LENGTH = "smallestIndClaimLength";
 	public static final String ASSIGNEE_LAST_NAME = "assigneeLastName";
 	public static final String ASSIGNEE_FIRST_NAME = "assigneeFirstName";
 	public static final String ASSIGNEE_COUNTRY = "assigneeCountry";
 	public static final String ASSIGNEE_CITY = "assigneeCity";
 	public static final String ASSIGNEE_STATE = "assigneeState";
 	public static final String ASSIGNEE_ROLE = "assigneeRole";
+	public static final String PAGE_RANK_VALUE = "pageRankValue";
 	public static final String INVENTOR_LAST_NAME = "inventorLastName";
 	public static final String INVENTOR_FIRST_NAME = "inventorFirstName";
+	public static final String MEANS_PRESENT = "meansPresent";
 	public static final String INVENTOR_COUNTRY = "inventorCountry";
 	public static final String INVENTOR_CITY = "inventorCity";
 	public static final String INVENTOR_STATE = "inventorState";
 	public static final String AGENT_LAST_NAME = "agentLastName";
+	public static final String CITATION_VALUE = "citationValue";
+	public static final String CLAIM_VALUE = "claimValue";
 	public static final String AGENT_FIRST_NAME = "agentFirstName";
 	public static final String AGENT_COUNTRY = "agentCountry";
 	public static final String AGENT_CITY = "agentCity";
+	public static final String DOC_TYPE = "docType";
 	public static final String AGENT_STATE = "agentState";
 	public static final String APPLICANT_LAST_NAME = "applicantLastName";
 	public static final String APPLICANT_FIRST_NAME = "applicantFirstName";
@@ -44,7 +52,7 @@ public class Constants {
 	public static final String FILING_COUNTRY = "filingCountry";
 	public static final String SIMILARITY = "similarity";
 	public static final String OVERALL_SCORE = "overallScore";
-	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
+	public static final String TOTAL_ASSET_COUNT = "totalAssetCount";
 	public static final String ASSIGNEES_TO_REMOVE_FILTER = "assigneesToRemoveFilter";
 	public static final String ADVANCED_KEYWORD_FILTER = "advancedKeywordFilter";
 	public static final String AI_VALUE = "aiValue";
@@ -73,10 +81,10 @@ public class Constants {
 	public static final String CPC_MODEL = "cpcModel";
 	public static final String RESULT_TYPE_FILTER = "resultTypeFilter";
 	public static final String WIPO_MODEL = "wipoModel";
-	public static final String TECHNOLOGY = "technologyValue";
+	public static final String TECHNOLOGY = "technology";
 	public static final String EXPIRATION_DATE = "expirationDate";
 	public static final String ASSIGNEE_ENTITY_TYPE = "assigneeEntityType";
-	public static final String INVENTION_TITLE = "inventionTitleValue";
+	public static final String INVENTION_TITLE = "inventionTitle";
 	public static final String NO_JAPANESE_FILTER = "noJapaneseFilter";
 	public static final String VALUE_THRESHOLD_FILTER = "valueThresholdFilter";
 	public static final String JAPANESE_ONLY_FILTER = "japaneseOnlyFilter";

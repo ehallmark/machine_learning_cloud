@@ -10,7 +10,7 @@ import java.util.Collection;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractFilter implements DependentAttribute {
+public abstract class AbstractFilter extends DependentAttribute {
     @Override
     public Object attributesFor(Collection portfolio, int limit) {
         throw new UnsupportedOperationException("Filter shouldn't use attributesFor method.");
@@ -30,4 +30,9 @@ public abstract class AbstractFilter implements DependentAttribute {
     public abstract QueryBuilder getFilterQuery();
 
     public boolean contributesToScore() { return false; }
+
+    @Override
+    public String getType() {
+        throw new UnsupportedOperationException("Filters do not have types");
+    }
 }
