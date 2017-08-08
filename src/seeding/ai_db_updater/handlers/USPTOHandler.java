@@ -23,7 +23,7 @@ public class USPTOHandler extends NestedHandler {
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = true;
         // application flags
-        Flag grantNumber = Flag.simpleFlag("doc-number",Constants.NAME, null);
+        Flag grantNumber = Flag.simpleFlag("doc-number",Constants.NAME, null).withTransformationFunction(Flag.unknownDocumentHandler);
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
