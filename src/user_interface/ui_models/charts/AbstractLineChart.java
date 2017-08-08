@@ -74,7 +74,7 @@ public class AbstractLineChart implements ChartAttribute {
 
     private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute) {
         PointSeries series = new PointSeries();
-        Map<Integer,Long> dataMap = data.stream().filter(item->item.getData(attribute)!=null).collect(Collectors.groupingBy(item->Integer.valueOf(item.getData(attribute).toString().substring(0,4)),Collectors.counting()));
+        Map<Integer,Long> dataMap = data.stream().filter(item->{Object r = item.getData(attribute); return r!=null && r.toString().length()>4;}).collect(Collectors.groupingBy(item->Integer.valueOf(item.getData(attribute).toString().substring(0,4)),Collectors.counting()));
         dataMap.entrySet().stream().sorted(Comparator.comparing(e->e.getKey())).forEach(e ->{
             series.addPoint(new Point(e.getKey(),e.getValue()));
         });
