@@ -68,10 +68,13 @@ public class Flag {
     };
 
     public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
+        str=str.replace(" ","").replace("/","");
         if(str.length()==8) {
             return str.substring(0,2)+"/"+str.substring(2);
+        } else if(str.length()==7) {
+            return "0"+str.substring(0,1)+"/"+str.substring(1);
         }
-        return null;
+        return str;
     };
 
     public final String localName;

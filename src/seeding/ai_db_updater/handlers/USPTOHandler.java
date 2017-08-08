@@ -51,6 +51,7 @@ public class USPTOHandler extends NestedHandler {
         publicationReference.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,documentFlag));
 
         Flag applicationReference = Flag.parentFlag("application-reference");
+        documentFlag.addChild(applicationReference);
         applicationReference.addChild(Flag.dateFlag("date",Constants.FILING_DATE,documentFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         applicationReference.addChild(Flag.simpleFlag("country",Constants.FILING_COUNTRY,documentFlag));
         applicationReference.addChild(Flag.simpleFlag("kind",Constants.FILING_DOC_KIND,documentFlag));
