@@ -19,6 +19,17 @@ import java.util.HashMap;
 
  */
 public class USPTOHandler extends NestedHandler {
+    private static void debug(EndFlag endFlag, boolean debug) {
+        if(debug) {
+            endFlag.getTransform().forEach((flag, val) -> {
+                String str = val.toString();
+                String cleanVal = str.substring(0,Math.min(str.length(), 20));
+                if (str.length() > 20) cleanVal += "...";
+                System.out.println(flag.dbName + ": " + cleanVal);
+            });
+        }
+    }
+
     @Override
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = true;
@@ -27,16 +38,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
-                if(debug) {
-                    getTransform().forEach((flag, val) -> {
-                        if(!flag.dbName.equals("name")&&!flag.dbName.equals("kind")) return;
-                        String str = val.toString();
-                        String cleanVal = str.substring(0,Math.min(str.length(), 20));
-                        if (str.length() > 20) cleanVal += "...";
-                        System.out.println(flag.dbName + ": " + cleanVal);
-                    });
-                }
-                dataMap = new HashMap<>();
+                debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
@@ -63,15 +65,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag citationFlag = new EndFlag("us-citation") {
             @Override
             public void save() {
-                if(debug) {
-                    getTransform().forEach((flag, val) -> {
-                        if(!flag.dbName.equals("name")&&!flag.dbName.equals("kind")) return;
-                        String str = val.toString();
-                        String cleanVal = str.substring(0,Math.min(str.length(), 20));
-                        if (str.length() > 20) cleanVal += "...";
-                        System.out.println(flag.dbName + ": " + cleanVal);
-                    });
-                }
             }
         };
         endFlags.add(citationFlag);
@@ -83,6 +76,46 @@ public class USPTOHandler extends NestedHandler {
         citationFlag.addChild(patCit);
         citationFlag.addChild(Flag.simpleFlag("category",Constants.CITATION_CATEGORY,citationFlag));
 
+
+        // parties
+        EndFlag applicantFlag = new EndFlag("applicant") {
+            @Override
+            public void save() {
+
+            }
+        };
+        applicantFlag.compareFunction = Flag.endsWithCompareFunction;
+        endFlags.add(applicantFlag);
+
+
+        EndFlag inventorFlag = new EndFlag("inventor") {
+            @Override
+            public void save() {
+
+            }
+        };
+        inventorFlag.compareFunction = Flag.endsWithCompareFunction;
+        endFlags.add(inventorFlag);
+
+
+        EndFlag agentFlag = new EndFlag("agent") {
+            @Override
+            public void save() {
+
+            }
+        };
+        agentFlag.compareFunction = Flag.endsWithCompareFunction;
+        endFlags.add(agentFlag);
+
+
+        EndFlag assigneeFlag = new EndFlag("assignee") {
+            @Override
+            public void save() {
+
+            }
+        };
+        assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
+        endFlags.add(assigneeFlag);
     }
 
     @Override

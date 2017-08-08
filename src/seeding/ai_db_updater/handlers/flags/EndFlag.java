@@ -31,6 +31,9 @@ public abstract class EndFlag extends Flag {
         return transform;
     }
 
+    public void resetDataMap() {
+        dataMap = new HashMap<>();
+    }
 
 
 }

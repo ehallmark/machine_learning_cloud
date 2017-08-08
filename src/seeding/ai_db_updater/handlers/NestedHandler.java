@@ -84,6 +84,7 @@ public abstract class NestedHandler extends CustomHandler{
         endFlags.forEach(flag->{
             if(flag.localName.equals(localName)) {
                 flag.save();
+                flag.resetDataMap();
                 resetAllDescendants(flag);
             }
         });
