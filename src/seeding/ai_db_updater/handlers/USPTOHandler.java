@@ -150,7 +150,7 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         Flag claimRefWrapper = Flag.parentFlag("claim-ref");
-        claim.addChild(claimRefWrapper);
+        claimFlag.addChild(claimRefWrapper);
         claimRefWrapper.addChild(Flag.integerFlag("idref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
             try {
                 return Integer.valueOf(s.substring(4));
