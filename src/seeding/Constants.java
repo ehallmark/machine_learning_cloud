@@ -12,11 +12,31 @@ import java.util.*;
 
 public class Constants {
 
+	public static final String ASSIGNEE_LAST_NAME = "assigneeLastName";
+	public static final String ASSIGNEE_FIRST_NAME = "assigneeFirstName";
+	public static final String ASSIGNEE_COUNTRY = "assigneeCountry";
+	public static final String ASSIGNEE_CITY = "assigneeCity";
+	public static final String ASSIGNEE_STATE = "assigneeState";
+	public static final String ASSIGNEE_ROLE = "assigneeRole";
+	public static final String INVENTOR_LAST_NAME = "inventorLastName";
+	public static final String INVENTOR_FIRST_NAME = "inventorFirstName";
+	public static final String INVENTOR_COUNTRY = "inventorCountry";
+	public static final String INVENTOR_CITY = "inventorCity";
+	public static final String INVENTOR_STATE = "inventorState";
+	public static final String AGENT_LAST_NAME = "agentLastName";
+	public static final String AGENT_FIRST_NAME = "agentFirstName";
+	public static final String AGENT_COUNTRY = "agentCountry";
+	public static final String AGENT_CITY = "agentCity";
+	public static final String AGENT_STATE = "agentState";
+	public static final String APPLICANT_LAST_NAME = "applicantLastName";
+	public static final String APPLICANT_FIRST_NAME = "applicantFirstName";
+	public static final String APPLICANT_COUNTRY = "applicantCountry";
+	public static final String APPLICANT_CITY = "applicantCity";
+	public static final String APPLICANT_STATE = "applicantState";
 	public static final String LENGTH_OF_GRANT = "lengthOfGrant";
 	public static final String ASSIGNEE = "assignee";
 	public static final String NAME = "name";
 	public static final String FILING_NAME = "filingName";
-	public static final String FILING_DOC_KIND = "filingDocKind";
 	public static final String FILING_COUNTRY = "filingCountry";
 	public static final String SIMILARITY = "similarity";
 	public static final String OVERALL_SCORE = "overallScore";

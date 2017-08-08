@@ -34,19 +34,16 @@ public class USPTOHandler extends NestedHandler {
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = true;
         // application flags
-        Flag grantNumber = Flag.simpleFlag("doc-number",Constants.NAME, null).withTransformationFunction(Flag.unknownDocumentHandler);
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
-        grantNumber.setEndFlag(documentFlag);
 
         Flag publicationReference = Flag.parentFlag("publication-reference");
         documentFlag.addChild(publicationReference);
-        publicationReference.addChild(grantNumber);
+        publicationReference.addChild(Flag.simpleFlag("doc-number",Constants.NAME, null).withTransformationFunction(Flag.unknownDocumentHandler));
         publicationReference.addChild(Flag.dateFlag("date",Constants.PUBLICATION_DATE,documentFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         publicationReference.addChild(Flag.simpleFlag("country",Constants.COUNTRY,documentFlag));
         publicationReference.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,documentFlag));
@@ -60,7 +57,6 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
 
-        Flag citedDocName = Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler);
         EndFlag citationFlag = new EndFlag("citation") {
             @Override
             public void save() {
@@ -68,25 +64,28 @@ public class USPTOHandler extends NestedHandler {
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(citationFlag);
-        citedDocName.setEndFlag(citationFlag);
         Flag patCit = Flag.parentFlag("patcit");
-        patCit.addChild(citedDocName);
+        patCit.addChild(Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler));
         patCit.addChild(Flag.simpleFlag("country",Constants.COUNTRY,citationFlag));
         patCit.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,citationFlag));
         patCit.addChild(Flag.dateFlag("date",Constants.CITED_DATE,citationFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         citationFlag.addChild(patCit);
         citationFlag.addChild(Flag.simpleFlag("category",Constants.CITATION_CATEGORY,citationFlag));
 
-
         // parties
         EndFlag applicantFlag = new EndFlag("applicant") {
             @Override
             public void save() {
-
+                debug(this,debug);
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
-        //endFlags.add(applicantFlag);
+        endFlags.add(applicantFlag);
+        applicantFlag.addChild(Flag.simpleFlag("last-name",Constants.APPLICANT_LAST_NAME, applicantFlag));
+        applicantFlag.addChild(Flag.simpleFlag("first-name",Constants.APPLICANT_FIRST_NAME, applicantFlag));
+        applicantFlag.addChild(Flag.simpleFlag("city",Constants.APPLICANT_CITY, applicantFlag));
+        applicantFlag.addChild(Flag.simpleFlag("state",Constants.APPLICANT_STATE, applicantFlag));
+        applicantFlag.addChild(Flag.simpleFlag("country",Constants.APPLICANT_COUNTRY, applicantFlag));
 
 
         EndFlag inventorFlag = new EndFlag("inventor") {
@@ -96,7 +95,12 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         inventorFlag.compareFunction = Flag.endsWithCompareFunction;
-        //endFlags.add(inventorFlag);
+        endFlags.add(inventorFlag);
+        inventorFlag.addChild(Flag.simpleFlag("last-name",Constants.INVENTOR_LAST_NAME, inventorFlag));
+        inventorFlag.addChild(Flag.simpleFlag("first-name",Constants.INVENTOR_FIRST_NAME, inventorFlag));
+        inventorFlag.addChild(Flag.simpleFlag("city",Constants.INVENTOR_CITY, inventorFlag));
+        inventorFlag.addChild(Flag.simpleFlag("state",Constants.INVENTOR_STATE, inventorFlag));
+        inventorFlag.addChild(Flag.simpleFlag("country",Constants.INVENTOR_COUNTRY, inventorFlag));
 
 
         EndFlag agentFlag = new EndFlag("agent") {
@@ -106,7 +110,12 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         agentFlag.compareFunction = Flag.endsWithCompareFunction;
-        //endFlags.add(agentFlag);
+        endFlags.add(agentFlag);
+        agentFlag.addChild(Flag.simpleFlag("last-name",Constants.AGENT_LAST_NAME, agentFlag));
+        agentFlag.addChild(Flag.simpleFlag("first-name",Constants.AGENT_FIRST_NAME, agentFlag));
+        agentFlag.addChild(Flag.simpleFlag("city",Constants.AGENT_CITY, agentFlag));
+        agentFlag.addChild(Flag.simpleFlag("state",Constants.AGENT_STATE, agentFlag));
+        agentFlag.addChild(Flag.simpleFlag("country",Constants.AGENT_COUNTRY, agentFlag));
 
 
         EndFlag assigneeFlag = new EndFlag("assignee") {
@@ -116,7 +125,14 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
-        //endFlags.add(assigneeFlag);
+        endFlags.add(assigneeFlag);
+        assigneeFlag.addChild(Flag.simpleFlag("last-name",Constants.ASSIGNEE_LAST_NAME, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("first-name",Constants.ASSIGNEE_FIRST_NAME, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("city",Constants.ASSIGNEE_CITY, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("state",Constants.ASSIGNEE_STATE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("country",Constants.ASSIGNEE_COUNTRY, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
+        assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
     }
 
     @Override

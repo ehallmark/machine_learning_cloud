@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import seeding.Constants;
+import tools.AssigneeTrimmer;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +45,8 @@ public class Flag {
             return false;
         }
     };
+
+    public static final Function<Flag,Function<String,?>> assigneeTransformationFunction = (flag) -> (str) -> AssigneeTrimmer.standardizedAssignee(str);
 
     public static final Function<Flag,Function<String,?>> defaultTransformationFunction = (flag)->(str) -> str;
 
