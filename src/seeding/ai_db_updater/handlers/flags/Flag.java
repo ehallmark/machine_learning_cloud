@@ -69,8 +69,11 @@ public class Flag {
     };
 
     public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
-        if(str.length()==8)
-    }
+        if(str.length()==8) {
+            return str.substring(0,2)+"/"+str.substring(2);
+        }
+        return null;
+    };
 
     public final String localName;
     public final String dbName;
