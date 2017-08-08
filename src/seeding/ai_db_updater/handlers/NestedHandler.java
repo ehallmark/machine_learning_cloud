@@ -121,7 +121,8 @@ public abstract class NestedHandler extends CustomHandler{
                         if (flag.isLeaf()) {
                             final String text = String.join("", documentPieces).trim();
                             shouldClear.set(true);
-                            if (flag.validValue(flag.apply(text).toString())) {
+                            Object value = flag.apply(text);
+                            if (value != null && flag.validValue(value.toString())) {
                                 flag.getEndFlag().getDataMap().put(flag, text);
                             }
                         }
