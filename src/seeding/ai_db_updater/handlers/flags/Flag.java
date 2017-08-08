@@ -84,6 +84,7 @@ public class Flag {
     public final String dbName;
     public final AtomicBoolean flag;
     public final List<Flag> children;
+    boolean isAttributeFlag = false;
     public Function<Flag,Function<String,?>> transformationFunction;
     public final String type;
     @Setter
@@ -107,6 +108,11 @@ public class Flag {
     public void setEndFlag(EndFlag endFlag) {
         if(endFlag!=null&&dbName!=null)endFlag.flagMap.put(dbName,this);
         this.endFlag=endFlag;
+    }
+
+    public Flag isAttributesFlag(boolean isAttributeFlag) {
+        this.isAttributeFlag=isAttributeFlag;
+        return this;
     }
 
     public static Flag fakeFlag(@NonNull String dbName) {
@@ -180,6 +186,10 @@ public class Flag {
 
     public Object apply(String text) {
         return transformationFunction.apply(this).apply(text);
+    }
+
+    public boolean isAttributeFlag() {
+        return isAttributeFlag;
     }
 
 }

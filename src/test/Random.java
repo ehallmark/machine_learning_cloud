@@ -8,6 +8,6 @@ import java.time.format.DateTimeFormatter;
  */
 public class Random {
     public static void main(String[] args) {
-        System.out.println(LocalDate.parse("19421100", DateTimeFormatter.BASIC_ISO_DATE).toString());
+        System.out.println(Integer.parseInt("0005"));
     }
 }

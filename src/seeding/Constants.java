@@ -12,6 +12,10 @@ import java.util.*;
 
 public class Constants {
 
+	public static final String CLAIM_STATEMENT = "claimStatement";
+	public static final String CLAIM = "claim";
+	public static final String CLAIM_NUM = "claimNum";
+	public static final String PARENT_CLAIM_NUM = "parentClaimNum";
 	public static final String ASSIGNEE_LAST_NAME = "assigneeLastName";
 	public static final String ASSIGNEE_FIRST_NAME = "assigneeFirstName";
 	public static final String ASSIGNEE_COUNTRY = "assigneeCountry";

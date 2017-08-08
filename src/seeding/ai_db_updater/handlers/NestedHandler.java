@@ -58,16 +58,23 @@ public abstract class NestedHandler extends CustomHandler{
     public void startElement(String uri,String localName,String qName,
         Attributes attributes)throws SAXException{
         endFlags.forEach(flag->{
-            startHelper(Arrays.asList(flag),localName);
+            startHelper(Arrays.asList(flag),localName, attributes);
         });
     }
 
-    private void startHelper(List<Flag> list, String localName) {
+    private void startHelper(List<Flag> list, String localName, Attributes attributes) {
         if(!list.isEmpty()) {
-            list.forEach(item->{
-                item.setTrueIfEqual(localName);
-                if(item.get()) {
-                    startHelper(item.children, localName);
+            list.forEach(flag->{
+                if(flag.isAttributeFlag()) {
+                    final String text = attributes.getValue(flag.localName);
+                    if (flag.validValue(flag.apply(text).toString())) {
+                        flag.getEndFlag().getDataMap().put(flag, text);
+                    }
+                } else {
+                    flag.setTrueIfEqual(localName);
+                    if (flag.get()) {
+                        startHelper(flag.children, localName, attributes);
+                    }
                 }
             });
         }

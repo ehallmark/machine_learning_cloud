@@ -56,6 +56,7 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("abstract", Constants.ABSTRACT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
 
         EndFlag citationFlag = new EndFlag("citation") {
             @Override
@@ -119,7 +120,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag assigneeFlag = new EndFlag("assignee") {
             @Override
             public void save() {
-                debug(this,debug);
+
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -131,6 +132,30 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.simpleFlag("country",Constants.ASSIGNEE_COUNTRY, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+
+        EndFlag claimFlag = new EndFlag("claim") {
+            @Override
+            public void save() {
+                debug(this,true);
+            }
+        };
+        endFlags.add(claimFlag);
+        Flag claim = Flag.simpleFlag("claim",Constants.CLAIM,claimFlag);
+        claimFlag.addChild(claim);
+        claimFlag.addChild(Flag.integerFlag("num",Constants.CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
+            try {
+                return Integer.valueOf(s);
+            } catch(Exception nfe) {
+                return null;
+            }
+        }));
+        claim.addChild(Flag.integerFlag("claim-ref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
+            try {
+                return Integer.valueOf(s.substring(4));
+            } catch(Exception e) {
+                return null;
+            }
+        }));
     }
 
     @Override
