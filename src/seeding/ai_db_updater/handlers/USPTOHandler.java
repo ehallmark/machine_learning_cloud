@@ -38,7 +38,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
@@ -65,6 +64,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag citationFlag = new EndFlag("us-citation") {
             @Override
             public void save() {
+                debug(this,debug);
             }
         };
         endFlags.add(citationFlag);
