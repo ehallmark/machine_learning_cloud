@@ -38,6 +38,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag("us-patent-grant") {
             @Override
             public void save() {
+                debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
@@ -62,12 +63,13 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
 
         Flag citedDocName = Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler);
-        EndFlag citationFlag = new EndFlag("us-citation") {
+        EndFlag citationFlag = new EndFlag("citation") {
             @Override
             public void save() {
                 debug(this,debug);
             }
         };
+        citationFlag.compareFunction = Flag.endsWithCompareFunction;
         endFlags.add(citationFlag);
         citedDocName.setEndFlag(citationFlag);
         Flag patCit = Flag.parentFlag("patcit");
