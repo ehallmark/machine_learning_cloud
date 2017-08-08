@@ -85,7 +85,7 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(applicantFlag);
+        //endFlags.add(applicantFlag);
 
 
         EndFlag inventorFlag = new EndFlag("inventor") {
@@ -95,7 +95,7 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         inventorFlag.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(inventorFlag);
+        //endFlags.add(inventorFlag);
 
 
         EndFlag agentFlag = new EndFlag("agent") {
@@ -105,7 +105,7 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         agentFlag.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(agentFlag);
+        //endFlags.add(agentFlag);
 
 
         EndFlag assigneeFlag = new EndFlag("assignee") {
@@ -115,7 +115,7 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
-        endFlags.add(assigneeFlag);
+        //endFlags.add(assigneeFlag);
     }
 
     @Override
