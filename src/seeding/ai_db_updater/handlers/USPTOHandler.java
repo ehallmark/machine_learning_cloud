@@ -171,7 +171,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
-        WebIterator iterator = new ZipFileIterator(new File("data/patents"), "temp_dir_test",(a, b)->true);
+        WebIterator iterator = new ZipFileIterator(new File("data/applications"), "temp_dir_test",(a, b)->true);
         iterator.applyHandlers(new USPTOHandler());
     }
 }
