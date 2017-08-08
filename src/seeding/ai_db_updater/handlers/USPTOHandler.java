@@ -76,7 +76,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag applicantFlag = new EndFlag("applicant") {
             @Override
             public void save() {
-                debug(this,debug);
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -91,7 +90,6 @@ public class USPTOHandler extends NestedHandler {
         EndFlag inventorFlag = new EndFlag("inventor") {
             @Override
             public void save() {
-
             }
         };
         inventorFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -121,7 +119,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag assigneeFlag = new EndFlag("assignee") {
             @Override
             public void save() {
-
+                debug(this,debug);
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
