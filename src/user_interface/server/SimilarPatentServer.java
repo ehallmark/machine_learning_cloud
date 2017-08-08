@@ -61,6 +61,8 @@ public class SimilarPatentServer {
     public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
     public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
+    public static final String LINE_CHART_MAX = "lineChartMax";
+    public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
     public static final String CPC_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "cpcTechnologiesToFilter[]";
@@ -129,7 +131,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Remove Assets", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
-            humanAttrToJavaAttrMap.put("Assignees",PortfolioList.Type.assignees.toString());
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
@@ -189,7 +190,6 @@ public class SimilarPatentServer {
         if(templates.isEmpty()) {
             templates.add(new PortfolioAssessment());
             templates.add(new SimilarAssetSearch());
-            templates.add(new SimilarAssigneeSearch());
             templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.defaultOptions()));
         }
     }
@@ -277,7 +277,6 @@ public class SimilarPatentServer {
     public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes, boolean loadVectors) {
         handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,loadVectors,false);
         handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,loadVectors,false);
-        handleItemsList(new ArrayList<>(Database.getAssignees()), lookupTable, batchSize, PortfolioList.Type.assignees, onlyAttributes,loadVectors,true);
     }
 
     public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors, boolean create) {
@@ -578,7 +577,7 @@ public class SimilarPatentServer {
                 + "         var charts = JSON.parse(data.charts);                 "
                 + "         for(var i = 0; i<charts.length; i++) { "
                 + "             var chart = null;"
-                + "             if($('#chart-'+i.toString()).hasClass('line')) {"
+                + "             if($('#chart-'+i.toString()).hasClass('stock')) {"
                 + "                 chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);"
                 + "             } else { "
                 + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
@@ -875,10 +874,10 @@ public class SimilarPatentServer {
             return defaultVal;
         }
     }
-    public static int extractInt(Request req, String param, int defaultVal) {
+    public static Integer extractInt(Request req, String param, Integer defaultVal) {
         return extractInt(req.queryMap(),param, defaultVal);
     }
-    static int extractInt(QueryParamsMap req, String param, int defaultVal) {
+    static Integer extractInt(QueryParamsMap req, String param, Integer defaultVal) {
         try {
             return Integer.valueOf(req.value(param));
         } catch(Exception e) {

@@ -53,17 +53,11 @@ public class SimilarityEngineController {
         Collection<String> assigneesToRemove = new HashSet<>();
         for(String resultType : resultTypes) {
             PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(resultType);
-            if (!portfolioType.equals(PortfolioList.Type.assignees)) {
-                // remove any patents in the search for category
-                Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-                Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-                labelsToRemove.addAll(patents);
-                assignees.forEach(assignee -> assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
-            } else {
-                // remove any assignees
-                Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-                assignees.forEach(assignee -> labelsToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
-            }
+            // remove any patents in the search for category
+            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+            labelsToRemove.addAll(patents);
+            assignees.forEach(assignee -> assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
         }
 
         if(labelsToRemove.size()>0) {

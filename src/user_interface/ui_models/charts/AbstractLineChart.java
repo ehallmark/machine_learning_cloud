@@ -31,10 +31,19 @@ import static j2html.TagCreator.*;
 public class AbstractLineChart implements ChartAttribute {
     protected List<String> attributes;
     protected Collection<String> searchTypes;
+    protected Integer max;
+    protected Integer min;
 
     @Override
     public Tag getOptionsTag() {
         return div().with(
+                div().withClass("row").with(
+                        div().withClass("col-6").with(
+                                label("Min"),br(),input().withName(SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
+                        ), div().withClass("col-6").with(
+                                label("Max"),br(),input().withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
+                        )
+                ),
                 SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.PUBLICATION_DATE,Constants.EXPIRATION_DATE,Constants.PRIORITY_DATE))
         );
     }
@@ -47,6 +56,9 @@ public class AbstractLineChart implements ChartAttribute {
         if(searchTypes.isEmpty()) {
             searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
+
+        min = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MIN, null);
+        max = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MAX, null);
     }
 
     @Override
@@ -62,7 +74,7 @@ public class AbstractLineChart implements ChartAttribute {
             String title = humanAttr + " Timeline";
             String xAxisSuffix = "";
             String yAxisSuffix = "";
-            return new LineChart(title, collectTimelineData(Arrays.asList(portfolioList.getItemList()), attribute),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0);
+            return new LineChart(title, collectTimelineData(Arrays.asList(portfolioList.getItemList()), attribute),xAxisSuffix, yAxisSuffix, humanAttr, humanSearchType,  0, min, max);
         }).collect(Collectors.toList());
     }
 

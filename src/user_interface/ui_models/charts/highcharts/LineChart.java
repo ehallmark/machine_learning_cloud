@@ -12,10 +12,10 @@ import java.util.List;
 public class LineChart extends AbstractChart {
     @Override
     public String getType() {
-        return "timeline";
+        return "line";
     }
 
-    public LineChart(String title, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
+    public LineChart(String title, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals, Integer min, Integer max) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         options=new Options()
@@ -27,6 +27,8 @@ public class LineChart extends AbstractChart {
                 .setSeries(data);
         options.setxAxis(new Axis().setType(AxisType.LINEAR).setTitle(new Title(xLabel)));
         options.setyAxis(new Axis().setType(AxisType.LINEAR).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
+        if(min!=null) options.getSingleXAxis().setMin(min);
+        if(max!=null) options.getSingleXAxis().setMax(max);
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
