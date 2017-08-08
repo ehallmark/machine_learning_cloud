@@ -28,6 +28,10 @@ public class USPTOHandler extends NestedHandler {
         }
     }
 
+    protected USPTOHandler(String topLevelTag) {
+        this.topLevelTag=topLevelTag;
+    }
+
     private static void debug(EndFlag endFlag, boolean debug) {
         if(debug) {
             endFlag.getTransform().forEach((flag, val) -> {
@@ -173,7 +177,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        return new USPTOHandler();
+        return new USPTOHandler(topLevelTag);
     }
 
     @Override
@@ -182,7 +186,8 @@ public class USPTOHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
-        WebIterator iterator = new ZipFileIterator(new File("data/applications"), "temp_dir_test",(a, b)->true);
-        iterator.applyHandlers(new USPTOHandler());
+        boolean seedApplications = true;
+        WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
+        iterator.applyHandlers(new USPTOHandler(seedApplications));
     }
 }
