@@ -149,7 +149,9 @@ public class USPTOHandler extends NestedHandler {
                 return null;
             }
         }));
-        claim.addChild(Flag.integerFlag("claim-ref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
+        Flag claimRefWrapper = Flag.parentFlag("claim-ref");
+        claim.addChild(claimRefWrapper);
+        claimRefWrapper.addChild(Flag.integerFlag("idref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
             try {
                 return Integer.valueOf(s.substring(4));
             } catch(Exception e) {

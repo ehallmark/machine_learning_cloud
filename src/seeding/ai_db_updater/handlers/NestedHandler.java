@@ -67,7 +67,7 @@ public abstract class NestedHandler extends CustomHandler{
             list.forEach(flag->{
                 if(flag.isAttributeFlag()) {
                     final String text = attributes.getValue(flag.localName);
-                    if (flag.validValue(flag.apply(text).toString())) {
+                    if (text != null && flag.validValue(flag.apply(text).toString())) {
                         flag.getEndFlag().getDataMap().put(flag, text);
                     }
                 } else {
