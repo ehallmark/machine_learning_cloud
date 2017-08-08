@@ -21,11 +21,11 @@ import java.util.HashMap;
 public class USPTOHandler extends NestedHandler {
     protected final String topLevelTag;
     public USPTOHandler(boolean applications) {
-        if(applications) {
-            topLevelTag = "us-patent-application";
-        } else {
+        //if(applications) {
+        //    topLevelTag = "us-patent-application";
+        //} else {
             topLevelTag = "us-patent-grant";
-        }
+        //}
     }
 
     protected USPTOHandler(String topLevelTag) {
