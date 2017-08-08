@@ -50,7 +50,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
-                debug(this,debug);
+                //debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
@@ -169,6 +169,7 @@ public class USPTOHandler extends NestedHandler {
                         if (s == null) s = "";
                         int length = s.length();
                         if (data == null || data.isEmpty() || Integer.valueOf(data) > length) {
+                            System.out.println("Handling independent claim length data...");
                             documentFlag.getDataMap().put(f, String.valueOf(length));
                         }
                     }
@@ -193,6 +194,7 @@ public class USPTOHandler extends NestedHandler {
                 String data = documentFlag.getDataMap().get(f);
                 if (data == null || data.equals("true")) {
                     // add
+                    System.out.println("Handling means present data...");
                     documentFlag.getDataMap().put(f, String.valueOf(meansPresent));
                 }
             }
