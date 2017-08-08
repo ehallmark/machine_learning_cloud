@@ -169,6 +169,10 @@ public class Flag {
     }
 
     public void setTrueIfEqual(String otherName) {
+        if(localName==null) {
+            System.out.println(" ITEM WAS NULL: "+dbName);
+            System.exit(1);
+        }
         if(localName.equals(otherName)) {
             flag.set(true);
         }

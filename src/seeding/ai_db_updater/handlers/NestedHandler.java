@@ -67,10 +67,17 @@ public abstract class NestedHandler extends CustomHandler{
             list.forEach(flag->{
                 if(flag.isAttributeFlag()) {
                     final String text = attributes.getValue(flag.localName);
-                    if (text != null && flag.validValue(flag.apply(text).toString())) {
-                        flag.getEndFlag().getDataMap().put(flag, text);
+                    if (text != null) {
+                        Object value = flag.apply(text);
+                        if(value != null && flag.validValue(value.toString())) {
+                            flag.getEndFlag().getDataMap().put(flag, text);
+                        }
                     }
                 } else {
+                    if(localName==null) {
+                        System.out.println("LOCAL NAME WAS NULL!!!");
+                        System.exit(1);
+                    }
                     flag.setTrueIfEqual(localName);
                     if (flag.get()) {
                         startHelper(flag.children, localName, attributes);
