@@ -68,6 +68,10 @@ public class Flag {
         return str;
     };
 
+    public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
+        if(str.length()==8)
+    }
+
     public final String localName;
     public final String dbName;
     public final AtomicBoolean flag;

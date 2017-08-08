@@ -30,7 +30,7 @@ public class USPTOHandler extends NestedHandler {
                 if(debug) {
                     getTransform().forEach((flag, val) -> {
                         String str = val.toString();
-                        String cleanVal = str.substring(Math.min(str.length(), 20));
+                        String cleanVal = str.substring(0,Math.min(str.length(), 20));
                         if (str.length() > 20) cleanVal += "...";
                         System.out.println(flag.dbName + ": " + cleanVal);
                     });
@@ -52,20 +52,20 @@ public class USPTOHandler extends NestedHandler {
         applicationReference.addChild(Flag.dateFlag("date",Constants.FILING_DATE,documentFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         applicationReference.addChild(Flag.simpleFlag("country",Constants.FILING_COUNTRY,documentFlag));
         applicationReference.addChild(Flag.simpleFlag("kind",Constants.FILING_DOC_KIND,documentFlag));
-        applicationReference.addChild(Flag.simpleFlag("doc-number",Constants.FILING_NAME,documentFlag));
+        applicationReference.addChild(Flag.simpleFlag("doc-number",Constants.FILING_NAME,documentFlag).withTransformationFunction(Flag.filingDocumentHandler));
 
         documentFlag.addChild(Flag.simpleFlag("abstract", Constants.ABSTRACT,documentFlag));
-        documentFlag.addChild(Flag.simpleFlag("invention_title",Constants.INVENTION_TITLE,documentFlag));
+        documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
 
-        Flag citedDoc = Flag.simpleFlag("doc-number",Constants.NAME,null);
+        Flag citedDoc = Flag.simpleFlag("doc-number",Constants.NAME,null).withTransformationFunction(Flag.unknownDocumentHandler);
         EndFlag citationFlag = new EndFlag("us-citation") {
             @Override
             public void save() {
                 if(debug) {
                     getTransform().forEach((flag, val) -> {
                         String str = val.toString();
-                        String cleanVal = str.substring(Math.min(str.length(), 20));
+                        String cleanVal = str.substring(0,Math.min(str.length(), 20));
                         if (str.length() > 20) cleanVal += "...";
                         System.out.println(flag.dbName + ": " + cleanVal);
                     });
