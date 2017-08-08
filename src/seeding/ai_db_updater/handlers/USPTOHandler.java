@@ -55,9 +55,7 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(applicationReference);
         applicationReference.addChild(Flag.dateFlag("date",Constants.FILING_DATE,documentFlag, DateTimeFormatter.BASIC_ISO_DATE).withTransformationFunction(Flag.defaultISODateTransformationFunction));
         applicationReference.addChild(Flag.simpleFlag("country",Constants.FILING_COUNTRY,documentFlag));
-        applicationReference.addChild(Flag.simpleFlag("kind",Constants.FILING_DOC_KIND,documentFlag));
         applicationReference.addChild(Flag.simpleFlag("doc-number",Constants.FILING_NAME,documentFlag).withTransformationFunction(Flag.filingDocumentHandler));
-
         documentFlag.addChild(Flag.simpleFlag("abstract", Constants.ABSTRACT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
