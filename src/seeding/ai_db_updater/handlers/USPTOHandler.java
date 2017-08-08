@@ -177,7 +177,9 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        return new USPTOHandler(topLevelTag);
+        USPTOHandler handler = new USPTOHandler(topLevelTag);
+        handler.init();
+        return handler;
     }
 
     @Override
@@ -189,7 +191,6 @@ public class USPTOHandler extends NestedHandler {
         boolean seedApplications = true;
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
         NestedHandler handler = new USPTOHandler(seedApplications);
-        handler.init();
         iterator.applyHandlers(handler);
     }
 }
