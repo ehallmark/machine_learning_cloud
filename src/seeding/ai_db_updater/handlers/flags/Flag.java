@@ -49,6 +49,16 @@ public class Flag {
 
     public static final Function<Flag,Function<String,?>> defaultISODateTransformationFunction = flag->(str)->str!=null&&str.endsWith("00")?str.substring(0,str.length()-1)+"1":str;
 
+    public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
+        str=str.replace(" ","").replace("/","");
+        if(str.length()==8) {
+            return str.substring(0,2)+"/"+str.substring(2);
+        } else if(str.length()==7) {
+            return "0"+str.substring(0,1)+"/"+str.substring(1);
+        }
+        return str;
+    };
+
     public static final Function<Flag,Function<String,?>> unknownDocumentHandler = (flag) -> (str) -> {
         str = str.replace(" ","").replace("/","");
         String kind = flag.getDataForField(Constants.DOC_KIND);
@@ -57,22 +67,12 @@ public class Flag {
             if(str.startsWith("D0")) str = "D"+str.substring(2);
         } else if (kind.equals("A") && str.length()==8) {
             // filing?
-            str = str.substring(0,2)+"/"+str.substring(2);
+            return filingDocumentHandler.apply(flag).apply(str);
         } else if(kind.startsWith("B")) {
             if(str.startsWith("0")) str = str.substring(1);
         } else if(kind.startsWith("E")) {
             //reissue
             if(str.startsWith("RE0")) str = "RE" + str.substring(3);
-        }
-        return str;
-    };
-
-    public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
-        str=str.replace(" ","").replace("/","");
-        if(str.length()==8) {
-            return str.substring(0,2)+"/"+str.substring(2);
-        } else if(str.length()==7) {
-            return "0"+str.substring(0,1)+"/"+str.substring(1);
         }
         return str;
     };
