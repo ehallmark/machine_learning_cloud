@@ -25,8 +25,8 @@ public class LineChart extends AbstractChart {
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data);
-        options.setxAxis(new Axis().setTitle(new Title(xLabel)));
-        options.setyAxis(new Axis().setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
+        options.setxAxis(new Axis().setType(AxisType.LINEAR).setTitle(new Title(xLabel)));
+        options.setyAxis(new Axis().setType(AxisType.LINEAR).setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)

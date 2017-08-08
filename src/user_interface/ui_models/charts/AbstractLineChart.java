@@ -76,7 +76,7 @@ public class AbstractLineChart implements ChartAttribute {
         PointSeries series = new PointSeries();
         Map<Integer,Long> dataMap = data.stream().filter(item->item.getData(attribute)!=null).collect(Collectors.groupingBy(item->Integer.valueOf(item.getData(attribute).toString().substring(0,4)),Collectors.counting()));
         dataMap.forEach((year,count) ->{
-               series.addPoint(new Point(String.valueOf(year),count));
+            series.addPoint(new Point(year,count));
         });
         return Arrays.asList(
             series
