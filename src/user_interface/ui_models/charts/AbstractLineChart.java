@@ -74,14 +74,9 @@ public class AbstractLineChart implements ChartAttribute {
 
     private List<Series<?>> collectTimelineData(Collection<Item> data, String attribute) {
         PointSeries series = new PointSeries();
-        data.forEach(item->{
-           try {
-               LocalDate date = LocalDate.parse(item.getData(attribute).toString(), DateTimeFormatter.ISO_DATE);
-               long millis = date.atStartOfDay(ZoneId.of("America/Los_Angeles")).toEpochSecond() * 1000;
-               series.addPoint(new Point(millis,1));
-           } catch(Exception e) {
-               // don't add point
-           }
+        Map<Integer,Long> dataMap = data.stream().filter(item->item.getData(attribute)!=null).collect(Collectors.groupingBy(item->Integer.valueOf(item.getData(attribute).toString().substring(0,4)),Collectors.counting()));
+        dataMap.forEach((year,count) ->{
+               series.addPoint(new Point(String.valueOf(year),count));
         });
         return Arrays.asList(
             series

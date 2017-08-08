@@ -12,21 +12,21 @@ import java.util.List;
 public class LineChart extends AbstractChart {
     @Override
     public String getType() {
-        return "line";
+        return "timeline";
     }
 
     public LineChart(String title, List<Series<?>> data, String xAxisSuffix, String yAxisSuffix, String xLabel, String yLabel, int yDecimals) {
         String yFormatStr = "{point.y:."+yDecimals+"f}"+yAxisSuffix;
         String xFormatStr = "{point.key}"+xAxisSuffix;
         options=new Options()
-                .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.COLUMN))
+                .setChartOptions(new ChartOptions().setHeight(450).setType(SeriesType.LINE))
                 .setTitle(new Title(title))
                 .setExporting(new ExportingOptions().setEnabled(true))
                 .setTooltip(new Tooltip().setEnabled(true).setHeaderFormat(xFormatStr+"<br/>").setPointFormat("<span style=\"color:{point.color}\">\u25CF</span> <b> Count: "+yFormatStr+" "+yLabel+"</b><br/>"))
                 .setCredits(new CreditOptions().setEnabled(true).setText("GTT Group").setHref("http://www.gttgrp.com"))
                 .setSeries(data);
         options.setxAxis(new Axis().setTitle(new Title(xLabel)));
-        options.setyAxis(new Axis().setTitle(new Title("Count")));
+        options.setyAxis(new Axis().setTitle(new Title(ColumnChart.capitalize(yLabel)+" Count")));
         for(Series<?> series : options.getSeries()) {
             series.setDataLabels(new DataLabels(true)
                     .setRotation(0)
