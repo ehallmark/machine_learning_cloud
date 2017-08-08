@@ -39,14 +39,14 @@ public class PAIRHandler extends NestedHandler {
         EndFlag applicationEndFlag = new EndFlag("PatentData") {
             @Override
             public void save() {
-                String appNumber = dataMap.get(applicationNumber);
+                Object appNumber = dataMap.get(applicationNumber);
                 if (appNumber != null) {
                     Set<String> assignees = new HashSet<>();
                     if (dataMap.containsKey(grantNumber)) {
-                        assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber)));
+                        assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber).toString()));
                     }
                     if (dataMap.containsKey(publicationNumber)) {
-                        String standardizedPubNumber = dataMap.get(publicationNumber);
+                        String standardizedPubNumber = dataMap.get(publicationNumber).toString();
                         if (standardizedPubNumber.startsWith("US") && standardizedPubNumber.length() == 15) {
                             standardizedPubNumber = standardizedPubNumber.substring(2, 13);
                             assignees.addAll(Database.assigneesFor(standardizedPubNumber));

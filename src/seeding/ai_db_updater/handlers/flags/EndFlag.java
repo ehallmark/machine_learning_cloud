@@ -1,9 +1,6 @@
 package seeding.ai_db_updater.handlers.flags;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -14,12 +11,21 @@ public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
 
     public EndFlag(String localName) {
-        super(localName,null,null,null,defaultCompareFunction,null);
+        super(localName,null,null,null,defaultCompareFunction,null,null);
     }
 
     public abstract void save();
     public Map<Flag,String> getDataMap() {
         return dataMap;
+    }
+
+    public Map<Flag,Object> getTransform() {
+        Map<Flag,Object> transform = new HashMap<>(dataMap.size());
+        Collection<Flag> flags = new HashSet<>(dataMap.keySet());
+        flags.forEach(flag->{
+            transform.put(flag,flag.apply(dataMap.get(flag)));
+        });
+        return transform;
     }
 
 }

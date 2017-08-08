@@ -12,8 +12,12 @@ import java.util.*;
 
 public class Constants {
 
+	public static final String LENGTH_OF_GRANT = "lengthOfGrant";
 	public static final String ASSIGNEE = "assignee";
 	public static final String NAME = "name";
+	public static final String FILING_NAME = "filingName";
+	public static final String FILING_DOC_KIND = "filingDocKind";
+	public static final String FILING_COUNTRY = "filingCountry";
 	public static final String SIMILARITY = "similarity";
 	public static final String OVERALL_SCORE = "overallScore";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCountValue";
@@ -28,9 +32,15 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE_MAXIMUM_FILTER = "portfolioSizeMaximumFilter";
 	public static final String EXPIRATION_FILTER = "expirationFilter";
 	public static final String EXPIRED = "expired";
+	public static final String CITED_DATE = "citedDate";
 	public static final String LINE_CHART = "lineChart[]";
+	public static final String COUNTRY = "country";
+	public static final String CITATION_CATEGORY = "citationCategory";
+	public static final String DOC_KIND = "docKind";
 	public static final String PRIORITY_DATE = "priorityDate";
-	public static final String PUBLICATION_DATE = "filingDate";
+	public static final String PUBLICATION_DATE = "publicationDate";
+	public static final String FILING_DATE = "filingDate";
+	public static final String ABSTRACT = "abstract";
 	public static final String CPC_CODES = "cpcCodes";
 	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String LABEL_FILTER = "labelFilter";
