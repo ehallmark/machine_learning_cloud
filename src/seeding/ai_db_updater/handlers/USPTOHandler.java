@@ -19,6 +19,15 @@ import java.util.HashMap;
 
  */
 public class USPTOHandler extends NestedHandler {
+    protected final String topLevelTag;
+    public USPTOHandler(boolean applications) {
+        if(applications) {
+            topLevelTag = "us-patent-application";
+        } else {
+            topLevelTag = "us-patent-grant";
+        }
+    }
+
     private static void debug(EndFlag endFlag, boolean debug) {
         if(debug) {
             endFlag.getTransform().forEach((flag, val) -> {
@@ -34,9 +43,10 @@ public class USPTOHandler extends NestedHandler {
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = true;
         // application flags
-        EndFlag documentFlag = new EndFlag("us-patent-grant") {
+        EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
+                debug(this,debug);
             }
         };
         endFlags.add(documentFlag);
@@ -61,6 +71,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag citationFlag = new EndFlag("citation") {
             @Override
             public void save() {
+                debug(this,debug);
             }
         };
         citationFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -120,7 +131,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag assigneeFlag = new EndFlag("assignee") {
             @Override
             public void save() {
-
+                debug(this,debug);
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -136,7 +147,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag claimFlag = new EndFlag("claim") {
             @Override
             public void save() {
-                debug(this,true);
+                debug(this,debug);
             }
         };
         endFlags.add(claimFlag);
