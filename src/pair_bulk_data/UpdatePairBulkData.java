@@ -16,6 +16,8 @@ public class UpdatePairBulkData {
                 return false;
             }
         });
-        pairIterator.applyHandlers(new PAIRHandler());
+        PAIRHandler handler = new PAIRHandler();
+        handler.init();
+        pairIterator.applyHandlers(handler);
     }
 }

@@ -7,7 +7,6 @@ import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFa
 import lombok.Getter;
 import net.lingala.zip4j.core.ZipFile;
 import org.deeplearning4j.berkeley.Pair;
-import pair_bulk_data.PAIRHandler;
 import seeding.ai_db_updater.handlers.LineHandler;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.ai_db_updater.handlers.flags.Flag;

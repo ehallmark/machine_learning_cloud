@@ -123,7 +123,9 @@ public class PAIRHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        return new PAIRHandler();
+        PAIRHandler handler = new PAIRHandler();
+        handler.init();
+        return handler;
     }
 
     @Override

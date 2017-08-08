@@ -26,7 +26,8 @@ public abstract class NestedHandler extends CustomHandler{
     private final List<Flag> leafFlags = new ArrayList<>();
     // flags that indicate a change in object(s)
     protected final List<EndFlag> endFlags = new ArrayList<>();
-    public NestedHandler() {
+
+    public void init() {
         initAndAddFlagsAndEndFlags();
         setLeafs();
     }
