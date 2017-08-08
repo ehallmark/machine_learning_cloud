@@ -515,7 +515,7 @@ public class SimilarPatentServer {
             charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
             // chart prerequisites
-            portfolioList.ensureAttributesArePresent(charts.stream().flatMap(chart->chart.getPrerequisites().stream()).distinct()
+            portfolioList.ensureAttributesArePresent(charts.stream().flatMap(chart->(Stream<String>)chart.getPrerequisites().stream()).distinct()
                     .map(attr->attributesMap.get(attr)).filter(attr->attr!=null).collect(Collectors.toList()));
 
             List<AbstractChart> finishedCharts = new ArrayList<>();
