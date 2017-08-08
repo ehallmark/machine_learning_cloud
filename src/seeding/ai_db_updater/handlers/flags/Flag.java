@@ -51,7 +51,7 @@ public class Flag {
 
     public static final Function<Flag,Function<String,?>> unknownDocumentHandler = (flag) -> (str) -> {
         str = str.replace(" ","").replace("/","");
-        String kind = flag.getEndFlag().getDataMap().getOrDefault(Constants.DOC_KIND,"").toString();
+        String kind = flag.getDataForField(Constants.DOC_KIND);
         if(kind.startsWith("S")) {
             // design
             if(str.startsWith("D0")) str = "D"+str.substring(2);
@@ -64,7 +64,6 @@ public class Flag {
             //reissue
             if(str.startsWith("RE0")) str = "RE" + str.substring(3);
         }
-
         return str;
     };
 
@@ -84,7 +83,7 @@ public class Flag {
     @Setter
     public Function<Flag,Function<String,Boolean>> compareFunction;
     public final Function<String,Boolean> validValueFunction;
-    @Getter @Setter
+    @Getter
     public EndFlag endFlag;
     protected Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction, Function<Flag,Function<String,Boolean>> compareFunction, Function<Flag,Function<String,?>> transformationFunction, EndFlag endFlag) {
         this.dbName=dbName;
@@ -96,6 +95,12 @@ public class Flag {
         this.endFlag=endFlag;
         this.compareFunction=compareFunction;
         this.transformationFunction = transformationFunction;
+        this.setEndFlag(endFlag);
+    }
+
+    public void setEndFlag(EndFlag endFlag) {
+        if(endFlag!=null&&dbName!=null)endFlag.flagMap.put(dbName,this);
+        this.endFlag=endFlag;
     }
 
     public static Flag fakeFlag(@NonNull String dbName) {
@@ -155,6 +160,12 @@ public class Flag {
         if(localName.equals(otherName)) {
             flag.set(true);
         }
+    }
+
+    public String getDataForField(String field) {
+        Flag flag = getEndFlag().flagMap.get(field);
+        if(flag==null) return "";
+        return getEndFlag().getDataMap().getOrDefault(flag,"");
     }
 
     public void reset() {

@@ -9,7 +9,7 @@ import java.util.function.Function;
  */
 public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
-
+    public final Map<String,Flag> flagMap = new HashMap<>();
     public EndFlag(String localName) {
         super(localName,null,null,null,defaultCompareFunction,null,null);
     }
@@ -30,5 +30,7 @@ public abstract class EndFlag extends Flag {
         });
         return transform;
     }
+
+
 
 }

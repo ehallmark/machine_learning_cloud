@@ -29,6 +29,7 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 if(debug) {
                     getTransform().forEach((flag, val) -> {
+                        if(!flag.dbName.equals("name")&&!flag.dbName.equals("kind")) return;
                         String str = val.toString();
                         String cleanVal = str.substring(0,Math.min(str.length(), 20));
                         if (str.length() > 20) cleanVal += "...";
@@ -64,6 +65,7 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 if(debug) {
                     getTransform().forEach((flag, val) -> {
+                        if(!flag.dbName.equals("name")&&!flag.dbName.equals("kind")) return;
                         String str = val.toString();
                         String cleanVal = str.substring(0,Math.min(str.length(), 20));
                         if (str.length() > 20) cleanVal += "...";
