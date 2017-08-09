@@ -16,12 +16,14 @@ import user_interface.server.SimilarPatentServer;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
 
  */
 public class USPTOHandler extends NestedHandler {
+    private static final AtomicInteger cnt = new AtomicInteger(0);
     protected final String topLevelTag;
     public USPTOHandler(boolean applications) {
         if(applications) {
@@ -76,7 +78,8 @@ public class USPTOHandler extends NestedHandler {
                 });
                 synchronized (USPTOHandler.class) {
                     if (queue.size() > batchSize) {
-                        DataIngester.ingestAssets(queue, true);
+                        System.out.println(cnt.getAndAdd(queue.size()));
+                        //DataIngester.ingestAssets(queue, true);
                     }
                 }
             }
