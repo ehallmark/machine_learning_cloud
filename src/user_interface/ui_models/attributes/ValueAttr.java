@@ -11,6 +11,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import models.value_models.*;
+import user_interface.ui_models.filters.AbstractFilter;
+
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -18,13 +20,14 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class ValueAttr extends AbstractAttribute<Number> {
+public abstract class ValueAttr extends ComputableAttribute<Number> {
     // Instance class
     protected ValueMapNormalizer.DistributionType distributionType;
     private static final double DEFAULT_VAL = (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
     protected double defaultVal;
 
     public ValueAttr(ValueMapNormalizer.DistributionType distributionType, double defaultVal) {
+        super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
         this.defaultVal=defaultVal;
         this.distributionType=distributionType;
     }
@@ -75,5 +78,11 @@ public abstract class ValueAttr extends AbstractAttribute<Number> {
     @Override
     public String getType() {
         return "double";
+    }
+
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Double;
     }
 }

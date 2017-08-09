@@ -34,11 +34,6 @@ public class TechTaggerNormalizer extends ClassificationAttr {
     }
 
     @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
-    @Override
     public ClassificationAttr optimizeHyperParameters(Map<String, Collection<String>> trainingData, Map<String, Collection<String>> validationData) {
         System.out.println("Starting genetic algorithm...");
         SolutionCreator creator = new TechTaggerSolutionCreator(validationData, taggers);

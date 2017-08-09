@@ -31,7 +31,7 @@ public class CitationEvaluator extends ValueAttr {
         List<String> patents = new ArrayList<>(((Map<String,Set<String>>) Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"))).keySet());
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
         Map<String,Set<String>> patentToCitationsMap = Database.getPatentToCitedPatentsMap();
-        Map<String,String> patentToDateMap = new PublicationDateAttribute().getPatentDataMap();
+        Map<String,LocalDate> patentToDateMap = Database.getPatentToPubDateMap();
 
         Map<String,Double> model = new HashMap<>();
         System.out.println("Calculating scores for patents...");
@@ -50,7 +50,7 @@ public class CitationEvaluator extends ValueAttr {
                 score+=Math.log(1.0+patentToCitationsMap.get(patent).size());
             }
             if(patentToDateMap.containsKey(patent)) {
-                LocalDate date = LocalDate.parse(patentToDateMap.get(patent), DateTimeFormatter.ISO_DATE);
+                LocalDate date = patentToDateMap.get(patent);
                 double trend = (new Double(date.getYear())+new Double(date.getMonthValue()-1)/12.0)-beginningTrendValue;
                 score+=0.1*Math.pow(trend,2.0);
             }

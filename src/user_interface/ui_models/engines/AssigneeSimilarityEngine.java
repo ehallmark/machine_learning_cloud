@@ -6,6 +6,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
@@ -60,5 +61,10 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 assignee per line").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
     }
 }

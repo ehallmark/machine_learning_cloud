@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts;
 
 import user_interface.ui_models.charts.highcharts.AbstractChart;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.attributes.DependentAttribute;
 
@@ -27,4 +28,7 @@ public abstract class ChartAttribute extends DependentAttribute {
     public String getType() {
         throw new UnsupportedOperationException("getType not defined for charts.");
     }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}
 }

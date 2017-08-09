@@ -1,11 +1,13 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.NonNull;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import spark.Request;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import static j2html.TagCreator.button;
@@ -18,9 +20,9 @@ import static user_interface.server.SimilarPatentServer.extractString;
  */
 public class AdvancedKeywordFilter extends AbstractFilter {
     protected String queryStr;
-    @Override
-    public String getName() {
-        return Constants.ADVANCED_KEYWORD_FILTER;
+
+    public AdvancedKeywordFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+        super(attribute,filterType);
     }
 
     @Override
@@ -30,32 +32,22 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         } else {
             return QueryBuilders.simpleQueryStringQuery(queryStr)
                     .defaultOperator(Operator.AND)
-                    .analyzeWildcard(false)
-                    .field("tokens");
+                    .analyzeWildcard(true) // might be slow but Scott Hicks uses it...
+                    .field(getPrerequisite());
         }
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        queryStr = extractString(req,Constants.ADVANCED_KEYWORD_FILTER,null);
+        queryStr = extractString(req,getName(),null);
     }
 
     @Override
     public Tag getOptionsTag() {
         return div().with(
                 button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
-                textarea().withClass("form-control").attr("placeholder","Example: (\"virtual reality\" | \"augmented reality\") +gaming").withName(Constants.ADVANCED_KEYWORD_FILTER)
+                textarea().withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
         );
-    }
-
-    @Override
-    public boolean shouldKeepItem(Item obj) {
-        return true;
-    }
-
-    @Override
-    public String getPrerequisite() {
-        return Constants.PORTFOLIO_SIZE;
     }
 
     @Override

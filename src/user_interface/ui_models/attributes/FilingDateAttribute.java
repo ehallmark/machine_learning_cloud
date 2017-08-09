@@ -1,28 +1,21 @@
 package user_interface.ui_models.attributes;
 
-import j2html.tags.Tag;
 import seeding.Constants;
-import seeding.Database;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collection;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PublicationDateAttribute extends StreamableAttribute<String> {
-    public PublicationDateAttribute() {
+public class FilingDateAttribute extends StreamableAttribute<String> {
+    public FilingDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     @Override
     public String getName() {
-        return Constants.PUBLICATION_DATE;
+        return Constants.FILING_DATE;
     }
 
     @Override

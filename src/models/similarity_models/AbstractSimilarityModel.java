@@ -11,17 +11,6 @@ import java.util.Collection;
  * Created by ehallmark on 5/9/17.
  */
 public interface AbstractSimilarityModel {
-    double similarityTo(String label);
-
-    PortfolioList findSimilarPatentsTo(INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters);
-
     int numItems();
-
-    PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters);
-
-    AbstractSimilarityModel duplicateWithScope(Item[] scope);
-
-    AbstractSimilarityModel duplicateWithScopeFromLabels(Collection<String> scope);
-
     Item[] getItemList();
 }

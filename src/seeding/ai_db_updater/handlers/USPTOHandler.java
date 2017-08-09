@@ -54,6 +54,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
+                System.out.println("Saving document...");
                 debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
             }
         };
@@ -137,6 +138,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag assigneeFlag = new EndFlag("assignee") {
             @Override
             public void save() {
+                debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
             }
         };
         assigneeFlag.compareFunction = Flag.endsWithCompareFunction;
@@ -146,12 +148,16 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.simpleFlag("city",Constants.ASSIGNEE_CITY, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("state",Constants.ASSIGNEE_STATE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("country",Constants.ASSIGNEE_COUNTRY, assigneeFlag));
+        assigneeFlag.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, assigneeFlag).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+        assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.LATEST_ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
 
         EndFlag claimFlag = new EndFlag("claim") {
             @Override
             public void save() {
+                System.out.println("Saving CLAIM...");
+                debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
             }
         };
         endFlags.add(claimFlag);

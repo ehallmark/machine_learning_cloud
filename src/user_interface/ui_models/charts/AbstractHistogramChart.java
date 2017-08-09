@@ -39,7 +39,7 @@ public class AbstractHistogramChart extends ChartAttribute {
                 label("Group By"),br(),select().withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
                         option("No Group (default)").attr("selected","selected").withValue(""),
                         span().with(
-                                Arrays.asList(Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY, Constants.CPC_TECHNOLOGY).stream()
+                                Arrays.asList(Constants.LATEST_ASSIGNEE,Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY, Constants.CPC_TECHNOLOGY).stream()
                                         .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                         )
                 ),SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE))

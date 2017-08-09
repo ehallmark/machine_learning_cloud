@@ -58,20 +58,14 @@ public class SimilarPatentServer {
     private static ClassificationAttr tagger;
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
-    public static final String PATENTS_TO_SEARCH_IN_FIELD = "patentsToSearchIn";
-    public static final String ASSIGNEES_TO_SEARCH_IN_FIELD = "assigneesToSearchIn";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    public static final String TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD = "technologiesToSearchFor[]";
-    public static final String CPC_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "cpcTechnologiesToFilter[]";
-    public static final String TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "technologiesToFilter[]";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
-    public static final String DO_NOTHING_FILTER_ARRAY_FIELD = "doNothingFilters[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
@@ -82,13 +76,11 @@ public class SimilarPatentServer {
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
-    public static final String WIPO_TECHNOLOGIES_TO_FILTER_ARRAY_FIELD = "wipoTechnologiesToFilter[]";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
-    public static Map<String,AbstractFilter> doNothingFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
@@ -109,46 +101,29 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
-            humanAttrToJavaAttrMap.put("Assignee", Constants.ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
-            humanAttrToJavaAttrMap.put("Result Type", Constants.RESULT_TYPE_FILTER);
+            humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE+Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Is Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD);
             humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED);
-            humanAttrToJavaAttrMap.put("Portfolio Size Greater Than", Constants.PORTFOLIO_SIZE_MINIMUM_FILTER);
-            humanAttrToJavaAttrMap.put("Portfolio Size Smaller Than", Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER);
-            humanAttrToJavaAttrMap.put("Similarity Threshold",Constants.SIMILARITY_THRESHOLD_FILTER);
-            humanAttrToJavaAttrMap.put("AI Value Threshold",Constants.VALUE_THRESHOLD_FILTER);
-            humanAttrToJavaAttrMap.put("Only Include Japanese",Constants.JAPANESE_ONLY_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Japanese",Constants.NO_JAPANESE_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Expired Assets", Constants.EXPIRATION_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Assignees", Constants.ASSIGNEES_TO_REMOVE_FILTER);
-            humanAttrToJavaAttrMap.put("Remove Assets", Constants.LABEL_FILTER);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
-            humanAttrToJavaAttrMap.put("Patent Scope", Constants.PATENT_SEARCH_SCOPE_FILTER);
-            humanAttrToJavaAttrMap.put("Assignee Scope", Constants.ASSIGNEE_SEARCH_SCOPE_FILTER);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
-            humanAttrToJavaAttrMap.put("Minimum Remaining Life (Years)",Constants.REMAINING_LIFE_FILTER);
-            humanAttrToJavaAttrMap.put("Require Keywords", Constants.REQUIRE_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
-            humanAttrToJavaAttrMap.put("Exclude Keywords", Constants.EXCLUDE_KEYWORD_FILTER);
-            humanAttrToJavaAttrMap.put("Advanced Keyword Filter", Constants.ADVANCED_KEYWORD_FILTER);
             humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
-            humanAttrToJavaAttrMap.put("Entity Type Filter", Constants.ENTITY_TYPE_FILTER_ARRAY);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
-            humanAttrToJavaAttrMap.put("CPC Code Filter", Constants.CPC_CODE_FILTER);
             humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
@@ -199,38 +174,19 @@ public class SimilarPatentServer {
     }
 
     public static void loadFilterModels() {
-        if(preFilterModelMap.isEmpty()&&doNothingFilterModelMap.isEmpty()&&similarityFilterModelMap.isEmpty()) {
+        if(preFilterModelMap.isEmpty()) {
             try {
                 // Do nothing filters
                     // None exist at the moment...
                     // Use doNothingFilterModelMap
 
                 // Pre filters
-                preFilterModelMap.put(Constants.RESULT_TYPE_FILTER, new ResultTypeFilter());
-                preFilterModelMap.put(Constants.REQUIRE_KEYWORD_FILTER, new RequireKeywordFilter());
-                preFilterModelMap.put(Constants.EXCLUDE_KEYWORD_FILTER, new ExcludeKeywordFilter());
-                preFilterModelMap.put(Constants.ADVANCED_KEYWORD_FILTER, new AdvancedKeywordFilter());
-                preFilterModelMap.put(Constants.PATENT_SEARCH_SCOPE_FILTER, new IncludeLabelFilter());
-                preFilterModelMap.put(Constants.ASSIGNEE_SEARCH_SCOPE_FILTER, new IncludeAssigneeFilter());
-                preFilterModelMap.put(Constants.LABEL_FILTER,new RemoveLabelFilter());
-                preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MAXIMUM_FILTER,new PortfolioSizeMaximumFilter());
-                preFilterModelMap.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER,new PortfolioSizeMinimumFilter());
-                preFilterModelMap.put(Constants.ASSIGNEES_TO_REMOVE_FILTER, new RemoveAssigneeFilter());
-                preFilterModelMap.put(Constants.NO_JAPANESE_FILTER, new RemoveJapaneseAssigneeFilter());
-                preFilterModelMap.put(Constants.JAPANESE_ONLY_FILTER, new IncludeJapaneseAssigneeFilter());
-                preFilterModelMap.put(Constants.VALUE_THRESHOLD_FILTER,new ValueThresholdFilter());
-                preFilterModelMap.put(Constants.EXPIRATION_FILTER,new ExpirationFilter());
-                preFilterModelMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedFilter());
-                preFilterModelMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldFilter());
-                preFilterModelMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyFilter());
-                preFilterModelMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyFilter());
-                preFilterModelMap.put(Constants.REMAINING_LIFE_FILTER, new RemainingLifeFilter());
-                preFilterModelMap.put(Constants.TECHNOLOGY,new TechnologyFilter());
-                preFilterModelMap.put(Constants.CPC_CODE_FILTER, new IncludeCPCFilter());
-                preFilterModelMap.put(Constants.ENTITY_TYPE_FILTER_ARRAY, new EntityTypeFilter());
+                attributesMap.forEach((name,attr) -> {
+                    ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
+                        preFilterModelMap.put(filter.getName(),filter);
+                    });
+                });
 
-                // During filters
-                similarityFilterModelMap.put(Constants.SIMILARITY_THRESHOLD_FILTER,new SimilarityThresholdFilter());
 
             }catch(Exception e) {
                 e.printStackTrace();
@@ -250,7 +206,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-            attributesMap.put(Constants.ASSIGNEE, new AssigneeNameAttribute());
+            attributesMap.put(Constants.LATEST_ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
             attributesMap.put(Constants.NAME, new NameAttribute());
@@ -267,11 +223,16 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
+            attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
+            attributesMap.put(Constants.CLAIM, new ClaimTextAttribute());
+            attributesMap.put(Constants.ASSIGNEE, new OriginalAssigneeNameAttribute());
+            attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
+            attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
-            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new TechnologySimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
+            similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
 
             allAttributes = new ArrayList<>(attributesMap.values());
         }
@@ -721,7 +682,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-bottom").with(
                                                         customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD)
                                                 ),div().withClass("col-6 form-right form-bottom").with(
-                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap, doNothingFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD,DO_NOTHING_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
                                                 )
                                         )
                                 ),div().with(
@@ -887,10 +848,10 @@ public class SimilarPatentServer {
             return defaultVal;
         }
     }
-    static double extractDouble(Request req, String param, double defaultVal) {
+    public static Double extractDouble(Request req, String param, Double defaultVal) {
         return extractDouble(req.queryMap(),param, defaultVal);
     }
-    static double extractDouble(QueryParamsMap queryMap, String param, double defaultVal) {
+    static Double extractDouble(QueryParamsMap queryMap, String param, Double defaultVal) {
         try {
             return Double.valueOf(queryMap.value(param));
         } catch(Exception e) {

@@ -3,53 +3,79 @@ package user_interface.ui_models.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
+import spark.Request;
+import user_interface.ui_models.filters.*;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static j2html.TagCreator.div;
 
 /**
  * Created by Evan on 5/9/2017.
  */
 public abstract class AbstractAttribute<T> {
-    protected Map<String,T> patentDataMap;
-    protected Map<String,T> applicationDataMap;
-
-    public T attributesFor(Collection<String> portfolio, int limit) {
-        return portfolio.stream().map(item->{
-            if(Database.isApplication(item)) {
-                return getApplicationDataMap().getOrDefault(item,null);
-            } else {
-                return getPatentDataMap().getOrDefault(item,null);
-            }
-        }).filter(item->item!=null).findAny().orElse(null);
+    protected Collection<AbstractFilter.FilterType> filterTypes;
+    public AbstractAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
+        this.filterTypes=filterTypes;
     }
+
+    public abstract T attributesFor(Collection<String> portfolio, int limit);
 
     public abstract String getName();
 
-    public abstract Tag getOptionsTag();
+    public Tag getOptionsTag() { return div(); }
 
     public abstract String getType();
 
-    public Map<String,T> getPatentDataMap() {
-        if(patentDataMap==null) patentDataMap = (Map<String,T>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
-        return patentDataMap;
-    }
-    public Map<String,T> getApplicationDataMap() {
-        if(applicationDataMap==null) applicationDataMap = (Map<String,T>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
-        return applicationDataMap;
-    }
+    public abstract AbstractFilter.FieldType getFieldType();
 
-    public void save() {
-        if(patentDataMap!=null) Database.saveObject(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
-        if(applicationDataMap!=null) Database.saveObject(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
-    }
 
     public boolean supportedByElasticSearch() {
         return true;
     }
 
-    public static File dataFileFrom(String folder, String attrName, String attrType) {
-        return new File(Constants.DATA_FOLDER+folder+attrName+"_"+attrType+"_map.jobj");
+    public Collection<AbstractFilter> createFilters() {
+        return filterTypes.stream().map(filterType->{
+            AbstractFilter filter;
+            switch(filterType) {
+                case BoolFalse: {
+                    filter = new AbstractBooleanExcludeFilter(this, filterType);
+                    break;
+                }
+                case BoolTrue: {
+                    filter = new AbstractBooleanIncludeFilter(this, filterType);
+                    break;
+                }
+                case Exclude: {
+                    filter = new AbstractExcludeFilter(this, filterType, getFieldType(), null);
+                    break;
+                }
+                case Include: {
+                    filter = new AbstractIncludeFilter(this, filterType, getFieldType(), null);
+                    break;
+                }
+                case LessThan: {
+                    filter = new AbstractLessThanFilter(this, filterType);
+                    break;
+                }
+                case GreaterThan: {
+                    filter = new AbstractGreaterThanFilter(this, filterType);
+                    break;
+                }
+                case Between: {
+                    filter = new AbstractBetweenFilter(this, filterType);
+                    break;
+                } default: {
+                    filter = null;
+                }
+            }
+            return filter;
+        }).filter(filter->filter!=null).collect(Collectors.toList());
     }
+
 }

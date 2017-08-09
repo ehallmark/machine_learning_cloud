@@ -3,7 +3,6 @@ package user_interface.ui_models.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -12,25 +11,26 @@ import java.util.Collection;
 import static j2html.TagCreator.div;
 
 /**
- * Created by ehallmark on 6/15/17.
+ * Created by Evan on 6/17/2017.
  */
-public class InventionTitleAttribute extends StreamableAttribute<String> {
-    public InventionTitleAttribute() {
+public class ResultTypeAttribute extends StreamableAttribute<String> {
+    public ResultTypeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include));
     }
 
     @Override
     public String getName() {
-        return Constants.INVENTION_TITLE;
+        return Constants.DOC_TYPE;
     }
 
     @Override
     public String getType() {
-        return "text";
+        return "keyword";
     }
+
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.AdvancedKeyword;
+        return AbstractFilter.FieldType.Multiselect;
     }
 }

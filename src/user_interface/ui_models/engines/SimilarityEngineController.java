@@ -5,8 +5,6 @@ import elasticsearch.DataSearcher;
 import lombok.Getter;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
@@ -15,16 +13,14 @@ import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
-import user_interface.server.tools.AjaxChartMessage;
+import user_interface.ui_models.attributes.AssigneeNameAttribute;
+import user_interface.ui_models.attributes.NameAttribute;
+import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.IncludeLabelFilter;
-import user_interface.ui_models.filters.RemoveAssigneeFilter;
-import user_interface.ui_models.filters.RemoveLabelFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static user_interface.server.SimilarPatentServer.*;
@@ -61,10 +57,10 @@ public class SimilarityEngineController {
         }
 
         if(labelsToRemove.size()>0) {
-            preFilters.add(new RemoveLabelFilter(labelsToRemove));
+            preFilters.add(new AbstractExcludeFilter(new NameAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
-            preFilters.add(new RemoveAssigneeFilter(assigneesToRemove));
+            preFilters.add(new AbstractExcludeFilter(new AssigneeNameAttribute(), AbstractFilter.FilterType.Exclude,  AbstractFilter.FieldType.Text, assigneesToRemove));
         }
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());

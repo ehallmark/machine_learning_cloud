@@ -4,7 +4,9 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static j2html.TagCreator.div;
@@ -12,12 +14,9 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class JapaneseAttribute extends AbstractAttribute<Boolean> {
-
-    @Override
-    public Boolean attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        return Database.isJapaneseAssignee(item);
+public class JapaneseAttribute extends StreamableAttribute<Boolean> {
+    public JapaneseAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
     }
 
     @Override
@@ -26,12 +25,12 @@ public class JapaneseAttribute extends AbstractAttribute<Boolean> {
     }
 
     @Override
-    public Tag getOptionsTag() {
-        return div();
+    public String getType() {
+        return "boolean";
     }
 
     @Override
-    public String getType() {
-        return "boolean";
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Boolean;
     }
 }

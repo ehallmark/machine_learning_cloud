@@ -15,11 +15,6 @@ import static j2html.TagCreator.div;
 public class WIPOTechnologyClassifier extends ClassificationAttr {
     private static WIPOTechnologyAttribute attribute = new WIPOTechnologyAttribute();
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
     public String getName() {
         return "WIPO Technology Tagger Model";
     }

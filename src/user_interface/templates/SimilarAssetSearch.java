@@ -21,16 +21,14 @@ public class SimilarAssetSearch extends FormTemplate {
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.SIMILARITY,Constants.AI_VALUE));
-        map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY,Constants.ASSIGNEE));
-        map.put(Constants.REMAINING_LIFE_FILTER, 5);
-        map.put(Constants.PORTFOLIO_SIZE_MINIMUM_FILTER, 10);
-        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.SIMILARITY,Constants.AI_VALUE,Constants.NAME,Constants.ASSIGNEE,Constants.REMAINING_LIFE,Constants.PORTFOLIO_SIZE,Constants.CPC_TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
+        map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY,Constants.LATEST_ASSIGNEE));
+        map.put(Constants.REMAINING_LIFE+Constants.FILTER_SUFFIX, 5);
+        map.put(Constants.PORTFOLIO_SIZE+"_min"+Constants.FILTER_SUFFIX, 10);
+        map.put(Constants.PORTFOLIO_SIZE+"_max"+Constants.FILTER_SUFFIX, 1000);
+        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.SIMILARITY,Constants.AI_VALUE,Constants.NAME,Constants.LATEST_ASSIGNEE,Constants.REMAINING_LIFE,Constants.PORTFOLIO_SIZE,Constants.CPC_TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD,"");
         map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD,"");
-        map.put(SimilarPatentServer.TECHNOLOGIES_TO_SEARCH_FOR_ARRAY_FIELD,new ArrayList<>());
-        map.put(Constants.ADVANCED_KEYWORD_FILTER,"");
-        map.put(Constants.REQUIRE_KEYWORD_FILTER,"");
-        map.put(Constants.EXCLUDE_KEYWORD_FILTER,"");
+        map.put(Constants.CLAIM+Constants.FILTER_SUFFIX,"");
         map.put(SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD, Arrays.asList(PortfolioList.Type.patents));
         return map;
     }

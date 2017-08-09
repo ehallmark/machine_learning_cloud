@@ -4,7 +4,9 @@ import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static j2html.TagCreator.div;
@@ -12,8 +14,11 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class FamilyMembersAttribute extends AbstractAttribute<String[]> {
+public class FamilyMembersAttribute extends ComputableAttribute<String[]> {
     private static RelatedAssetsGraph graph = RelatedAssetsGraph.get();
+    public FamilyMembersAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+    }
 
     @Override
     public String[] attributesFor(Collection<String> portfolio, int limit) {
@@ -29,12 +34,13 @@ public class FamilyMembersAttribute extends AbstractAttribute<String[]> {
     }
 
     @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
-    @Override
     public String getType() {
         return "keyword";
+    }
+
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
     }
 }

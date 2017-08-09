@@ -50,11 +50,6 @@ public class GatherSVMClassifier extends ClassificationAttr {
         return "SVM Classifier";
     }
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
     // trainable version
     public GatherSVMClassifier(svm_parameter param, File modelFile, Map<String,INDArray> lookupTable) {
         this.modelFile=modelFile;

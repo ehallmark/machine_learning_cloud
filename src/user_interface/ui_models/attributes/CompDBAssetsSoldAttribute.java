@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
 
@@ -12,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 1/27/2017.
  */
-public class CompDBAssetsSoldAttribute extends AbstractAttribute<Integer> {
+public class CompDBAssetsSoldAttribute extends ComputableAttribute<Integer> {
     private static Map<String,Integer> MODEL;
 
     @Override
@@ -28,15 +29,10 @@ public class CompDBAssetsSoldAttribute extends AbstractAttribute<Integer> {
         return Constants.COMPDB_ASSETS_SOLD;
     }
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
     public CompDBAssetsSoldAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
         if(MODEL==null)MODEL=runModel();
     }
-
 
     private static Map<String,Integer> runModel(){
         System.out.println("Starting to load CompDBAssetsSoldEvaluator evaluator...");
@@ -47,5 +43,10 @@ public class CompDBAssetsSoldAttribute extends AbstractAttribute<Integer> {
     @Override
     public String getType() {
         return "integer";
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Integer;
     }
 }

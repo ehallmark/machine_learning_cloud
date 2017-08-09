@@ -5,7 +5,9 @@ import models.classification_models.WIPOHelper;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -19,6 +21,7 @@ public class CPCTechnologyAttribute extends AbstractAttribute<String> {
     public static Map<String,String> definitionMap;
 
     public CPCTechnologyAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
         if(definitionMap==null) definitionMap= Database.getClassCodeToClassTitleMap();
     }
 
@@ -39,13 +42,14 @@ public class CPCTechnologyAttribute extends AbstractAttribute<String> {
         return Constants.CPC_TECHNOLOGY;
     }
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
 
     @Override
     public String getType() {
         return "keyword";
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Multiselect;
     }
 }

@@ -26,6 +26,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
     protected INDArray avg;
 
     public AbstractSimilarityEngine(AbstractSimilarityModel similarityModel) {
+        super(Collections.emptyList());
         this.similarityModel=similarityModel;
     }
 
@@ -74,7 +75,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
 
     @Override
     public Object attributesFor(Collection portfolio, int limit) {
-        return null;
+        throw new UnsupportedOperationException("AttributesFor not defined in similarity models");
     }
 
     @Override

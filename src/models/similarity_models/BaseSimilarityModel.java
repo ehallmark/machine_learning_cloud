@@ -53,62 +53,10 @@ public class BaseSimilarityModel implements AbstractSimilarityModel {
         return itemList;
     }
 
-    @Override
-    public PortfolioList similarFromCandidateSet(AbstractSimilarityModel other, int limit, Collection<? extends AbstractFilter> filters)  {
-        if(other.numItems()==0) return new PortfolioList(new Item[]{});
-        INDArray otherAvg = ((BaseSimilarityModel)other).computeAvg();
-        return findSimilarPatentsTo(otherAvg,limit,filters);
-    }
-
-    @Override
-    public AbstractSimilarityModel duplicateWithScope(Item[] scope) {
-        return new BaseSimilarityModel(Arrays.asList(scope), lookupTable);
-    }
-
-    @Override
-    public AbstractSimilarityModel duplicateWithScopeFromLabels(Collection<String> scope) {
-        return new BaseSimilarityModel(scope.stream().map(item->new Item(item)).collect(Collectors.toList()), lookupTable);
-    }
-
-    @Override
-    public double similarityTo(String label) {
-        INDArray avg = computeAvg();
-        INDArray thisVec = lookupTable.get(label);
-        if(thisVec==null) return 0d;
-        else return Transforms.cosineSim(avg,thisVec);
-    }
-
-    // returns null if patentNumber not found
-    @Override
-    public PortfolioList findSimilarPatentsTo(INDArray avgVector, int limit, Collection<? extends AbstractFilter> filters)  {
-        if(avgVector==null) return new PortfolioList(new Item[]{});
-        long startTime = System.currentTimeMillis();
-        PortfolioList list = similarPatentsHelper(avgVector, limit, filters);
-        long endTime = System.currentTimeMillis();
-        double time = new Double(endTime-startTime)/1000;
-        System.out.println("Time to find "+list.getItemList().length+" similar patents: "+time+" seconds");
-        return list;
-    }
 
     @Override
     public int numItems() {
         return itemList==null?0:itemList.length;
-    }
-
-    private synchronized PortfolioList similarPatentsHelper(INDArray baseVector, int limit, Collection<? extends AbstractFilter> filters) {
-        Stream<Item> resultStream = itemMap.values().parallelStream().map(item->{
-            double sim = Transforms.cosineSim(item.getVec(),baseVector);
-            if(!Double.isNaN(sim)) {
-                Item itemClone = item.getItem();
-                itemClone.setSimilarity(sim);
-                return itemClone;
-            } else return null;
-        }).filter(item->item!=null&&filters.stream().allMatch(filter->filter.shouldKeepItem(item)));
-        Item[] resultList = resultStream.toArray(size->new Item[size]);
-        if(resultList.length==0) return new PortfolioList(resultList);
-        Arrays.parallelSort(resultList,(i1,i2)->Double.compare(i2.getSimilarity(),i1.getSimilarity()));
-        PortfolioList results = new PortfolioList(Arrays.copyOfRange(resultList,0, Math.min(limit,resultList.length)));
-        return results;
     }
 
 }

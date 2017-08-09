@@ -35,11 +35,6 @@ public class SimilarityGatherTechTagger extends ClassificationAttr {
     private static SimilarityGatherTechTagger cpcModel;
     private static SimilarityGatherTechTagger wipoModel;
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
     public String getName() {
         return "Average Similarity Model";
     }

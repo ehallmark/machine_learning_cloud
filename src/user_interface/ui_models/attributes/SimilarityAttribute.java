@@ -2,7 +2,9 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
+import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import static j2html.TagCreator.div;
@@ -11,6 +13,10 @@ import static j2html.TagCreator.div;
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractAttribute<String> {
+
+    public SimilarityAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
+    }
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
@@ -23,11 +29,6 @@ public class SimilarityAttribute extends AbstractAttribute<String> {
     }
 
     @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
-    @Override
     public String getType() {
         return "double";
     }
@@ -35,5 +36,11 @@ public class SimilarityAttribute extends AbstractAttribute<String> {
     @Override
     public boolean supportedByElasticSearch() {
         return false;
+    }
+
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Double;
     }
 }

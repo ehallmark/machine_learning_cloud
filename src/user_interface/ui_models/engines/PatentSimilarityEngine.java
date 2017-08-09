@@ -6,6 +6,7 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import spark.Request;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
@@ -53,5 +54,10 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 patent or application per line (eg. 800000)").withName(SimilarPatentServer.PATENTS_TO_SEARCH_FOR_FIELD)
         );
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
     }
 }

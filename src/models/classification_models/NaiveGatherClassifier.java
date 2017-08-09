@@ -33,11 +33,6 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
     protected List<String> orderedClassifications;
     protected double alpha;
 
-    @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
     public String getName() {
         return "Bayesian Classifier";
     }

@@ -22,10 +22,10 @@ public class PortfolioAssessment extends FormTemplate {
         Map<String,Object> map = new HashMap<>();
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE, Constants.REMAINING_LIFE));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
-        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
-        map.put(SimilarPatentServer.PATENTS_TO_SEARCH_IN_FIELD,"");
-        map.put(SimilarPatentServer.ASSIGNEES_TO_SEARCH_IN_FIELD,"");
-        map.put(SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD, Arrays.asList(PortfolioList.Type.patents));
+        map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.LATEST_ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
+        map.put(Constants.NAME + Constants.FILTER_SUFFIX,"");
+        map.put(Constants.LATEST_ASSIGNEE + Constants.FILTER_SUFFIX,"");
+        map.put(Constants.DOC_KIND + Constants.FILTER_SUFFIX, Arrays.asList(PortfolioList.Type.patents));
         return map;
     }
 

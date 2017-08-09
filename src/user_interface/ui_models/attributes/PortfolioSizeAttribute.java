@@ -4,7 +4,9 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -13,7 +15,10 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class PortfolioSizeAttribute extends AbstractAttribute<Integer> {
+public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
+    public PortfolioSizeAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.Between));
+    }
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
@@ -31,12 +36,13 @@ public class PortfolioSizeAttribute extends AbstractAttribute<Integer> {
     }
 
     @Override
-    public Tag getOptionsTag() {
-        return div();
-    }
-
-    @Override
     public String getType() {
         return "integer";
+    }
+
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Integer;
     }
 }
