@@ -156,8 +156,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag claimFlag = new EndFlag("claim") {
             @Override
             public void save() {
-                System.out.println("Saving CLAIM...");
-                debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
+                //debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
             }
         };
         endFlags.add(claimFlag);
@@ -179,7 +178,6 @@ public class USPTOHandler extends NestedHandler {
                         if (s == null) s = "";
                         int length = s.length();
                         if (data == null || data.isEmpty() || Integer.valueOf(data) > length) {
-                            System.out.println("Handling independent claim length data...");
                             documentFlag.getDataMap().put(f, String.valueOf(length));
                         }
                     }
@@ -204,7 +202,6 @@ public class USPTOHandler extends NestedHandler {
                 String data = documentFlag.getDataMap().get(f);
                 if (data == null || data.equals("true")) {
                     // add
-                    System.out.println("Handling means present data...");
                     documentFlag.getDataMap().put(f, String.valueOf(meansPresent));
                 }
             }
