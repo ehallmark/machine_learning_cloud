@@ -80,7 +80,7 @@ public class USPTOHandler extends NestedHandler {
                     synchronized (USPTOHandler.class) {
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
-                            //DataIngester.ingestAssets(queue, true);
+                            DataIngester.ingestAssets(queue, true);
                             queue.clear();
                         }
                     }
