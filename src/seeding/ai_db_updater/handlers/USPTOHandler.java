@@ -60,7 +60,7 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
-                debug(this,debug, Arrays.asList(Constants.MEANS_PRESENT,Constants.CLAIM_LENGTH,Constants.PARENT_CLAIM_NUM,Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH));
+                debug(this,debug, attrsToIngest);
                 Map<String,Object> toIngest = getTransform(attrsToIngest);
                 Object name = toIngest.get(Constants.NAME);
                 if(name==null)return;

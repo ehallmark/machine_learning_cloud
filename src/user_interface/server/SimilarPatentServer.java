@@ -135,13 +135,22 @@ public class SimilarPatentServer {
         }
     }
 
+
+    private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
-        return allAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
+        if(allAttrNames ==null) {
+            allAttrNames = allAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
+        }
+        return allAttrNames;
     }
 
 
+    private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
-        return allAttributes.stream().filter(attr->attr instanceof StreamableAttribute).map(attr->attr.getName()).collect(Collectors.toList());
+        if(allStreamingAttrNames ==null) {
+            allStreamingAttrNames = allAttributes.stream().filter(attr -> attr instanceof StreamableAttribute).map(attr -> attr.getName()).collect(Collectors.toList());
+        }
+        return allStreamingAttrNames;
     }
 
     public static String humanAttributeFor(String attr) {
