@@ -94,6 +94,7 @@ public class Flag {
     @Getter
     public EndFlag endFlag;
     private final int id;
+    protected boolean isForeign = false;
     private static final AtomicInteger idCounter = new AtomicInteger(0);
     protected Flag(String localName, String dbName, String type, Function<String,Boolean> validValueFunction, Function<Flag,Function<String,Boolean>> compareFunction, Function<Flag,Function<String,?>> transformationFunction, EndFlag endFlag) {
         this.dbName=dbName;
@@ -202,6 +203,15 @@ public class Flag {
 
     public Object apply(String text) {
         return transformationFunction.apply(this).apply(text);
+    }
+
+    public boolean isForeign() {
+        return isForeign;
+    }
+
+    public Flag setIsForeign(boolean isForeign) {
+        this.isForeign=isForeign;
+        return this;
     }
 
     public boolean isAttributeFlag() {

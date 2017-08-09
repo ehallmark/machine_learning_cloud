@@ -23,8 +23,14 @@ public abstract class EndFlag extends Flag {
         Map<Flag,Object> transform = new HashMap<>(dataMap.size());
         Collection<Flag> flags = new HashSet<>(dataMap.keySet());
         flags.forEach(flag->{
-            Object result = flag.apply(dataMap.get(flag));
-            if(result!=null) {
+            String data = dataMap.get(flag);
+            Object result;
+            if(flag.isForeign()) {
+                result = data;
+            } else {
+                result = flag.apply(data);
+            }
+            if (result != null) {
                 transform.put(flag, result);
             }
         });

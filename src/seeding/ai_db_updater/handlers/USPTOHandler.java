@@ -170,7 +170,7 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         claimFlag.addChild(Flag.integerFlag("claim",Constants.CLAIM_LENGTH,claimFlag).withTransformationFunction(f->s->s==null?0:s.length()));
-        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).withTransformationFunction(f->
+        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).setIsForeign(true).withTransformationFunction(f->
                 s->{
                     String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
                     boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
@@ -183,7 +183,7 @@ public class USPTOHandler extends NestedHandler {
                             documentFlag.getDataMap().put(f, String.valueOf(length));
                         }
                     }
-                    return null; // prevent default behavior
+                    return null; // prevent default behavior (must have isForeign set to true)
                 })
         );
         Flag claimRefWrapper = Flag.parentFlag("claim-ref");
@@ -196,7 +196,7 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         // means present data
-        claimFlag.addChild(Flag.booleanFlag("claim",Constants.MEANS_PRESENT,claimFlag).withTransformationFunction(f->s->{
+        claimFlag.addChild(Flag.booleanFlag("claim",Constants.MEANS_PRESENT,claimFlag).setIsForeign(true).withTransformationFunction(f->s->{
             String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
             boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
             if(isIndependent) {
@@ -208,7 +208,7 @@ public class USPTOHandler extends NestedHandler {
                     documentFlag.getDataMap().put(f, String.valueOf(meansPresent));
                 }
             }
-            return null; // prevent default behavior
+            return null; // prevent default behavior (must have isForeign set to true)
         }));
     }
 
