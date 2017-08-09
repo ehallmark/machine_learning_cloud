@@ -24,7 +24,7 @@ public class OriginalAssigneeNameAttribute extends StreamableAttribute<String[]>
 
     @Override
     public String getName() {
-        return Constants.ORIGINAL_ASSIGNEE;
+        return Constants.ASSIGNEE;
     }
 
 }
