@@ -12,7 +12,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class SimilarityAttribute extends AbstractAttribute<String> {
+public class SimilarityAttribute extends ComputableAttribute<String> {
 
     public SimilarityAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));

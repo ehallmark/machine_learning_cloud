@@ -15,11 +15,6 @@ public abstract class ChartAttribute extends DependentAttribute {
     public abstract List<? extends AbstractChart> create(PortfolioList portfolioList);
 
     @Override
-    public Object attributesFor(Collection portfolio, int limit) {
-        throw new UnsupportedOperationException("AttributesFor not supported on charts.");
-    }
-
-    @Override
     public String getName() {
         throw new UnsupportedOperationException("getName not defined for charts.");
     }

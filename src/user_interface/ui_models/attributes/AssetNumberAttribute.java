@@ -2,7 +2,6 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
-import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -12,25 +11,24 @@ import java.util.Collection;
 import static j2html.TagCreator.div;
 
 /**
- * Created by ehallmark on 7/20/17.
+ * Created by ehallmark on 6/15/17.
  */
-public class JapaneseAttribute extends AbstractAttribute<Boolean> {
-    public JapaneseAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
+public class AssetNumberAttribute extends AbstractAttribute<String> {
+    public AssetNumberAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
-
     @Override
     public String getName() {
-        return Constants.JAPANESE_ASSIGNEE;
+        return Constants.NAME;
     }
 
     @Override
     public String getType() {
-        return "boolean";
+        return "keyword";
     }
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Boolean;
+        return AbstractFilter.FieldType.Text;
     }
 }

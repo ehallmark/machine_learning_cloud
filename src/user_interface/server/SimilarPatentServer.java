@@ -139,7 +139,15 @@ public class SimilarPatentServer {
     private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
-            allAttrNames = allAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList());
+            allAttrNames = allAttributes.stream().flatMap(attr->{
+                Stream<String> stream;
+                if(attr instanceof NestedAttribute) {
+                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
+                } else {
+                    stream = Arrays.asList(attr.getName()).stream();
+                }
+                return stream;
+            }).collect(Collectors.toList());
         }
         return allAttrNames;
     }
@@ -148,7 +156,15 @@ public class SimilarPatentServer {
     private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
-            allStreamingAttrNames = allAttributes.stream().filter(attr -> attr instanceof StreamableAttribute).map(attr -> attr.getName()).collect(Collectors.toList());
+            allStreamingAttrNames = allAttributes.stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
+                Stream<String> stream;
+                if(attr instanceof NestedAttribute) {
+                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
+                } else {
+                    stream = Arrays.asList(attr.getName()).stream();
+                }
+                return stream;
+            }).collect(Collectors.toList());
         }
         return allStreamingAttrNames;
     }
@@ -223,7 +239,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.LATEST_ASSIGNEE, new AssigneeNameAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
-            attributesMap.put(Constants.NAME, new NameAttribute());
+            attributesMap.put(Constants.NAME, new AssetNumberAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
@@ -241,10 +257,16 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
             attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
             attributesMap.put(Constants.CLAIM, new ClaimTextAttribute());
-            attributesMap.put(Constants.ASSIGNEE, new OriginalAssigneeNameAttribute());
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
+            // nested attrs
+            attributesMap.put(Constants.ASSIGNEES, new AssigneesNestedAttribute());
+            attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
+            attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());
+            attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
+            attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
+            attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
@@ -261,7 +283,7 @@ public class SimilarPatentServer {
 
     public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
-        Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
+        Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr instanceof ComputableAttribute && attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
@@ -276,7 +298,7 @@ public class SimilarPatentServer {
                     item.addData("vector_obj", obj);
                 }
                 attributes.forEach(model -> {
-                    item.addData(model.getName(), model.attributesFor(Arrays.asList(item.getName()), 1));
+                    item.addData(model.getName(), ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1));
                 });
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());
@@ -481,7 +503,7 @@ public class SimilarPatentServer {
             similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
-            portfolioList.ensureAttributesArePresent(itemAttributes.stream().map(attr->attributesMap.get(attr)).filter(attr->attr!=null).collect(Collectors.toList()));
+            // ensure attrs
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
             if(comparator.equals(Constants.OVERALL_SCORE)) {
@@ -492,9 +514,13 @@ public class SimilarPatentServer {
             List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
             charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
-            // chart prerequisites
-            portfolioList.ensureAttributesArePresent(charts.stream().flatMap(chart->(Stream<String>)chart.getPrerequisites().stream()).distinct()
-                    .map(attr->attributesMap.get(attr)).filter(attr->attr!=null).collect(Collectors.toList()));
+            // prerequisites
+            Set<ComputableAttribute> computableAttributes = new HashSet<>();
+            computableAttributes.addAll(itemAttributes.stream().map(attr->attributesMap.get(attr)).filter(attr->attr!=null && attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList()));
+            computableAttributes.addAll(charts.stream().flatMap(chart->(Stream<String>)chart.getPrerequisites().stream()).distinct()
+                    .map(attr->attributesMap.get(attr)).filter(attr->attr!=null&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList()));
+            portfolioList.ensureAttributesArePresent(computableAttributes);
+
 
             List<AbstractChart> finishedCharts = new ArrayList<>();
             // adding charts

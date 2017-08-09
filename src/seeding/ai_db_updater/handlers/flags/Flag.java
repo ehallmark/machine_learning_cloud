@@ -96,7 +96,7 @@ public class Flag {
     public final List<Flag> children;
     boolean isAttributeFlag = false;
     public Function<Flag,Function<String,?>> transformationFunction;
-    public final String type;
+    public String type;
     @Setter
     public Function<Flag,Function<String,Boolean>> compareFunction;
     public final Function<String,Boolean> validValueFunction;

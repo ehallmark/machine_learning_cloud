@@ -24,8 +24,6 @@ public abstract class AbstractAttribute<T> {
         this.filterTypes=filterTypes;
     }
 
-    public abstract T attributesFor(Collection<String> portfolio, int limit);
-
     public abstract String getName();
 
     public Tag getOptionsTag() { return div(); }
@@ -69,6 +67,13 @@ public abstract class AbstractAttribute<T> {
                 }
                 case Between: {
                     filter = new AbstractBetweenFilter(this, filterType);
+                    break;
+                } case AdvancedKeyword: {
+                    filter = new AdvancedKeywordFilter(this, filterType);
+                    break;
+                } case Nested: {
+                    if(!(this instanceof NestedAttribute)) throw new RuntimeException("Only nested attributes support nested filterType");
+                    filter = new AbstractNestedFilter((NestedAttribute)this, filterType);
                     break;
                 } default: {
                     filter = null;

@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class ResultTypeAttribute extends StreamableAttribute<String> {
+public class ResultTypeAttribute extends AbstractAttribute<String> {
     public ResultTypeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include));
     }

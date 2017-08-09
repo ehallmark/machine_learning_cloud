@@ -1,6 +1,5 @@
 package user_interface.ui_models.engines;
 
-import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import lombok.Getter;
 import org.elasticsearch.script.Script;
@@ -14,7 +13,7 @@ import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.attributes.AssigneeNameAttribute;
-import user_interface.ui_models.attributes.NameAttribute;
+import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -57,7 +56,7 @@ public class SimilarityEngineController {
         }
 
         if(labelsToRemove.size()>0) {
-            preFilters.add(new AbstractExcludeFilter(new NameAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
+            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
             preFilters.add(new AbstractExcludeFilter(new AssigneeNameAttribute(), AbstractFilter.FilterType.Exclude,  AbstractFilter.FieldType.Text, assigneesToRemove));

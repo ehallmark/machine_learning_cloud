@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.deeplearning4j.berkeley.Pair;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -30,9 +31,9 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public void ensureAttributesArePresent(Collection<? extends AbstractAttribute> attributes)  {
+    public void ensureAttributesArePresent(Collection<? extends ComputableAttribute> attributes)  {
         for(Item item : itemList) {
-            for(AbstractAttribute attribute : attributes) {
+            for(ComputableAttribute attribute : attributes) {
                 if(item.getData(attribute.getName())==null) {
                     item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
                 }

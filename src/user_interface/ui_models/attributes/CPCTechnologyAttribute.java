@@ -17,7 +17,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class CPCTechnologyAttribute extends AbstractAttribute<String> {
+public class CPCTechnologyAttribute extends ComputableAttribute<String> {
     public static Map<String,String> definitionMap;
 
     public CPCTechnologyAttribute() {

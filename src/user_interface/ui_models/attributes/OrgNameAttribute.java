@@ -8,13 +8,13 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class OriginalAssigneeNameAttribute extends StreamableAttribute<String[]> {
-    public OriginalAssigneeNameAttribute() {
+public class OrgNameAttribute extends AbstractAttribute<String[]> {
+    public OrgNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
     @Override
     public String getType() {
-        return "text";
+        return "keyword";
     }
 
     @Override

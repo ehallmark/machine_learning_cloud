@@ -34,7 +34,6 @@ public class AbstractExcludeFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder builder = QueryBuilders.boolQuery();
-
         if(attribute.getType().equals("text")) {
               builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite(),labels));
         } else {

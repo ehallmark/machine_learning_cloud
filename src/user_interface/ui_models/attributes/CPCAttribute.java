@@ -15,7 +15,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CPCAttribute extends StreamableAttribute<String[]> {
+public class CPCAttribute extends AbstractAttribute<String[]> {
     public CPCAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

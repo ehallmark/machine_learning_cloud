@@ -14,7 +14,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class InventionTitleAttribute extends StreamableAttribute<String> {
+public class InventionTitleAttribute extends AbstractAttribute<String> {
     public InventionTitleAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include));
     }

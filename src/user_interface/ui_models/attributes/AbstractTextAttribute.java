@@ -9,10 +9,10 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AbstractTextAttribute extends StreamableAttribute<String> {
+public class AbstractTextAttribute extends AbstractAttribute<String> {
 
     public AbstractTextAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }
 
     @Override

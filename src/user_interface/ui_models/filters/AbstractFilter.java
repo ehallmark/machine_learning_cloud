@@ -14,14 +14,14 @@ import java.util.Collection;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractFilter extends DependentAttribute {
+public abstract class AbstractFilter<T> extends DependentAttribute<T> {
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword
     }
 
     public enum FieldType {
-        Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword
+        Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword, NestedObject, Object
     }
 
     protected AbstractAttribute<?> attribute;
@@ -29,11 +29,6 @@ public abstract class AbstractFilter extends DependentAttribute {
     public AbstractFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
         this.attribute=attribute;
         this.filterType=filterType;
-    }
-
-    @Override
-    public Object attributesFor(Collection portfolio, int limit) {
-        throw new UnsupportedOperationException("Filter shouldn't use attributesFor method.");
     }
 
     @Override

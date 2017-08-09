@@ -29,6 +29,13 @@ public class Constants {
 	public static final String MEANS_PRESENT = "meansPresent";
 	public static final String CITATION_VALUE = "citationValue";
 	public static final String CLAIM_VALUE = "claimValue";
+	public static final String CLAIMS = "claims";
+	public static final String ASSIGNEES = "assignees";
+	public static final String INDEPENDENT_CLAIM = "independentClaim";
+	public static final String INVENTORS = "inventors";
+	public static final String AGENTS = "agents";
+	public static final String APPLICANTS = "applicants";
+	public static final String CITATIONS = "citations";
 	public static final String DOC_TYPE = "docType";
 	public static final String FILTER_SUFFIX = "_filter[]";
 	public static final String LENGTH_OF_GRANT = "lengthOfGrant";

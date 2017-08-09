@@ -73,10 +73,6 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
             "}" +
             "return ab;";
 
-    @Override
-    public Object attributesFor(Collection portfolio, int limit) {
-        throw new UnsupportedOperationException("AttributesFor not defined in similarity models");
-    }
 
     @Override
     public String getType() {

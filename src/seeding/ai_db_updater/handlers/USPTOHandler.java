@@ -109,6 +109,11 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
+        Flag latestAssigneeFlag = Flag.parentFlag("assignee");
+        latestAssigneeFlag.compareFunction = Flag.endsWithCompareFunction;
+        latestAssigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.LATEST_ASSIGNEE, documentFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+        documentFlag.addChild(latestAssigneeFlag);
+
 
         EndFlag claimTextFlag = new EndFlag("claim") {
             {
@@ -126,7 +131,7 @@ public class USPTOHandler extends NestedHandler {
 
         EndFlag citationFlag = new EndFlag("citation") {
             {
-                dbName = "citations";
+                dbName = Constants.CITATIONS;
             }
             @Override
             public void save() {
@@ -146,7 +151,7 @@ public class USPTOHandler extends NestedHandler {
         // parties
         EndFlag applicantFlag = new EndFlag("applicant") {
             {
-                dbName = "applicants";
+                dbName = Constants.APPLICANTS;
             }
             @Override
             public void save() {
@@ -164,7 +169,7 @@ public class USPTOHandler extends NestedHandler {
 
         EndFlag inventorFlag = new EndFlag("inventor") {
             {
-                dbName = "inventors";
+                dbName = Constants.INVENTORS;
             }
             @Override
             public void save() {
@@ -182,7 +187,7 @@ public class USPTOHandler extends NestedHandler {
 
         EndFlag agentFlag = new EndFlag("agent") {
             {
-                dbName = "agents";
+                dbName = Constants.AGENTS;
             }
             @Override
             public void save() {
@@ -200,7 +205,7 @@ public class USPTOHandler extends NestedHandler {
 
         EndFlag assigneeFlag = new EndFlag("assignee") {
             {
-                dbName = "assignees";
+                dbName = Constants.ASSIGNEES;
             }
             @Override
             public void save() {
@@ -218,11 +223,10 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, assigneeFlag).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-        assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.LATEST_ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
 
         EndFlag claimFlag = new EndFlag("claim") {
             {
-                dbName = "claims";
+                dbName = Constants.CLAIMS;
             }
             @Override
             public void save() {

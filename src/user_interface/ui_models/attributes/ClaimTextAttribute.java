@@ -8,9 +8,9 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class ClaimTextAttribute extends StreamableAttribute<String> {
+public class ClaimTextAttribute extends AbstractAttribute<String> {
     public ClaimTextAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }
 
     @Override
