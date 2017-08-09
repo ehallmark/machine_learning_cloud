@@ -276,6 +276,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
+        SimilarPatentServer.loadAttributes(false);
         boolean seedApplications = true;
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
         NestedHandler handler = new USPTOHandler(seedApplications);
