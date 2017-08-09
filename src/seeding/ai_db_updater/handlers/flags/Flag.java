@@ -27,16 +27,14 @@ public class Flag {
         return flag.localName.endsWith(str);
     };
 
-    private static Function<String,Boolean> validDateFunction(DateTimeFormatter formatter) {
-        return (str) -> {
-            try {
-                LocalDate.parse(str, formatter);
-                return true;
-            } catch (Exception e) {
-                return false;
-            }
-        };
-    }
+    private static Function<String,Boolean> validDateFunction = (str) -> {
+        try {
+            LocalDate.parse(str, DateTimeFormatter.ISO_DATE);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    };
 
     private static Function<String,Boolean> validIntegerFunction = (str) -> {
         try {
@@ -47,11 +45,22 @@ public class Flag {
         }
     };
 
+    public static  Function<Flag,Function<String,?>> dateTransformationFunction(DateTimeFormatter format) {
+         return flag->(str)->{
+             String date = str!=null&&str.endsWith("00")?str.substring(0,str.length()-1)+"1":str;
+             try {
+                 return LocalDate.parse(date,format).format(DateTimeFormatter.ISO_DATE);
+             } catch(Exception e) {
+                 return null;
+             }
+         };
+
+    }
+
     public static final Function<Flag,Function<String,?>> assigneeTransformationFunction = (flag) -> (str) -> AssigneeTrimmer.standardizedAssignee(str);
 
     public static final Function<Flag,Function<String,?>> defaultTransformationFunction = (flag)->(str) -> str;
 
-    public static final Function<Flag,Function<String,?>> defaultISODateTransformationFunction = flag->(str)->str!=null&&str.endsWith("00")?str.substring(0,str.length()-1)+"1":str;
 
     public static final Function<Flag,Function<String,?>> filingDocumentHandler = (flag) -> (str) -> {
         str=str.replace(" ","").replace("/","");
@@ -82,7 +91,7 @@ public class Flag {
     };
 
     public final String localName;
-    public final String dbName;
+    public String dbName;
     public final AtomicBoolean flag;
     public final List<Flag> children;
     boolean isAttributeFlag = false;
@@ -135,12 +144,9 @@ public class Flag {
     public static Flag booleanFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
         return new Flag(localName,dbName,"boolean",(str)->str.equals("true")||str.equals("false"),defaultCompareFunction,defaultTransformationFunction,endFlag);
     }
-    public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
-        return dateFlag(localName,dbName,endFlag,DateTimeFormatter.ISO_DATE);
-    }
 
-    public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag, @NonNull DateTimeFormatter dateFormat) {
-        return new Flag(localName,dbName,"date",validDateFunction(dateFormat),defaultCompareFunction,defaultTransformationFunction,endFlag);
+    public static Flag dateFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {
+        return new Flag(localName,dbName,"date",validDateFunction,defaultCompareFunction,defaultTransformationFunction,endFlag);
     }
 
     public static Flag integerFlag(@NonNull String localName,@NonNull String dbName, EndFlag endFlag) {

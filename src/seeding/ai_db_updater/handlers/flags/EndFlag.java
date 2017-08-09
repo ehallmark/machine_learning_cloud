@@ -10,19 +10,22 @@ import java.util.function.Function;
 public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
     public final Map<String,Flag> flagMap = new HashMap<>();
+    public List<Map<String,Object>> dataQueue = new ArrayList<>();
     public EndFlag(String localName) {
         super(localName,null,null,null,defaultCompareFunction,null,null);
     }
 
     public abstract void save();
+
     public Map<Flag,String> getDataMap() {
         return dataMap;
     }
 
-    public Map<Flag,Object> getTransform() {
-        Map<Flag,Object> transform = new HashMap<>(dataMap.size());
+    public Map<String,Object> getTransform(Collection<String> flagsToIngest) {
+        Map<String,Object> transform = new HashMap<>(dataMap.size());
         Collection<Flag> flags = new HashSet<>(dataMap.keySet());
         flags.forEach(flag->{
+            if(!flagsToIngest.contains(flag.dbName)) return;
             String data = dataMap.get(flag);
             Object result;
             if(flag.isForeign()) {
@@ -31,7 +34,7 @@ public abstract class EndFlag extends Flag {
                 result = flag.apply(data);
             }
             if (result != null) {
-                transform.put(flag, result);
+                transform.put(flag.dbName, result);
             }
         });
         return transform;

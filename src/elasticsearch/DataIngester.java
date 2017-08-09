@@ -72,7 +72,7 @@ public class DataIngester {
         return builder;
     }
 
-    public static void ingestItems(Collection<Item> items, PortfolioList.Type type, boolean create) {
+    public static void ingestItems(Collection<Item> items, boolean create) {
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
