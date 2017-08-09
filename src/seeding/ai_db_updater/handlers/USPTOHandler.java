@@ -53,7 +53,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = true;
+        boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
@@ -62,7 +62,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 try {
-                    //debug(this, debug, attrsToIngest);
+                    debug(this, debug, attrsToIngest);
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
                     Object name = toIngest.get(Constants.NAME);
                     if (name == null) return;
@@ -122,7 +122,6 @@ public class USPTOHandler extends NestedHandler {
             }
             @Override
             public void save() {
-                debug(this,debug,attrsToIngest);
                 dataQueue.add(getTransform(attrsToIngest));
             }
         };
