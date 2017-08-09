@@ -31,7 +31,7 @@ public class CreatePatentDBIndex {
         properties.put("properties",mapping);
         builder.addMapping(DataIngester.TYPE_NAME, properties);
         System.out.println("Query: "+new Gson().toJson(properties));
-       // builder.get();
+        builder.get();
     }
 
     private static Object typeMap(String type) {
@@ -40,15 +40,21 @@ public class CreatePatentDBIndex {
         return typeMap;
     }
 
+    private static Object nestedTypeMap(String type, Map<String,Object> props) {
+        Map<String,Object> typeMap = new HashMap<>();
+        typeMap.put("type",type);
+        typeMap.put("properties",props);
+        return typeMap;
+    }
+
     private static void recursiveHelper(AbstractAttribute attr, Map<String,Object> mapping) {
         if(attr instanceof NestedAttribute) {
             Map<String,Object> nestedMapping = new HashMap<>();
-            mapping.put(attr.getName(),nestedMapping);
+            mapping.put(attr.getName(),nestedTypeMap(attr.getType(),nestedMapping));
             ((NestedAttribute) attr).getAttributes().forEach(nestedAttr->{
                 recursiveHelper((AbstractAttribute)nestedAttr,nestedMapping);
             });
         } else {
-            // stop
             mapping.put(attr.getName(),typeMap(attr.getType()));
         }
     }
