@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
@@ -29,7 +30,7 @@ public class CreatePatentDBIndex {
         Map<String,Object> properties = new HashMap<>();
         properties.put("properties",mapping);
         builder.addMapping(DataIngester.TYPE_NAME, properties);
-        System.out.println("Query: "+builder.toString());
+        System.out.println("Query: "+new Gson().toJson(properties));
        // builder.get();
     }
 
