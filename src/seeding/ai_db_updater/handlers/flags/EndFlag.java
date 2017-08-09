@@ -1,5 +1,7 @@
 package seeding.ai_db_updater.handlers.flags;
 
+import lombok.Getter;
+
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -11,6 +13,8 @@ public abstract class EndFlag extends Flag {
     protected Map<Flag,String> dataMap = new HashMap<>();
     public final Map<String,Flag> flagMap = new HashMap<>();
     public List<Map<String,Object>> dataQueue = new ArrayList<>();
+    @Getter
+    public boolean isArray = false;
     public EndFlag(String localName) {
         super(localName,null,null,null,defaultCompareFunction,null,null);
     }
@@ -48,4 +52,5 @@ public abstract class EndFlag extends Flag {
     public EndFlag getEndFlag() {
         return this;
     }
+
 }

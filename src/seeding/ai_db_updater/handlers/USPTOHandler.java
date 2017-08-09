@@ -61,28 +61,33 @@ public class USPTOHandler extends NestedHandler {
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
             public void save() {
-                debug(this,debug, attrsToIngest);
-                Map<String,Object> toIngest = getTransform(attrsToIngest);
-                Object name = toIngest.get(Constants.NAME);
-                if(name==null)return;
-                queue.put(name.toString(),toIngest);
-                nestedEndFlags.forEach(endFlag->{
-                    List<Map<String,Object>> data = endFlag.dataQueue;
-                    if(data.isEmpty() || endFlag.children.isEmpty()) return;
-                    int maxSize = data.stream().mapToInt(map->map.size()).min().getAsInt();
-                    if(maxSize==1) {
-                        // add as array
-                        toIngest.put(endFlag.dbName,endFlag.dataQueue.stream().map(map->map.get(dbName)).filter(d->d!=null).collect(Collectors.toList()));
-                    } else {
-                        toIngest.put(endFlag.dbName,endFlag.dataQueue);
+                try {
+                    //debug(this, debug, attrsToIngest);
+                    Map<String, Object> toIngest = getTransform(attrsToIngest);
+                    Object name = toIngest.get(Constants.NAME);
+                    if (name == null) return;
+                    queue.put(name.toString(), toIngest);
+                    nestedEndFlags.forEach(endFlag -> {
+                        List<Map<String, Object>> data = endFlag.dataQueue;
+                        if (data.isEmpty() || endFlag.children.isEmpty()) return;
+                        if (endFlag.isArray()) {
+                            // add as array
+                            toIngest.put(endFlag.dbName, endFlag.dataQueue.stream().map(map -> map.get(dbName)).filter(d -> d != null).collect(Collectors.toList()));
+                        } else {
+                            toIngest.put(endFlag.dbName, endFlag.dataQueue);
+                        }
+                    });
+                    synchronized (USPTOHandler.class) {
+                        if (queue.size() > batchSize) {
+                            System.out.println(cnt.getAndAdd(queue.size()));
+                            //DataIngester.ingestAssets(queue, true);
+                            queue.clear();
+                        }
                     }
-                });
-                synchronized (USPTOHandler.class) {
-                    if (queue.size() > batchSize) {
-                        System.out.println(cnt.getAndAdd(queue.size()));
-                        //DataIngester.ingestAssets(queue, true);
-                        queue.clear();
-                    }
+                } finally {
+                    // clear dataqueues
+                    dataQueue.clear();
+                    nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
                 }
             }
         };
@@ -104,7 +109,20 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
-        documentFlag.addChild(Flag.integerFlag("claims",Constants.CLAIM,documentFlag));
+
+        EndFlag claimTextFlag = new EndFlag("claim") {
+            {
+                isArray=true;
+                dbName = Constants.CLAIM;
+            }
+            @Override
+            public void save() {
+                debug(this,debug,attrsToIngest);
+                dataQueue.add(getTransform(attrsToIngest));
+            }
+        };
+        endFlags.add(claimTextFlag);
+        claimTextFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimTextFlag));
 
         EndFlag citationFlag = new EndFlag("citation") {
             {
