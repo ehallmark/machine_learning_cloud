@@ -17,13 +17,14 @@ import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
 
  */
 public class USPTOHandler extends NestedHandler {
-    private static final AtomicInteger cnt = new AtomicInteger(0);
+    private static final AtomicLong cnt = new AtomicLong(0);
     protected final String topLevelTag;
     public USPTOHandler(boolean applications) {
         if(applications) {
@@ -52,7 +53,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = false;
+        boolean debug = true;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
@@ -80,6 +81,7 @@ public class USPTOHandler extends NestedHandler {
                     if (queue.size() > batchSize) {
                         System.out.println(cnt.getAndAdd(queue.size()));
                         //DataIngester.ingestAssets(queue, true);
+                        queue.clear();
                     }
                 }
             }
