@@ -21,16 +21,24 @@ public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
 
     public WIPOTechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+    }
+
+    public static Map<String,String> getDefinitionMap() {
         if(definitionMap==null) definitionMap= WIPOHelper.getDefinitionMap();
+        return definitionMap;
+    }
+
+    public static Map<String,String> getWipoMap() {
         if(wipoMap==null) wipoMap = WIPOHelper.getWIPOMapWithAssignees();
+        return wipoMap;
     }
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
         String item = portfolio.stream().findAny().get();
-        String attr = wipoMap.get(item);
+        String attr = getWipoMap().get(item);
         if(attr!=null) {
-            String title = definitionMap.get(attr);
+            String title = getDefinitionMap().get(attr);
             if(title!=null) return title;
         }
         return "";
@@ -49,6 +57,11 @@ public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
     @Override
     public String getType() {
         return "keyword";
+    }
+
+    @Override
+    public Collection<String> getAllValues() {
+        return WIPOHelper.getOrderedClassifications();
     }
 
 

@@ -11,6 +11,14 @@ import java.time.Month;
 import java.util.*;
 
 public class Constants {
+	public static final String REEL_NO = "reelNo";
+	public static final String FRAME_NO = "frameNo";
+	public static final String PURGE_INDICATOR = "purgeIndicator";
+	public static final String CORRESPONDENT = "correspondent";
+	public static final String FULL_NAME = "fullName";
+	public static final String REEL_FRAME = "reelFrame";
+	public static final String EXECUTION_DATE = "executionDate";
+	public static final String CONVEYANCE_TEXT = "conveyanceText";
 	public static final String PATENT_DATA_FOLDER = "patentDataFolder/";
 	public static final String APPLICATION_DATA_FOLDER = "applicationDataFolder/";
 	public static final String CLAIM_STATEMENT = "claimStatement";
@@ -40,6 +48,7 @@ public class Constants {
 	public static final String FILTER_SUFFIX = "_filter[]";
 	public static final String LENGTH_OF_GRANT = "lengthOfGrant";
 	public static final String LATEST_ASSIGNEE = "assignee";
+	public static final String RECORDED_DATE = "recordedDate";
 	public static final String NAME = "name";
 	public static final String FILING_NAME = "filingName";
 	public static final String FILING_COUNTRY = "filingCountry";

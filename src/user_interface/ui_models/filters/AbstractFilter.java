@@ -50,6 +50,11 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
     public abstract Tag getOptionsTag();
 
     @Override
+    public Collection<String> getAllValues() {
+        return attribute.getAllValues();
+    }
+
+    @Override
     public String getType() {
         return attribute.getType();
     }

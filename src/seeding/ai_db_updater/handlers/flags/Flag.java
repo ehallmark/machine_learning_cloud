@@ -78,7 +78,7 @@ public class Flag {
         if(kind.startsWith("S")) {
             // design
             if(str.startsWith("D0")) str = "D"+str.substring(2);
-        } else if (kind.trim().equals("A")||kind.equals("00")) {
+        } else if (kind.trim().equals("A")||kind.equals("00")||kind.equals("X0")) {
             // filing?
             return filingDocumentHandler.apply(flag).apply(str);
         } else if(kind.startsWith("B")) {

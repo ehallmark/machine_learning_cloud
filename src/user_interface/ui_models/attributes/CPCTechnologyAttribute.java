@@ -52,4 +52,9 @@ public class CPCTechnologyAttribute extends ComputableAttribute<String> {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Multiselect;
     }
+
+    @Override
+    public Collection<String> getAllValues() {
+        return Database.getClassCodeToClassTitleMap().values().stream().sorted().collect(Collectors.toList());
+    }
 }

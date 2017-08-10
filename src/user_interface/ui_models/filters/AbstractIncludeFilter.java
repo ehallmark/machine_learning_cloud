@@ -66,7 +66,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
             );
         } else {
             return div().with(
-                    SimilarPatentServer.technologySelect(getName(), labels)
+                    SimilarPatentServer.technologySelect(getName(), getAllValues())
             );
         }
     }

@@ -61,7 +61,7 @@ public class AbstractExcludeFilter extends AbstractFilter {
             );
         } else {
             return div().with(
-                    SimilarPatentServer.technologySelect(getPrerequisite(), labels)
+                    SimilarPatentServer.technologySelect(getPrerequisite(), getAllValues())
             );
         }
     }

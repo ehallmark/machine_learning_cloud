@@ -7,10 +7,7 @@ import spark.Request;
 import user_interface.ui_models.filters.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -32,6 +29,10 @@ public abstract class AbstractAttribute<T> {
 
     public abstract AbstractFilter.FieldType getFieldType();
 
+    // for populating select dropdown filters
+    public Collection<String> getAllValues() {
+        return Collections.emptyList();
+    }
 
     public boolean supportedByElasticSearch() {
         return true;

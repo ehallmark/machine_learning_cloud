@@ -3,6 +3,7 @@ package user_interface.ui_models.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import models.classification_models.ClassificationAttr;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -39,6 +40,10 @@ public class TechnologyAttribute extends ComputableAttribute<String> {
         return "keyword";
     }
 
+    @Override
+    public Collection<String> getAllValues() {
+        return SimilarPatentServer.getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList());
+    }
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
