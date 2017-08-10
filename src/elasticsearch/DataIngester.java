@@ -55,7 +55,7 @@ public class DataIngester {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             System.out.println("ERROR UPDATING BATCH");
             System.exit(1);
         } finally {
