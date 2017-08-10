@@ -177,7 +177,7 @@ public class Database {
 		return date.toString();
 	}
 
-	public static Map<String,LocalDate> getExpirationDateMap() {
+	public synchronized static Map<String,LocalDate> getExpirationDateMap() {
 		if(expirationDateMap==null) {
 			expirationDateMap = (Map<String,LocalDate>) loadObject(expirationDateMapFile);
 		}
