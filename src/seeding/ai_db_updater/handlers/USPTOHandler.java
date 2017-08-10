@@ -364,19 +364,23 @@ public class USPTOHandler extends NestedHandler {
     }
 
 
-    private static void ingestData(boolean seedApplications) {
+    private static void ingestData(boolean seedApplications, int numEpochs) {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.addAll(computableAttributes.stream().flatMap(attr->(Stream<ComputableAttribute>)attr.getNecessaryMetaAttributes().stream()).collect(Collectors.toList()));
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->b.endsWith("2010-06-08"));
         NestedHandler handler = new USPTOHandler(seedApplications);
-        iterator.applyHandlers(handler);
+        for(int i = 0; i < numEpochs; i++) {
+            System.out.println("Starting epoch: "+i);
+            iterator.applyHandlers(handler);
+        }
     }
 
     public static void main(String[] args) {
+        int numEpochs = 2; // requires two full passes
         SimilarPatentServer.loadAttributes();
-        ingestData(true);
-        ingestData(false);
+        ingestData(true,numEpochs);
+        ingestData(false,numEpochs);
     }
 }
