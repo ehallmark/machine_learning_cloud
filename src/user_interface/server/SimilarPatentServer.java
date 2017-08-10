@@ -307,13 +307,14 @@ public class SimilarPatentServer {
                 Item item = new Item(label);
                 if(loadVectors) {
                     INDArray vector = lookupTable.get(label);
-                    if (vector == null) return null;
-                    float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
-                    Map<String, Float> obj = new HashMap<>();
-                    for (int i = 0; i < data.length; i++) {
-                        obj.put(String.valueOf(i), data[i]);
+                    if (vector != null) {
+                        float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
+                        Map<String, Float> obj = new HashMap<>();
+                        for (int i = 0; i < data.length; i++) {
+                            obj.put(String.valueOf(i), data[i]);
+                        }
+                        item.addData("vector_obj", obj);
                     }
-                    item.addData("vector_obj", obj);
                 }
                 attributes.forEach(model -> {
                     item.addData(model.getName(), ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1));
