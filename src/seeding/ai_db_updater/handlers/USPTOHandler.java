@@ -65,6 +65,7 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 try {
                     //debug(this, debug, attrsToIngest);
+                    System.out.println("Saving...");
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
                     Object name = toIngest.get(Constants.NAME);
                     if (name == null){
