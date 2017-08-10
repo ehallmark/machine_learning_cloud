@@ -355,9 +355,6 @@ public class USPTOHandler extends NestedHandler {
             if(firstPassThrough.getAndSet(false)) {
                 if (computableAttributes != null) {
                     computableAttributes.forEach(attr -> {
-                    attr.getNecessaryMetaAttributes().forEach(metaAttr -> {
-                        ((MetaComputableAttribute) metaAttr).save();
-                    });
                     attr.save();
                 });
             } else {

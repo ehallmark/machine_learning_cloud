@@ -21,13 +21,4 @@ public class ExpirationDateAttribute extends PriorityDateAttribute {
         return Constants.EXPIRATION_DATE;
     }
 
-    @Override
-    public String getType() {
-        return "date";
-    }
-
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Date;
-    }
 }
