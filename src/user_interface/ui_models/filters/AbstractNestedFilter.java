@@ -56,10 +56,14 @@ public class AbstractNestedFilter<T> extends AbstractFilter<T> {
 
     @Override
     public Tag getOptionsTag() {
-        String collapseId = "collapse-filters-"+getName().replaceAll("[\\[\\]]","");
-        String type = "filters";
-        return div().withClass("row").with(filters.stream().map(filter->div().withClass("col-12").with(
-                SimilarPatentServer.createAttributeElement(type,filter.getName(),collapseId,filter.getName(),filter.getOptionsTag()))).collect(Collectors.toList())
+        return div().withClass("row").with(
+                filters.stream().map(filter->{
+                    String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
+                    String type = "filters";
+                    return div().withClass("col-12").with(
+                                    SimilarPatentServer.createAttributeElement(type,filter.getName(),collapseId,SimilarPatentServer.PRE_FILTER_ARRAY_FIELD,filter.getOptionsTag(),true)
+                    );
+                }).collect(Collectors.toList())
         );
     }
 

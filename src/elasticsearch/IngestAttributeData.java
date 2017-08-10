@@ -20,7 +20,7 @@ public class IngestAttributeData {
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllAttributeNames(),true);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllComputableAttributeNames(),true);
     }
 
 }

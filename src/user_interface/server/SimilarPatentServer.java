@@ -165,9 +165,26 @@ public class SimilarPatentServer {
                 }
                 return stream;
             }).collect(Collectors.toSet());
-            System.out.println("Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
+            System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
         }
         return allStreamingAttrNames;
+    }
+
+    private static Collection<String> allComputableAttrNames;
+    public static Collection<String> getAllComputableAttributeNames() {
+        if(allComputableAttrNames ==null) {
+            allComputableAttrNames = allAttributes.stream().filter(attr ->attr instanceof ComputableAttribute).flatMap(attr->{
+                Stream<String> stream;
+                if(attr instanceof NestedAttribute) {
+                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
+                } else {
+                    stream = Arrays.asList(attr.getName()).stream();
+                }
+                return stream;
+            }).collect(Collectors.toSet());
+            System.out.println("Computable Attributes: "+Arrays.toString(allComputableAttrNames.toArray()));
+        }
+        return allComputableAttrNames;
     }
 
     public static String humanAttributeFor(String attr) {
@@ -798,7 +815,7 @@ public class SimilarPatentServer {
                                                     String arrayFieldName = pair._2;
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag());
+                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(),false);
                                                     });
                                                 }).collect(Collectors.toList())
                                         )
@@ -808,11 +825,11 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag) {
+    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nested) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
         return div().withClass("draggable "+type).attr("data-target",type).with(
-                div().attr("style","width: 100%;").withClass("collapsible-header").attr("data-target","#"+collapseId).with(
+                div().attr("style","width: 100%;").withClass("collapsible-header"+(nested ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
                         span().withClass("remove-button").withText("x")

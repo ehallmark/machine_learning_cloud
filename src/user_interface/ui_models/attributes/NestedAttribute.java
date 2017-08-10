@@ -27,7 +27,11 @@ public abstract class NestedAttribute<T> extends AbstractAttribute<T> {
     @Override
     public Tag getOptionsTag() {
         return div().withClass("row").with(
-                attributes.stream().map(attr->label(attr.getName())).collect(Collectors.toList())
+                attributes.stream().map(attr->{
+                    return div().withClass("col-12").with(
+                            label(attr.getName())
+                    );
+                }).collect(Collectors.toList())
         );
     }
 
