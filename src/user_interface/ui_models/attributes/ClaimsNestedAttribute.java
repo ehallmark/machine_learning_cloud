@@ -15,7 +15,7 @@ public class ClaimsNestedAttribute extends NestedAttribute {
 
     @Override
     public String getName() {
-        return Constants.CITATIONS;
+        return Constants.CLAIMS;
     }
 
     @Override
