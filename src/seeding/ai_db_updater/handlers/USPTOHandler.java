@@ -98,8 +98,7 @@ public class USPTOHandler extends NestedHandler {
                 } finally {
                     // clear dataqueues
                     dataQueue.clear();
-                    //nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
-                    queue.clear();
+                    nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
                 }
             }
         };
