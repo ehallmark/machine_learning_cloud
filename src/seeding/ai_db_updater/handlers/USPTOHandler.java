@@ -67,7 +67,6 @@ public class USPTOHandler extends NestedHandler {
                     //debug(this, debug, attrsToIngest);
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
                     Object name = toIngest.get(Constants.NAME);
-                    System.out.println("Saving "+toIngest.size()+" attrs for "+name);
                     if (name == null){
                         System.out.println("NO NAME!!!!!!!!!!");
                         if(errors.getAndIncrement()%10==0) {
@@ -86,13 +85,12 @@ public class USPTOHandler extends NestedHandler {
                             toIngest.put(endFlag.dbName, data.stream().filter(map->map.size()>0).collect(Collectors.toList()));
                         }
                     });
-                    System.out.println("Attrs after nested: "+toIngest.size());
                     synchronized (USPTOHandler.class) {
-                        //if (queue.size() > batchSize) {
+                        if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
                             DataIngester.ingestAssets(queue, true);
                             queue.clear();
-                        //}
+                        }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
