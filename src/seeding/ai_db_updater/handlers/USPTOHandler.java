@@ -134,7 +134,7 @@ public class USPTOHandler extends NestedHandler {
                             queue.put(name.toString(), toIngest);
                             if (queue.size() > batchSize) {
                                 System.out.println(cnt.getAndAdd(queue.size()));
-                                DataIngester.ingestAssets(queue, firstPassThrough.get());
+                                DataIngester.ingestAssets(queue, true);
                             }
                         }
                     }
@@ -361,7 +361,7 @@ public class USPTOHandler extends NestedHandler {
                     attr.save();
                 });
             } else {
-                DataIngester.ingestAssets(queue, firstPassThrough.get());
+                DataIngester.ingestAssets(queue, true);
             }
         }
     }
@@ -372,7 +372,7 @@ public class USPTOHandler extends NestedHandler {
         computableAttributes.addAll(computableAttributes.stream().flatMap(attr->(Stream<ComputableAttribute>)attr.getNecessaryMetaAttributes().stream()).collect(Collectors.toList()));
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
-        WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
+        WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->b.startsWith("2010"));
         NestedHandler handler = new USPTOHandler(seedApplications);
         iterator.applyHandlers(handler);
     }
