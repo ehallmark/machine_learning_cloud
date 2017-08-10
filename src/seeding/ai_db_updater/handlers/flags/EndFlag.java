@@ -27,7 +27,7 @@ public abstract class EndFlag extends Flag {
 
     public Map<String,Object> getTransform(Collection<String> flagsToIngest) {
         Map<String,Object> transform = new HashMap<>(dataMap.size());
-        Collection<Flag> flags = dataMap.keySet();
+        Collection<Flag> flags = new HashSet<>(dataMap.keySet());
         flags.forEach(flag->{
             if(!flagsToIngest.contains(flag.dbName)) {
                if(dbName==null || !flagsToIngest.contains(dbName+"."+flag.dbName)) {
