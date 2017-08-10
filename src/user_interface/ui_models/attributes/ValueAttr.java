@@ -44,7 +44,7 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     }
 
     @Override
-    public Map<String,Number> getPatentDataMap() {
+    public synchronized Map<String,Number> getPatentDataMap() {
         if(patentDataMap==null) {
             patentDataMap = (Map<String,Number>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
             if(distributionType!=null) patentDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(patentDataMap));
@@ -53,7 +53,7 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     }
 
     @Override
-    public Map<String,Number> getApplicationDataMap() {
+    public synchronized Map<String,Number> getApplicationDataMap() {
         if(applicationDataMap==null) {
             applicationDataMap = (Map<String,Number>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
             if(distributionType!=null) applicationDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(applicationDataMap));

@@ -4,31 +4,31 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
-import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import seeding.Constants;
-import seeding.ai_db_updater.iterators.FileIterator;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.ComputableAttribute;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
 
  */
-public class USPTOHandler extends NestedHandler {
+public class USPTOComputationHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
     protected final String topLevelTag;
-    public USPTOHandler(boolean applications) {
+    private boolean applications;
+    public USPTOComputationHandler(boolean applications) {
+        this.applications=applications;
         if(applications) {
             topLevelTag = "us-patent-application";
         } else {
@@ -37,10 +37,6 @@ public class USPTOHandler extends NestedHandler {
     }
 
     private static Map<String,Map<String,Object>> queue = Collections.synchronizedMap(new HashMap<>(5000));
-
-    protected USPTOHandler(String topLevelTag) {
-        this.topLevelTag=topLevelTag;
-    }
 
     private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
@@ -58,7 +54,7 @@ public class USPTOHandler extends NestedHandler {
         boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
-        Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
+        Collection<String> attrsToIngest = SimilarPatentServer.getAllComputableAttributeNames();
         // application flags
         EndFlag documentFlag = new EndFlag(topLevelTag) {
             @Override
@@ -84,7 +80,7 @@ public class USPTOHandler extends NestedHandler {
                             toIngest.put(endFlag.dbName, data.stream().filter(map->map.size()>0).collect(Collectors.toList()));
                         }
                     });
-                    synchronized (USPTOHandler.class) {
+                    synchronized (USPTOComputationHandler.class) {
                         queue.put(name.toString(), toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
@@ -298,7 +294,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        USPTOHandler handler = new USPTOHandler(topLevelTag);
+        USPTOComputationHandler handler = new USPTOComputationHandler(applications);
         handler.init();
         return handler;
     }
@@ -311,7 +307,7 @@ public class USPTOHandler extends NestedHandler {
 
     private static void ingestData(boolean seedApplications) {
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
-        NestedHandler handler = new USPTOHandler(seedApplications);
+        NestedHandler handler = new USPTOComputationHandler(seedApplications);
         iterator.applyHandlers(handler);
     }
 

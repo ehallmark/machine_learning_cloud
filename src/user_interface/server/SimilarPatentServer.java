@@ -139,7 +139,7 @@ public class SimilarPatentServer {
     private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
-            allAttrNames = allAttributes.stream().flatMap(attr->{
+            allAttrNames = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()).flatMap(attr->{
                 Stream<String> stream;
                 if(attr instanceof NestedAttribute) {
                     stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
@@ -156,7 +156,7 @@ public class SimilarPatentServer {
     private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
-            allStreamingAttrNames = allAttributes.stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
+            allStreamingAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&!(attr instanceof ComputableAttribute)).flatMap(attr->{
                 Stream<String> stream;
                 if(attr instanceof NestedAttribute) {
                     stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
@@ -173,10 +173,10 @@ public class SimilarPatentServer {
     private static Collection<String> allComputableAttrNames;
     public static Collection<String> getAllComputableAttributeNames() {
         if(allComputableAttrNames ==null) {
-            allComputableAttrNames = allAttributes.stream().filter(attr ->attr instanceof ComputableAttribute).flatMap(attr->{
+            allComputableAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).flatMap(attr->{
                 Stream<String> stream;
                 if(attr instanceof NestedAttribute) {
-                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
+                    throw new RuntimeException("Computable attributes are not (yet) allowed to be nested");
                 } else {
                     stream = Arrays.asList(attr.getName()).stream();
                 }
@@ -195,8 +195,8 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void initialize(boolean loadData, boolean onlyAttributes) {
-        loadAttributes(loadData);
+    public static void initialize(boolean onlyAttributes) {
+        loadAttributes();
         if(!onlyAttributes) {
             loadFilterModels();
             loadTechTaggerModel();
@@ -249,7 +249,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAttributes(boolean loadData) {
+    public static void loadAttributes() {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
@@ -261,7 +261,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_PURCHASED, new CompDBAssetsPurchasedAttribute());
             attributesMap.put(Constants.COMPDB_ASSETS_SOLD, new CompDBAssetsSoldAttribute());
-            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator(loadData));
+            attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
@@ -941,7 +941,7 @@ public class SimilarPatentServer {
         if(initDatabase) Database.initializeDatabase();
 
         System.out.println("Starting to load base finder...");
-        initialize(false,false);
+        initialize(false);
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
         server();

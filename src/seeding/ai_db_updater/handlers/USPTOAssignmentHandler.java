@@ -141,7 +141,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     public static void main(String[] args) {
-        SimilarPatentServer.loadAttributes(false);
+        SimilarPatentServer.loadAttributes();
         ingestData();
     }
 }

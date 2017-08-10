@@ -13,15 +13,27 @@ import java.util.stream.Collectors;
  */
 public class OverallEvaluator extends ValueAttr {
     private static final File mergedValueModelFile = new File("data/merged_value_model_map.jobj");
+    private static Map<String,Double> aiValueMap;
 
     @Override
     public String getName() {
         return Constants.AI_VALUE;
     }
 
-    public OverallEvaluator(boolean loadData) {
+    public OverallEvaluator() {
         super(null);
     }
+
+    @Override
+    public Double attributesFor(Collection<String> portfolio, int limit) {
+        if(aiValueMap==null) {
+            aiValueMap = (Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
+        }
+        return portfolio.stream().map(item->{
+            return aiValueMap.getOrDefault(item,null);
+        }).filter(item->item!=null).findAny().orElse(null);
+    }
+
 
     private static void runAndSaveOverallModel() {
         List<ValueAttr> evaluators = Arrays.asList(
