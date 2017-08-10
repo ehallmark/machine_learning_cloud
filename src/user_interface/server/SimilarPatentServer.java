@@ -166,6 +166,7 @@ public class SimilarPatentServer {
                 return stream;
             }).collect(Collectors.toSet());
         }
+        System.out.println("Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
         return allStreamingAttrNames;
     }
 
