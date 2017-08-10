@@ -26,8 +26,10 @@ public class OverallEvaluator extends ValueAttr {
 
     @Override
     public Double attributesFor(Collection<String> portfolio, int limit) {
-        if(aiValueMap==null) {
-            aiValueMap = (Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
+        synchronized (OverallEvaluator.class) {
+            if(aiValueMap==null) {
+                aiValueMap = (Map<String,Double>)Database.tryLoadObject(mergedValueModelFile);
+            }
         }
         return portfolio.stream().map(item->{
             return aiValueMap.getOrDefault(item,null);
