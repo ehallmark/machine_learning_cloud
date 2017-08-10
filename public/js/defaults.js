@@ -33,8 +33,8 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
         var value = $this.parent().find(".value").val();
-        var toDisplay = $this.parent().next().find('.draggable').get(parseInt(value,10));
-        showDraggable(toDisplay);
+        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(parseInt(value,10));
+        showDraggable(toDisplay.parentElement);
     });
 
     // on close
