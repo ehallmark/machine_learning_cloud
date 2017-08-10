@@ -4,6 +4,7 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
+import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import seeding.Constants;
 import seeding.ai_db_updater.iterators.FileIterator;
@@ -53,7 +54,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = false;
+        boolean debug = true;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
@@ -62,7 +63,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 try {
-                    debug(this, debug, attrsToIngest);
+                    //debug(this, debug, attrsToIngest);
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
                     Object name = toIngest.get(Constants.NAME);
                     if (name == null) return;
@@ -84,10 +85,12 @@ public class USPTOHandler extends NestedHandler {
                             queue.clear();
                         }
                     }
+                    System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
                     // clear dataqueues
                     dataQueue.clear();
-                    nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
+                    //nestedEndFlags.forEach(endFlag->endFlag.dataQueue.clear());
+                    queue.clear();
                 }
             }
         };
