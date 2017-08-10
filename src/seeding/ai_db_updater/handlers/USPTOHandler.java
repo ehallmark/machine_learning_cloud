@@ -74,7 +74,6 @@ public class USPTOHandler extends NestedHandler {
                         }
                         return;
                     }
-                    queue.put(name.toString(), toIngest);
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
                         if (data.isEmpty() || endFlag.children.isEmpty()) return;
@@ -86,6 +85,7 @@ public class USPTOHandler extends NestedHandler {
                         }
                     });
                     synchronized (USPTOHandler.class) {
+                        queue.put(name.toString(), toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
                             DataIngester.ingestAssets(queue, true);
