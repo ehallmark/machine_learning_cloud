@@ -24,11 +24,6 @@ public class ExpiredAttribute extends ComputableAttribute<Boolean> {
 
 
     @Override
-    public Boolean handleIncomingData(String name, Map<String, Object> data, boolean isApplication) {
-        return null;
-    }
-
-    @Override
     public String getName() {
         return Constants.EXPIRED;
     }

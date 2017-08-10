@@ -17,12 +17,6 @@ import static j2html.TagCreator.div;
 public class ExpirationDateAttribute extends PriorityDateAttribute {
 
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        return Database.expirationDateFor(item);
-    }
-
-    @Override
     public String getName() {
         return Constants.EXPIRATION_DATE;
     }

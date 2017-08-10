@@ -372,7 +372,7 @@ public class USPTOHandler extends NestedHandler {
         computableAttributes.addAll(computableAttributes.stream().flatMap(attr->(Stream<ComputableAttribute>)attr.getNecessaryMetaAttributes().stream()).collect(Collectors.toList()));
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
-        WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->b.startsWith("2010"));
+        WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->b.endsWith("2010-06-08"));
         NestedHandler handler = new USPTOHandler(seedApplications);
         iterator.applyHandlers(handler);
     }

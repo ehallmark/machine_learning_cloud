@@ -18,7 +18,6 @@ import static j2html.TagCreator.div;
  * Created by ehallmark on 6/15/17.
  */
 public class FamilyMembersAttribute extends ComputableAttribute<String[]> {
-    private static RelatedAssetsGraph graph = RelatedAssetsGraph.get();
     public FamilyMembersAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
