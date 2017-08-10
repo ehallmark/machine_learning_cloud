@@ -83,7 +83,7 @@ public class USPTOHandler extends NestedHandler {
                             // add as array
                             toIngest.put(endFlag.dbName, data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                         } else {
-                            toIngest.put(endFlag.dbName, new ArrayList<>(data));
+                            toIngest.put(endFlag.dbName, data.stream().filter(map->map.size()>0).collect(Collectors.toList()));
                         }
                     });
                     System.out.println("Attrs after nested: "+toIngest.size());
