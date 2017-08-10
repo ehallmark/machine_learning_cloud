@@ -4,10 +4,13 @@ import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import static j2html.TagCreator.div;
 
@@ -19,10 +22,10 @@ public class ExpiredAttribute extends ComputableAttribute<Boolean> {
         super(Arrays.asList(AbstractFilter.FilterType.BoolFalse));
     }
 
+
     @Override
-    public Boolean attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        return Database.isExpired(item);
+    public Boolean handleIncomingData(String name, Map<String, Object> data, boolean isApplication) {
+        return null;
     }
 
     @Override

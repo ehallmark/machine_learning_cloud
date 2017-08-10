@@ -170,16 +170,15 @@ public class SimilarPatentServer {
         return allStreamingAttrNames;
     }
 
+    public static Collection<ComputableAttribute> getAllComputableAttributes() {
+        return allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList());
+    }
+
     private static Collection<String> allComputableAttrNames;
     public static Collection<String> getAllComputableAttributeNames() {
         if(allComputableAttrNames ==null) {
-            allComputableAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).flatMap(attr->{
-                Stream<String> stream;
-                if(attr instanceof NestedAttribute) {
-                    throw new RuntimeException("Computable attributes are not (yet) allowed to be nested");
-                } else {
-                    stream = Arrays.asList(attr.getName()).stream();
-                }
+            allComputableAttrNames = getAllComputableAttributes().stream().flatMap(attr->{
+                Stream<String> stream = Arrays.asList(attr.getName()).stream();
                 return stream;
             }).collect(Collectors.toSet());
             System.out.println("Computable Attributes: "+Arrays.toString(allComputableAttrNames.toArray()));

@@ -8,6 +8,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Map;
 
 import static j2html.TagCreator.div;
 

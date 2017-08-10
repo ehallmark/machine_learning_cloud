@@ -3,6 +3,7 @@ package user_interface.ui_models.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
@@ -44,18 +45,41 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     }
 
     public void initMaps() {
-        this.patentDataMap= Collections.synchronizedMap(new HashMap<String, T>());
-        this.applicationDataMap = Collections.synchronizedMap(new HashMap<String, T>());
+        getPatentDataMap();
+        getApplicationDataMap();
+        if(patentDataMap==null) this.patentDataMap= Collections.synchronizedMap(new HashMap<String, T>());
+        if(applicationDataMap==null) this.applicationDataMap = Collections.synchronizedMap(new HashMap<String, T>());
     }
 
-    public void addDataToPatentMap(String item, T val) {
+    public void handlePatentData(String item, Map<String,Object> data) {
         if(patentDataMap==null) throw new RuntimeException("Must init patent data map");
-        patentDataMap.put(item,val);
+        T val = handleIncomingData(item,data,false);
+        if(val!=null) {
+            patentDataMap.put(item, val);
+        }
     }
 
-    public void addDataToApplicationMap(String item, T val) {
+    public Collection<MetaComputableAttribute> getNecessaryMetaAttributes() {
+        return Collections.emptyList();
+    }
+    public T handleIncomingData(String name, Map<String,Object> data, boolean isApplication) {
+        return null;
+    }
+
+    public String getAssociatedField() {
+        throw new UnsupportedOperationException("Must define each associated field separately on the concrete classes.");
+    }
+
+    public String getAssociation() {
+        return Constants.NAME; // Default
+    }
+
+    public void handleApplicationData(String item, Map<String,Object> data) {
         if(applicationDataMap==null) throw new RuntimeException("Must init application data map");
-        applicationDataMap.put(item,val);
+        T val = handleIncomingData(item,data,true);
+        if(val!=null) {
+            applicationDataMap.put(item,val);
+        }
     }
 
     public void save() {

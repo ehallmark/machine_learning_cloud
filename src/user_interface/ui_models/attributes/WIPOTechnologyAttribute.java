@@ -4,10 +4,12 @@ import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import static j2html.TagCreator.div;
@@ -34,14 +36,15 @@ public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
     }
 
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        String attr = getWipoMap().get(item);
-        if(attr!=null) {
-            String title = getDefinitionMap().get(attr);
-            if(title!=null) return title;
+    public String handleIncomingData(String item, Map<String, Object> data, boolean isAppplication) {
+        if(item != null) {
+            String attr = getWipoMap().get(item);
+            if(attr!=null) {
+                String title = getDefinitionMap().get(attr);
+                if(title!=null) return title;
+            }
         }
-        return "";
+        return null;
     }
 
     @Override

@@ -4,10 +4,13 @@ import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import static j2html.TagCreator.div;
 
@@ -18,14 +21,6 @@ public class FamilyMembersAttribute extends ComputableAttribute<String[]> {
     private static RelatedAssetsGraph graph = RelatedAssetsGraph.get();
     public FamilyMembersAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
-    }
-
-    @Override
-    public String[] attributesFor(Collection<String> portfolio, int limit) {
-        if(portfolio.isEmpty()) return new String[]{};
-        String patent = portfolio.stream().findAny().get();
-        Collection<String> relatives = graph.relatives(patent);
-        return relatives.toArray(new String[relatives.size()]);
     }
 
     @Override
@@ -43,4 +38,5 @@ public class FamilyMembersAttribute extends ComputableAttribute<String[]> {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
     }
+
 }

@@ -14,10 +14,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class ExpirationDateAttribute extends ComputableAttribute<String> {
-    public ExpirationDateAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
-    }
+public class ExpirationDateAttribute extends PriorityDateAttribute {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
