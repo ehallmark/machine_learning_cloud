@@ -65,10 +65,13 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 try {
                     //debug(this, debug, attrsToIngest);
-                    System.out.println("Saving...");
+                    System.out.print("Saving...");
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
+                    System.out.print(" "+toIngest.size()+" attrs for");
                     Object name = toIngest.get(Constants.NAME);
+                    System.out.println(" "+name);
                     if (name == null){
+                        System.out.println("NO NAME!!!!!!!!!!");
                         if(errors.getAndIncrement()%10==0) {
                             System.out.println(errors.get());
                         }
