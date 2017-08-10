@@ -19,7 +19,7 @@ $(document).ready(function() {
 
         // add hidden elements
         $this.append('<option></option>');
-        var $items = $this.parent().next().find('.draggable .collapsible-header label');
+        var $items = $this.parent().next().find('.draggable .collapsible-header:not(.nested) label');
 
         // add new items
         $items.each(function(index, elem) {
