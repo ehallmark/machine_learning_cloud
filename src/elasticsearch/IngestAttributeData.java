@@ -19,8 +19,9 @@ public class IngestAttributeData {
     private static final int batchSize = 10000;
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
-        Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllComputableAttributeNames(),true);
+        boolean loadVectors = true;
+        Map<String,INDArray> lookupTable = loadVectors ? SimilarPatentFinder.getLookupTable() : null;
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllComputableAttributeNames(),loadVectors);
     }
 
 }
