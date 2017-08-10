@@ -697,11 +697,6 @@ public class SimilarPatentServer {
     }
 
 
-    public static Tag gatherTechnologySelect(String name) {
-        return technologySelect(name,getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList()));
-    }
-
-
     public static Tag technologySelect(String name, Collection<String> orderedClassifications) {
         return select().attr("style","width:100%;").withName(name).withClass("multiselect").attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
@@ -789,7 +784,6 @@ public class SimilarPatentServer {
             modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
         }
         String groupID = type+"-row";
-        String toggleID = groupID+"-panel-toggle";
         return span().with(
                 toggleButton(groupID, shortTitle),
                 span().withId(groupID).withClass("collapse").with(
@@ -804,19 +798,25 @@ public class SimilarPatentServer {
                                                     String arrayFieldName = pair._2;
                                                     return pair._1.entrySet().stream().map(e->{
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return div().withClass("draggable "+type).attr("data-target",type).with(
-                                                                div().attr("style","width: 100%;").withClass("collapsible-header").attr("data-target","#"+collapseId).with(
-                                                                        label(humanAttributeFor(e.getKey())),
-                                                                        input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(e.getKey()),
-                                                                        span().withClass("remove-button").withText("x")
-                                                                ), span().withClass("collapse").withId(collapseId).with(e.getValue().getOptionsTag())
-                                                        );
+                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag());
                                                     });
                                                 }).collect(Collectors.toList())
                                         )
                                 ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
                         )
                 )
+        );
+    }
+
+    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag) {
+        String groupID = type+"-row";
+        String toggleID = groupID+"-panel-toggle";
+        return div().withClass("draggable "+type).attr("data-target",type).with(
+                div().attr("style","width: 100%;").withClass("collapsible-header").attr("data-target","#"+collapseId).with(
+                        label(humanAttributeFor(modelName)),
+                        input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
+                        span().withClass("remove-button").withText("x")
+                ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );
     }
 

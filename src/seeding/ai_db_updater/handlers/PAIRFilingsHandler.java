@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PAIRFilingsHandler extends NestedHandler {
 
     protected static AtomicInteger cnt = new AtomicInteger(0);
-    protected int batchSize = 10000;
+    protected int batchSize = 5000;
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {

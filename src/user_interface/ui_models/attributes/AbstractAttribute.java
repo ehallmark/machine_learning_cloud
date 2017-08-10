@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
+import lombok.Setter;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;

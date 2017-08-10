@@ -1,7 +1,9 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -26,10 +28,13 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
 
     protected AbstractAttribute<?> attribute;
     protected FilterType filterType;
+    @Setter @Getter
+    protected AbstractFilter parent;
     public AbstractFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
         this.attribute=attribute;
         this.filterType=filterType;
     }
+
 
     @Override
     public Collection<String> getPrerequisites() {
@@ -61,7 +66,11 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
 
     @Override
     public String getName() {
-        return getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
+        if(parent==null) {
+            return getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
+        } else {
+            return parent.getName().replaceAll("[\\[\\]]","")+getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
+        }
     }
 
     @Override

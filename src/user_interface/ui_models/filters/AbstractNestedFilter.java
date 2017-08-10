@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.label;
 
 /**
  * Created by Evan on 6/13/2017.
@@ -29,6 +31,7 @@ public class AbstractNestedFilter<T> extends AbstractFilter<T> {
             Collection<AbstractFilter> filters = attr.createFilters();
             return filters.stream();
         }).collect(Collectors.toList());
+        filters.forEach(filter->filter.setParent(this));
     }
 
     @Override
@@ -53,8 +56,10 @@ public class AbstractNestedFilter<T> extends AbstractFilter<T> {
 
     @Override
     public Tag getOptionsTag() {
-        return div().with(
-                filters.stream().map(filter->filter.getOptionsTag()).collect(Collectors.toList())
+        String collapseId = "collapse-filters-"+getName().replaceAll("[\\[\\]]","");
+        String type = "filters";
+        return div().withClass("row").with(filters.stream().map(filter->div().withClass("col-12").with(
+                SimilarPatentServer.createAttributeElement(type,filter.getName(),collapseId,filter.getName(),filter.getOptionsTag()))).collect(Collectors.toList())
         );
     }
 
