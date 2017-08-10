@@ -65,11 +65,9 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 try {
                     //debug(this, debug, attrsToIngest);
-                    System.out.print("Saving...");
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
-                    System.out.print(" "+toIngest.size()+" attrs for");
                     Object name = toIngest.get(Constants.NAME);
-                    System.out.println(" "+name);
+                    System.out.println("Saving "+toIngest.size()+" attrs for "+name);
                     if (name == null){
                         System.out.println("NO NAME!!!!!!!!!!");
                         if(errors.getAndIncrement()%10==0) {
@@ -83,17 +81,18 @@ public class USPTOHandler extends NestedHandler {
                         if (data.isEmpty() || endFlag.children.isEmpty()) return;
                         if (endFlag.isArray()) {
                             // add as array
-                            toIngest.put(endFlag.dbName, endFlag.dataQueue.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
+                            toIngest.put(endFlag.dbName, data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                         } else {
-                            toIngest.put(endFlag.dbName, new ArrayList<>(endFlag.dataQueue));
+                            toIngest.put(endFlag.dbName, new ArrayList<>(data));
                         }
                     });
+                    System.out.println("Attrs after nested: "+toIngest.size());
                     synchronized (USPTOHandler.class) {
-                        if (queue.size() > batchSize) {
+                        //if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
                             DataIngester.ingestAssets(queue, true);
                             queue.clear();
-                        }
+                        //}
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
