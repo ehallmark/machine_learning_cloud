@@ -18,16 +18,6 @@ public abstract class MetaComputableAttribute<T> extends ComputableAttribute<T> 
     }
 
     @Override
-    public String getName() {
-        throw new UnsupportedOperationException("Meta attributes");
-    }
-
-    @Override
-    public String getType() {
-        throw new UnsupportedOperationException("Meta attributes");
-    }
-
-    @Override
     public AbstractFilter.FieldType getFieldType() {
         throw new UnsupportedOperationException("Meta attributes");
     }

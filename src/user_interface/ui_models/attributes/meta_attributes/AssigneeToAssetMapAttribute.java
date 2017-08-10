@@ -28,4 +28,14 @@ public class AssigneeToAssetMapAttribute extends MetaComputableAttribute<Collect
         }
         else return null;
     }
+
+    @Override
+    public String getName() {
+        return Constants.ASSIGNEE+"_to_"+Constants.NAME;
+    }
+
+    @Override
+    public String getType() {
+        return "map";
+    }
 }
