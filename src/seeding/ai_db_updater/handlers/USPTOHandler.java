@@ -308,11 +308,16 @@ public class USPTOHandler extends NestedHandler {
         DataIngester.ingestAssets(queue,true);
     }
 
-    public static void main(String[] args) {
-        SimilarPatentServer.loadAttributes(false);
-        boolean seedApplications = true;
+
+    private static void ingestData(boolean seedApplications) {
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
         NestedHandler handler = new USPTOHandler(seedApplications);
         iterator.applyHandlers(handler);
+    }
+
+    public static void main(String[] args) {
+        SimilarPatentServer.loadAttributes(false);
+        ingestData(true);
+        ingestData(false);
     }
 }
