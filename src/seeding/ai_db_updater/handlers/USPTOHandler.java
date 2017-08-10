@@ -55,7 +55,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = true;
+        boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
@@ -79,9 +79,9 @@ public class USPTOHandler extends NestedHandler {
                         if (data.isEmpty() || endFlag.children.isEmpty()) return;
                         if (endFlag.isArray()) {
                             // add as array
-                            toIngest.put(endFlag.dbName, endFlag.dataQueue.stream().map(map -> map.get(dbName)).filter(d -> d != null).collect(Collectors.toList()));
+                            toIngest.put(endFlag.dbName, endFlag.dataQueue.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                         } else {
-                            toIngest.put(endFlag.dbName, endFlag.dataQueue);
+                            toIngest.put(endFlag.dbName, new ArrayList<>(endFlag.dataQueue));
                         }
                     });
                     synchronized (USPTOHandler.class) {
@@ -91,7 +91,7 @@ public class USPTOHandler extends NestedHandler {
                             queue.clear();
                         }
                     }
-                     System.out.println("Ingesting: "+new Gson().toJson(toIngest));
+                     //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
                     // clear dataqueues
                     dataQueue.clear();
