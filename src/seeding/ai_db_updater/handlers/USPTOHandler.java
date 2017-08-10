@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
+    private static final AtomicLong errors = new AtomicLong(0);
     protected final String topLevelTag;
     public USPTOHandler(boolean applications) {
         if(applications) {
@@ -66,7 +67,12 @@ public class USPTOHandler extends NestedHandler {
                     //debug(this, debug, attrsToIngest);
                     Map<String, Object> toIngest = getTransform(attrsToIngest);
                     Object name = toIngest.get(Constants.NAME);
-                    if (name == null) return;
+                    if (name == null){
+                        if(errors.getAndIncrement()%10==0) {
+                            System.out.println(errors.get());
+                        }
+                        return;
+                    }
                     queue.put(name.toString(), toIngest);
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
