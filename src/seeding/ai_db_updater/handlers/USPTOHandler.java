@@ -164,6 +164,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 dataQueue.add(getTransform(attrsToIngest));
+                debug(this,debug,attrsToIngest);
             }
         };
         applicantFlag.compareFunction = Flag.endsWithCompareFunction;
