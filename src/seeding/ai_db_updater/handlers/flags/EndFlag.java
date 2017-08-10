@@ -27,9 +27,13 @@ public abstract class EndFlag extends Flag {
 
     public Map<String,Object> getTransform(Collection<String> flagsToIngest) {
         Map<String,Object> transform = new HashMap<>(dataMap.size());
-        Collection<Flag> flags = new HashSet<>(dataMap.keySet());
+        Collection<Flag> flags = dataMap.keySet();
         flags.forEach(flag->{
-            if(!flagsToIngest.contains(flag.dbName)) return;
+            if(!flagsToIngest.contains(flag.dbName)) {
+               if(dbName==null || !flagsToIngest.contains(dbName+"."+flag.dbName)) {
+                   return;
+               }
+            }
             String data = dataMap.get(flag);
             Object result;
             if(flag.isForeign()) {

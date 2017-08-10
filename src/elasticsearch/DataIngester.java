@@ -57,7 +57,6 @@ public class DataIngester {
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("ERROR UPDATING BATCH");
-            throw new RuntimeException();
         } finally {
             labelToTextMap.clear();
         }

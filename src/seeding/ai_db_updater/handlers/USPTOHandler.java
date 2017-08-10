@@ -85,7 +85,7 @@ public class USPTOHandler extends NestedHandler {
                             queue.clear();
                         }
                     }
-                    System.out.println("Ingesting: "+new Gson().toJson(toIngest));
+                    // System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
                     // clear dataqueues
                     dataQueue.clear();
