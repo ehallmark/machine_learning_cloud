@@ -37,9 +37,4 @@ public abstract class MetaComputableAttribute<T> extends ComputableAttribute<T> 
         throw new UnsupportedOperationException("Meta attributes");
     }
 
-    @Override
-    public T computeFinalValue(String name, boolean isApplication) {
-        throw new UnsupportedOperationException("Meta attributes");
-    }
-
 }

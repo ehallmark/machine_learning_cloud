@@ -32,8 +32,10 @@ public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
     }
 
     @Override
-    public Integer computeFinalValue(String name, boolean isApplication) {
-        if(isApplication) {
+    public Integer attributesFor(Collection<String> portfolioList, int limit) {
+        if(portfolioList.isEmpty()) return null;
+        String name = portfolioList.stream().findAny().get();
+        if(Database.isApplication(name)) {
             return assigneeToAssetMap.applicationDataMap.getOrDefault(name, Collections.emptyList()).size();
         } else {
             return assigneeToAssetMap.patentDataMap.getOrDefault(name, Collections.emptyList()).size();

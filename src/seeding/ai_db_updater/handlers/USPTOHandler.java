@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
 
@@ -368,7 +369,7 @@ public class USPTOHandler extends NestedHandler {
 
     private static void ingestData(boolean seedApplications) {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        computableAttributes.addAll(computableAttributes.stream().flatMap(attr->attr.getNecessaryMetaAttributes().stream()).map(attr->(ComputableAttribute)attr).collect(Collectors.toList()));
+        computableAttributes.addAll(computableAttributes.stream().flatMap(attr->(Stream<ComputableAttribute>)attr.getNecessaryMetaAttributes().stream()).collect(Collectors.toList()));
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a, b)->true);
