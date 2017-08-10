@@ -147,7 +147,7 @@ public class SimilarPatentServer {
                     stream = Arrays.asList(attr.getName()).stream();
                 }
                 return stream;
-            }).collect(Collectors.toList());
+            }).collect(Collectors.toSet());
         }
         return allAttrNames;
     }
@@ -164,7 +164,7 @@ public class SimilarPatentServer {
                     stream = Arrays.asList(attr.getName()).stream();
                 }
                 return stream;
-            }).collect(Collectors.toList());
+            }).collect(Collectors.toSet());
         }
         return allStreamingAttrNames;
     }
