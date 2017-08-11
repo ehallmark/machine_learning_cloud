@@ -305,9 +305,9 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes, boolean loadVectors) {
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,loadVectors,false);
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,loadVectors,false);
+    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes) {
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,false);
+        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,false);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -319,13 +319,13 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors, boolean create) {
+    public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr instanceof ComputableAttribute && attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
-                if(loadVectors) {
+                if(lookupTable!=null) {
                     INDArray vector = lookupTable.get(label);
                     if (vector != null) {
                         item.addData("vector_obj", vectorToElasticSearchObject(vector));
