@@ -7,6 +7,9 @@ import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
+import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -284,6 +287,11 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
+
+            Arrays.asList(
+                    new AssetToAssigneeMap(),
+                    new AssigneeToAssetsMap()
+            ).forEach(attr->attributesMap.put(attr.getName(),attr));
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
@@ -814,9 +822,10 @@ public class SimilarPatentServer {
                                                 modelFields.stream().flatMap(pair->{
                                                     String arrayFieldName = pair._2;
                                                     return pair._1.entrySet().stream().map(e->{
+                                                        if(e.getValue() instanceof HiddenAttribute) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
                                                         return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(),false);
-                                                    });
+                                                    }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
                                 ), div().withId(type+"-target").withClass("droppable target col-12 "+type)

@@ -4,7 +4,6 @@ import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;

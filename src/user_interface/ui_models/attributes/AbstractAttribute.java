@@ -28,6 +28,10 @@ public abstract class AbstractAttribute<T> {
 
     public abstract String getType();
 
+    public Map<String,Object> getNestedFields() {
+        return null;
+    }
+
     public abstract AbstractFilter.FieldType getFieldType();
 
     // for populating select dropdown filters

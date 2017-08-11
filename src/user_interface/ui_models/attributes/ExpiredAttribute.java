@@ -3,8 +3,6 @@ package user_interface.ui_models.attributes;
 import j2html.tags.Tag;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;

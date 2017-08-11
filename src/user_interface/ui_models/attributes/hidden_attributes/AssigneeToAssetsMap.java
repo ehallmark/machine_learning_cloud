@@ -1,24 +1,20 @@
-package user_interface.ui_models.attributes.meta_attributes;
+package user_interface.ui_models.attributes.hidden_attributes;
 
-import lombok.Getter;
 import seeding.Constants;
-import tools.DateHelper;
-import user_interface.ui_models.attributes.ComputableAttribute;
-import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 
 /**
- * Created by ehallmark on 8/10/17.
+ * Created by Evan on 8/11/2017.
  */
-public class AssigneeToAssetMapAttribute extends MetaComputableAttribute<Collection<String>> {
+public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
     public Collection<String> handleIncomingData(String name, Map<String, Object> data, boolean isApp) {
         Object assignee = data.get(Constants.LATEST_ASSIGNEE);
-        if(name!=null) {
+        System.out.println("Latest assignee: "+assignee);
+        if(assignee!=null&&name!=null) {
             Collection<String> currentAssets = isApp ? applicationDataMap.get(assignee) : patentDataMap.get(assignee);
             if(currentAssets==null) {
                 currentAssets = new HashSet<>();
@@ -32,10 +28,5 @@ public class AssigneeToAssetMapAttribute extends MetaComputableAttribute<Collect
     @Override
     public String getName() {
         return Constants.ASSIGNEE+"_to_"+Constants.NAME;
-    }
-
-    @Override
-    public String getType() {
-        return "map";
     }
 }

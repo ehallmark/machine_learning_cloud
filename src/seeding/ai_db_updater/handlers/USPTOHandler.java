@@ -15,8 +15,6 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.ComputableAttribute;
-import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
-
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -33,7 +31,6 @@ public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
     protected final String topLevelTag;
-    protected AtomicBoolean firstPassThrough = new AtomicBoolean(true);
     protected boolean applications;
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
@@ -92,50 +89,19 @@ public class USPTOHandler extends NestedHandler {
                     });
                     // update computable attrs
                     if(computableAttributes!=null) {
-                        if(firstPassThrough.get()) {
-                            computableAttributes.forEach(attr -> {
-                                if (applications) {
-                                    attr.handleApplicationData(name.toString(), toIngest);
-                                } else {
-                                    attr.handlePatentData(name.toString(), toIngest);
-                                }
-                            });
-                        } else {
-                            computableAttributes.forEach(attr->{
-                                Object objectName = toIngest.get(attr.getAssociation());
-                                if(objectName!=null) {
-                                    if(objectName instanceof String) {
-                                        Object objectValue = attr.attributesFor(Arrays.asList(objectName.toString()),1);
-                                        if (objectValue != null) {
-                                            toIngest.put(attr.getName(),objectValue);
-                                        }
-                                    } else if (objectName instanceof Collection) {
-                                        Object fieldName = attr.getAssociatedField();
-                                        ((Collection) objectName).forEach(obj->{
-                                            Object field = ((Map)obj).get(fieldName);
-                                            if(field!=null) {
-                                                Object objectValue = attr.attributesFor(Arrays.asList(field.toString()), 1);
-                                                if (objectValue != null) {
-                                                    ((Map)obj).put(attr.getName(),objectValue);
-                                                }
-                                            }
-                                        });
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    if(firstPassThrough.get()) {
-                        if(cnt.getAndIncrement() % batchSize == batchSize-1) {
-                            System.out.println(cnt.get());
-                        }
-                    } else {
-                        synchronized (USPTOHandler.class) {
-                            queue.put(name.toString(), toIngest);
-                            if (queue.size() > batchSize) {
-                                System.out.println(cnt.getAndAdd(queue.size()));
-                                DataIngester.ingestAssets(queue, true);
+                        computableAttributes.forEach(attr -> {
+                            if (applications) {
+                                attr.handleApplicationData(name.toString(), toIngest);
+                            } else {
+                                attr.handlePatentData(name.toString(), toIngest);
                             }
+                        });
+                    }
+                    synchronized (USPTOHandler.class) {
+                        queue.put(name.toString(), toIngest);
+                        if (queue.size() > batchSize) {
+                            System.out.println(cnt.getAndAdd(queue.size()));
+                            DataIngester.ingestAssets(queue, true);
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -345,42 +311,33 @@ public class USPTOHandler extends NestedHandler {
     @Override
     public CustomHandler newInstance() {
         USPTOHandler handler = new USPTOHandler(applications);
-        handler.firstPassThrough=firstPassThrough;
         handler.init();
         return handler;
     }
 
     @Override
     public void save() {
-            if(firstPassThrough.getAndSet(false)) {
-                if (computableAttributes != null) {
-                    computableAttributes.forEach(attr -> {
-                    attr.save();
-                });
-            } else {
-                DataIngester.ingestAssets(queue, true);
-            }
+        DataIngester.ingestAssets(queue, true);
+        if (computableAttributes != null) {
+            computableAttributes.forEach(attr -> {
+                attr.save();
+            });
         }
     }
 
 
-    private static void ingestData(boolean seedApplications, int numEpochs) {
+    private static void ingestData(boolean seedApplications) {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        computableAttributes.addAll(computableAttributes.stream().flatMap(attr->(Stream<ComputableAttribute>)attr.getNecessaryMetaAttributes().stream()).collect(Collectors.toList()));
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->b.endsWith("2010-06-08"));
         NestedHandler handler = new USPTOHandler(seedApplications);
-        for(int i = 0; i < numEpochs; i++) {
-            System.out.println("Starting epoch: "+i);
-            iterator.applyHandlers(handler);
-        }
+        iterator.applyHandlers(handler);
     }
 
     public static void main(String[] args) {
-        int numEpochs = 2; // requires two full passes
         SimilarPatentServer.loadAttributes();
-        ingestData(true,numEpochs);
-        ingestData(false,numEpochs);
+        ingestData(true);
+        ingestData(false);
     }
 }

@@ -26,7 +26,7 @@ public class CreatePatentDBIndex {
         attributes.forEach(attribute->{
             recursiveHelper(attribute, mapping);
         });
-        mapping.put("vector_obj",typeMap("object"));
+        mapping.put("vector_obj",typeMap("object",null,null));
         Map<String,Object> properties = new HashMap<>();
         properties.put("properties",mapping);
         builder.addMapping(DataIngester.TYPE_NAME, properties);
@@ -34,28 +34,27 @@ public class CreatePatentDBIndex {
         builder.get();
     }
 
-    private static Object typeMap(String type) {
-        Map<String,String> typeMap = new HashMap<>();
-        typeMap.put("type",type);
-        return typeMap;
-    }
-
-    private static Object nestedTypeMap(String type, Map<String,Object> props) {
+    private static Object typeMap(String type, Map<String,Object> props, Map<String,Object> nestedFields) {
         Map<String,Object> typeMap = new HashMap<>();
         typeMap.put("type",type);
-        typeMap.put("properties",props);
+        if(props!=null) {
+            typeMap.put("properties",props);
+        }
+        if(nestedFields!=null) {
+            typeMap.put("fields", nestedFields);
+        }
         return typeMap;
     }
 
     private static void recursiveHelper(AbstractAttribute attr, Map<String,Object> mapping) {
         if(attr instanceof NestedAttribute) {
             Map<String,Object> nestedMapping = new HashMap<>();
-            mapping.put(attr.getName(),nestedTypeMap(attr.getType(),nestedMapping));
+            mapping.put(attr.getName(),typeMap(attr.getType(),nestedMapping,attr.getNestedFields()));
             ((NestedAttribute) attr).getAttributes().forEach(nestedAttr->{
                 recursiveHelper((AbstractAttribute)nestedAttr,nestedMapping);
             });
         } else {
-            mapping.put(attr.getName(),typeMap(attr.getType()));
+            mapping.put(attr.getName(),typeMap(attr.getType(),null, attr.getNestedFields()));
         }
     }
 }

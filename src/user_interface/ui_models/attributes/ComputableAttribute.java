@@ -1,9 +1,9 @@
 package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.meta_attributes.MetaComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
@@ -20,7 +20,6 @@ import static j2html.TagCreator.div;
 public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     protected Map<String,T> patentDataMap;
     protected Map<String,T> applicationDataMap;
-
     public ComputableAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         super(filterTypes);
     }
@@ -59,19 +58,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         }
     }
 
-    public Collection<MetaComputableAttribute> getNecessaryMetaAttributes() {
-        return Collections.emptyList();
-    }
     public T handleIncomingData(String name, Map<String,Object> data, boolean isApplication) {
         return null;
-    }
-
-    public String getAssociatedField() {
-        throw new UnsupportedOperationException("Must define each associated field separately on the concrete classes.");
-    }
-
-    public String getAssociation() {
-        return Constants.NAME; // Default
     }
 
     public void handleApplicationData(String item, Map<String,Object> data) {
