@@ -15,7 +15,6 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
@@ -32,11 +31,9 @@ public class USPTOHandler extends NestedHandler {
     protected final String topLevelTag;
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
-    protected Map<String,String> parentMap;
     protected boolean applications;
-    public USPTOHandler(String topLevelTag, Map<String,String> parentMap, boolean applications) {
+    public USPTOHandler(String topLevelTag, boolean applications) {
         this.topLevelTag=topLevelTag;
-        this.parentMap=parentMap;
         this.applications=applications;
     }
 
@@ -330,7 +327,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        USPTOHandler handler = new USPTOHandler(topLevelTag, parentMap, applications);
+        USPTOHandler handler = new USPTOHandler(topLevelTag, applications);
         handler.init();
         return handler;
     }
@@ -358,7 +355,7 @@ public class USPTOHandler extends NestedHandler {
             topLevelTag = "us-patent-grant";
         }
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->true);
-        NestedHandler handler = new USPTOHandler(topLevelTag,seedApplications ? new AssetToFilingMap().getApplicationDataMap() : new AssetToFilingMap().getPatentDataMap(), seedApplications);
+        NestedHandler handler = new USPTOHandler(topLevelTag, seedApplications);
         iterator.applyHandlers(handler);
     }
 

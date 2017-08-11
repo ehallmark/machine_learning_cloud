@@ -11,7 +11,6 @@ import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
