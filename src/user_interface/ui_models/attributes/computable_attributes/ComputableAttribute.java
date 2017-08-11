@@ -8,10 +8,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static j2html.TagCreator.div;
 
@@ -72,23 +69,22 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         if(applicationDataMap==null) this.applicationDataMap = Collections.synchronizedMap(new HashMap<String, T>());
     }
 
+    public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isAppplication) {
+        if(item==null)return null;
+        return attributesFor(Arrays.asList(item),1);
+    }
+
     public void handlePatentData(String item, Map<String,Object> allData) {
-        if(patentDataMap==null) throw new RuntimeException("Must init patent data map");
         T val = handleIncomingData(item,allData,patentDataMap,false);
         if(val!=null) {
-            patentDataMap.put(item, val);
+            allData.put(getName(), val);
         }
     }
 
-    public T handleIncomingData(String name, Map<String,Object> allData, Map<String, T> myData, boolean isApplication) {
-        return null;
-    }
-
     public void handleApplicationData(String item, Map<String,Object> allData) {
-        if(applicationDataMap==null) throw new RuntimeException("Must init application data map");
         T val = handleIncomingData(item,allData,applicationDataMap,true);
         if(val!=null) {
-            applicationDataMap.put(item,val);
+            allData.put(getName(), val);
         }
     }
 

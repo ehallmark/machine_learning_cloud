@@ -29,7 +29,7 @@ public class CPCTechnologyAttribute extends ComputableAttribute<String> {
             String title = definitionMap.get(attr);
             if(title!=null) return title;
         }
-        return "";
+        return null;
     }
 
     @Override

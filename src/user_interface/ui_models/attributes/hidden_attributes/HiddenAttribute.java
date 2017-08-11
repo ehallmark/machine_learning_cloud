@@ -26,4 +26,21 @@ public abstract class HiddenAttribute<T> extends ComputableAttribute<T> {
 
     public abstract T handleIncomingData(String name, Map<String,Object> allData, Map<String, T> myData, boolean isApplication);
 
+    @Override
+    public void handlePatentData(String item, Map<String,Object> allData) {
+        if(patentDataMap==null) throw new RuntimeException("Must init patent data map");
+        T val = handleIncomingData(item,allData,patentDataMap,false);
+        if(val!=null) {
+            patentDataMap.put(item, val);
+        }
+    }
+
+    @Override
+    public void handleApplicationData(String item, Map<String,Object> allData) {
+        if(applicationDataMap==null) throw new RuntimeException("Must init application data map");
+        T val = handleIncomingData(item,allData,applicationDataMap,true);
+        if(val!=null) {
+            applicationDataMap.put(item,val);
+        }
+    }
 }

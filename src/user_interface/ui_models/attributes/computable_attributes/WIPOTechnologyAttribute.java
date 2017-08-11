@@ -33,9 +33,9 @@ public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
     }
 
     @Override
-    public String handleIncomingData(String item, Map<String, Object> data, Map<String,String> myData, boolean isAppplication) {
-        if(item != null) {
-            String attr = getWipoMap().get(item);
+    public String attributesFor(Collection<String> items, int limit) {
+        if(!items.isEmpty()) {
+            String attr = getWipoMap().get(items.stream().findAny().get());
             if(attr!=null) {
                 String title = getDefinitionMap().get(attr);
                 if(title!=null) return title;

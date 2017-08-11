@@ -548,13 +548,6 @@ public class SimilarPatentServer {
             List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
             charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
-            // prerequisites
-            Set<ComputableAttribute> computableAttributes = new HashSet<>();
-            computableAttributes.addAll(itemAttributes.stream().map(attr->attributesMap.get(attr)).filter(attr->attr!=null && attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList()));
-            computableAttributes.addAll(charts.stream().flatMap(chart->(Stream<String>)chart.getPrerequisites().stream()).distinct()
-                    .map(attr->attributesMap.get(attr)).filter(attr->attr!=null&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList()));
-            portfolioList.ensureAttributesArePresent(computableAttributes);
-
 
             List<AbstractChart> finishedCharts = new ArrayList<>();
             // adding charts

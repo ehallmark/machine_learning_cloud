@@ -29,15 +29,6 @@ public class PortfolioList implements Comparable<PortfolioList> {
         return Double.compare(o.avgSimilarity,avgSimilarity);
     }
 
-    public void ensureAttributesArePresent(Collection<? extends ComputableAttribute> attributes)  {
-        for(Item item : itemList) {
-            for(ComputableAttribute attribute : attributes) {
-                if(item.getData(attribute.getName())==null) {
-                    item.addData(attribute.getName(), attribute.attributesFor(Arrays.asList(item.getName()), 1));
-                }
-            }
-        }
-    }
 
     public Stream<Pair<String,PortfolioList>> groupedBy(String field) {
         if(field==null) return Arrays.asList(new Pair<>("",this)).stream();

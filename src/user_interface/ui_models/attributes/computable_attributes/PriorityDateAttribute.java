@@ -18,9 +18,10 @@ public class PriorityDateAttribute extends ComputableAttribute<String> {
 
     @Override
     public String attributesFor(Collection<String> portfolio, int limit) {
+        if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().findAny().get();
         LocalDate date = Database.getPriorityDateFor(item, Database.isApplication(item));
-        if(date==null) return "";
+        if(date==null) return null;
         return date.toString();
     }
 

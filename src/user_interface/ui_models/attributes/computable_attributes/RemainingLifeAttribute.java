@@ -17,9 +17,9 @@ public class RemainingLifeAttribute extends ComputableAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> portfolio, int limit) {
-        if(portfolio.isEmpty()) return 0;
+        if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().findAny().get();
-        return Database.getLifeRemainingMap().getOrDefault(item,0);
+        return Database.getLifeRemainingMap().getOrDefault(item,null);
     }
 
     @Override

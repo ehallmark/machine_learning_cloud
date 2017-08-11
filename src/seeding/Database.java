@@ -172,12 +172,6 @@ public class Database {
 		return itemToTermAdjustmentMap;
 	}
 
-	public static String expirationDateFor(String item) {
-		LocalDate date = getExpirationDateMap().get(item);
-		if(date==null) return "";
-		return date.toString();
-	}
-
 	public synchronized static Map<String,LocalDate> getExpirationDateMap() {
 		if(expirationDateMap==null) {
 			expirationDateMap = (Map<String,LocalDate>) loadObject(expirationDateMapFile);
