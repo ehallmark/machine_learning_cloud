@@ -16,7 +16,7 @@ public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
     }
     @Override
     public String getType() {
-        return "keyword";
+        return "text";
     }
 
     @Override
