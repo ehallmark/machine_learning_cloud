@@ -21,7 +21,7 @@ public class IngestAttributeData {
         SimilarPatentServer.initialize(false);
         boolean loadVectors = false;
         Map<String,INDArray> lookupTable = loadVectors ? SimilarPatentFinder.getLookupTable() : null;
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllComputableAttributeNames(),loadVectors);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(lookupTable,batchSize,SimilarPatentServer.getAllComputableAttributeNames());
     }
 
 }
