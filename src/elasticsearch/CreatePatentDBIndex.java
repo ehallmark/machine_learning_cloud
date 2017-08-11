@@ -27,31 +27,14 @@ public class CreatePatentDBIndex {
         Map<String,Object> mapping = new HashMap<>();
         Map<String,Object> properties = new HashMap<>();
         mapping.put("_parent", typeMap(DataIngester.TYPE_NAME,null,null));
-        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().filter(attr->!attr.getName().equals(Constants.LATEST_ASSIGNEE)).collect(Collectors.toList());
-        LatestAssigneeAttribute latestAssignee = (LatestAssigneeAttribute) SimilarPatentServer.getAllAttributes().stream().filter(attr->attr.getName().equals(Constants.LATEST_ASSIGNEE)).findAny().orElse(null);
+        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().collect(Collectors.toList());
         attributes.forEach(attribute->{
             recursiveHelper(attribute, properties);
         });
         properties.put("vector_obj",typeMap("object",null,null));
         mapping.put("properties",properties);
-        for(PortfolioList.Type type : PortfolioList.Type.values()) {
-            builder.addMapping(type.toString(), mapping);
-        }
+        builder.addMapping(DataIngester.TYPE_NAME, mapping);
         System.out.println("Query: " + new Gson().toJson(mapping));
-
-        // assignee type
-        Map<String,Object> assigneeProperties = new HashMap<>();
-        Map<String,Object> assigneeMapping = new HashMap<>();
-        recursiveHelper(latestAssignee,assigneeProperties);
-        assigneeMapping.put("properties",assigneeProperties);
-        builder.addMapping(latestAssignee.getName(), assigneeMapping);
-        System.out.println("Query: " + new Gson().toJson(assigneeMapping));
-
-        // filing type
-        Map<String,Object> filingMapping = new HashMap<>();
-        filingMapping.put("_parent", typeMap(latestAssignee.getName(),null,null));
-        builder.addMapping(DataIngester.TYPE_NAME, filingMapping);
-        System.out.println("Query: " + new Gson().toJson(filingMapping));
 
         // get response
         builder.get();

@@ -125,10 +125,6 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.simpleFlag("invention-title",Constants.INVENTION_TITLE,documentFlag));
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
-        Flag latestAssigneeFlag = Flag.parentFlag("assignee");
-        latestAssigneeFlag.compareFunction = Flag.endsWithCompareFunction;
-        latestAssigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.LATEST_ASSIGNEE, documentFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-        documentFlag.addChild(latestAssigneeFlag);
 
 
         EndFlag claimTextFlag = new EndFlag("claim") {
@@ -239,6 +235,28 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, assigneeFlag).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
+
+        EndFlag latestAssignee = new EndFlag("assignee") {
+            {
+                dbName = Constants.LATEST_ASSIGNEE;
+            }
+            @Override
+            public void save() {
+                //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
+                dataQueue.add(getTransform(attrsToIngest));
+            }
+        };
+        latestAssignee.compareFunction = Flag.endsWithCompareFunction;
+        endFlags.add(latestAssignee);
+        latestAssignee.addChild(Flag.simpleFlag("last-name",Constants.LAST_NAME, latestAssignee));
+        latestAssignee.addChild(Flag.simpleFlag("first-name",Constants.FIRST_NAME, latestAssignee));
+        latestAssignee.addChild(Flag.simpleFlag("city",Constants.CITY, latestAssignee));
+        latestAssignee.addChild(Flag.simpleFlag("state",Constants.STATE, latestAssignee));
+        latestAssignee.addChild(Flag.simpleFlag("country",Constants.COUNTRY, latestAssignee));
+        latestAssignee.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, latestAssignee).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
+        latestAssignee.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, latestAssignee));
+        latestAssignee.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, latestAssignee).withTransformationFunction(Flag.assigneeTransformationFunction));
+
 
         EndFlag claimFlag = new EndFlag("claim") {
             {
