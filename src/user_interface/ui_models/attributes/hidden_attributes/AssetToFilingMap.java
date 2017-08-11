@@ -12,12 +12,11 @@ public class AssetToFilingMap extends HiddenAttribute<String> {
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
         Object filing = allData.get(Constants.FILING_NAME);
         if(filing==null) return null;
-        System.out.println("Filing: "+filing);
         return filing.toString();
     }
 
     @Override
     public String getName() {
-        return Constants.ASSIGNEE+"_to_"+Constants.NAME;
+        return Constants.NAME+"_to_"+Constants.FILING_NAME;
     }
 }
