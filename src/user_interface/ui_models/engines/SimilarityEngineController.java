@@ -12,7 +12,7 @@ import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
-import user_interface.ui_models.attributes.LatestAssigneeAttribute;
+import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -59,7 +59,7 @@ public class SimilarityEngineController {
             preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
-            preFilters.add(new AbstractExcludeFilter(new LatestAssigneeAttribute(), AbstractFilter.FilterType.Exclude,  AbstractFilter.FieldType.Text, assigneesToRemove, Constants.ASSIGNEE));
+            preFilters.add(new AbstractExcludeFilter(new LatestAssigneeNestedAttribute(), AbstractFilter.FilterType.Exclude,  AbstractFilter.FieldType.Text, assigneesToRemove, Constants.ASSIGNEE));
         }
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());

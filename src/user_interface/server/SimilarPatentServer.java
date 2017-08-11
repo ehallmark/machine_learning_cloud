@@ -255,8 +255,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-            attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeAttribute());
-            attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
             attributesMap.put(Constants.NAME, new AssetNumberAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
@@ -269,7 +267,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
-            attributesMap.put(Constants.ASSIGNEE_ENTITY_TYPE, new EntityTypeAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
@@ -283,6 +280,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.FILING_COUNTRY, new FilingCountryAttribute());
 
             // nested attrs
+            attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
             attributesMap.put(Constants.ASSIGNEES, new AssigneesNestedAttribute());
             attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
             attributesMap.put(Constants.INVENTORS, new InventorsNestedAttribute());

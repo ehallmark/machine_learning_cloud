@@ -3,14 +3,10 @@ package elasticsearch;
 import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
-import seeding.Constants;
-import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.LatestAssigneeAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashMap;

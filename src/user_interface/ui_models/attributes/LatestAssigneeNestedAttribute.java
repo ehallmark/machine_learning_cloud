@@ -11,9 +11,9 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class LatestAssigneeAttribute extends NestedAttribute {
-    public LatestAssigneeAttribute() {
-        super(Arrays.asList(new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
+public class LatestAssigneeNestedAttribute extends NestedAttribute {
+    public LatestAssigneeNestedAttribute() {
+        super(Arrays.asList(new EntityTypeAttribute(), new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
     }
 
     @Override
