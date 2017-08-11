@@ -23,39 +23,28 @@ public class DataIngester {
     private static TransportClient client = MyClient.get();
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
-    static final String PARENT_TYPE_NAME = "filings";
 
-    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, Map<String,String> idToParentIdMap, boolean create) {
+    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean createIfNotPresent, boolean createImmediately) {
         try {
             BulkRequestBuilder request = client.prepareBulk();
             for (Map.Entry<String, Map<String,Object>> e : labelToTextMap.entrySet()) {
-                String parentId = idToParentIdMap.get(e.getKey());
-                if(parentId!=null) {
-                    // add parent id to map
-                    // create parent id index
-                    request = request.add(client.prepareIndex(INDEX_NAME, PARENT_TYPE_NAME, parentId).setSource(Collections.emptyMap()));
-                    // build actual document
-                    XContentBuilder json = buildJson(e.getValue());
-                    request = request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, e.getKey())
-                            .setParent(parentId)
-                            .setDoc(json));
-                }
+                // build actual document
+                XContentBuilder json = buildJson(e.getValue());
+                request = createImmediately ?
+                        request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, e.getKey()).setSource(json))
+                        : request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, e.getKey()).setDoc(json));
             }
             BulkResponse response = request.get();
-            if(create&&response.hasFailures()) {
+            if(createIfNotPresent&&!createImmediately&&response.hasFailures()) {
                 int numFailures = 0;
                 request = client.prepareBulk();
                 for(BulkItemResponse itemResponse : response.getItems()) {
                     if(itemResponse.isFailed()) {
                         numFailures++;
                         String id = itemResponse.getId();
-                        String parentId = idToParentIdMap.get(id);
-                        if(parentId!=null) {
-                            XContentBuilder json = buildJson(labelToTextMap.get(id));
-                            request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, id)
-                                    .setParent(parentId)
-                                    .setSource(json));
-                        }
+                        XContentBuilder json = buildJson(labelToTextMap.get(id));
+                        request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, id)
+                                .setSource(json));
                     }
                 }
                 response = request.get();
@@ -85,7 +74,7 @@ public class DataIngester {
         return builder;
     }
 
-    public static void ingestItems(Collection<Item> items, Map<String,String> assetToParentMap, boolean create) {
+    public static void ingestItems(Collection<Item> items, boolean createIfNotPresent) {
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
@@ -94,7 +83,7 @@ public class DataIngester {
             }
             data.put(item.getName(),itemData);
         });
-        ingestAssets(data,assetToParentMap,create);
+        ingestAssets(data,createIfNotPresent,false);
     }
 
 }

@@ -78,8 +78,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         queue.put(reelFrame, toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
-                            // TODO fix null
-                            DataIngester.ingestAssets(queue, null, false);
+                            saveElasticSearch();
                             queue.clear();
                         }
                     }
@@ -132,9 +131,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
     @Override
     public void save() {
-        DataIngester.ingestAssets(queue,null,false);
+        saveElasticSearch();
     }
 
+    private void saveElasticSearch() {
+        DataIngester.ingestAssets(queue, false,false);
+    }
 
     private static void ingestData() {
         WebIterator iterator = new ZipFileIterator(new File("data/assignments"), "temp_dir_test",(a, b)->true);

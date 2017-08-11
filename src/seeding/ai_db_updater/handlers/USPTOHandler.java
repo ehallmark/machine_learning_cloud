@@ -56,7 +56,7 @@ public class USPTOHandler extends NestedHandler {
     @Override
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = false;
-        int batchSize = 5000;
+        int batchSize = 10000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         Collection<String> attrsToIngest = SimilarPatentServer.getAllStreamingAttributeNames();
         // application flags
@@ -103,7 +103,7 @@ public class USPTOHandler extends NestedHandler {
                         queue.put(name.toString(), toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
-                            DataIngester.ingestAssets(queue, parentMap, true);
+                            saveElasticSearch();
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -337,12 +337,16 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public void save() {
-        DataIngester.ingestAssets(queue, parentMap, true);
+        saveElasticSearch();
         if (computableAttributes != null) {
             computableAttributes.forEach(attr -> {
                 attr.save();
             });
         }
+    }
+
+    private void saveElasticSearch() {
+        DataIngester.ingestAssets(queue, true, true);
     }
 
 
