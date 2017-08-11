@@ -26,7 +26,6 @@ public class CreatePatentDBIndex {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Map<String,Object> mapping = new HashMap<>();
         Map<String,Object> properties = new HashMap<>();
-        mapping.put("_parent", typeMap(DataIngester.TYPE_NAME,null,null));
         Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().collect(Collectors.toList());
         attributes.forEach(attribute->{
             recursiveHelper(attribute, properties);
