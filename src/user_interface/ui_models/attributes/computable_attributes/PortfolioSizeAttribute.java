@@ -4,6 +4,7 @@ import seeding.Constants;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -11,7 +12,9 @@ import java.util.Map;
  */
 public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
     public PortfolioSizeAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
+        // TODO get nested computable attributes to work
+        //super(Arrays.asList(AbstractFilter.FilterType.Between));
+        super(Collections.emptyList());
     }
 
     @Override
