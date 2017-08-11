@@ -2,7 +2,7 @@ package models.value_models;
 
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.ValueAttr;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 
 import java.io.File;
 import java.util.*;

@@ -1,13 +1,11 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
-import j2html.tags.Tag;
 import seeding.Constants;
+import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 6/15/17.

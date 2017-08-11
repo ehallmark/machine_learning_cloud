@@ -1,14 +1,12 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
 import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
 import seeding.Constants;
-import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 import static j2html.TagCreator.div;

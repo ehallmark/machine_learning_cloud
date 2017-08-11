@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
+import user_interface.ui_models.attributes.computable_attributes.PortfolioSizeAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;

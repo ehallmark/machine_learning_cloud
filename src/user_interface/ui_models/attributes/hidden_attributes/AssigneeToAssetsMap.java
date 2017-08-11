@@ -13,7 +13,6 @@ public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
     public Collection<String> handleIncomingData(String name, Map<String, Object> data, boolean isApp) {
         Object assignee = data.get(Constants.LATEST_ASSIGNEE);
-        System.out.println("Latest assignee: "+assignee);
         if(assignee!=null&&name!=null) {
             Collection<String> currentAssets = isApp ? applicationDataMap.get(assignee) : patentDataMap.get(assignee);
             if(currentAssets==null) {

@@ -1,16 +1,7 @@
 package models.value_models;
 
-import models.graphical_models.page_rank.PageRank;
-import models.graphical_models.page_rank.PageRankHelper;
 import seeding.Constants;
-import seeding.Database;
-import tools.DateHelper;
-import user_interface.ui_models.attributes.ValueAttr;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 
 /**
  * Created by ehallmark on 5/9/17.

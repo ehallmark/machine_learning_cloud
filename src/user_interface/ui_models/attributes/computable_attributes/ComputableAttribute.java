@@ -1,9 +1,10 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;

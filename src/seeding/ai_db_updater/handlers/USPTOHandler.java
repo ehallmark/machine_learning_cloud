@@ -4,25 +4,20 @@ package seeding.ai_db_updater.handlers;
  * Created by ehallmark on 1/3/17.
  */
 
-import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import seeding.Constants;
-import seeding.ai_db_updater.iterators.FileIterator;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
 

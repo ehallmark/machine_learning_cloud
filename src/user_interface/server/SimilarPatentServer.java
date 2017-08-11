@@ -7,7 +7,9 @@ import lombok.Getter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
@@ -17,7 +19,7 @@ import user_interface.server.tools.BackButtonHandler;
 import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
-import user_interface.templates.*;
+import user_interface.ui_models.templates.*;
 import util.Pair;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
@@ -280,6 +282,9 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
+            attributesMap.put(Constants.FILING_NAME, new FilingNameAttribute());
+            attributesMap.put(Constants.FILING_COUNTRY, new FilingCountryAttribute());
+
             // nested attrs
             attributesMap.put(Constants.ASSIGNEES, new AssigneesNestedAttribute());
             attributesMap.put(Constants.APPLICANTS, new ApplicantsNestedAttribute());
@@ -290,7 +295,8 @@ public class SimilarPatentServer {
 
             Arrays.asList(
                     new AssetToAssigneeMap(),
-                    new AssigneeToAssetsMap()
+                    new AssigneeToAssetsMap(),
+                    new AssetToFilingMap()
             ).forEach(attr->attributesMap.put(attr.getName(),attr));
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());

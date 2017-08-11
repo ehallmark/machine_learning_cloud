@@ -1,10 +1,9 @@
-package user_interface.templates;
+package user_interface.ui_models.templates;
 
 import com.google.gson.Gson;
 import lombok.Getter;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
 

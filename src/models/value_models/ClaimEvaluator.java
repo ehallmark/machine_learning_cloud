@@ -7,16 +7,11 @@ import seeding.Database;
 import seeding.ai_db_updater.handlers.AppClaimDataSAXHandler;
 import seeding.ai_db_updater.handlers.ClaimDataSAXHandler;
 import tools.DateHelper;
-import user_interface.ui_models.attributes.ValueAttr;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.ObjectOutputStream;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 1/27/2017.

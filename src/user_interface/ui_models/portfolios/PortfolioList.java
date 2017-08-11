@@ -3,9 +3,7 @@ package user_interface.ui_models.portfolios;
 import lombok.Getter;
 import lombok.Setter;
 import org.deeplearning4j.berkeley.Pair;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.ComputableAttribute;
-import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;

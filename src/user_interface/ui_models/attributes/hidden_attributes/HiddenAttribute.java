@@ -1,9 +1,8 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
-import user_interface.ui_models.attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
