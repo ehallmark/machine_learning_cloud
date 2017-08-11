@@ -291,10 +291,10 @@ public class USPTOHandler extends NestedHandler {
                     String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
                     boolean isIndependent = (parentClaimNum==null || parentClaimNum.isEmpty()) && !s.contains("(canceled)");
                     if(isIndependent) {
-                        String data = documentFlag.getDataMap().get(f);
-                        int length = s.length();
-                        if (data == null || data.isEmpty() || Integer.valueOf(data) > length) {
-                            documentFlag.getDataMap().put(f, String.valueOf(length));
+                        String previousWordCount = documentFlag.getDataMap().get(f);
+                        int wordCount = s.split("\\s+").length;
+                        if (previousWordCount == null || previousWordCount.isEmpty() || Integer.valueOf(previousWordCount) > wordCount) {
+                            documentFlag.getDataMap().put(f, String.valueOf(wordCount));
                         }
                     }
                     return null; // prevent default behavior (must have isForeign set to true)
