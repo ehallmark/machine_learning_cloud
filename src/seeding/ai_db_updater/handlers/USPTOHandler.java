@@ -30,6 +30,8 @@ public class USPTOHandler extends NestedHandler {
     private static final AtomicLong errors = new AtomicLong(0);
     protected final String topLevelTag;
     @Setter
+    protected static Map<String,INDArray> lookupTable;
+    @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     protected boolean applications;
     public USPTOHandler(String topLevelTag, boolean applications) {
@@ -72,7 +74,7 @@ public class USPTOHandler extends NestedHandler {
                         return;
                     }
                     // try to add vector
-                    INDArray vec = SimilarPatentFinder.getLookupTable().get(name);
+                    INDArray vec = lookupTable.get(name);
                     if(vec!=null) {
                         toIngest.put("vector_obj", SimilarPatentServer.vectorToElasticSearchObject(vec));
                     }
@@ -364,6 +366,7 @@ public class USPTOHandler extends NestedHandler {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
+        USPTOHandler.setLookupTable(SimilarPatentFinder.getLookupTable());
         ingestData(false);
         ingestData(true);
     }
