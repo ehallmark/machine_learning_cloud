@@ -36,6 +36,11 @@ public class ExpiredAttribute extends ComputableAttribute<Boolean> {
     public Boolean attributesFor(Collection<String> items, int limit) {
         if(items.isEmpty()) return null;
         String item = items.stream().findAny().get();
-        return Database.isExpired(item) || Database.getPriorityDateFor(item, Database.isApplication(item)).plusYears(20).isBefore(LocalDate.now());
+        if(Database.isExpired(item)) return true;
+
+        LocalDate priorityDate = Database.getPriorityDateFor(item, Database.isApplication(item));
+        if(priorityDate==null) return null;
+
+        return priorityDate.plusYears(20).isBefore(LocalDate.now());
     }
 }

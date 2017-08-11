@@ -323,8 +323,8 @@ public class SimilarPatentServer {
     }
 
     public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes) {
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,false);
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,false);
+        handleItemsList(new AssetToFilingMap().getApplicationDataMap(), new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,false);
+        handleItemsList(new AssetToFilingMap().getPatentDataMap(), new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,false);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -336,7 +336,7 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean create) {
+    public static void handleItemsList(Map<String,String> assetToParentMap, List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr instanceof ComputableAttribute && attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
@@ -354,7 +354,7 @@ public class SimilarPatentServer {
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());
 
-            DataIngester.ingestItems(items, create);
+            DataIngester.ingestItems(items, assetToParentMap, create);
             cnt.getAndAdd(items.size());
             System.out.println("Seen "+cnt.get()+" "+type.toString());
         });

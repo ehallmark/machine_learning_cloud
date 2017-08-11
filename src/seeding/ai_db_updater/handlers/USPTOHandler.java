@@ -15,6 +15,8 @@ import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+
 import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -28,16 +30,14 @@ public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
     protected final String topLevelTag;
-    protected boolean applications;
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
-    public USPTOHandler(boolean applications) {
+    protected Map<String,String> parentMap;
+    protected boolean applications;
+    public USPTOHandler(String topLevelTag, Map<String,String> parentMap, boolean applications) {
+        this.topLevelTag=topLevelTag;
+        this.parentMap=parentMap;
         this.applications=applications;
-        if(applications) {
-            topLevelTag = "us-patent-application";
-        } else {
-            topLevelTag = "us-patent-grant";
-        }
     }
 
     private static Map<String,Map<String,Object>> queue = Collections.synchronizedMap(new HashMap<>(5000));
@@ -103,7 +103,7 @@ public class USPTOHandler extends NestedHandler {
                         queue.put(name.toString(), toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
-                            DataIngester.ingestAssets(queue, true);
+                            DataIngester.ingestAssets(queue, parentMap, true);
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -330,14 +330,14 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public CustomHandler newInstance() {
-        USPTOHandler handler = new USPTOHandler(applications);
+        USPTOHandler handler = new USPTOHandler(topLevelTag, parentMap, applications);
         handler.init();
         return handler;
     }
 
     @Override
     public void save() {
-        DataIngester.ingestAssets(queue, true);
+        DataIngester.ingestAssets(queue, parentMap, true);
         if (computableAttributes != null) {
             computableAttributes.forEach(attr -> {
                 attr.save();
@@ -347,16 +347,22 @@ public class USPTOHandler extends NestedHandler {
 
 
     private static void ingestData(boolean seedApplications) {
-        Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
-        computableAttributes.forEach(attr->attr.initMaps());
-        USPTOHandler.setComputableAttributes(computableAttributes);
+        String topLevelTag;
+        if(seedApplications) {
+            topLevelTag = "us-patent-application";
+        } else {
+            topLevelTag = "us-patent-grant";
+        }
         WebIterator iterator = new ZipFileIterator(new File(seedApplications ? "data/applications" : "data/patents"), "temp_dir_test",(a,b)->true);
-        NestedHandler handler = new USPTOHandler(seedApplications);
+        NestedHandler handler = new USPTOHandler(topLevelTag,seedApplications ? new AssetToFilingMap().getApplicationDataMap() : new AssetToFilingMap().getPatentDataMap(), seedApplications);
         iterator.applyHandlers(handler);
     }
 
     public static void main(String[] args) {
         SimilarPatentServer.loadAttributes();
+        Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
+        computableAttributes.forEach(attr->attr.initMaps());
+        USPTOHandler.setComputableAttributes(computableAttributes);
         ingestData(true);
         ingestData(false);
     }

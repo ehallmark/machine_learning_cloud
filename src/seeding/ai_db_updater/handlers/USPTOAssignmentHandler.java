@@ -11,6 +11,7 @@ import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
@@ -77,7 +78,8 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         queue.put(reelFrame, toIngest);
                         if (queue.size() > batchSize) {
                             System.out.println(cnt.getAndAdd(queue.size()));
-                            DataIngester.ingestAssets(queue, false);
+                            // TODO fix null
+                            DataIngester.ingestAssets(queue, null, false);
                             queue.clear();
                         }
                     }
@@ -130,7 +132,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
     @Override
     public void save() {
-        DataIngester.ingestAssets(queue,false);
+        DataIngester.ingestAssets(queue,null,false);
     }
 
 

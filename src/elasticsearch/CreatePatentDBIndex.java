@@ -29,8 +29,13 @@ public class CreatePatentDBIndex {
         });
         properties.put("vector_obj",typeMap("object",null,null));
         mapping.put("properties",properties);
+        mapping.put("_parent", typeMap(DataIngester.PARENT_TYPE_NAME,null,null));
         builder.addMapping(DataIngester.TYPE_NAME, mapping);
         System.out.println("Query: " + new Gson().toJson(mapping));
+
+        // filings parent object
+        Map<String,Object> parentMapping = new HashMap<>();
+        builder.addMapping(DataIngester.PARENT_TYPE_NAME, parentMapping);
 
         // get response
         builder.get();

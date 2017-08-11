@@ -23,14 +23,23 @@ public class DataIngester {
     private static TransportClient client = MyClient.get();
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
+    static final String PARENT_TYPE_NAME = "filings";
 
-    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean create) {
+    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, Map<String,String> idToParentIdMap, boolean create) {
         try {
             BulkRequestBuilder request = client.prepareBulk();
             for (Map.Entry<String, Map<String,Object>> e : labelToTextMap.entrySet()) {
-                XContentBuilder json = buildJson(e.getValue());
-                request = request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, e.getKey())
-                        .setDoc(json));
+                String parentId = idToParentIdMap.get(e.getKey());
+                if(parentId!=null) {
+                    // add parent id to map
+                    // create parent id index
+                    request = request.add(client.prepareIndex(INDEX_NAME, PARENT_TYPE_NAME, parentId).setSource(Collections.emptyMap()));
+                    // build actual document
+                    XContentBuilder json = buildJson(e.getValue());
+                    request = request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, e.getKey())
+                            .setParent(parentId)
+                            .setDoc(json));
+                }
             }
             BulkResponse response = request.get();
             if(create&&response.hasFailures()) {
@@ -40,9 +49,13 @@ public class DataIngester {
                     if(itemResponse.isFailed()) {
                         numFailures++;
                         String id = itemResponse.getId();
-                        XContentBuilder json = buildJson(labelToTextMap.get(id));
-                        request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, id)
-                                .setSource(json));
+                        String parentId = idToParentIdMap.get(id);
+                        if(parentId!=null) {
+                            XContentBuilder json = buildJson(labelToTextMap.get(id));
+                            request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, id)
+                                    .setParent(parentId)
+                                    .setSource(json));
+                        }
                     }
                 }
                 response = request.get();
@@ -55,7 +68,6 @@ public class DataIngester {
             }
 
         } catch (Exception e) {
-            System.out.println("ERROR UPDATING BATCH");
             e.printStackTrace();
             System.out.println("ERROR UPDATING BATCH");
             //System.exit(1);
@@ -73,7 +85,7 @@ public class DataIngester {
         return builder;
     }
 
-    public static void ingestItems(Collection<Item> items, boolean create) {
+    public static void ingestItems(Collection<Item> items, Map<String,String> assetToParentMap, boolean create) {
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
@@ -82,7 +94,7 @@ public class DataIngester {
             }
             data.put(item.getName(),itemData);
         });
-        ingestAssets(data,create);
+        ingestAssets(data,assetToParentMap,create);
     }
 
 }
