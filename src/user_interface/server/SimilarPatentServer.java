@@ -129,12 +129,24 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
+            humanAttrToJavaAttrMap.put("Include Filter", AbstractFilter.FilterType.Include.toString());
+            humanAttrToJavaAttrMap.put("Exclude Filter", AbstractFilter.FilterType.Exclude.toString());
+            humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
+            humanAttrToJavaAttrMap.put("With Filter", AbstractFilter.FilterType.BoolTrue.toString());
+            humanAttrToJavaAttrMap.put("Without Filter", AbstractFilter.FilterType.BoolFalse.toString());
+            humanAttrToJavaAttrMap.put("Between Filter", AbstractFilter.FilterType.Between.toString());
+            humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
+            humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
 
-            // inverted version to get human readables back
-            javaAttrToHumanAttrMap = new HashMap<>();
-            humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
+            buildJavaToHumanAttrMap();
 
         }
+    }
+
+    private static void buildJavaToHumanAttrMap() {
+        // inverted version to get human readables back
+        javaAttrToHumanAttrMap = new HashMap<>();
+        humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
     }
 
 
@@ -233,9 +245,16 @@ public class SimilarPatentServer {
                 attributesMap.forEach((name,attr) -> {
                     ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
                         preFilterModelMap.put(filter.getName(),filter);
+                        humanAttrToJavaAttrMap.put(filter.getName(),humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()));
+                        if(filter instanceof AbstractNestedFilter) {
+                            ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
+                                AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
+                                humanAttrToJavaAttrMap.put(nestedFilter.getName(), humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
+                            });
+                        }
                     });
                 });
-
+                buildJavaToHumanAttrMap();
 
             }catch(Exception e) {
                 e.printStackTrace();

@@ -1,6 +1,7 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import lombok.NonNull;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -23,6 +24,7 @@ import static j2html.TagCreator.label;
  * Created by Evan on 6/13/2017.
  */
 public class AbstractNestedFilter<T> extends AbstractFilter<T> {
+    @Getter
     protected Collection<AbstractFilter> filters;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, FilterType filterType) {
         super(nestedAttribute,filterType);

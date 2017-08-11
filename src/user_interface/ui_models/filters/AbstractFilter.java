@@ -27,6 +27,7 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
     }
 
     protected AbstractAttribute<?> attribute;
+    @Getter
     protected FilterType filterType;
     @Setter @Getter
     protected AbstractFilter parent;
@@ -69,7 +70,8 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
         if(parent==null) {
             return getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
         } else {
-            return parent.getName().replaceAll("[\\[\\]]","")+getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
+            // nested form field
+            return parent.getName().replaceAll("[\\[\\]]","")+"["+getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX.replaceAll("[\\[\\]\\]]","")+"]"+"[]";
         }
     }
 
