@@ -7,11 +7,14 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.LatestAssigneeAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 7/25/2017.
@@ -22,15 +25,35 @@ public class CreatePatentDBIndex {
         TransportClient client = MyClient.get();
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Map<String,Object> mapping = new HashMap<>();
-        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes();
-        attributes.forEach(attribute->{
-            recursiveHelper(attribute, mapping);
-        });
-        mapping.put("vector_obj",typeMap("object",null,null));
         Map<String,Object> properties = new HashMap<>();
-        properties.put("properties",mapping);
-        builder.addMapping(DataIngester.TYPE_NAME, properties);
-        System.out.println("Query: "+new Gson().toJson(properties));
+        mapping.put("_parent", typeMap(DataIngester.TYPE_NAME,null,null));
+        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().filter(attr->!attr.getName().equals(Constants.LATEST_ASSIGNEE)).collect(Collectors.toList());
+        LatestAssigneeAttribute latestAssignee = (LatestAssigneeAttribute) SimilarPatentServer.getAllAttributes().stream().filter(attr->attr.getName().equals(Constants.LATEST_ASSIGNEE)).findAny().orElse(null);
+        attributes.forEach(attribute->{
+            recursiveHelper(attribute, properties);
+        });
+        properties.put("vector_obj",typeMap("object",null,null));
+        mapping.put("properties",properties);
+        for(PortfolioList.Type type : PortfolioList.Type.values()) {
+            builder.addMapping(type.toString(), mapping);
+        }
+        System.out.println("Query: " + new Gson().toJson(mapping));
+
+        // assignee type
+        Map<String,Object> assigneeProperties = new HashMap<>();
+        Map<String,Object> assigneeMapping = new HashMap<>();
+        recursiveHelper(latestAssignee,assigneeProperties);
+        assigneeMapping.put("properties",assigneeProperties);
+        builder.addMapping(latestAssignee.getName(), assigneeMapping);
+        System.out.println("Query: " + new Gson().toJson(assigneeMapping));
+
+        // filing type
+        Map<String,Object> filingMapping = new HashMap<>();
+        filingMapping.put("_parent", typeMap(latestAssignee.getName(),null,null));
+        builder.addMapping(DataIngester.TYPE_NAME, filingMapping);
+        System.out.println("Query: " + new Gson().toJson(filingMapping));
+
+        // get response
         builder.get();
     }
 

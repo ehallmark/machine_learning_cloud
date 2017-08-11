@@ -51,21 +51,21 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         if(applicationDataMap==null) this.applicationDataMap = Collections.synchronizedMap(new HashMap<String, T>());
     }
 
-    public void handlePatentData(String item, Map<String,Object> data) {
+    public void handlePatentData(String item, Map<String,Object> allData) {
         if(patentDataMap==null) throw new RuntimeException("Must init patent data map");
-        T val = handleIncomingData(item,data,false);
+        T val = handleIncomingData(item,allData,patentDataMap,false);
         if(val!=null) {
             patentDataMap.put(item, val);
         }
     }
 
-    public T handleIncomingData(String name, Map<String,Object> data, boolean isApplication) {
+    public T handleIncomingData(String name, Map<String,Object> allData, Map<String, T> myData, boolean isApplication) {
         return null;
     }
 
-    public void handleApplicationData(String item, Map<String,Object> data) {
+    public void handleApplicationData(String item, Map<String,Object> allData) {
         if(applicationDataMap==null) throw new RuntimeException("Must init application data map");
-        T val = handleIncomingData(item,data,true);
+        T val = handleIncomingData(item,allData,applicationDataMap,true);
         if(val!=null) {
             applicationDataMap.put(item,val);
         }

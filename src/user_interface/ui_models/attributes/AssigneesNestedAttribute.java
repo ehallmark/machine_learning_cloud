@@ -1,7 +1,6 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.PortfolioSizeAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -12,7 +11,7 @@ import java.util.Arrays;
 public class AssigneesNestedAttribute extends NestedAttribute {
 
     public AssigneesNestedAttribute() {
-        super(Arrays.asList(new OrgNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
+        super(Arrays.asList(new AssigneeNameAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
     }
 
     @Override

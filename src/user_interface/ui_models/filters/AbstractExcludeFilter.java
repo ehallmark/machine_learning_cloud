@@ -24,18 +24,26 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 public class AbstractExcludeFilter extends AbstractFilter {
     protected Collection<String> labels;
     protected FieldType fieldType;
-
-    public AbstractExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+    protected String nestedField;
+    public AbstractExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType, FieldType fieldType, Collection<String> labels, String nestedField) {
         super(attribute,filterType);
         this.fieldType=fieldType;
         this.labels = labels;
+        this.nestedField=nestedField;
     }
+
+    public AbstractExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+        this(attribute,filterType,fieldType,labels,null);
+    }
+
 
     @Override
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder builder = QueryBuilders.boolQuery();
-        if(attribute.getType().equals("text")) {
-              builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite(),labels));
+        if(attribute.getType().equals("nested") && nestedField!=null) {
+            builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite()+"."+nestedField,labels));
+        } else if(attribute.getType().equals("text")) {
+            builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite(),labels));
         } else {
             builder=builder.mustNot(QueryBuilders.termsQuery(getPrerequisite(),labels));
         }

@@ -11,17 +11,17 @@ import java.util.Map;
  */
 public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
-    public Collection<String> handleIncomingData(String name, Map<String, Object> data, boolean isApp) {
-        Object assignee = data.get(Constants.LATEST_ASSIGNEE);
+    public Collection<String> handleIncomingData(String name, Map<String,Object> allData, Map<String, Collection<String>> myData, boolean isApp) {
+        Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
         if(assignee!=null&&name!=null) {
-            Collection<String> currentAssets = isApp ? applicationDataMap.get(assignee) : patentDataMap.get(assignee);
+            Collection<String> currentAssets = myData.get(assignee);
             if(currentAssets==null) {
                 currentAssets = new HashSet<>();
             }
             currentAssets.add(name);
-            return currentAssets;
+            myData.put(assignee.toString(),currentAssets);
         }
-        else return null;
+        return null;
     }
 
     @Override

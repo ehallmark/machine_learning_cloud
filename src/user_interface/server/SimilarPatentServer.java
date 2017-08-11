@@ -8,10 +8,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
-import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -258,7 +255,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-            attributesMap.put(Constants.LATEST_ASSIGNEE, new AssigneeNameAttribute());
+            attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeAttribute());
             attributesMap.put(Constants.PORTFOLIO_SIZE, new PortfolioSizeAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
             attributesMap.put(Constants.NAME, new AssetNumberAttribute());
@@ -296,7 +293,8 @@ public class SimilarPatentServer {
             Arrays.asList(
                     new AssetToAssigneeMap(),
                     new AssigneeToAssetsMap(),
-                    new AssetToFilingMap()
+                    new AssetToFilingMap(),
+                    new FilingToAssetMap()
             ).forEach(attr->attributesMap.put(attr.getName(),attr));
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());

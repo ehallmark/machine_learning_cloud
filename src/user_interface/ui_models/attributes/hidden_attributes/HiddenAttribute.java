@@ -24,6 +24,6 @@ public abstract class HiddenAttribute<T> extends ComputableAttribute<T> {
         throw new UnsupportedOperationException("Hidden attribute not shown, so there should be no field type");
     }
 
-    public abstract T handleIncomingData(String name, Map<String,Object> data, boolean isApplication);
+    public abstract T handleIncomingData(String name, Map<String,Object> allData, Map<String, T> myData, boolean isApplication);
 
 }

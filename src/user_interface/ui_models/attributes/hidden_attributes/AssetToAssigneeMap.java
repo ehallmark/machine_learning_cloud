@@ -11,14 +11,14 @@ import java.util.Map;
  */
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
     @Override
-    public String handleIncomingData(String name, Map<String, Object> data, boolean isApp) {
-        Object assignee = data.get(Constants.LATEST_ASSIGNEE);
+    public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
+        Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
         if(assignee==null) return null;
         return assignee.toString();
     }
 
     @Override
     public String getName() {
-        return Constants.ASSIGNEE+"_to_"+Constants.NAME;
+        return Constants.NAME+"_to_"+Constants.ASSIGNEE;
     }
 }

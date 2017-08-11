@@ -33,7 +33,7 @@ public class Constants {
 	public static final String STATE = "state";
 	public static final String ASSIGNEE_ROLE = "assigneeRole";
 	public static final String PAGE_RANK_VALUE = "pageRankValue";
-	public static final String ASSIGNEE = "originalAssignee";
+	public static final String ASSIGNEE = "assignee";
 	public static final String MEANS_PRESENT = "meansPresent";
 	public static final String CITATION_VALUE = "citationValue";
 	public static final String CLAIM_VALUE = "claimValue";
@@ -47,7 +47,7 @@ public class Constants {
 	public static final String DOC_TYPE = "docType";
 	public static final String FILTER_SUFFIX = "_filter[]";
 	public static final String LENGTH_OF_GRANT = "lengthOfGrant";
-	public static final String LATEST_ASSIGNEE = "assignee";
+	public static final String LATEST_ASSIGNEE = "latestAssignee";
 	public static final String RECORDED_DATE = "recordedDate";
 	public static final String NAME = "name";
 	public static final String FILING_NAME = "filingName";

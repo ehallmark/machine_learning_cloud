@@ -1,17 +1,11 @@
 package user_interface.ui_models.attributes;
 
-import j2html.tags.Tag;
 import seeding.Constants;
-import seeding.Database;
-import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static j2html.TagCreator.div;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -22,7 +16,17 @@ public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
     }
     @Override
     public String getType() {
-        return "text";
+        return "keyword";
+    }
+
+    @Override
+    public AbstractFilter.FieldType getFieldType() {
+        return AbstractFilter.FieldType.Text;
+    }
+
+    @Override
+    public String getName() {
+        return Constants.ASSIGNEE;
     }
 
     @Override
@@ -33,15 +37,4 @@ public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
         fields.put("raw",rawType);
         return fields;
     }
-
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
-    }
-
-    @Override
-    public String getName() {
-        return Constants.LATEST_ASSIGNEE;
-    }
-
 }

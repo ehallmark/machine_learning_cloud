@@ -22,7 +22,7 @@ import java.util.Map;
 public class DataIngester {
     private static TransportClient client = MyClient.get();
     static final String INDEX_NAME = "ai_db";
-    static final String TYPE_NAME = "patents_and_applications";
+    static final String TYPE_NAME = "filings";
 
     public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean create) {
         try {
