@@ -367,7 +367,7 @@ public class USPTOHandler extends NestedHandler {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
-        ingestData(true);
         ingestData(false);
+        ingestData(true);
     }
 }
