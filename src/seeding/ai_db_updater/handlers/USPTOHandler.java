@@ -287,11 +287,11 @@ public class USPTOHandler extends NestedHandler {
         claimFlag.addChild(Flag.integerFlag("claim",Constants.CLAIM_LENGTH,claimFlag).withTransformationFunction(f->s->s==null?0:s.length()));
         claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).setIsForeign(true).withTransformationFunction(f->
                 s->{
+                    if (s == null) s = "";
                     String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
-                    boolean isIndependent = parentClaimNum==null || parentClaimNum.isEmpty();
+                    boolean isIndependent = (parentClaimNum==null || parentClaimNum.isEmpty()) && !s.contains("(canceled)");
                     if(isIndependent) {
                         String data = documentFlag.getDataMap().get(f);
-                        if (s == null) s = "";
                         int length = s.length();
                         if (data == null || data.isEmpty() || Integer.valueOf(data) > length) {
                             documentFlag.getDataMap().put(f, String.valueOf(length));
