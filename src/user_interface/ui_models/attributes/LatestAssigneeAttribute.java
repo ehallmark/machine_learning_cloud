@@ -17,15 +17,6 @@ public class LatestAssigneeAttribute extends NestedAttribute {
     }
 
     @Override
-    public Map<String,Object> getNestedFields() {
-        Map<String,Object> fields = new HashMap<>();
-        Map<String,String> rawType = new HashMap<>();
-        rawType.put("type","keyword");
-        fields.put("raw",rawType);
-        return fields;
-    }
-
-    @Override
     public String getType() {
         return "nested";
     }

@@ -9,6 +9,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.LatestAssigneeAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
@@ -26,7 +27,7 @@ public class CreatePatentDBIndex {
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Map<String,Object> mapping = new HashMap<>();
         Map<String,Object> properties = new HashMap<>();
-        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().collect(Collectors.toList());
+        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
         attributes.forEach(attribute->{
             recursiveHelper(attribute, properties);
         });
