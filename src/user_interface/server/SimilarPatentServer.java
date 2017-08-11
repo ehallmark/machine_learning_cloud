@@ -310,6 +310,15 @@ public class SimilarPatentServer {
         handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,loadVectors,false);
     }
 
+    public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
+        float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
+        Map<String, Float> obj = new HashMap<>();
+        for (int i = 0; i < data.length; i++) {
+            obj.put(String.valueOf(i), data[i]);
+        }
+        return obj;
+    }
+
     public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean loadVectors, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
         Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr instanceof ComputableAttribute && attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
@@ -319,12 +328,7 @@ public class SimilarPatentServer {
                 if(loadVectors) {
                     INDArray vector = lookupTable.get(label);
                     if (vector != null) {
-                        float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
-                        Map<String, Float> obj = new HashMap<>();
-                        for (int i = 0; i < data.length; i++) {
-                            obj.put(String.valueOf(i), data[i]);
-                        }
-                        item.addData("vector_obj", obj);
+                        item.addData("vector_obj", vectorToElasticSearchObject(vector));
                     }
                 }
                 attributes.forEach(model -> {

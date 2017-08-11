@@ -21,6 +21,9 @@ import static j2html.TagCreator.div;
 public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     protected Map<String,T> patentDataMap;
     protected Map<String,T> applicationDataMap;
+    private static Map<String,Map<String,?>> allPatentDataMaps = Collections.synchronizedMap(new HashMap<>());
+    private static Map<String,Map<String,?>> allApplicationDataMaps = Collections.synchronizedMap(new HashMap<>());
+
     public ComputableAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         super(filterTypes);
     }
@@ -36,11 +39,29 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     }
 
     public synchronized Map<String,T> getPatentDataMap() {
-        if(patentDataMap==null) patentDataMap = (Map<String,T>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
+        if(patentDataMap==null) {
+            synchronized (ComputableAttribute.class) {
+                if (allPatentDataMaps.containsKey(getName())) {
+                    patentDataMap = (Map<String, T>) allPatentDataMaps.get(getName());
+                } else {
+                    patentDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
+                    allPatentDataMaps.put(getName(), patentDataMap);
+                }
+            }
+        }
         return patentDataMap;
     }
     public synchronized Map<String,T> getApplicationDataMap() {
-        if(applicationDataMap==null) applicationDataMap = (Map<String,T>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+        if(applicationDataMap==null) {
+            synchronized (ComputableAttribute.class) {
+                if(allApplicationDataMaps.containsKey(getName())) {
+                    applicationDataMap = (Map<String,T>) allApplicationDataMaps.get(getName());
+                } else {
+                    applicationDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER, getName(), getType()));
+                    allApplicationDataMaps.put(getName(),applicationDataMap);
+                }
+            }
+        }
         return applicationDataMap;
     }
 

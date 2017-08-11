@@ -14,6 +14,7 @@ import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.io.*;
@@ -828,19 +829,12 @@ public class Database {
 	}
 
 	public static Collection<String> getCopyOfAllPatents() {
-		Set<String> everything = new HashSet<>(getValuablePatents().size()+getLapsedPatentSet().size()+getExpiredPatentSet().size());
-		everything.addAll(valuablePatents);
-		everything.addAll(expiredPatentSet);
-		everything.addAll(lapsedPatentSet);
-		return everything;
+		return new HashSet<>(new AssetToFilingMap().getPatentDataMap().keySet());
 	}
 
 
 	public static Collection<String> getCopyOfAllApplications() {
-		Set<String> everything = new HashSet<>(getValuableApplications().size()+getLapsedAppSet().size());
-		everything.addAll(valuableApps);
-		everything.addAll(lapsedAppSet);
-		return everything;
+		return new HashSet<>(new AssetToFilingMap().getApplicationDataMap().keySet());
 	}
 
 	public synchronized static Set<String> classificationsFor(String patent) {

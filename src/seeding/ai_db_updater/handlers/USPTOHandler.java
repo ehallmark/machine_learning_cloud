@@ -6,6 +6,8 @@ package seeding.ai_db_updater.handlers;
 
 import elasticsearch.DataIngester;
 import lombok.Setter;
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
+import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
@@ -71,6 +73,11 @@ public class USPTOHandler extends NestedHandler {
                             System.out.println(errors.get());
                         }
                         return;
+                    }
+                    // try to add vector
+                    INDArray vec = SimilarPatentFinder.getLookupTable().get(name);
+                    if(vec!=null) {
+                        toIngest.put("vector_obj", SimilarPatentServer.vectorToElasticSearchObject(vec));
                     }
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
