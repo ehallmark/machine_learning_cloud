@@ -70,7 +70,7 @@ public class RelatedAssetsGraph implements Serializable {
     }
 
 
-    public static RelatedAssetsGraph get() {
+    public synchronized static RelatedAssetsGraph get() {
         if(SELF==null) {
             SELF = (RelatedAssetsGraph) Database.tryLoadObject(graphFile);
         }
