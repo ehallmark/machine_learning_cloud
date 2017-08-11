@@ -39,7 +39,7 @@ public class TechnologyAttribute extends ComputableAttribute<String> {
     }
 
     @Override
-    public String handleIncomingData(String item, Map<String, Object> data, boolean isAppplication) {
+    public String handleIncomingData(String item, Map<String, Object> data, Map<String,String> myData, boolean isAppplication) {
         if(item==null)return null;
         return Database.getItemToTechnologyMap().get(item);
     }

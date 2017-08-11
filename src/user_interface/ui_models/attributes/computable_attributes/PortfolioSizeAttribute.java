@@ -14,13 +14,6 @@ public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
-
-    @Override
-    public Integer handleIncomingData(String name, Map<String, Object> data, boolean isApplication) {
-        return null;
-    }
-
-
     @Override
     public String getName() {
         return Constants.PORTFOLIO_SIZE;

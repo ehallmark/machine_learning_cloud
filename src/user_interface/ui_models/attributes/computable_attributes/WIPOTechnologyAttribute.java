@@ -33,7 +33,7 @@ public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
     }
 
     @Override
-    public String handleIncomingData(String item, Map<String, Object> data, boolean isAppplication) {
+    public String handleIncomingData(String item, Map<String, Object> data, Map<String,String> myData, boolean isAppplication) {
         if(item != null) {
             String attr = getWipoMap().get(item);
             if(attr!=null) {
