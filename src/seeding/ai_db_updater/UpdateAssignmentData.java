@@ -24,7 +24,6 @@ public class UpdateAssignmentData {
     }
 
     public static void main(String[] args) {
-        SimilarPatentServer.loadAttributes();
         ingestData();
     }
 }
