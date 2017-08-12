@@ -37,8 +37,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class UpdateWIPOTechnologies {
     public static void main(String[] args) throws Exception {
-        File wipoDefinitionDestinationFile = new File("data/wipo_field.tsv");
-        File wipoDestinationFile = new File("data/wipo.tsv");
+        File wipoDefinitionDestinationFile = new File("data/wipo_field/");
+        File wipoDestinationFile = new File("data/wipo/");
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
@@ -77,16 +77,22 @@ public class UpdateWIPOTechnologies {
                 }
             }
 
-            BufferedReader reader = new BufferedReader(new FileReader(wipoDefinitionDestinationFile));
-            reader.lines().skip(1).parallel().forEach(line -> {
-                String[] fields = line.split("\t");
-                String wipo = fields[0];
-                String title = fields[2];
-                if (!wipo.startsWith("D")) {
-                    System.out.println(wipo + ": " + title);
-                    definitionMap.put(wipo, title);
+            Arrays.stream(wipoDefinitionDestinationFile.listFiles()).forEach(file->{
+                try(BufferedReader reader = new BufferedReader(new FileReader(wipoDefinitionDestinationFile.getAbsoluteFile()))) {
+                    reader.lines().skip(1).parallel().forEach(line -> {
+                        String[] fields = line.split("\t");
+                        String wipo = fields[0];
+                        String title = fields[2];
+                        if (!wipo.startsWith("D")) {
+                            System.out.println(wipo + ": " + title);
+                            definitionMap.put(wipo, title);
+                        }
+                    });
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
             });
+
             Database.trySaveObject(definitionMap, WIPOHelper.definitionFile);
         }
 
