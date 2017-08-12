@@ -11,6 +11,10 @@ import java.time.Month;
 import java.util.*;
 
 public class Constants {
+	public static final String MAINTENANCE_FEE_REMINDERS = "maintenanceFeeReminders";
+	public static final String SMALL = "small";
+	public static final String MICRO = "micro";
+	public static final String LARGE = "large";
 	public static final String REEL_NO = "reelNo";
 	public static final String FRAME_NO = "frameNo";
 	public static final String PURGE_INDICATOR = "purgeIndicator";

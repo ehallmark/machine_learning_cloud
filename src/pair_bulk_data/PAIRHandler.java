@@ -80,10 +80,7 @@ public class PAIRHandler extends NestedHandler {
                         String appNum = dataMap.get(publicationNumber);
                         String grantNum = dataMap.get(grantNumber);
                         if(appNum!=null || grantNum != null) {
-                            Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->{
-                                if(e.getKey().equals(Constants.PATENT_TERM_ADJUSTMENT)) return Integer.valueOf(e.getValue());
-                                else return e.getValue();
-                            }));
+                            Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
                             if(appNum!=null) {
                                 DataIngester.ingestBulk(appNum, cleanData, false);
                             }

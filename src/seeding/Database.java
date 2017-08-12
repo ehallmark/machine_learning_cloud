@@ -179,43 +179,7 @@ public class Database {
 		return expirationDateMap;
 	}
 
-	public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {
-		// should be one at least every other month
-		// Load file from Google
-		try {
-			String url = handler.getUrl(); // "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
-			URL website = new URL(url);
-			System.out.println("Trying: " + website.toString());
-			ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-			FileOutputStream fos = new FileOutputStream(zipFile);
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-			fos.close();
 
-			new ZipFile(zipFile).extractAll(destinationFile.getAbsolutePath());
-
-		} catch (Exception e) {
-			//e.printStackTrace();
-			System.out.println("Not found");
-		}
-		Arrays.stream(destinationFile.listFiles()).forEach(file -> {
-			if (!file.getName().endsWith(".txt")) {
-				file.delete();
-				return;
-			}
-			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-				String line = reader.readLine();
-				while (line != null) {
-					handler.handleLine(line);
-					line = reader.readLine();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				file.delete();
-			}
-		});
-		handler.save();
-	}
 
 	public static Map<String,Set<String>> loadPatentToClassificationMap() throws IOException,ClassNotFoundException {
 		Map<String,Set<String>> map;
