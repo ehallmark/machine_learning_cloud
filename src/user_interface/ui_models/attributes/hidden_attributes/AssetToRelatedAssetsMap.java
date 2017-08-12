@@ -21,7 +21,6 @@ public class AssetToRelatedAssetsMap extends HiddenAttribute<Collection<String>>
                 currentFamily = new HashSet<>();
             }
             Collection<String> related = relatedAssets.stream().map(map->(String) map.get(Constants.NAME)).filter(n->n!=null).collect(Collectors.toList());
-            System.out.println("Related to "+name+": "+String.join("; ",related));
             currentFamily.addAll(related);
             return currentFamily;
         }
