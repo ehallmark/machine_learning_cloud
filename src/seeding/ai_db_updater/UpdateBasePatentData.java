@@ -31,7 +31,7 @@ public class UpdateBasePatentData {
     }
 
     public static void main(String[] args) {
-        SimilarPatentServer.loadAttributes();
+        SimilarPatentServer.loadAttributes(true);
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);

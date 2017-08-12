@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  */
 public class CreatePatentDBIndex {
     public static void main(String[] args) {
-        SimilarPatentServer.initialize(true);
+        SimilarPatentServer.initialize(true,false);
         TransportClient client = MyClient.get();
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
         Map<String,Object> mapping = new HashMap<>();

@@ -208,8 +208,8 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void initialize(boolean onlyAttributes) {
-        loadAttributes();
+    public static void initialize(boolean onlyAttributes, boolean loadHidden) {
+        loadAttributes(loadHidden);
         if(!onlyAttributes) {
             loadFilterModels();
             loadTechTaggerModel();
@@ -269,7 +269,7 @@ public class SimilarPatentServer {
         }
     }
 
-    public static void loadAttributes() {
+    public static void loadAttributes(boolean loadHidden) {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
@@ -309,19 +309,21 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.ASSIGNORS, new AssignorsNestedAttribute());
 
-            // hidden attrs
-            Arrays.asList(
-                    new AssetToAssigneeMap(),
-                    new AssigneeToAssetsMap(),
-                    new AssetToFilingMap(),
-                    new FilingToAssetMap(),
-                    new AssetToPriorityDate(),
-                    new AssetToPubDateMap(),
-                    new AssetToFilingDateMap(),
-                    new AssetToTermAdjustmentMap(),
-                    new AssetToRelatedAssetsMap(),
-                    new AssetToCitatedAssetsMap()
-            ).forEach(attr->attributesMap.put(attr.getName(),attr));
+            if(loadHidden) {
+                // hidden attrs
+                Arrays.asList(
+                        new AssetToAssigneeMap(),
+                        new AssigneeToAssetsMap(),
+                        new AssetToFilingMap(),
+                        new FilingToAssetMap(),
+                        new AssetToPriorityDate(),
+                        new AssetToPubDateMap(),
+                        new AssetToFilingDateMap(),
+                        new AssetToTermAdjustmentMap(),
+                        new AssetToRelatedAssetsMap(),
+                        new AssetToCitatedAssetsMap()
+                ).forEach(attr -> attributesMap.put(attr.getName(), attr));
+            }
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
@@ -977,7 +979,7 @@ public class SimilarPatentServer {
         if(initDatabase) Database.initializeDatabase();
 
         System.out.println("Starting to load base finder...");
-        initialize(false);
+        initialize(false,false);
         System.out.println("Finished loading base finder.");
         System.out.println("Starting user_interface.server...");
         server();

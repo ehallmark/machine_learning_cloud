@@ -33,7 +33,7 @@ public abstract class EndFlag extends Flag {
         Map<String,Object> transform = new HashMap<>(dataMap.size());
         Collection<Flag> flags = new HashSet<>(dataMap.keySet());
         flags.forEach(flag->{
-            if(flagsToIngest==null || !flagsToIngest.contains(flag.dbName)) {
+            if(flagsToIngest!=null && !flagsToIngest.contains(flag.dbName)) {
                if(dbName==null || !flagsToIngest.contains(dbName+"."+flag.dbName)) {
                    return;
                }
