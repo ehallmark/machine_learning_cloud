@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 7/18/17.
  */
-public class UpdateLifeRemainingMap {
+public class UpdatePriorityAndExpirationData {
     public static void main(String[] args) {
         UpdateTermAdjustmentData.main(args);
         Map<String,Integer> termAdjustmentMap = UpdateTermAdjustmentData.assetTermAdjustmentMap;

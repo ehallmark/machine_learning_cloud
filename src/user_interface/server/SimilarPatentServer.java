@@ -318,7 +318,8 @@ public class SimilarPatentServer {
                     new AssetToPubDateMap(),
                     new AssetToFilingDateMap(),
                     new AssetToTermAdjustmentMap(),
-                    new AssetToRelatedAssetsMap()
+                    new AssetToRelatedAssetsMap(),
+                    new AssetToCitatedAssetsMap()
             ).forEach(attr->attributesMap.put(attr.getName(),attr));
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());

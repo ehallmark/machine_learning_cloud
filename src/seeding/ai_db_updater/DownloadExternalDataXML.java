@@ -7,7 +7,7 @@ import seeding.Constants;
 /**
  * Created by Evan on 1/22/2017.
  */
-public class IngestUSPTOData {
+public class DownloadExternalDataXML {
 
     public static void main(String[] args) {
         IngestUSPTOIterator patentIterator = new IngestUSPTOIterator(Constants.DEFAULT_START_DATE, Constants.PATENT_ZIP_FOLDER, Constants.GOOGLE_URL_CREATOR, Constants.USPTO_URL_CREATOR);

@@ -15,6 +15,7 @@ import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToRelatedAssetsMap;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.io.*;
@@ -586,17 +587,12 @@ public class Database {
 	}
 
 	public synchronized static Map<String,Collection<String>> getPatentToRelatedPatentsMap() {
-		if(patentToRelatedPatentsMap==null) {
-			patentToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(patentToRelatedPatentsMapFile));
-		}
-		return patentToRelatedPatentsMap;
+		return new AssetToRelatedAssetsMap().getPatentDataMap();
+
 	}
 
 	public synchronized static Map<String,Collection<String>> getAppToRelatedPatentsMap() {
-		if(appToRelatedPatentsMap==null) {
-			appToRelatedPatentsMap = Collections.unmodifiableMap((Map<String,Collection<String>>)tryLoadObject(appToRelatedDocMapFile));
-		}
-		return appToRelatedPatentsMap;
+		return new AssetToRelatedAssetsMap().getApplicationDataMap();
 	}
 
 	public static Map<String,Set<String>> getPatentToCitedPatentsMap() {
