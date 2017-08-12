@@ -15,7 +15,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
+      - esdata1:/usr/share/elasticsearch/data/node1
     ports:
       - 9200:9200
       - 9300:9300
@@ -39,7 +39,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata2:/usr/share/elasticsearch/data
+      - esdata2:/usr/share/elasticsearch/data/node2
     ports:
       - 9301:9300
     networks:
