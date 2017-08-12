@@ -15,6 +15,14 @@ public class Constants {
 	public static final String FRAME_NO = "frameNo";
 	public static final String PURGE_INDICATOR = "purgeIndicator";
 	public static final String CORRESPONDENT = "correspondent";
+	public static final String CORRESPONDENT_ADDRESS_ID = "correspondentAddressId";
+	public static final String APPLICATION_TYPE = "applicationType";
+	public static final String APPLICATION_CONFIRMATION_NUM = "applicationConfirmationNumber";
+	public static final String APPLICANT_FILE_REFERENCE = "applicantFileReference";
+	public static final String APPLICATION_STATUS = "applicationStatus";
+	public static final String APPLICATION_STATUS_DATE = "applicationStatusDate";
+	public static final String GRANT_NAME = "grantName";
+	public static final String PUBLICATION_NAME = "publicationName";
 	public static final String FULL_NAME = "fullName";
 	public static final String REEL_FRAME = "reelFrame";
 	public static final String EXECUTION_DATE = "executionDate";

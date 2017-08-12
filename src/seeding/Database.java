@@ -233,48 +233,6 @@ public class Database {
 		return set;
 	}
 
-	public static void setupClassificationsHash(File zipFile, File destinationFile, UrlCreator urlCreator, LineHandler handler) {
-		// should be one at least every other month
-		// Load file from Google
-		boolean found = false;
-		LocalDate date = LocalDate.now();
-		while (!found) {
-			try {
-				// String dateStr = String.format("%04d", date.getYear()) + "-" + String.format("%02d", date.getMonthValue()) + "-" + String.format("%02d", date.getDayOfMonth());
-				String url = urlCreator.create(date); //"http://patents.reedtech.com/downloads/PatentClassInfo/ClassData/US_Grant_CPC_MCF_Text_" + dateStr + ".zip";
-				URL website = new URL(url);
-				System.out.println("Trying: " + website.toString());
-				ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-				FileOutputStream fos = new FileOutputStream(zipFile);
-				fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-				fos.close();
-
-				new ZipFile(zipFile).extractAll(destinationFile.getAbsolutePath());
-
-				found = true;
-			} catch (Exception e) {
-				//e.printStackTrace();
-				System.out.println("Not found");
-			}
-			date = date.minusDays(1);
-			if(date.isBefore(LocalDate.now().minusYears(20))) throw new RuntimeException("Url does not work: "+urlCreator.create(date));
-		}
-
-		Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
-			try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-				String line = reader.readLine();
-				while (line != null) {
-					handler.handleLine(line);
-					line = reader.readLine();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-
-		handler.save();
-
-	}
 
 	public static void ingestRecords(String patentNumber, Collection<String> assigneeData, List<List<String>> documents) throws SQLException {
 		if(patentNumber==null)return;
