@@ -111,7 +111,7 @@ public class UpdateWIPOTechnologies {
                         fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                         fos.close();
 
-                        new ZipFile(zipFile).extractAll(wipoDefinitionDestinationFile.getAbsolutePath());
+                        new ZipFile(zipFile).extractAll(wipoDestinationFile.getAbsolutePath());
 
                         found = true;
                     } catch (Exception e) {
