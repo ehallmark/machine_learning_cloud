@@ -44,7 +44,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
 
     @Override
     protected void initAndAddFlagsAndEndFlags() {
-        boolean debug = true;
+        boolean debug = false;
         int batchSize = 5000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         // application flags
