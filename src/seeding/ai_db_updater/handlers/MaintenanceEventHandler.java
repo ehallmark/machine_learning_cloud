@@ -48,6 +48,7 @@ public class MaintenanceEventHandler implements LineHandler {
                 } else if (maintenanceCode.equals("EXPX")) {
                     // reinstated
                     expiredAssetsMap.getPatentDataMap().get(Constants.EXPIRED).remove(patNum);
+                    data.put(Constants.REINSTATED, true);
                     data.put(Constants.EXPIRED, false);
                     if(appNum!=null) {
                         expiredAssetsMap.getApplicationDataMap().get(Constants.EXPIRED).remove(appNum);
@@ -60,12 +61,10 @@ public class MaintenanceEventHandler implements LineHandler {
                     } else {
                         maintenanceFeeReminderCountMap.getPatentDataMap().put(patNum,1);
                     }
+                    int maintenanceFeeCount = maintenanceFeeReminderCountMap.getApplicationDataMap().get(patNum);
+                    data.put(Constants.MAINTENANCE_FEE_REMINDERS, maintenanceFeeCount);
                     if(appNum!=null) {
-                        if(maintenanceFeeReminderCountMap.getApplicationDataMap().containsKey(appNum)) {
-                            maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeReminderCountMap.getApplicationDataMap().get(appNum)+1);
-                        } else {
-                            maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,1);
-                        }
+                        maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeCount);
                     }
                 } else if (maintenanceCode.startsWith("M2")||maintenanceCode.startsWith("SM")||maintenanceCode.equals("LTOS")||maintenanceCode.equals("MTOS")) {
                     entityStatusMap.getPatentDataMap().get(Constants.SMALL).add(patNum);
