@@ -49,7 +49,7 @@ public class UpdateWIPOTechnologies {
         Map<String, String> definitionMap = Collections.synchronizedMap(new HashMap<>());
         {
             {// load from internet
-                String baseUrl = "http://www.patentsview.org/data/?/wipo_field.zip";
+                String baseUrl = "http://www.patentsview.org/data/20170307/wipo_field.zip";
                 boolean found = false;
                 LocalDate date = LocalDate.now();
                 File zipFile = new File("wipo_definition_zip/");
