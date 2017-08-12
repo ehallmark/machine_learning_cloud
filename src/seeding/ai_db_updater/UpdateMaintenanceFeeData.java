@@ -20,24 +20,20 @@ import java.util.Set;
  * Created by ehallmark on 1/19/17.
  */
 public class UpdateMaintenanceFeeData {
-    public static void main(String[] args) {
-        try {
-            // update latest assignees
-            AssetEntityStatusMap assetEntityStatusMap = new AssetEntityStatusMap();
-            AssetToMaintenanceFeeReminderCountMap assetToMaintenanceFeeReminderCountMap = new AssetToMaintenanceFeeReminderCountMap();
-            ExpiredAssetsMap expiredAssetsMap = new ExpiredAssetsMap();
-            assetEntityStatusMap.initMaps();
-            assetToMaintenanceFeeReminderCountMap.initMaps();
-            expiredAssetsMap.initMaps();
-            System.out.println("Starting to update latest maintenace fee data...");
-            loadAndIngestMaintenanceFeeData(new File("maintenance-zip/"),new File("maintenance-dest/"), new MaintenanceEventHandler(expiredAssetsMap,assetEntityStatusMap,assetToMaintenanceFeeReminderCountMap));
-            assetEntityStatusMap.save();
-            assetToMaintenanceFeeReminderCountMap.save();
-            expiredAssetsMap.save();
-            MyClient.closeBulkProcessor();
-        } catch(Exception sql) {
-            sql.printStackTrace();
-        }
+    public static void main(String[] args) throws Exception{
+        // update latest assignees
+        AssetEntityStatusMap assetEntityStatusMap = new AssetEntityStatusMap();
+        AssetToMaintenanceFeeReminderCountMap assetToMaintenanceFeeReminderCountMap = new AssetToMaintenanceFeeReminderCountMap();
+        ExpiredAssetsMap expiredAssetsMap = new ExpiredAssetsMap();
+        assetEntityStatusMap.initMaps();
+        assetToMaintenanceFeeReminderCountMap.initMaps();
+        expiredAssetsMap.initMaps();
+        System.out.println("Starting to update latest maintenace fee data...");
+        loadAndIngestMaintenanceFeeData(new File("maintenance-zip/"),new File("maintenance-dest/"), new MaintenanceEventHandler(expiredAssetsMap,assetEntityStatusMap,assetToMaintenanceFeeReminderCountMap));
+        assetEntityStatusMap.save();
+        assetToMaintenanceFeeReminderCountMap.save();
+        expiredAssetsMap.save();
+        MyClient.closeBulkProcessor();
     }
 
     public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {

@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import elasticsearch.MyClient;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.USPTOAssignmentHandler;
 import seeding.ai_db_updater.iterators.AssignmentIterator;
@@ -25,5 +26,8 @@ public class UpdateAssignmentData {
 
     public static void main(String[] args) {
         ingestData();
+
+        // Close bulk processor
+        MyClient.closeBulkProcessor();
     }
 }

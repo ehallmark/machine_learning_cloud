@@ -11,9 +11,9 @@ public class UpdateAll {
         UpdatePairBulkData.main(args);
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
-        UpdateRelatedAssetsGraph.main(args);
         UpdatePriorityAndExpirationData.main(args);
         UpdateWIPOTechnologies.main(args);
+        UpdateRelatedAssetsGraph.main(args);
         UpdateAssignmentData.main(args);
     }
 }
