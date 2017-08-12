@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class UpdatePriorityAndExpirationData {
     public static void main(String[] args) {
-        UpdateTermAdjustmentData.main(args);
+       /* UpdateTermAdjustmentData.main(args);
         Map<String,Integer> termAdjustmentMap = UpdateTermAdjustmentData.assetTermAdjustmentMap;
 
         Map<String,Integer> lifeRemainingMap = Collections.synchronizedMap(new HashMap<>());
@@ -31,6 +31,6 @@ public class UpdatePriorityAndExpirationData {
             }
         });
         Database.saveObject(lifeRemainingMap,Database.lifeRemainingMapFile);
-        Database.saveObject(expirationDateMap,Database.expirationDateMapFile);
+        Database.saveObject(expirationDateMap,Database.expirationDateMapFile);*/
     }
 }

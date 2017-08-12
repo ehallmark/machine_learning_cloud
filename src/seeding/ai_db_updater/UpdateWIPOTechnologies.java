@@ -68,11 +68,11 @@ public class UpdateWIPOTechnologies {
 
                         found = true;
                     } catch (Exception e) {
-                        //e.printStackTrace();
+                        e.printStackTrace();
                         System.out.println("Not found");
                     }
                     date = date.minusDays(1);
-                    if (date.isBefore(LocalDate.now().minusYears(20)))
+                    if (date.isBefore(LocalDate.now().minusYears(3)))
                         throw new RuntimeException("Url does not work: " + baseUrl);
                 }
             }
@@ -114,7 +114,7 @@ public class UpdateWIPOTechnologies {
                         System.out.println("Not found");
                     }
                     date = date.minusDays(1);
-                    if (date.isBefore(LocalDate.now().minusYears(20)))
+                    if (date.isBefore(LocalDate.now().minusYears(3)))
                         throw new RuntimeException("Url does not work: " + baseUrl);
                 }
             }
