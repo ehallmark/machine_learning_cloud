@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class LatestAssigneeNestedAttribute extends NestedAttribute {
     public LatestAssigneeNestedAttribute() {
-        super(Arrays.asList(new EntityTypeAttribute(), new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
+        super(Arrays.asList(new EntityTypeAttribute(), new ExecutionDateAttribute(), new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
     }
 
     @Override

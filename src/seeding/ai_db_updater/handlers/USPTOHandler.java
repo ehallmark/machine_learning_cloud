@@ -357,7 +357,6 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public void save() {
-        //saveElasticSearch();
         if (computableAttributes != null) {
             computableAttributes.forEach(attr -> {
                 attr.save();

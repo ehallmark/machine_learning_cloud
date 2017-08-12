@@ -1,15 +1,12 @@
-package pair_bulk_data;
+package seeding.ai_db_updater.pair_bulk_data;
 
 import seeding.Database;
-import seeding.GetEtsiPatentsList;
 
 import java.io.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**

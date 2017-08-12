@@ -307,6 +307,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
+            attributesMap.put(Constants.ASSIGNORS, new AssignorsNestedAttribute());
 
             // hidden attrs
             Arrays.asList(

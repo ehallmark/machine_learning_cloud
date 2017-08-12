@@ -1,11 +1,10 @@
-package pair_bulk_data;
+package seeding.ai_db_updater.pair_bulk_data;
 
 /**
  * Created by ehallmark on 1/3/17.
  */
 
 import elasticsearch.DataIngester;
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import seeding.Constants;
 import seeding.Database;
@@ -13,14 +12,9 @@ import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import tools.AssigneeTrimmer;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**

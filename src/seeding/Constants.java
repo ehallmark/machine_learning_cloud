@@ -18,6 +18,9 @@ public class Constants {
 	public static final String REEL_NO = "reelNo";
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";
+	public static final String ADDRESS_1 = "addressOne";
+	public static final String ADDRESS_2 = "addressTwo";
+	public static final String ADDRESS_3 = "addressThree";
 	public static final String PURGE_INDICATOR = "purgeIndicator";
 	public static final String CORRESPONDENT = "correspondent";
 	public static final String CORRESPONDENT_ADDRESS_ID = "correspondentAddressId";
@@ -27,6 +30,10 @@ public class Constants {
 	public static final String APPLICATION_STATUS = "applicationStatus";
 	public static final String APPLICATION_STATUS_DATE = "applicationStatusDate";
 	public static final String GRANT_NAME = "grantName";
+	public static final String PAGE_COUNT = "pageCount";
+	public static final String POSTAL_CODE = "postalCode";
+	public static final String ASSIGNMENTS = "assignments";
+	public static final String ASSIGNOR = "assignor";
 	public static final String PUBLICATION_NAME = "publicationName";
 	public static final String FULL_NAME = "fullName";
 	public static final String REEL_FRAME = "reelFrame";
@@ -105,6 +112,7 @@ public class Constants {
 	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
 	public static final String REMAINING_LIFE = "remainingLife";
 	public static final String PATENT_FAMILY = "patentFamily";
+	public static final String ASSIGNORS = "assignors";
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
 
