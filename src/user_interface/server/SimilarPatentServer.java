@@ -282,7 +282,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
-            attributesMap.put(Constants.PATENT_FAMILY, new FamilyMembersAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());

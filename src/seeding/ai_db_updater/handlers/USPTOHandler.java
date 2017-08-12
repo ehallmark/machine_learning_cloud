@@ -332,7 +332,6 @@ public class USPTOHandler extends NestedHandler {
             public void save() {
                 Map<String,Object> resultMap = getTransform(attrsToIngest);
                 if(currentTag != null) {
-                    System.out.println("FOUND RELATED ASSET: "+currentTag+ " "+resultMap.get(Constants.NAME));
                     resultMap.put(Constants.RELATION_TYPE, currentTag);
                 }
                 dataQueue.add(resultMap);
