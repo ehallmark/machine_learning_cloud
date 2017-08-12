@@ -9,6 +9,7 @@ services:
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch2"
     ulimits:
       memlock:
         soft: -1
@@ -19,7 +20,6 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
-      - 5601:5601
     networks:
       - esnet
 
