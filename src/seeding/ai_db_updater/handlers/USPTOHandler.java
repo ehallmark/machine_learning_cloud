@@ -342,7 +342,7 @@ public class USPTOHandler extends NestedHandler {
         Flag docFlag = Flag.parentFlag("document-id");
         docFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY,relatedAssetsFlag));
         docFlag.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,relatedAssetsFlag));
-        docFlag.addChild(Flag.simpleFlag("doc-number",Constants.NAME,relatedAssetsFlag));
+        docFlag.addChild(Flag.simpleFlag("doc-number",Constants.NAME,relatedAssetsFlag).withTransformationFunction(Flag.unknownDocumentHandler));
         relatedAssetsFlag.addChild(docFlag);
 
         nestedEndFlags.addAll(endFlags.stream().filter(f->!f.equals(documentFlag)).collect(Collectors.toList()));
