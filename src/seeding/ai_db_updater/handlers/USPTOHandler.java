@@ -100,7 +100,9 @@ public class USPTOHandler extends NestedHandler {
                     }
                     synchronized (USPTOHandler.class) {
                         //queue.put(name.toString(), toIngest);
-                        System.out.println(cnt.getAndAdd(1));
+                        if(cnt.getAndIncrement() % batchSize == batchSize-1) {
+                            System.out.println();
+                        }
                         saveElasticSearch(name.toString(),toIngest);
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
