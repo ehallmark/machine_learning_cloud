@@ -5,6 +5,7 @@ package seeding.ai_db_updater.handlers;
  */
 
 import elasticsearch.DataIngester;
+import elasticsearch.MyClient;
 import lombok.Setter;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -101,7 +102,7 @@ public class USPTOHandler extends NestedHandler {
                     synchronized (USPTOHandler.class) {
                         //queue.put(name.toString(), toIngest);
                         if(cnt.getAndIncrement() % batchSize == batchSize-1) {
-                            System.out.println();
+                            System.out.println(cnt.get());
                         }
                         saveElasticSearch(name.toString(),toIngest);
                     }
@@ -323,6 +324,27 @@ public class USPTOHandler extends NestedHandler {
             return null; // prevent default behavior (must have isForeign set to true)
         }));
 
+        // related assets data
+        EndFlag relatedAssetsFlag = new EndFlag(Constants.RELATED_DOC_TYPE_LIST) {
+            {
+                dbName=Constants.PATENT_FAMILY;
+            }
+            @Override
+            public void save() {
+                Map<String,Object> resultMap = getTransform(attrsToIngest);
+                if(currentTag != null) {
+                    resultMap.put(Constants.RELATION_TYPE, currentTag);
+                }
+                dataQueue.add(resultMap);
+            }
+        };
+        endFlags.add(relatedAssetsFlag);
+        Flag docFlag = Flag.parentFlag("document-id");
+        docFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY,relatedAssetsFlag));
+        docFlag.addChild(Flag.simpleFlag("kind",Constants.DOC_KIND,relatedAssetsFlag));
+        docFlag.addChild(Flag.simpleFlag("doc-number",Constants.NAME,relatedAssetsFlag));
+        relatedAssetsFlag.addChild(docFlag);
+
         nestedEndFlags.addAll(endFlags.stream().filter(f->!f.equals(documentFlag)).collect(Collectors.toList()));
 
     }
@@ -369,5 +391,8 @@ public class USPTOHandler extends NestedHandler {
         USPTOHandler.setLookupTable(SimilarPatentFinder.getLookupTable());
         ingestData(false);
         ingestData(true);
+
+        // Close bulk processor
+        MyClient.closeBulkProcessor();
     }
 }

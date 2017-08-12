@@ -19,6 +19,10 @@ public abstract class EndFlag extends Flag {
         super(localName,null,null,null,defaultCompareFunction,null,null);
     }
 
+    public EndFlag(Collection<String> localNames) {
+        super(null,null,null,null,multiCompareFunction(localNames),null,null);
+    }
+
     public abstract void save();
 
     public Map<Flag,String> getDataMap() {

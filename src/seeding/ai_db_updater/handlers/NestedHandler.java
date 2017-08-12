@@ -97,7 +97,7 @@ public abstract class NestedHandler extends CustomHandler{
 
         // check end flags
         endFlags.forEach(flag->{
-            if(flag.localName.equals(localName)) {
+            if(flag.compareTag(localName)) {
                 flag.save();
                 flag.resetDataMap();
                 resetAllDescendants(flag);

@@ -11,18 +11,18 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PriorityDateAttribute extends ComputableAttribute<String> {
+public class PriorityDateAttribute extends ComputableAttribute<LocalDate> {
     public PriorityDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
+    public LocalDate attributesFor(Collection<String> portfolio, int limit) {
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().findAny().get();
         LocalDate date = Database.getPriorityDateFor(item, Database.isApplication(item));
         if(date==null) return null;
-        return date.toString();
+        return date;
     }
 
     @Override

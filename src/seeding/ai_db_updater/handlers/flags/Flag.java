@@ -9,6 +9,7 @@ import tools.AssigneeTrimmer;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,6 +23,15 @@ public class Flag {
     protected static final Function<Flag,Function<String,Boolean>> defaultCompareFunction = (flag) -> (str) ->{
         return flag.localName.equals(str);
     };
+
+    protected static Function<Flag,Function<String,Boolean>> multiCompareFunction(Collection<String> list) {
+        return f -> str -> {
+            boolean result = list.contains(str);
+            if(result) f.currentTag = str;
+            else f.currentTag = null;
+            return list.contains(str);
+        };
+    }
 
     public static final Function<Flag,Function<String,Boolean>> endsWithCompareFunction = (flag) -> (str) ->{
         return flag.localName.endsWith(str);
@@ -91,6 +101,7 @@ public class Flag {
     };
 
     public final String localName;
+    public String currentTag;
     public String dbName;
     public final AtomicBoolean flag;
     public final List<Flag> children;
@@ -183,16 +194,7 @@ public class Flag {
     }
 
     public void setTrueIfEqual(String otherName) {
-        if(localName==null) {
-            System.out.println(" ITEM WAS NULL! ");
-            System.out.println("  dbName: "+dbName);
-            System.out.println("  localName: "+localName);
-            System.out.println("  type: "+type);
-            System.out.println("  isAttrFlag: "+isAttributeFlag);
-            System.out.println("  ID: "+id);
-            System.exit(1);
-        }
-        if(localName.equals(otherName)) {
+        if(compareTag(otherName)) {
             flag.set(true);
         }
     }

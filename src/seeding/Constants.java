@@ -25,6 +25,7 @@ public class Constants {
 	public static final String CLAIM = "claim";
 	public static final String CLAIM_NUM = "claimNum";
 	public static final String PARENT_CLAIM_NUM = "parentClaimNum";
+	public static final String RELATION_TYPE = "relationType";
 	public static final String CLAIM_LENGTH = "claimLength";
 	public static final String SMALLEST_INDEPENDENT_CLAIM_LENGTH = "smallestIndClaimLength";
 	public static final String LAST_NAME = "lastName";
@@ -140,4 +141,24 @@ public class Constants {
 			return baseUrl + dateStr + ".zip";
 		};
 	}
-}
+
+	public static final String[] RELATED_DOC_TYPES = new String[]{
+			"addition",
+			"division",
+			"continuation",
+			"continuation-in-part",
+			"continuing-reissue",
+			"reissue",
+			"us-divisional-reissue",
+			"reexamination",
+			"us-reexamination-reissue-merger",
+			"substitution",
+			"us-provisional-application",
+			"utility-model-basis",
+			"correction",
+			"related-publication"
+	};
+
+	public static final List<String> RELATED_DOC_TYPE_LIST = Arrays.asList(RELATED_DOC_TYPES);
+
+	}

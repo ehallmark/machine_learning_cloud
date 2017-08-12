@@ -16,6 +16,7 @@ import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -73,6 +74,18 @@ public class MyClient {
                     .build();
         }
         return BULK_PROCESSOR;
+    }
+
+    public synchronized static void closeBulkProcessor() {
+        if(BULK_PROCESSOR!=null) {
+            try {
+                BULK_PROCESSOR.awaitClose(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
+            } catch(Exception e) {
+                e.printStackTrace();
+                System.out.println("Error closing bulk processor");
+            }
+            BULK_PROCESSOR=null;
+        }
     }
 
     public static void main(String[] args) {

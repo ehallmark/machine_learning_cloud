@@ -306,12 +306,19 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.AGENTS, new AgentsNestedAttribute());
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
+            attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
 
+            // hidden attrs
             Arrays.asList(
                     new AssetToAssigneeMap(),
                     new AssigneeToAssetsMap(),
                     new AssetToFilingMap(),
-                    new FilingToAssetMap()
+                    new FilingToAssetMap(),
+                    new AssetToPriorityDate(),
+                    new AssetToPubDateMap(),
+                    new AssetToFilingDateMap(),
+                    new AssetToTermAdjustmentMap(),
+                    new AssetToRelatedAssetsMap()
             ).forEach(attr->attributesMap.put(attr.getName(),attr));
 
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
