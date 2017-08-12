@@ -17,11 +17,10 @@ public class ExpirationDateAttribute extends PriorityDateAttribute {
     }
 
     @Override
-    public String attributesFor(Collection<String> portfolio, int limit) {
-        String item = portfolio.stream().findAny().get();
-        LocalDate date = Database.getPriorityDateFor(item, Database.isApplication(item));
-        if(date==null) return null;
-        return date.plusYears(20).toString();
+    public LocalDate attributesFor(Collection<String> portfolio, int limit) {
+        LocalDate date = super.attributesFor(portfolio,limit);
+        if(date == null) return null;
+        return date.plusYears(20);
     }
 
 }
