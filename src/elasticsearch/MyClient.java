@@ -1,10 +1,17 @@
 package elasticsearch;
 
 import lombok.Getter;
+import org.elasticsearch.action.bulk.BackoffPolicy;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
 import java.net.InetAddress;
@@ -15,6 +22,7 @@ import java.net.UnknownHostException;
  */
 public class MyClient {
     private static TransportClient CLIENT;
+    private static BulkProcessor BULK_PROCESSOR;
     private MyClient() {}
     private static void init() {
         boolean sniff = false;
@@ -33,11 +41,38 @@ public class MyClient {
         }
     }
 
-    public static TransportClient get() {
+    public synchronized static TransportClient get() {
         if(CLIENT==null) {
             init();
         }
         return CLIENT;
+    }
+
+    public synchronized static BulkProcessor getBulkProcessor() {
+        if(BULK_PROCESSOR==null) {
+            BULK_PROCESSOR = BulkProcessor.builder(get(), new BulkProcessor.Listener() {
+                @Override
+                public void beforeBulk(long l, BulkRequest bulkRequest) {
+
+                }
+
+                @Override
+                public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
+
+                }
+
+                @Override
+                public void afterBulk(long l, BulkRequest bulkRequest, Throwable throwable) {
+
+                }
+            })
+                    .setBulkActions(10000)
+                    .setBulkSize(new ByteSizeValue(10, ByteSizeUnit.MB))
+                    .setFlushInterval(TimeValue.timeValueSeconds(10))
+                    .setConcurrentRequests(Runtime.getRuntime().availableProcessors()/2+1)
+                    .build();
+        }
+        return BULK_PROCESSOR;
     }
 
     public static void main(String[] args) {

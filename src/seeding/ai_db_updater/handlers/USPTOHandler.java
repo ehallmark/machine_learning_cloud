@@ -39,7 +39,7 @@ public class USPTOHandler extends NestedHandler {
         this.applications=applications;
     }
 
-    private static Map<String,Map<String,Object>> queue = Collections.synchronizedMap(new HashMap<>(5000));
+    //private static Map<String,Map<String,Object>> queue = Collections.synchronizedMap(new HashMap<>(5000));
 
     private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
@@ -99,11 +99,9 @@ public class USPTOHandler extends NestedHandler {
                         });
                     }
                     synchronized (USPTOHandler.class) {
-                        queue.put(name.toString(), toIngest);
-                        if (queue.size() > batchSize) {
-                            System.out.println(cnt.getAndAdd(queue.size()));
-                            saveElasticSearch();
-                        }
+                        //queue.put(name.toString(), toIngest);
+                        System.out.println(cnt.getAndAdd(1));
+                        saveElasticSearch(name.toString(),toIngest);
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
                 } finally {
@@ -336,7 +334,7 @@ public class USPTOHandler extends NestedHandler {
 
     @Override
     public void save() {
-        saveElasticSearch();
+        //saveElasticSearch();
         if (computableAttributes != null) {
             computableAttributes.forEach(attr -> {
                 attr.save();
@@ -344,8 +342,8 @@ public class USPTOHandler extends NestedHandler {
         }
     }
 
-    private void saveElasticSearch() {
-        DataIngester.ingestAssets(queue, true, true);
+    private void saveElasticSearch(String name, Map<String,Object> doc) {
+        DataIngester.ingestBulk(name,doc,true);
     }
 
 
