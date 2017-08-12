@@ -296,6 +296,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
             attributesMap.put(Constants.FILING_NAME, new FilingNameAttribute());
             attributesMap.put(Constants.FILING_COUNTRY, new FilingCountryAttribute());
+            attributesMap.put(Constants.REINSTATED, new ReinstatedAttribute());
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());

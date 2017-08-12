@@ -15,33 +15,8 @@ import static j2html.TagCreator.div;
  * Created by Evan on 6/18/2017.
  */
 public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
-    public static Map<String,String> definitionMap;
-    public static Map<String,String> wipoMap;
-
     public WIPOTechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
-    }
-
-    public static Map<String,String> getDefinitionMap() {
-        if(definitionMap==null) definitionMap= WIPOHelper.getDefinitionMap();
-        return definitionMap;
-    }
-
-    public static Map<String,String> getWipoMap() {
-        if(wipoMap==null) wipoMap = WIPOHelper.getWIPOMapWithAssignees();
-        return wipoMap;
-    }
-
-    @Override
-    public String attributesFor(Collection<String> items, int limit) {
-        if(!items.isEmpty()) {
-            String attr = getWipoMap().get(items.stream().findAny().get());
-            if(attr!=null) {
-                String title = getDefinitionMap().get(attr);
-                if(title!=null) return title;
-            }
-        }
-        return null;
     }
 
     @Override

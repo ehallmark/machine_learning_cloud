@@ -37,13 +37,5 @@ public class WIPOSimilarityFinder extends BaseSimilarityModel {
         }
         return LOOKUP_TABLE;
     }
-    public static void main(String[] args) throws IOException {
-        Database.initializeDatabase();
 
-        int classDepth = -1; // not using
-        Map<String,Collection<String>> dataMap = WIPOHelper.getWIPOMap().entrySet().stream().collect(Collectors.toMap(e->e.getKey(),e->Arrays.asList(e.getValue())));
-
-        AbstractClassSimilarityFinder.trainAndSave(Database.getCopyOfAllPatents(),dataMap,classDepth,rawFile);
-
-    }
 }

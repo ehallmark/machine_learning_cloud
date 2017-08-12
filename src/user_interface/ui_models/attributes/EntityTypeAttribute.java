@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
+import models.classification_models.WIPOHelper;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -31,5 +32,10 @@ public class EntityTypeAttribute extends AbstractAttribute<String> {
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Multiselect;
+    }
+
+    @Override
+    public Collection<String> getAllValues() {
+        return Arrays.asList(Constants.SMALL,Constants.MICRO,Constants.LARGE);
     }
 }
