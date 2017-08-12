@@ -49,7 +49,7 @@ public class UpdateWIPOTechnologies {
         Map<String, String> definitionMap = Collections.synchronizedMap(new HashMap<>());
         {
             {// load from internet
-                String baseUrl = "http://www.patentsview.org/data/20170307/wipo_field.zip";
+                String baseUrl = "http://www.patentsview.org/data/?/wipo_field.zip";
                 boolean found = false;
                 LocalDate date = LocalDate.now();
                 File zipFile = new File("wipo_definition_zip/");
@@ -68,7 +68,6 @@ public class UpdateWIPOTechnologies {
 
                         found = true;
                     } catch (Exception e) {
-                        e.printStackTrace();
                         System.out.println("Not found");
                     }
                     date = date.minusDays(1);
@@ -78,7 +77,7 @@ public class UpdateWIPOTechnologies {
             }
 
             Arrays.stream(wipoDefinitionDestinationFile.listFiles()).forEach(file->{
-                try(BufferedReader reader = new BufferedReader(new FileReader(wipoDefinitionDestinationFile.getAbsoluteFile()))) {
+                try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     reader.lines().skip(1).parallel().forEach(line -> {
                         String[] fields = line.split("\t");
                         String wipo = fields[0];
@@ -126,38 +125,42 @@ public class UpdateWIPOTechnologies {
             }
 
 
-            BufferedReader reader = new BufferedReader(new FileReader(wipoDestinationFile));
-            reader.lines().skip(1).parallel().forEach(line -> {
-                String[] fields = line.split("\t");
-                String patent = fields[0];
-                String wipo = fields[1];
-                if (definitionMap.containsKey(wipo)) {
-                    try {
-                        if (Integer.valueOf(patent) > 6000000) {
-                            String filing = assetToFilingMap.getPatentDataMap().get(patent);
-                            String appNum = null;
-                            if (filing != null) {
-                                appNum = filingToAssetMap.getApplicationDataMap().get(filing);
-                            }
-                            if(appNum!=null) {
-                                wipoTechnologyAttribute.getApplicationDataMap().put(patent,wipo);
-                            }
-                            wipoTechnologyAttribute.getPatentDataMap().put(patent, wipo);
-                            Map<String,Object> data = new HashMap<>();
-                            data.put(Constants.WIPO_TECHNOLOGY,wipo);
-                            DataIngester.ingestBulk(patent,data,false);
-                            if(appNum!=null) {
-                                DataIngester.ingestBulk(appNum,data,false);
-                            }
+            Arrays.stream(wipoDestinationFile.listFiles()).forEach(file->{
+                try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                    reader.lines().skip(1).parallel().forEach(line -> {
+                        String[] fields = line.split("\t");
+                        String patent = fields[0];
+                        String wipo = fields[1];
+                        if (definitionMap.containsKey(wipo)) {
+                            try {
+                                if (Integer.valueOf(patent) > 6000000) {
+                                    String filing = assetToFilingMap.getPatentDataMap().get(patent);
+                                    String appNum = null;
+                                    if (filing != null) {
+                                        appNum = filingToAssetMap.getApplicationDataMap().get(filing);
+                                    }
+                                    if (appNum != null) {
+                                        wipoTechnologyAttribute.getApplicationDataMap().put(patent, wipo);
+                                    }
+                                    wipoTechnologyAttribute.getPatentDataMap().put(patent, wipo);
+                                    Map<String, Object> data = new HashMap<>();
+                                    data.put(Constants.WIPO_TECHNOLOGY, wipo);
+                                    DataIngester.ingestBulk(patent, data, false);
+                                    if (appNum != null) {
+                                        DataIngester.ingestBulk(appNum, data, false);
+                                    }
 
+                                }
+                            } catch (Exception e) {
+
+                            }
                         }
-                    } catch (Exception e) {
-
-                    }
+                    });
+                } catch(Exception e) {
+                    e.printStackTrace();
                 }
             });
 
-            reader.close();
         }
 
         wipoTechnologyAttribute.save();
