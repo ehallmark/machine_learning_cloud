@@ -36,6 +36,7 @@ public abstract class SingleFileDownloader implements DataDownloader {
             if(destinationFile!=null&&destinationFile.exists()) {
                 if(destinationFile.isDirectory()) {
                     FileUtils.deleteDirectory(destinationFile);
+                    if(destinationFile.exists()) System.out.println("Unable to remove directory");
                 } else {
                     destinationFile.delete();
                 }
