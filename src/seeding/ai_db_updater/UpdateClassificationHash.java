@@ -23,11 +23,13 @@ import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 1/20/17.
  */
 public class UpdateClassificationHash {
+    private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception {
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         assetToCPCMap.initMaps();
@@ -57,12 +59,15 @@ public class UpdateClassificationHash {
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {
-        Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
+        Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).parallel().forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 String line = reader.readLine();
                 while (line != null) {
                     handler.handleLine(line);
                     line = reader.readLine();
+                    if(cnt.getAndIncrement()%10000==9999) {
+                        System.out.println("Seen: "+cnt.get());
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
