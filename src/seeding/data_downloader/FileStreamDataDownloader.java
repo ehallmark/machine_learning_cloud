@@ -69,6 +69,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     }
 
     public synchronized void finishedIngestingFile(File file) {
+        System.out.println("Finished file: "+file.getName());
         finishedFiles.add(file.getAbsolutePath());
     }
 }
