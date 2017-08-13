@@ -3,6 +3,7 @@ package seeding.data_downloader;
 import lombok.Getter;
 import models.classification_models.WIPOHelper;
 import net.lingala.zip4j.core.ZipFile;
+import org.apache.commons.io.FileUtils;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
@@ -33,7 +34,11 @@ public abstract class SingleFileDownloader implements DataDownloader {
         LocalDate date = LocalDate.now();
         try {
             if(destinationFile!=null&&destinationFile.exists()) {
-                destinationFile.delete();
+                if(destinationFile.isDirectory()) {
+                    FileUtils.deleteDirectory(destinationFile);
+                } else {
+                    destinationFile.delete();
+                }
             }
             if(zipFile!=null&&zipFile.exists()) {
                 zipFile.delete();
