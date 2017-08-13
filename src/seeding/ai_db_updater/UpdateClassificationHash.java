@@ -33,26 +33,17 @@ public class UpdateClassificationHash {
     public static void main(String[] args) throws Exception {
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         assetToCPCMap.initMaps();
-        ForkJoinPool pool = new ForkJoinPool(2);
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
-                downloader.pullMostRecentData();
-                setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(assetToCPCMap.getPatentDataMap()));
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                AppCPCDataDownloader downloader = new AppCPCDataDownloader();
-                downloader.pullMostRecentData();
-                setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(assetToCPCMap.getApplicationDataMap()));
-            }
-        });
+        {
+            PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
+            downloader.pullMostRecentData();
+            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(assetToCPCMap.getPatentDataMap()));
+        }
+        {
+            AppCPCDataDownloader downloader = new AppCPCDataDownloader();
+            downloader.pullMostRecentData();
+            setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(assetToCPCMap.getApplicationDataMap()));
+        }
 
-        pool.shutdown();
-        pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
         assetToCPCMap.save();
         // shutdown bulk
         MyClient.closeBulkProcessor();
