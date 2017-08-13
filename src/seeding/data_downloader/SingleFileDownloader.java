@@ -64,6 +64,18 @@ public abstract class SingleFileDownloader implements DataDownloader {
             if (date.isBefore(LocalDate.now().minusYears(3)))
                 throw new RuntimeException("Url does not work for class: "+this.getClass().getName());
         }
+
+        // clean up
+        try {
+            if(destinationFile!=null&&destinationFile.exists()) {
+                destinationFile.delete();
+            }
+            if(zipFile!=null&&zipFile.exists()) {
+                zipFile.delete();
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }
