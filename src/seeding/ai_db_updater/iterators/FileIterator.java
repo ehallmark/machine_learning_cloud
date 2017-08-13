@@ -31,7 +31,7 @@ public class FileIterator implements WebIterator {
         Arrays.stream(fileFolder.listFiles(filter)).parallel().forEach(xmlFile->{
             try {
                 if (xmlFile.exists()) {
-                    System.out.print("Parsing "+xmlFile.getName()+" now...");
+                    System.out.println("Parsing "+xmlFile.getName()+" now...");
                     SAXParserFactory factory = SAXParserFactory.newInstance();
                     factory.setNamespaceAware(true);
                     factory.setValidating(false);
