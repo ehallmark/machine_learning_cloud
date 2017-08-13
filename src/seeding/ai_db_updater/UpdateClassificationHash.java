@@ -59,16 +59,15 @@ public class UpdateClassificationHash {
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {
-        Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).parallel().forEach(file -> {
+        Arrays.stream(destinationFile.listFiles(File::isDirectory)[0].listFiles()).forEach(file -> {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line = reader.readLine();
-                while (line != null) {
+                reader.lines().parallel().forEach(line->{
                     handler.handleLine(line);
-                    line = reader.readLine();
-                    if(cnt.getAndIncrement()%10000==9999) {
-                        System.out.println("Seen: "+cnt.get());
+                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                        System.out.println("Seen: " + cnt.get());
                     }
-                }
+                });
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

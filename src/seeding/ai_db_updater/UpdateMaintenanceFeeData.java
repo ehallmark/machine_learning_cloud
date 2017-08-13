@@ -16,11 +16,13 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ehallmark on 1/19/17.
  */
 public class UpdateMaintenanceFeeData {
+    private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception{
         // update latest assignees
         AssetEntityStatusMap assetEntityStatusMap = new AssetEntityStatusMap();
@@ -49,11 +51,12 @@ public class UpdateMaintenanceFeeData {
                 return;
             }
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String line = reader.readLine();
-                while (line != null) {
+                reader.lines().forEach(line->{
                     handler.handleLine(line);
-                    line = reader.readLine();
-                }
+                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                        System.out.println("Seen: " + cnt.get());
+                    }
+                });
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
