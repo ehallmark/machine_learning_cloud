@@ -36,7 +36,7 @@ public class UpdateBasePatentData {
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
         USPTOHandler.setLookupTable(SimilarPatentFinder.getLookupTable());
-        ingestData(false);
+        //ingestData(false);
         ingestData(true);
 
         // Close bulk processor
