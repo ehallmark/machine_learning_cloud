@@ -37,7 +37,7 @@ public class ZipFileIterator implements WebIterator {
         dataDownloader.pullMostRecentData();
         dataDownloader.save();
         dataDownloader.zipFileStream().parallel().forEach(zipFile->{
-            final String destinationFilename = destinationPrefix + cnt.getAndIncrement();
+            final String destinationFilename = destinationPrefix + zipFile.getName();
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
