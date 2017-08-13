@@ -60,7 +60,9 @@ public class MyClient {
 
                 @Override
                 public void afterBulk(long l, BulkRequest bulkRequest, BulkResponse bulkResponse) {
-
+                    if(bulkResponse.hasFailures()) {
+                        System.out.println("HAS FAILURES: "+bulkResponse.buildFailureMessage());
+                    }
                 }
 
                 @Override
@@ -69,9 +71,9 @@ public class MyClient {
                 }
             })
                     .setBulkActions(10000)
-                    .setBulkSize(new ByteSizeValue(100, ByteSizeUnit.MB))
+                    .setBulkSize(new ByteSizeValue(50, ByteSizeUnit.MB))
                     .setFlushInterval(TimeValue.timeValueSeconds(5))
-                    .setConcurrentRequests(3)
+                    .setConcurrentRequests(4)
                     .build();
         }
         return BULK_PROCESSOR;
