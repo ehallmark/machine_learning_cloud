@@ -2,6 +2,7 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
 import java.util.Arrays;
@@ -27,11 +28,7 @@ public abstract class NestedAttribute<T> extends AbstractAttribute<T> {
     @Override
     public Tag getOptionsTag() {
         return div().withClass("row").with(
-                attributes.stream().map(attr->{
-                    return div().withClass("col-12").with(
-                            label(attr.getName())
-                    );
-                }).collect(Collectors.toList())
+                SimilarPatentServer.technologySelect(getName(),attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))
         );
     }
 
