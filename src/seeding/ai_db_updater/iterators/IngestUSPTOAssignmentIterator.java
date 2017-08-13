@@ -1,6 +1,7 @@
 package seeding.ai_db_updater.iterators;
 
 import lombok.Getter;
+import seeding.Constants;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -16,10 +17,7 @@ import java.util.List;
  */
 public class IngestUSPTOAssignmentIterator implements DateIterator {
     @Getter
-    private String zipFilePrefix;
-    public IngestUSPTOAssignmentIterator(String zipFilePrefix) {
-        this.zipFilePrefix=zipFilePrefix;
-    }
+    private String zipFilePrefix = Constants.ASSIGNMENT_ZIP_FOLDER;
 
     public void run(LocalDate startDate) {
         // go through assignment xml data and update records using assignment sax handler
