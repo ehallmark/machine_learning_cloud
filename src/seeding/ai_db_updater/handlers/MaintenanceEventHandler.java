@@ -61,7 +61,7 @@ public class MaintenanceEventHandler implements LineHandler {
                     } else {
                         maintenanceFeeReminderCountMap.getPatentDataMap().put(patNum,1);
                     }
-                    int maintenanceFeeCount = maintenanceFeeReminderCountMap.getApplicationDataMap().get(patNum);
+                    int maintenanceFeeCount = maintenanceFeeReminderCountMap.getPatentDataMap().get(patNum);
                     data.put(Constants.MAINTENANCE_FEE_REMINDERS, maintenanceFeeCount);
                     if(appNum!=null) {
                         maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeCount);
