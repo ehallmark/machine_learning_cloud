@@ -559,7 +559,13 @@ public class SimilarPatentServer {
 
             System.out.println(" ... Filters");
             // Get filters
-            List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> similarityFilterModelMap.get(modelName)).collect(Collectors.toList());
+            List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> {
+                AbstractFilter filter = similarityFilterModelMap.get(modelName);
+                if(filter==null) {
+                    System.out.println("Unable to find model: "+modelName);
+                }
+                return filter;
+            }).filter(model->model!=null).collect(Collectors.toList());
 
             // Update filters based on params
             similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));

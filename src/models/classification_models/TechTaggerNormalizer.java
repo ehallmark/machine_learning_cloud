@@ -25,7 +25,7 @@ public class TechTaggerNormalizer extends ClassificationAttr {
     private List<ClassificationAttr> taggers;
     private List<Double> weights;
     private static List<Double> DEFAULT_WEIGHTS;
-    private static final File weightsFile = new File("tech_tagger_normalizer_weights.jobj");
+    private static final File weightsFile = new File(Constants.DATA_FOLDER+"tech_tagger_normalizer_weights.jobj");
     private static final int timeLimit = 10*60*1000;
     private Integer numClassifications;
 

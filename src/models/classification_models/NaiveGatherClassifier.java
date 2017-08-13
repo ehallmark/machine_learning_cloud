@@ -9,6 +9,7 @@ import model.nodes.Node;
 import models.model_testing.GatherTechnologyScorer;
 import models.model_testing.SplitModelData;
 import org.deeplearning4j.berkeley.Pair;
+import seeding.Constants;
 import seeding.Database;
 
 import java.io.File;
@@ -24,7 +25,7 @@ import static j2html.TagCreator.div;
  */
 public class NaiveGatherClassifier extends ClassificationAttr implements Serializable{
     private static final long serialVersionUID = 1l;
-    static final File file = new File("gather_bayesian_classifier.jobj");
+    static final File file = new File(Constants.DATA_FOLDER+"gather_bayesian_classifier.jobj");
     private static NaiveGatherClassifier defaultClassifier;
     private static final double defaultAlpha = 20d;
 

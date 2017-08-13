@@ -65,7 +65,7 @@ public class AbstractExcludeFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         if (fieldType.equals(FieldType.Text)) {
             return div().with(
-                    textarea().withClass("form-control").attr("placeholder","1 per line.").withName(getPrerequisite()+Constants.FILTER_SUFFIX)
+                    textarea().withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
             return div().with(
