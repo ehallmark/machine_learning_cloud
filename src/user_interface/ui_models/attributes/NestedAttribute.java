@@ -27,7 +27,7 @@ public abstract class NestedAttribute<T> extends AbstractAttribute<T> {
 
     @Override
     public Tag getOptionsTag() {
-        return div().withClass("row").with(
+        return div().with(
                 SimilarPatentServer.technologySelect(getName(),attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))
         );
     }
