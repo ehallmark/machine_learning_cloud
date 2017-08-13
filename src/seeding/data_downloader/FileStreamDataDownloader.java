@@ -42,7 +42,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     }
 
     @Override
-    public void pullMostRecentData() {
+    public synchronized void pullMostRecentData() {
         // pull zips only
         zipDownloader.run(lastUpdatedDate);
     }
@@ -51,12 +51,12 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         return Arrays.stream(new File(zipFilePrefix).listFiles()).filter(file->!finishedFiles.contains(file.getAbsolutePath()));
     }
 
-    public void save() {
+    public synchronized void save() {
         this.lastUpdatedDate = LocalDate.now().minusDays(1);
         Database.trySaveObject(this,new File(Constants.DATA_FOLDER,Constants.DATA_DOWNLOADERS_FOLDER+name));
     }
 
-    private static FileStreamDataDownloader load(String name) {
+    private synchronized static FileStreamDataDownloader load(String name) {
         File file = new File(Constants.DATA_FOLDER+Constants.DATA_DOWNLOADERS_FOLDER+name);
         if(file.exists()) {
             return (FileStreamDataDownloader) Database.tryLoadObject(file);
@@ -65,7 +65,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         }
     }
 
-    public void finishedIngestingFile(File file) {
+    public synchronized void finishedIngestingFile(File file) {
         finishedFiles.add(file.getAbsolutePath());
     }
 }
