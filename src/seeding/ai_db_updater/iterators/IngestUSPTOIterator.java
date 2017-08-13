@@ -16,7 +16,7 @@ import java.util.concurrent.RecursiveAction;
 /**
  * Created by Evan on 7/5/2017.
  */
-public class IngestUSPTOIterator implements DateIterator {
+public abstract class IngestUSPTOIterator implements DateIterator {
     private UrlCreator[] urlCreators;
     @Getter
     private String zipFilePrefix;

@@ -1,8 +1,7 @@
 package seeding.data_downloader;
 
 import seeding.Constants;
-import seeding.ai_db_updater.iterators.IngestUSPTOAssignmentIterator;
-import seeding.ai_db_updater.iterators.IngestUSPTOIterator;
+import seeding.ai_db_updater.iterators.AppUSPTOIterator;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 /**
@@ -10,6 +9,6 @@ import user_interface.ui_models.portfolios.PortfolioList;
  */
 public class AppDataDownloader extends FileStreamDataDownloader {
     public AppDataDownloader() {
-        super(PortfolioList.Type.applications.toString(), new IngestUSPTOIterator(Constants.APP_ZIP_FOLDER, Constants.GOOGLE_APP_URL_CREATOR, Constants.USPTO_APP_URL_CREATOR), Constants.DEFAULT_START_DATE);
+        super(PortfolioList.Type.applications.toString(), AppUSPTOIterator.class, Constants.DEFAULT_START_DATE);
     }
 }

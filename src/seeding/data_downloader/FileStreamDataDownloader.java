@@ -4,6 +4,7 @@ import lombok.Getter;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.iterators.DateIterator;
+import seeding.ai_db_updater.iterators.IngestUSPTOIterator;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
@@ -24,20 +25,22 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     protected String name;
     protected Set<String> finishedFiles = new HashSet<>();
     protected LocalDate lastUpdatedDate;
-    protected DateIterator zipDownloader;
-    public FileStreamDataDownloader(String name, DateIterator zipDownloader, LocalDate lastUpdatedDate) {
+    protected transient DateIterator zipDownloader;
+    public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader, LocalDate lastUpdatedDate) {
         // check for previous one
         FileStreamDataDownloader pastLife = load(name);
         if(pastLife==null) {
-            this.zipFilePrefix = zipDownloader.getZipFilePrefix();
             this.lastUpdatedDate = lastUpdatedDate;
             this.name = name;
-            this.zipDownloader = zipDownloader;
         } else {
-            this.zipFilePrefix = pastLife.zipFilePrefix;
             this.lastUpdatedDate = pastLife.lastUpdatedDate;
             this.name = pastLife.name;
-            this.zipDownloader = pastLife.zipDownloader;
+        }
+        try {
+            this.zipDownloader = zipDownloader.newInstance();
+            this.zipFilePrefix = this.zipDownloader.getZipFilePrefix();
+        } catch(Exception e) {
+            throw new RuntimeException("Error instantiating: "+zipDownloader.getName());
         }
     }
 
