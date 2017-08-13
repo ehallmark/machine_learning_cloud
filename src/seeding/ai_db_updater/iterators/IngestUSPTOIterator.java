@@ -43,6 +43,7 @@ public class IngestUSPTOIterator implements DateIterator {
                                 FileOutputStream fos = new FileOutputStream(zipFilename);
                                 fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                                 fos.close();
+                                System.out.println("FOUND!!!!!!!!!!!!");
 
                             } catch (Exception e) {
                                 System.out.println("... Failed");

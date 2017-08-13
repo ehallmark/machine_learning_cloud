@@ -75,6 +75,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
                     FileOutputStream fos = new FileOutputStream(zipFilePrefix + zipDate);
                     fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
                     fos.close();
+                    System.out.println("FOUND!!!!!!!!!!!!");
 
                 } catch (Exception e) {
                     System.out.println("Unable to get file");
