@@ -53,8 +53,11 @@ public abstract class EndFlag extends Flag {
     }
 
     public void resetDataMap() {
-        int size = dataMap.size();
-        dataMap.clear();
+        int size = 10;
+        if(dataMap!=null) {
+            dataMap.size();
+            dataMap.clear();
+        }
         dataMap = new HashMap<>(size);
     }
 
