@@ -267,7 +267,6 @@ public class Database {
 	public static Object tryLoadObject(File file) {
 		System.out.println("Starting to load file: "+file.getName()+"...");
 		try {
-			if(!file.exists() && new File(Constants.DATA_FOLDER+file.getName()).exists()) file = new File(Constants.DATA_FOLDER+file.getName());
 			ObjectInputStream ois = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			Object toReturn = ois.readObject();
 			ois.close();
@@ -282,7 +281,6 @@ public class Database {
 
 	public static void trySaveObject(Object obj, File file) {
 		try {
-			file = new File(Constants.DATA_FOLDER+file.getName());
 			ObjectOutputStream oos = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 			oos.writeObject(obj);
 			oos.flush();

@@ -9,14 +9,14 @@ services:
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms30000m -Xmx30000m"
-      - "discovery.zen.ping.unicast.hosts=elasticsearch2,elasticsearch2"
+      - "discovery.zen.ping.unicast.hosts=elasticsearch2,elasticsearch3"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata1:/usr/share/elasticsearch/data/node1
+      - esdata1:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
       - 9300:9300
@@ -39,7 +39,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata2:/usr/share/elasticsearch/data/node2
+      - esdata2:/usr/share/elasticsearch/data
     ports:
       - 9301:9300
     networks:
@@ -60,7 +60,7 @@ services:
         hard: -1
     mem_limit: 60g
     volumes:
-      - esdata3:/usr/share/elasticsearch/data/node3
+      - esdata3:/usr/share/elasticsearch/data
     ports:
       - 9302:9300
     networks:
