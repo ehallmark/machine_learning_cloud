@@ -1,5 +1,6 @@
 package seeding.ai_db_updater.iterators;
 
+import lombok.Getter;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.*;
@@ -15,18 +16,17 @@ import java.util.concurrent.RecursiveAction;
 /**
  * Created by Evan on 7/5/2017.
  */
-public class IngestUSPTOIterator {
-    public LocalDate startDate;
+public class IngestUSPTOIterator implements DateIterator {
     private UrlCreator[] urlCreators;
+    @Getter
     private String zipFilePrefix;
 
-    public IngestUSPTOIterator(LocalDate startDate, String zipFilePrefix, UrlCreator... urlCreators) {
-        this.startDate=startDate;
+    public IngestUSPTOIterator(String zipFilePrefix, UrlCreator... urlCreators) {
         this.zipFilePrefix=zipFilePrefix;
         this.urlCreators=urlCreators;
     }
 
-    public void run() {
+    public void run(LocalDate startDate) {
         List<RecursiveAction> tasks = new ArrayList<>();
         while (startDate.isBefore(LocalDate.now())) {
             final String zipFilename = zipFilePrefix + startDate;

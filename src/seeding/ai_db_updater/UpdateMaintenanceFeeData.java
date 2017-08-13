@@ -5,6 +5,7 @@ import elasticsearch.MyClient;
 import net.lingala.zip4j.core.ZipFile;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
+import seeding.data_downloader.MaintenanceFeeDataDownloader;
 import user_interface.ui_models.attributes.hidden_attributes.AssetEntityStatusMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
 import user_interface.ui_models.attributes.hidden_attributes.ExpiredAssetsMap;
@@ -28,32 +29,20 @@ public class UpdateMaintenanceFeeData {
         assetEntityStatusMap.initMaps();
         assetToMaintenanceFeeReminderCountMap.initMaps();
         expiredAssetsMap.initMaps();
-        System.out.println("Starting to update latest maintenace fee data...");
-        loadAndIngestMaintenanceFeeData(new File("maintenance-zip/"),new File("maintenance-dest/"), new MaintenanceEventHandler(expiredAssetsMap,assetEntityStatusMap,assetToMaintenanceFeeReminderCountMap));
+        System.out.println("Starting to update latest maintenance fee data...");
+        MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
+        downloader.pullMostRecentData();
+        System.out.println("Starting to ingest data...");
+        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(expiredAssetsMap,assetEntityStatusMap,assetToMaintenanceFeeReminderCountMap));
         assetEntityStatusMap.save();
         assetToMaintenanceFeeReminderCountMap.save();
         expiredAssetsMap.save();
         MyClient.closeBulkProcessor();
     }
 
-    public static void loadAndIngestMaintenanceFeeData(File zipFile, File destinationFile, MaintenanceEventHandler handler) throws Exception {
+    public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {
         // should be one at least every other month
         // Load file from Google
-        try {
-            String url = handler.getUrl(); // "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
-            URL website = new URL(url);
-            System.out.println("Trying: " + website.toString());
-            ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-            FileOutputStream fos = new FileOutputStream(zipFile);
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-            fos.close();
-
-            new ZipFile(zipFile).extractAll(destinationFile.getAbsolutePath());
-
-        } catch (Exception e) {
-            //e.printStackTrace();
-            System.out.println("Not found");
-        }
         Arrays.stream(destinationFile.listFiles()).forEach(file -> {
             if (!file.getName().endsWith(".txt")) {
                 file.delete();

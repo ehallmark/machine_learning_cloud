@@ -1,5 +1,7 @@
 package seeding.ai_db_updater.iterators;
 
+import lombok.Getter;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
@@ -12,14 +14,14 @@ import java.util.List;
 /**
  * Created by Evan on 7/6/2017.
  */
-public class IngestUSPTOAssignmentIterator {
+public class IngestUSPTOAssignmentIterator implements DateIterator {
+    @Getter
     private String zipFilePrefix;
-
     public IngestUSPTOAssignmentIterator(String zipFilePrefix) {
         this.zipFilePrefix=zipFilePrefix;
     }
 
-    public void run() {
+    public void run(LocalDate startDate) {
         // go through assignment xml data and update records using assignment sax handler
         LocalDate date = LocalDate.now();
         String endDateStr = String.valueOf(date.getYear()).substring(2, 4) + String.format("%02d", date.getMonthValue()) + String.format("%02d", date.getDayOfMonth());
@@ -30,10 +32,13 @@ public class IngestUSPTOAssignmentIterator {
         final int numFilesForBackYearData = 14;
         final int backYearDataStartNum = 1;
         final int startDateNum = 160101;
-
         List<String> backYearDates = new ArrayList<>(numFilesForBackYearData);
-        for(int i = backYearDataStartNum; i < backYearDataStartNum + numFilesForBackYearData; i++) {
-            backYearDates.add(String.format("%06d", backYearDataDate)+"-"+String.format("%02d", i));
+
+        if(startDate.getYear()< 2016) {
+
+            for (int i = backYearDataStartNum; i < backYearDataStartNum + numFilesForBackYearData; i++) {
+                backYearDates.add(String.format("%06d", backYearDataDate) + "-" + String.format("%02d", i));
+            }
         }
 
         int lastIngestedDate = startDateNum;

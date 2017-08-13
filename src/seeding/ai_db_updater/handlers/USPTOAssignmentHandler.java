@@ -10,9 +10,6 @@ import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import seeding.ai_db_updater.iterators.WebIterator;
-import seeding.ai_db_updater.iterators.ZipFileIterator;
-import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
 import java.io.File;

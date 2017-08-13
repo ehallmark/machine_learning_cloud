@@ -5,19 +5,14 @@ package seeding.ai_db_updater.handlers;
  */
 
 import elasticsearch.DataIngester;
-import elasticsearch.MyClient;
 import lombok.Setter;
-import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
-import seeding.ai_db_updater.iterators.WebIterator;
-import seeding.ai_db_updater.iterators.ZipFileIterator;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
-import java.io.File;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;

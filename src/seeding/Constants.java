@@ -1,13 +1,12 @@
 package seeding;
 
 
-import seeding.ai_db_updater.iterators.AssignmentIterator;
-import seeding.ai_db_updater.iterators.PatentGrantIterator;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class Constants {
@@ -20,6 +19,7 @@ public class Constants {
 	public static final String FRAME_NO = "frameNo";
 	public static final String ADDRESS_1 = "addressOne";
 	public static final String ADDRESS_2 = "addressTwo";
+	public static final String DATA_DOWNLOADERS_FOLDER = "dataDownloaders/";
 	public static final String ADDRESS_3 = "addressThree";
 	public static final String PURGE_INDICATOR = "purgeIndicator";
 	public static final String CORRESPONDENT = "correspondent";
@@ -132,17 +132,12 @@ public class Constants {
 	public static final UrlCreator USPTO_APP_URL_CREATOR = defaultAppUrlCreator(USPTO_APP_URL);
 	public static final UrlCreator PATENT_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_Grant_CPC_MCF_Text_");
 	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
+	public static final UrlCreator PAIR_BULK_URL_CREATOR = date -> "https://pairbulkdata.uspto.gov/api/full-download?format=XML";
 
-	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);
-	public static final String PATENT_DESTINATION_PREFIX = "patent-grant-destinations";
-	public static final String APP_DESTINATION_PREFIX = "app-grant-destinations";
-	public static final String ASSIGNMENT_DESTINATION_PREFIX = "assignment-grant-destinations";
+	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
 	public static final String PATENT_ZIP_FOLDER = "data/patents/";
 	public static final String APP_ZIP_FOLDER = "data/applications/";
 	public static final String ASSIGNMENT_ZIP_FOLDER = "data/assignments/";
-	public static final PatentGrantIterator DEFAULT_PATENT_GRANT_ITERATOR = new PatentGrantIterator(new File(PATENT_ZIP_FOLDER), PATENT_DESTINATION_PREFIX);
-	public static final PatentGrantIterator DEFAULT_PATENT_APPLICATION_ITERATOR = new PatentGrantIterator(new File(APP_ZIP_FOLDER), APP_DESTINATION_PREFIX);
-	public static final AssignmentIterator DEFAULT_ASSIGNMENT_ITERATOR = new AssignmentIterator(new File(ASSIGNMENT_ZIP_FOLDER), ASSIGNMENT_DESTINATION_PREFIX);
 
 	private static UrlCreator defaultPatentUrlCreator(String baseUrl) {
 		return defaultCreator(baseUrl, "ipg");
@@ -155,6 +150,18 @@ public class Constants {
 	private static UrlCreator defaultCreator(String baseUrl, String prefix) {
 		return date -> baseUrl + "/" + date.getYear() + "/" + prefix + date.toString().replace("-", "").substring(2) + ".zip";
 	}
+
+	public static final UrlCreator WIPO_TECHNOLOGY_URL_CREATOR = date -> {
+		String baseUrl = "http://www.patentsview.org/data/?/wipo.zip";
+		String url = baseUrl.replace("?", date.format(DateTimeFormatter.BASIC_ISO_DATE));
+		return url;
+	};
+
+	public static final UrlCreator MAINTENANCE_FEE_URL_CREATOR = date-> {
+		String url = "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
+		return url;
+	};
+
 
 	private static UrlCreator maintenanceUrlCreator(String baseUrl) {
 		return date -> {

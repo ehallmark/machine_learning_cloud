@@ -114,7 +114,4 @@ public class MaintenanceEventHandler implements LineHandler {
 
     }
 
-    public String getUrl() {
-        return "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
-    }
 }

@@ -3,6 +3,7 @@ package seeding.ai_db_updater.iterators;
 import seeding.ai_db_updater.handlers.CustomHandler;
 import seeding.ai_db_updater.iterators.WebIterator;
 import seeding.ai_db_updater.tools.ZipHelper;
+import seeding.data_downloader.FileStreamDataDownloader;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -22,18 +24,19 @@ import java.util.stream.Stream;
 public class ZipFileIterator implements WebIterator {
     public AtomicInteger cnt;
     private String destinationPrefix;
-    private File zipFolder;
-    private FilenameFilter filter;
-    public ZipFileIterator(File zipFolder, String destinationPrefix, FilenameFilter filter) {
+    private FileStreamDataDownloader dataDownloader;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
         this.cnt=new AtomicInteger(0);
+        this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
-        this.zipFolder=zipFolder;
-        this.filter=filter;
     }
 
     @Override
     public void applyHandlers(CustomHandler... handlers) {
-        Arrays.stream(zipFolder.listFiles(filter)).parallel().forEach(zipFile->{
+        // pull latest data
+        dataDownloader.pullMostRecentData();
+        dataDownloader.save();
+        dataDownloader.zipFileStream().parallel().forEach(zipFile->{
             final String destinationFilename = destinationPrefix + cnt.getAndIncrement();
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
@@ -59,6 +62,7 @@ public class ZipFileIterator implements WebIterator {
 
                     FileReader fr = new FileReader(xmlFile);
                     BufferedReader br = new BufferedReader(fr);
+                    AtomicBoolean failed = new AtomicBoolean(false);
                     String line;
                     boolean firstLine = true;
                     List<String> lines = new ArrayList<>();
@@ -72,6 +76,7 @@ public class ZipFileIterator implements WebIterator {
                                     saxParser.parse(new ByteArrayInputStream(data), handler);
                                 } catch (Exception e) {
                                     e.printStackTrace();
+                                    failed.set(true);
                                 }
                             }
                             lines.clear();
@@ -91,13 +96,17 @@ public class ZipFileIterator implements WebIterator {
                                 saxParser.parse(new ByteArrayInputStream(data), handler);
                             } catch (Exception e) {
                                 e.printStackTrace();
+                                failed.set(true);
                             }
                         }
                         lines.clear();
                     }
-                }
 
-                System.out.println(" Parsed successfully!");
+                    if(!failed.get()) {
+                        System.out.println(" Parsed successfully!");
+                        dataDownloader.finishedIngestingFile(xmlFile);
+                    }
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -108,6 +117,8 @@ public class ZipFileIterator implements WebIterator {
             }
 
         });
+
+        dataDownloader.save();
 
         // save
         for(CustomHandler handler : handlers) {
