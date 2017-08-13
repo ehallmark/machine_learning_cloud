@@ -67,9 +67,6 @@ public abstract class SingleFileDownloader implements DataDownloader {
 
         // clean up
         try {
-            if(destinationFile!=null&&destinationFile.exists()) {
-                destinationFile.delete();
-            }
             if(zipFile!=null&&zipFile.exists()) {
                 zipFile.delete();
             }
