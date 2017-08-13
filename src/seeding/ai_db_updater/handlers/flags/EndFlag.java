@@ -53,7 +53,9 @@ public abstract class EndFlag extends Flag {
     }
 
     public void resetDataMap() {
+        int size = dataMap.size();
         dataMap.clear();
+        dataMap = new HashMap<>(size);
     }
 
     @Override
