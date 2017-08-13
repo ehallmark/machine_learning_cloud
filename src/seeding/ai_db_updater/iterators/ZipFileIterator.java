@@ -104,7 +104,7 @@ public class ZipFileIterator implements WebIterator {
 
                     if(!failed.get()) {
                         System.out.println(" Parsed successfully!");
-                        dataDownloader.finishedIngestingFile(xmlFile);
+                        dataDownloader.finishedIngestingFile(zipFile);
                         dataDownloader.save();
                     }
                 }
