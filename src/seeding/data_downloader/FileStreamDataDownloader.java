@@ -23,7 +23,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     @Getter
     protected String zipFilePrefix;
     protected String name;
-    protected Set<String> finishedFiles = new HashSet<>();
+    protected Set<String> finishedFiles;
     protected LocalDate lastUpdatedDate;
     protected transient DateIterator zipDownloader;
     public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader, LocalDate lastUpdatedDate) {
