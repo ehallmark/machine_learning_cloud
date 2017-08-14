@@ -43,7 +43,7 @@ public class DataIngester {
 
     static List<Document> insertBatch = new ArrayList<>();
     static List<WriteModel<Document>> updateBatch = new ArrayList<>();
-    static final int batchSize = 1000;
+    static final int batchSize = 500;
 
     public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create) {
         mongoCount.getAndIncrement();
