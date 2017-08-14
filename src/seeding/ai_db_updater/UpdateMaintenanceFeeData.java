@@ -52,7 +52,7 @@ public class UpdateMaintenanceFeeData {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().forEach(line->{
                     handler.handleLine(line);
-                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                    if (cnt.getAndIncrement() % 100000 == 99999) {
                         System.out.println("Seen maintenance events: " + cnt.get());
                     }
                 });

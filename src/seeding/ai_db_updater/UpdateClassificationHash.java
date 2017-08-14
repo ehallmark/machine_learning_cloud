@@ -54,8 +54,8 @@ public class UpdateClassificationHash {
             try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().parallel().forEach(line->{
                     handler.handleLine(line);
-                    if (cnt.getAndIncrement() % 10000 == 9999) {
-                        System.out.println("Seen classifications: " + cnt.get());
+                    if (cnt.getAndIncrement() % 100000 == 99999) {
+                        System.out.println("Seen "+destinationFile.getName()+" classifications: " + cnt.get());
                     }
                 });
 

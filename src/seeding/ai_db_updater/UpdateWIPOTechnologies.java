@@ -32,11 +32,13 @@ import java.util.Map;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by ehallmark on 1/20/17.
  */
 public class UpdateWIPOTechnologies {
+    static final AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) throws Exception {
         File wipoDestinationFile = new File("data/wipo/");
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
@@ -78,6 +80,9 @@ public class UpdateWIPOTechnologies {
                                 DataIngester.ingestBulk(patent, data, false);
                                 if (appNum != null) {
                                     DataIngester.ingestBulk(appNum, data, false);
+                                }
+                                if(cnt.getAndIncrement()%100000==99999) {
+                                    System.out.println("Seen "+cnt.get()+" wipo technologies...");
                                 }
 
                             }
