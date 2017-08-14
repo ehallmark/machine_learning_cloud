@@ -11,6 +11,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -39,10 +40,8 @@ public class ZipFileIterator implements WebIterator {
         // pull latest data
         dataDownloader.pullMostRecentData();
         dataDownloader.save();
-        Stream<File> fileStream = dataDownloader.zipFileStream();
-        if(parallel) fileStream = fileStream.parallel();
-        else fileStream = fileStream.sorted(Comparator.comparing(e->e.getName()));
-        fileStream.forEach(zipFile->{
+        List<File> fileStream = dataDownloader.zipFileStream().sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
+        (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
