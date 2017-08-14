@@ -42,9 +42,12 @@ public class DataIngester {
         if(create) {
             doc.put("_id", name);
             mongoCollection.insertOne(new Document(doc), (v, t) -> {
+                if(t!=null) {
+                    System.out.println("Failed in insert: "+t.getMessage());
+                }
             });
         } else {
-            mongoCollection.updateOne(new Document("_id",name), new Document("$set",doc), (v,t)-> {
+            mongoCollection.findOneAndUpdate(new Document("_id",name), new Document("$set",doc), (v,t)-> {
             });
         }
     }
