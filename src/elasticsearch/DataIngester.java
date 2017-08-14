@@ -1,5 +1,7 @@
 package elasticsearch;
 
+import com.mongodb.async.client.MongoCollection;
+import org.bson.Document;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -27,10 +29,21 @@ public class DataIngester {
     private static BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
+    private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
 
     public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
-        if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
-        else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
+       // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
+       // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
+        ingestMongo(name, doc, create);
+    }
+
+    public static void ingestMongo(String name, Map<String,Object> doc, boolean create) {
+        if(create) {
+            doc.put("_id", name);
+            mongoCollection.insertOne(new Document(doc), (v, t) -> System.out.println("Inserted!"));
+        } else {
+            mongoCollection.updateOne(new Document("_id",name), new Document("$set",doc), (v,t)->System.out.println("Updated!"));
+        }
     }
 
     public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean createIfNotPresent, boolean createImmediately) {
