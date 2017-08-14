@@ -77,9 +77,9 @@ public class UpdateWIPOTechnologies {
                                 wipoTechnologyAttribute.getPatentDataMap().put(patent, wipo);
                                 Map<String, Object> data = new HashMap<>();
                                 data.put(Constants.WIPO_TECHNOLOGY, wipo);
-                                DataIngester.ingestBulk(patent, data, false, true);
+                                DataIngester.ingestBulk(patent, data, false, false);
                                 if (appNum != null) {
-                                    DataIngester.ingestBulk(appNum, data, false, true);
+                                    DataIngester.ingestBulk(appNum, data, false, false);
                                 }
                                 if(cnt.getAndIncrement()%100000==99999) {
                                     System.out.println("Seen "+cnt.get()+" wipo technologies...");
