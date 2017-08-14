@@ -90,10 +90,10 @@ public class DataIngester {
         if(insertBatch.size()>0) {
             insertBatch();
         }
-        if(mongoCount.get() > 0) {
+        while(mongoCount.get() > 0) {
             try {
                 System.out.println("Waiting for "+mongoCount.get()+" assets");
-                //TimeUnit.SECONDS.sleep(10);
+                TimeUnit.SECONDS.sleep(10);
             } catch (Exception e) {
 
             }
