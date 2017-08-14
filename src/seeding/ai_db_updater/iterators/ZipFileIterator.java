@@ -8,10 +8,7 @@ import seeding.data_downloader.FileStreamDataDownloader;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -25,10 +22,16 @@ public class ZipFileIterator implements WebIterator {
     public AtomicInteger cnt;
     private String destinationPrefix;
     private FileStreamDataDownloader dataDownloader;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
+    private boolean parallel;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
+        this.parallel=parallel;
+    }
+
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
+        this(dataDownloader,destinationPrefix,true);
     }
 
     @Override
@@ -36,7 +39,10 @@ public class ZipFileIterator implements WebIterator {
         // pull latest data
         dataDownloader.pullMostRecentData();
         dataDownloader.save();
-        dataDownloader.zipFileStream().parallel().forEach(zipFile->{
+        Stream<File> fileStream = dataDownloader.zipFileStream();
+        if(parallel) fileStream = fileStream.parallel();
+        else fileStream = fileStream.sorted(Comparator.comparing(e->e.getName()));
+        fileStream.forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
