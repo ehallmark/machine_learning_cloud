@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import elasticsearch.DataIngester;
 import elasticsearch.MyClient;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import seeding.ai_db_updater.handlers.*;
@@ -35,7 +36,7 @@ public class UpdateBasePatentData {
         handler.init();
         iterator.applyHandlers(handler);
         // Close bulk processor
-        MyClient.closeBulkProcessor();
+        DataIngester.close();
     }
 
     public static void main(String[] args) {

@@ -20,6 +20,8 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -30,6 +32,7 @@ public class DataIngester {
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
     private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
+    private static AtomicLong mongoCount = new AtomicLong(0);
 
     public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
@@ -39,19 +42,43 @@ public class DataIngester {
 
 
     public static void ingestMongo(String name, Map<String,Object> doc, boolean create) {
+        mongoCount.getAndIncrement();
         if(create) {
             doc.put("_id", name);
             mongoCollection.insertOne(new Document(doc), (v, t) -> {
+                mongoCount.getAndDecrement();
                 if(t!=null) {
                     System.out.println("Failed in insert: "+t.getMessage());
                 }
             });
         } else {
             mongoCollection.findOneAndUpdate(new Document("_id",name), new Document("$set",doc), (v,t)-> {
+                mongoCount.getAndDecrement();
                 if(t!=null) {
                     System.out.println("Failed in update: "+t.getMessage());
                 }
             });
+        }
+    }
+
+    public static synchronized void close() {
+        while(mongoCount.get() > 0) {
+            try {
+                System.out.println("Waiting for "+mongoCount.get()+" assets");
+                TimeUnit.SECONDS.sleep(10);
+            } catch (Exception e) {
+
+            }
+        }
+        if(mongoCollection!=null) {
+            MongoDBClient.close();
+        }
+        if(bulkProcessor!=null) {
+            try {
+                MyClient.closeBulkProcessor();
+            } catch(Exception e) {
+
+            }
         }
     }
 

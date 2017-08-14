@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import elasticsearch.DataIngester;
 import elasticsearch.MyClient;
 import net.lingala.zip4j.core.ZipFile;
 import seeding.Constants;
@@ -46,7 +47,7 @@ public class UpdateClassificationHash {
 
         assetToCPCMap.save();
         // shutdown bulk
-        MyClient.closeBulkProcessor();
+        DataIngester.close();
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {

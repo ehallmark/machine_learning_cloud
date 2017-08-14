@@ -51,6 +51,12 @@ public class MongoDBClient {
         return CLIENT;
     }
 
+    public synchronized static void close() {
+        if(CLIENT!=null) {
+            CLIENT.close();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         // test
         get().getDatabase("ai_db").getCollection("patents_and_applications").count((res,t)->System.out.println("Count: "+res.doubleValue()));

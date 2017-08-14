@@ -93,6 +93,6 @@ public class UpdateWIPOTechnologies {
 
         wipoTechnologyAttribute.save();
         // shutdown bulk
-        MyClient.closeBulkProcessor();
+        DataIngester.close();
     }
 }
