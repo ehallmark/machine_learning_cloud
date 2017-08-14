@@ -46,7 +46,6 @@ public class DataIngester {
     static final int batchSize = 500;
 
     public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create) {
-        mongoCount.getAndIncrement();
         if(create) {
             doc.put("_id", name);
             insertBatch.add(new Document(doc));
@@ -63,6 +62,7 @@ public class DataIngester {
     }
 
     private static void updateBatch() {
+        mongoCount.getAndIncrement();
         mongoCollection.bulkWrite(updateBatch, new BulkWriteOptions().ordered(false), (v,t)-> {
             mongoCount.getAndDecrement();
             if(t!=null) {
@@ -73,6 +73,7 @@ public class DataIngester {
     }
 
     private static void insertBatch() {
+        mongoCount.getAndIncrement();
         mongoCollection.insertMany(insertBatch, new InsertManyOptions().ordered(false), (v, t) -> {
             mongoCount.getAndDecrement();
             if(t!=null) {
