@@ -41,7 +41,11 @@ public class MongoDBClient {
 
     public synchronized static MongoClient get() {
         if(CLIENT==null) {
-            init();
+            try {
+                init();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
         return CLIENT;
     }
