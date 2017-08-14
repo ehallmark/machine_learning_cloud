@@ -28,10 +28,11 @@ public class MongoDBClient {
     private static MongoClient CLIENT;
     private MongoDBClient() {}
     private static void init() {
-        MongoClientSettings settings = MongoClientSettings.builder()
+        MongoClient fake = MongoClients.create();
+        MongoClientSettings settings = MongoClientSettings.builder(fake.getSettings())
                 .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .connectionPoolSettings(
-                        ConnectionPoolSettings.builder()
+                        ConnectionPoolSettings.builder(fake.getSettings().getConnectionPoolSettings())
                                 .maxSize(400)
                                 .build()
                 ).build();
