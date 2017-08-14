@@ -88,9 +88,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         }
     }
 
-    public void save() {
-        //if(patentDataMap!=null) Database.trySaveObject(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
-        //if(applicationDataMap!=null) Database.trySaveObject(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+    public synchronized void save() {
+        //if(patentDataMap!=null && patentDataMap.size()>0) Database.trySaveObject(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
+        //if(applicationDataMap!=null && applicationDataMap.size()>0) Database.trySaveObject(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
     }
 
     public static File dataFileFrom(String folder, String attrName, String attrType) {
