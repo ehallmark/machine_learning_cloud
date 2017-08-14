@@ -5,7 +5,6 @@ services:
     container_name: elasticsearch1
     environment:
       - cluster.name=elasticsearch
-      - index.refresh_interval=600s
       - xpack.security.enabled=false
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
@@ -30,7 +29,6 @@ services:
     environment:
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
-      - index.refresh_interval=600s
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms25000m -Xmx25000m"
@@ -52,7 +50,6 @@ services:
     environment:
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
-      - index.refresh_interval=600s
       - node.name=elasticsearch3
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms25000m -Xmx25000m"
@@ -74,7 +71,6 @@ services:
     environment:
       - cluster.name=elasticsearch
       - xpack.security.enabled=false
-      - index.refresh_interval=600s
       - node.name=elasticsearch4
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms25000m -Xmx25000m"
