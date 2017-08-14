@@ -67,7 +67,7 @@ public class DataIngester {
     }
 
     private static void waitForMongo() {
-        while(mongoCount.get() > 5000) {
+        while(mongoCount.get() > 500) {
             System.out.println("Waiting for mongo to ingest batch...");
             try {
                 TimeUnit.SECONDS.sleep(5);
