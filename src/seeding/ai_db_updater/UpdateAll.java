@@ -8,13 +8,13 @@ import elasticsearch.MongoDBClient;
  */
 public class UpdateAll {
     public static void main(String[] args) throws Exception {
-     /*   UpdateBasePatentData.main(args);
+        UpdateBasePatentData.main(args);
         UpdateBaseApplicationData.main(args);
         UpdatePairBulkData.main(args);
         UpdateMaintenanceFeeData.main(args);
         UpdateClassificationHash.main(args);
         UpdatePriorityAndExpirationData.main(args);
-     */   UpdateWIPOTechnologies.main(args);
+        UpdateWIPOTechnologies.main(args);
         //UpdateRelatedAssetsGraph.main(args);
         UpdateAssignmentData.main(args);
         DataIngester.close();
