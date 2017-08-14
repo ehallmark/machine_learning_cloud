@@ -50,16 +50,15 @@ public class DataIngester {
         if(create) {
             doc.put("_id", name);
             insertBatch.add(new Document(doc));
-            if(insertBatch.size() > batchSize) {
-                insertBatch();
-            }
-
         } else {
             WriteModel<Document> model = new UpdateOneModel<>(new Document("_id",name), new Document("$set",doc));
             updateBatch.add(model);
-            if(updateBatch.size()> batchSize) {
-                updateBatch();
-            }
+        }
+        if(updateBatch.size()> batchSize) {
+            updateBatch();
+        }
+        if(insertBatch.size() > batchSize) {
+            insertBatch();
         }
     }
 
