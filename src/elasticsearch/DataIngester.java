@@ -1,6 +1,9 @@
 package elasticsearch;
 
+import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.client.model.InsertManyOptions;
+import com.mongodb.client.model.InsertOneOptions;
 import org.bson.Document;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
@@ -16,10 +19,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Evan on 7/22/2017.
@@ -29,7 +29,7 @@ public class DataIngester {
     private static BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
-    private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
+    private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME).withWriteConcern(WriteConcern.ACKNOWLEDGED);
 
     public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
@@ -37,12 +37,23 @@ public class DataIngester {
         ingestMongo(name, doc, create);
     }
 
+    static final int batchSize = 1000;
+    static List<Document> inserts = new ArrayList<>();
+
     public static void ingestMongo(String name, Map<String,Object> doc, boolean create) {
         if(create) {
             doc.put("_id", name);
-            mongoCollection.insertOne(new Document(doc), (v, t) -> System.out.println("Inserted!"));
+            inserts.add(new Document(doc));
+            if(inserts.size()>batchSize) {
+                InsertManyOptions options = new InsertManyOptions().ordered(false).bypassDocumentValidation(true);
+                mongoCollection.insertMany(inserts, options, (v, t) -> {
+                });
+                inserts = new ArrayList<>();
+            }
+
         } else {
-            mongoCollection.updateOne(new Document("_id",name), new Document("$set",doc), (v,t)->System.out.println("Updated!"));
+            mongoCollection.updateOne(new Document("_id",name), new Document("$set",doc), (v,t)-> {
+            });
         }
     }
 
