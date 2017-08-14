@@ -34,6 +34,7 @@ public abstract class SingleFileDownloader implements DataDownloader {
         // pull and unzip
         if(destinationFile!=null&&destinationFile.exists()&&(System.currentTimeMillis()-destinationFile.lastModified()) < SHOULD_REDOWNLOAD_PERIOD_MILLIS) {
             System.out.println("FILE IS ALREADY UP TO DATE... SKIPPING DOWNLOAD: "+destinationFile.getName());
+            return;
         }
         boolean found = false;
         LocalDate date = LocalDate.now();
