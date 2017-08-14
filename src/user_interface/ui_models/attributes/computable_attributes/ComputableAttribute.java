@@ -42,6 +42,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
                     patentDataMap = (Map<String, T>) allPatentDataMaps.get(getName());
                 } else {
                     patentDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
+                    if(patentDataMap == null) {
+                        patentDataMap = Collections.synchronizedMap(new HashMap<>());
+                    }
                     allPatentDataMaps.put(getName(), patentDataMap);
                 }
             }
@@ -55,6 +58,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
                     applicationDataMap = (Map<String,T>) allApplicationDataMaps.get(getName());
                 } else {
                     applicationDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER, getName(), getType()));
+                    if(applicationDataMap == null) {
+                        applicationDataMap = Collections.synchronizedMap(new HashMap<>());
+                    }
                     allApplicationDataMaps.put(getName(),applicationDataMap);
                 }
             }
