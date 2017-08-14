@@ -36,6 +36,7 @@ public class MongoDBClient {
                                 .maxSize(400)
                                 .build()
                 ).build();
+        fake.close();
         CLIENT = MongoClients.create(settings);
     }
 
@@ -54,6 +55,7 @@ public class MongoDBClient {
     public synchronized static void close() {
         if(CLIENT!=null) {
             CLIENT.close();
+            CLIENT = null;
         }
     }
 
