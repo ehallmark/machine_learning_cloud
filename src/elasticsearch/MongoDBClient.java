@@ -1,7 +1,9 @@
 package elasticsearch;
 
 import com.mongodb.async.client.MongoClient;
+import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
+import com.mongodb.connection.ConnectionPoolSettings;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -25,7 +27,13 @@ public class MongoDBClient {
     private static MongoClient CLIENT;
     private MongoDBClient() {}
     private static void init() {
-        CLIENT = MongoClients.create();
+        MongoClientSettings settings = MongoClientSettings.builder()
+                .connectionPoolSettings(
+                        ConnectionPoolSettings.builder()
+                                .maxSize(400)
+                                .build()
+                ).build();
+        CLIENT = MongoClients.create(settings);
     }
 
 
