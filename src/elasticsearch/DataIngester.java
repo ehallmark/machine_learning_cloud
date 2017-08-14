@@ -93,7 +93,7 @@ public class DataIngester {
         if(mongoCount.get() > 0) {
             try {
                 System.out.println("Waiting for "+mongoCount.get()+" assets");
-                TimeUnit.SECONDS.sleep(10);
+                //TimeUnit.SECONDS.sleep(10);
             } catch (Exception e) {
 
             }
