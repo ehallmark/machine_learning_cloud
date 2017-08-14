@@ -2,6 +2,8 @@ package seeding.ai_db_updater.handlers.flags;
 
 import lombok.Getter;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
@@ -46,6 +48,9 @@ public abstract class EndFlag extends Flag {
                 result = flag.apply(data);
             }
             if (result != null) {
+                if(result instanceof LocalDate) {
+                    result = ((LocalDate) result).format(DateTimeFormatter.ISO_DATE);
+                }
                 transform.put(flag.dbName, result);
             }
         });
