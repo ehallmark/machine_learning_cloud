@@ -64,7 +64,19 @@ public class DataIngester {
         }
     }
 
+    private static void waitForMongo() {
+        while(mongoCount.get() > 500) {
+            System.out.println("Waiting for mongo to ingest batch...");
+            try {
+                TimeUnit.SECONDS.sleep(5);
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private static void updateBatch() {
+        waitForMongo();
         mongoCount.getAndIncrement();
         mongoCollection.bulkWrite(updateBatch, new BulkWriteOptions().ordered(false), (v,t)-> {
             mongoCount.getAndDecrement();
@@ -76,6 +88,7 @@ public class DataIngester {
     }
 
     private static void insertBatch() {
+        waitForMongo();
         mongoCount.getAndIncrement();
         mongoCollection.insertMany(insertBatch, new InsertManyOptions().ordered(false), (v, t) -> {
             mongoCount.getAndDecrement();
