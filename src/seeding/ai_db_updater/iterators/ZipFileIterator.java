@@ -24,15 +24,17 @@ public class ZipFileIterator implements WebIterator {
     private String destinationPrefix;
     private FileStreamDataDownloader dataDownloader;
     private boolean parallel;
-    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel) {
+    private boolean perDocument;
+    public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix, boolean parallel, boolean perDocument) {
         this.cnt=new AtomicInteger(0);
         this.dataDownloader=dataDownloader;
         this.destinationPrefix=destinationPrefix;
         this.parallel=parallel;
+        this.perDocument=perDocument;
     }
 
     public ZipFileIterator(FileStreamDataDownloader dataDownloader, String destinationPrefix) {
-        this(dataDownloader,destinationPrefix,true);
+        this(dataDownloader,destinationPrefix,true, true);
     }
 
     @Override
@@ -68,12 +70,34 @@ public class ZipFileIterator implements WebIterator {
                     FileReader fr = new FileReader(xmlFile);
                     BufferedReader br = new BufferedReader(fr);
                     AtomicBoolean failed = new AtomicBoolean(false);
-                    String line;
-                    boolean firstLine = true;
-                    List<String> lines = new ArrayList<>();
-                    while ((line = br.readLine()) != null) {
-                        if (line.contains("<?xml") && !firstLine) {
-                            // stop
+
+                    if(perDocument) {
+                        String line;
+                        boolean firstLine = true;
+                        List<String> lines = new ArrayList<>();
+                        while ((line = br.readLine()) != null) {
+                            if (line.contains("<?xml") && !firstLine) {
+                                // stop
+                                byte[] data = String.join("", lines).getBytes();
+                                for (CustomHandler _handler : handlers) {
+                                    CustomHandler handler = _handler.newInstance();
+                                    try {
+                                        saxParser.parse(new ByteArrayInputStream(data), handler);
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                        failed.set(true);
+                                    }
+                                }
+                                lines.clear();
+                            }
+                            if (firstLine) firstLine = false;
+                            lines.add(line);
+                        }
+                        br.close();
+                        fr.close();
+
+                        // get the last one
+                        if (!lines.isEmpty()) {
                             byte[] data = String.join("", lines).getBytes();
                             for (CustomHandler _handler : handlers) {
                                 CustomHandler handler = _handler.newInstance();
@@ -86,25 +110,14 @@ public class ZipFileIterator implements WebIterator {
                             }
                             lines.clear();
                         }
-                        if (firstLine) firstLine = false;
-                        lines.add(line);
-                    }
-                    br.close();
-                    fr.close();
-
-                    // get the last one
-                    if (!lines.isEmpty()) {
-                        byte[] data = String.join("", lines).getBytes();
-                        for (CustomHandler _handler : handlers) {
-                            CustomHandler handler = _handler.newInstance();
-                            try {
-                                saxParser.parse(new ByteArrayInputStream(data), handler);
+                    } else {
+                        for (CustomHandler handler : handlers) {
+                            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
+                                saxParser.parse(bis, handler.newInstance());
                             } catch (Exception e) {
                                 e.printStackTrace();
-                                failed.set(true);
                             }
                         }
-                        lines.clear();
                     }
 
                     if(!failed.get()) {

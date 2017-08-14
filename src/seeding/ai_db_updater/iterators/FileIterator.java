@@ -30,17 +30,16 @@ public class FileIterator implements WebIterator {
     public void applyHandlers(CustomHandler... handlers) {
         Arrays.stream(fileFolder.listFiles(filter)).parallel().forEach(xmlFile->{
             try {
+                System.out.println("Parsing "+xmlFile.getName()+" now...");
+                SAXParserFactory factory = SAXParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                factory.setValidating(false);
+                // security vulnerable
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+                factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+                SAXParser saxParser = factory.newSAXParser();
                 if (xmlFile.exists()) {
-                    System.out.println("Parsing "+xmlFile.getName()+" now...");
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    factory.setNamespaceAware(true);
-                    factory.setValidating(false);
-                    // security vulnerable
-                    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-                    factory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-
                     for (CustomHandler handler : handlers) {
-                        SAXParser saxParser = factory.newSAXParser();
                         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
                             saxParser.parse(bis, handler.newInstance());
                         } catch (Exception e) {
