@@ -58,9 +58,7 @@ public class UpdateMaintenanceFeeData {
                 });
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                file.delete();
-            }
+            } 
         });
         handler.save();
     }
