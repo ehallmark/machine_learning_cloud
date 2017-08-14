@@ -54,7 +54,7 @@ public class MongoDBClient {
     public static void main(String[] args) throws Exception {
         // test
         get().getDatabase("ai_db").getCollection("patents_and_applications").count((res,t)->System.out.println("Count: "+res.doubleValue()));
-        get().wait(2000);
+        TimeUnit.SECONDS.sleep(10);
         get().close();
         System.out.println("Database finished");
     }
