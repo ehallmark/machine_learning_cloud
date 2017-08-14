@@ -53,7 +53,7 @@ public class UpdateMaintenanceFeeData {
                 reader.lines().forEach(line->{
                     handler.handleLine(line);
                     if (cnt.getAndIncrement() % 10000 == 9999) {
-                        System.out.println("Seen: " + cnt.get());
+                        System.out.println("Seen maintenance events: " + cnt.get());
                     }
                 });
             } catch (Exception e) {

@@ -15,7 +15,7 @@ public class UpdateAll {
         UpdateClassificationHash.main(args);
         UpdatePriorityAndExpirationData.main(args);
         UpdateWIPOTechnologies.main(args);
-        UpdateRelatedAssetsGraph.main(args);
+        //UpdateRelatedAssetsGraph.main(args);
         UpdateAssignmentData.main(args);
         DataIngester.close();
     }

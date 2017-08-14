@@ -166,7 +166,7 @@ public class PAIRHandler extends NestedHandler {
         // check for end document
         if(localName.equals("PatentData")) {
             if(cnt.getAndIncrement() % batchSize == batchSize-1) {
-                System.out.println("Commit: "+cnt.get());
+                System.out.println("Commit of pair data: "+cnt.get());
                 save();
             }
         }
