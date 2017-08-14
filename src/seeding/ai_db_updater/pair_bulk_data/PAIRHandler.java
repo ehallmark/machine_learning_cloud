@@ -44,8 +44,10 @@ public class PAIRHandler extends NestedHandler {
         EndFlag applicationEndFlag = new EndFlag("PatentData") {
             @Override
             public void save() {
-                Object appNumber = dataMap.get(applicationNumber);
+                String appNumber = dataMap.get(applicationNumber);
                 if (appNumber != null) {
+                    appNumber = Flag.filingDocumentHandler.apply(applicationNumber).apply(appNumber).toString();
+                    dataMap.put(applicationNumber,appNumber);
                     Set<String> assignees = new HashSet<>();
                     if (loadExternalAssignees && dataMap.containsKey(grantNumber)) {
                         assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber).toString()));
