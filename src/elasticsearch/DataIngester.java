@@ -40,6 +40,9 @@ public class DataIngester {
         ingestMongo(name, doc, create);
     }
 
+    public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
+        bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
+    }
 
     static List<Document> insertBatch = new ArrayList<>();
     static List<WriteModel<Document>> updateBatch = new ArrayList<>();
