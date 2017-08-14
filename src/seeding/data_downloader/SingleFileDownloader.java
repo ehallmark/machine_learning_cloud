@@ -18,6 +18,8 @@ import java.time.format.DateTimeFormatter;
  * Created by Evan on 8/13/2017.
  */
 public abstract class SingleFileDownloader implements DataDownloader {
+    // one day
+    private static final long SHOULD_REDOWNLOAD_PERIOD_MILLIS = 1000l * 60l * 60l * 24l;
     @Getter
     protected File destinationFile;
     protected File zipFile;
@@ -30,6 +32,9 @@ public abstract class SingleFileDownloader implements DataDownloader {
     @Override
     public void pullMostRecentData() {
         // pull and unzip
+        if(destinationFile!=null&&destinationFile.exists()&&(System.currentTimeMillis()-destinationFile.lastModified()) < SHOULD_REDOWNLOAD_PERIOD_MILLIS) {
+            System.out.println("FILE IS ALREADY UP TO DATE... SKIPPING DOWNLOAD: "+destinationFile.getName());
+        }
         boolean found = false;
         LocalDate date = LocalDate.now();
         try {
