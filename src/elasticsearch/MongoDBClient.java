@@ -45,8 +45,14 @@ public class MongoDBClient {
                 init();
             } catch(Exception e) {
                 e.printStackTrace();
+                System.exit(1);
             }
         }
         return CLIENT;
+    }
+
+    public static void main(String[] args) {
+        // test
+        get().getDatabase("ai_db").getCollection("patents_and_applications").count((res,t)->System.out.println("Count: "+res.doubleValue()));
     }
 }
