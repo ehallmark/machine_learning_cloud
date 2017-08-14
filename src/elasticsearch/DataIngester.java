@@ -2,9 +2,9 @@ package elasticsearch;
 
 import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoCollection;
-import com.mongodb.client.model.InsertManyOptions;
-import com.mongodb.client.model.InsertOneOptions;
+import com.mongodb.client.model.*;
 import org.bson.Document;
+import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -34,34 +34,62 @@ public class DataIngester {
     private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
 
-    public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
+    public static synchronized void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
         ingestMongo(name, doc, create);
     }
 
 
-    public static void ingestMongo(String name, Map<String,Object> doc, boolean create) {
+    static List<Document> insertBatch = new ArrayList<>();
+    static List<WriteModel<Document>> updateBatch = new ArrayList<>();
+    static final int batchSize = 1000;
+
+    public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create) {
         mongoCount.getAndIncrement();
         if(create) {
             doc.put("_id", name);
-            mongoCollection.insertOne(new Document(doc), (v, t) -> {
-                mongoCount.getAndDecrement();
-                if(t!=null) {
-                    System.out.println("Failed in insert: "+t.getMessage());
-                }
-            });
+            insertBatch.add(new Document(doc));
+            if(insertBatch.size() > batchSize) {
+                insertBatch();
+            }
+
         } else {
-            mongoCollection.findOneAndUpdate(new Document("_id",name), new Document("$set",doc), (v,t)-> {
-                mongoCount.getAndDecrement();
-                if(t!=null) {
-                    System.out.println("Failed in update: "+t.getMessage());
-                }
-            });
+            WriteModel<Document> model = new UpdateOneModel<>(new Document("_id",name), new Document("$set",doc));
+            updateBatch.add(model);
+            if(updateBatch.size()> batchSize) {
+                updateBatch();
+            }
         }
     }
 
+    private static void updateBatch() {
+        mongoCollection.bulkWrite(updateBatch, (v,t)-> {
+            mongoCount.getAndDecrement();
+            if(t!=null) {
+                System.out.println("Failed in update: "+t.getMessage());
+            }
+        });
+        updateBatch = new ArrayList<>();
+    }
+
+    private static void insertBatch() {
+        mongoCollection.insertMany(insertBatch, (v, t) -> {
+            mongoCount.getAndDecrement();
+            if(t!=null && ! t.getMessage().startsWith("EE11000 duplicate key error")) {
+                System.out.println("Failed in insert: "+t.getMessage());
+            }
+        });
+        insertBatch = new ArrayList<>();
+    }
+
     public static synchronized void close() {
+        if(updateBatch.size()>0) {
+            updateBatch();
+        }
+        if(insertBatch.size()>0) {
+            insertBatch();
+        }
         while(mongoCount.get() > 0) {
             try {
                 System.out.println("Waiting for "+mongoCount.get()+" assets");
@@ -82,7 +110,7 @@ public class DataIngester {
         }
     }
 
-    public static void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean createIfNotPresent, boolean createImmediately) {
+    public static synchronized void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean createIfNotPresent, boolean createImmediately) {
         try {
             BulkRequestBuilder request = client.prepareBulk();
             for (Map.Entry<String, Map<String,Object>> e : labelToTextMap.entrySet()) {
