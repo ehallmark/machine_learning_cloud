@@ -48,6 +48,9 @@ public class DataIngester {
             });
         } else {
             mongoCollection.findOneAndUpdate(new Document("_id",name), new Document("$set",doc), (v,t)-> {
+                if(t!=null) {
+                    System.out.println("Failed in update: "+t.getMessage());
+                }
             });
         }
     }
