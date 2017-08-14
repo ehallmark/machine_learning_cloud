@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.mongodb.WriteConcern;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoClientSettings;
 import com.mongodb.async.client.MongoClients;
@@ -28,6 +29,7 @@ public class MongoDBClient {
     private MongoDBClient() {}
     private static void init() {
         MongoClientSettings settings = MongoClientSettings.builder()
+                .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .connectionPoolSettings(
                         ConnectionPoolSettings.builder()
                                 .maxSize(400)

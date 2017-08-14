@@ -45,7 +45,11 @@ public class MyClient {
 
     public synchronized static TransportClient get() {
         if(CLIENT==null) {
-            init();
+            try {
+                init();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
         return CLIENT;
     }

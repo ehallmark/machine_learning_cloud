@@ -137,6 +137,18 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Between Filter", AbstractFilter.FilterType.Between.toString());
             humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
             humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
+            humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
+            humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
+            humanAttrToJavaAttrMap.put("Applicants", Constants.APPLICANTS);
+            humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
+            humanAttrToJavaAttrMap.put("Execution Date", Constants.EXECUTION_DATE);
+            humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
+            humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
+            humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
+            humanAttrToJavaAttrMap.put("City", Constants.CITY);
+            humanAttrToJavaAttrMap.put("Zip Code", Constants.POSTAL_CODE);
+            humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
+
 
             buildJavaToHumanAttrMap();
 

@@ -29,7 +29,7 @@ public class DataIngester {
     private static BulkProcessor bulkProcessor = MyClient.getBulkProcessor();
     static final String INDEX_NAME = "ai_db";
     static final String TYPE_NAME = "patents_and_applications";
-    private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME).withWriteConcern(WriteConcern.ACKNOWLEDGED);
+    private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
 
     public static void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
