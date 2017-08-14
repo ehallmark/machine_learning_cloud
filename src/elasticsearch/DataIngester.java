@@ -63,7 +63,7 @@ public class DataIngester {
     }
 
     private static void updateBatch() {
-        mongoCollection.bulkWrite(updateBatch, (v,t)-> {
+        mongoCollection.bulkWrite(updateBatch, new BulkWriteOptions().ordered(false), (v,t)-> {
             mongoCount.getAndDecrement();
             if(t!=null) {
                 System.out.println("Failed in update: "+t.getMessage());
@@ -73,7 +73,7 @@ public class DataIngester {
     }
 
     private static void insertBatch() {
-        mongoCollection.insertMany(insertBatch, (v, t) -> {
+        mongoCollection.insertMany(insertBatch, new InsertManyOptions().ordered(false), (v, t) -> {
             mongoCount.getAndDecrement();
             if(t!=null && ! t.getMessage().startsWith("EE11000 duplicate key error")) {
                 System.out.println("Failed in insert: "+t.getMessage());
