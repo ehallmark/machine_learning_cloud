@@ -46,7 +46,7 @@ public class DataIngester {
 
     static List<Document> insertBatch = new ArrayList<>();
     static List<WriteModel<Document>> updateBatch = new ArrayList<>();
-    static final int batchSize = 500;
+    static final int batchSize = 5000;
 
     public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create) {
         if(create) {
@@ -65,7 +65,7 @@ public class DataIngester {
     }
 
     private static void waitForMongo() {
-        while(mongoCount.get() > 500) {
+        while(mongoCount.get() > 5000) {
             System.out.println("Waiting for mongo to ingest batch...");
             try {
                 TimeUnit.SECONDS.sleep(5);

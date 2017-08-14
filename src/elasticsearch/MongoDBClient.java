@@ -33,7 +33,7 @@ public class MongoDBClient {
                 .writeConcern(WriteConcern.ACKNOWLEDGED)
                 .connectionPoolSettings(
                         ConnectionPoolSettings.builder(fake.getSettings().getConnectionPoolSettings())
-                                .maxSize(400)
+                                .maxSize(500)
                                 .maxWaitQueueSize(10000)
                                 .maxWaitTime(600000l, TimeUnit.MILLISECONDS)
                                 .build()
