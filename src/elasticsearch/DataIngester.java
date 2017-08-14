@@ -37,20 +37,12 @@ public class DataIngester {
         ingestMongo(name, doc, create);
     }
 
-    static final int batchSize = 1000;
-    static List<Document> inserts = new ArrayList<>();
 
     public static void ingestMongo(String name, Map<String,Object> doc, boolean create) {
         if(create) {
             doc.put("_id", name);
-            inserts.add(new Document(doc));
-            if(inserts.size()>batchSize) {
-                InsertManyOptions options = new InsertManyOptions().ordered(false).bypassDocumentValidation(true);
-                mongoCollection.insertMany(inserts, options, (v, t) -> {
-                });
-                inserts = new ArrayList<>();
-            }
-
+            mongoCollection.insertOne(new Document(doc), (v, t) -> {
+            });
         } else {
             mongoCollection.updateOne(new Document("_id",name), new Document("$set",doc), (v,t)-> {
             });
