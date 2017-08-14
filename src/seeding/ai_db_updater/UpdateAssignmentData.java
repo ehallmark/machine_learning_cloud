@@ -26,7 +26,5 @@ public class UpdateAssignmentData {
 
     public static void main(String[] args) {
         ingestData();
-        // Close bulk processor
-        DataIngester.close();
     }
 }

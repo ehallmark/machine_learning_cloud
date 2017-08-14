@@ -39,7 +39,6 @@ public class UpdateMaintenanceFeeData {
         assetEntityStatusMap.save();
         assetToMaintenanceFeeReminderCountMap.save();
         expiredAssetsMap.save();
-        DataIngester.close();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {

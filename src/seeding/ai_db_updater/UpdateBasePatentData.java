@@ -35,8 +35,6 @@ public class UpdateBasePatentData {
         NestedHandler handler = new USPTOHandler(topLevelTag, seedApplications);
         handler.init();
         iterator.applyHandlers(handler);
-        // Close bulk processor
-        DataIngester.close();
     }
 
     public static void main(String[] args) {

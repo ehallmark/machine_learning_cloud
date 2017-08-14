@@ -92,7 +92,5 @@ public class UpdateWIPOTechnologies {
         });
 
         wipoTechnologyAttribute.save();
-        // shutdown bulk
-        DataIngester.close();
     }
 }

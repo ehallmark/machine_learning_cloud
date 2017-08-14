@@ -46,8 +46,7 @@ public class UpdateClassificationHash {
         }
 
         assetToCPCMap.save();
-        // shutdown bulk
-        DataIngester.close();
+
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {
