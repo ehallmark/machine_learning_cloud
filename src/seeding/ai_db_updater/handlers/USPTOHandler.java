@@ -360,7 +360,7 @@ public class USPTOHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
-        DataIngester.ingestBulk(name,doc,true);
+        DataIngester.ingestBulk(name,doc,true,false);
     }
 
 

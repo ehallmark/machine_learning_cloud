@@ -208,7 +208,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
-        DataIngester.ingestBulk(name,doc,false);
+        DataIngester.ingestBulk(name,doc,false,true);
     }
 
 

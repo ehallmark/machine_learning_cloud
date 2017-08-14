@@ -34,10 +34,10 @@ public class DataIngester {
     private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
 
-    public static synchronized void ingestBulk(String name, Map<String,Object> doc, boolean create) {
+    public static synchronized void ingestBulk(String name, Map<String,Object> doc, boolean create, boolean updateArray) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
-        ingestMongo(name, doc, create);
+        ingestMongo(name, doc, create, updateArray);
     }
 
     public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
@@ -48,12 +48,14 @@ public class DataIngester {
     static List<WriteModel<Document>> updateBatch = new ArrayList<>();
     static final int batchSize = 5000;
 
-    public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create) {
+    public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create, boolean updateArray) {
+        if(create && updateArray) throw new RuntimeException("Cannot create and update array at the same time.");
         if(create) {
             doc.put("_id", name);
             insertBatch.add(new Document(doc));
         } else {
-            WriteModel<Document> model = new UpdateOneModel<>(new Document("_id",name), new Document("$set",doc));
+            Document updateDoc = new Document(updateArray ? "$addToSet" : "$set",doc);
+            WriteModel<Document> model = new UpdateOneModel<>(new Document("_id",name), updateDoc);
             updateBatch.add(model);
         }
         if(updateBatch.size()> batchSize) {
