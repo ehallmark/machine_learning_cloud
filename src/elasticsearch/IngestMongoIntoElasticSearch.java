@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoCollection;
 import org.bson.Document;
 
@@ -17,7 +18,8 @@ public class IngestMongoIntoElasticSearch {
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong cnt = new AtomicLong(0);
         AtomicLong keepTrack = new AtomicLong(0);
-        collection.find(new Document()).forEach(doc->{
+        FindIterable<Document> iterator = collection.find(new Document());
+        iterator.forEach(doc->{
             keepTrack.getAndIncrement();
             if(debug) {
                 System.out.println("Ingesting: "+doc.getString("_id"));
@@ -32,12 +34,13 @@ public class IngestMongoIntoElasticSearch {
                 System.out.println("Ingested: "+cnt.get());
             }
         });
+        System.out.println("Total count: "+cnt.get());
         while(keepTrack.get()>0) {
             System.out.println("Waiting for mongo db. Remaining: "+keepTrack.get());
             try {
                 TimeUnit.SECONDS.sleep(10);
             } catch(Exception e) {
-                
+
             }
         }
         DataIngester.close();
