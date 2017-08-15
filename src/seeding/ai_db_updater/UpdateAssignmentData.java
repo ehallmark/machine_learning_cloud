@@ -1,8 +1,5 @@
 package seeding.ai_db_updater;
 
-import elasticsearch.DataIngester;
-import elasticsearch.MyClient;
-import seeding.Constants;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.USPTOAssignmentHandler;
 import seeding.ai_db_updater.iterators.WebIterator;
