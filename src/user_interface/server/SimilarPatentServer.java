@@ -106,7 +106,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
-            humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE+Constants.FILTER_SUFFIX);
+            humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
+            humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
             humanAttrToJavaAttrMap.put("Is Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
@@ -117,6 +118,10 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
+            humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
+            humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
+            humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
+            humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
@@ -151,7 +156,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Claim Length", Constants.CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Claim Text", Constants.CLAIM);
-            humanAttrToJavaAttrMap.put("Independent Claim Flag", Constants.INDEPENDENT_CLAIM);
+            humanAttrToJavaAttrMap.put("Independent Claim", Constants.INDEPENDENT_CLAIM);
+            humanAttrToJavaAttrMap.put("Abstract", Constants.ABSTRACT);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
@@ -267,16 +273,7 @@ public class SimilarPatentServer {
                 // Pre filters
                 attributesMap.forEach((name,attr) -> {
                     ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
-                        preFilterModelMap.put(filter.getName(),filter);
-                        humanAttrToJavaAttrMap.put(humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
-                        if(filter instanceof AbstractNestedFilter) {
-                            ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
-                                AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
-                                preFilterModelMap.put(nestedFilter.getName(), nestedFilter);
-                                System.out.println("Attr for "+nestedFilter.getName() + ": "+ humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
-                                humanAttrToJavaAttrMap.put(humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()), nestedFilter.getName());
-                            });
-                        }
+                        filterNameHelper(filter);
                     });
                 });
                 buildJavaToHumanAttrMap();
@@ -284,6 +281,17 @@ public class SimilarPatentServer {
             }catch(Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static void filterNameHelper(AbstractFilter filter) {
+        preFilterModelMap.put(filter.getName(),filter);
+        humanAttrToJavaAttrMap.put(AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
+        if(filter instanceof AbstractNestedFilter) {
+            ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
+                AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
+                filterNameHelper(nestedFilter);
+            });
         }
     }
 

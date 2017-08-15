@@ -22,6 +22,11 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
         Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword
     }
 
+    public static boolean isPrefix(FilterType type) {
+        if(Arrays.asList(FilterType.Include,FilterType.Exclude,FilterType.BoolTrue,FilterType.BoolFalse).contains(type)) return true;
+        return false;
+    }
+
     public enum FieldType {
         Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword, NestedObject, Object
     }
