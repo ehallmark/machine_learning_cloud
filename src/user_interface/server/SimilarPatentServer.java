@@ -124,6 +124,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
+            humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Filing Country", Constants.FILING_COUNTRY);
@@ -326,7 +327,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
             attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
             attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
-            attributesMap.put(Constants.CLAIM, new ClaimTextAttribute());
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
