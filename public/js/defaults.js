@@ -59,12 +59,14 @@ $(document).ready(function() {
 
     $('.nested-form-select select').on("select2:select", function(e) {
         var id = e.params.data.id;
-        $('.draggable[name="'+id+'"]').show();
+        alert(id);
+        $('.draggable[data-model="'+id+'"]').hide();
     });
 
     $('.nested-form-select select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        $('.draggable[name="'+id+'"]').hide();
+        alert(id);
+        $('.draggable[data-model="'+id+'"]').hide();
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
