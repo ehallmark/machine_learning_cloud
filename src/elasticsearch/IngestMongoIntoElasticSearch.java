@@ -30,26 +30,21 @@ public class IngestMongoIntoElasticSearch {
         }
         System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
-        iterator.forEach(doc->{
-            try {
-                if (debug) {
-                    System.out.println("Ingesting: " + doc.getString("_id"));
-                }
-                DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
-            } finally {
-                if (cnt.getAndIncrement() % 10000 == 9999) {
-                    System.out.println("Ingested: " + cnt.get());
-                }
-            }
-        }, (v,t)->{
-            try {
-                TimeUnit.MILLISECONDS.sleep(100);
-            } catch(Exception e) {
-
-            }
-            if(t!=null) {
-                System.out.println("Error from mongo: "+t.getMessage());
-            }
+        iterator.batchSize(1000).batchCursor((cursor,t)->{
+            cursor.next((docList,t2)->{
+                docList.parallelStream().forEach(doc->{
+                    try {
+                        if (debug) {
+                            System.out.println("Ingesting: " + doc.getString("_id"));
+                        }
+                        DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
+                    } finally {
+                        if (cnt.getAndIncrement() % 10000 == 9999) {
+                            System.out.println("Ingested: " + cnt.get());
+                        }
+                    }
+                });
+            });
         });
         System.out.println("Total count: "+cnt.get());
         while(cnt.get()<total.get()) {
