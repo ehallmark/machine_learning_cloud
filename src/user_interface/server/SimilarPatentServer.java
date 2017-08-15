@@ -138,17 +138,24 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
             humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
-            humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
-            humanAttrToJavaAttrMap.put("Applicants", Constants.APPLICANTS);
-            humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
             humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
+            humanAttrToJavaAttrMap.put("State", Constants.STATE);
             humanAttrToJavaAttrMap.put("Zip Code", Constants.POSTAL_CODE);
+            // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
-
+            humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
+            humanAttrToJavaAttrMap.put("Applicants", Constants.APPLICANTS);
+            humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
+            humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
+            humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
+            humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
+            humanAttrToJavaAttrMap.put("Claims", Constants.CLAIMS);
+            humanAttrToJavaAttrMap.put("Related Assets", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Assignments", Constants.ASSIGNMENTS);
 
             buildJavaToHumanAttrMap();
 
@@ -258,6 +265,8 @@ public class SimilarPatentServer {
                         if(filter instanceof AbstractNestedFilter) {
                             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
                                 AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
+                                preFilterModelMap.put(nestedFilter.getName(), nestedFilter);
+                                System.out.println("Attr for "+nestedFilter.getName() + ": "+ humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
                                 humanAttrToJavaAttrMap.put(nestedFilter.getName(), humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
                             });
                         }
@@ -990,6 +999,12 @@ public class SimilarPatentServer {
     }
 
     public static void main(String[] args) throws Exception {
+        boolean test = true;
+        if(test) {
+            loadAttributes(false);
+            loadFilterModels();
+            return;
+        }
         long t1 = System.currentTimeMillis();
         //Database.setupSeedConn();
         boolean preLoad = true;
