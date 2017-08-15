@@ -6,6 +6,7 @@ import org.bson.Document;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by ehallmark on 8/14/17.
@@ -30,21 +31,27 @@ public class IngestMongoIntoElasticSearch {
         }
         System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
-        iterator.batchSize(1000).batchCursor((cursor,t)->{
-            cursor.next((docList,t2)->{
-                docList.parallelStream().forEach(doc->{
-                    try {
-                        if (debug) {
-                            System.out.println("Ingesting: " + doc.getString("_id"));
-                        }
-                        DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
-                    } finally {
-                        if (cnt.getAndIncrement() % 10000 == 9999) {
-                            System.out.println("Ingested: " + cnt.get());
-                        }
+        iterator.batchSize(100).batchCursor((cursor,t)->{
+            AtomicReference<Throwable> shouldStop = new AtomicReference<>(null);
+            while(shouldStop.get()==null) {
+                cursor.next((docList, t2) -> {
+                    if (docList == null || docList.isEmpty()) {
+                        docList.stream().forEach(doc -> {
+                            try {
+                                if (debug) {
+                                    System.out.println("Ingesting: " + doc.getString("_id"));
+                                }
+                                DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
+                            } finally {
+                                if (cnt.getAndIncrement() % 10000 == 9999) {
+                                    System.out.println("Ingested: " + cnt.get());
+                                }
+                            }
+                        });
                     }
+                    shouldStop.set(t2);
                 });
-            });
+            }
         });
         System.out.println("Total count: "+cnt.get());
         while(cnt.get()<total.get()) {
