@@ -889,7 +889,7 @@ public class SimilarPatentServer {
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nested ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
-                        span().withClass("remove-button").withText("x")
+                        nested ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );
     }
