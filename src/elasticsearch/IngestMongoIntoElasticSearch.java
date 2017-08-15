@@ -17,29 +17,39 @@ public class IngestMongoIntoElasticSearch {
         String type = DataIngester.TYPE_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong cnt = new AtomicLong(0);
-        AtomicLong keepTrack = new AtomicLong(0);
+        AtomicLong total = new AtomicLong(0);
+        collection.count(new Document(), (count,t)->{
+            total.set(count);
+        });
+        while(total.get()==0) {
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
         iterator.forEach(doc->{
-            keepTrack.incrementAndGet();
             if(debug) {
                 System.out.println("Ingesting: "+doc.getString("_id"));
             }
             DataIngester.ingestBulkFromMongoDB(doc.getString("_id"),doc);
+            if(cnt.getAndIncrement() % 10000==9999) {
+                System.out.println("Ingested: "+cnt.get());
+            }
         }, (v,t)->{
             try {
                 TimeUnit.MILLISECONDS.sleep(100);
             } catch(Exception e) {
-                
+
             }
             if(t!=null) {
                 System.out.println("Error from mongo: "+t.getMessage());
             }
-            if(cnt.getAndIncrement() % 10000==9999) {
-                System.out.println("Ingested: "+cnt.get());
-            }
         });
         System.out.println("Total count: "+cnt.get());
-        while(keepTrack.get()>0) {
+        while(cnt.get()>0) {
             System.out.println("Waiting for mongo db. Remaining: "+keepTrack.get());
             try {
                 TimeUnit.SECONDS.sleep(10);
