@@ -50,6 +50,23 @@ $(document).ready(function() {
         $this.trigger('change');
     });
 
+    // nested forms
+    $('.nested-form-select select').each(function() {
+        $this = $(this);
+        var displayItemSelectOptions = {width: '100%', placeholder: 'Search'};
+        $this.select2(displayItemSelectOptions);
+    });
+
+    $('.nested-form-select select').on("select2:select", function(e) {
+        var id = e.params.data.id;
+        $('.draggable[name="'+id+'"]').show();
+    });
+
+    $('.nested-form-select select').on("select2:unselect", function(e) {
+        var id = e.params.data.id;
+        $('.draggable[name="'+id+'"]').hide();
+    });
+
     $('.sidebar .nav-item .btn').click(function(e){
         $('.sidebar .nav-item .btn').removeClass('active');
         $(this).addClass('active');
