@@ -3,6 +3,7 @@ package elasticsearch;
 import com.mongodb.async.client.MongoCollection;
 import org.bson.Document;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -15,12 +16,15 @@ public class IngestMongoIntoElasticSearch {
         String type = DataIngester.TYPE_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong cnt = new AtomicLong(0);
-        collection.find().forEach(doc->{
+        AtomicLong keepTrack = new AtomicLong(0);
+        collection.find(new Document()).forEach(doc->{
+            keepTrack.getAndIncrement();
             if(debug) {
                 System.out.println("Ingesting: "+doc.getString("_id"));
             }
             DataIngester.ingestBulkFromMongoDB(doc.getString("_id"),doc);
         }, (v,t)->{
+            keepTrack.getAndDecrement();
             if(t!=null) {
                 System.out.println("Error from mongo: "+t.getMessage());
             }
@@ -28,6 +32,14 @@ public class IngestMongoIntoElasticSearch {
                 System.out.println("Ingested: "+cnt.get());
             }
         });
+        while(keepTrack.get()>0) {
+            System.out.println("Waiting for mongo db. Remaining: "+keepTrack.get());
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch(Exception e) {
+                
+            }
+        }
         DataIngester.close();
     }
 }
