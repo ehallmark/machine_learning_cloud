@@ -166,13 +166,7 @@ public class SimilarPatentServer {
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
             allAttrNames = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()).flatMap(attr->{
-                Stream<String> stream;
-                if(attr instanceof NestedAttribute) {
-                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
-                } else {
-                    stream = Arrays.asList(attr.getName()).stream();
-                }
-                return stream;
+                return nameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
         }
         return allAttrNames;
@@ -183,17 +177,21 @@ public class SimilarPatentServer {
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
             allStreamingAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&!(attr instanceof ComputableAttribute)).flatMap(attr->{
-                Stream<String> stream;
-                if(attr instanceof NestedAttribute) {
-                    stream = ((NestedAttribute) attr).getAttributes().stream().map(nestedAttr->(attr.getName()+"."+((AbstractAttribute)nestedAttr).getName()));
-                } else {
-                    stream = Arrays.asList(attr.getName()).stream();
-                }
-                return stream;
+                return nameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
             System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
         }
         return allStreamingAttrNames;
+    }
+
+    private static Collection<String> nameHelper(AbstractAttribute attr, String previous) {
+        Collection<String> stream;
+        if(attr instanceof NestedAttribute) {
+            stream = (Collection<String>) ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(nameHelper((AbstractAttribute)nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
+        } else {
+            stream = Arrays.asList(previous==null||previous.isEmpty() ? attr.getName() : previous+"."+attr.getName());
+        }
+        return stream;
     }
 
     public static Collection<ComputableAttribute> getAllComputableAttributes() {
@@ -204,8 +202,7 @@ public class SimilarPatentServer {
     public static Collection<String> getAllComputableAttributeNames() {
         if(allComputableAttrNames ==null) {
             allComputableAttrNames = getAllComputableAttributes().stream().flatMap(attr->{
-                Stream<String> stream = Arrays.asList(attr.getName()).stream();
-                return stream;
+                return nameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
             System.out.println("Computable Attributes: "+Arrays.toString(allComputableAttrNames.toArray()));
         }
@@ -320,6 +317,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.ASSIGNORS, new AssignorsNestedAttribute());
+            attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
 
             if(loadHidden) {
                 // hidden attrs
