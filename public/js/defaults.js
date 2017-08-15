@@ -53,18 +53,20 @@ $(document).ready(function() {
     // nested forms
     $('.nested-form-select select').each(function() {
         $this = $(this);
-        var displayItemSelectOptions = {width: '100%', placeholder: 'Search'};
+        var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
         $this.select2(displayItemSelectOptions);
     });
 
     $('.nested-form-select select').on("select2:select", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().show();
+        return true;
     });
 
     $('.nested-form-select select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().hide();
+        return true;
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
