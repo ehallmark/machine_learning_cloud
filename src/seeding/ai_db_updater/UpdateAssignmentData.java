@@ -18,7 +18,7 @@ public class UpdateAssignmentData {
 
     private static void ingestData() {
         FileStreamDataDownloader downloader = new AssignmentDataDownloader();
-        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", false, false);
+        WebIterator iterator = new ZipFileIterator(downloader, "assignments_temp", true, false);
         NestedHandler handler = new USPTOAssignmentHandler();
         handler.init();
         iterator.applyHandlers(handler);
