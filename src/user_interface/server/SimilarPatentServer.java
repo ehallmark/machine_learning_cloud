@@ -268,13 +268,13 @@ public class SimilarPatentServer {
                 attributesMap.forEach((name,attr) -> {
                     ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
                         preFilterModelMap.put(filter.getName(),filter);
-                        humanAttrToJavaAttrMap.put(filter.getName(),humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()));
+                        humanAttrToJavaAttrMap.put(humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
                         if(filter instanceof AbstractNestedFilter) {
                             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
                                 AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
                                 preFilterModelMap.put(nestedFilter.getName(), nestedFilter);
                                 System.out.println("Attr for "+nestedFilter.getName() + ": "+ humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
-                                humanAttrToJavaAttrMap.put(nestedFilter.getName(), humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()));
+                                humanAttrToJavaAttrMap.put(humanAttributeFor(nestedFilter.getPrerequisite())+ " " + humanAttributeFor(nestedFilter.getFilterType().toString()), nestedFilter.getName());
                             });
                         }
                     });
@@ -886,7 +886,7 @@ public class SimilarPatentServer {
                                                 modelFields.stream().flatMap(pair->{
                                                     String arrayFieldName = pair._2;
                                                     return pair._1.entrySet().stream().map(e->{
-                                                        if(e.getValue() instanceof HiddenAttribute) return null;
+                                                        if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
                                                         return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(),false);
                                                     }).filter(r->r!=null);
