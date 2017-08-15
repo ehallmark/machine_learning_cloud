@@ -167,7 +167,10 @@ public class USPTOAssignmentHandler extends NestedHandler {
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(f->s->{
             Object formatted = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(s);
-            if(formatted!=null) assigneeFlag.getDataMap().put(f, formatted.toString());
+            if(formatted!=null) {
+                documentFlag.getDataMap().put(f, formatted.toString());
+                assigneeFlag.getDataMap().put(f, formatted.toString());
+            }
             return null;
         }).setIsForeign(true));
 
@@ -214,25 +217,26 @@ public class USPTOAssignmentHandler extends NestedHandler {
         if(assignmentMap!=null) {
             String reelFrame = (String) assignmentMap.get(Constants.REEL_FRAME);
             if(reelFrame!=null) {
-                DataIngester.updateMongoArray(name, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
-            }
-            // try add latest assignee
-            List<Map<String,Object>> latestAssigneeData = (List<Map<String,Object>>)assignmentMap.get(Constants.LATEST_ASSIGNEE);
-            if(latestAssigneeData!=null && latestAssigneeData.size() > 0) {
-                String executionDate = (String) latestAssigneeData.stream().map(map->map.get(Constants.EXECUTION_DATE)).filter(d->d!=null).findAny().orElse(null);
-                if(executionDate!=null) {
-                    // update if newer
-                    Map<String, Object> assigneeMap = new HashMap<>();
-                    assigneeMap.put(Constants.LATEST_ASSIGNEE, latestAssigneeData);
-                    List<Object> or = new ArrayList<>();
-                    Map<String, Object> lessThan = new HashMap<>();
-                    lessThan.put("$lt", executionDate);
-                    Map<String, Object> exists = new HashMap<>();
-                    exists.put("$exists", false);
-                    or.add(lessThan);
-                    or.add(exists);
-                    Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, or);
-                    DataIngester.ingestMongo(name, query, assigneeMap, false);
+                //DataIngester.updateMongoArray(name, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
+
+                // try add latest assignee
+                List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
+                if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
+                    String executionDate = (String) latestAssigneeData.stream().map(map -> map.get(Constants.EXECUTION_DATE)).filter(d -> d != null).findAny().orElse(null);
+                    if (executionDate != null) {
+                        // update if newer
+                        Map<String, Object> assigneeMap = new HashMap<>();
+                        assigneeMap.put(Constants.LATEST_ASSIGNEE, latestAssigneeData);
+                        List<Object> or = new ArrayList<>();
+                        Map<String, Object> lessThan = new HashMap<>();
+                        lessThan.put("$lt", executionDate);
+                        Map<String, Object> exists = new HashMap<>();
+                        exists.put("$exists", false);
+                        or.add(lessThan);
+                        or.add(exists);
+                        Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, or);
+                        DataIngester.ingestMongo(name, query, assigneeMap, false);
+                    }
                 }
             }
         }
