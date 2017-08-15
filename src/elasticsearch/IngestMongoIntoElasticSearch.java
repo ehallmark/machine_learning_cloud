@@ -45,7 +45,7 @@ public class IngestMongoIntoElasticSearch {
         System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
 
-        iterator.batchSize(1000).batchCursor((cursor,t)->{
+        iterator.batchSize(100).batchCursor((cursor,t)->{
             cursor.next(helper(cursor));
         });
         System.out.println("Total count: "+cnt.get());
