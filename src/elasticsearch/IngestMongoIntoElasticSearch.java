@@ -17,7 +17,7 @@ public class IngestMongoIntoElasticSearch {
         String type = DataIngester.TYPE_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong cnt = new AtomicLong(0);
-        AtomicLong keepTrack = new AtomicLong(0);
+        AtomicLong keepTrack = new AtomicLong(1);
         FindIterable<Document> iterator = collection.find(new Document());
         iterator.forEach(doc->{
             keepTrack.getAndIncrement();
