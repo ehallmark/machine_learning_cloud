@@ -43,7 +43,7 @@ public class PatentCPCHandler implements LineHandler {
                     }
                     data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
                     doc.put(Constants.CPC_CODES, data);
-                    DataIngester.ingestBulk(patNum,doc,false,false);
+                    DataIngester.ingestBulk(patNum,doc,false);
                 }
             } catch(Exception e) {
                 // nfe

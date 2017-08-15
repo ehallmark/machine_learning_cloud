@@ -99,9 +99,9 @@ public class MaintenanceEventHandler implements LineHandler {
                 }
 
                 if(data.size()>0) {
-                    DataIngester.ingestBulk(patNum, data, false,false);
+                    DataIngester.ingestBulk(patNum, data, false);
                     if (appNum != null) {
-                        DataIngester.ingestBulk(appNum, data, false,false);
+                        DataIngester.ingestBulk(appNum, data, false);
                     }
                 }
 

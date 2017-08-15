@@ -34,10 +34,10 @@ public class DataIngester {
     private static MongoCollection<Document> mongoCollection = MongoDBClient.get().getDatabase(INDEX_NAME).getCollection(TYPE_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
 
-    public static synchronized void ingestBulk(String name, Map<String,Object> doc, boolean create, boolean updateArray) {
+    public static synchronized void ingestBulk(String name, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
-        ingestMongo(name, doc, create, updateArray);
+        ingestMongo(name, null, doc, create);
     }
 
     public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
@@ -49,16 +49,34 @@ public class DataIngester {
     static List<WriteModel<Document>> updateBatch = new ArrayList<>();
     static final int batchSize = 5000;
 
-    public static synchronized void ingestMongo(String name, Map<String,Object> doc, boolean create, boolean updateArray) {
-        if(create && updateArray) throw new RuntimeException("Cannot create and update array at the same time.");
+    public static synchronized void ingestMongo(String id, Document query, Map<String,Object> doc, boolean create) {
         if(create) {
-            doc.put("_id", name);
+            doc.put("_id", id);
             insertBatch.add(new Document(doc));
         } else {
-            Document updateDoc = new Document(updateArray ? "$addToSet" : "$set",doc);
-            WriteModel<Document> model = new UpdateOneModel<>(new Document("_id",name), updateDoc);
+            Document updateDoc = new Document("$set",doc);
+            query = query == null ? new Document("_id", id) : query.append("_id", id);
+            WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
             updateBatch.add(model);
         }
+        if(updateBatch.size()> batchSize) {
+            updateBatch();
+        }
+        if(insertBatch.size() > batchSize) {
+            insertBatch();
+        }
+    }
+
+    public static synchronized void updateMongoArray(String id, String nestedName, String nestedId, Map<String,Object> doc) {
+        Document updateDoc = new Document("$push",doc);
+        Map<String,String> ne = new HashMap<>();
+        ne.put("%ne",nestedId);
+        Document query = new Document()
+                .append("_id", id)
+                .append(nestedName, ne);
+        WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
+        updateBatch.add(model);
+
         if(updateBatch.size()> batchSize) {
             updateBatch();
         }

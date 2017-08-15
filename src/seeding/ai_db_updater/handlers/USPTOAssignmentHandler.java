@@ -6,6 +6,7 @@ package seeding.ai_db_updater.handlers;
 
 import elasticsearch.DataIngester;
 import lombok.Setter;
+import org.bson.Document;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
@@ -208,7 +209,28 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private void saveElasticSearch(String name, Map<String,Object> doc) {
-        DataIngester.ingestBulk(name,doc,false,true);
+        // get reel frame for id
+        Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
+        if(assignmentMap!=null) {
+            String reelFrame = (String) assignmentMap.get(Constants.REEL_FRAME);
+            if(reelFrame!=null) {
+                DataIngester.updateMongoArray(name, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
+            }
+            // try add latest assignee
+            List<Map<String,Object>> latestAssigneeData = (List<Map<String,Object>>)assignmentMap.get(Constants.LATEST_ASSIGNEE);
+            if(latestAssigneeData!=null && latestAssigneeData.size() > 0) {
+                String executionDate = (String) latestAssigneeData.stream().map(map->map.get(Constants.EXECUTION_DATE)).filter(d->d!=null).findAny().orElse(null);
+                if(executionDate!=null) {
+                    // update if newer
+                    Map<String, Object> assigneeMap = new HashMap<>();
+                    assigneeMap.put(Constants.LATEST_ASSIGNEE, latestAssigneeData);
+                    Map<String, Object> lessThan = new HashMap<>();
+                    lessThan.put("$lt", executionDate);
+                    Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, lessThan);
+                    DataIngester.ingestMongo(name, query, assigneeMap, false);
+                }
+            }
+        }
     }
 
 

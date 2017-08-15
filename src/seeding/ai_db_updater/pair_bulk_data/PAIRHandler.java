@@ -78,10 +78,10 @@ public class PAIRHandler extends NestedHandler {
                         if(appNum!=null || grantNum != null) {
                             Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
                             if(appNum!=null) {
-                                DataIngester.ingestBulk(appNum, cleanData, false, false);
+                                DataIngester.ingestBulk(appNum, cleanData, false);
                             }
                             if(grantNum!=null) {
-                                DataIngester.ingestBulk(grantNum,cleanData,false, false);
+                                DataIngester.ingestBulk(grantNum,cleanData,false);
                             }
                         }
 
