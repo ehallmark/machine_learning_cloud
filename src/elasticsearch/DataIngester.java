@@ -43,7 +43,7 @@ public class DataIngester {
 
     public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
         doc.remove("_id");
-        doc.remove(Constants.ASSIGNMENTS);
+        doc.remove(Constants.ASSIGNMENTS); // RIGHT NOW ASSIGNMENTS ARE TOO EXPENSIVE
         bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
     }
 
