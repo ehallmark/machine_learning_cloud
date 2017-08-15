@@ -103,12 +103,12 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
-            humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
             humanAttrToJavaAttrMap.put("AI Value", Constants.AI_VALUE);
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
-            humanAttrToJavaAttrMap.put("Is Expired", Constants.EXPIRED);
+            humanAttrToJavaAttrMap.put("Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
@@ -118,6 +118,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
+            humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
@@ -125,6 +126,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
+            humanAttrToJavaAttrMap.put("Filing Country", Constants.FILING_COUNTRY);
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
@@ -134,14 +136,15 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
-            humanAttrToJavaAttrMap.put("Include Filter", AbstractFilter.FilterType.Include.toString());
-            humanAttrToJavaAttrMap.put("Exclude Filter", AbstractFilter.FilterType.Exclude.toString());
+            humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
+            humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
             humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
-            humanAttrToJavaAttrMap.put("With Filter", AbstractFilter.FilterType.BoolTrue.toString());
-            humanAttrToJavaAttrMap.put("Without Filter", AbstractFilter.FilterType.BoolFalse.toString());
+            humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());
+            humanAttrToJavaAttrMap.put("Exclude", AbstractFilter.FilterType.BoolFalse.toString());
             humanAttrToJavaAttrMap.put("Between Filter", AbstractFilter.FilterType.Between.toString());
             humanAttrToJavaAttrMap.put("Greater Than Filter", AbstractFilter.FilterType.GreaterThan.toString());
             humanAttrToJavaAttrMap.put("Less Than Filter", AbstractFilter.FilterType.LessThan.toString());
+            humanAttrToJavaAttrMap.put("Filter", AbstractFilter.FilterType.Nested.toString());
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
@@ -286,7 +289,7 @@ public class SimilarPatentServer {
 
     private static void filterNameHelper(AbstractFilter filter) {
         preFilterModelMap.put(filter.getName(),filter);
-        humanAttrToJavaAttrMap.put(AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
+        humanAttrToJavaAttrMap.put(AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
         if(filter instanceof AbstractNestedFilter) {
             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
                 AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;
@@ -340,7 +343,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
-            attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
+            //attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
 
             if(loadHidden) {
                 // hidden attrs
