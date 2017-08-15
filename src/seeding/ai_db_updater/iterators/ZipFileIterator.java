@@ -53,6 +53,7 @@ public class ZipFileIterator implements WebIterator {
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(destinationFilename)));
                     ZipHelper.unzip(bis, bos);
                     bis.close();
+                    bos.flush();
                     bos.close();
                 }
 

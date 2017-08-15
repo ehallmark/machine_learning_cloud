@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class AssignmentsNestedAttribute extends NestedAttribute {
 
     public AssignmentsNestedAttribute() {
-        super(Arrays.asList(new LatestAssigneeNestedAttribute(), new AssignorsNestedAttribute(), new ExecutionDateAttribute(), new AssetNumberAttribute()));
+        super(Arrays.asList(new LatestAssigneeNestedAttribute(), new ExecutionDateAttribute(), new AssignorsNestedAttribute(), new ExecutionDateAttribute(), new AssetNumberAttribute()));
     }
 
     @Override
