@@ -32,26 +32,22 @@ public class IngestMongoIntoElasticSearch {
         System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
         iterator.batchSize(100).batchCursor((cursor,t)->{
-            AtomicReference<Throwable> shouldStop = new AtomicReference<>(null);
-            while(shouldStop.get()==null) {
-                cursor.next((docList, t2) -> {
-                    if (docList == null || docList.isEmpty()) {
-                        docList.stream().forEach(doc -> {
-                            try {
-                                if (debug) {
-                                    System.out.println("Ingesting: " + doc.getString("_id"));
-                                }
-                                DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
-                            } finally {
-                                if (cnt.getAndIncrement() % 10000 == 9999) {
-                                    System.out.println("Ingested: " + cnt.get());
-                                }
+            cursor.next((docList, t2) -> {
+                if (docList == null || docList.isEmpty()) {
+                    docList.stream().forEach(doc -> {
+                        try {
+                            if (debug) {
+                                System.out.println("Ingesting: " + doc.getString("_id"));
                             }
-                        });
-                    }
-                    shouldStop.set(t2);
-                });
-            }
+                            DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
+                        } finally {
+                            if (cnt.getAndIncrement() % 10000 == 9999) {
+                                System.out.println("Ingested: " + cnt.get());
+                            }
+                        }
+                    });
+                }
+            });
         });
         System.out.println("Total count: "+cnt.get());
         while(cnt.get()<total.get()) {
