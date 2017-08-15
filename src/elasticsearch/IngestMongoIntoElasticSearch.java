@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class IngestMongoIntoElasticSearch {
     public static void main(String[] args) {
-        final boolean debug = true;
+        final boolean debug = false;
         String index = DataIngester.INDEX_NAME;
         String type = DataIngester.TYPE_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
