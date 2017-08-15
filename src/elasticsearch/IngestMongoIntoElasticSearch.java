@@ -1,8 +1,17 @@
 package elasticsearch;
 
+import com.mongodb.MongoNamespace;
+import com.mongodb.ReadPreference;
 import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoCollection;
+import com.mongodb.binding.AsyncReadBinding;
+import com.mongodb.binding.AsyncSingleConnectionReadBinding;
+import com.mongodb.binding.ReadBinding;
+import com.mongodb.connection.AsyncConnection;
+import com.mongodb.connection.ServerDescription;
+import com.mongodb.operation.ParallelCollectionScanOperation;
 import org.bson.Document;
+import org.bson.codecs.DocumentCodec;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,8 +40,9 @@ public class IngestMongoIntoElasticSearch {
         }
         System.out.println("Total count: "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
-        iterator.batchSize(100).batchCursor((cursor,t)->{
+        iterator.batchCursor((cursor,t)->{
             cursor.next((docList, t2) -> {
+                System.out.println("Ingesting batch of : "+docList.size());
                 if (docList == null || docList.isEmpty()) {
                     docList.stream().forEach(doc -> {
                         try {
