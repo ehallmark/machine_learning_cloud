@@ -53,7 +53,7 @@ public class IngestMongoIntoElasticSearch {
         });
         System.out.println("Total count: "+cnt.get());
         while(cnt.get()<total.get()) {
-            System.out.println("Waiting for mongo db. Remaining: "+keepTrack.get());
+            System.out.println("Waiting for mongo db. Remaining: "+(total.get()-cnt.get()));
             try {
                 TimeUnit.SECONDS.sleep(10);
             } catch(Exception e) {
