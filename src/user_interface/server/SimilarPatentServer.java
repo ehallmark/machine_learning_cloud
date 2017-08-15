@@ -767,7 +767,11 @@ public class SimilarPatentServer {
 
 
     public static Tag technologySelect(String name, Collection<String> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withClass("multiselect").attr("multiple","multiple").with(
+        return technologySelectWithCustomClass(name, "multiselect", orderedClassifications);
+    }
+
+    public static Tag technologySelectWithCustomClass(String name, String clazz, Collection<String> orderedClassifications) {
+        return select().attr("style","width:100%;").withName(name).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));
                 }).collect(Collectors.toList())
