@@ -224,9 +224,14 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     // update if newer
                     Map<String, Object> assigneeMap = new HashMap<>();
                     assigneeMap.put(Constants.LATEST_ASSIGNEE, latestAssigneeData);
+                    List<Object> or = new ArrayList<>();
                     Map<String, Object> lessThan = new HashMap<>();
                     lessThan.put("$lt", executionDate);
-                    Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, lessThan);
+                    Map<String, Object> exists = new HashMap<>();
+                    exists.put("$exists", false);
+                    or.add(lessThan);
+                    or.add(exists);
+                    Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, or);
                     DataIngester.ingestMongo(name, query, assigneeMap, false);
                 }
             }

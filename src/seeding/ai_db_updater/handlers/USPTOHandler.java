@@ -35,8 +35,6 @@ public class USPTOHandler extends NestedHandler {
         this.applications=applications;
     }
 
-    //private static Map<String,Map<String,Object>> queue = Collections.synchronizedMap(new HashMap<>(5000));
-
     private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
             endFlag.getTransform(onlyAttrs).forEach((flag, val) -> {
