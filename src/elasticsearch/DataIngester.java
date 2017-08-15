@@ -16,6 +16,7 @@ import org.elasticsearch.client.Response;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import seeding.Constants;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -42,6 +43,7 @@ public class DataIngester {
 
     public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
         doc.remove("_id");
+        doc.remove(Constants.ASSIGNMENTS);
         bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
     }
 
