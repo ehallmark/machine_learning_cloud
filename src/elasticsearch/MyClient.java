@@ -76,8 +76,8 @@ public class MyClient {
             })
                     .setBulkActions(10000)
                     .setBulkSize(new ByteSizeValue(50, ByteSizeUnit.MB))
-                    .setFlushInterval(TimeValue.timeValueSeconds(5))
-                    .setConcurrentRequests(4)
+                    .setFlushInterval(TimeValue.timeValueSeconds(10))
+                    .setConcurrentRequests(10)
                     .build();
         }
         return BULK_PROCESSOR;
