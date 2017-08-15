@@ -1,5 +1,6 @@
 package elasticsearch;
 
+import com.google.gson.Gson;
 import org.apache.commons.lang.ArrayUtils;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -121,11 +122,12 @@ public class DataSearcher {
         //System.out.println("Hit id: "+item.getName());
         //System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
-            if(v instanceof String[]) {
+            v = new Gson().toJson(v);
+            /*if(v instanceof String[]) {
                 v = String.join("; ", (String[]) v);
             } else if (v instanceof List) {
                 v = String.join("; ", (List)v);
-            }
+            }*/
             item.addData(k,v);
         });
         SearchHitField similarityField = hit.getField(Constants.SIMILARITY);
