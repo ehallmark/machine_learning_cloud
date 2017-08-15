@@ -145,6 +145,13 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
             humanAttrToJavaAttrMap.put("State", Constants.STATE);
             humanAttrToJavaAttrMap.put("Zip Code", Constants.POSTAL_CODE);
+            humanAttrToJavaAttrMap.put("Claim Number", Constants.CLAIM_NUM);
+            humanAttrToJavaAttrMap.put("Parent Claim Number", Constants.PARENT_CLAIM_NUM);
+            humanAttrToJavaAttrMap.put("Document Kind", Constants.DOC_KIND);
+            humanAttrToJavaAttrMap.put("Claim Length", Constants.CLAIM_LENGTH);
+            humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH);
+            humanAttrToJavaAttrMap.put("Claim Text", Constants.CLAIM);
+            humanAttrToJavaAttrMap.put("Independent Claim Flag", Constants.INDEPENDENT_CLAIM);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
