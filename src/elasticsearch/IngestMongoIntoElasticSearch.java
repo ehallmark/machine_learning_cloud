@@ -62,7 +62,7 @@ public class IngestMongoIntoElasticSearch {
 
     static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor) {
         return (docList, t2) -> {
-            System.out.println("Ingesting batch of : "+docList.size());
+            //System.out.println("Ingesting batch of : "+docList.size());
             if (docList == null || docList.isEmpty()) {
                 docList.stream().forEach(doc -> {
                     try {
