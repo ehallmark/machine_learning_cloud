@@ -59,14 +59,12 @@ $(document).ready(function() {
 
     $('.nested-form-select select').on("select2:select", function(e) {
         var id = e.params.data.id;
-        alert(id);
-        $('.draggable[data-model="'+id+'"]').hide();
+        $('.draggable[data-model="'+id+'"]').parent().show();
     });
 
     $('.nested-form-select select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        alert(id);
-        $('.draggable[data-model="'+id+'"]').hide();
+        $('.draggable[data-model="'+id+'"]').parent().hide();
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
