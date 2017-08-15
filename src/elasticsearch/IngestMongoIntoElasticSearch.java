@@ -26,7 +26,11 @@ public class IngestMongoIntoElasticSearch {
             }
             DataIngester.ingestBulkFromMongoDB(doc.getString("_id"),doc);
         }, (v,t)->{
-            keepTrack.getAndDecrement();
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch(Exception e) {
+                
+            }
             if(t!=null) {
                 System.out.println("Error from mongo: "+t.getMessage());
             }
