@@ -63,17 +63,15 @@ public class IngestMongoIntoElasticSearch {
     static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor) {
         return (docList, t2) -> {
             //System.out.println("Ingesting batch of : "+docList.size());
-            if (docList == null || docList.isEmpty()) {
-                docList.stream().forEach(doc -> {
-                    try {
-                        DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
-                    } finally {
-                        if (cnt.getAndIncrement() % 10000 == 9999) {
-                            System.out.println("Ingested: " + cnt.get());
-                        }
+            docList.iterator().forEachRemaining(doc->{
+                try {
+                    DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
+                } finally {
+                    if (cnt.getAndIncrement() % 10000 == 9999) {
+                        System.out.println("Ingested: " + cnt.get());
                     }
-                });
-            }
+                }
+            });
             cursor.next(helper(cursor));
         };
     }
