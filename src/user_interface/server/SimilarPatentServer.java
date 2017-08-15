@@ -881,7 +881,7 @@ public class SimilarPatentServer {
     public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nested) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
-        return div().withClass("draggable "+type).attr("data-target",type).with(
+        return div().attr("data-model",modelName).withClass("draggable "+type).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nested ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
                         input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
