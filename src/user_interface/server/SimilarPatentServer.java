@@ -911,7 +911,7 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter);
+                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute);
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )

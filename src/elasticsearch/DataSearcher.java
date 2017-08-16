@@ -72,11 +72,13 @@ public class DataSearcher {
             BoolQueryBuilder query = QueryBuilders.boolQuery();
             // filters
             for (AbstractFilter filter : filters) {
-                if (filter.contributesToScore()&&isOverallScore) {
-                    query = query.must(filter.getFilterQuery().boost(10));
-                } else {
-                    filterBuilder = filterBuilder
-                            .must(filter.getFilterQuery().boost(0));
+                if(filter.getParent()==null) {
+                    if (filter.contributesToScore() && isOverallScore) {
+                        query = query.must(filter.getFilterQuery().boost(10));
+                    } else {
+                        filterBuilder = filterBuilder
+                                .must(filter.getFilterQuery().boost(0));
+                    }
                 }
             }
             // Add filter to query
