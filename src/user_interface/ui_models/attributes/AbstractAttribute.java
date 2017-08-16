@@ -74,14 +74,17 @@ public abstract class AbstractAttribute<T> {
                 case Between: {
                     filter = new AbstractBetweenFilter(this, filterType);
                     break;
-                } case AdvancedKeyword: {
+                }
+                case AdvancedKeyword: {
                     filter = new AdvancedKeywordFilter(this, filterType);
                     break;
-                } case Nested: {
+                }
+                case Nested: {
                     if(!(this instanceof NestedAttribute)) throw new RuntimeException("Only nested attributes support nested filterType");
                     filter = new AbstractNestedFilter((NestedAttribute)this, filterType);
                     break;
-                } default: {
+                }
+                default: {
                     filter = null;
                 }
             }
