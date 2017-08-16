@@ -32,7 +32,7 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
         if(limit == null || limit.doubleValue() < 0d) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getPrerequisite())
+            return QueryBuilders.rangeQuery(getFullPrerequisite())
                     .gt(limit);
         }
     }

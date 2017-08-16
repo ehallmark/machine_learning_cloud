@@ -34,7 +34,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
             return QueryBuilders.simpleQueryStringQuery(queryStr)
                     .defaultOperator(Operator.AND)
                     .analyzeWildcard(true) // might be slow but Scott Hicks uses it...
-                    .field(getPrerequisite());
+                    .field(getFullPrerequisite());
         }
     }
 

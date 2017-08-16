@@ -57,6 +57,10 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
 
     public boolean contributesToScore() { return false; }
 
+    public String getFullPrerequisite() {
+         return (parent==null?"":parent.getPrerequisite()+".")+getPrerequisite();
+    }
+
     @Override
     public abstract Tag getOptionsTag();
 

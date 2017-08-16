@@ -41,11 +41,11 @@ public class AbstractExcludeFilter extends AbstractFilter {
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder builder = QueryBuilders.boolQuery();
         if(attribute.getType().equals("nested") && nestedField!=null) {
-            builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite()+"."+nestedField,labels));
+            builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite()+"."+nestedField,labels));
         } else if(attribute.getType().equals("text")) {
-            builder=builder.mustNot(QueryBuilders.matchQuery(getPrerequisite(),labels));
+            builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite(),labels));
         } else {
-            builder=builder.mustNot(QueryBuilders.termsQuery(getPrerequisite(),labels));
+            builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite(),labels));
         }
         return builder;
     }

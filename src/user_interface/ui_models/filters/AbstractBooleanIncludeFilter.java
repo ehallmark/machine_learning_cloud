@@ -22,7 +22,7 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        return QueryBuilders.termQuery(getPrerequisite(), true);
+        return QueryBuilders.termQuery(getFullPrerequisite(), true);
     }
 
     @Override

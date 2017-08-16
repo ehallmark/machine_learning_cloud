@@ -27,7 +27,7 @@ public class AbstractLessThanFilter extends AbstractFilter {
         if(limit == null || limit.doubleValue() <= 0d) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getPrerequisite())
+            return QueryBuilders.rangeQuery(getFullPrerequisite())
                     .lt(limit);
         }
     }

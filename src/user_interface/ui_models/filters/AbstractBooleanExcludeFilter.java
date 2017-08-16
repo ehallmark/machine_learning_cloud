@@ -20,7 +20,7 @@ public class AbstractBooleanExcludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        return QueryBuilders.termQuery(getPrerequisite(), false);
+        return QueryBuilders.termQuery(getFullPrerequisite(), false);
     }
 
     @Override

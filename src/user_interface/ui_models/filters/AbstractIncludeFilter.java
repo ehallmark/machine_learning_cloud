@@ -40,10 +40,10 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         if(attribute.getType().equals("text")) {
-            return QueryBuilders.matchQuery(getPrerequisite(),labels);
+            return QueryBuilders.matchQuery(getFullPrerequisite(),labels);
 
         } else {
-            return QueryBuilders.termsQuery(getPrerequisite(),labels);
+            return QueryBuilders.termsQuery(getFullPrerequisite(),labels);
         }
     }
 

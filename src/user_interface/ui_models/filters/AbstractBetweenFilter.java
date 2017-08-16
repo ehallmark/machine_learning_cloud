@@ -32,7 +32,7 @@ public class AbstractBetweenFilter extends AbstractFilter {
         if(min == null || max == null) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getPrerequisite())
+            return QueryBuilders.rangeQuery(getFullPrerequisite())
                     .gt(min)
                     .lt(max);
         }

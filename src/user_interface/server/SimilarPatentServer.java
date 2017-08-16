@@ -974,7 +974,7 @@ public class SimilarPatentServer {
         try {
             String[] array = req.queryParamsValues(param);
             if (array != null) {
-                List<String> list = Arrays.stream(array).collect(Collectors.toList());
+                List<String> list = Arrays.stream(array).map(str->str.replaceAll("\\r","")).collect(Collectors.toList());
                 return list;
             }
             else return Collections.emptyList();
@@ -988,7 +988,7 @@ public class SimilarPatentServer {
     }
     public static String extractString(QueryParamsMap paramsMap, String param, String defaultVal) {
         if(paramsMap.value(param)!=null&&paramsMap.value(param).trim().length()>0) {
-            return paramsMap.value(param);
+            return paramsMap.value(param).replaceAll("\\r","");
         } else {
             return defaultVal;
         }

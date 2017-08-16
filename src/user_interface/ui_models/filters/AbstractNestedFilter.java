@@ -44,7 +44,7 @@ public class AbstractNestedFilter<T> extends AbstractFilter<T> {
                 boolQuery = boolQuery.must(filter.getFilterQuery());
             }
         }
-        return QueryBuilders.nestedQuery(getPrerequisite(), boolQuery, ScoreMode.Max);
+        return QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max);
     }
 
     @Override
