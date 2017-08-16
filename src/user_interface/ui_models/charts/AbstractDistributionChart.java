@@ -24,7 +24,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.CPC_TECHNOLOGY,Constants.ASSIGNEE,Constants.LATEST_ASSIGNEE));
+        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.CPC_TECHNOLOGY,Constants.ASSIGNEES+"."+Constants.ASSIGNEE,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE));
 
     }
 

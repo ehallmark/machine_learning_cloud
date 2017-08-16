@@ -249,7 +249,12 @@ public class SimilarPatentServer {
         if(javaAttrToHumanAttrMap.containsKey(attr))  {
             return javaAttrToHumanAttrMap.get(attr);
         } else {
-            return attr;
+            int commaIdx = attr.indexOf(".");
+            if(commaIdx>=0&&commaIdx<attr.length()-1) {
+                return humanAttributeFor(attr.substring(attr.indexOf(".")+1));
+            } else {
+                return attr;
+            }
         }
     }
 
@@ -373,6 +378,10 @@ public class SimilarPatentServer {
                 ).forEach(attr -> attributesMap.put(attr.getName(), attr));
             }
 
+
+            // nested attribute names
+            buildJavaToHumanAttrMap();
+
             if(DEFAULT_SIMILARITY_MODEL==null) DEFAULT_SIMILARITY_MODEL = new SimilarPatentFinder(Collections.emptyList());
             // similarity engine
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
@@ -380,6 +389,7 @@ public class SimilarPatentServer {
             allAttributes = new ArrayList<>(attributesMap.values());
         }
     }
+
 
     public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes) {
         handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,false);

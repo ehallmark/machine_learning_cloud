@@ -44,7 +44,7 @@ public class AbstractLineChart extends ChartAttribute {
                                 label("Max"),br(),input().withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                         )
                 ),
-                SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.PUBLICATION_DATE,Constants.EXPIRATION_DATE,Constants.PRIORITY_DATE))
+                SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE))
         );
     }
 

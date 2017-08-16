@@ -2,6 +2,7 @@ package user_interface.ui_models.templates;
 
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
@@ -20,11 +21,12 @@ public class PortfolioAssessment extends FormTemplate {
     private static Map<String,Object> getParams() {
         Map<String,Object> map = new HashMap<>();
         map.put(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE, Constants.REMAINING_LIFE));
+        map.put(Constants.LINE_CHART,Arrays.asList(Constants.PRIORITY_DATE));
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.LATEST_ASSIGNEE,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(Constants.NAME + Constants.FILTER_SUFFIX,"");
         map.put(Constants.LATEST_ASSIGNEE + Constants.FILTER_SUFFIX,"");
-        map.put(Constants.DOC_TYPE + Constants.FILTER_SUFFIX, Arrays.asList(PortfolioList.Type.patents));
+        map.put(Constants.DOC_TYPE + AbstractFilter.FilterType.Include.toString() + Constants.FILTER_SUFFIX, Arrays.asList(PortfolioList.Type.patents.toString()));
         return map;
     }
 
