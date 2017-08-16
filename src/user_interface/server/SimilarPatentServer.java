@@ -289,6 +289,7 @@ public class SimilarPatentServer {
                 // Pre filters
                 attributesMap.forEach((name,attr) -> {
                     ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
+                        preFilterModelMap.put(filter.getName(),filter);
                         filterNameHelper(filter);
                     });
                 });
@@ -301,7 +302,6 @@ public class SimilarPatentServer {
     }
 
     private static void filterNameHelper(AbstractFilter filter) {
-        preFilterModelMap.put(filter.getName(),filter);
         humanAttrToJavaAttrMap.put(AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
         if(filter instanceof AbstractNestedFilter) {
             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
@@ -921,14 +921,14 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nested, boolean parentOfNested) {
+    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedAttributeParent) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
         return div().attr("data-model",modelName).withClass("draggable "+type).attr("data-target",type).with(
-                div().attr("style","width: 100%;").withClass("collapsible-header"+(nested ? " nested" : "")).attr("data-target","#"+collapseId).with(
+                div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
-                        parentOfNested ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
-                        nested ? span() : span().withClass("remove-button").withText("x")
+                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
+                        nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );
     }

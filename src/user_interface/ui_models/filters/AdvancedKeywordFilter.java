@@ -7,6 +7,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import seeding.Constants;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -37,9 +38,11 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         }
     }
 
+    public boolean isActive() {return queryStr!=null && queryStr.length()>0; }
+
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        queryStr = extractString(req,getName(),null);
+        queryStr = String.join("", SimilarPatentServer.extractArray(req,getName()));
     }
 
     @Override

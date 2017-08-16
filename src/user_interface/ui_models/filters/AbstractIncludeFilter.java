@@ -52,7 +52,8 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public void extractRelevantInformationFromParams(Request req) {
         if (fieldType.equals(FieldType.Text)) {
-            labels = preProcess(extractString(req, getName(), "").toUpperCase(), "\n", "[^a-zA-Z0-9 \\/]");
+            labels = preProcess(String.join("",SimilarPatentServer.extractArray(req, getName())), "\n", null);
+            System.out.println("Should include labels for "+getName()+": "+String.join(", ",labels));
         } else {
             labels = SimilarPatentServer.extractArray(req, getName());
         }
