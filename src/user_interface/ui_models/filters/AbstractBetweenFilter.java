@@ -42,8 +42,8 @@ public class AbstractBetweenFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.min = SimilarPatentServer.extractDouble(params,minName,null);
-        this.max = SimilarPatentServer.extractDouble(params,maxName,null);
+        this.min = SimilarPatentServer.extractDoubleFromArrayField(params,minName,null);
+        this.max = SimilarPatentServer.extractDoubleFromArrayField(params,maxName,null);
 
         System.out.println(("Filter "+getName()+": between "+min)+ " and "+max);
 

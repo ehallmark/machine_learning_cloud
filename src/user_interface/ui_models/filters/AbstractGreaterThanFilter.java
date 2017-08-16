@@ -41,7 +41,7 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
-        this.limit = SimilarPatentServer.extractDouble(params,getName(),null);
+        this.limit = SimilarPatentServer.extractDoubleFromArrayField(params,getName(),null);
         System.out.println("Filter "+getName()+": greater than "+limit);
     }
 

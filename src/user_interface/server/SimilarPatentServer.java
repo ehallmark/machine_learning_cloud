@@ -1004,12 +1004,9 @@ public class SimilarPatentServer {
             return defaultVal;
         }
     }
-    public static Double extractDouble(Request req, String param, Double defaultVal) {
-        return extractDouble(req.queryMap(),param, defaultVal);
-    }
-    static Double extractDouble(QueryParamsMap queryMap, String param, Double defaultVal) {
+    public static Double extractDoubleFromArrayField(Request req, String param, Double defaultVal) {
         try {
-            return Double.valueOf(queryMap.value(param));
+            return Double.valueOf(req.queryParamsValues(param)[0]);
         } catch(Exception e) {
             System.out.println("No "+param+" parameter specified... using default");
             return defaultVal;
