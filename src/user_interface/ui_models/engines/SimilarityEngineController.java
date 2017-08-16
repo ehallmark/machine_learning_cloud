@@ -48,7 +48,6 @@ public class SimilarityEngineController {
         Collection<String> labelsToRemove = new HashSet<>();
         Collection<String> assigneesToRemove = new HashSet<>();
         for(String resultType : resultTypes) {
-            PortfolioList.Type portfolioType = PortfolioList.Type.valueOf(resultType);
             // remove any patents in the search for category
             Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
             Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");

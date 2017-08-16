@@ -50,9 +50,7 @@ public class AbstractNestedFilter<T> extends AbstractFilter<T> {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         filters.forEach(filter->{
-            if(filter.isActive()) {
-                filter.extractRelevantInformationFromParams(params);
-            }
+            filter.extractRelevantInformationFromParams(params);
         });
     }
 
