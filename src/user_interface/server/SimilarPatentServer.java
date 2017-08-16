@@ -84,7 +84,7 @@ public class SimilarPatentServer {
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
-    static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
+    public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     static List<FormTemplate> templates = new ArrayList<>();
 
@@ -185,6 +185,18 @@ public class SimilarPatentServer {
         humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
     }
 
+    public static Map<String,NestedAttribute> nestedAttrMap;
+    public static Map<String,NestedAttribute> getNestedAttrMap() {
+        if(nestedAttrMap==null) {
+            nestedAttrMap = new HashMap<>();
+            getAllAttributes().forEach(attr->{
+                if(attr instanceof NestedAttribute) {
+                    nestedAttrMap.put(attr.getName(),(NestedAttribute)attr);
+                }
+            });
+        }
+        return nestedAttrMap;
+    }
 
     private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
@@ -899,7 +911,7 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(),false);
+                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter);
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
@@ -909,13 +921,13 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nested) {
+    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nested, boolean parentOfNested) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
         return div().attr("data-model",modelName).withClass("draggable "+type).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nested ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
-                        input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
+                        parentOfNested ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
                         nested ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );

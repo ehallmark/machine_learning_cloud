@@ -14,6 +14,7 @@ import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
+import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -112,7 +113,7 @@ public class SimilarityEngineController {
             );
         }
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, comparator, sortOrder, limit);
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);

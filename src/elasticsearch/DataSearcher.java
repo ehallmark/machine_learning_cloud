@@ -25,6 +25,9 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -45,7 +48,7 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
         try {
             // Run elasticsearch
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
@@ -56,7 +59,7 @@ public class DataSearcher {
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
             }
-            String[] attrArray = attributes.toArray(new String[attributes.size()]);
+            String[] attrArray = attributes.stream().toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
@@ -103,7 +106,7 @@ public class DataSearcher {
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
-                items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit)).toArray(size->new Item[size]));
+                items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit,nestedAttrNameMap)).toArray(size->new Item[size]));
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
             } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
             return items;
@@ -117,18 +120,19 @@ public class DataSearcher {
         return (Item[]) ArrayUtils.addAll(v1, v2);
     }
 
-    private static Item hitToItem(SearchHit hit) {
+    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap) {
         Item item = new Item(hit.getId());
         //System.out.println("Hit id: "+item.getName());
         //System.out.println(" Source: "+hit.getSourceAsString());
         hit.getSource().forEach((k,v)->{
+            if(v instanceof Map)
             v = (v instanceof Number) || (v instanceof String) ? v : new Gson().toJson(v);
             /*if(v instanceof String[]) {
                 v = String.join("; ", (String[]) v);
             } else if (v instanceof List) {
                 v = String.join("; ", (List)v);
             }*/
-            item.addData(k,v);
+            hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
         });
         SearchHitField similarityField = hit.getField(Constants.SIMILARITY);
         if(similarityField!=null) {
@@ -139,5 +143,42 @@ public class DataSearcher {
         }
         item.addData(Constants.OVERALL_SCORE,hit.getScore());
         return item;
+    }
+
+    private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap) {
+        if(v==null) return;
+        if(v instanceof Map) {
+            // get attr
+            NestedAttribute attr = nestedAttrNameMap.get(attrName);
+            if(attr!=null) {
+                for(AbstractAttribute nestedAttr : ((Collection<AbstractAttribute>)attr.getAttributes() )) {
+                    Object v2 = ((Map) v).get(nestedAttr.getName());
+                    if(v2!=null) {
+                        hitToItemHelper(attrName+"."+nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
+                    }
+                }
+            }
+
+        } else if (v instanceof List || v instanceof Object[])  {
+            if(v instanceof Object[]) v = Arrays.stream((Object[]) v).collect(Collectors.toList());
+            if(nestedAttrNameMap.containsKey(attrName)) {
+                // add nested object data
+                for(Object obj : (List) v) {
+                    if(obj instanceof Map) {
+                        hitToItemHelper(attrName, obj, itemDataMap, nestedAttrNameMap);
+                    }
+                }
+            } else {
+                // add as normal list
+                if(v != null) {
+                    hitToItemHelper(attrName, String.join("; ",(List<String>) ((List)v).stream().map(v2->v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
+                }
+            }
+
+        } else {
+            if(v!=null) {
+                itemDataMap.put(attrName, v);
+            }
+        }
     }
 }
