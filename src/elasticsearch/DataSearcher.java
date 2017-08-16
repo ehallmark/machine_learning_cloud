@@ -99,6 +99,8 @@ public class DataSearcher {
                 ));
             }
             // Set query
+            System.out.println("\"query\": "+query.toString());
+
             request = request.setQuery(query);
             //String queryStr = request.toString().replace("\n","").replace("\t","");
             //while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
