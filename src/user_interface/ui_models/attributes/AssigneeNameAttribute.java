@@ -12,7 +12,7 @@ import java.util.Map;
  */
 public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
     public AssigneeNameAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }
     @Override
     public String getType() {
@@ -21,7 +21,7 @@ public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return AbstractFilter.FieldType.AdvancedKeyword;
     }
 
     @Override
