@@ -18,13 +18,4 @@ public class ClaimsNestedAttribute extends NestedAttribute {
         return Constants.CLAIMS;
     }
 
-    @Override
-    public String getType() {
-        return "nested";
-    }
-
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
 }

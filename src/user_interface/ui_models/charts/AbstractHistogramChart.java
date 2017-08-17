@@ -103,7 +103,11 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     private List<Series<?>> collectDistributionData(Collection<Item> data, double min, double max, int nBins, String attribute, String title, List<String> categories) {
-        List<Pair<Item,Number>> scores = data.stream().map(item->new Pair<>(item,(Number) item.getData(attribute))).collect(Collectors.toList());
+        List<Pair<Item,Number>> scores = data.stream().map(item->{
+            Object d = item.getData(attribute);
+            if(d!=null) return new Pair<>(item,(Number) d);
+            else return null;
+        }).filter(d->d!=null).collect(Collectors.toList());
         double step = (max-min)/nBins;
         List<Range> ranges = new ArrayList<>();
         for(double start = min; start < max; start += step) {

@@ -19,13 +19,5 @@ public class ApplicantsNestedAttribute extends NestedAttribute {
         return Constants.APPLICANTS;
     }
 
-    @Override
-    public String getType() {
-        return "nested";
-    }
 
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
 }

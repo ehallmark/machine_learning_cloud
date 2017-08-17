@@ -78,6 +78,7 @@ public class SimilarPatentServer {
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
+    public static final String RANDOM_TOKEN = "<><><>";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -246,16 +247,19 @@ public class SimilarPatentServer {
     }
 
     public static String humanAttributeFor(String attr) {
+        String human = attr;
         if(javaAttrToHumanAttrMap.containsKey(attr))  {
-            return javaAttrToHumanAttrMap.get(attr);
+            human = javaAttrToHumanAttrMap.get(attr);
         } else {
             int commaIdx = attr.indexOf(".");
             if(commaIdx>=0&&commaIdx<attr.length()-1) {
-                return humanAttributeFor(attr.substring(attr.indexOf(".")+1));
-            } else {
-                return attr;
+                human = humanAttributeFor(attr.substring(attr.indexOf(".")+1));
             }
         }
+        if(human.endsWith(RANDOM_TOKEN)) {
+            human = human.replace(RANDOM_TOKEN,"");
+        }
+        return human;
     }
 
     public static void initialize(boolean onlyAttributes, boolean loadHidden) {
@@ -307,7 +311,13 @@ public class SimilarPatentServer {
     }
 
     private static void filterNameHelper(AbstractFilter filter) {
-        humanAttrToJavaAttrMap.put(AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString()), filter.getName());
+        String filterHumanName = AbstractFilter.isPrefix(filter.getFilterType()) ? humanAttributeFor(filter.getFilterType().toString()) + " " + humanAttributeFor(filter.getPrerequisite()) + " Filter" : humanAttributeFor(filter.getPrerequisite())+ " " + humanAttributeFor(filter.getFilterType().toString());
+        System.out.println("Name for "+filter.getName()+": "+filterHumanName);
+        while(humanAttrToJavaAttrMap.containsKey(filterHumanName)) {
+            // already exists
+            filterHumanName = filterHumanName+RANDOM_TOKEN;
+        }
+        humanAttrToJavaAttrMap.put(filterHumanName, filter.getName());
         if(filter instanceof AbstractNestedFilter) {
             ((AbstractNestedFilter)filter).getFilters().forEach(_nestedFilter->{
                 AbstractFilter nestedFilter = (AbstractFilter)_nestedFilter;

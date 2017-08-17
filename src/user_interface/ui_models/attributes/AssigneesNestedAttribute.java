@@ -19,13 +19,5 @@ public class AssigneesNestedAttribute extends NestedAttribute {
         return Constants.ASSIGNEES;
     }
 
-    @Override
-    public String getType() {
-        return "nested";
-    }
 
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
 }
