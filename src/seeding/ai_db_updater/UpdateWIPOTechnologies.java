@@ -63,32 +63,40 @@ public class UpdateWIPOTechnologies {
                     String[] fields = line.split("\t");
                     String patent = fields[0];
                     String wipo = fields[1];
-                    if (definitionMap.containsKey(wipo)) {
-                        try {
-                            if (Integer.valueOf(patent) > 6000000) {
+                    try {
+                        if (patent.startsWith("RE") || patent.startsWith("D") || patent.startsWith("PP") || Integer.valueOf(patent) > 6000000) {
+                            String wipoTechnology;
+                            if(patent.startsWith("D")) {
+                                wipoTechnology = "Design";
+                            } else if (patent.startsWith("PP")) {
+                                wipoTechnology = "Plants";
+                            } else {
+                                wipoTechnology = definitionMap.get(wipo);
+                            }
+
+                            if(wipoTechnology!=null) {
                                 String filing = assetToFilingMap.getPatentDataMap().get(patent);
                                 String appNum = null;
                                 if (filing != null) {
                                     appNum = filingToAssetMap.getApplicationDataMap().get(filing);
                                 }
                                 if (appNum != null) {
-                                    wipoTechnologyAttribute.getApplicationDataMap().put(patent, wipo);
+                                    wipoTechnologyAttribute.getApplicationDataMap().put(patent, wipoTechnology);
                                 }
-                                wipoTechnologyAttribute.getPatentDataMap().put(patent, wipo);
+                                wipoTechnologyAttribute.getPatentDataMap().put(patent, wipoTechnology);
                                 Map<String, Object> data = new HashMap<>();
-                                data.put(Constants.WIPO_TECHNOLOGY, wipo);
+                                data.put(Constants.WIPO_TECHNOLOGY, wipoTechnology);
                                 DataIngester.ingestBulk(patent, data, false);
                                 if (appNum != null) {
                                     DataIngester.ingestBulk(appNum, data, false);
                                 }
-                                if(cnt.getAndIncrement()%100000==99999) {
-                                    System.out.println("Seen "+cnt.get()+" wipo technologies...");
+                                if (cnt.getAndIncrement() % 100000 == 99999) {
+                                    System.out.println("Seen " + cnt.get() + " wipo technologies...");
                                 }
-
                             }
-                        } catch (Exception e) {
-
                         }
+                    } catch (Exception e) {
+
                     }
                 });
             } catch(Exception e) {
