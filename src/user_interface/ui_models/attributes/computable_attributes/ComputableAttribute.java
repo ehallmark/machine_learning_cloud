@@ -99,6 +99,12 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         //if(applicationDataMap!=null && applicationDataMap.size()>0) Database.trySaveObject(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
     }
 
+    private static void safeSaveFile(Object obj, File file) {
+        try {
+            Database.trySaveObject(obj, file);
+        }
+    }
+
     public static File dataFileFrom(String folder, String attrName, String attrType) {
         return new File(Constants.DATA_FOLDER+folder+attrName+"_"+attrType+"_map.jobj");
     }

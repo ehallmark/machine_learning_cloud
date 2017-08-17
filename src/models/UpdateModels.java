@@ -1,6 +1,6 @@
 package models;
 
-import elasticsearch.IngestAttributeData;
+import seeding.ai_db_updater.UpdateComputableAttributeData;
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import models.model_testing.TestSpecificModels;
 
@@ -23,7 +23,7 @@ public class UpdateModels {
         models.value_models.UpdateValueModels.main(args);
 
         // update elasticsearch attributes
-        IngestAttributeData.main(args);
+        UpdateComputableAttributeData.main(args);
 
         // test
         TestSpecificModels.main(args); // test models
