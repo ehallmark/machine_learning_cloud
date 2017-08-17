@@ -15,17 +15,7 @@ public class LatestAssigneeNestedAttribute extends NestedAttribute {
     public LatestAssigneeNestedAttribute() {
         super(Arrays.asList(new EntityTypeAttribute(), new ExecutionDateAttribute(), new AssigneeNameAttribute(), new PortfolioSizeAttribute(), new OrgRoleAttribute(), new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
     }
-
-    @Override
-    public String getType() {
-        return "nested";
-    }
-
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
-
+    
     @Override
     public String getName() {
         return Constants.LATEST_ASSIGNEE;

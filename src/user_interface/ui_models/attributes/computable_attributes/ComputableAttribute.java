@@ -28,9 +28,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     public T attributesFor(Collection<String> portfolio, int limit) {
         return portfolio.stream().map(item->{
             if(Database.isApplication(item)) {
-                return getApplicationDataMap().getOrDefault(item,null);
+                return getApplicationDataMap().get(item);
             } else {
-                return getPatentDataMap().getOrDefault(item,null);
+                return getPatentDataMap().get(item);
             }
         }).filter(item->item!=null).findAny().orElse(null);
     }
@@ -75,7 +75,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         if(applicationDataMap==null) this.applicationDataMap = Collections.synchronizedMap(new HashMap<String, T>());
     }
 
-    public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isAppplication) {
+    public T handleIncomingData(String item, Map<String, Object> data, Map<String,T> myData, boolean isApplication) {
         if(item==null)return null;
         return attributesFor(Arrays.asList(item),1);
     }

@@ -19,13 +19,5 @@ public class RelatedDocumentsNestedAttribute extends NestedAttribute {
         return Constants.PATENT_FAMILY;
     }
 
-    @Override
-    public String getType() {
-        return "nested";
-    }
 
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
 }

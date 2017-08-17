@@ -21,13 +21,4 @@ public class InventorsNestedAttribute extends NestedAttribute {
         return Constants.INVENTORS;
     }
 
-    @Override
-    public String getType() {
-        return "nested";
-    }
-
-    @Override
-    public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.NestedObject;
-    }
 }
