@@ -49,11 +49,11 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
-        return searchForAssets(attributes,filters,similarityScript,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
+        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
     }
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
         try {
             // Run elasticsearch
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);

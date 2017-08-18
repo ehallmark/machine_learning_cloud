@@ -32,6 +32,7 @@ public class Constants {
 	public static final String GRANT_NAME = "grantName";
 	public static final String PAGE_COUNT = "pageCount";
 	public static final String POSTAL_CODE = "postalCode";
+	public static final String LAPSED = "lapsed";
 	public static final String ASSIGNMENTS = "assignments";
 	public static final String ASSIGNOR = "assignor";
 	public static final String PUBLICATION_NAME = "publicationName";

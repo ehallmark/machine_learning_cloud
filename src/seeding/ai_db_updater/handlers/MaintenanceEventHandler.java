@@ -2,14 +2,11 @@ package seeding.ai_db_updater.handlers;
 
 import elasticsearch.DataIngester;
 import seeding.Constants;
-import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 
-import java.io.File;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by ehallmark on 7/12/17.
@@ -17,12 +14,10 @@ import java.util.Set;
 public class MaintenanceEventHandler implements LineHandler {
     protected AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-    protected ExpiredAssetsMap expiredAssetsMap;
-    protected AssetEntityStatusMap entityStatusMap;
+    protected LapsedAttribute lapsedAssetMap;
     protected AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap;
-    public MaintenanceEventHandler(ExpiredAssetsMap expiredAssetsMap, AssetEntityStatusMap entityStatusMap, AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap) {
-        this.expiredAssetsMap=expiredAssetsMap;
-        this.entityStatusMap=entityStatusMap;
+    public MaintenanceEventHandler(LapsedAttribute lapsedAssetMap, AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap) {
+        this.lapsedAssetMap=lapsedAssetMap;
         this.maintenanceFeeReminderCountMap = maintenanceFeeReminderCountMap;
     }
 
@@ -40,18 +35,18 @@ public class MaintenanceEventHandler implements LineHandler {
 
                 Map<String,Object> data = new HashMap<>();
                 if(maintenanceCode.equals("EXP.")) {
-                    data.put(Constants.EXPIRED, true);
-                    expiredAssetsMap.getPatentDataMap().get(Constants.EXPIRED).add(patNum);
+                    data.put(Constants.LAPSED, true);
+                    lapsedAssetMap.getPatentDataMap().get(Constants.LAPSED).add(patNum);
                     if(appNum!=null) {
-                        expiredAssetsMap.getApplicationDataMap().get(Constants.EXPIRED).add(appNum);
+                        lapsedAssetMap.getApplicationDataMap().get(Constants.LAPSED).add(appNum);
                     }
                 } else if (maintenanceCode.equals("EXPX")) {
                     // reinstated
-                    expiredAssetsMap.getPatentDataMap().get(Constants.EXPIRED).remove(patNum);
+                    lapsedAssetMap.getPatentDataMap().get(Constants.LAPSED).remove(patNum);
                     data.put(Constants.REINSTATED, true);
-                    data.put(Constants.EXPIRED, false);
+                    data.put(Constants.LAPSED, false);
                     if(appNum!=null) {
-                        expiredAssetsMap.getApplicationDataMap().get(Constants.EXPIRED).remove(appNum);
+                        lapsedAssetMap.getApplicationDataMap().get(Constants.LAPSED).remove(appNum);
                     }
 
                 } else if (maintenanceCode.equals("REM.")) {
@@ -67,34 +62,10 @@ public class MaintenanceEventHandler implements LineHandler {
                         maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeCount);
                     }
                 } else if (maintenanceCode.startsWith("M2")||maintenanceCode.startsWith("SM")||maintenanceCode.equals("LTOS")||maintenanceCode.equals("MTOS")) {
-                    entityStatusMap.getPatentDataMap().get(Constants.SMALL).add(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.LARGE).remove(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.MICRO).remove(patNum);
-                    if(appNum!=null) {
-                        entityStatusMap.getApplicationDataMap().get(Constants.SMALL).add(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.LARGE).remove(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.MICRO).remove(appNum);
-                    }
                     data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.SMALL.toString());
                 } else if (maintenanceCode.startsWith("M1")||maintenanceCode.startsWith("LSM")) {
-                    entityStatusMap.getPatentDataMap().get(Constants.SMALL).remove(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.LARGE).add(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.MICRO).remove(patNum);
-                    if(appNum!=null) {
-                        entityStatusMap.getApplicationDataMap().get(Constants.SMALL).remove(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.LARGE).add(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.MICRO).remove(appNum);
-                    }
                     data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.LARGE.toString());
                 } else if(maintenanceCode.startsWith("M3")||maintenanceCode.equals("STOM")) {
-                    entityStatusMap.getPatentDataMap().get(Constants.SMALL).remove(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.LARGE).remove(patNum);
-                    entityStatusMap.getPatentDataMap().get(Constants.MICRO).add(patNum);
-                    if(appNum!=null) {
-                        entityStatusMap.getApplicationDataMap().get(Constants.SMALL).remove(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.LARGE).remove(appNum);
-                        entityStatusMap.getApplicationDataMap().get(Constants.MICRO).add(appNum);
-                    }
                     data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.MICRO.toString());
                 }
 

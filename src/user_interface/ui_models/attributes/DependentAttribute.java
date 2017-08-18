@@ -10,11 +10,6 @@ import java.util.Collections;
 /**
  * Created by Evan on 6/17/2017.
  */
-public abstract class DependentAttribute<T> extends AbstractAttribute<T> {
-    public DependentAttribute() {
-        super(Collections.emptyList());
-    }
-
-    public abstract Collection<String> getPrerequisites();
-    public abstract void extractRelevantInformationFromParams(Request params);
+public interface DependentAttribute {
+    void extractRelevantInformationFromParams(Request params);
 }

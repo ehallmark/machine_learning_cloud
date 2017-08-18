@@ -16,7 +16,7 @@ import java.util.Collection;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractFilter<T> extends DependentAttribute<T> {
+public abstract class AbstractFilter<T> extends AbstractAttribute<T> implements DependentAttribute {
 
     public enum FilterType {
         Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword
@@ -37,6 +37,7 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
     @Setter @Getter
     protected AbstractFilter parent;
     public AbstractFilter(AbstractAttribute<?> attribute, FilterType filterType) {
+        super(Arrays.asList(filterType));
         this.attribute=attribute;
         this.filterType=filterType;
     }
@@ -58,7 +59,7 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
     public boolean contributesToScore() { return false; }
 
     public String getFullPrerequisite() {
-         return (parent==null?"":parent.getPrerequisite()+".")+getPrerequisite();
+         return (parent==null?"":parent.getFullPrerequisite()+".")+getPrerequisite();
     }
 
     @Override

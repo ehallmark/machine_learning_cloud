@@ -64,14 +64,6 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
             "}";
 
 
-    static final String DEFAULT_SIMILARITY_SCRIPT = "" +
-            "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
-            "float ab = 0f;" +
-            "int length = params.avg_vector.length;" +
-            "for(int i = 0; i < length; i++) {" +
-            "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
-            "}" +
-            "return ab;";
 
 
     @Override

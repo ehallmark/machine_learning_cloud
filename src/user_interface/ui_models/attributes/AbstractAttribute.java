@@ -17,7 +17,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractAttribute<T> {
+public abstract class AbstractAttribute {
     protected Collection<AbstractFilter.FilterType> filterTypes;
     @Getter @Setter
     protected AbstractAttribute parent;

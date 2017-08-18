@@ -34,7 +34,7 @@ public class SimilarityEngineController {
     @Getter
     protected PortfolioList portfolioList;
     @Getter
-    private List<AbstractSimilarityEngine> engines;
+    private static List<AbstractSimilarityEngine> engines;
     public SimilarityEngineController(List<AbstractSimilarityEngine> engines) {
         this.engines=engines;
     }
@@ -78,41 +78,12 @@ public class SimilarityEngineController {
         if(resultTypes.isEmpty()) {
             resultTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
+
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.OVERALL_SCORE);
-
-        String similarityModelStr = extractString(req,SIMILARITY_MODEL_FIELD,Constants.PARAGRAPH_VECTOR_MODEL);
-        AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
-
-        List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
-        List<AbstractSimilarityEngine> relevantEngines = engines.stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
-        List<INDArray> simVectors = relevantEngines.stream().map(engine->{
-            engine.setSimilarityModel(finderPrototype);
-            engine.extractRelevantInformationFromParams(req);
-            return engine.getAvg();
-        }).filter(avg->avg!=null).collect(Collectors.toList());
-
-        // check degenerate case
-        if(simVectors.isEmpty() && comparator.equals(Constants.SIMILARITY)) {
-            // bad
-            portfolioList = new PortfolioList(new Item[]{});
-            return;
-        }
-
         setPrefilters(req);
 
-        Script searchScript = null;
-        if(simVectors.size()>0) {
-            Map<String,Object> params = new HashMap<>();
-            params.put("avg_vector", simVectors.size()==1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
-            searchScript =  new Script(
-                    ScriptType.INLINE,
-                    "painless",
-                    AbstractSimilarityEngine.DEFAULT_SIMILARITY_SCRIPT,
-                    params
-            );
-        }
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, searchScript, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);

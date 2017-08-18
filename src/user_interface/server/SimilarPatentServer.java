@@ -9,6 +9,7 @@ import spark.Session;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.*;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import j2html.tags.ContainerTag;
 import user_interface.server.tools.AjaxChartMessage;
@@ -448,16 +449,6 @@ public class SimilarPatentServer {
     public static ClassificationAttr getTechTagger() {
         if(tagger==null) loadTechTaggerModel();
         return tagger;
-    }
-
-    public static Collection<? extends AbstractAttribute> getAttributesFromPrerequisites(Collection<? extends DependentAttribute> dependentAttributes, Collection<String> appliedAttributes) {
-        return dependentAttributes.stream().flatMap(dependency ->(Stream<String>)dependency.getPrerequisites().stream().filter(r->r!=null)).distinct().filter(preReq -> !appliedAttributes.contains(preReq)).map(preReq -> {
-            AbstractAttribute attr = attributesMap.get(preReq);
-            if (attr != null) {
-                appliedAttributes.add(preReq);
-            }
-            return attr;
-        }).filter(model -> model != null).collect(Collectors.toList());
     }
 
     private static void authorize(Request req) {

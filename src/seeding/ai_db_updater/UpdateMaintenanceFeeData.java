@@ -1,21 +1,12 @@
 package seeding.ai_db_updater;
 
-import elasticsearch.DataIngester;
-import elasticsearch.MyClient;
-import net.lingala.zip4j.core.ZipFile;
-import seeding.Database;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
-import user_interface.ui_models.attributes.hidden_attributes.AssetEntityStatusMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
-import user_interface.ui_models.attributes.hidden_attributes.ExpiredAssetsMap;
+import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
 
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.Arrays;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -25,20 +16,17 @@ public class UpdateMaintenanceFeeData {
     private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception{
         // update latest assignees
-        AssetEntityStatusMap assetEntityStatusMap = new AssetEntityStatusMap();
         AssetToMaintenanceFeeReminderCountMap assetToMaintenanceFeeReminderCountMap = new AssetToMaintenanceFeeReminderCountMap();
-        ExpiredAssetsMap expiredAssetsMap = new ExpiredAssetsMap();
-        assetEntityStatusMap.initMaps();
+        LapsedAttribute lapsedAttribute = new LapsedAttribute();
         assetToMaintenanceFeeReminderCountMap.initMaps();
-        expiredAssetsMap.initMaps();
+        lapsedAttribute.initMaps();
         System.out.println("Starting to update latest maintenance fee data...");
         MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
         downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
-        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(expiredAssetsMap,assetEntityStatusMap,assetToMaintenanceFeeReminderCountMap));
-        assetEntityStatusMap.save();
+        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(lapsedAttribute,assetToMaintenanceFeeReminderCountMap));
         assetToMaintenanceFeeReminderCountMap.save();
-        expiredAssetsMap.save();
+        lapsedAttribute.save();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {
