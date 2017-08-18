@@ -1,8 +1,14 @@
 package test;
 
 import elasticsearch.DataSearcher;
+import j2html.tags.Tag;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.script.Script;
+import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import spark.Request;
 import user_interface.ui_models.attributes.DocKindAttribute;
 import user_interface.ui_models.attributes.ResultTypeAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -22,7 +28,22 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SalesforceElasticSearchQuery {
     public static void main(String[] args) throws Exception {
         AtomicLong cnt = new AtomicLong(0);
-        AbstractFilter filter = new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("applications"));
+        AbstractFilter filter = new AbstractFilter(null,null) {
+            @Override
+            public QueryBuilder getFilterQuery() {
+                return QueryBuilders.scriptQuery(new Script(ScriptType.INLINE,"expression","doc['name'].value.length==11", new HashMap<>()));
+            }
+
+            @Override
+            public Tag getOptionsTag() {
+                return null;
+            }
+
+            @Override
+            public void extractRelevantInformationFromParams(Request params) {
+
+            }
+        };
         Collection<String> attributes = Arrays.asList(Constants.NAME,Constants.FILING_DATE,Constants.PUBLICATION_DATE);
         BufferedWriter writer = new BufferedWriter(new FileWriter("data/all-applications-and-dates.csv"));
         writer.write("asset_number,filing_date,publication_date\n");
