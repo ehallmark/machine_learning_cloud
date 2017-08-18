@@ -8,6 +8,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.*;
 
 import static j2html.TagCreator.div;
@@ -18,6 +19,8 @@ import static j2html.TagCreator.div;
 public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     protected Map<String,T> patentDataMap;
     protected Map<String,T> applicationDataMap;
+   // protected LocalDate saveDate;
+
     private static Map<String,Map<String,?>> allPatentDataMaps = Collections.synchronizedMap(new HashMap<>());
     private static Map<String,Map<String,?>> allApplicationDataMaps = Collections.synchronizedMap(new HashMap<>());
 
@@ -95,14 +98,14 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
     }
 
     public synchronized void save() {
-        //if(patentDataMap!=null && patentDataMap.size()>0) Database.trySaveObject(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
-        //if(applicationDataMap!=null && applicationDataMap.size()>0) Database.trySaveObject(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+        if(patentDataMap!=null && patentDataMap.size()>0) safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
+        if(applicationDataMap!=null && applicationDataMap.size()>0) safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
     }
 
     private static void safeSaveFile(Object obj, File file) {
-        try {
-            Database.trySaveObject(obj, file);
-        }
+        //try {
+         //   Database.trySaveObject(obj, file);
+        //}
     }
 
     public static File dataFileFrom(String folder, String attrName, String attrType) {
