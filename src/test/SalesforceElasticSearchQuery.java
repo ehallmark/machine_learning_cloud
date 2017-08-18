@@ -31,7 +31,7 @@ public class SalesforceElasticSearchQuery {
         AbstractFilter filter = new AbstractFilter(null,null) {
             @Override
             public QueryBuilder getFilterQuery() {
-                return QueryBuilders.scriptQuery(new Script(ScriptType.INLINE,"expression","doc['name'].value.length()==11", new HashMap<>()));
+                return QueryBuilders.scriptQuery(new Script(ScriptType.INLINE,"painless","doc['name'].value.length==11", new HashMap<>()));
             }
 
             @Override
