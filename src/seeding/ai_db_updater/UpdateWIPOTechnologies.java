@@ -3,7 +3,7 @@ package seeding.ai_db_updater;
 import elasticsearch.DataIngester;
 import seeding.Constants;
 import seeding.data_downloader.WIPOTechnologyDownloader;
-import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 

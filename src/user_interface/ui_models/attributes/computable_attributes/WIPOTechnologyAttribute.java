@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.computable_attributes;
 
 import models.classification_models.WIPOHelper;
 import j2html.tags.Tag;
@@ -15,7 +15,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class WIPOTechnologyAttribute extends AbstractAttribute<String> {
+public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
     public WIPOTechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
