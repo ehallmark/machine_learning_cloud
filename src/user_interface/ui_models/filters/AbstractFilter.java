@@ -36,7 +36,7 @@ public abstract class AbstractFilter<T> extends DependentAttribute<T> {
     protected FilterType filterType;
     @Setter @Getter
     protected AbstractFilter parent;
-    public AbstractFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractFilter(AbstractAttribute<?> attribute, FilterType filterType) {
         this.attribute=attribute;
         this.filterType=filterType;
     }
