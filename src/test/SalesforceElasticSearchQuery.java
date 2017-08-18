@@ -53,12 +53,13 @@ public class SalesforceElasticSearchQuery {
             Object filingDate = item.getData(Constants.FILING_DATE);
             Object pubDate = item.getData(Constants.PUBLICATION_DATE);
 
-            System.out.println("Num attrs found: "+item.getDataMap().size());
 
             Object latestAssignee = item.getData(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE);
             Object originalAssignee = item.getData(Constants.ASSIGNEES+"."+Constants.ASSIGNEE);
+            if(latestAssignee==null) latestAssignee="";
+            if(originalAssignee==null) originalAssignee="";
 
-            if(name==null||filingDate==null||pubDate==null||latestAssignee==null||latestAssignee.toString().isEmpty()) return null;
+            if(name==null||filingDate==null||pubDate==null) return null;
             try {
                 writer.write(name.toString() + "," + filingDate.toString() + "," + pubDate.toString() + ","+originalAssignee.toString().replace(",","")+","+latestAssignee.toString().replace(",","")+"\n");
                 if(cnt.getAndIncrement() % 10000 == 9999) {
