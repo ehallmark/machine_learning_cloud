@@ -32,6 +32,7 @@ import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
+import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -49,6 +50,10 @@ public class DataSearcher {
     private static final int PAGE_LIMIT = 10000;
 
     public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
+        return searchForAssets(attributes,filters,similarityScript,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
+    }
+
+    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, Script similarityScript, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
         try {
             // Run elasticsearch
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
@@ -110,7 +115,8 @@ public class DataSearcher {
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
-                items=merge(items,Arrays.stream(response.getHits().getHits()).map(hit->hitToItem(hit,nestedAttrNameMap)).toArray(size->new Item[size]));
+                Item[] newItems = Arrays.stream(response.getHits().getHits()).map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap))).toArray(size->new Item[size]);
+                if(merge) items=merge(items,newItems);
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
             } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
             return items;
