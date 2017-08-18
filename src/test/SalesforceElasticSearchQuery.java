@@ -1,5 +1,6 @@
 package test;
 
+import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import j2html.tags.Tag;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -51,6 +52,7 @@ public class SalesforceElasticSearchQuery {
             Object pubDate = item.getData(Constants.PUBLICATION_DATE);
             Object latestAssignees = item.getData(Constants.LATEST_ASSIGNEE);
             Object latestAssignee;
+            System.out.println(new Gson().toJson(latestAssignees));
             if(latestAssignees ==null || !(latestAssignees instanceof List)) latestAssignee="";
             else latestAssignee = ((List)latestAssignees).stream().map(_map->{
                 Map<String,Object> map = (Map<String,Object>)_map;
@@ -65,9 +67,9 @@ public class SalesforceElasticSearchQuery {
                 return map.get(Constants.ASSIGNEE);
             }).filter(a->a!=null).findAny().orElse("");
 
-            if(name==null||filingDate==null||pubDate==null) return null;
+            if(name==null||filingDate==null||pubDate==null||latestAssignee.toString().isEmpty()) return null;
             try {
-                writer.write(name.toString() + "," + filingDate.toString() + "," + pubDate.toString() + ","+originalAssignee.toString()+","+latestAssignee.toString()+"\n");
+                writer.write(name.toString() + "," + filingDate.toString() + "," + pubDate.toString() + ","+originalAssignee.toString().replace(",","")+","+latestAssignee.toString().replace(",","")+"\n");
                 if(cnt.getAndIncrement() % 10000 == 9999) {
                     System.out.println("Finished: "+cnt.get());
                     writer.flush();
