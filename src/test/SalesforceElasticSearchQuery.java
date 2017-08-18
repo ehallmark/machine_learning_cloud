@@ -52,7 +52,7 @@ public class SalesforceElasticSearchQuery {
             Object pubDate = item.getData(Constants.PUBLICATION_DATE);
             Object latestAssignees = item.getData(Constants.LATEST_ASSIGNEE);
             Object latestAssignee;
-            System.out.println(new Gson().toJson(latestAssignees));
+            //System.out.println(new Gson().toJson(latestAssignees));
             if(latestAssignees ==null || !(latestAssignees instanceof List)) latestAssignee="";
             else latestAssignee = ((List)latestAssignees).stream().map(_map->{
                 Map<String,Object> map = (Map<String,Object>)_map;
