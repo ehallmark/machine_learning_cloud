@@ -1,6 +1,6 @@
 package test;
 
-import seeding.ai_db_updater.UpdateComputableAttributeData;
+import seeding.ai_db_updater.UpdateExtraneousComputableAttributeData;
 
 /**
  * Created by Evan on 1/22/2017.
@@ -13,6 +13,6 @@ public class UpdateElasticSearch {
         //PatentGrantIterator applicationIterator = Constants.DEFAULT_PATENT_APPLICATION_ITERATOR;
         //applicationIterator.applyHandlers(new ElasticSearchHandler(PortfolioList.Type.applications));
 
-        UpdateComputableAttributeData.main(args);
+        UpdateExtraneousComputableAttributeData.main(args);
     }
 }

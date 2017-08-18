@@ -241,7 +241,6 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, assigneeFlag).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
-        assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, documentFlag).withTransformationFunction(Flag.assigneeTransformationFunction).setIsForeign(true));
 
         EndFlag latestAssignee = new EndFlag("assignee") {
             {
@@ -250,7 +249,7 @@ public class USPTOHandler extends NestedHandler {
             @Override
             public void save() {
                 //debug(this,debug,Arrays.asList(Constants.JAPANESE_ASSIGNEE, Constants.ASSIGNEE, Constants.LATEST_ASSIGNEE));
-                dataQueue.add(getTransform(attrsToIngest));
+                if(dataQueue.isEmpty()) dataQueue.add(getTransform(attrsToIngest));
             }
         };
         latestAssignee.compareFunction = Flag.endsWithCompareFunction;

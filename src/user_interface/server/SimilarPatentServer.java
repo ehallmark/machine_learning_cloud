@@ -412,7 +412,13 @@ public class SimilarPatentServer {
                 Item item = new Item(label);
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
-                    if(obj!=null) item.addData(model.getName(), obj);
+                    if(obj!=null) {
+                        if(model.getParent()==null) {
+                            item.addData(model.getName(), obj);
+                        } else {
+                            item.addData(model.getParent().getName()+"."+model.getName(),obj);
+                        }
+                    }
                 });
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());

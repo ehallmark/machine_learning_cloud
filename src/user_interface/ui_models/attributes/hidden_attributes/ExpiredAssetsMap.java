@@ -11,11 +11,6 @@ import java.util.Set;
  */
 public class ExpiredAssetsMap extends HiddenAttribute<Set<String>> {
     @Override
-    public Set<String> handleIncomingData(String name, Map<String,Object> allData, Map<String, Set<String>> myData, boolean isApp) {
-        return null;
-    }
-
-    @Override
     public String getName() {
         return Constants.NAME+"_to_"+Constants.EXPIRED;
     }

@@ -24,6 +24,7 @@ public class UpdateAll {
             computableAttribute.save();
             System.out.println("  Done.");
         });
+        UpdateExtraneousComputableAttributeData.main(args);
         // add in computable attributes
         DataIngester.close();
 

@@ -69,6 +69,18 @@ public class DataIngester {
         }
     }
 
+    public static synchronized void updateMongoByQuery(Document query, Map<String,Object> doc) {
+        Document updateDoc = new Document("$set",doc);
+        WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
+        updateBatch.add(model);
+        if(updateBatch.size()> batchSize) {
+            updateBatch();
+        }
+        if(insertBatch.size() > batchSize) {
+            insertBatch();
+        }
+    }
+
     public static synchronized void updateMongoArray(String id, String nestedName, String nestedId, Map<String,Object> doc) {
         Document updateDoc = new Document("$push",doc);
         Map<String,String> ne = new HashMap<>();

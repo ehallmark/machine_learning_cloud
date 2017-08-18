@@ -1,37 +1,18 @@
 package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
-import elasticsearch.MyClient;
-import models.classification_models.WIPOHelper;
-import net.lingala.zip4j.core.ZipFile;
 import seeding.Constants;
-import seeding.Database;
-import seeding.ai_db_updater.handlers.AppCPCHandler;
-import seeding.ai_db_updater.handlers.LineHandler;
-import seeding.ai_db_updater.handlers.PatentCPCHandler;
-import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.data_downloader.WIPOTechnologyDownloader;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**

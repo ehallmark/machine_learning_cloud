@@ -2,6 +2,8 @@ package user_interface.ui_models.attributes.computable_attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import lombok.Setter;
+import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -45,9 +47,16 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
                 if (allPatentDataMaps.containsKey(getName())) {
                     patentDataMap = (Map<String, T>) allPatentDataMaps.get(getName());
                 } else {
-                    patentDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
+                    File dataFile = dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType());
+                    patentDataMap = (Map<String, T>) Database.tryLoadObject(dataFile);
                     if(patentDataMap == null) {
-                        patentDataMap = Collections.synchronizedMap(new HashMap<>());
+                        // check for backup file
+                        patentDataMap = (Map<String,T>) Database.tryLoadObject(new File(dataFile.getAbsolutePath()+"-backup"));
+                        if(patentDataMap==null) {
+                            patentDataMap = Collections.synchronizedMap(new HashMap<>());
+                        } else {
+                            System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
+                        }
                     }
                     allPatentDataMaps.put(getName(), patentDataMap);
                 }
@@ -61,9 +70,16 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
                 if(allApplicationDataMaps.containsKey(getName())) {
                     applicationDataMap = (Map<String,T>) allApplicationDataMaps.get(getName());
                 } else {
-                    applicationDataMap = (Map<String, T>) Database.tryLoadObject(dataFileFrom(Constants.APPLICATION_DATA_FOLDER, getName(), getType()));
+                    File dataFile = dataFileFrom(Constants.APPLICATION_DATA_FOLDER, getName(), getType());
+                    applicationDataMap = (Map<String, T>) Database.tryLoadObject(dataFile);
                     if(applicationDataMap == null) {
-                        applicationDataMap = Collections.synchronizedMap(new HashMap<>());
+                        // check for backup file
+                        applicationDataMap = (Map<String,T>) Database.tryLoadObject(new File(dataFile.getAbsolutePath()+"-backup"));
+                        if(applicationDataMap==null) {
+                            applicationDataMap = Collections.synchronizedMap(new HashMap<>());
+                        } else {
+                            System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
+                        }
                     }
                     allApplicationDataMaps.put(getName(),applicationDataMap);
                 }
@@ -98,15 +114,28 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
         }
     }
 
-    public synchronized void save() {
-        if(patentDataMap!=null && patentDataMap.size()>0) safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType()));
-        if(applicationDataMap!=null && applicationDataMap.size()>0) safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType()));
+    public void save() {
+        if(patentDataMap!=null && patentDataMap.size()>0) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null && applicationDataMap.size()>0) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
     private static void safeSaveFile(Object obj, File file) {
-        //try {
-         //   Database.trySaveObject(obj, file);
-        //}
+        try {
+            File backup;
+            if(file.exists()) {
+                backup = new File(file.getAbsolutePath()+"-backup");
+                if(backup.exists()) backup.delete();
+                backup = new File(backup.getAbsolutePath());
+                // copy to backup
+                FileUtils.copyFile(file, backup);
+            }
+            // write contents
+            Database.trySaveObject(obj, file);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("  ... While saving: "+file.getName());
+        }
     }
 
     public static File dataFileFrom(String folder, String attrName, String attrType) {

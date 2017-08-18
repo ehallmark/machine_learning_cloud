@@ -23,6 +23,11 @@ public abstract class NestedAttribute<T> extends AbstractAttribute<T> {
     public NestedAttribute(Collection<AbstractAttribute> attributes) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = attributes;
+        if(this.attributes!=null) {
+            this.attributes.forEach(attr->{
+               attr.setParent(attr);
+            });
+        }
     }
 
     @Override

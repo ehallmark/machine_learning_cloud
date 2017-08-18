@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import lombok.Setter;
 import seeding.Constants;
 import seeding.Database;
@@ -18,6 +19,9 @@ import static j2html.TagCreator.div;
  */
 public abstract class AbstractAttribute<T> {
     protected Collection<AbstractFilter.FilterType> filterTypes;
+    @Getter @Setter
+    protected AbstractAttribute parent;
+
     public AbstractAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         this.filterTypes=filterTypes;
     }

@@ -100,10 +100,11 @@ public class USPTOAssignmentHandler extends NestedHandler {
                             System.out.println(cnt.get());
                         }
                         // for each patent or application
-                        if(assets.get()!=null) {
-                            assets.get().forEach(asset->{
-                                saveElasticSearch(asset.toString(),toIngest);
-                            });
+                        if(assets.get()!=null&&assets.get().size()>0) {
+                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null).collect(Collectors.toList());
+                            if(assetsClean.size()>0) {
+                                saveElasticSearch(assetsClean,toIngest);
+                            }
                         }
                     }
                      //System.out.println("Ingesting: "+new Gson().toJson(toIngest));
@@ -211,7 +212,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
         }
     }
 
-    private void saveElasticSearch(String name, Map<String,Object> doc) {
+    private void saveElasticSearch(List<String> ids, Map<String,Object> doc) {
         // get reel frame for id
         Map<String,Object> assignmentMap = (Map<String,Object>)doc.get(Constants.ASSIGNMENTS);
         if(assignmentMap!=null) {
@@ -232,10 +233,15 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         lessThan.put("$lt", executionDate);
                         Map<String, Object> exists = new HashMap<>();
                         exists.put("$exists", false);
-                        or.add(lessThan);
-                        or.add(exists);
-                        Document query = new Document(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, or);
-                        DataIngester.ingestMongo(name, query, assigneeMap, false);
+                        Map<String,Object> lt = new HashMap<>();
+                        lt.put(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, lessThan);
+                        Map<String,Object> e = new HashMap<>();
+                        e.put(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, exists);
+                        or.add(e);
+                        or.add(lt);
+                        Document dateQuery = new Document("$or", or);
+                        Document assetQuery = new Document("$in",new Document("_id", ids));
+                        DataIngester.updateMongoByQuery(new Document("$and",Arrays.asList(dateQuery,assetQuery)), assigneeMap);
                     }
                 }
             }
