@@ -2,6 +2,8 @@ package user_interface.ui_models.attributes.computable_attributes;
 
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToPriorityDate;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToTermAdjustmentMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -11,6 +13,7 @@ import java.util.Collection;
  * Created by ehallmark on 6/15/17.
  */
 public class RemainingLifeAttribute extends ComputableAttribute<Integer> {
+
     public RemainingLifeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

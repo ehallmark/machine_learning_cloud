@@ -231,19 +231,8 @@ public class SimilarPatentServer {
         return stream;
     }
 
-    public static Collection<ComputableAttribute> getAllComputableAttributes() {
-        return allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute)attr).collect(Collectors.toList());
-    }
-
-    private static Collection<String> allComputableAttrNames;
-    public static Collection<String> getAllComputableAttributeNames() {
-        if(allComputableAttrNames ==null) {
-            allComputableAttrNames = getAllComputableAttributes().stream().flatMap(attr->{
-                return nameHelper(attr,"").stream();
-            }).collect(Collectors.toSet());
-            System.out.println("Computable Attributes: "+Arrays.toString(allComputableAttrNames.toArray()));
-        }
-        return allComputableAttrNames;
+    public static Collection<ComputableAttribute<?>> getAllComputableAttributes() {
+        return allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute<?>)attr).collect(Collectors.toList());
     }
 
     public static String humanAttributeFor(String attr) {
@@ -381,11 +370,9 @@ public class SimilarPatentServer {
                         new AssetToFilingMap(),
                         new FilingToAssetMap(),
                         new AssetToPriorityDate(),
-                        new AssetToPubDateMap(),
-                        new AssetToFilingDateMap(),
                         new AssetToTermAdjustmentMap(),
                         new AssetToRelatedAssetsMap(),
-                        new AssetToCitatedAssetsMap()
+                        new AssetToCitedAssetsMap()
                 ).forEach(attr -> attributesMap.put(attr.getName(), attr));
             }
 
@@ -402,9 +389,11 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Map<String,INDArray> lookupTable, int batchSize, Collection<String> onlyAttributes) {
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllApplications()), lookupTable, batchSize, PortfolioList.Type.applications, onlyAttributes,false);
-        handleItemsList(new ArrayList<>(Database.getCopyOfAllPatents()), lookupTable, batchSize, PortfolioList.Type.patents, onlyAttributes,false);
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize) {
+        List<String> applications = attributes.stream().flatMap(attr->attr.getApplicationDataMap().keySet().stream()).distinct().collect(Collectors.toList());
+        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications,false);
+        List<String> patents = attributes.stream().flatMap(attr->attr.getPatentDataMap().keySet().stream()).distinct().collect(Collectors.toList());
+        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents,false);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -416,20 +405,14 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Map<String,INDArray> lookupTable, int batchSize, PortfolioList.Type type, Collection<String> onlyAttributes, boolean create) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type, boolean create) {
         AtomicInteger cnt = new AtomicInteger(0);
-        Collection<? extends AbstractAttribute> attributes = allAttributes.stream().filter(attr->attr instanceof ComputableAttribute && attr.supportedByElasticSearch()&&onlyAttributes.contains(attr.getName())).collect(Collectors.toList());
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
-                if(lookupTable!=null) {
-                    INDArray vector = lookupTable.get(label);
-                    if (vector != null) {
-                        item.addData("vector_obj", vectorToElasticSearchObject(vector));
-                    }
-                }
                 attributes.forEach(model -> {
-                    item.addData(model.getName(), ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1));
+                    Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
+                    if(obj!=null) item.addData(model.getName(), obj);
                 });
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());

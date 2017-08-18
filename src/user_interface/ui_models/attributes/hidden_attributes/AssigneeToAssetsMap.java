@@ -12,7 +12,7 @@ import java.util.Map;
 public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
     public Collection<String> handleIncomingData(String name, Map<String,Object> allData, Map<String, Collection<String>> myData, boolean isApp) {
-        Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
+        Object assignee = allData.get(Constants.ASSIGNEE);
         if(assignee!=null&&name!=null) {
             Collection<String> currentAssets = myData.get(assignee);
             if(currentAssets==null) {

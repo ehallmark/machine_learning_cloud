@@ -149,37 +149,11 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean createIfNotPresent, boolean createImmediately) {
+    public static synchronized void ingestAssets(Map<String,Map<String,Object>> labelToTextMap, boolean create) {
         try {
-            BulkRequestBuilder request = client.prepareBulk();
-            for (Map.Entry<String, Map<String,Object>> e : labelToTextMap.entrySet()) {
-                // build actual document
-                XContentBuilder json = buildJson(e.getValue());
-                request = createImmediately ?
-                        request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, e.getKey()).setSource(json))
-                        : request.add(client.prepareUpdate(INDEX_NAME, TYPE_NAME, e.getKey()).setDoc(json));
-            }
-            BulkResponse response = request.get();
-            if(createIfNotPresent&&!createImmediately&&response.hasFailures()) {
-                int numFailures = 0;
-                request = client.prepareBulk();
-                for(BulkItemResponse itemResponse : response.getItems()) {
-                    if(itemResponse.isFailed()) {
-                        numFailures++;
-                        String id = itemResponse.getId();
-                        XContentBuilder json = buildJson(labelToTextMap.get(id));
-                        request = request.add(client.prepareIndex(INDEX_NAME, TYPE_NAME, id)
-                                .setSource(json));
-                    }
-                }
-                response = request.get();
-                System.out.println("Update had failures: " + numFailures);
-                if(response.hasFailures()) {
-                    System.out.println("  And prepareIndex has failures.");
-                } else {
-                    System.out.println("  But were successfully indexed.");
-                }
-            }
+            labelToTextMap.forEach((name,data)->{
+                ingestBulk(name,data,create);
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -199,7 +173,7 @@ public class DataIngester {
         return builder;
     }
 
-    public static void ingestItems(Collection<Item> items, boolean createIfNotPresent) {
+    public static void ingestItems(Collection<Item> items, boolean create) {
         Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
         items.parallelStream().forEach(item->{
             Map<String,Object> itemData = new HashMap<>();
@@ -208,7 +182,7 @@ public class DataIngester {
             }
             data.put(item.getName(),itemData);
         });
-        ingestAssets(data,createIfNotPresent,false);
+        ingestAssets(data,create);
     }
 
 }

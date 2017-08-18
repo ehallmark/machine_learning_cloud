@@ -661,7 +661,7 @@ public class Database {
 	}
 
 	public synchronized static boolean isApplication(String application) {
-		if(application.length()!=11) return false;
+		if(application.length()<10||application.length() > 13) return false;
 		for(int i = 0; i < application.length(); i++) {
 			if(!Character.isDigit(application.charAt(i))) {
 				return false;
@@ -673,6 +673,7 @@ public class Database {
 	public synchronized static boolean isPatent(String patent) {
 		return !(isAssignee(patent) || isApplication(patent));
 	}
+
 	public synchronized static boolean isAssignee(String assignee) {
 		if(assignee.length() > 11 || assignee.length() < 7) return true;
 		for(int i = 2; i < assignee.length(); i++) {

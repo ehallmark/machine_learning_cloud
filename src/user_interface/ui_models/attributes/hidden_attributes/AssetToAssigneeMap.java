@@ -12,7 +12,7 @@ import java.util.Map;
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
     @Override
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
-        Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
+        Object assignee = allData.get(Constants.ASSIGNEE);
         if(assignee==null) return null;
         return assignee.toString();
     }

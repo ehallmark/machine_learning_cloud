@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 8/11/2017.
  */
-public class AssetToCitatedAssetsMap extends HiddenAttribute<Collection<String>> {
+public class AssetToCitedAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
     public Collection<String> handleIncomingData(String name, Map<String,Object> allData, Map<String, Collection<String>> myData, boolean isApp) {
         List<Map<String,Object>> citedAssets = (List<Map<String,Object>>) allData.get(Constants.CITATIONS);

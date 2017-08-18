@@ -123,7 +123,6 @@ public class Flag {
         this.localName=localName;
         this.flag = new AtomicBoolean(false);
         this.children = new ArrayList<>();
-        this.endFlag=endFlag;
         this.compareFunction=compareFunction;
         this.transformationFunction = transformationFunction;
         this.setEndFlag(endFlag);
