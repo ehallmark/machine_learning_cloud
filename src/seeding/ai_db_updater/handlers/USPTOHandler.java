@@ -12,6 +12,7 @@ import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -66,6 +67,12 @@ public class USPTOHandler extends NestedHandler {
                             System.out.println(errors.get());
                         }
                         return;
+                    }
+                    // add result type
+                    if(applications) {
+                        toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
+                    } else {
+                        toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString());
                     }
                     // try to add vector
                     INDArray vec = lookupTable.get(name);
