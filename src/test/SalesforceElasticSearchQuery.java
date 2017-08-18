@@ -4,6 +4,7 @@ import elasticsearch.DataSearcher;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import user_interface.ui_models.attributes.DocKindAttribute;
+import user_interface.ui_models.attributes.ResultTypeAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class SalesforceElasticSearchQuery {
     public static void main(String[] args) throws Exception {
         AtomicLong cnt = new AtomicLong(0);
-        AbstractFilter filter = new AbstractIncludeFilter(new DocKindAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("A1","A2"));
+        AbstractFilter filter = new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("applications"));
         Collection<String> attributes = Arrays.asList(Constants.NAME,Constants.FILING_DATE,Constants.PUBLICATION_DATE);
         BufferedWriter writer = new BufferedWriter(new FileWriter("data/all-applications-and-dates.csv"));
         writer.write("asset_number,filing_date,publication_date\n");

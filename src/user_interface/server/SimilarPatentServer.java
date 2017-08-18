@@ -360,6 +360,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.FILING_NAME, new FilingNameAttribute());
             attributesMap.put(Constants.FILING_COUNTRY, new FilingCountryAttribute());
             attributesMap.put(Constants.REINSTATED, new ReinstatedAttribute());
+            attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
