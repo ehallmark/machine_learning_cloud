@@ -49,6 +49,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
     }
 
     private void assigneeToAssetHelper(Map<String,String> assetToAssignee, Map<String,Collection<String>> assigneeToAssets) {
+        assigneeToAssets.clear();
         assetToAssignee.entrySet().parallelStream().forEach(e->{
             if(assigneeToAssets.containsKey(e.getValue())) {
                 assigneeToAssets.get(e.getValue()).add(e.getKey());
