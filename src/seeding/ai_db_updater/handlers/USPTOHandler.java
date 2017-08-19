@@ -86,7 +86,14 @@ public class USPTOHandler extends NestedHandler {
                             // add as array
                             toIngest.put(endFlag.dbName, data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                         } else {
-                            toIngest.put(endFlag.dbName, data.stream().filter(map->map.size()>0).collect(Collectors.toList()));
+                            if(endFlag.dbName.equals(Constants.LATEST_ASSIGNEE)) {
+                                Map<String,Object> latestAssigneeData = data.stream().filter(map -> map.size() > 0).findAny().orElse(null);
+                                if(latestAssigneeData!=null) {
+                                    toIngest.put(endFlag.dbName, latestAssigneeData);
+                                }
+                            } else {
+                                toIngest.put(endFlag.dbName, data.stream().filter(map -> map.size() > 0).collect(Collectors.toList()));
+                            }
                         }
                     });
                     // update computable attrs
