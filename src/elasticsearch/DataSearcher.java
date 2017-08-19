@@ -90,12 +90,14 @@ public class DataSearcher {
             for(AbstractAttribute attribute : attributes) {
                 if(attribute instanceof AbstractScriptAttribute) {
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
-                    QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(scriptAttribute.getScript()).setWeight(100))
-                            .boostMode(CombineFunction.AVG)
-                            .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
-                    // add script to query
-                    query = query.must(scoreFunction);
-                    request = request.addScriptField(scriptAttribute.getName(), scriptAttribute.getScript());
+                    if(scriptAttribute.getScript()!=null) {
+                        QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(scriptAttribute.getScript()).setWeight(100))
+                                .boostMode(CombineFunction.AVG)
+                                .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
+                        // add script to query
+                        query = query.must(scoreFunction);
+                        request = request.addScriptField(scriptAttribute.getName(), scriptAttribute.getScript());
+                    }
                 }
             }
 
