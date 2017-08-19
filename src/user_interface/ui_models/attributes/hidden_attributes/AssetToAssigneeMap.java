@@ -18,11 +18,9 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
         Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
         if(assignee!=null&&assignee instanceof Map) {
             assignee = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
-            System.out.println("FOUND ASSIGNEE: "+assignee==null?"null":assignee.toString());
             // check execution date
+            // TODO check execution date
 
-        } else {
-            System.out.println("NO ASSIGNEE :(");
         }
         if(assignee==null) return null;
         return assignee.toString();
