@@ -169,7 +169,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
         assignorFlag.addChild(Flag.dateFlag("execution-date", Constants.EXECUTION_DATE, assignorFlag).withTransformationFunction(f->s->{
             Object formatted = Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE).apply(f).apply(s);
             if(formatted!=null) {
-                documentFlag.getDataMap().put(f, formatted.toString());
                 assigneeFlag.getDataMap().put(f, formatted.toString());
             }
             return null;

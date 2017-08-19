@@ -119,7 +119,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
         if(applicationDataMap!=null && applicationDataMap.size()>0) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
-    private static void safeSaveFile(Object obj, File file) {
+    protected static void safeSaveFile(Object obj, File file) {
         try {
             File backup;
             if(file.exists()) {

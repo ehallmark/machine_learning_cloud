@@ -1,10 +1,11 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
 import seeding.Constants;
+import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
+import java.io.File;
+import java.util.*;
 
 /**
  * Created by Evan on 8/11/2017.
@@ -12,20 +13,12 @@ import java.util.Map;
 public class AssigneeToAssetsMap extends HiddenAttribute<Collection<String>> {
     @Override
     public Collection<String> handleIncomingData(String name, Map<String,Object> allData, Map<String, Collection<String>> myData, boolean isApp) {
-        Object assignee = allData.get(Constants.ASSIGNEE);
-        if(assignee!=null&&name!=null) {
-            Collection<String> currentAssets = myData.get(assignee);
-            if(currentAssets==null) {
-                currentAssets = new HashSet<>();
-            }
-            currentAssets.add(name);
-            myData.put(assignee.toString(),currentAssets);
-        }
         return null;
     }
 
     @Override
     public String getName() {
-        return Constants.ASSIGNEE+"_to_"+Constants.NAME;
+        return Constants.LATEST_ASSIGNEE+"_to_"+Constants.NAME;
     }
+
 }

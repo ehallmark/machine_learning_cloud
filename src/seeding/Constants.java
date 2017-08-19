@@ -34,6 +34,7 @@ public class Constants {
 	public static final String POSTAL_CODE = "postalCode";
 	public static final String LAPSED = "lapsed";
 	public static final String ASSIGNMENTS = "assignments";
+	public static final String LAST_EXECUTION_DATE = "lastExecutionDate";
 	public static final String ASSIGNOR = "assignor";
 	public static final String PUBLICATION_NAME = "publicationName";
 	public static final String FULL_NAME = "fullName";

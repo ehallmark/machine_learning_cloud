@@ -3,7 +3,7 @@ package seeding.ai_db_updater;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
-import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
+import user_interface.ui_models.attributes.LapsedAttribute;
 
 import java.io.*;
 import java.util.Arrays;
@@ -17,16 +17,13 @@ public class UpdateMaintenanceFeeData {
     public static void main(String[] args) throws Exception{
         // update latest assignees
         AssetToMaintenanceFeeReminderCountMap assetToMaintenanceFeeReminderCountMap = new AssetToMaintenanceFeeReminderCountMap();
-        LapsedAttribute lapsedAttribute = new LapsedAttribute();
         assetToMaintenanceFeeReminderCountMap.initMaps();
-        lapsedAttribute.initMaps();
         System.out.println("Starting to update latest maintenance fee data...");
         MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
         downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
-        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(lapsedAttribute,assetToMaintenanceFeeReminderCountMap));
+        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(assetToMaintenanceFeeReminderCountMap));
         assetToMaintenanceFeeReminderCountMap.save();
-        lapsedAttribute.save();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {

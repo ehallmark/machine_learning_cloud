@@ -2,7 +2,7 @@ package seeding.ai_db_updater.handlers;
 
 import elasticsearch.DataIngester;
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.LapsedAttribute;
+import user_interface.ui_models.attributes.LapsedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 
 import java.util.HashMap;
@@ -14,10 +14,8 @@ import java.util.Map;
 public class MaintenanceEventHandler implements LineHandler {
     protected AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     protected FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-    protected LapsedAttribute lapsedAssetMap;
     protected AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap;
-    public MaintenanceEventHandler(LapsedAttribute lapsedAssetMap, AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap) {
-        this.lapsedAssetMap=lapsedAssetMap;
+    public MaintenanceEventHandler(AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap) {
         this.maintenanceFeeReminderCountMap = maintenanceFeeReminderCountMap;
     }
 
@@ -36,18 +34,13 @@ public class MaintenanceEventHandler implements LineHandler {
                 Map<String,Object> data = new HashMap<>();
                 if(maintenanceCode.equals("EXP.")) {
                     data.put(Constants.LAPSED, true);
-                    lapsedAssetMap.getPatentDataMap().get(Constants.LAPSED).add(patNum);
-                    if(appNum!=null) {
-                        lapsedAssetMap.getApplicationDataMap().get(Constants.LAPSED).add(appNum);
-                    }
+                    data.put(Constants.REINSTATED, false);
+
                 } else if (maintenanceCode.equals("EXPX")) {
                     // reinstated
-                    lapsedAssetMap.getPatentDataMap().get(Constants.LAPSED).remove(patNum);
                     data.put(Constants.REINSTATED, true);
                     data.put(Constants.LAPSED, false);
-                    if(appNum!=null) {
-                        lapsedAssetMap.getApplicationDataMap().get(Constants.LAPSED).remove(appNum);
-                    }
+
 
                 } else if (maintenanceCode.equals("REM.")) {
                     // reminder
