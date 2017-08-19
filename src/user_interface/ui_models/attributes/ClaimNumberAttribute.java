@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class ClaimNumberAttribute extends AbstractAttribute<String[]> {
+public class ClaimNumberAttribute extends AbstractAttribute {
     public ClaimNumberAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

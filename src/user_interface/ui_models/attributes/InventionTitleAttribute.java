@@ -14,7 +14,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class InventionTitleAttribute extends AbstractAttribute<String> {
+public class InventionTitleAttribute extends AbstractAttribute {
     public InventionTitleAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }

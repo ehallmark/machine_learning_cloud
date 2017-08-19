@@ -18,7 +18,7 @@ import static j2html.TagCreator.input;
 public class AbstractLessThanFilter extends AbstractFilter {
     protected Number limit;
 
-    public AbstractLessThanFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractLessThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 

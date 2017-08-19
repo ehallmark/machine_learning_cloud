@@ -18,7 +18,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class ComputableAttribute<T> extends AbstractAttribute<T> {
+public abstract class ComputableAttribute<T> extends AbstractAttribute {
     protected Map<String,T> patentDataMap;
     protected Map<String,T> applicationDataMap;
    // protected LocalDate saveDate;

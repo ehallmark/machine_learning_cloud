@@ -23,7 +23,7 @@ import static j2html.TagCreator.label;
 /**
  * Created by Evan on 6/13/2017.
  */
-public class AbstractNestedFilter<T> extends AbstractFilter<T> {
+public class AbstractNestedFilter extends AbstractFilter {
     @Getter
     protected Collection<AbstractFilter> filters;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, FilterType filterType) {

@@ -23,7 +23,7 @@ import static j2html.TagCreator.label;
 public class AbstractGreaterThanFilter extends AbstractFilter {
     protected Number limit;
 
-    public AbstractGreaterThanFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 

@@ -39,11 +39,6 @@ public class AbstractDistributionChart extends ChartAttribute {
     }
 
     @Override
-    public Collection<String> getPrerequisites() {
-        return attributes;
-    }
-
-    @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";

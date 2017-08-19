@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class ClaimTextAttribute extends AbstractAttribute<String> {
+public class ClaimTextAttribute extends AbstractAttribute {
     public ClaimTextAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }

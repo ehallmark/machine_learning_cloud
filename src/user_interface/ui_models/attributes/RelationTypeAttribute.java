@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class RelationTypeAttribute extends AbstractAttribute<String> {
+public class RelationTypeAttribute extends AbstractAttribute {
     public RelationTypeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

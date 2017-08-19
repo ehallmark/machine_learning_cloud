@@ -16,7 +16,7 @@ import java.util.Collection;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractFilter<T> extends AbstractAttribute<T> implements DependentAttribute {
+public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute {
 
     public enum FilterType {
         Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword
@@ -31,21 +31,15 @@ public abstract class AbstractFilter<T> extends AbstractAttribute<T> implements 
         Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword, NestedObject, Object
     }
 
-    protected AbstractAttribute<?> attribute;
+    protected AbstractAttribute attribute;
     @Getter
     protected FilterType filterType;
     @Setter @Getter
     protected AbstractFilter parent;
-    public AbstractFilter(AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
         super(Arrays.asList(filterType));
         this.attribute=attribute;
         this.filterType=filterType;
-    }
-
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return Arrays.asList(getPrerequisite());
     }
 
     public String getPrerequisite() {

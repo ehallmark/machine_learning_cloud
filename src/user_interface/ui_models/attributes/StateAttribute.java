@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class StateAttribute extends AbstractAttribute<String[]> {
+public class StateAttribute extends AbstractAttribute {
     public StateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

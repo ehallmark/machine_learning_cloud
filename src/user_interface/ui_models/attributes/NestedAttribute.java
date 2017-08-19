@@ -16,7 +16,7 @@ import static j2html.TagCreator.label;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class NestedAttribute<T> extends AbstractAttribute<T> {
+public abstract class NestedAttribute extends AbstractAttribute {
     @Getter
     protected Collection<AbstractAttribute> attributes;
 

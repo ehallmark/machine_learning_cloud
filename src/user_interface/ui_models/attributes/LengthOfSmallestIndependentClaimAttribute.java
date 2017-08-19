@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class LengthOfSmallestIndependentClaimAttribute extends AbstractAttribute<Integer> {
+public class LengthOfSmallestIndependentClaimAttribute extends AbstractAttribute {
     public LengthOfSmallestIndependentClaimAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

@@ -60,12 +60,7 @@ public class AbstractLineChart extends ChartAttribute {
         min = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MIN, null);
         max = SimilarPatentServer.extractInt(params, SimilarPatentServer.LINE_CHART_MAX, null);
     }
-
-    @Override
-    public Collection<String> getPrerequisites() {
-        return attributes;
-    }
-
+    
     @Override
     public List<? extends AbstractChart> create(PortfolioList portfolioList) {
         return attributes.stream().map(attribute->{

@@ -22,7 +22,7 @@ import static user_interface.server.SimilarPatentServer.extractString;
 public class AdvancedKeywordFilter extends AbstractFilter {
     protected String queryStr;
 
-    public AdvancedKeywordFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AdvancedKeywordFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 

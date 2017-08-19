@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class FirstNameAttribute extends AbstractAttribute<String[]> {
+public class FirstNameAttribute extends AbstractAttribute {
     public FirstNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

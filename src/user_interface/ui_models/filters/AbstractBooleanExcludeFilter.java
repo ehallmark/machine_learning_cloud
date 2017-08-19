@@ -18,7 +18,7 @@ import static j2html.TagCreator.div;
  */
 public class AbstractBooleanExcludeFilter extends AbstractFilter {
     private List<String> filters;
-    public AbstractBooleanExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractBooleanExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 

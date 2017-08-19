@@ -13,7 +13,7 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PriorityDateAttribute extends AbstractAttribute<String> {
+public class PriorityDateAttribute extends AbstractAttribute {
     public PriorityDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

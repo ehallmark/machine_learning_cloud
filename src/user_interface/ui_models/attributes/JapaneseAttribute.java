@@ -14,7 +14,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class JapaneseAttribute extends AbstractAttribute<Boolean> {
+public class JapaneseAttribute extends AbstractAttribute {
     public JapaneseAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
     }

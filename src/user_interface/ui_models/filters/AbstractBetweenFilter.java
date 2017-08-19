@@ -21,7 +21,7 @@ public class AbstractBetweenFilter extends AbstractFilter {
     protected Number min;
     protected String minName;
     protected String maxName;
-    public AbstractBetweenFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractBetweenFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
         this.minName = attribute.getName()+"_min"+ Constants.FILTER_SUFFIX;
         this.maxName = attribute.getName()+"_max"+ Constants.FILTER_SUFFIX;

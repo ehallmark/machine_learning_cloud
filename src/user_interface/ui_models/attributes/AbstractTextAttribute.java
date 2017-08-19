@@ -9,7 +9,7 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AbstractTextAttribute extends AbstractAttribute<String> {
+public class AbstractTextAttribute extends AbstractAttribute {
 
     public AbstractTextAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));

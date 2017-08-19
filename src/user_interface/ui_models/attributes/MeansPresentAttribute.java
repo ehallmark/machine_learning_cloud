@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class MeansPresentAttribute extends AbstractAttribute<Boolean> {
+public class MeansPresentAttribute extends AbstractAttribute {
     public MeansPresentAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
     }

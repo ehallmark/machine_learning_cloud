@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssigneeNameAttribute extends AbstractAttribute<String[]> {
+public class AssigneeNameAttribute extends AbstractAttribute {
     public AssigneeNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }

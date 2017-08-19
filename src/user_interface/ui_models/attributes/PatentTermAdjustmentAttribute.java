@@ -16,7 +16,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PatentTermAdjustmentAttribute extends AbstractAttribute<Integer> {
+public class PatentTermAdjustmentAttribute extends AbstractAttribute {
     public PatentTermAdjustmentAttribute() {
         super(Collections.emptyList());
     }

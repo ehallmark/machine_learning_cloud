@@ -91,7 +91,7 @@ public class SimilarPatentServer {
     static List<FormTemplate> templates = new ArrayList<>();
 
     @Getter
-    static Collection<? extends AbstractAttribute> allAttributes;
+    static Collection<AbstractAttribute> allAttributes;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -204,7 +204,7 @@ public class SimilarPatentServer {
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
             allAttrNames = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()).flatMap(attr->{
-                return nameHelper(attr,"").stream();
+                return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
         }
         return allAttrNames;
@@ -215,17 +215,17 @@ public class SimilarPatentServer {
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
             allStreamingAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&!(attr instanceof ComputableAttribute)).flatMap(attr->{
-                return nameHelper(attr,"").stream();
+                return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
             System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
         }
         return allStreamingAttrNames;
     }
 
-    private static Collection<String> nameHelper(AbstractAttribute attr, String previous) {
+    public static Collection<String> attributeNameHelper(AbstractAttribute attr, String previous) {
         Collection<String> stream;
         if(attr instanceof NestedAttribute) {
-            stream = (Collection<String>) ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(nameHelper((AbstractAttribute)nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
+            stream = (Collection<String>) ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(attributeNameHelper((AbstractAttribute)nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
         } else {
             stream = Arrays.asList(previous==null||previous.isEmpty() ? attr.getName() : previous+"."+attr.getName());
         }

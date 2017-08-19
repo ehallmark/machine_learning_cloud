@@ -83,7 +83,7 @@ public class SimilarityEngineController {
         setPrefilters(req);
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributeNames(), preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
+        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllAttributes(), preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);

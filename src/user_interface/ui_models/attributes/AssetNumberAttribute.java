@@ -13,7 +13,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssetNumberAttribute extends AbstractAttribute<String> {
+public class AssetNumberAttribute extends AbstractAttribute {
     public AssetNumberAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

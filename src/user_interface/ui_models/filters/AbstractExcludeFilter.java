@@ -25,14 +25,14 @@ public class AbstractExcludeFilter extends AbstractFilter {
     protected Collection<String> labels;
     protected FieldType fieldType;
     protected String nestedField;
-    public AbstractExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType, FieldType fieldType, Collection<String> labels, String nestedField) {
+    public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels, String nestedField) {
         super(attribute,filterType);
         this.fieldType=fieldType;
         this.labels = labels;
         this.nestedField=nestedField;
     }
 
-    public AbstractExcludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+    public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
         this(attribute,filterType,fieldType,labels,null);
     }
 

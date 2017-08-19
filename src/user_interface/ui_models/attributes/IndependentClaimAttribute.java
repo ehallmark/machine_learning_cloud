@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class IndependentClaimAttribute extends AbstractAttribute<String[]> {
+public class IndependentClaimAttribute extends AbstractAttribute {
     public IndependentClaimAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
     }

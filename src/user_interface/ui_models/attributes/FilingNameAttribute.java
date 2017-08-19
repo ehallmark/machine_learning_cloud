@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class FilingNameAttribute extends AbstractAttribute<String[]> {
+public class FilingNameAttribute extends AbstractAttribute {
     public FilingNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

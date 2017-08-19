@@ -20,7 +20,7 @@ import static j2html.TagCreator.div;
  */
 public class AbstractBooleanIncludeFilter extends AbstractFilter {
     private List<String> filters;
-    public AbstractBooleanIncludeFilter(@NonNull AbstractAttribute<?> attribute, FilterType filterType) {
+    public AbstractBooleanIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
 

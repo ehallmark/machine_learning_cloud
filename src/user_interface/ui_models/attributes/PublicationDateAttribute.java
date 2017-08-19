@@ -15,7 +15,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PublicationDateAttribute extends AbstractAttribute<String> {
+public class PublicationDateAttribute extends AbstractAttribute {
     public PublicationDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

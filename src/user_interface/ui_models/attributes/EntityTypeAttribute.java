@@ -14,7 +14,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class EntityTypeAttribute extends AbstractAttribute<String> {
+public class EntityTypeAttribute extends AbstractAttribute {
     public EntityTypeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include));
     }

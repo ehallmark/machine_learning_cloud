@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class FilingDateAttribute extends AbstractAttribute<String> {
+public class FilingDateAttribute extends AbstractAttribute {
     public FilingDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class ReinstatedAttribute extends AbstractAttribute<String[]> {
+public class ReinstatedAttribute extends AbstractAttribute {
     public ReinstatedAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.BoolTrue, AbstractFilter.FilterType.BoolFalse));
     }

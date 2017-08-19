@@ -28,6 +28,7 @@ import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -49,11 +50,11 @@ public class DataSearcher {
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
+    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
     }
 
-    public static Item[] searchForAssets(Collection<String> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
+    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
         try {
             // Run elasticsearch
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
@@ -64,7 +65,7 @@ public class DataSearcher {
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
             }
-            String[] attrArray = attributes.stream().toArray(size -> new String[size]);
+            String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
@@ -86,17 +87,21 @@ public class DataSearcher {
                     }
                 }
             }
+            for(AbstractAttribute attribute : attributes) {
+                if(attribute instanceof AbstractScriptAttribute) {
+                    AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
+                    QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(scriptAttribute.getScript()).setWeight(100))
+                            .boostMode(CombineFunction.AVG)
+                            .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
+                    // add script to query
+                    query = query.must(scoreFunction);
+                    request = request.addScriptField(scriptAttribute.getName(), scriptAttribute.getScript());
+                }
+            }
+
             // Add filter to query
             query = query.filter(filterBuilder);
-            // scripts
-            if (similarityScript != null) {
-                QueryBuilder scoreFunction = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(similarityScript).setWeight(100))
-                        .boostMode(CombineFunction.AVG)
-                        .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
-                // add script to query
-                query = query.must(scoreFunction);
-                request = request.addScriptField(Constants.SIMILARITY,similarityScript);
-            }
+
             if (isOverallScore) {
                 // add in AI Value
                 query = query.must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(Constants.AI_VALUE)

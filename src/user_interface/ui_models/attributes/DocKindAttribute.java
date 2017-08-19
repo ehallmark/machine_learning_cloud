@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class DocKindAttribute extends AbstractAttribute<String[]> {
+public class DocKindAttribute extends AbstractAttribute {
     public DocKindAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CountryAttribute extends AbstractAttribute<String[]> {
+public class CountryAttribute extends AbstractAttribute {
     public CountryAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
