@@ -425,7 +425,7 @@ public class SimilarPatentServer {
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     if(obj!=null) {
-                        item.addData(model.getFullName(),obj);
+                        item.addData(model.getMongoDBName(),obj);
                     }
                 });
                 return item;
