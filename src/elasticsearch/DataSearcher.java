@@ -157,56 +157,37 @@ public class DataSearcher {
     }
 
     private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap) {
-        // if(attrName.equals(Constants.LATEST_ASSIGNEE)) System.out.println("Latest assignee: "+new Gson().toJson(v));
-        if (attrName.startsWith(Constants.LATEST_ASSIGNEE)) { // TODO REMOVE THIS
-            System.out.println("INSTANCEOF: "+v.getClass().getName());
-            if (v == null) return;
-            if (v instanceof Map) {
-                System.out.println("IS MAP");
-                // get attr
-                NestedAttribute attr = nestedAttrNameMap.get(attrName);
-                System.out.println("looking for attr");
-                if (attr != null) {
-                    System.out.println("Found attr");
-                    for (AbstractAttribute nestedAttr : attr.getAttributes()) {
-                        Object v2 = ((Map) v).get(nestedAttr.getName());
-                        System.out.println("Found nested: " + nestedAttr.getName());
-                        if (attrName.equals(Constants.LATEST_ASSIGNEE) && nestedAttr.getName().equals(Constants.ASSIGNEE)) {
-                            System.out.println("Value for assignee: " + v2);
-                        }
-                        System.out.println("Value: " + v2);
-                        if (v2 != null) {
-                            hitToItemHelper(attrName + "." + nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
-                        }
+        if (v == null) return;
+        if (v instanceof Map) {
+            // get attr
+            NestedAttribute attr = nestedAttrNameMap.get(attrName);
+            if (attr != null) {
+                for (AbstractAttribute nestedAttr : attr.getAttributes()) {
+                    Object v2 = ((Map) v).get(nestedAttr.getName());
+                    if (v2 != null) {
+                        hitToItemHelper(attrName + "." + nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
                     }
                 }
+            }
 
-            } else if (v instanceof List || v instanceof Object[]) {
-                System.out.println("IS LIST");
-
-                if (v instanceof Object[]) v = Arrays.stream((Object[]) v).collect(Collectors.toList());
-                if (nestedAttrNameMap.containsKey(attrName)) {
-                    System.out.println("IS NESTED");
-                    // add nested object data
-                    for (Object obj : (List) v) {
-                        if (obj instanceof Map) {
-                            System.out.println("Found nested map");
-                            hitToItemHelper(attrName, obj, itemDataMap, nestedAttrNameMap);
-                        }
-                    }
-                } else {
-                    // add as normal list
-                    if (v != null) {
-                        System.out.println("IS normal list");
-                        hitToItemHelper(attrName, String.join("; ", (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
+        } else if (v instanceof List || v instanceof Object[]) {
+            if (v instanceof Object[]) v = Arrays.stream((Object[]) v).collect(Collectors.toList());
+            if (nestedAttrNameMap.containsKey(attrName)) {
+                // add nested object data
+                for (Object obj : (List) v) {
+                    if (obj instanceof Map) {
+                        hitToItemHelper(attrName, obj, itemDataMap, nestedAttrNameMap);
                     }
                 }
-
             } else {
+                // add as normal list
                 if (v != null) {
-                    System.out.println("found value: "+v);
-                    itemDataMap.put(attrName, v);
+                    hitToItemHelper(attrName, String.join("; ", (List<String>) ((List) v).stream().map(v2 -> v2.toString()).collect(Collectors.toList())), itemDataMap, nestedAttrNameMap);
                 }
+            }
+        } else {
+            if (v != null) {
+                itemDataMap.put(attrName, v);
             }
         }
     }
