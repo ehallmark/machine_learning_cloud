@@ -51,7 +51,7 @@ public class AbstractLineChart extends ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         attributes = SimilarPatentServer.extractArray(params, Constants.LINE_CHART);
-        searchTypes = SimilarPatentServer.extractArray(params, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        searchTypes = SimilarPatentServer.extractArray(params,  Constants.DOC_TYPE);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
             searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());

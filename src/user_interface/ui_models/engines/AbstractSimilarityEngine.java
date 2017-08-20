@@ -33,7 +33,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
     protected abstract Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes);
 
     public void extractRelevantInformationFromParams(Request req) {
-        List<String> resultTypes = SimilarPatentServer.extractArray(req, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        List<String> resultTypes = SimilarPatentServer.extractArray(req,  Constants.DOC_TYPE);
         inputs = getInputsToSearchFor(req,resultTypes);
         if(inputs!=null&&inputs.size()>0) {
             SimilarPatentFinder finder = new SimilarPatentFinder(inputs);

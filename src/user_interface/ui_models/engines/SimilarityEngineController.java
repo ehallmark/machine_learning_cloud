@@ -73,7 +73,7 @@ public class SimilarityEngineController {
         if(limit > maxResultLimit) {
             throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
         }
-        resultTypes = SimilarPatentServer.extractArray(req, SimilarPatentServer.SEARCH_TYPE_ARRAY_FIELD);
+        resultTypes = SimilarPatentServer.extractArray(req, Constants.DOC_TYPE);
         // what to do if not present?
         if(resultTypes.isEmpty()) {
             resultTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
