@@ -72,7 +72,10 @@ public class SalesforceElasticSearchQuery {
                 if(originalAssignee==null) {
                     originalAssignee = "";
                 }
+            } else {
+                System.out.println("UNABLE TO FIND ASSIGNEE: "+originalAssignee);
             }
+
 
             if(name==null||filingDate==null||pubDate==null) return null;
             try {

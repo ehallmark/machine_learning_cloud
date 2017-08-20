@@ -172,7 +172,7 @@ public class DataSearcher {
             // get attr
             NestedAttribute attr = nestedAttrNameMap.get(attrName);
             if(attr!=null) {
-                for(AbstractAttribute nestedAttr : ((Collection<AbstractAttribute>)attr.getAttributes() )) {
+                for(AbstractAttribute nestedAttr : attr.getAttributes()) {
                     Object v2 = ((Map) v).get(nestedAttr.getName());
                     if(v2!=null) {
                         hitToItemHelper(attrName+"."+nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
