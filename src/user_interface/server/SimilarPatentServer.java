@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
+import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.*;
@@ -77,6 +78,7 @@ public class SimilarPatentServer {
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
     public static final String REPORT_URL = PROTECTED_URL_PREFIX+"/patent_recommendation_engine";
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
+    public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String RANDOM_TOKEN = "<><><>";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
@@ -87,7 +89,6 @@ public class SimilarPatentServer {
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
-    static List<FormTemplate> templates = new ArrayList<>();
 
     @Getter
     static Collection<AbstractAttribute> allAttributes;
@@ -267,7 +268,6 @@ public class SimilarPatentServer {
             loadFilterModels();
             loadTechTaggerModel();
             loadChartModels();
-            loadTemplates();
             loadSimilarityModels();
         }
     }
@@ -278,14 +278,6 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart());
     }
 
-
-    public static void loadTemplates() {
-        if(templates.isEmpty()) {
-            templates.add(new PortfolioAssessment());
-            templates.add(new SimilarAssetSearch());
-            templates.add(new FormTemplate("Reset Form",new HashMap<>(), FormTemplate.defaultOptions()));
-        }
-    }
 
     public static void loadFilterModels() {
         if(preFilterModelMap.isEmpty()) {
@@ -455,13 +447,15 @@ public class SimilarPatentServer {
         return tagger;
     }
 
-    private static void authorize(Request req) {
+    private static void authorize(Request req, Response res) {
         try {
             if (req.session().attribute("authorized") == null || ! (Boolean) req.session().attribute("authorized")) {
-                halt("You do not have access!");
+                res.redirect("/");
+                halt("Access expired. Please sign in.");
             }
         } catch(Exception e) {
             e.printStackTrace();
+            res.redirect("/");
             halt("Error during authentication.");
         }
     }
@@ -498,6 +492,7 @@ public class SimilarPatentServer {
             if(!authorized) {
                 halt("User not found.");
             }
+            session.attribute("username",username);
             res.status(200);
             res.redirect(HOME_URL);
             return null;
@@ -513,7 +508,7 @@ public class SimilarPatentServer {
         // GET METHODS
         //redirect.get("/",HOME_URL);
         get("/", (req, res)->{
-            return templateWrapper(res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
+            return templateWrapper(req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
@@ -525,22 +520,26 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(res, candidateSetModelsForm());
+                return templateWrapper(req, res, candidateSetModelsForm());
             } else {
                 return null;
             }
         });
 
         post(REPORT_URL, (req, res) -> {
-            authorize(req);
+            authorize(req,res);
             return handleReport(req,res);
         });
 
         post(DOWNLOAD_URL, (req, res) -> {
-            authorize(req);
+            authorize(req,res);
             return handleExcel(req,res);
         });
 
+        post(SAVE_TEMPLATE_URL, (req, res) -> {
+            authorize(req,res);
+            return handleSaveForm(req,res);
+        });
 
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
@@ -579,28 +578,36 @@ public class SimilarPatentServer {
     }
 
 
+    private static synchronized Object handleSaveForm(Request req, Response res) {
+        String formHTML = req.queryParams("template_html");
+        String formName = req.queryParams("template_name");
+        String message;
+        if(formHTML!=null&&formName!=null) {
+            Map<String,String> formMap = new HashMap<>();
+            formMap.put(formName,formHTML);
+            String username = req.session().attribute("username");
+            if(username!=null&&username.length()>0) {
+                String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
+                File templateFolder = new File(templateFolderStr);
+                if(!templateFolder.exists()) templateFolder.mkdirs();
+                int fileNum = templateFolder.listFiles().length;
+                Database.trySaveObject(formMap,new File(templateFolderStr+fileNum));
+                message = "Saved sucessfully.";
+            } else {
+                message = "Unable to find user.";
+            }
+        } else {
+            if(formHTML==null) {
+                message = "Error finding form html.";
+            } else {
+                message = "Please enter a form name.";
+            }
+        }
+        return new Gson().toJson(new SimpleAjaxMessage(message));
+    };
+
     private static Object handleReport(Request req, Response res) {
         try {
-            System.out.println("Handling back button handler...");
-            // handle navigation
-            BackButtonHandler<String> navigator;
-            if (req.session().attribute("navigator") == null) {
-                navigator = new BackButtonHandler<>();
-                req.session().attribute("navigator", navigator);
-            } else {
-                navigator = req.session().attribute("navigator");
-            }
-
-            if (SimilarPatentServer.extractBool(req.queryMap(), "goBack")) {
-                String tmp = navigator.goBack();
-                if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go back",Collections.emptyList()));
-                return tmp;
-            } else if (SimilarPatentServer.extractBool(req.queryMap(), "goForward")) {
-                String tmp = navigator.goForward();
-                if (tmp == null) return new Gson().toJson(new AjaxChartMessage("Unable to go forward",Collections.emptyList()));
-                return tmp;
-            }
-
             System.out.println("Getting parameters...");
             System.out.println("Getting models...");
             // Sorted by
@@ -657,7 +664,6 @@ public class SimilarPatentServer {
                     )
             ).render(), finishedCharts));
 
-            navigator.addRequest(html);
             Map<String,Object> excelRequestMap = new HashMap<>();
             excelRequestMap.put("headers", tableHeaders);
             excelRequestMap.put("rows", tableData);
@@ -694,15 +700,17 @@ public class SimilarPatentServer {
                 + "    if (data.hasOwnProperty('charts')) {                    "
                 + "      try {    "
                 + "         var charts = JSON.parse(data.charts);                 "
-                + "         for(var i = 0; i<charts.length; i++) { "
-                + "             var chart = null;"
-                + "             if($('#chart-'+i.toString()).hasClass('stock')) {"
-                + "                 chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);"
-                + "             } else { "
-                + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
-                + "             } "
-                + "             chart.redraw();   "
-                + "         }      "
+                + "         if(charts) {"
+                    + "         for(var i = 0; i<charts.length; i++) { "
+                    + "             var chart = null;"
+                    + "             if($('#chart-'+i.toString()).hasClass('stock')) {"
+                    + "                 chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);"
+                    + "             } else { "
+                    + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
+                    + "             } "
+                    + "             chart.redraw();   "
+                    + "         }      "
+                + "         }"
                 + "      } catch (err) {"
                 + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
                 + "      }            "
@@ -749,7 +757,19 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    static Tag templateWrapper(Response res, Tag form) {
+    public static List<Map<String,String>> getTemplatesForUser(String username) {
+        if(username!=null && username.length()>0) {
+            File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
+            if(!folder.exists()) folder.mkdirs();
+            return Arrays.stream(folder.listFiles()).sorted(Comparator.comparingLong(file->file.lastModified())).map(file->{
+                return (Map<String,String>)Database.tryLoadObject(file);
+            }).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    static Tag templateWrapper(Request req, Response res, Tag form) {
         res.type("text/html");
         return html().with(
                 head().with(
@@ -777,7 +797,14 @@ public class SimilarPatentServer {
                                                 br(),br(),br(),
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
-                                                    templates.stream().map(template->templateHelper(template,80)).collect(Collectors.toList())
+                                                        div().with(
+                                                                form().withAction(SAVE_TEMPLATE_URL).withMethod("post").with(
+                                                                        input().withType("text").withClass("form-control").withName("template_name").withId("template_name").attr("style","width: 80%;"),
+                                                                        button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
+                                                                )
+                                                        ), div().with(
+                                                                getTemplatesForUser(req.session().attribute("username")).stream().map(template->templateHelper(new FormTemplate(template))).collect(Collectors.toList())
+                                                        )
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
@@ -792,21 +819,10 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag templateHelper(FormTemplate template, int width) {
-        if(template.nestedForms().isEmpty()) {
-            return li().withClass("nav-item").with(
-                    a(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").withHref(template.getHref())
-            );
-        } else {
-            return li().withClass("nav-item").with(
-                    button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+width+"%;").attr("onclick","$(this).next().slideToggle();"),
-                    ul().withClass("nav nav-pills flex-column").attr("style","display: none;").with(
-                            template.nestedForms().stream().map(nested->{
-                                return templateHelper(nested,width-5);
-                            }).collect(Collectors.toList())
-                    )
-            );
-        }
+    public static Tag templateHelper(FormTemplate template) {
+        return li().withClass("nav-item").with(
+                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+80+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));")
+        );
     }
 
 
@@ -860,22 +876,10 @@ public class SimilarPatentServer {
                         )
                 ),div().withClass("col-9").attr("style","padding-top: 30px; background-color: #c4c4c4;").with(
                         div().withClass("row").with(
-                                div().withClass("col-2").with(
-                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-back", REPORT_URL,"Back","Back"))
-                                                .withId(GENERATE_REPORTS_FORM_ID+"-back").with(
-                                                input().withName("goBack").withValue("on").withType("hidden"), br(),
-                                                button("Back").withClass("btn btn-sm btn-secondary").attr("style","margin-right: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-back"+"-button").withType("submit")
-                                        )
-                                ), div().withClass("col-8").with(
+                                 div().withClass("col-12").with(
                                         h3("Artificial Intelligence Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
                                                 .attr("style","margin-top: -5px;")
-                                ), div().withClass("col-2").with(
-                                        form().attr("style","display: flex;").attr("onsubmit",ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID+"-forward", REPORT_URL,"Next","Next"))
-                                                .withId(GENERATE_REPORTS_FORM_ID+"-forward").with(
-                                                input().withName("goForward").withValue("on").withType("hidden"), br(),
-                                                button("Next").withClass("btn btn-sm btn-secondary").attr("style","margin-left: auto; width: 90%;").withId(GENERATE_REPORTS_FORM_ID+"-forward"+"-button").withType("submit")
-                                        )
                                 )
                         )
                 )

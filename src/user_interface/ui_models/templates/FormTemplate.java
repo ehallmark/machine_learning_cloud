@@ -13,31 +13,12 @@ import java.util.*;
 public class FormTemplate {
     @Getter
     protected String name;
-    protected Map<String,Object> params;
-    protected Map<String,Object> searchOptions;
-    protected List<String> special;
-    public FormTemplate(String name, Map<String,Object> params, Map<String,Object> searchOptions) {
-        this.params=params;
-        this.searchOptions=searchOptions;
-        this.name=name;
-        this.special=new ArrayList<>(params.keySet());
+    @Getter
+    protected String html;
+    public FormTemplate(Map<String,String> map) {
+        Map.Entry<String,String> e = map.entrySet().stream().findFirst().orElse(null);
+        if(e==null) throw new RuntimeException("Null entry in user_interface.ui_models.FormTemplate");
+        this.name=e.getKey();
+        this.html=e.getValue();
     }
-
-    public String getHref() {
-        return "javascript:resetSearchForm();applyParams("+new Gson().toJson(params)+","+new Gson().toJson(searchOptions)+","+new Gson().toJson(special)+");";
-    }
-
-    public static Map<String,Object> defaultOptions() {
-        Map<String,Object> map = new HashMap<>();
-        map.put(SimilarPatentServer.LIMIT_FIELD,100);
-        map.put(SimilarPatentServer.COMPARATOR_FIELD, Constants.OVERALL_SCORE);
-        map.put(SimilarPatentServer.SIMILARITY_MODEL_FIELD, Constants.PARAGRAPH_VECTOR_MODEL);
-        map.put(SimilarPatentServer.SORT_DIRECTION_FIELD, "desc");
-        return map;
-    }
-
-    public List<FormTemplate> nestedForms() {
-        return Collections.emptyList();
-    }
-
 }

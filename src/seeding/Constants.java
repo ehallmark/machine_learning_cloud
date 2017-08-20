@@ -15,6 +15,7 @@ public class Constants {
 	public static final String MICRO = "micro";
 	public static final String LARGE = "large";
 	public static final String REEL_NO = "reelNo";
+	public static final String USER_TEMPLATE_FOLDER = "userTemplates/";
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";
 	public static final String ADDRESS_1 = "addressOne";

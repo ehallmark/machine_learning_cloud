@@ -1,4 +1,24 @@
 $(document).ready(function() {
+    $('#save-template-form-id-button').click(function(e){
+        e.preventDefault();
+
+        $.ajax({
+          type: "POST",
+          url: $(this).closest('form').attr('action'),
+          data: {
+            template_name: $('#template-name').val(),
+            template_html: $('#generate-reports-form').html()
+          },
+          success: function(data) {
+              $('#results').html(data.message);
+          }
+          dataType: "json"
+        });
+
+        return false;
+    });
+
+
     // display-item-select
     $('.display-item-select').each(function(){
         $this = $(this);
@@ -340,3 +360,5 @@ var hideDraggable = function(elem) {
 var loadEvent = function(){
  // do nothing :(
 };
+
+
