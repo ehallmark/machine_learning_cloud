@@ -35,7 +35,7 @@ public class SalesforceElasticSearchQuery {
         AbstractFilter filter = new AbstractFilter(null,null) {
             @Override
             public QueryBuilder getFilterQuery() {
-                return QueryBuilders.scriptQuery(new Script(ScriptType.INLINE,"painless","doc['name'].value.length()>8", new HashMap<>()));
+                return QueryBuilders.termQuery(Constants.DOC_TYPE, "applications");
             }
 
             @Override
