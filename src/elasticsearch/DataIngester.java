@@ -191,11 +191,10 @@ public class DataIngester {
             Map<String,Object> itemData = new HashMap<>();
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
                 itemData.put(e.getKey(), e.getValue());
-                System.out.println(e.getKey()+": "+e.getValue());
             }
             data.put(item.getName(),itemData);
         });
-        //ingestAssets(data,create);
+        ingestAssets(data,create);
     }
 
 }
