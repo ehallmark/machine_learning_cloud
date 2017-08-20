@@ -3,10 +3,7 @@ package user_interface.ui_models.attributes.hidden_attributes;
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.LastExecutionDateAttribute;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by Evan on 8/11/2017.
@@ -55,7 +52,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             if(assigneeToAssets.containsKey(e.getValue())) {
                 assigneeToAssets.get(e.getValue()).add(e.getKey());
             } else {
-                Collection<String> set = new HashSet<>();
+                Collection<String> set = Collections.synchronizedSet(new HashSet<>());
                 set.add(e.getKey());
                 assigneeToAssets.put(e.getValue(),set);
             }
