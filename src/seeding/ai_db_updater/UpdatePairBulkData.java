@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import org.apache.commons.io.FileUtils;
 import seeding.ai_db_updater.iterators.FileIterator;
 import seeding.ai_db_updater.pair_bulk_data.PAIRHandler;
 import seeding.data_downloader.PAIRDataDownloader;
@@ -27,5 +28,10 @@ public class UpdatePairBulkData {
         PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch);
         handler.init();
         pairIterator.applyHandlers(handler);
+        try {
+            FileUtils.deleteDirectory(downloader.getDestinationFile());
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 }
