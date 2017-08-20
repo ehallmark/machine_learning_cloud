@@ -12,6 +12,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,6 +27,7 @@ import static j2html.TagCreator.label;
 public class AbstractNestedFilter extends AbstractFilter {
     @Getter
     protected Collection<AbstractFilter> filters;
+    protected Collection<AbstractFilter> filterSubset;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, FilterType filterType) {
         super(nestedAttribute,filterType);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
@@ -39,7 +41,7 @@ public class AbstractNestedFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        for(AbstractFilter filter : filters) {
+        for(AbstractFilter filter : filterSubset) {
             if(filter.isActive()) {
                 boolQuery = boolQuery.must(filter.getFilterQuery());
             }
@@ -49,8 +51,13 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
+        Collection<String> nestedAttributesToFilter = SimilarPatentServer.extractArray(params, getName());
+        filterSubset = new ArrayList<>();
         filters.forEach(filter->{
-            filter.extractRelevantInformationFromParams(params);
+            if(nestedAttributesToFilter.contains(filter.getName())) {
+                filter.extractRelevantInformationFromParams(params);
+                filterSubset.add(filter);
+            }
         });
     }
 
@@ -71,5 +78,5 @@ public class AbstractNestedFilter extends AbstractFilter {
         );
     }
 
-    public boolean isActive() { return filters.stream().anyMatch(filter->filter.isActive()); }
+    public boolean isActive() { return filterSubset.size() > 0 && filterSubset.stream().anyMatch(filter->filter.isActive()); }
 }
