@@ -62,18 +62,21 @@ public class SalesforceElasticSearchQuery {
 
             Object originalAssignee = item.getData(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE);
             if(originalAssignee==null) {
-                String filing = assetToFilingMap.getApplicationDataMap().get(name);
-                if(filing!=null) {
-                    String patent = filingToAssetMap.getPatentDataMap().get(filing);
-                    if(patent!=null) {
-                        originalAssignee = assetToAssigneeMap.getPatentDataMap().get(patent);
+                // look in own map
+                originalAssignee = assetToAssigneeMap.getApplicationDataMap().get(name);
+                if(originalAssignee==null) {
+                    String filing = assetToFilingMap.getApplicationDataMap().get(name);
+                    if (filing != null) {
+                        String patent = filingToAssetMap.getPatentDataMap().get(filing);
+                        if (patent != null) {
+                            originalAssignee = assetToAssigneeMap.getPatentDataMap().get(patent);
+                        }
                     }
                 }
                 if(originalAssignee==null) {
+                    System.out.println("UNABLE TO FIND ASSIGNEE: "+originalAssignee);
                     originalAssignee = "";
                 }
-            } else {
-                System.out.println("UNABLE TO FIND ASSIGNEE: "+originalAssignee);
             }
 
 
