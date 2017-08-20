@@ -51,7 +51,7 @@ public class SalesforceElasticSearchQuery {
         Map<String,NestedAttribute> nestedAttributeMap = new HashMap<>();
         nestedAttributeMap.put(Constants.ASSIGNEES,new AssigneesNestedAttribute());
         nestedAttributeMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
-        Collection<AbstractAttribute> attributes = Arrays.asList(new AssetNumberAttribute(), new FilingDateAttribute(), new PublicationDateAttribute(), new AssigneesNestedAttribute(), new LatestAssigneeNestedAttribute());
+        Collection<AbstractAttribute> attributes = Arrays.asList(new AssetNumberAttribute(), new FilingDateAttribute(), new PublicationDateAttribute(), new LatestAssigneeNestedAttribute());
         BufferedWriter writer = new BufferedWriter(new FileWriter("data/all-applications-and-dates.csv"));
         writer.write("asset_number,filing_date,publication_date,assignee\n");
         DataSearcher.searchForAssets(attributes,Arrays.asList(filter), Constants.NAME, SortOrder.ASC, 5000000, nestedAttributeMap, item -> {
