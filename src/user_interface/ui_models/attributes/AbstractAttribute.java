@@ -28,8 +28,8 @@ public abstract class AbstractAttribute {
 
     public abstract String getName();
 
-    public String getFullName() {
-        return parent==null? getName() : (parent.getName() + "." + getName());
+    public String getMongoDBName() {
+        return parent==null? getName() : (parent.getName() + ".0." + getName());
     }
 
     public Tag getOptionsTag() { return div(); }
