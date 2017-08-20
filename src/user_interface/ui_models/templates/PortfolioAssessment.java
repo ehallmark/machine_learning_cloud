@@ -36,27 +36,22 @@ public class PortfolioAssessment extends FormTemplate {
     }
 
     public static String simpleNameToFilterName(AbstractFilter.FilterType targetFilterType, String... attrStrs) {
-        AbstractAttribute attribute = getChildHelper(attrStrs,0);
+        AbstractAttribute attribute = getChildHelper(attrStrs);
         return attribute.createFilters().stream().filter(filter->filter.getFilterType().equals(targetFilterType)).map(filter->filter.getName()).findAny().orElse("");
     }
 
-    private static AbstractAttribute getChildHelper(String[] attrStrs, int i) {
-        if(i >= attrStrs.length) {
-            return null;
-        } else {
-            AbstractAttribute attr = SimilarPatentServer.attributesMap.get(String.join(".",Arrays.copyOf(attrStrs,i+1)));
-            if (attr != null) {
-                AbstractAttribute child = getChildHelper(attrStrs, i + 1);
-                if(child != null) {
-                    return new NestedAttribute(Arrays.asList(child)) {
-                        @Override
-                        public String getName() {
-                            return attrStrs[i];
-                        }
-                    };
+    private static AbstractAttribute getChildHelper(String[] attrStrs) {
+        AbstractAttribute attr = SimilarPatentServer.attributesMap.get(attrStrs[0]);
+        for(int i = 1; i < attrStrs.length; i++) {
+            String nestedName = attrStrs[i];
+            if(attr instanceof NestedAttribute) {
+                for(AbstractAttribute nested : ((NestedAttribute)attr).getAttributes()) {
+                    if(nested.getName().equals(nestedName)) {
+                        attr = nested;
+                        break;
+                    }
                 }
             }
-            return attr;
         }
     }
 
