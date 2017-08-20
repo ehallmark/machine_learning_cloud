@@ -44,7 +44,7 @@ public class PortfolioAssessment extends FormTemplate {
         if(i >= attrStrs.length) {
             return null;
         } else {
-            AbstractAttribute attr = SimilarPatentServer.attributesMap.get(String.join(".",Arrays.copyOf(attrStrs,i)));
+            AbstractAttribute attr = SimilarPatentServer.attributesMap.get(String.join(".",Arrays.copyOf(attrStrs,i+1)));
             if (attr != null) {
                 AbstractAttribute child = getChildHelper(attrStrs, i + 1);
                 if(child != null) {

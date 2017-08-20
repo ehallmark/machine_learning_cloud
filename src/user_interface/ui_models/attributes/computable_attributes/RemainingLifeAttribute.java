@@ -2,8 +2,6 @@ package user_interface.ui_models.attributes.computable_attributes;
 
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToPriorityDate;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToTermAdjustmentMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;

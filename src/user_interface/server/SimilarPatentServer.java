@@ -380,8 +380,6 @@ public class SimilarPatentServer {
                         new AssetToAssigneeMap(),
                         new AssetToFilingMap(),
                         new FilingToAssetMap(),
-                        new AssetToPriorityDate(),
-                        new AssetToTermAdjustmentMap(),
                         new AssetToRelatedAssetsMap(),
                         new AssetToCitedAssetsMap()
                 ).forEach(attr -> attributesMap.put(attr.getName(), attr));
