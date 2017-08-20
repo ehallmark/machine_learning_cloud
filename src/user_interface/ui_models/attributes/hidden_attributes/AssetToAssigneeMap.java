@@ -33,6 +33,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
 
     public void save() {
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
+        assigneeToAssetsMap.initMaps();
         if(patentDataMap!=null && patentDataMap.size()>0) {
             synchronized (patentDataMap) {
                 safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER, getName(), getType()));
