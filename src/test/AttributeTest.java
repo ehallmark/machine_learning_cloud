@@ -14,12 +14,7 @@ public class AttributeTest {
     public static void main(String[] args) {
         AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
-        assetToAssigneeMap.getPatentDataMap().entrySet().stream().limit(5).forEach(e->{
-            System.out.println(e.getKey()+": "+e.getValue());
-        });
-        assetToAssigneeMap.getApplicationDataMap().entrySet().stream().limit(5).forEach(e->{
-            System.out.println(e.getKey()+": "+e.getValue());
-        });
+        assetToAssigneeMap.save();
         assigneeToAssetsMap.getPatentDataMap().entrySet().stream().limit(5).forEach(e->{
             System.out.println(e.getKey()+": "+e.getValue());
         });
