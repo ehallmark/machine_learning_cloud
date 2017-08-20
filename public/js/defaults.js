@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
     $('#save-template-form-id-button').click(function(e){
         e.preventDefault();
 
@@ -18,7 +19,23 @@ $(document).ready(function() {
         return false;
     });
 
+    $('.template-remove-button').click(function(e){
+        e.preventDefault();
 
+        $.ajax({
+          type: "POST",
+          url: $(this).attr('data-action'),
+          data: {
+            path_to_remove: $(this).attr("data-file")
+          },
+          success: function(data) {
+            $(this).closest('li').remove();
+          }
+          dataType: "json"
+        });
+
+        return false;
+    });
     // display-item-select
     $('.display-item-select').each(function(){
         $this = $(this);
