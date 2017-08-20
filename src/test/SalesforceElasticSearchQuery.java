@@ -62,6 +62,8 @@ public class SalesforceElasticSearchQuery {
 
             Object originalAssignee = item.getData(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE);
             if(originalAssignee==null) {
+                System.out.println("UNABLE TO FIND ASSIGNEE: "+originalAssignee);
+
                 // look in own map
                 originalAssignee = assetToAssigneeMap.getApplicationDataMap().get(name);
                 if(originalAssignee==null) {
@@ -74,11 +76,9 @@ public class SalesforceElasticSearchQuery {
                     }
                 }
                 if(originalAssignee==null) {
-                    System.out.println("UNABLE TO FIND ASSIGNEE: "+originalAssignee);
                     originalAssignee = "";
                 }
             }
-
 
             if(name==null||filingDate==null||pubDate==null) return null;
             try {

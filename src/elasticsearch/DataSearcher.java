@@ -174,6 +174,9 @@ public class DataSearcher {
             if(attr!=null) {
                 for(AbstractAttribute nestedAttr : attr.getAttributes()) {
                     Object v2 = ((Map) v).get(nestedAttr.getName());
+                    if(attrName.equals(Constants.LATEST_ASSIGNEE) && nestedAttr.getName().equals(Constants.ASSIGNEE)) {
+                        System.out.println("Value for assignee: "+v2);
+                    }
                     if(v2!=null) {
                         hitToItemHelper(attrName+"."+nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
                     }
