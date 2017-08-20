@@ -80,6 +80,7 @@ public class SimilarPatentServer {
     public static final String HOME_URL = PROTECTED_URL_PREFIX+"/home";
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
+    public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
     public static final String RANDOM_TOKEN = "<><><>";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -541,6 +542,11 @@ public class SimilarPatentServer {
             return handleSaveForm(req,res);
         });
 
+        post(DELETE_TEMPLATE_URL, (req, res) -> {
+            authorize(req,res);
+            return handleDeleteForm(req,res);
+        });
+
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
@@ -602,6 +608,21 @@ public class SimilarPatentServer {
             } else {
                 message = "Please enter a form name.";
             }
+        }
+        return new Gson().toJson(new SimpleAjaxMessage(message));
+    };
+
+    private static synchronized Object handleDeleteForm(Request req, Response res) {
+        String formPath = req.queryParams("path_to_remove");
+        String message;
+        if(formPath!=null) {
+            try {
+                message = String.valueOf(new File(formPath).delete());
+            } catch(Exception e) {
+                message = e.getMessage();
+            }
+        } else {
+            message = "Did not provide path.";
         }
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
@@ -757,12 +778,14 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    public static List<Map<String,String>> getTemplatesForUser(String username) {
+    public static List<Tag> getTemplatesForUser(String username) {
         if(username!=null && username.length()>0) {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             return Arrays.stream(folder.listFiles()).sorted(Comparator.comparingLong(file->file.lastModified())).map(file->{
-                return (Map<String,String>)Database.tryLoadObject(file);
+                Map<String,String> templateMap = (Map<String,String>)Database.tryLoadObject(file);
+                FormTemplate template = new FormTemplate(templateMap);
+                return templateHelper(template,file);
             }).collect(Collectors.toList());
         } else {
             return Collections.emptyList();
@@ -803,7 +826,7 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().with(
-                                                                getTemplatesForUser(req.session().attribute("username")).stream().map(template->templateHelper(new FormTemplate(template))).collect(Collectors.toList())
+                                                                getTemplatesForUser(req.session().attribute("username"))
                                                         )
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
@@ -819,9 +842,10 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag templateHelper(FormTemplate template) {
+    public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+80+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));")
+                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+80+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));"),
+                span("(Delete)").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getAbsolutePath()).withClass("template-remove-button").attr("style","padding: 3px; float: right; font-weight: bolder;")
         );
     }
 
