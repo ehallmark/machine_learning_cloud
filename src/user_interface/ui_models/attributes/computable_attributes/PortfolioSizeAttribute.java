@@ -33,7 +33,7 @@ public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
         String assignee = probablyApplication ? assetToAssigneeMap.getApplicationDataMap().getOrDefault(item,assetToAssigneeMap.getPatentDataMap().get(item))
                 : assetToAssigneeMap.getPatentDataMap().getOrDefault(item,assetToAssigneeMap.getApplicationDataMap().get(item));
         if(assignee == null) return null;
-        Integer portfolioSize = assigneeToAssetsMap.getPatentDataMap().getOrDefault(item,Collections.emptyList()).size();
+        Integer portfolioSize = Math.max(assigneeToAssetsMap.getPatentDataMap().getOrDefault(assignee,Collections.emptyList()).size(),assigneeToAssetsMap.getApplicationDataMap().getOrDefault(assignee,Collections.emptyList()).size());
         System.out.println("Portfolio size: "+portfolioSize);
         return portfolioSize;
     }
