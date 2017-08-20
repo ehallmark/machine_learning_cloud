@@ -38,7 +38,7 @@ public class PortfolioAssessment extends FormTemplate {
 
     public static String simpleNameToFilterName(AbstractFilter.FilterType targetFilterType, String attr, String nested) {
         AbstractAttribute attribute = SimilarPatentServer.attributesMap.get(attr);
-        return attribute.createFilters().stream().filter(filter->filter!=null&&filter.getFilterType().equals(targetFilterType)&&(nested==null||filter.getPrerequisite().equals(nested))).map(filter->filter.getName()).findAny().orElse("");
+        return attribute.createFilters().stream().flatMap(filter->filter instanceof AbstractNestedFilter ? ((AbstractNestedFilter)filter).getFilters().stream() : Arrays.asList(filter).stream()).filter(filter->filter!=null&&filter.getFilterType().equals(targetFilterType)&&(nested==null||filter.getPrerequisite().equals(nested))).map(filter->filter.getName()).findAny().orElse("");
     }
 
 }
