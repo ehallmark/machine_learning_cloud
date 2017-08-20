@@ -30,31 +30,15 @@ public class PortfolioAssessment extends FormTemplate {
         map.put(Constants.PIE_CHART,Arrays.asList(Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,Arrays.asList(Constants.AI_VALUE,Constants.NAME,Constants.PORTFOLIO_SIZE,Constants.WIPO_TECHNOLOGY,Constants.TECHNOLOGY));
         map.put(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE,"");
-        map.put(simpleNameToFilterName(AbstractFilter.FilterType.Include,Constants.NAME),"");
+        map.put(simpleNameToFilterName(AbstractFilter.FilterType.Include,Constants.NAME, null),"");
         map.put(simpleNameToFilterName(AbstractFilter.FilterType.AdvancedKeyword,Constants.LATEST_ASSIGNEE,Constants.ASSIGNEE),"");
-        map.put(simpleNameToFilterName(AbstractFilter.FilterType.Include,Constants.DOC_TYPE),PortfolioList.Type.patents.toString());
+        map.put(simpleNameToFilterName(AbstractFilter.FilterType.Include,Constants.DOC_TYPE, null),PortfolioList.Type.patents.toString());
         return map;
     }
 
-    public static String simpleNameToFilterName(AbstractFilter.FilterType targetFilterType, String... attrStrs) {
-        AbstractAttribute attribute = getChildHelper(attrStrs);
-        return attribute.createFilters().stream().filter(filter->filter!=null&&filter.getFilterType().equals(targetFilterType)).map(filter->filter.getName()).findAny().orElse("");
-    }
-
-    private static AbstractAttribute getChildHelper(String[] attrStrs) {
-        AbstractAttribute attr = SimilarPatentServer.attributesMap.get(attrStrs[0]);
-        for(int i = 1; i < attrStrs.length; i++) {
-            String nestedName = attrStrs[i];
-            if(attr instanceof NestedAttribute) {
-                for(AbstractAttribute nested : ((NestedAttribute)attr).getAttributes()) {
-                    if(nested.getName().equals(nestedName)) {
-                        attr = nested;
-                        break;
-                    }
-                }
-            }
-        }
-        return attr;
+    public static String simpleNameToFilterName(AbstractFilter.FilterType targetFilterType, String attr, String nested) {
+        AbstractAttribute attribute = SimilarPatentServer.attributesMap.get(attr);
+        return attribute.createFilters().stream().filter(filter->filter!=null&&filter.getFilterType().equals(targetFilterType)&&(nested==null||filter.getPrerequisite().equals(nested))).map(filter->filter.getName()).findAny().orElse("");
     }
 
 }
