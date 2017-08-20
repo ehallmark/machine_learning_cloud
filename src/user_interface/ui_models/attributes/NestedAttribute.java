@@ -25,7 +25,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         this.attributes = attributes;
         if(this.attributes!=null) {
             this.attributes.forEach(attr->{
-               attr.setParent(attr);
+               attr.setParent(this);
             });
         }
     }
