@@ -170,15 +170,21 @@ public class DataSearcher {
         if(v==null) return;
         if(v instanceof Map) {
             // get attr
-            NestedAttribute attr = nestedAttrNameMap.get(attrName);
-            if(attr!=null) {
-                for(AbstractAttribute nestedAttr : attr.getAttributes()) {
-                    Object v2 = ((Map) v).get(nestedAttr.getName());
-                    if(attrName.equals(Constants.LATEST_ASSIGNEE) && nestedAttr.getName().equals(Constants.ASSIGNEE)) {
-                        System.out.println("Value for assignee: "+v2);
-                    }
-                    if(v2!=null) {
-                        hitToItemHelper(attrName+"."+nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
+            if(attrName.equals(Constants.ASSIGNEES)) {
+                NestedAttribute attr = nestedAttrNameMap.get(attrName);
+                System.out.println("looking for attr");
+                if (attr != null) {
+                    System.out.println("Found attr");
+                    for (AbstractAttribute nestedAttr : attr.getAttributes()) {
+                        Object v2 = ((Map) v).get(nestedAttr.getName());
+                        System.out.println("Found nested: "+nestedAttr.getName());
+                        if (attrName.equals(Constants.LATEST_ASSIGNEE) && nestedAttr.getName().equals(Constants.ASSIGNEE)) {
+                            System.out.println("Value for assignee: " + v2);
+                        }
+                        System.out.println("Value: "+v2);
+                        if (v2 != null) {
+                            hitToItemHelper(attrName + "." + nestedAttr.getName(), v2, itemDataMap, nestedAttrNameMap);
+                        }
                     }
                 }
             }
