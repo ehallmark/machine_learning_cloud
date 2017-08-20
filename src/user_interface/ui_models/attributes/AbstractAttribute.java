@@ -28,6 +28,10 @@ public abstract class AbstractAttribute {
 
     public abstract String getName();
 
+    public String getFullName() {
+        return parent==null? getName() : parent.getFullName() + "." + getName();
+    }
+
     public Tag getOptionsTag() { return div(); }
 
     public abstract String getType();
