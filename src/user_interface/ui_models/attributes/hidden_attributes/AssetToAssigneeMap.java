@@ -55,7 +55,7 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             if(assigneeToAssets.containsKey(e.getValue())) {
                 assigneeToAssets.get(e.getValue()).add(e.getKey());
             } else {
-                Set<String> set = new HashSet<>();
+                Collection<String> set = new HashSet<>();
                 set.add(e.getKey());
                 assigneeToAssets.put(e.getValue(),set);
             }
