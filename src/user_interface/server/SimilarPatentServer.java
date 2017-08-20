@@ -235,7 +235,15 @@ public class SimilarPatentServer {
     }
 
     public static Collection<ComputableAttribute<?>> getAllComputableAttributes() {
-        return allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&attr instanceof ComputableAttribute).map(attr->(ComputableAttribute<?>)attr).collect(Collectors.toList());
+        return allAttributes.stream().flatMap(attr->getAllComputableAttributesHelper(attr)).collect(Collectors.toList());
+    }
+
+    private static Stream<ComputableAttribute<?>> getAllComputableAttributesHelper(AbstractAttribute attribute) {
+        if(attribute instanceof NestedAttribute) {
+            return ((NestedAttribute)attribute).getAttributes().stream().flatMap(attr->getAllComputableAttributesHelper(attr));
+        } else {
+            return Arrays.asList(attribute).stream().filter(attr -> attr.supportedByElasticSearch() && attr instanceof ComputableAttribute).map(attr -> (ComputableAttribute<?>) attr);
+        }
     }
 
     public static String humanAttributeFor(String attr) {
