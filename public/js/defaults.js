@@ -59,13 +59,13 @@ $(document).ready(function() {
 
     $('.nested-form-select select').on("select2:select", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').parent().show();
+        $('.draggable[data-model="'+id+'"]').parent().show().find('input, select, textarea').prop('disabled', false);
         return true;
     });
 
     $('.nested-form-select select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').parent().hide();
+        $('.draggable[data-model="'+id+'"]').parent().hide().find('input, select, textarea').prop('disabled', true);
         return true;
     });
 
