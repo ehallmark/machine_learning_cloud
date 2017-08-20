@@ -164,8 +164,8 @@ public class DataSearcher {
     }
 
     private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap) {
-        if(attrName.equals(Constants.LATEST_ASSIGNEE)) System.out.println("Latest assignee: "+new Gson().toJson(v));
-        if(attrName.equals(Constants.ASSIGNEES)) System.out.println("Original assignee: "+new Gson().toJson(v));
+       // if(attrName.equals(Constants.LATEST_ASSIGNEE)) System.out.println("Latest assignee: "+new Gson().toJson(v));
+       // if(attrName.equals(Constants.ASSIGNEES)) System.out.println("Original assignee: "+new Gson().toJson(v));
 
         if(v==null) return;
         if(v instanceof Map) {
