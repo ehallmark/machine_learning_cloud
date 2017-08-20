@@ -13,10 +13,10 @@ import java.util.Collection;
 public class AttributeTest {
     public static void main(String[] args) {
 
-        //AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
-        //assetToAssigneeMap.getApplicationDataMap();
-        //assetToAssigneeMap.getPatentDataMap();
-        //assetToAssigneeMap.save();
+        AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
+        assetToAssigneeMap.getApplicationDataMap();
+        assetToAssigneeMap.getPatentDataMap();
+        assetToAssigneeMap.save();
 
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
 
