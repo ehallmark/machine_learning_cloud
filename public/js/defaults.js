@@ -5,54 +5,59 @@ $(document).ready(function() {
         return true;
     });
 
-    $('#generate-reports-form').submit(function(e) {
-        e.preventDefault();
-        $('#generate-reports-form-button').attr('disabled',true).text('Generating...');
-        var url = '/secure/patent_recommendation_engine';
-        var tempScrollTop = $(window).scrollTop();
-        $('#results').html('');    // clears results div
-        $.ajax({
-          type: 'POST',
-          dataType: 'json',
-          url: url,
-          data: $('#"+ID+"').serialize(),
-          complete: function(jqxhr,status) {
-            $('#generate-reports-form-button').attr('disabled',false).text('Generate Report');
-            $(window).scrollTop(tempScrollTop);
-          },
-          error: function(jqxhr,status,error) {
-            $('#results').html('<div style="color: red;">Server ajax error:'+error+'</div>');
-          },
-          success: function(data) {
-            $('#results').html(data.message);
-            setupDataTable($('#results #data-table').get(0));
-            setCollapsibleHeaders('#results .collapsible-header');
-            if (data.hasOwnProperty('charts')) {
-              try {
-                 var charts = JSON.parse(data.charts);
-                 if(charts) {
-                     for(var i = 0; i<charts.length; i++) {
-                         var chart = null;
-                         if($('#chart-'+i.toString()).hasClass('stock')) {
-                             chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);
-                         } else {
-                             chart = Highcharts.chart('chart-'+i.toString(), charts[i]);
-                         }
-                         chart.redraw();
-                     }
-                 }
-              } catch (err) {
-                 $('#results').html("<div style='color:red;'>JavaScript error occured: " + err.message + '</div>');
-              }
-            }
-          }
-        });
-        return false;
-    });
+    $('#generate-reports-form').submit(function(e) {return submitFormFunction(e);});
+    $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e);});
+
+    var submitFormFunction = function(e) {
+         e.preventDefault();
+         $('#generate-reports-form-button').attr('disabled',true).text('Generating...');
+         var url = '/secure/patent_recommendation_engine';
+         var tempScrollTop = $(window).scrollTop();
+         $('#results').html('');    // clears results div
+         $.ajax({
+           type: 'POST',
+           dataType: 'json',
+           url: url,
+           data: $('#"+ID+"').serialize(),
+           complete: function(jqxhr,status) {
+             $('#generate-reports-form-button').attr('disabled',false).text('Generate Report');
+             $(window).scrollTop(tempScrollTop);
+           },
+           error: function(jqxhr,status,error) {
+             $('#results').html('<div style="color: red;">Server ajax error:'+error+'</div>');
+           },
+           success: function(data) {
+             $('#results').html(data.message);
+             setupDataTable($('#results #data-table').get(0));
+             setCollapsibleHeaders('#results .collapsible-header');
+             if (data.hasOwnProperty('charts')) {
+               try {
+                  var charts = JSON.parse(data.charts);
+                  if(charts) {
+                      for(var i = 0; i<charts.length; i++) {
+                          var chart = null;
+                          if($('#chart-'+i.toString()).hasClass('stock')) {
+                              chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);
+                          } else {
+                              chart = Highcharts.chart('chart-'+i.toString(), charts[i]);
+                          }
+                          chart.redraw();
+                      }
+                  }
+               } catch (err) {
+                  $('#results').html("<div style='color:red;'>JavaScript error occured: " + err.message + '</div>');
+               }
+             }
+           }
+         });
+         return false;
+     };
 
     $('.template-remove-button').click(function(e){
         e.preventDefault();
-
+        $this = $(this);
+        $li = $this.closest('li');
+        $this.remove();
         $.ajax({
           type: "POST",
           url: $(this).attr('data-action'),
@@ -60,7 +65,7 @@ $(document).ready(function() {
             path_to_remove: $(this).attr("data-file")
           },
           success: function(data) {
-            $(this).closest('li').remove();
+            $li.remove();
           },
           dataType: "json"
         });

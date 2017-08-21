@@ -592,6 +592,7 @@ public class SimilarPatentServer {
         String message;
         Random random = new Random(System.currentTimeMillis());
         if(formHTML!=null&&formName!=null) {
+            System.out.println("Form "+formName+": "+formHTML);
             Map<String,String> formMap = new HashMap<>();
             formMap.put(formName,formHTML);
             String username = req.session().attribute("username");
