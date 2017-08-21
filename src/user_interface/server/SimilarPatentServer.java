@@ -802,9 +802,12 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().with(
+                                                                h5("Default Templates"),
                                                                 div().with(
                                                                         getTemplatesForUser("form_creator",false)
-                                                                ), div().with(
+                                                                ),
+                                                                h5("My Templates"),
+                                                                div().with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )
@@ -824,8 +827,8 @@ public class SimilarPatentServer {
 
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+80+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));"),
-                file==null?span():span("(Delete)").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","padding: 3px; float: right; font-weight: bolder;")
+                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+(file==null?80:60)+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));"),
+                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","width: 20%; cursor: pointer; padding: 3px; float: right; font-weight: bolder;")
         );
     }
 
