@@ -1,13 +1,45 @@
 $(document).ready(function() {
 
-    $('#save-template-form-id').submit(function(e){
-        alert($('#generate-reports-form').html());
-        $('#template_html').val($('#generate-reports-form').html());
+    var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
+        var dataMap = {};
+        $(containerSelector+" "+itemSelector).each(function(elem) {
+            var $elem = $(elem);
+            dataMap[$elem.attr("id")]=$elem.val();
+        });
+        var json = JSON.stringify(dataMap);
+        alert(json);
+        $(hiddenValueSelector).val(json);
+    };
+
+   $('#save-template-form-id').submit(function(e){
+        // search options
+        saveTemplateFormHelper("#searchOptionsForm",".searchOptionElement:visible","#save-template-form-id #searchOptionsMap");
+        saveTemplateFormHelper("#attributesForm",".attributeElement:visible","#save-template-form-id #attributesMap");
+        saveTemplateFormHelper("#filtersForm",".filterElement:visible","#save-template-form-id #filtersMap");
+        saveTemplateFormHelper("#chartsForm",".chartElement:visible","#save-template-form-id #chartsMap");
         return true;
     });
 
-    $('#generate-reports-form').submit(function(e) {return submitFormFunction(e);});
-    $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e);});
+    var showTemplateFormHelper = function(formSelector,json) {
+        var dataMap = JQuery.parseJSON(json);
+        $.each(dataMap,function(id,value) {
+            var $elem = $('#'+id);
+            $elem.val(value);
+            showDraggable($elem.get(0));
+        });
+    };
+
+    $('.template-show-button').click(function(e){
+        e.preventDefault();
+
+        var $this = $(this);
+        resetSearchForm();
+        showTemplateFormHelper($this.attr("#searchOptionsForm","data-searchOptionsMap"));
+        showTemplateFormHelper($this.attr("#attributesForm","data-attributesMap"));
+        showTemplateFormHelper($this.attr("#filtersForm","data-filtersMap"));
+        showTemplateFormHelper($this.attr("#chartsForm","data-chartsMap"));
+        return false;
+    });
 
     var submitFormFunction = function(e) {
          e.preventDefault();
@@ -19,7 +51,7 @@ $(document).ready(function() {
            type: 'POST',
            dataType: 'json',
            url: url,
-           data: $('#"+ID+"').serialize(),
+           data: $('#generate-reports-form').serialize(),
            complete: function(jqxhr,status) {
              $('#generate-reports-form-button').attr('disabled',false).text('Generate Report');
              $(window).scrollTop(tempScrollTop);
@@ -54,10 +86,14 @@ $(document).ready(function() {
          return false;
      };
 
+    $('#generate-reports-form').submit(function(e) {return submitFormFunction(e);});
+    $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e);});
+
+
     $('.template-remove-button').click(function(e){
         e.preventDefault();
-        $this = $(this);
-        $li = $this.closest('li');
+        var $this = $(this);
+        var $li = $this.closest('li');
         $this.remove();
         $.ajax({
           type: "POST",
@@ -225,6 +261,7 @@ var resetSearchForm = function() {
     $('.collapsible-form').filter(':visible').each(function() {
         $(this).closest('.collapse').removeClass("show");
     });
+    $('.draggable select,textarea,input').val('');
     $('.draggable .multiselect').val(null).trigger("change");
     $('#results').html('');
 };

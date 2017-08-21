@@ -587,14 +587,21 @@ public class SimilarPatentServer {
 
 
     private static synchronized Object handleSaveForm(Request req, Response res) {
-        String formHTML = req.queryParams("template_html");
-        String formName = req.queryParams("template_name");
+        String attributesMap = req.queryParams("attributesMap");
+        String searchOptionsMap = req.queryParams("searchOptionsMap");
+        String filtersMap = req.queryParams("filtersMap");
+        String chartsMap = req.queryParams("chartsMap");
+        String name = req.queryParams("name");
         String message;
         Random random = new Random(System.currentTimeMillis());
-        if(formHTML!=null&&formName!=null&&formHTML.length()>0&&formName.length()>0) {
-            System.out.println("Form "+formName+": "+formHTML);
+        if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
+            System.out.println("Form "+name+" attributes: "+attributesMap);
             Map<String,String> formMap = new HashMap<>();
-            formMap.put(formName,formHTML);
+            formMap.put("name",name);
+            formMap.put("attributesMap",attributesMap);
+            formMap.put("searchOptionsMap",searchOptionsMap);
+            formMap.put("filtersMap",filtersMap);
+            formMap.put("chartsMap",chartsMap);
             String username = req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
@@ -610,11 +617,7 @@ public class SimilarPatentServer {
                 message = "Unable to find user.";
             }
         } else {
-            if(formHTML==null) {
-                message = "Error finding form html.";
-            } else {
-                message = "Please enter a form name.";
-            }
+            message = "Unable to create form. Data missing.";
         }
         res.redirect(HOME_URL);
         req.session().attribute("message", message);
@@ -761,10 +764,17 @@ public class SimilarPatentServer {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             return Arrays.stream(folder.listFiles()).sorted(Comparator.comparingLong(file->file.lastModified())).map(file->{
-                Map<String,String> templateMap = (Map<String,String>)Database.tryLoadObject(file);
-                FormTemplate template = new FormTemplate(templateMap);
-                return templateHelper(template,deletable ? file : null);
-            }).collect(Collectors.toList());
+                Map<String,Object> templateMap = (Map<String,Object>)Database.tryLoadObject(file);
+                Object name = templateMap.get("name");
+                Object searchObjectsMap = templateMap.get("searchOptionsMap");
+                Object attributesMap = templateMap.get("attributesMap");
+                Object chartsMap = templateMap.get("chartsMap");
+                Object filtersMap = templateMap.get("filtersMap");
+                if(name!=null&&searchObjectsMap!=null&&attributesMap!=null&&chartsMap!=null&&filtersMap!=null) {
+                    FormTemplate template = new FormTemplate(name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString());
+                    return templateHelper(template, deletable ? file : null);
+                } else return null;
+            }).filter(t->t!=null).collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }
@@ -800,8 +810,11 @@ public class SimilarPatentServer {
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
                                                                 form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
-                                                                        input().withType("hidden").withName("template_html").withId("template_html"),
-                                                                        input().withType("text").withClass("form-control").withName("template_name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
+                                                                        input().withType("hidden").withName("chartsMap").withId("chartsMap"),
+                                                                        input().withType("hidden").withName("filtersMap").withId("filtersMap"),
+                                                                        input().withType("hidden").withName("attributesMap").withId("attributesMap"),
+                                                                        input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
+                                                                        input().withType("text").withClass("form-control").withName("name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().with(
@@ -830,7 +843,8 @@ public class SimilarPatentServer {
 
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+(file==null?80:60)+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));"),
+                button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:60)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                        .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
                 file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","width: 20%; cursor: pointer; padding: 3px; float: right; font-weight: bolder;")
         );
     }
@@ -854,15 +868,15 @@ public class SimilarPatentServer {
                         form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
-                                                div().withClass("col-6 form-left form-top").with(
+                                                div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
                                                         mainOptionsRow()
-                                                ),div().withClass("col-6 form-right form-top").with(
+                                                ),div().withClass("col-6 form-right form-top").withId("chartsForm").with(
                                                         customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
                                                 )
                                         ), div().withClass("row").with(
-                                                div().withClass("col-6 form-left form-bottom").with(
+                                                div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
                                                         customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD)
-                                                ),div().withClass("col-6 form-right form-bottom").with(
+                                                ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
                                                         customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
                                                 )
                                         )

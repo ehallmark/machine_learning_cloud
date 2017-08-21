@@ -14,11 +14,18 @@ public class FormTemplate {
     @Getter
     protected String name;
     @Getter
-    protected String html;
-    public FormTemplate(Map<String,String> map) {
-        Map.Entry<String,String> e = map.entrySet().stream().findFirst().orElse(null);
-        if(e==null) throw new RuntimeException("Null entry in user_interface.ui_models.FormTemplate");
-        this.name=e.getKey();
-        this.html=e.getValue();
+    protected String attributesMap;
+    @Getter
+    protected String filtersMap;
+    @Getter
+    protected String chartsMap;
+    @Getter
+    protected String searchOptionsMap;
+    public FormTemplate(String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap) {
+        this.name=name;
+        this.searchOptionsMap=searchOptionsMap;
+        this.attributesMap=attributesMap;
+        this.filtersMap=filtersMap;
+        this.chartsMap=chartsMap;
     }
 }
