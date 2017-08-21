@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.script_attributes;
 
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -19,6 +20,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
         throw new RuntimeException("Abstract script attributes do not have types.");
     }
 
+    public abstract QueryBuilder getScriptQuery();
     public abstract Script getScript();
 
     @Override

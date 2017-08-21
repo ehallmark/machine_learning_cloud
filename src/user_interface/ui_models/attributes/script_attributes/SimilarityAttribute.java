@@ -1,6 +1,11 @@
 package user_interface.ui_models.attributes.script_attributes;
 
 import models.similarity_models.AbstractSimilarityModel;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -34,12 +39,21 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     protected List<INDArray> simVectors;
 
     @Override
+    public QueryBuilder getScriptQuery() {
+        Script searchScript = getScript();
+        if(searchScript==null) return null;
+        return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(100))
+                    .boostMode(CombineFunction.AVG)
+                    .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
+    }
+
+    @Override
     public Script getScript() {
         Script searchScript = null;
         if(simVectors!=null&&simVectors.size()>0) {
-            Map<String,Object> params = new HashMap<>();
-            params.put("avg_vector", simVectors.size()==1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
-            searchScript =  new Script(
+            Map<String, Object> params = new HashMap<>();
+            params.put("avg_vector", simVectors.size() == 1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
+            searchScript = new Script(
                     ScriptType.INLINE,
                     "painless",
                     DEFAULT_SIMILARITY_SCRIPT,
