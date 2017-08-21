@@ -477,8 +477,6 @@ public class SimilarPatentServer {
 
     public static void server() {
         port(8080);
-        System.setProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "21474836");
-        System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "21474836");
 
         // HOST ASSETS
         staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
@@ -717,49 +715,6 @@ public class SimilarPatentServer {
         }
     }
 
-    static String ajaxSubmitWithChartsScript(String ID, String url, String buttonText, String buttonTextWhileSearching) {
-        return "$('#"+ID+"-button').attr('disabled',true).text('"+buttonTextWhileSearching+"');"
-                + "var url = '"+ url +"'; "
-                + "var tempScrollTop = $(window).scrollTop();"
-                + "$('#results').html('');       " // clears results div
-                + "$.ajax({"
-                + "  type: 'POST', "
-                + "  dataType: 'json',"
-                + "  url: url,     "
-                + "  data: $('#"+ID+"').serialize(),"
-                + "  complete: function(jqxhr,status) {"
-                + "    $('#"+ID+"-button').attr('disabled',false).text('"+buttonText+"');"
-                + "    $(window).scrollTop(tempScrollTop);"
-                + "  },"
-                + "  error: function(jqxhr,status,error) {"
-                + "    $('#results').html('<div style=\"color: red;\">Server ajax error:'+error+'</div>'); "
-                + "  },"
-                + "  success: function(data) { "
-                + "    $('#results').html(data.message); "
-                + "    setupDataTable($('#results #data-table').get(0));   "
-                + "    setCollapsibleHeaders('#results .collapsible-header');   "
-                + "    if (data.hasOwnProperty('charts')) {                    "
-                + "      try {    "
-                + "         var charts = JSON.parse(data.charts);                 "
-                + "         if(charts) {"
-                    + "         for(var i = 0; i<charts.length; i++) { "
-                    + "             var chart = null;"
-                    + "             if($('#chart-'+i.toString()).hasClass('stock')) {"
-                    + "                 chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);"
-                    + "             } else { "
-                    + "                 chart = Highcharts.chart('chart-'+i.toString(), charts[i]);"
-                    + "             } "
-                    + "             chart.redraw();   "
-                    + "         }      "
-                + "         }"
-                + "      } catch (err) {"
-                + "         $('#results').html(\"<div style='color:red;'>JavaScript error occured: \" + err.message + '</div>');"
-                + "      }            "
-                + "    }          "
-                + "  }        "
-                + "});"
-                + "return false; ";
-    }
 
     static Tag tableFromPatentList(List<List<String>> data, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
@@ -842,6 +797,7 @@ public class SimilarPatentServer {
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
                                                                 form().withAction(SAVE_TEMPLATE_URL).withMethod("post").with(
+                                                                        input().withType("hidden").withName("template_html").withId("template_html"),
                                                                         input().withType("text").withClass("form-control").withName("template_name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
@@ -906,7 +862,6 @@ public class SimilarPatentServer {
                                         )
                                 ),div().with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
-                                                .attr("onclick", ajaxSubmitWithChartsScript(GENERATE_REPORTS_FORM_ID, REPORT_URL,"Generate Report","Generating Report..."))
                                 )
                         )
                 ),

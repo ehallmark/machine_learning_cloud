@@ -1,23 +1,53 @@
 $(document).ready(function() {
 
-    $('#save-template-form-id-button').click(function(e){
-        e.preventDefault();
+    $('#save-template-form-id').submit(function(e){
+        $('#template_html').val($('#generate-reports-form').html());
+        return true;
+    });
 
+    $('#generate-reports-form').submit(function(e)) {
+        $('#generate-reports-form-button').attr('disabled',true).text('Generating...');"
+        var url = '/secure/patent_recommendation_engine';
+        var tempScrollTop = $(window).scrollTop();
+        $('#results').html('');    // clears results div
         $.ajax({
-          type: "POST",
-          url: $(this).closest('form').attr('action'),
-          data: {
-            template_name: $('#template-name').val(),
-            template_html: $('#generate-reports-form').html()
+          type: 'POST',
+          dataType: 'json',
+          url: url,
+          data: $('#"+ID+"').serialize(),
+          complete: function(jqxhr,status) {
+            $('#generate-reports-form-button').attr('disabled',false).text('Generate Report');
+            $(window).scrollTop(tempScrollTop);
+          },
+          error: function(jqxhr,status,error) {
+            $('#results').html('<div style="color: red;">Server ajax error:'+error+'</div>');
           },
           success: function(data) {
-              $('#results').html(data.message);
-          },
-          dataType: "json"
+            $('#results').html(data.message);
+            setupDataTable($('#results #data-table').get(0));
+            setCollapsibleHeaders('#results .collapsible-header');
+            if (data.hasOwnProperty('charts')) {
+              try {
+                 var charts = JSON.parse(data.charts);
+                 if(charts) {
+                     for(var i = 0; i<charts.length; i++) {
+                         var chart = null;
+                         if($('#chart-'+i.toString()).hasClass('stock')) {
+                             chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);
+                         } else {
+                             chart = Highcharts.chart('chart-'+i.toString(), charts[i]);
+                         }
+                         chart.redraw();
+                     }
+                 }
+              } catch (err) {
+                 $('#results').html("<div style='color:red;'>JavaScript error occured: " + err.message + '</div>');
+              }
+            }
+          }
         });
-
         return false;
-    });
+    }
 
     $('.template-remove-button').click(function(e){
         e.preventDefault();
