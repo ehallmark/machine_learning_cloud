@@ -483,6 +483,7 @@ public class SimilarPatentServer {
         Map<String,String> users = new HashMap<>();
         users.put("ehallmark","Evan1040");
         users.put("gtt","password");
+        users.put("form_creator","casolekjgoozckbz1894376lkjdxg09345lkzjdx34975ldfogi340975");
 
         post("/login", (req,res)->{
             Session session = req.session(true);
@@ -613,11 +614,23 @@ public class SimilarPatentServer {
     };
 
     private static synchronized Object handleDeleteForm(Request req, Response res) {
-        String formPath = req.queryParams("path_to_remove");
+        String fileName = req.queryParams("path_to_remove");
         String message;
-        if(formPath!=null) {
+        if(fileName!=null && fileName.replaceAll("[^0-9]","").length() > 0) {
+            fileName = fileName.replaceAll("[^0-9]","");
             try {
-                message = String.valueOf(new File(formPath).delete());
+                String username = req.session().attribute("username");
+                if(username==null||username.isEmpty()) {
+                    message = "Unable to locate user.";
+                } else {
+                    File toDelete = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/"+fileName);
+                    if(toDelete.exists() && toDelete.isFile()) {
+                        toDelete.delete();
+                        message = String.valueOf("Success: " + toDelete.delete());
+                    } else {
+                        message = "Unable to locate file.";
+                    }
+                }
             } catch(Exception e) {
                 message = e.getMessage();
             }
@@ -778,14 +791,14 @@ public class SimilarPatentServer {
         return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
-    public static List<Tag> getTemplatesForUser(String username) {
+    public static List<Tag> getTemplatesForUser(String username, boolean deletable) {
         if(username!=null && username.length()>0) {
             File folder = new File(Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/");
             if(!folder.exists()) folder.mkdirs();
             return Arrays.stream(folder.listFiles()).sorted(Comparator.comparingLong(file->file.lastModified())).map(file->{
                 Map<String,String> templateMap = (Map<String,String>)Database.tryLoadObject(file);
                 FormTemplate template = new FormTemplate(templateMap);
-                return templateHelper(template,file);
+                return templateHelper(template,deletable ? file : null);
             }).collect(Collectors.toList());
         } else {
             return Collections.emptyList();
@@ -826,7 +839,11 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().with(
-                                                                getTemplatesForUser(req.session().attribute("username"))
+                                                                div().with(
+                                                                        getTemplatesForUser("form_creator",false)
+                                                                ), div().with(
+                                                                        getTemplatesForUser(req.session().attribute("username"),true)
+                                                                )
                                                         )
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
@@ -845,7 +862,7 @@ public class SimilarPatentServer {
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
                 button(template.getName()).withClass("btn btn-secondary").attr("style","width: "+80+"%;").attr("data-template", template.getHtml()).attr("onclick", "$('#"+GENERATE_REPORTS_FORM_ID+"').html($(this).attr('data-template'));"),
-                span("(Delete)").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getAbsolutePath()).withClass("template-remove-button").attr("style","padding: 3px; float: right; font-weight: bolder;")
+                file==null?span():span("(Delete)").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","padding: 3px; float: right; font-weight: bolder;")
         );
     }
 
