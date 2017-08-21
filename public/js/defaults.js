@@ -5,7 +5,8 @@ $(document).ready(function() {
         return true;
     });
 
-    $('#generate-reports-form').submit(function(e)) {
+    $('#generate-reports-form').submit(function(e) {
+        e.preventDefault();
         $('#generate-reports-form-button').attr('disabled',true).text('Generating...');"
         var url = '/secure/patent_recommendation_engine';
         var tempScrollTop = $(window).scrollTop();
@@ -47,7 +48,7 @@ $(document).ready(function() {
           }
         });
         return false;
-    }
+    });
 
     $('.template-remove-button').click(function(e){
         e.preventDefault();
