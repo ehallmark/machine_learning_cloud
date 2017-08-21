@@ -30,7 +30,7 @@ $(document).ready(function() {
           },
           success: function(data) {
             $(this).closest('li').remove();
-          }
+          },
           dataType: "json"
         });
 
