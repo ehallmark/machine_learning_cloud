@@ -477,6 +477,9 @@ public class SimilarPatentServer {
 
     public static void server() {
         port(8080);
+        System.setProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "21474836");
+        System.setProperty("org.mortbay.http.HttpRequest.maxFormContentSize", "21474836");
+
         // HOST ASSETS
         staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
 
