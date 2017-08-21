@@ -8,13 +8,13 @@ services:
       - xpack.security.enabled=false
       - node.name=elasticsearch1
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms10000m -Xmx10000m"
+      - "ES_JAVA_OPTS=-Xms5000m -Xmx5000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch2"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 20g
+    mem_limit: 10g
     volumes:
       - esdata1:/usr/share/elasticsearch/data
     ports:
@@ -30,13 +30,13 @@ services:
       - xpack.security.enabled=false
       - node.name=elasticsearch2
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms10000m -Xmx10000m"
+      - "ES_JAVA_OPTS=-Xms5000m -Xmx5000m"
       - "discovery.zen.ping.unicast.hosts=elasticsearch1"
     ulimits:
       memlock:
         soft: -1
         hard: -1
-    mem_limit: 20g
+    mem_limit: 10g
     volumes:
       - esdata2:/usr/share/elasticsearch/data
     ports:
