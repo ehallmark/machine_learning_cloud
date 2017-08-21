@@ -289,7 +289,7 @@ public class SimilarPatentServer {
 
                 // Pre filters
                 attributesMap.forEach((name,attr) -> {
-                    ((Collection<AbstractFilter>)attr.createFilters()).forEach(filter->{
+                    attr.createFilters().forEach(filter->{
                         preFilterModelMap.put(filter.getName(),filter);
                         filterNameHelper(filter);
                     });
