@@ -8,7 +8,7 @@ sudo -u ehallmark1122 bash -c '    mvn clean install'
 sudo -u ehallmark1122 bash -c '    echo "Mvn clean installed"'
 sudo -u ehallmark1122 bash -c '    gcsfuse machine_learning_cloud_data data'
 sudo -u ehallmark1122 bash -c '    echo "Finished gcsfuse"'
-cd /home/ehallmark1122/machine_learning_cloud/src/elasticsearch
+cd /home/ehallmark1122/machine_learning_cloud/scripts/production
 sudo -u ehallmark1122 bash -c '    echo "in elasticsearch"'
 sudo -u ehallmark1122 bash -c '    sudo docker-compose up -d'
 sudo -u ehallmark1122 bash -c '    echo "Docker compose up"'
