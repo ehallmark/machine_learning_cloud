@@ -616,7 +616,9 @@ public class SimilarPatentServer {
                 message = "Please enter a form name.";
             }
         }
-        return new Gson().toJson(new SimpleAjaxMessage(message));
+        res.redirect(HOME_URL);
+        req.session().attribute("message", message);
+        return null;
     };
 
     private static synchronized Object handleDeleteForm(Request req, Response res) {
