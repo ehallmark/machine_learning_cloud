@@ -591,7 +591,7 @@ public class SimilarPatentServer {
         String formName = req.queryParams("template_name");
         String message;
         Random random = new Random(System.currentTimeMillis());
-        if(formHTML!=null&&formName!=null) {
+        if(formHTML!=null&&formName!=null&&formHTML.length()>0&&formName.length()>0) {
             System.out.println("Form "+formName+": "+formHTML);
             Map<String,String> formMap = new HashMap<>();
             formMap.put(formName,formHTML);
@@ -797,7 +797,7 @@ public class SimilarPatentServer {
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
-                                                                form().withAction(SAVE_TEMPLATE_URL).withMethod("post").with(
+                                                                form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
                                                                         input().withType("hidden").withName("template_html").withId("template_html"),
                                                                         input().withType("text").withClass("form-control").withName("template_name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")

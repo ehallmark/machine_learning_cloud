@@ -1,6 +1,7 @@
 $(document).ready(function() {
 
     $('#save-template-form-id').submit(function(e){
+        alert($('#generate-reports-form').html());
         $('#template_html').val($('#generate-reports-form').html());
         return true;
     });
