@@ -589,6 +589,7 @@ public class SimilarPatentServer {
         String formHTML = req.queryParams("template_html");
         String formName = req.queryParams("template_name");
         String message;
+        Random random = new Random(System.currentTimeMillis());
         if(formHTML!=null&&formName!=null) {
             Map<String,String> formMap = new HashMap<>();
             formMap.put(formName,formHTML);
@@ -597,8 +598,11 @@ public class SimilarPatentServer {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
                 File templateFolder = new File(templateFolderStr);
                 if(!templateFolder.exists()) templateFolder.mkdirs();
-                int fileNum = templateFolder.listFiles().length;
-                Database.trySaveObject(formMap,new File(templateFolderStr+fileNum));
+                File file = null;
+                while(file == null || file.exists()) {
+                    file = new File(templateFolderStr+Math.abs(random.nextInt()));
+                }
+                Database.trySaveObject(formMap,file);
                 message = "Saved sucessfully.";
             } else {
                 message = "Unable to find user.";
