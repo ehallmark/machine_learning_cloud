@@ -7,7 +7,7 @@ $(document).ready(function() {
 
     $('#generate-reports-form').submit(function(e) {
         e.preventDefault();
-        $('#generate-reports-form-button').attr('disabled',true).text('Generating...');"
+        $('#generate-reports-form-button').attr('disabled',true).text('Generating...');
         var url = '/secure/patent_recommendation_engine';
         var tempScrollTop = $(window).scrollTop();
         $('#results').html('');    // clears results div
