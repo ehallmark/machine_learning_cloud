@@ -444,26 +444,30 @@ var resetCheckbox = function(elem,target,shouldShow) {
 
 var showDraggable = function(elem) {
     var $draggable = $(elem);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
+    if($draggable.length > 0) {
     var id = $draggable.attr('data-target');
-    if(id) {
-        var target = "target";
-        $target = $('#'+id+'-'+target);
-        if($target) {
-              resetCheckbox($draggable.get(0),$target.get(0),true);
+        if(id) {
+            var target = "target";
+            $target = $('#'+id+'-'+target);
+            if($target) {
+                  resetCheckbox($draggable.get(0),$target.get(0),true);
+            }
         }
     }
 };
 
 var hideDraggable = function(elem) {
     var $draggable = $(elem);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
-    var id = $draggable.attr('data-target');
-    if(id) {
-        var target = "start";
-        $target = $('#'+id+'-'+target);
-        if($target) {
-              resetCheckbox($draggable.get(0),$target.get(0),false);
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
+    if($draggable.length > 0) {
+        var id = $draggable.attr('data-target');
+        if(id) {
+            var target = "start";
+            $target = $('#'+id+'-'+target);
+            if($target) {
+                  resetCheckbox($draggable.get(0),$target.get(0),false);
+            }
         }
     }
 };
