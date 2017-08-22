@@ -64,8 +64,8 @@ public class AbstractNestedFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                div().withClass("nested-form-select").with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"", filters.stream().map(filter->filter.getName()).collect(Collectors.toList()))
+                div().with(
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-form-select", filters.stream().map(filter->filter.getName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         filters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");

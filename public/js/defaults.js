@@ -191,19 +191,19 @@ $(document).ready(function() {
     });
 
     // nested forms
-    $('.nested-form-select select').each(function() {
+    $('select..nested-form-select').each(function() {
         $this = $(this);
         var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
         $this.select2(displayItemSelectOptions);
     });
 
-    $('.nested-form-select select').on("select2:select", function(e) {
+    $('select.nested-form-select').on("select2:select", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().show().find('input, select, textarea').prop('disabled', false);
         return true;
     });
 
-    $('.nested-form-select select').on("select2:unselect", function(e) {
+    $('select.nested-form-select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().hide().find('input, select, textarea').prop('disabled', true);
         return true;
@@ -438,10 +438,11 @@ var resetCheckbox = function(elem,target,shouldShow) {
         }
         // actually show element incase it's not shown
         if(shouldShow && !$draggable.is(':visible')) {
-            $collapse.show();
+            $draggable.parent().show();
         } else if ($draggable.is(':visible') && !shouldShow) {
-            $collapse.hide();
+            $draggable.parent().hide();
         }
+        $draggable.find('input,textarea,select').prop("disabled",!shouldShow);
 
     } else {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
@@ -458,9 +459,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
         $checkbox.prop("checked", shouldShow);
         //$checkbox.prop("disabled", !shouldShow);
         // security concern ?
-        $draggable.find('input').prop("disabled",!shouldShow);
-        $draggable.find('textarea').prop("disabled",!shouldShow);
-        $draggable.find('select').prop("disabled",!shouldShow);
+        $draggable.find('input,textarea,select').prop("disabled",!shouldShow);
     }
 };
 
