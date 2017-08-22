@@ -137,6 +137,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
             humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
+            humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
