@@ -596,6 +596,9 @@ public class SimilarPatentServer {
         Random random = new Random(System.currentTimeMillis());
         if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
             System.out.println("Form "+name+" attributes: "+attributesMap);
+            System.out.println("Form "+name+" charts: "+chartsMap);
+            System.out.println("Form "+name+" filters: "+filtersMap);
+            System.out.println("Form "+name+" searchOptions: "+attributesMap);
             Map<String,String> formMap = new HashMap<>();
             formMap.put("name",name);
             formMap.put("attributesMap",attributesMap);
@@ -619,9 +622,7 @@ public class SimilarPatentServer {
         } else {
             message = "Unable to create form. Data missing.";
         }
-        res.redirect(HOME_URL);
-        req.session().attribute("message", message);
-        return null;
+        return new Gson().toJson(new SimpleAjaxMessage(message));
     };
 
     private static synchronized Object handleDeleteForm(Request req, Response res) {

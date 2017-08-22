@@ -4,21 +4,38 @@ $(document).ready(function() {
         var dataMap = {};
         $(containerSelector+" "+itemSelector+" textarea,input,select").each(function(elem) {
             var $elem = $(elem);
-            dataMap[$elem.attr("id")]=$elem.val();
+            if($elem.attr('id')) {
+                dataMap[$elem.attr("id")]=$elem.val();
+            }
         });
         var json = JSON.stringify(dataMap);
         alert(json);
         $(hiddenValueSelector).val(json);
     };
 
-   $('#save-template-form-id').submit(function(e){
-        // search options
+    $('#save-template-form-id').submit(function(e){
+        e.preventDefault();
         saveTemplateFormHelper("#searchOptionsForm",".attributeElement:visible","#save-template-form-id #searchOptionsMap");
         saveTemplateFormHelper("#attributesForm",".attributeElement:visible","#save-template-form-id #attributesMap");
         saveTemplateFormHelper("#filtersForm",".attributeElement:visible","#save-template-form-id #filtersMap");
         saveTemplateFormHelper("#chartsForm",".attributeElement:visible","#save-template-form-id #chartsMap");
-        return true;
+
+        var $this = $(this);
+
+        $.ajax({
+          type: "POST",
+          url: $(this).attr('data-action'),
+          data: $('#save-template-form-id').serialize(),
+          success: function(data) {
+            alert("Success");
+            // add button
+          },
+          dataType: "json"
+        });
+
+        return false;
     });
+
 
     var showTemplateFormHelper = function(formSelector,json) {
         var dataMap = JQuery.parseJSON(json);
@@ -111,6 +128,7 @@ $(document).ready(function() {
 
         return false;
     });
+
     // display-item-select
     $('.display-item-select').each(function(){
         $this = $(this);
