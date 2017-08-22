@@ -54,10 +54,10 @@ public class AbstractBetweenFilter extends AbstractFilter {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min"),
-                        input().withClass("form-control").withType("number").withValue("0").withName(minName)
+                        input().withClass("form-control").withType("number").withValue("0").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+minName.replaceAll("[\\[\\]]","")).withName(minName)
                 ), div().withClass("col-6").with(
                         label("Max"),
-                        input().withClass("form-control").withType("number").withValue("0").withName(maxName)
+                        input().withClass("form-control").withType("number").withValue("0").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()+maxName.replaceAll("[\\[\\]]","")).withName(maxName)
                 )
         );
     }

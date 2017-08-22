@@ -2,7 +2,7 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector).each(function(elem) {
+        $(containerSelector+" "+itemSelector+" textarea,input,select").each(function(elem) {
             var $elem = $(elem);
             dataMap[$elem.attr("id")]=$elem.val();
         });
@@ -13,10 +13,10 @@ $(document).ready(function() {
 
    $('#save-template-form-id').submit(function(e){
         // search options
-        saveTemplateFormHelper("#searchOptionsForm",".searchOptionElement:visible","#save-template-form-id #searchOptionsMap");
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement:visible","#save-template-form-id #searchOptionsMap");
         saveTemplateFormHelper("#attributesForm",".attributeElement:visible","#save-template-form-id #attributesMap");
-        saveTemplateFormHelper("#filtersForm",".filterElement:visible","#save-template-form-id #filtersMap");
-        saveTemplateFormHelper("#chartsForm",".chartElement:visible","#save-template-form-id #chartsMap");
+        saveTemplateFormHelper("#filtersForm",".attributeElement:visible","#save-template-form-id #filtersMap");
+        saveTemplateFormHelper("#chartsForm",".attributeElement:visible","#save-template-form-id #chartsMap");
         return true;
     });
 
@@ -25,6 +25,8 @@ $(document).ready(function() {
         $.each(dataMap,function(id,value) {
             var $elem = $('#'+id);
             $elem.val(value);
+            $elem.trigger('change');
+            System.out.println(" "+formSelector+":: "+id+": "+value);
             showDraggable($elem.get(0));
         });
     };
@@ -34,10 +36,10 @@ $(document).ready(function() {
 
         var $this = $(this);
         resetSearchForm();
-        showTemplateFormHelper($this.attr("#searchOptionsForm","data-searchOptionsMap"));
-        showTemplateFormHelper($this.attr("#attributesForm","data-attributesMap"));
-        showTemplateFormHelper($this.attr("#filtersForm","data-filtersMap"));
-        showTemplateFormHelper($this.attr("#chartsForm","data-chartsMap"));
+        showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
+        showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
+        showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
+        showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
         return false;
     });
 

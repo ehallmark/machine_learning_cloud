@@ -63,7 +63,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         if (fieldType.equals(FieldType.Text)) {
             return div().with(
-                    textarea().withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+                    textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
             return div().with(

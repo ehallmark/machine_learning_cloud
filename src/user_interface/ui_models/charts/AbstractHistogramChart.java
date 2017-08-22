@@ -36,7 +36,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                label("Group By"),br(),select().withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
+                label("Group By"),br(),select().withId(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD.replaceAll("[\\[\\]]","")).withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
                         option("No Group (default)").attr("selected","selected").withValue(""),
                         span().with(
                                 Arrays.asList(Constants.LATEST_ASSIGNEE,Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY, Constants.CPC_TECHNOLOGY).stream()

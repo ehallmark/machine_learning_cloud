@@ -843,9 +843,9 @@ public class SimilarPatentServer {
 
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
-                button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:60)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
                         .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
-                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","width: 20%; cursor: pointer; padding: 3px; float: right; font-weight: bolder;")
+                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","width: 10%; margin-left: 10;  cursor: pointer; padding: 3px; font-weight: bolder;")
         );
     }
 
@@ -855,7 +855,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag technologySelectWithCustomClass(String name, String clazz, Collection<String> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withClass(clazz).attr("multiple","multiple").with(
+        return select().attr("style","width:100%;").withName(name).withId("multiselect-"+clazz+"-"+name.replaceAll("[\\[\\]]","")).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));
                 }).collect(Collectors.toList())
@@ -956,10 +956,10 @@ public class SimilarPatentServer {
     public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedAttributeParent) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
-        return div().attr("data-model",modelName).withClass("draggable "+type).attr("data-target",type).with(
+        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
-                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withName(arrayFieldName).withValue(modelName),
+                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withId(arrayFieldName.replaceAll("[\\[\\]]","")+modelName+type+collapseId).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );

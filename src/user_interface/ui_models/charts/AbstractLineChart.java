@@ -39,9 +39,9 @@ public class AbstractLineChart extends ChartAttribute {
         return div().with(
                 div().withClass("row").with(
                         div().withClass("col-6").with(
-                                label("Min"),br(),input().withName(SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
+                                label("Min"),br(),input().withId(SimilarPatentServer.LINE_CHART_MIN).withName(SimilarPatentServer.LINE_CHART_MIN).withType("number").withClass("form-control")
                         ), div().withClass("col-6").with(
-                                label("Max"),br(),input().withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
+                                label("Max"),br(),input().withId(SimilarPatentServer.LINE_CHART_MAX).withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                         )
                 ),
                 SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE))

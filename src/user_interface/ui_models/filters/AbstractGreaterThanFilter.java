@@ -49,7 +49,7 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                input().withClass("form-control").withType("number").withValue("0").withName(getName())
+                input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType("number").withValue("0").withName(getName())
         );
     }
 }

@@ -49,7 +49,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         return div().with(
                 button("Syntax").withClass("miniTip btn btn-sm btn-secondary"),
-                textarea().withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
+                textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","Example: (\"find this phrase\" | \"or this one\")").withName(getName())
         );
     }
 
