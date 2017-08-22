@@ -814,15 +814,16 @@ public class SimilarPatentServer {
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
+                                                                h5("Create New Template"),
                                                                 form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
                                                                         input().withType("hidden").withName("chartsMap").withId("chartsMap"),
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
                                                                         input().withType("hidden").withName("attributesMap").withId("attributesMap"),
                                                                         input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
                                                                         input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
-                                                                        button().withType("submit").withText("Save Form as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
+                                                                        button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
-                                                        ), div().with(
+                                                        ), div().attr("style","max-height: 50%; overflow-y: auto;").with(
                                                                 h5("Default Templates"),
                                                                 div().with(
                                                                         getTemplatesForUser("form_creator",false)
