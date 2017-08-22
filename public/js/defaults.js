@@ -278,11 +278,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.collapsible-form').filter(':visible').each(function() {
-        $(this).closest('.collapse').removeClass("show");
-    });
-    $('.draggable select,textarea,input').val('');
-    $('.draggable .multiselect').val(null).trigger("change");
+    $('.draggable select,textarea,input').val(null).trigger('change');
     $('#results').html('');
 };
 
@@ -423,23 +419,37 @@ var setCollapsibleHeaders = function(selector) {
 
 var resetCheckbox = function(elem,target,shouldShow) {
     var $draggable = $(elem);
-    $draggable.detach().css({top: 0,left: 0}).appendTo(target);
-    var $handle = $draggable.find(".collapsible-header");
-    var $collapse = $draggable.find(".collapse");
-    $collapse.css('display','');
-    if(shouldShow && !$collapse.hasClass('show')) {
-        $collapse.addClass('show');
-    } else if ($collapse.hasClass('show') && !shouldShow) {
-        $collapse.removeClass('show');
-    }
+    // check for nested
+    if($draggable.hasClass('nested')) {
+        resetCheckbox($draggable.parent().closest('.draggable').get(0)), target, shouldShow);
+        var $handle = $draggable.find(".collapsible-header");
+        var $collapse = $draggable.find(".collapse");
+        $collapse.css('display','');
+        if(shouldShow && !$collapse.hasClass('show')) {
+            $collapse.addClass('show');
+        } else if ($collapse.hasClass('show') && !shouldShow) {
+            $collapse.removeClass('show');
+        }
+        
+    } else {
+        $draggable.detach().css({top: 0,left: 0}).appendTo(target);
+        var $handle = $draggable.find(".collapsible-header");
+        var $collapse = $draggable.find(".collapse");
+        $collapse.css('display','');
+        if(shouldShow && !$collapse.hasClass('show')) {
+            $collapse.addClass('show');
+        } else if ($collapse.hasClass('show') && !shouldShow) {
+            $collapse.removeClass('show');
+        }
 
-    var $checkbox = $draggable.find(".mycheckbox")
-    $checkbox.prop("checked", shouldShow);
-    //$checkbox.prop("disabled", !shouldShow);
-    // security concern ?
-    $draggable.find('input').prop("disabled",!shouldShow);
-    $draggable.find('textarea').prop("disabled",!shouldShow);
-    $draggable.find('select').prop("disabled",!shouldShow);
+        var $checkbox = $draggable.find(".mycheckbox")
+        $checkbox.prop("checked", shouldShow);
+        //$checkbox.prop("disabled", !shouldShow);
+        // security concern ?
+        $draggable.find('input').prop("disabled",!shouldShow);
+        $draggable.find('textarea').prop("disabled",!shouldShow);
+        $draggable.find('select').prop("disabled",!shouldShow);
+    }
 };
 
 var showDraggable = function(elem) {

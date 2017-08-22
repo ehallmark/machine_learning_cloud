@@ -597,7 +597,7 @@ public class SimilarPatentServer {
             System.out.println("Form "+name+" attributes: "+attributesMap);
             System.out.println("Form "+name+" charts: "+chartsMap);
             System.out.println("Form "+name+" filters: "+filtersMap);
-            System.out.println("Form "+name+" searchOptions: "+attributesMap);
+            System.out.println("Form "+name+" searchOptions: "+searchOptionsMap);
             Map<String,String> formMap = new HashMap<>();
             formMap.put("name",name);
             formMap.put("attributesMap",attributesMap);
@@ -956,7 +956,7 @@ public class SimilarPatentServer {
     public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedAttributeParent) {
         String groupID = type+"-row";
         String toggleID = groupID+"-panel-toggle";
-        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type).attr("data-target",type).with(
+        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "")).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
                         nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
