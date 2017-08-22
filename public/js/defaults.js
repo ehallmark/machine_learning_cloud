@@ -11,7 +11,6 @@ $(document).ready(function() {
             });
         });
         var json = JSON.stringify(dataMap);
-        alert(json);
         $(hiddenValueSelector).val(json);
     };
 
@@ -40,7 +39,7 @@ $(document).ready(function() {
 
 
     var showTemplateFormHelper = function(formSelector,json) {
-        var dataMap = JQuery.parseJSON(json);
+        var dataMap = jQuery.parseJSON(json);
         $.each(dataMap,function(id,value) {
             var $elem = $('#'+id);
             $elem.val(value);

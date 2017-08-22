@@ -71,7 +71,6 @@ public class SimilarPatentServer {
     public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String LIMIT_FIELD = "limit";
-    public static final String SIMILARITY_MODEL_FIELD = "similarityModel";
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String SORT_DIRECTION_FIELD = "sortDirection";
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
@@ -960,7 +959,7 @@ public class SimilarPatentServer {
         return div().attr("data-model",modelName).withClass("attributeElement draggable "+type).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
-                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withId(arrayFieldName.replaceAll("[\\[\\]]","")+modelName+type+collapseId).withName(arrayFieldName).withValue(modelName),
+                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]]","")).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );
@@ -975,27 +974,20 @@ public class SimilarPatentServer {
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
                                         div().withClass("col-12").with(
-                                                label("Sort By"),br(),select().withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
+                                                label("Sort By"),br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Arrays.asList(Constants.OVERALL_SCORE,Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         ),
                                         div().withClass("col-6").with(
                                                 label("Sort Direction"),br(),
-                                                select().withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
+                                                select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
                                                         option("Ascending").withValue("asc"),
                                                         option("Descending").withValue("desc").attr("selected","selected")
                                                 )
                                         ),
                                         div().withClass("col-6").with(
-                                                label("Result Limit"),br(),input().withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                        ), div().withClass("col-12").attr("style","margin-top: 8px; display: none;").with(
-                                                label("Similarity Model"),br(),select().withClass("form-control single-select2").withName(SIMILARITY_MODEL_FIELD).with(
-                                                        option().withValue(Constants.PARAGRAPH_VECTOR_MODEL).attr("selected","true").withText("Claim Language Model"),
-                                                        option().withValue(Constants.SIM_RANK_MODEL).withText("Citation Graph Model"),
-                                                        option().withValue(Constants.WIPO_MODEL).withText("WIPO Technology Model"),
-                                                        option().withValue(Constants.CPC_MODEL).withText("CPC Code Model")
-                                                )
+                                                label("Result Limit"),br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
                         )
