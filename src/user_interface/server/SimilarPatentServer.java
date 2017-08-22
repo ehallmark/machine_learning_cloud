@@ -818,8 +818,8 @@ public class SimilarPatentServer {
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
                                                                         input().withType("hidden").withName("attributesMap").withId("attributesMap"),
                                                                         input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
-                                                                        input().withType("text").withClass("form-control").withName("name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
-                                                                        button().withType("submit").withText("Save as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
+                                                                        input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
+                                                                        button().withType("submit").withText("Save Form as Template").attr("style","width: 80%;").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().with(
                                                                 h5("Default Templates"),
