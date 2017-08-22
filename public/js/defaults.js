@@ -38,7 +38,7 @@ $(document).ready(function() {
             if(!(name || charts || attributes || filters || searchOptions || file)) {
                 alert('Error saving template.');
             } else {
-                $('#my-templates ul').append($('<li class="nav-item"><button class="btn btn-secondary template-show-button" style="width: 70%;" data-name="'+name+'" data-chartsmap="'+charts+'" data-attributesmap="'+attributes+'" data-filtersmap="'+filters+'" data-searchoptionsmap="'+searchOptions+'">'+name+'</button><span data-action="/secure/delete_template" data-file="'+file+'" class="template-remove-button" >X</span></li>'));
+                $('#my-templates').append($('<li class="nav-item"><button class="btn btn-secondary template-show-button" style="width: 70%;" data-name="'+name+'" data-chartsmap="'+charts+'" data-attributesmap="'+attributes+'" data-filtersmap="'+filters+'" data-searchoptionsmap="'+searchOptions+'">'+name+'</button><span data-action="/secure/delete_template" data-file="'+file+'" class="template-remove-button" >X</span></li>'));
             }
           },
           dataType: "json"
