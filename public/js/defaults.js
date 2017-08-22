@@ -29,7 +29,7 @@ $(document).ready(function() {
           data: $('#save-template-form-id').serialize(),
           success: function(data) {
             // add button
-            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('charts') && data.hasOwnProperty('attributes') && data.hasOwnProperty('filters') && data.hasOwnProperty('searchOptions') && data.hasOwnProperty('file'))) {
+            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
                 alert('Error saving template: '+data.message);
             } else {
                 var name = data.name;

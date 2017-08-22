@@ -604,7 +604,6 @@ public class SimilarPatentServer {
             formMap.put("filtersMap",filtersMap);
             formMap.put("chartsMap",chartsMap);
             String username = req.session().attribute("username");
-            Object fileName;
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
                 File templateFolder = new File(templateFolderStr);
@@ -615,13 +614,11 @@ public class SimilarPatentServer {
                 }
                 Database.trySaveObject(formMap,file);
                 message = "Saved sucessfully.";
-                fileName = file.getName();
+                responseMap.put("file",file.getName());
             } else {
                 message = "Unable to find user.";
-                fileName = false;
             }
             responseMap.putAll(formMap);
-            responseMap.put("file",fileName);
         } else {
             if(name==null||name.isEmpty()) {
                 message = "Please enter a name for the new template.";
