@@ -44,7 +44,6 @@ $(document).ready(function() {
             var $elem = $('#'+id);
             $elem.val(value);
             $elem.trigger('change');
-            System.out.println(" "+formSelector+":: "+id+": "+value);
             showDraggable($elem.get(0));
         });
     };

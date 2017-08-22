@@ -973,20 +973,20 @@ public class SimilarPatentServer {
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
-                                        div().withClass("col-12").with(
+                                        div().withClass("col-12 attributeElement").with(
                                                 label("Sort By"),br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Arrays.asList(Constants.OVERALL_SCORE,Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.COMPDB_ASSETS_PURCHASED, Constants.COMPDB_ASSETS_SOLD).stream()
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                                 )
                                         ),
-                                        div().withClass("col-6").with(
+                                        div().withClass("col-6 attributeElement").with(
                                                 label("Sort Direction"),br(),
                                                 select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
                                                         option("Ascending").withValue("asc"),
                                                         option("Descending").withValue("desc").attr("selected","selected")
                                                 )
                                         ),
-                                        div().withClass("col-6").with(
+                                        div().withClass("col-6 attributeElement").with(
                                                 label("Result Limit"),br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 )
