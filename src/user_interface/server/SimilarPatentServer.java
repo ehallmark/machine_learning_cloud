@@ -907,7 +907,7 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().withClass("btn-group").with(
+                                ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button"),
                                         div().withText("Download to Excel").withClass("btn btn-secondary div-button").withId("download-to-excel-button")
                                 )
