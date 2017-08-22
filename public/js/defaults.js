@@ -51,6 +51,7 @@ $(document).ready(function() {
                 var searchOptions = data.searchOptionsMap;
                 var file = data.file;
                 $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
+                $('.template-show-button').filter(':last').click(showTemplateFunction);
             }
           },
           dataType: "json"
@@ -70,17 +71,7 @@ $(document).ready(function() {
         });
     };
 
-    $('.template-show-button').click(function(e){
-        e.preventDefault();
-
-        var $this = $(this);
-        resetSearchForm();
-        showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
-        showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
-        showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
-        showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
-        return false;
-    });
+    $('.template-show-button').click(showTemplateFunction);
 
     var submitFormFunction = function(e) {
          e.preventDefault();
@@ -449,8 +440,18 @@ var hideDraggable = function(elem) {
     }
 };
 
+var showTemplateFunction = function(e){
+    e.preventDefault();
+
+    var $this = $(this);
+    resetSearchForm();
+    showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
+    showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
+    showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
+    showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
+    return false;
+};
+
 var loadEvent = function(){
  // do nothing :(
 };
-
-
