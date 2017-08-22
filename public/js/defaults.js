@@ -2,9 +2,9 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector).each(function(container) {
-            $(container).find("textarea,input,select").each(function(elem) {
-                var $elem = $(elem);
+        $(containerSelector+" "+itemSelector).each(function() {
+            $(this).find("textarea,input,select").each(function() {
+                var $elem = $(this);
                 if($elem.attr('id')) {
                     dataMap[$elem.attr("id")]=$elem.val();
                 }
