@@ -420,8 +420,8 @@ var resetCheckbox = function(elem,target,shouldShow) {
 var showDraggable = function(elem) {
     var $draggable = $(elem);
     $draggable.find('input,textarea,select').prop("disabled",false);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
-    if($draggable.hasClass('draggable')) {
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
+    if($draggable.length > 0) {
         $draggable.find('input,textarea,select').prop("disabled",false);
         var id = $draggable.attr('data-target');
         if(id) {
@@ -437,8 +437,8 @@ var showDraggable = function(elem) {
 var hideDraggable = function(elem) {
     var $draggable = $(elem);
     $draggable.find('input,textarea,select').prop("disabled",true);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
-    if($draggable.hasClass('draggable')) {
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
+    if($draggable.length > 0) {
         $draggable.find('input,textarea,select').prop("disabled",true);
         var id = $draggable.attr('data-target');
         if(id) {
