@@ -2,11 +2,13 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector+" textarea,input,select").each(function(elem) {
-            var $elem = $(elem);
-            if($elem.attr('id')) {
-                dataMap[$elem.attr("id")]=$elem.val();
-            }
+        $(containerSelector+" "+itemSelector).each(function(container) {
+            $(container).find("textarea,input,select").each(function(elem) {
+                var $elem = $(elem);
+                if($elem.attr('id')) {
+                    dataMap[$elem.attr("id")]=$elem.val();
+                }
+            });
         });
         var json = JSON.stringify(dataMap);
         alert(json);
@@ -24,7 +26,7 @@ $(document).ready(function() {
 
         $.ajax({
           type: "POST",
-          url: $(this).attr('data-action'),
+          url: $(this).attr('action'),
           data: $('#save-template-form-id').serialize(),
           success: function(data) {
             alert("Success");
