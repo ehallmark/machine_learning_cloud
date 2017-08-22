@@ -300,7 +300,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable select,textarea,input').val(null).trigger('change').prop('disabled',true);
+    $('.draggable').find('select,textarea,input').val(null).trigger('change').prop('disabled',true);
     $('#results').html('');
 };
 
