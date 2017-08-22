@@ -623,7 +623,11 @@ public class SimilarPatentServer {
             responseMap.putAll(formMap);
             responseMap.put("file",fileName);
         } else {
-            message = "Unable to create form. Data missing.";
+            if(name==null||name.isEmpty()) {
+                message = "Please enter a name for the new template.";
+            } else {
+                message = "Unable to create form. Data missing.";
+            }
         }
         responseMap.put("message", message);
         return new Gson().toJson(responseMap);
