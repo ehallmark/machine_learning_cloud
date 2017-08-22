@@ -511,7 +511,7 @@ public class SimilarPatentServer {
         // GET METHODS
         //redirect.get("/",HOME_URL);
         get("/", (req, res)->{
-            return templateWrapper(req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
+            return templateWrapper(false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
@@ -523,7 +523,7 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(req, res, candidateSetModelsForm());
+                return templateWrapper(true, req, res, candidateSetModelsForm());
             } else {
                 return null;
             }
@@ -786,7 +786,7 @@ public class SimilarPatentServer {
         }
     }
 
-    static Tag templateWrapper(Request req, Response res, Tag form) {
+    static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form) {
         res.type("text/html");
         return html().with(
                 head().with(
@@ -813,7 +813,7 @@ public class SimilarPatentServer {
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 15px;").with(
                                                 br(),br(),br(),
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
-                                                ul().withClass("nav nav-pills flex-column").with(
+                                                (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
                                                                 h5("Create New Template"),
                                                                 form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
@@ -821,7 +821,7 @@ public class SimilarPatentServer {
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
                                                                         input().withType("hidden").withName("attributesMap").withId("attributesMap"),
                                                                         input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
-                                                                        input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; display: inline-block; text-align: center;"),
+                                                                        input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().attr("style","max-height: 50%; overflow-y: auto;").with(

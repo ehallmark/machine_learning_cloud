@@ -191,7 +191,7 @@ $(document).ready(function() {
     });
 
     // nested forms
-    $('select..nested-form-select').each(function() {
+    $('select.nested-form-select').each(function() {
         $this = $(this);
         var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
         $this.select2(displayItemSelectOptions);
