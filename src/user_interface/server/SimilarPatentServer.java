@@ -930,7 +930,7 @@ public class SimilarPatentServer {
         String groupID = type+"-row";
         return span().with(
                 toggleButton(groupID, shortTitle),
-                span().withId(groupID).withClass("collapse").with(
+                span().withId(groupID).with(
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected")),
@@ -968,9 +968,9 @@ public class SimilarPatentServer {
     private static Tag mainOptionsRow() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        h5("Search Options") //.withClass("collapsible-header").attr("data-target","#main-options")
+                        h5("Search Options")
                 ),
-                span().withId("main-options").withClass("collapse").with(
+                span().withId("main-options").with(
                         div().withClass("col-12").with(
                                 div().withClass("row collapsible-form").with(
                                         div().withClass("col-12 attributeElement").with(
