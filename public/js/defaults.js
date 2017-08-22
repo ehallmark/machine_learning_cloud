@@ -421,7 +421,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
     var $draggable = $(elem);
     // check for nested
     if($draggable.hasClass('nested')) {
-        resetCheckbox($draggable.parent().closest('.draggable').get(0)), target, shouldShow);
+        resetCheckbox($draggable.parent().closest('.draggable').get(0), target, shouldShow);
         var $handle = $draggable.find(".collapsible-header");
         var $collapse = $draggable.find(".collapse");
         $collapse.css('display','');
@@ -430,7 +430,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
         } else if ($collapse.hasClass('show') && !shouldShow) {
             $collapse.removeClass('show');
         }
-        
+
     } else {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
         var $handle = $draggable.find(".collapsible-header");
