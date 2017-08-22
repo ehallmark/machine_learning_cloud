@@ -60,17 +60,6 @@ $(document).ready(function() {
         return false;
     });
 
-
-    var showTemplateFormHelper = function(formSelector,json) {
-        var dataMap = jQuery.parseJSON(json);
-        $.each(dataMap,function(id,value) {
-            var $elem = $('#'+id);
-            showDraggable($elem.get(0));
-            $elem.val(value);
-            $elem.trigger('change');
-        });
-    };
-
     $('.template-show-button').click(showTemplateFunction);
 
     var submitFormFunction = function(e) {
@@ -440,9 +429,18 @@ var hideDraggable = function(elem) {
     }
 };
 
+var showTemplateFormHelper = function(formSelector,json) {
+    var dataMap = jQuery.parseJSON(json);
+    $.each(dataMap,function(id,value) {
+        var $elem = $('#'+id);
+        showDraggable($elem.get(0));
+        $elem.val(value);
+        $elem.trigger('change');
+    });
+};
+
 var showTemplateFunction = function(e){
     e.preventDefault();
-
     var $this = $(this);
     resetSearchForm();
     showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
