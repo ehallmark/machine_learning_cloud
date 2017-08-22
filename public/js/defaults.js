@@ -64,9 +64,9 @@ $(document).ready(function() {
         var dataMap = jQuery.parseJSON(json);
         $.each(dataMap,function(id,value) {
             var $elem = $('#'+id);
+            showDraggable($elem.get(0));
             $elem.val(value);
             $elem.trigger('change');
-            showDraggable($elem.get(0));
         });
     };
 
