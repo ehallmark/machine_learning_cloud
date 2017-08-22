@@ -913,7 +913,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
                 div().withId(id+"-panel-toggle").withClass("col-12").with(
-                        h5(text).withClass("collapsible-header").attr("data-target","#"+id)
+                        h5(text)
                 )
         );
     }
@@ -968,7 +968,7 @@ public class SimilarPatentServer {
     private static Tag mainOptionsRow() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        h5("Search Options").withClass("collapsible-header").attr("data-target","#main-options")
+                        h5("Search Options") //.withClass("collapsible-header").attr("data-target","#main-options")
                 ),
                 span().withId("main-options").withClass("collapse").with(
                         div().withClass("col-12").with(
