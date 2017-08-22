@@ -28,8 +28,18 @@ $(document).ready(function() {
           url: $(this).attr('action'),
           data: $('#save-template-form-id').serialize(),
           success: function(data) {
-            alert("Success");
             // add button
+            var name = data.name;
+            var charts = data.chartsMap;
+            var attributes = data.attributesMap;
+            var filters = data.filtersMap;
+            var searchOptions = data.searchOptionsMap;
+            var file = searchOptions.file;
+            if(!(name || charts || attributes || filters || searchOptions || file)) {
+                alert('Error saving template.');
+            } else {
+                $('#my-templates ul').append($('<li class="nav-item"><button class="btn btn-secondary template-show-button" style="width: 70%;" data-name="'+name+'" data-chartsmap="'+charts+'" data-attributesmap="'+attributes+'" data-filtersmap="'+filters+'" data-searchoptionsmap="'+searchOptions+'">'+name+'</button><span data-action="/secure/delete_template" data-file="'+file+'" class="template-remove-button" >X</span></li>'));
+            }
           },
           dataType: "json"
         });

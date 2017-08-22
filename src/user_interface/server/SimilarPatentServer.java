@@ -593,11 +593,9 @@ public class SimilarPatentServer {
         String name = req.queryParams("name");
         String message;
         Random random = new Random(System.currentTimeMillis());
+        Map<String,Object> responseMap = new HashMap<>();
         if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
             System.out.println("Form "+name+" attributes: "+attributesMap);
-            System.out.println("Form "+name+" charts: "+chartsMap);
-            System.out.println("Form "+name+" filters: "+filtersMap);
-            System.out.println("Form "+name+" searchOptions: "+searchOptionsMap);
             Map<String,String> formMap = new HashMap<>();
             formMap.put("name",name);
             formMap.put("attributesMap",attributesMap);
@@ -605,6 +603,7 @@ public class SimilarPatentServer {
             formMap.put("filtersMap",filtersMap);
             formMap.put("chartsMap",chartsMap);
             String username = req.session().attribute("username");
+            Object fileName;
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
                 File templateFolder = new File(templateFolderStr);
@@ -615,13 +614,18 @@ public class SimilarPatentServer {
                 }
                 Database.trySaveObject(formMap,file);
                 message = "Saved sucessfully.";
+                fileName = file.getName();
             } else {
                 message = "Unable to find user.";
+                fileName = false;
             }
+            responseMap.putAll(formMap);
+            responseMap.put("file",fileName);
         } else {
             message = "Unable to create form. Data missing.";
         }
-        return new Gson().toJson(new SimpleAjaxMessage(message));
+        responseMap.put("message", message);
+        return new Gson().toJson(responseMap);
     };
 
     private static synchronized Object handleDeleteForm(Request req, Response res) {
@@ -823,7 +827,7 @@ public class SimilarPatentServer {
                                                                         getTemplatesForUser("form_creator",false)
                                                                 ),
                                                                 h5("My Templates"),
-                                                                div().with(
+                                                                div().withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )
@@ -845,7 +849,7 @@ public class SimilarPatentServer {
         return li().withClass("nav-item").with(
                 button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
                         .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
-                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button").attr("style","width: 10%; margin-left: 10;  cursor: pointer; padding: 3px; font-weight: bolder;")
+                file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button")
         );
     }
 
@@ -855,7 +859,7 @@ public class SimilarPatentServer {
     }
 
     public static Tag technologySelectWithCustomClass(String name, String clazz, Collection<String> orderedClassifications) {
-        return select().attr("style","width:100%;").withName(name).withId("multiselect-"+clazz+"-"+name.replaceAll("[\\[\\]]","")).withClass(clazz).attr("multiple","multiple").with(
+        return select().attr("style","width:100%;").withName(name).withId(("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","")).withClass(clazz).attr("multiple","multiple").with(
                 orderedClassifications.stream().map(technology-> {
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));
                 }).collect(Collectors.toList())

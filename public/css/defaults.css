@@ -26,6 +26,14 @@ h4, h5 {
     margin-right: auto;
 }
 
+.template-remove-button {
+    width: 10%;
+    margin-left: 10;
+    cursor: pointer;
+    padding: 3px;
+    font-weight: bolder;
+}
+
 h5 {
     padding-top: 10px;
 }
