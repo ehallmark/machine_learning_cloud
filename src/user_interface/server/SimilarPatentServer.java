@@ -702,18 +702,29 @@ public class SimilarPatentServer {
 
             System.out.println("Rendering table...");
             List<List<String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
-            AtomicInteger chartCnt = new AtomicInteger(0);
-            String html = new Gson().toJson(new AjaxChartMessage(div().with(
-                    finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style","margin-bottom: 10px;").with(
-                            h4("Charts").withClass("collapsible-header").attr("data-target","#data-charts"),
-                            span().withId("data-charts").withClass("collapse show").with(
-                                    finishedCharts.stream().map(c -> div().attr("style","width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                            ),br()
-                    ),portfolioList == null ? div() : div().withClass("row").attr("style","margin-top: 10px;").with(
-                            h4("Data").withClass("collapsible-header").attr("data-target","#data-table"),
-                            tableFromPatentList(tableData, tableHeaders)
-                    )
-            ).render(), finishedCharts));
+
+            boolean onlyExcel = extractBool(req, "onlyExcel");
+            String html;
+
+            if(onlyExcel) {
+                System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
+                Map<String,String> results = new HashMap<>();
+                results.put("message","success");
+                html = new Gson().toJson(results);
+            } else {
+                AtomicInteger chartCnt = new AtomicInteger(0);
+                html = new Gson().toJson(new AjaxChartMessage(div().with(
+                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
+                                h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                                span().withId("data-charts").withClass("collapse show").with(
+                                        finishedCharts.stream().map(c -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                ), br()
+                        ), portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
+                                h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                                tableFromPatentList(tableData, tableHeaders)
+                        )
+                ).render(), finishedCharts));
+            }
 
             Map<String,Object> excelRequestMap = new HashMap<>();
             excelRequestMap.put("headers", tableHeaders);
@@ -731,7 +742,7 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(List<List<String>> data, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 25%; margin-right: 25%; margin-bottom: 20px;")
+                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 35%; margin-right: 35%; margin-bottom: 20px;")
                 ), table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                         thead().with(
                                 tr().with(
@@ -815,7 +826,7 @@ public class SimilarPatentServer {
                                                 h4("Templates").attr("style","margin-top: 50px;"),br(),
                                                 (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
-                                                                h5("Create New Template"),
+                                                                h5("Save as Template"),
                                                                 form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
                                                                         input().withType("hidden").withName("chartsMap").withId("chartsMap"),
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
@@ -872,7 +883,8 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm() {
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
-                        form().withAction(DOWNLOAD_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                        form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
+                                input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12").with(
                                         div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
@@ -887,8 +899,9 @@ public class SimilarPatentServer {
                                                         customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
                                                 )
                                         )
-                                ),div().with(
-                                        div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button")
+                                ),div().withClass("btn-group").with(
+                                        div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button"),
+                                        div().withText("Download to Excel").withClass("btn btn-secondary div-button").withId("download-to-excel-button")
                                 )
                         )
                 ),
