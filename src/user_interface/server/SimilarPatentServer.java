@@ -515,9 +515,9 @@ public class SimilarPatentServer {
                     p("Log in"),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
-                    ), label("Password").with(
+                    ), br(), br(), label("Password").with(
                             input().withType("password").withClass("form-control").withName("password")
-                    ),button("Login").withType("submit").withClass("btn btn-secondary")
+                    ), br(), br(), button("Login").withType("submit").withClass("btn btn-secondary")
             ));
         });
 
