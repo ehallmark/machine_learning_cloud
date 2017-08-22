@@ -1,11 +1,23 @@
 $(document).ready(function() {
+    $('.miniTip').miniTip({
+        title: 'Advanced Keyword Syntax',
+        event: 'click',
+        content: "<p>+ signifies AND operation</p>"+
+                 "<p>| signifies OR operation</p>"+
+                 "<p>- negates a single token</p>"+
+                 "\"\" wraps a number of tokens to signify a phrase for searching</p>"+
+                 "<p>* at the end of a term signifies a prefix query</p>"+
+                 "<p>( and ) signify precedence</p>"+
+                 "<p>~N after a word signifies edit distance (fuzziness)</p>"+
+                 "<p>~N after a phrase signifies slop amount</p>"
+    });
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
         $(containerSelector+" "+itemSelector).each(function() {
             $(this).find("textarea,input,select").each(function() {
                 var $elem = $(this);
-                if($elem.attr('id')) {
+                if($elem.attr('id') && ! $elem.prop('disabled')) {
                     dataMap[$elem.attr("id")]=$elem.val();
                 }
             });
@@ -292,64 +304,6 @@ var resetSearchForm = function() {
     $('#results').html('');
 };
 
-var applyParams = function(params,searchOptions,special=[]) {
-    // add search options
-    $.each(searchOptions, function(key,value){
-        var $input = $('[name="'+key+'"]');
-        $input.val(value);
-        if($input.hasClass("single-select2")) {
-            $input.trigger('change');
-        }
-    });
-
-    if(!$('#main-content-id').hasClass('show')) {
-        $('#main-content-id').addClass("show");
-    }
-
-    if(special.length==0) return null;
-
-    // add other params
-    $.each(params, function(key,value){
-        var $input = $('[name="'+key+'"]');
-        if(Array.isArray(value) && $input.hasClass("mycheckbox")) {
-            $.each(value, function(i,val) {
-                var input = findByValue($input.get(),val);
-                paramsHelper($(input),null);
-            });
-        } else {
-            var $checkbox = paramsHelper($input,value);
-            $checkbox.parent().next().addClass("show");
-            if(special.includes(key)) {
-                // highlight and keep open
-                if(!$input.hasClass("highlighted-special")) {
-                    $input.addClass('highlighted-special');
-                    if($input.hasClass("multiselect")) {
-                        $input.next().find('.selection .select2-selection').addClass('highlighted-special');
-                    }
-                }
-            }
-            // trigger change
-            if($input.hasClass("single-select2")) {
-                $input.trigger('change');
-            }
-        }
-    });
-
-    $('.miniTip').miniTip({
-        title: 'Advanced Keyword Syntax',
-        event: 'click',
-        content: "<p>+ signifies AND operation</p>"+
-                 "<p>| signifies OR operation</p>"+
-                 "<p>- negates a single token</p>"+
-                 "\"\" wraps a number of tokens to signify a phrase for searching</p>"+
-                 "<p>* at the end of a term signifies a prefix query</p>"+
-                 "<p>( and ) signify precedence</p>"+
-                 "<p>~N after a word signifies edit distance (fuzziness)</p>"+
-                 "<p>~N after a phrase signifies slop amount</p>"
-    });
-
-};
-
 var findByValue = function(inputs, value) {
     for(var i = 0; i < inputs.length; i++) {
         if(inputs[i].value == value) return inputs[i];
@@ -465,9 +419,11 @@ var resetCheckbox = function(elem,target,shouldShow) {
 
 var showDraggable = function(elem) {
     var $draggable = $(elem);
+    $draggable.find('input,textarea,select').prop("disabled",false);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-    var id = $draggable.attr('data-target');
+        $draggable.find('input,textarea,select').prop("disabled",false);
+        var id = $draggable.attr('data-target');
         if(id) {
             var target = "target";
             $target = $('#'+id+'-'+target);
@@ -480,8 +436,10 @@ var showDraggable = function(elem) {
 
 var hideDraggable = function(elem) {
     var $draggable = $(elem);
+    $draggable.find('input,textarea,select').prop("disabled",true);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
+        $draggable.find('input,textarea,select').prop("disabled",true);
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "start";
