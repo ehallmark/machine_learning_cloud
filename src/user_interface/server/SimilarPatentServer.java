@@ -661,6 +661,7 @@ public class SimilarPatentServer {
         try {
             System.out.println("Getting parameters...");
             System.out.println("Getting models...");
+            long timeStart = System.currentTimeMillis();
             // Sorted by
             String comparator = extractString(req,COMPARATOR_FIELD,Constants.OVERALL_SCORE);
             // Get Models to use
@@ -713,16 +714,23 @@ public class SimilarPatentServer {
                 html = new Gson().toJson(results);
             } else {
                 AtomicInteger chartCnt = new AtomicInteger(0);
-                html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
-                                h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
-                                span().withId("data-charts").withClass("collapse show").with(
-                                        finishedCharts.stream().map(c -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
-                                ), br()
-                        ), portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
-                                h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                                tableFromPatentList(tableData, tableHeaders)
+                Tag chartTag = finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
+                        h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
+                        span().withId("data-charts").withClass("collapse show").with(
+                                finishedCharts.stream().map(c -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                         )
+                );
+                Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
+                        h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                        tableFromPatentList(tableData, tableHeaders)
+                );
+                long timeEnd = System.currentTimeMillis();
+                double timeSeconds = new Double(timeEnd-timeStart)/1000;
+                html = new Gson().toJson(new AjaxChartMessage(div().with(
+                        p("Found "+tableData.size()+" results in "+timeSeconds+" seconds."), br(),
+                        chartTag, br(),
+                        tableTag, br()
+
                 ).render(), finishedCharts));
             }
 
