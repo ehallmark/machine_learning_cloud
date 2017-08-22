@@ -300,7 +300,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable select,textarea,input').val(null).trigger('change');
+    $('.draggable select,textarea,input').val(null).trigger('change').prop('disabled',true);
     $('#results').html('');
 };
 
@@ -396,7 +396,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
         } else if ($draggable.is(':visible') && !shouldShow) {
             $draggable.parent().hide();
         }
-        $draggable.find('input,textarea,select').prop("disabled",!shouldShow);
+        $draggable.parent().find('input,textarea,select').prop("disabled",!shouldShow);
 
     } else {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
@@ -420,8 +420,8 @@ var resetCheckbox = function(elem,target,shouldShow) {
 var showDraggable = function(elem) {
     var $draggable = $(elem);
     $draggable.find('input,textarea,select').prop("disabled",false);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
-    if($draggable.length > 0) {
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+    if($draggable.hasClass('draggable')) {
         $draggable.find('input,textarea,select').prop("disabled",false);
         var id = $draggable.attr('data-target');
         if(id) {
@@ -437,8 +437,8 @@ var showDraggable = function(elem) {
 var hideDraggable = function(elem) {
     var $draggable = $(elem);
     $draggable.find('input,textarea,select').prop("disabled",true);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
-    if($draggable.length > 0) {
+    if(!$draggable.hasClass("draggable")) $draggable = $draggable.parent();
+    if($draggable.hasClass('draggable')) {
         $draggable.find('input,textarea,select').prop("disabled",true);
         var id = $draggable.attr('data-target');
         if(id) {
