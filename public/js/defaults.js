@@ -49,7 +49,7 @@ $(document).ready(function() {
                 var attributes = data.attributesMap;
                 var filters = data.filtersMap;
                 var searchOptions = data.searchOptionsMap;
-                var file = searchOptions.file;
+                var file = data.file;
                 $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
             }
           },
