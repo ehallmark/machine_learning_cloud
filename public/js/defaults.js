@@ -334,10 +334,6 @@ var applyParams = function(params,searchOptions,special=[]) {
             }
         }
     });
-    // open search forms
-    $('.collapse').filter(":hidden").find('.collapsible-form').each(function() {
-        $(this).closest('.collapse').addClass("show");
-    });
 
     $('.miniTip').miniTip({
         title: 'Advanced Keyword Syntax',
@@ -439,6 +435,12 @@ var resetCheckbox = function(elem,target,shouldShow) {
             $collapse.addClass('show');
         } else if ($collapse.hasClass('show') && !shouldShow) {
             $collapse.removeClass('show');
+        }
+        // actually show element incase it's not shown
+        if(shouldShow && !$draggable.is(':visible')) {
+            $collapse.show();
+        } else if ($draggable.is(':visible') && !shouldShow) {
+            $collapse.hide();
         }
 
     } else {
