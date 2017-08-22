@@ -376,7 +376,6 @@ var resetCheckbox = function(elem,target,shouldShow) {
         } else if ($draggable.is(':visible') && !shouldShow) {
             $draggable.parent().hide();
         }
-        $draggable.parent().find('input,textarea,select').prop("disabled",!shouldShow);
 
     } else {
         $draggable.detach().css({top: 0,left: 0}).appendTo(target);
@@ -391,9 +390,6 @@ var resetCheckbox = function(elem,target,shouldShow) {
 
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
-        //$checkbox.prop("disabled", !shouldShow);
-        // security concern ?
-        $draggable.find('input,textarea,select').prop("disabled",!shouldShow);
     }
 };
 
@@ -401,7 +397,11 @@ var showDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        $draggable.find('input,textarea,select').prop("disabled",false);
+        if($draggable.hasClass('nested')) {
+            $draggable.parent().find('input,textarea,select').prop("disabled",false);
+        } else {
+            $draggable.find('input:not(.draggable.nested input),textarea:not(.draggable.nested textarea),select:not(.draggable.nested textarea)').prop("disabled",false);
+        }
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "target";
