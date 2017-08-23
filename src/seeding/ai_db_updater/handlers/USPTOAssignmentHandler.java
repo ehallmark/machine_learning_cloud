@@ -241,7 +241,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 Map<String,Object> mergedDataMap = new HashMap<>();
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().limit(1).collect(Collectors.toList()), Constants.LATEST_ASSIGNEE);
+                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().findFirst().get(), Constants.LATEST_ASSIGNEE);
                 }
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
@@ -262,7 +262,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private static void mergeDataMapHelper(Map<String,Object> mergedMap, Object data, String fieldName) {
-        mergedMap.put(fieldName + (data instanceof List ? ".$" : ""), data);
+        mergedMap.put(fieldName, data);
     }
 
 
