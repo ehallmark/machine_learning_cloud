@@ -75,7 +75,6 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     // get date
                     Object date = assignmentMap.get(Constants.RECORDED_DATE);
                     if(date == null || LocalDate.parse(date.toString(),DateTimeFormatter.ISO_DATE).isBefore(LocalDate.now().minusYears(20))) {
-                        System.out.println("Too early... ");
                         return;
                     }
                     String reelFrame = reel.toString()+":"+frame.toString();
