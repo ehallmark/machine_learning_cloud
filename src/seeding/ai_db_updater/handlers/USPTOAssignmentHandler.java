@@ -30,6 +30,11 @@ public class USPTOAssignmentHandler extends NestedHandler {
     private static final AtomicLong errors = new AtomicLong(0);
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
+    static {
+        computableAttributes.forEach(attr->{
+            attr.initMaps();
+        });
+    }
 
     private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
