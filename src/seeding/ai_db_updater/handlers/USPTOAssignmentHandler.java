@@ -246,7 +246,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().limit(1).collect(Collectors.toList()), Constants.ASSIGNORS);
+                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().findFirst().get(), Constants.ASSIGNORS);
                 }
                 // add conveyance text (helpful to fiend liens)
                 Object conveyanceText = assignmentMap.get(Constants.CONVEYANCE_TEXT);
