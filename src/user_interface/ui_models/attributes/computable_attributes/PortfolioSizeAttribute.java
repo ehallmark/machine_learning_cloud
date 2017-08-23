@@ -1,5 +1,6 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
+import lombok.NonNull;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
@@ -17,26 +18,25 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class PortfolioSizeAttribute extends ComputableAttribute<Integer> {
-    private AssetToAssigneeMap assetToAssigneeMap = new AssetToAssigneeMap();
-    private AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
+public class PortfolioSizeAttribute extends ComputableAssigneeAttribute<Integer> {
+    private static AssigneeToAssetsMap assigneeToAssetsMap;
+
+    public static AssigneeToAssetsMap getAssigneeToAssetsMap() {
+        if(assigneeToAssetsMap==null) {
+            assigneeToAssetsMap = new AssigneeToAssetsMap();
+        }
+        return assigneeToAssetsMap;
+    }
+
     public PortfolioSizeAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     @Override
-    public Integer attributesFor(Collection<String> portfolio, int limit) {
-        if(portfolio.isEmpty()) return null;
-        String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
-        if(item == null) return null;
-        boolean probablyApplication = Database.isApplication(item);
-        String assignee = probablyApplication ? assetToAssigneeMap.getApplicationDataMap().getOrDefault(item,assetToAssigneeMap.getPatentDataMap().get(item))
-                : assetToAssigneeMap.getPatentDataMap().getOrDefault(item,assetToAssigneeMap.getApplicationDataMap().get(item));
-        if(assignee == null) return null;
-        Integer portfolioSize = Math.max(assigneeToAssetsMap.getPatentDataMap().getOrDefault(assignee,Collections.emptyList()).size(),assigneeToAssetsMap.getApplicationDataMap().getOrDefault(assignee,Collections.emptyList()).size());
+    protected Integer attributesForAssigneeHelper(@NonNull String assignee) {
+        Integer portfolioSize = Math.max(getAssigneeToAssetsMap().getPatentDataMap().getOrDefault(assignee,Collections.emptyList()).size(),getAssigneeToAssetsMap().getApplicationDataMap().getOrDefault(assignee,Collections.emptyList()).size());
         return portfolioSize;
     }
-
 
     @Override
     public String getName() {

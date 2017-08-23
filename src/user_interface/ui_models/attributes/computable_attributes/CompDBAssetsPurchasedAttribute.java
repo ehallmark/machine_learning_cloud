@@ -9,16 +9,8 @@ import java.util.*;
 /**
  * Created by Evan on 1/27/2017.
  */
-public class CompDBAssetsPurchasedAttribute extends ComputableAttribute<Integer> {
+public class CompDBAssetsPurchasedAttribute extends ComputableAssigneeAttribute<Integer> {
     private static Map<String,Integer> MODEL;
-
-    @Override
-    public Integer attributesFor(Collection<String> portfolio, int limit) {
-        if(MODEL==null) return 0;
-        Integer count = MODEL.get(portfolio.stream().findAny().get());
-        if(count==null) return 0;
-        return count;
-    }
 
     @Override
     public String getName() {
@@ -26,7 +18,7 @@ public class CompDBAssetsPurchasedAttribute extends ComputableAttribute<Integer>
     }
 
     public CompDBAssetsPurchasedAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
+        super(Arrays.asList(AbstractFilter.FilterType.Between));
         if(MODEL==null)MODEL=runModel();
     }
 
@@ -45,5 +37,11 @@ public class CompDBAssetsPurchasedAttribute extends ComputableAttribute<Integer>
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Integer;
+    }
+
+    @Override
+    protected Integer attributesForAssigneeHelper(String assignee) {
+        if(MODEL==null) return 0;
+        return MODEL.getOrDefault(assignee, 0);
     }
 }

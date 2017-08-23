@@ -1,4 +1,4 @@
-package seeding;
+package seeding.gather;
 
 import models.model_testing.SplitModelData;
 

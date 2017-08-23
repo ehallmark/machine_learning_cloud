@@ -670,10 +670,6 @@ public class Database {
 		return true;
 	}
 
-	public synchronized static boolean isPatent(String patent) {
-		return !(isAssignee(patent) || isApplication(patent));
-	}
-
 	public synchronized static boolean isAssignee(String assignee) {
 		if(assignee.length() > 11 || assignee.length() < 7) return true;
 		for(int i = 2; i < assignee.length(); i++) {
@@ -685,18 +681,6 @@ public class Database {
 		return false;
 	}
 
-	public synchronized static String getInventionTitleFor(String patent) {
-		if(isApplication(patent)) {
-			if(getAppToInventionTitleMap().containsKey(patent)) {
-				return appToInventionTitleMap.get(patent);
-			}
-		} else {
-			if (getPatentToInventionTitleMap().containsKey(patent)) {
-				return patentToInventionTitleMap.get(patent);
-			}
-		}
-		return "";
-	}
 
 	public static RadixTree<String> getAssigneePrefixTrie() {
 		// prefix trie for assignees
@@ -771,32 +755,7 @@ public class Database {
 		return classifications;
 	}
 
-	public synchronized static String entityTypeForPatent(String patent) {
-		if(patent==null) throw new NullPointerException("patent");
-		if(getMicroEntityPatents().contains(patent)) return "Micro";
-		if(getSmallEntityPatents().contains(patent)) return "Small";
-		if(getLargeEntityPatents().contains(patent)) return "Large";
-		return "Unknown";
-	}
-	public synchronized static String entityTypeForApplication(String application) {
-		// check patents
-		Collection<String> relatives = RelatedAssetsGraph.get().relatives(application);
-		for(String rel : relatives) {
-			String type = entityTypeForPatent(rel);
-			if(!type.equals("Unknown")) {
-				return type;
-			}
-		}
-		// check assignees
-		Collection<String> assignees = assigneesFor(application);
-		for(String assignee : assignees) {
-			String type = assigneeEntityType(assignee);
-			if(!type.equals("Unknown")) {
-				return type;
-			}
-		}
-		return "Unknown";
-	}
+
 	public synchronized static String assigneeEntityType(String assignee) {
 		int sampleSize = 30;
 		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
@@ -806,7 +765,7 @@ public class Database {
 		entityTypeToScoreMap.put("Micro",new AtomicInteger(0));
 		if(assets.isEmpty()) return "Unknown";
 		AtomicBoolean shouldStop = new AtomicBoolean(false);
-		assets.stream().sorted((a1,a2)->Integer.compare(a1.hashCode(),a2.hashCode())).forEach(asset-> {
+		assets.stream().forEach(asset-> {
 			// stop conditions
 			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
 				shouldStop.set(true);
@@ -843,32 +802,6 @@ public class Database {
 		return etsiStandardToPatentsMap;
 	}
 
-	public synchronized static Collection<String> selectPatentNumbersFromETSIStandard(String etsiStandard) {
-
-		if(getEtsiStandardToPatentsMap().containsKey(etsiStandard)) {
-			return new ArrayList<>(etsiStandardToPatentsMap.get(etsiStandard));
-		} else {
-			return Collections.emptySet();
-		}
-	}
-
-	public synchronized static Set<String> selectPatentNumbersFromClassAndSubclassCodes(String cpcCode) {
-		Set<String> set = new HashSet<>();
-		subClassificationsForClass(cpcCode).forEach(subClass->{
-			if (classCodeToPatentMap.containsKey(subClass)) {
-				set.addAll(classCodeToPatentMap.get(subClass));
-			}
-		});
-		return set;
-	}
-
-	public synchronized static Set<String> selectPatentNumbersFromExactClassCode(String cpcCode) {
-		Set<String> set = new HashSet<>();
-		if (classCodeToPatentMap.containsKey(cpcCode)) {
-			set.addAll(classCodeToPatentMap.get(cpcCode));
-		}
-		return set;
-	}
 
 	public synchronized static Collection<String> assigneesFor(String patent) {
 		List<String> assignees;
@@ -926,51 +859,6 @@ public class Database {
 		return keywords.replace(" not ", " ! ").replace(" and ", " & ").replace(" or ", " | ");
 	}
 
-
-	public synchronized static Set<String> patentsWithKeywords(Collection<String> patents, PortfolioList.Type type, String advancedKeywords, String keywordsToInclude, String keywordsToExclude) throws SQLException {
-		int limit = 1000;
-		boolean searchFullDatabase = patents==null;
-		Set<String> validPatents = new HashSet<>();
-		PreparedStatement ps;
-		StringJoiner keywordJoiner = new StringJoiner(" && ", "(", ")");
-		List<String> keywordList = new ArrayList<>();
-		for(String phrase : keywordsToInclude.split("\\n")) {
-			keywordJoiner.add("phraseto_tsquery('english', ?)");
-			keywordList.add(phrase.trim());
-		}
-		for(String phrase : keywordsToExclude.split("\\n")) {
-			keywordJoiner.add("!!phraseto_tsquery('english', ?)");
-			keywordList.add(phrase.trim());
-		}
-		if(advancedKeywords!=null) {
-			keywordJoiner.add("to_tsquery('english', ?)");
-			keywordList.add(convertToPGTextSearch(advancedKeywords));
-		}
-		String keywordQuery = "(tokens @@ " + keywordJoiner.toString() + ")";
-		String docTypeWhere = " doc_type = '"+type+"' and ";
-		int startIndex;
-		if(searchFullDatabase) {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE "+docTypeWhere+keywordQuery+" limit "+limit);
-			startIndex = 1;
-		}
-		else {
-			ps = seedConn.prepareStatement("SELECT pub_doc_number FROM patents_and_applications WHERE pub_doc_number=ANY(?) and "+docTypeWhere+keywordQuery+" limit "+ limit);
-			ps.setArray(1,seedConn.createArrayOf("varchar",patents.toArray()));
-			startIndex = 2;
-		}
-		for(int i = 0; i < keywordList.size(); i++) {
-			ps.setString(startIndex + i, keywordList.get(i));
-		}
-		ps.setFetchSize(100);
-
-		ResultSet rs = ps.executeQuery();
-		while(rs.next()) {
-			String patent = rs.getString(1);
-			validPatents.add(patent);
-		}
-		ps.close();
-		return validPatents;
-	}
 
 	public synchronized static Collection<String> getGatherPatents() {
 		if(gatherPatentSet==null) {

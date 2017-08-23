@@ -1,4 +1,4 @@
-package seeding;
+package tools;
 
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
