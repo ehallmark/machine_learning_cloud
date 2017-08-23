@@ -140,6 +140,10 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(Flag.integerFlag("length-of-grant",Constants.LENGTH_OF_GRANT,documentFlag));
         documentFlag.addChild(Flag.simpleFlag("us-claim-statement",Constants.CLAIM_STATEMENT,documentFlag));
 
+        Flag priorityClaims = Flag.parentFlag("priority-claim");
+        documentFlag.addChild(priorityClaims);
+        priorityClaims.addChild(Flag.dateFlag("date",Constants.PRIORITY_DATE, documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
+
 
         EndFlag claimTextFlag = new EndFlag("claim") {
             {
