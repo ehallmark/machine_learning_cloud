@@ -1,5 +1,6 @@
-package seeding;
+package seeding.compdb;
 
+import seeding.Constants;
 import seeding.Database;
 import tools.AssigneeTrimmer;
 
@@ -17,8 +18,8 @@ import java.util.Set;
  * Created by ehallmark on 3/28/17.
  */
 public class CreateCompDBAssigneeTransactionData {
-    public static final File sellerFile = new File("compdb_assignee_to_assets_sold_count_map.jobj");
-    public static final File buyerFile = new File("compdb_assignee_to_assets_purchased_count_map.jobj");
+    public static final File sellerFile = new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj");
+    public static final File buyerFile = new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj");
     private static final String buyerQuery = "select buyer_name, sum(asset_count) as num_assets_purchased from (select case when (buyer.normalized_company_id is null) then buyer.name else (select name from normalized_companies where id = buyer.normalized_company_id) end as buyer_name, asset_count from recordings as r join recordings_buyers as rb on (r.id=rb.recording_id) join companies as buyer on (buyer.id=rb.company_id) where deal_id is not null) as temp group by buyer_name";
     private static final String sellerQuery = "select seller_name, sum(asset_count) as num_assets_sold from (select case when (seller.normalized_company_id is null) then seller.name else (select name from normalized_companies where id = seller.normalized_company_id) end as seller_name, asset_count from recordings as r join recordings_sellers as rb on (r.id=rb.recording_id) join companies as seller on (seller.id=rb.company_id) where deal_id is not null) as temp group by seller_name";
 
