@@ -133,7 +133,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
-            humanAttrToJavaAttrMap.put("CPC Technology", Constants.CPC_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
             humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
@@ -337,7 +336,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
-            attributesMap.put(Constants.CPC_TECHNOLOGY, new CPCTechnologyAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());

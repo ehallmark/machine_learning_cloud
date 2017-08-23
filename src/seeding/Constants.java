@@ -94,9 +94,6 @@ public class Constants {
 	public static final String CPC_CODES = "cpcCodes";
 	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";
-	public static final String SIM_RANK_MODEL = "simRankModel";
-	public static final String CPC_MODEL = "cpcModel";
-	public static final String WIPO_MODEL = "wipoModel";
 	public static final String TECHNOLOGY = "technology";
 	public static final String EXPIRATION_DATE = "expirationDate";
 	public static final String ASSIGNEE_ENTITY_TYPE = "assigneeEntityType";
@@ -106,9 +103,6 @@ public class Constants {
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
-	public static final String CPC_TECHNOLOGY = "cpcTechnology";
-	public static final String PORTFOLIO_ASSESSMENT = "Portfolio Assessment";
-	public static final String SIMILAR_PATENT_SEARCH = "Similar Asset Search";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";
 	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
