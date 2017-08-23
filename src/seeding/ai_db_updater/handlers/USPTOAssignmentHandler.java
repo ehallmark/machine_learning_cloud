@@ -242,12 +242,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 Map<String,Object> mergedDataMap = new HashMap<>();
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().limit(1).collect(Collectors.toList()).toArray(), Constants.LATEST_ASSIGNEE);
+                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().limit(1).collect(Collectors.toList()), Constants.LATEST_ASSIGNEE);
                 }
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().limit(1).collect(Collectors.toList()).toArray(), Constants.ASSIGNORS);
+                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().limit(1).collect(Collectors.toList()), Constants.ASSIGNORS);
                 }
                 // add conveyance text (helpful to fiend liens)
                 Object conveyanceText = assignmentMap.get(Constants.CONVEYANCE_TEXT);
@@ -263,7 +263,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     }
 
     private static void mergeDataMapHelper(Map<String,Object> mergedMap, Object data, String fieldName) {
-        mergedMap.put(fieldName, data);
+        mergedMap.put(fieldName + (data instanceof List ? ".$" : ""), data);
     }
 
 
