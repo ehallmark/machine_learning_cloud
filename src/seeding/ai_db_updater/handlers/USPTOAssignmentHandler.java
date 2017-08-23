@@ -226,7 +226,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
         if(assignmentMap!=null) {
             String reelFrame = (String) assignmentMap.get(Constants.REEL_FRAME);
             if(reelFrame!=null) {
-                Document assetQuery = new Document("$in",new Document("_id", ids));
+                Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
                 DataIngester.updateMongoArray(assetQuery, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
 
