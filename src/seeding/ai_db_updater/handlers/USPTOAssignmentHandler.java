@@ -12,6 +12,8 @@ import seeding.Database;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 
 import java.io.File;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +29,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
     @Setter
-    protected static Collection<ComputableAttribute> computableAttributes;
+    protected static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
 
     private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
         if(debug) {
@@ -43,7 +45,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
     @Override
     protected void initAndAddFlagsAndEndFlags() {
         boolean debug = false;
-        int batchSize = 5000;
+        int batchSize = 10000;
         List<EndFlag> nestedEndFlags = new ArrayList<>();
         // application flags
         EndFlag documentFlag = new EndFlag("patent-assignment") {
@@ -66,14 +68,14 @@ public class USPTOAssignmentHandler extends NestedHandler {
                     }
                     String reelFrame = reel.toString()+":"+frame.toString();
                     assignmentMap.put(Constants.REEL_FRAME, reelFrame);
-                    AtomicReference<Collection<Object>> assets = new AtomicReference<>();
+                    AtomicReference<Collection<String>> assets = new AtomicReference<>();
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
                         if (data.isEmpty() || endFlag.children.isEmpty()) return;
                         if (endFlag.isArray()) {
                             // add as array
                             if(endFlag.localName.equals("document-id")) {
-                                assets.set(data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
+                                assets.set(data.stream().map(map -> (String) map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
                                 assignmentMap.put(endFlag.dbName,assets.get());
                             } else {
                                 toIngest.put(endFlag.dbName, data.stream().map(map -> map.values().stream().findAny().orElse(null)).filter(d -> d != null).collect(Collectors.toList()));
@@ -87,14 +89,16 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         computableAttributes.forEach(attr -> {
                             // for each patent or application
                             assets.get().forEach(name->{
-                                if (Database.isApplication(name.toString())) {
-                                    attr.handleApplicationData(name.toString(), toIngest);
+                                if(name.contains("/")) return;
+                                if (Database.isApplication(name)) {
+                                    attr.handleApplicationData(name, assignmentMap);
                                 } else {
-                                    attr.handlePatentData(name.toString(), toIngest);
+                                    attr.handlePatentData(name, assignmentMap);
                                 }
                             });
                         });
                     }
+
                     synchronized (USPTOAssignmentHandler.class) {
                         if(cnt.getAndIncrement() % batchSize == batchSize-1) {
                             System.out.println(cnt.get());
@@ -217,36 +221,38 @@ public class USPTOAssignmentHandler extends NestedHandler {
         if(assignmentMap!=null) {
             String reelFrame = (String) assignmentMap.get(Constants.REEL_FRAME);
             if(reelFrame!=null) {
-                //DataIngester.updateMongoArray(name, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
+                Document assetQuery = new Document("$in",new Document("_id", ids));
+                // update reel frames array
+                DataIngester.updateMongoArray(assetQuery, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
 
+                // update complex data
                 // try add latest assignee
+                Map<String,Object> mergedDataMap = new HashMap<>();
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
-                    String executionDate = (String) latestAssigneeData.stream().map(map -> map.get(Constants.EXECUTION_DATE)).filter(d -> d != null).findAny().orElse(null);
-                    if (executionDate != null) {
-                        // update if newer
-                        Map<String, Object> assigneeMap = new HashMap<>();
-                        assigneeMap.put(Constants.LATEST_ASSIGNEE, latestAssigneeData);
-                        List<Object> or = new ArrayList<>();
-                        Map<String, Object> lessThan = new HashMap<>();
-                        lessThan.put("$lt", executionDate);
-                        Map<String, Object> exists = new HashMap<>();
-                        exists.put("$exists", false);
-                        Map<String,Object> lt = new HashMap<>();
-                        lt.put(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, lessThan);
-                        Map<String,Object> e = new HashMap<>();
-                        e.put(Constants.LATEST_ASSIGNEE + "." + Constants.EXECUTION_DATE, exists);
-                        or.add(e);
-                        or.add(lt);
-                        Document dateQuery = new Document("$or", or);
-                        Document assetQuery = new Document("$in",new Document("_id", ids));
-                        DataIngester.updateMongoByQuery(new Document("$and",Arrays.asList(dateQuery,assetQuery)), assigneeMap);
-                    }
+                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().findAny().get(), Constants.LATEST_ASSIGNEE);
+                }
+                // add assignor data
+                List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
+                if (latestAssignorData != null && latestAssignorData.size() > 0) {
+                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().findAny().get(), Constants.ASSIGNORS);
+                }
+                // add conveyance text (helpful to fiend liens)
+                Object conveyanceText = assignmentMap.get(Constants.CONVEYANCE_TEXT);
+                if(conveyanceText!=null) {
+                    mergeDataMapHelper(mergedDataMap, conveyanceText, Constants.CONVEYANCE_TEXT);
+                }
+
+                if(mergedDataMap.size()>0) {
+                    DataIngester.updateMongoByQuery(assetQuery, mergedDataMap);
                 }
             }
         }
     }
 
+    private static void mergeDataMapHelper(Map<String,Object> mergedMap, Object data, String fieldName) {
+        mergedMap.put(fieldName, data);
+    }
 
 
 }

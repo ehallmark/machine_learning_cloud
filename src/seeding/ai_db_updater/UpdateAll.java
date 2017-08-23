@@ -14,7 +14,6 @@ public class UpdateAll {
                 if (arg.equals("0")) {
                     UpdateBasePatentData.main(args);
                     UpdateBaseApplicationData.main(args);
-                    saveComputableAttributes();
                 } else if (arg.equals("1")) {
                     UpdatePairBulkData.main(args);
                 } else if (arg.equals("2")) {

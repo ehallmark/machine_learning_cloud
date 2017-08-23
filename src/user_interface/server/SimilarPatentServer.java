@@ -165,7 +165,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Claim Text", Constants.CLAIM);
             humanAttrToJavaAttrMap.put("Independent Claim", Constants.INDEPENDENT_CLAIM);
             humanAttrToJavaAttrMap.put("Abstract", Constants.ABSTRACT);
-            humanAttrToJavaAttrMap.put("Last Execution Date", Constants.LAST_EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
@@ -354,7 +353,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.REINSTATED, new ReinstatedAttribute());
             attributesMap.put(Constants.LAPSED, new LapsedAttribute());
             attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
-            attributesMap.put(Constants.LAST_EXECUTION_DATE, new LastExecutionDateAttribute());
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());

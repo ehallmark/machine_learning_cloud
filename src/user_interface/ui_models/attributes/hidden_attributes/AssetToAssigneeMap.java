@@ -1,7 +1,6 @@
 package user_interface.ui_models.attributes.hidden_attributes;
 
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.LastExecutionDateAttribute;
 
 import java.util.*;
 
@@ -9,7 +8,6 @@ import java.util.*;
  * Created by Evan on 8/11/2017.
  */
 public class AssetToAssigneeMap extends HiddenAttribute<String> {
-    private LastExecutionDateAttribute lastExecutionDate = new LastExecutionDateAttribute();
     @Override
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
         Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
