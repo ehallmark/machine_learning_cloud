@@ -346,35 +346,6 @@ public class Database {
 		return collection;
 	}
 
-	public synchronized static boolean isJapaneseAssignee(String assignee) {
-		// check other assignees
-		return getJapaneseCompanies().contains(assignee) || assigneesFor(assignee).stream().anyMatch(other->getJapaneseCompanies().contains(other));
-	}
-
-	public synchronized static Set<String> getJapaneseCompanies() {
-		if(japaneseCompanies==null) {
-			// japanese companies
-			japaneseCompanies = (Set<String>)Database.tryLoadObject(LoadJapaneseCompaniesSet.FILE);
-		}
-		return Collections.unmodifiableSet(japaneseCompanies);
-	}
-
-	public synchronized static Set<String> loadJapaneseCompaniesSetFromDB() throws SQLException {
-		PreparedStatement ps = seedConn.prepareStatement("select distinct orgname from patent_grant_assignee where country='JP' and orgname is not null");
-		ResultSet rs = ps.executeQuery();
-		Set<String> japanese = new HashSet<>();
-		while(rs.next()) {
-			String assignee = rs.getString(1);
-			if(assignee!=null && assignee.trim().length()>0) {
-				String cleanAssignee = AssigneeTrimmer.standardizedAssignee(assignee);
-				if(cleanAssignee!=null&&cleanAssignee.length()>0) {
-					japanese.add(cleanAssignee);
-				}
-			}
-		}
-		return japanese;
-	}
-
 	public synchronized static void preLoad() {
 		getAssigneePrefixTrie();
 		getAssigneeToPatentsMap();
@@ -389,7 +360,7 @@ public class Database {
 	public synchronized static void initializeDatabase() {
 		if(init==true)return;
 		init=true;
-
+		// nothing to do
 	}
 
 
@@ -755,40 +726,6 @@ public class Database {
 		return classifications;
 	}
 
-
-	public synchronized static String assigneeEntityType(String assignee) {
-		int sampleSize = 30;
-		Collection<String> assets = selectPatentNumbersFromAssignee(assignee);
-		Map<String,AtomicInteger> entityTypeToScoreMap = new HashMap<>();
-		entityTypeToScoreMap.put("Small",new AtomicInteger(0));
-		entityTypeToScoreMap.put("Large",new AtomicInteger(0));
-		entityTypeToScoreMap.put("Micro",new AtomicInteger(0));
-		if(assets.isEmpty()) return "Unknown";
-		AtomicBoolean shouldStop = new AtomicBoolean(false);
-		assets.stream().forEach(asset-> {
-			// stop conditions
-			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
-				shouldStop.set(true);
-			}
-			if(Math.abs(entityTypeToScoreMap.get("Micro").get()-entityTypeToScoreMap.get("Large").get())>sampleSize) {
-				shouldStop.set(true);
-			}
-			if(Math.abs(entityTypeToScoreMap.get("Small").get()-entityTypeToScoreMap.get("Micro").get())>sampleSize) {
-				shouldStop.set(true);
-			}
-			if(shouldStop.get()) return;
-
-			if (getMicroEntityPatents().contains(asset)) {
-				entityTypeToScoreMap.get("Micro").getAndIncrement();
-			} else if(getSmallEntityPatents().contains(asset)) {
-				entityTypeToScoreMap.get("Small").getAndIncrement();
-			} else if(getLargeEntityPatents().contains(asset)) {
-				entityTypeToScoreMap.get("Large").getAndIncrement();
-			}
-		});
-		return entityTypeToScoreMap.entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).findFirst().get().getKey();
-	}
-
 	public synchronized static Map<String,Collection<String>> getEtsiStandardToPatentsMap() {
 		if(etsiStandardToPatentsMap==null) {
 			// ETSI
@@ -854,11 +791,6 @@ public class Database {
 		}
 		return apps;
 	}
-
-	private static String convertToPGTextSearch(String keywords) {
-		return keywords.replace(" not ", " ! ").replace(" and ", " & ").replace(" or ", " | ");
-	}
-
 
 	public synchronized static Collection<String> getGatherPatents() {
 		if(gatherPatentSet==null) {

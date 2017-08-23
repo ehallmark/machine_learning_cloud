@@ -21,7 +21,6 @@ public class PatentCPCHandler implements LineHandler {
 
     @Override
     public void save() {
-        //Database.saveObject(patentToClassificationHash,Database.patentToClassificationMapFile);
     }
 
     @Override

@@ -36,7 +36,9 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static user_interface.server.SimilarPatentServer.SORT_DIRECTION_FIELD;
 import static user_interface.server.SimilarPatentServer.extractString;
@@ -157,6 +159,15 @@ public class DataSearcher {
         return item;
     }
 
+    private static Map<String,Object> mapAccumulator(List<Map<String,Object>> maps) {
+        Map<String,Object> newMap = new HashMap<>();
+        Collection<String> keys = maps.stream().flatMap(m->m.keySet().stream()).distinct().collect(Collectors.toList());
+        keys.forEach(key->{
+            newMap.put(key, String.join("; ", maps.stream().map(m->m.getOrDefault(key," ").toString()).collect(Collectors.toList())).trim());
+        });
+        return newMap;
+    }
+
     private static void hitToItemHelper(String attrName, Object v, Map<String,Object> itemDataMap, Map<String,NestedAttribute> nestedAttrNameMap) {
         if (v == null) return;
         if (v instanceof Map) {
@@ -175,10 +186,17 @@ public class DataSearcher {
             if (v instanceof Object[]) v = Arrays.stream((Object[]) v).collect(Collectors.toList());
             if (nestedAttrNameMap.containsKey(attrName)) {
                 // add nested object data
+                List<Map<String,Object>> nestedDataMaps = new ArrayList<>();
                 for (Object obj : (List) v) {
                     if (obj instanceof Map) {
-                        hitToItemHelper(attrName, obj, itemDataMap, nestedAttrNameMap);
+                        Map<String,Object> nestedDataMap = new HashMap<>();
+                        hitToItemHelper(attrName, obj, nestedDataMap, nestedAttrNameMap);
+                        nestedDataMaps.add(nestedDataMap);
                     }
+                }
+                if(nestedDataMaps.size()>0) {
+                    Map<String,Object> reduction = mapAccumulator(nestedDataMaps);
+                    if(reduction!=null && reduction.size()>0) itemDataMap.putAll(reduction);
                 }
             } else {
                 // add as normal list
