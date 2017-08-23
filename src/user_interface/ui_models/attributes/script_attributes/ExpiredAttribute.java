@@ -8,23 +8,28 @@ import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Created by ehallmark on 6/15/17.
+ * Created by ehallmark on 7/20/17.
  */
-public class RemainingLifeAttribute extends AbstractScriptAttribute {
-
-    public RemainingLifeAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
+public class ExpiredAttribute extends AbstractScriptAttribute {
+    public ExpiredAttribute() {
+        super(Arrays.asList(AbstractFilter.FilterType.BoolFalse));
     }
 
     @Override
     public String getName() {
-        return Constants.REMAINING_LIFE;
+        return Constants.EXPIRED;
+    }
+
+    @Override
+    public String getType() {
+        return "boolean";
     }
 
     @Override
@@ -34,13 +39,12 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", "doc['"+Constants.LAPSED+"'].value ? 0 : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+")/31536000000)", new HashMap<>());
+        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value ? true : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+") <= 0)", new HashMap<>());
     }
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Integer;
+        return AbstractFilter.FieldType.Boolean;
     }
-
 
 }

@@ -87,12 +87,6 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     }
 
     @Override
-    public String getType() {
-        return "double";
-    }
-
-
-    @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Double;
     }
