@@ -16,6 +16,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
@@ -69,6 +70,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         if(errors.getAndIncrement()%10==0) {
                             System.out.println(errors.get());
                         }
+                        return;
+                    }
+                    // get date
+                    Object date = assignmentMap.get(Constants.RECORDED_DATE);
+                    if(date == null || LocalDate.parse(date.toString(),DateTimeFormatter.ISO_DATE).isBefore(LocalDate.now().minusYears(20))) {
+                        System.out.println("Too early... ");
                         return;
                     }
                     String reelFrame = reel.toString()+":"+frame.toString();
@@ -235,12 +242,12 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 Map<String,Object> mergedDataMap = new HashMap<>();
                 List<Map<String, Object>> latestAssigneeData = (List<Map<String, Object>>) assignmentMap.get(Constants.LATEST_ASSIGNEE);
                 if (latestAssigneeData != null && latestAssigneeData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().limit(1).collect(Collectors.toList()), Constants.LATEST_ASSIGNEE);
+                    mergeDataMapHelper(mergedDataMap, latestAssigneeData.stream().limit(1).collect(Collectors.toList()).toArray(), Constants.LATEST_ASSIGNEE);
                 }
                 // add assignor data
                 List<Map<String, Object>> latestAssignorData = (List<Map<String, Object>>) assignmentMap.get(Constants.ASSIGNORS);
                 if (latestAssignorData != null && latestAssignorData.size() > 0) {
-                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().limit(1).collect(Collectors.toList()), Constants.ASSIGNORS);
+                    mergeDataMapHelper(mergedDataMap, latestAssignorData.stream().limit(1).collect(Collectors.toList()).toArray(), Constants.ASSIGNORS);
                 }
                 // add conveyance text (helpful to fiend liens)
                 Object conveyanceText = assignmentMap.get(Constants.CONVEYANCE_TEXT);
