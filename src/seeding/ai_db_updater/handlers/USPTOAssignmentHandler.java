@@ -234,7 +234,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                DataIngester.updateMongoArray(assetQuery, Constants.ASSIGNMENTS + "." + Constants.REEL_FRAME, reelFrame, doc);
+                DataIngester.updateMongoArray(assetQuery, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 // try add latest assignee

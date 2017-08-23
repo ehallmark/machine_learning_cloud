@@ -81,11 +81,11 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void updateMongoArray(Document query, String nestedName, String nestedId, Map<String,Object> doc) {
-        Document updateDoc = new Document("$push",doc);
+    public static synchronized void updateMongoArray(Document query, String arrayName, String value) {
+        Document updateDoc = new Document("$push",new Document(arrayName,value));
         Map<String,String> ne = new HashMap<>();
-        ne.put("$ne",nestedId);
-        query = query.append(nestedName, ne);
+        ne.put("$ne",value);
+        query = query.append(arrayName, ne);
         WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
         updateBatch.add(model);
 
