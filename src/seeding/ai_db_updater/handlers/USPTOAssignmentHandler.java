@@ -116,7 +116,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         // for each patent or application
                         if(assets.get()!=null&&assets.get().size()>0) {
-                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null).collect(Collectors.toList());
+                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null&&!o.contains("/")).collect(Collectors.toList());
                             if(assetsClean.size()>0) {
                                 saveElasticSearch(assetsClean,toIngest);
                             }
