@@ -15,7 +15,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/18/2017.
  */
-public class WIPOTechnologyAttribute extends ComputableAttribute<String> {
+public class WIPOTechnologyAttribute extends AbstractAttribute {
     public WIPOTechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }

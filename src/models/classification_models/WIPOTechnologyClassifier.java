@@ -44,10 +44,8 @@ public class WIPOTechnologyClassifier extends ClassificationAttr {
 
 
     private static List<Pair<String,Double>> wipoHelper(Collection<String> patents, int limit) {
-        if(patents.isEmpty()) return Collections.emptyList();
-        return patents.stream().map(patent->attribute.attributesFor(Arrays.asList(patent),limit))
-                .filter(tech->tech!=null&&!tech.isEmpty()).collect(Collectors.groupingBy(tech->tech,Collectors.counting())).entrySet().stream()
-                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue())).limit(limit).map(e->new Pair<>(e.getKey(),e.getValue().doubleValue()/patents.size())).collect(Collectors.toList());
+        // TODO hookup to elasticsearch
+        return Collections.emptyList();
     }
 
     @Override

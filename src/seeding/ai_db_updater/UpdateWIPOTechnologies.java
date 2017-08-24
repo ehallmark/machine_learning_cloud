@@ -24,10 +24,6 @@ public class UpdateWIPOTechnologies {
     public static void main(String[] args) throws Exception {
         File wipoDestinationFile = new File("data/wipo/");
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-        FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-
-        WIPOTechnologyAttribute wipoTechnologyAttribute = new WIPOTechnologyAttribute();
-        wipoTechnologyAttribute.initMaps();
 
         // Data loader
         WIPOTechnologyDownloader downloader = new WIPOTechnologyDownloader();
@@ -46,36 +42,21 @@ public class UpdateWIPOTechnologies {
                     String patent = fields[0];
                     String wipo = fields[1];
                     try {
-                        if (patent.startsWith("RE") || patent.startsWith("D") || patent.startsWith("PP") || Integer.valueOf(patent) > 6000000) {
+                        String filing = assetToFilingMap.getPatentDataMap().get(patent);
+                        if (filing != null) {
                             String wipoTechnology;
-                            if(patent.startsWith("D")) {
+                            if (patent.startsWith("D")) {
                                 wipoTechnology = "Design";
-                            } else if (patent.startsWith("PP")) {
+                            } else if (patent.startsWith("P")) {
                                 wipoTechnology = "Plants";
                             } else {
                                 wipoTechnology = definitionMap.get(wipo);
                             }
 
-                            if(wipoTechnology!=null) {
-                                String filing = assetToFilingMap.getPatentDataMap().get(patent);
-                                Collection<String> appNums = null;
-                                if (filing != null) {
-                                    appNums = filingToAssetMap.getApplicationDataMap().get(filing);
-                                }
-                                if (appNums != null) {
-                                    appNums.forEach(appNum->{
-                                        wipoTechnologyAttribute.getApplicationDataMap().put(appNum, wipoTechnology);
-                                    });
-                                }
-                                wipoTechnologyAttribute.getPatentDataMap().put(patent, wipoTechnology);
+                            if (wipoTechnology != null) {
                                 Map<String, Object> data = new HashMap<>();
                                 data.put(Constants.WIPO_TECHNOLOGY, wipoTechnology);
-                                DataIngester.ingestBulk(patent, data, false);
-                                if (appNums != null) {
-                                    appNums.forEach(appNum->{
-                                        DataIngester.ingestBulk(appNum, data, false);
-                                    });
-                                }
+                                DataIngester.ingestBulk(null, filing, data, false);
                                 if (cnt.getAndIncrement() % 100000 == 99999) {
                                     System.out.println("Seen " + cnt.get() + " wipo technologies...");
                                 }
@@ -90,6 +71,5 @@ public class UpdateWIPOTechnologies {
             }
         });
 
-        wipoTechnologyAttribute.save();
     }
 }

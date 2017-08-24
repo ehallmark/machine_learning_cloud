@@ -3,6 +3,7 @@ package elasticsearch;
 import com.google.gson.Gson;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
+import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -21,20 +22,35 @@ public class CreatePatentDBIndex {
         SimilarPatentServer.initialize(true,false);
         TransportClient client = MyClient.get();
         CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(DataIngester.INDEX_NAME);
-        Map<String,Object> mapping = new HashMap<>();
-        Map<String,Object> properties = new HashMap<>();
-        Collection<? extends AbstractAttribute> attributes = SimilarPatentServer.getAllAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
-        attributes.forEach(attribute->{
-            recursiveHelper(attribute, properties);
-        });
-        properties.put("vector_obj",typeMap("object",null,null));
-        mapping.put("properties",properties);
-        builder.addMapping(DataIngester.TYPE_NAME, mapping);
-        builder.addMapping(DataIngester.PARENT_TYPE_NAME, mapping);
-        System.out.println("Query: " + new Gson().toJson(mapping));
+        Collection<? extends AbstractAttribute> allAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().filter(attr->!(attr instanceof HiddenAttribute)).collect(Collectors.toList());
+
+        Collection<? extends AbstractAttribute> childAttributes = allAttributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
+        Map<String,Object> childProperties = createPropertiesMap(childAttributes);
+        childProperties.put("vector_obj",typeMap("object",null,null));
+        builder = createMapping(builder, childProperties, DataIngester.TYPE_NAME);
+
+        Collection<? extends AbstractAttribute> parentAttributes = allAttributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
+        Map<String,Object> parentProperties = createPropertiesMap(parentAttributes);
+        builder = createMapping(builder, parentProperties, DataIngester.PARENT_TYPE_NAME);
 
         // get response
         builder.get();
+    }
+
+    private static CreateIndexRequestBuilder createMapping(CreateIndexRequestBuilder builder, Map<String,Object> properties, String typeName) {
+        Map<String,Object> mapping = new HashMap<>();
+        mapping.put("properties",properties);
+        builder.addMapping(typeName, mapping);
+        System.out.println(typeName+" => Query: " + new Gson().toJson(mapping));
+        return builder;
+    }
+
+    private static Map<String,Object> createPropertiesMap(Collection<? extends AbstractAttribute> attributes) {
+        Map<String,Object> properties = new HashMap<>();
+        attributes.forEach(attribute->{
+            recursiveHelper(attribute, properties);
+        });
+        return properties;
     }
 
     private static Object typeMap(String type, Map<String,Object> props, Map<String,Object> nestedFields) {

@@ -4,6 +4,7 @@ import elasticsearch.DataIngester;
 import seeding.Constants;
 import seeding.Database;
 import tools.ClassCodeHandler;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
  */
 public class AppCPCHandler implements LineHandler {
     protected Map<String,Set<String>> appToClassificationHash;
+    protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     public AppCPCHandler(Map<String,Set<String>> appToClassificationHash) {
         this.appToClassificationHash=appToClassificationHash;
     }
@@ -42,7 +44,10 @@ public class AppCPCHandler implements LineHandler {
                 }
                 data.add(ClassCodeHandler.convertToHumanFormat(cpcSubGroup));
                 doc.put(Constants.CPC_CODES, data);
-                DataIngester.ingestBulk(patNum,doc,false);
+                String filingName = assetToFilingMap.getApplicationDataMap().get(patNum);
+                if(filingName!=null) {
+                    DataIngester.ingestBulk(patNum, filingName, doc, false);
+                }
             }
         }
     }

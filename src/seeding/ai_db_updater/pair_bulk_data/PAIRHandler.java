@@ -44,14 +44,12 @@ public class PAIRHandler extends NestedHandler {
         EndFlag applicationEndFlag = new EndFlag("PatentData") {
             @Override
             public void save() {
-                String appNumber = dataMap.get(applicationNumber);
-                if (appNumber != null) {
-                    appNumber = Flag.filingDocumentHandler.apply(applicationNumber).apply(appNumber).toString();
-                    dataMap.put(applicationNumber,appNumber);
+                String filingNumber = dataMap.get(applicationNumber);
+                if (filingNumber != null) {
+                    filingNumber = Flag.filingDocumentHandler.apply(applicationNumber).apply(filingNumber).toString();
+                    dataMap.put(applicationNumber,filingNumber);
                     Set<String> assignees = new HashSet<>();
-                    if (loadExternalAssignees && dataMap.containsKey(grantNumber)) {
-                        assignees.addAll(Database.assigneesFor(dataMap.get(grantNumber).toString()));
-                    }
+
                     if (dataMap.containsKey(publicationNumber)) {
                         String standardizedPubNumber = dataMap.get(publicationNumber).toString();
                         if (standardizedPubNumber.startsWith("US") && standardizedPubNumber.length() == 15) {
@@ -73,16 +71,18 @@ public class PAIRHandler extends NestedHandler {
                         }
                     }
                     if(updateElasticSearch) {
-                        String appNum = dataMap.get(publicationNumber);
+                        String publicationNum = dataMap.get(publicationNumber);
                         String grantNum = dataMap.get(grantNumber);
-                        if(appNum!=null || grantNum != null) {
-                            Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
-                            if(appNum!=null) {
-                                DataIngester.ingestBulk(appNum, cleanData, false);
+                        Map<String,Object> cleanData = dataMap.entrySet().stream().collect(Collectors.toMap(e->e.getKey().dbName,e->e.getValue()));
+                        if(dataMap.size() > 0 && (publicationNum!=null || grantNum != null)) {
+                            if(publicationNum!=null) {
+                                DataIngester.ingestBulk(publicationNum, filingNumber, cleanData, false);
                             }
                             if(grantNum!=null) {
-                                DataIngester.ingestBulk(grantNum,cleanData,false);
+                                DataIngester.ingestBulk(grantNum, filingNumber, cleanData,false);
                             }
+                        } else if (dataMap.size() > 0) {
+                            DataIngester.ingestBulk(null, filingNumber, cleanData,false);
                         }
 
                     }

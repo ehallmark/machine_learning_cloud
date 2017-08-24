@@ -92,7 +92,7 @@ public class SimilarPatentServer {
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
 
     @Getter
-    static Collection<AbstractAttribute> allAttributes;
+    static Collection<AbstractAttribute> allTopLevelAttributes;
 
     protected static Map<String,String> humanAttrToJavaAttrMap;
     protected static Map<String,String> javaAttrToHumanAttrMap;
@@ -193,7 +193,7 @@ public class SimilarPatentServer {
     public static Map<String,NestedAttribute> getNestedAttrMap() {
         if(nestedAttrMap==null) {
             nestedAttrMap = new HashMap<>();
-            getAllAttributes().forEach(attr->{
+            getAllTopLevelAttributes().forEach(attr->{
                 if(attr instanceof NestedAttribute) {
                     nestedAttrMap.put(attr.getName(),(NestedAttribute)attr);
                 }
@@ -205,7 +205,7 @@ public class SimilarPatentServer {
     private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
-            allAttrNames = allAttributes.stream().flatMap(attr->{
+            allAttrNames = getAllTopLevelAttributes().stream().flatMap(attr->{
                 return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
         }
@@ -216,7 +216,7 @@ public class SimilarPatentServer {
     private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
-            allStreamingAttrNames = allAttributes.stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
+            allStreamingAttrNames = getAllTopLevelAttributes().stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
                 return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
             System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
@@ -227,7 +227,7 @@ public class SimilarPatentServer {
     public static Collection<String> attributeNameHelper(AbstractAttribute attr, String previous) {
         Collection<String> stream;
         if(attr instanceof NestedAttribute) {
-            stream = (Collection<String>) ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(attributeNameHelper((AbstractAttribute)nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
+            stream = ((NestedAttribute) attr).getAttributes().stream().flatMap(nestedAttr->(attributeNameHelper(nestedAttr,attr.getName()).stream())).collect(Collectors.toList());
         } else {
             stream = Arrays.asList(previous==null||previous.isEmpty() ? attr.getName() : previous+"."+attr.getName());
         }
@@ -235,7 +235,7 @@ public class SimilarPatentServer {
     }
 
     public static Collection<ComputableAttribute<?>> getAllComputableAttributes() {
-        return allAttributes.stream().flatMap(attr->getAllComputableAttributesHelper(attr)).collect(Collectors.toList());
+        return getAllTopLevelAttributes().stream().flatMap(attr->getAllComputableAttributesHelper(attr)).collect(Collectors.toList());
     }
 
     private static Stream<ComputableAttribute<?>> getAllComputableAttributesHelper(AbstractAttribute attribute) {
@@ -380,7 +380,7 @@ public class SimilarPatentServer {
             // similarity engine
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
 
-            allAttributes = new ArrayList<>(attributesMap.values());
+            allTopLevelAttributes = new ArrayList<>(attributesMap.values());
         }
     }
 

@@ -93,12 +93,14 @@ public class DataIngester {
             }
         });
         if(create) {
-            assetDoc.put("_id", id);
             if(parent!=null) {
                 assetDoc.put("_parent", parent);
                 filingDoc.put("_id", parent);
             }
-            addToInsertMap(TYPE_NAME,new Document(assetDoc));
+            if(id!=null) {
+                assetDoc.put("_id", id);
+                addToInsertMap(TYPE_NAME,new Document(assetDoc));
+            }
             if(parent!=null) {
                 // upsert
                 Document upsertParentDoc = new Document("$set",filingDoc);
@@ -108,17 +110,18 @@ public class DataIngester {
             }
 
         } else {
-            Document updateDoc = new Document("$set",assetDoc);
-            Document updateQuery = query == null ? new Document("_id", id) : query.append("_id", id);
+            if (id != null) {
+                Document updateDoc = new Document("$set", assetDoc);
+                Document updateQuery = query == null ? new Document("_id", id) : query.append("_id", id);
+                WriteModel<Document> model = new UpdateOneModel<>(updateQuery, updateDoc);
+                addToUpdateMap(TYPE_NAME, model);
+            }
             if(parent!=null) {
-                updateQuery = updateQuery.append("_parent", parent);
                 Document updateParentDoc = new Document("$set",filingDoc);
                 Document updateParentQuery = new Document("_id", parent);
                 WriteModel<Document> model = new UpdateOneModel<>(updateParentDoc, updateParentQuery);
                 addToUpdateMap(PARENT_TYPE_NAME, model);
             }
-            WriteModel<Document> model = new UpdateOneModel<>(updateQuery, updateDoc);
-            addToUpdateMap(TYPE_NAME,model);
         }
     }
 
