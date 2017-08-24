@@ -206,19 +206,19 @@ $(document).ready(function() {
     });
 
     // nested forms
-    $('select.nested-form-select').each(function() {
+    $('select.nested-filter-select').each(function() {
         $this = $(this);
         var displayItemSelectOptions = {width: '100%', placeholder: 'Search', closeOnSelect: true};
         $this.select2(displayItemSelectOptions);
     });
 
-    $('select.nested-form-select').on("select2:select", function(e) {
+    $('select.nested-filter-select').on("select2:select", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().show().find('input, select, textarea').prop('disabled', false);
         return true;
     });
 
-    $('select.nested-form-select').on("select2:unselect", function(e) {
+    $('select.nested-filter-select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
         $('.draggable[data-model="'+id+'"]').parent().hide().find('input, select, textarea').prop('disabled', true);
         return true;
@@ -424,6 +424,9 @@ var showDraggable = function(elem) {
     if($draggable.length > 0) {
         if($draggable.hasClass('leaf')) {
             ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').prop("disabled",false);
+        } else {
+            // enable the select option
+            $draggable.find('select.nested-filter-select,select.nested-attribute-select').prop('disabled', false);
         }
         var id = $draggable.attr('data-target');
         if(id) {
