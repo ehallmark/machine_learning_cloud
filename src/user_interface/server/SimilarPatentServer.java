@@ -664,7 +664,7 @@ public class SimilarPatentServer {
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
             List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-            System.out.println(" ... Filters");
+            System.out.println(" ... Similarity Filters");
             // Get filters
             List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> {
                 AbstractFilter filter = similarityFilterModelMap.get(modelName);

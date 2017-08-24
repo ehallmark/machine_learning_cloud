@@ -41,7 +41,14 @@ public class SimilarityEngineController {
 
     private void setPrefilters(Request req) {
         List<String> preFilterModels = SimilarPatentServer.extractArray(req, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
-        preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> SimilarPatentServer.preFilterModelMap.get(modelName)).collect(Collectors.toList()));
+
+        preFilters = new ArrayList<>(preFilterModels.stream().map(modelName -> {
+            AbstractFilter filter = SimilarPatentServer.preFilterModelMap.get(modelName);
+            if(filter==null) {
+                System.out.println("Unable to find model: "+modelName);
+            }
+            return filter;
+        }).filter(i->i!=null).collect(Collectors.toList()));
         preFilters.forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
         // get labels to remove (if any)
