@@ -10,8 +10,6 @@ import java.util.stream.Collectors;
  * Created by Evan on 3/4/2017.
  */
 public class WIPOTechnologyClassifier extends ClassificationAttr {
-    private static WIPOTechnologyAttribute attribute = new WIPOTechnologyAttribute();
-
     public String getName() {
         return "WIPO Technology Tagger Model";
     }

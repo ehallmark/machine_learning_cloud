@@ -26,11 +26,11 @@ public class CreatePatentDBIndex {
 
         Collection<? extends AbstractAttribute> childAttributes = allAttributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
         Map<String,Object> childProperties = createPropertiesMap(childAttributes);
-        childProperties.put("vector_obj",typeMap("object",null,null));
         builder = createMapping(builder, childProperties, DataIngester.TYPE_NAME);
 
         Collection<? extends AbstractAttribute> parentAttributes = allAttributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
         Map<String,Object> parentProperties = createPropertiesMap(parentAttributes);
+        parentProperties.put("vector_obj",typeMap("object",null,null));
         builder = createMapping(builder, parentProperties, DataIngester.PARENT_TYPE_NAME);
 
         // get response

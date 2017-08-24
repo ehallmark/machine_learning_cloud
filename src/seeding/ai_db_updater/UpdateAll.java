@@ -16,8 +16,8 @@ public class UpdateAll {
                     // udpate compdb
                     CreateCompDBAssigneeTransactionData.main(args);
                 } else if (arg.equals("1")) {
-                    UpdateBasePatentData.main(args);
                     UpdateBaseApplicationData.main(args);
+                    UpdateBasePatentData.main(args);
                 } else if (arg.equals("2")) {
                     UpdatePairBulkData.main(args);
                 } else if (arg.equals("3")) {

@@ -44,10 +44,15 @@ public class DataIngester {
         ingestMongo(name, parent, null, doc, create);
     }
 
-    public static synchronized void ingestBulkFromMongoDB(String name,  Document doc) {
+    public static synchronized void ingestBulkFromMongoDB(String type, String name,  Document doc) {
         doc.remove("_id");
-        doc.remove(Constants.ASSIGNMENTS); // RIGHT NOW ASSIGNMENTS ARE TOO EXPENSIVE
-        bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
+        Object parent = doc.get("_parent");
+        IndexRequest request = new IndexRequest(INDEX_NAME,type, name).source(doc);
+        if(parent!=null) {
+            request = request.parent(parent.toString());
+            doc.remove("_parent");
+        }
+        bulkProcessor.add(request);
     }
 
     static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());

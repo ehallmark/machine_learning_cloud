@@ -206,6 +206,11 @@ public class Constants {
 			PATENT_FAMILY,
 			REINSTATED,
 			EXECUTION_DATE,
-			ASSIGNMENTS
+			ASSIGNMENTS,
+			WIPO_TECHNOLOGY,
+			TECHNOLOGY,
+			SIMILARITY,
+			"vector_obj",
+			AI_VALUE
 	);
 }

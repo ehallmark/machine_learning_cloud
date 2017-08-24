@@ -27,9 +27,15 @@ import java.util.function.Function;
 public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
-        final boolean debug = false;
+        // ingest filings (aka parents)
+        ingestByType(DataIngester.PARENT_TYPE_NAME);
+        // ingest assets (aka children)
+        ingestByType(DataIngester.TYPE_NAME);
+        DataIngester.close();
+    }
+
+    private static void ingestByType(String type) {
         String index = DataIngester.INDEX_NAME;
-        String type = DataIngester.TYPE_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
         collection.count(new Document(), (count,t)->{
@@ -42,37 +48,36 @@ public class IngestMongoIntoElasticSearch {
                 e.printStackTrace();
             }
         }
-        System.out.println("Total count: "+total.get());
+        System.out.println("Total count of "+type+": "+total.get());
         FindIterable<Document> iterator = collection.find(new Document());
 
         iterator.batchSize(100).batchCursor((cursor,t)->{
-            cursor.next(helper(cursor));
+            cursor.next(helper(cursor, type));
         });
-        System.out.println("Total count: "+cnt.get());
+        System.out.println("Total count of "+type+": "+cnt.get());
         while(cnt.get()<total.get()) {
-            System.out.println("Waiting for mongo db. Remaining: "+(total.get()-cnt.get()));
+            System.out.println("Waiting for mongo db. Remaining "+type+": "+(total.get()-cnt.get()));
             try {
                 TimeUnit.SECONDS.sleep(10);
             } catch(Exception e) {
 
             }
         }
-        DataIngester.close();
     }
 
-    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor) {
+    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, String type) {
         return (docList, t2) -> {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
                 try {
-                    DataIngester.ingestBulkFromMongoDB(doc.getString("_id"), doc);
+                    DataIngester.ingestBulkFromMongoDB(type, doc.getString("_id"), doc);
                 } finally {
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         System.out.println("Ingested: " + cnt.get());
                     }
                 }
             });
-            cursor.next(helper(cursor));
+            cursor.next(helper(cursor, type));
         };
     }
 }
