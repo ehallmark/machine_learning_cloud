@@ -253,6 +253,8 @@ $(document).ready(function() {
     });
 
     setCollapsibleHeaders(".collapsible-header");
+
+    resetSearchForm();
 });
 
 var setupDataTable = function (dataTable) {
