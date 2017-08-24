@@ -54,13 +54,11 @@ public class SimilarityEngineController {
         // get labels to remove (if any)
         Collection<String> labelsToRemove = new HashSet<>();
         Collection<String> assigneesToRemove = new HashSet<>();
-        for(String resultType : resultTypes) {
-            // remove any patents in the search for category
-            Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-            Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
-            labelsToRemove.addAll(patents);
-            assignees.forEach(assignee -> assigneesToRemove.addAll(Database.possibleNamesForAssignee(assignee)));
-        }
+        // remove any patents in the search for category
+        Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+        Collection<String> assignees = preProcess(extractString(req, ASSIGNEES_TO_SEARCH_FOR_FIELD, "").toUpperCase(), "\n", "[^a-zA-Z0-9 ]");
+        labelsToRemove.addAll(patents);
+        assigneesToRemove.addAll(assignees);
 
         if(labelsToRemove.size()>0) {
             preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
