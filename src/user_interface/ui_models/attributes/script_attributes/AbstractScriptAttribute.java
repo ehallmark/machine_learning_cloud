@@ -27,17 +27,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
         return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : (doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value * 86400000))";
     }
 
-    @Override
-    public String getType() {
-        throw new RuntimeException("Abstract script attributes do not have types.");
-    }
-
     public abstract QueryBuilder getScriptQuery();
     public abstract Script getScript();
-
-    @Override
-    public boolean supportedByElasticSearch() {
-        return false;
-    }
 
 }

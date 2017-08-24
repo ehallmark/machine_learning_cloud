@@ -305,7 +305,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable').find('select,textarea,input').val(null).trigger('change').prop('disabled',true);
+    $('.draggable').find('select,textarea,input:not(.mycheckbox)').val(null).trigger('change').prop('disabled',true);
     $('#results').html('');
 };
 
@@ -422,10 +422,8 @@ var showDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        if($draggable.hasClass('nested')) {
+        if($draggable.hasClass('leaf')) {
             $draggable.parent().find('input,textarea,select').prop("disabled",false);
-        } else {
-            $draggable.find('input:not(.draggable.nested input),textarea:not(.draggable.nested textarea),select:not(.draggable.nested textarea)').prop("disabled",false);
         }
         var id = $draggable.attr('data-target');
         if(id) {
@@ -459,8 +457,10 @@ var showTemplateFormHelper = function(formSelector,json) {
     $.each(dataMap,function(id,value) {
         var $elem = $('#'+id);
         showDraggable($elem.get(0));
-        $elem.val(value);
-        $elem.trigger('change');
+        if(! $elem.hasClass("mycheckbox")) {
+            $elem.val(value);
+            $elem.trigger('change');
+        }
     });
 };
 

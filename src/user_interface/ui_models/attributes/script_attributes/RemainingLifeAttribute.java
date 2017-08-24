@@ -28,6 +28,11 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
     }
 
     @Override
+    public String getType() {
+        return "integer";
+    }
+
+    @Override
     public QueryBuilder getScriptQuery() {
         return null;
     }

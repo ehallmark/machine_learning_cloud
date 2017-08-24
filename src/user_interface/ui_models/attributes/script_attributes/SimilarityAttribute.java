@@ -68,6 +68,11 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     }
 
     @Override
+    public String getType() {
+        return "double";
+    }
+
+    @Override
     public void extractRelevantInformationFromParams(Request req) {
         String similarityModelStr = Constants.PARAGRAPH_VECTOR_MODEL;
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);

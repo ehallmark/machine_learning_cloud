@@ -47,10 +47,6 @@ public abstract class AbstractAttribute {
         return Collections.emptyList();
     }
 
-    public boolean supportedByElasticSearch() {
-        return true;
-    }
-
     public Collection<AbstractFilter> createFilters() {
         return filterTypes.stream().map(filterType->{
             AbstractFilter filter;

@@ -205,7 +205,7 @@ public class SimilarPatentServer {
     private static Collection<String> allAttrNames;
     public static Collection<String> getAllAttributeNames() {
         if(allAttrNames ==null) {
-            allAttrNames = allAttributes.stream().filter(attr->attr.supportedByElasticSearch()).flatMap(attr->{
+            allAttrNames = allAttributes.stream().flatMap(attr->{
                 return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
         }
@@ -216,7 +216,7 @@ public class SimilarPatentServer {
     private static Collection<String> allStreamingAttrNames;
     public static Collection<String> getAllStreamingAttributeNames() {
         if(allStreamingAttrNames ==null) {
-            allStreamingAttrNames = allAttributes.stream().filter(attr ->attr.supportedByElasticSearch()&&!(attr instanceof ComputableAttribute)).flatMap(attr->{
+            allStreamingAttrNames = allAttributes.stream().filter(attr ->!(attr instanceof ComputableAttribute)).flatMap(attr->{
                 return attributeNameHelper(attr,"").stream();
             }).collect(Collectors.toSet());
             System.out.println("Streamable Attributes: "+Arrays.toString(allStreamingAttrNames.toArray()));
@@ -242,7 +242,7 @@ public class SimilarPatentServer {
         if(attribute instanceof NestedAttribute) {
             return ((NestedAttribute)attribute).getAttributes().stream().flatMap(attr->getAllComputableAttributesHelper(attr));
         } else {
-            return Arrays.asList(attribute).stream().filter(attr -> attr.supportedByElasticSearch() && attr instanceof ComputableAttribute).map(attr -> (ComputableAttribute<?>) attr);
+            return Arrays.asList(attribute).stream().filter(attr -> attr instanceof ComputableAttribute).map(attr -> (ComputableAttribute<?>) attr);
         }
     }
 
@@ -979,11 +979,12 @@ public class SimilarPatentServer {
 
     public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedAttributeParent) {
         String groupID = type+"-row";
+        boolean isLeaf = ! nestedAttributeParent;
         String toggleID = groupID+"-panel-toggle";
-        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "")).attr("data-target",type).with(
-                div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "")).attr("data-target","#"+collapseId).with(
+        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target",type).with(
+                div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
-                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","disabled").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
+                        nestedAttributeParent || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)
         );
