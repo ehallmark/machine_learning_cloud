@@ -504,7 +504,7 @@ public class SimilarPatentServer {
         });
 
         // GET METHODS
-        //redirect.get("/",HOME_URL);
+
         get("/", (req, res)->{
             return templateWrapper(false, req, res, form().withClass("form-group").withMethod("POST").withAction("/login").attr("style","margin-top: 100px;").with(
                     p("Log in"),
@@ -558,7 +558,7 @@ public class SimilarPatentServer {
         });
     }
 
-    private static Object handleExcel(Request req, Response res) {
+    private static synchronized Object handleExcel(Request req, Response res) {
         try {
             System.out.println("Received excel request");
             long t0 = System.currentTimeMillis();
@@ -652,7 +652,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
 
-    private static Object handleReport(Request req, Response res) {
+    private static synchronized Object handleReport(Request req, Response res) {
         try {
             System.out.println("Getting parameters...");
             System.out.println("Getting models...");
@@ -737,6 +737,7 @@ public class SimilarPatentServer {
             return html;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            e.printStackTrace();
             return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
         }
     }
@@ -1066,7 +1067,7 @@ public class SimilarPatentServer {
     }
     static boolean extractBool(QueryParamsMap req, String param) {
         try {
-            return (req.value(param)==null||!req.value(param).startsWith("on")) ? false : true;
+            return (req.value(param)==null||(!(req.value(param).startsWith("on")||req.value(param).startsWith("true")))) ? false : true;
         } catch(Exception e) {
             System.out.println("No "+param+" parameter specified... using default");
             return false;
