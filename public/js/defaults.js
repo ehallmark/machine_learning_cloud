@@ -28,10 +28,10 @@ $(document).ready(function() {
 
     $('#save-template-form-id').submit(function(e){
         e.preventDefault();
-        saveTemplateFormHelper("#searchOptionsForm",".attributeElement:visible","#save-template-form-id #searchOptionsMap");
-        saveTemplateFormHelper("#attributesForm",".attributeElement:visible","#save-template-form-id #attributesMap");
-        saveTemplateFormHelper("#filtersForm",".attributeElement:visible","#save-template-form-id #filtersMap");
-        saveTemplateFormHelper("#chartsForm",".attributeElement:visible","#save-template-form-id #chartsMap");
+        saveTemplateFormHelper("#searchOptionsForm",".attributeElement","#save-template-form-id #searchOptionsMap");
+        saveTemplateFormHelper("#attributesForm",".attributeElement","#save-template-form-id #attributesMap");
+        saveTemplateFormHelper("#filtersForm",".attributeElement","#save-template-form-id #filtersMap");
+        saveTemplateFormHelper("#chartsForm",".attributeElement","#save-template-form-id #chartsMap");
 
         var $this = $(this);
 
