@@ -5,6 +5,7 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.LapsedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,9 +27,9 @@ public class MaintenanceEventHandler implements LineHandler {
             String maintenanceCode = line.substring(46, 51).trim();
             if (patNum != null && maintenanceCode != null ) {
                 String filing = assetToFilingMap.getPatentDataMap().get(patNum);
-                String appNum = null;
+                Collection<String> appNums = null;
                 if (filing != null) {
-                    appNum = filingToAssetMap.getApplicationDataMap().get(filing);
+                    appNums = filingToAssetMap.getApplicationDataMap().get(filing);
                 }
 
                 Map<String,Object> data = new HashMap<>();
@@ -51,8 +52,10 @@ public class MaintenanceEventHandler implements LineHandler {
                     }
                     int maintenanceFeeCount = maintenanceFeeReminderCountMap.getPatentDataMap().get(patNum);
                     data.put(Constants.MAINTENANCE_FEE_REMINDERS, maintenanceFeeCount);
-                    if(appNum!=null) {
-                        maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeCount);
+                    if(appNums!=null) {
+                        appNums.forEach(appNum->{
+                            maintenanceFeeReminderCountMap.getApplicationDataMap().put(appNum,maintenanceFeeCount);
+                        });
                     }
                 } else if (maintenanceCode.startsWith("M2")||maintenanceCode.startsWith("SM")||maintenanceCode.equals("LTOS")||maintenanceCode.equals("MTOS")) {
                     data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.SMALL.toString());
@@ -64,8 +67,10 @@ public class MaintenanceEventHandler implements LineHandler {
 
                 if(data.size()>0) {
                     DataIngester.ingestBulk(patNum, data, false);
-                    if (appNum != null) {
-                        DataIngester.ingestBulk(appNum, data, false);
+                    if (appNums != null) {
+                        appNums.forEach(appNum->{
+                            DataIngester.ingestBulk(appNum, data, false);
+                        });
                     }
                 }
 

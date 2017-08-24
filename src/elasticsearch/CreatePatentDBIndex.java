@@ -30,6 +30,7 @@ public class CreatePatentDBIndex {
         properties.put("vector_obj",typeMap("object",null,null));
         mapping.put("properties",properties);
         builder.addMapping(DataIngester.TYPE_NAME, mapping);
+        builder.addMapping(DataIngester.PARENT_TYPE_NAME, mapping);
         System.out.println("Query: " + new Gson().toJson(mapping));
 
         // get response
@@ -53,7 +54,7 @@ public class CreatePatentDBIndex {
             Map<String,Object> nestedMapping = new HashMap<>();
             mapping.put(attr.getName(),typeMap(attr.getType(),nestedMapping,attr.getNestedFields()));
             ((NestedAttribute) attr).getAttributes().forEach(nestedAttr->{
-                recursiveHelper((AbstractAttribute)nestedAttr,nestedMapping);
+                recursiveHelper(nestedAttr,nestedMapping);
             });
         } else {
             mapping.put(attr.getName(),typeMap(attr.getType(),null, attr.getNestedFields()));

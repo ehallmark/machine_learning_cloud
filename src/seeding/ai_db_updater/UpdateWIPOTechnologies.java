@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,19 +58,23 @@ public class UpdateWIPOTechnologies {
 
                             if(wipoTechnology!=null) {
                                 String filing = assetToFilingMap.getPatentDataMap().get(patent);
-                                String appNum = null;
+                                Collection<String> appNums = null;
                                 if (filing != null) {
-                                    appNum = filingToAssetMap.getApplicationDataMap().get(filing);
+                                    appNums = filingToAssetMap.getApplicationDataMap().get(filing);
                                 }
-                                if (appNum != null) {
-                                    wipoTechnologyAttribute.getApplicationDataMap().put(patent, wipoTechnology);
+                                if (appNums != null) {
+                                    appNums.forEach(appNum->{
+                                        wipoTechnologyAttribute.getApplicationDataMap().put(appNum, wipoTechnology);
+                                    });
                                 }
                                 wipoTechnologyAttribute.getPatentDataMap().put(patent, wipoTechnology);
                                 Map<String, Object> data = new HashMap<>();
                                 data.put(Constants.WIPO_TECHNOLOGY, wipoTechnology);
                                 DataIngester.ingestBulk(patent, data, false);
-                                if (appNum != null) {
-                                    DataIngester.ingestBulk(appNum, data, false);
+                                if (appNums != null) {
+                                    appNums.forEach(appNum->{
+                                        DataIngester.ingestBulk(appNum, data, false);
+                                    });
                                 }
                                 if (cnt.getAndIncrement() % 100000 == 99999) {
                                     System.out.println("Seen " + cnt.get() + " wipo technologies...");

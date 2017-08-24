@@ -13,6 +13,7 @@ import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 
 import java.io.File;
@@ -22,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
 
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
 public class USPTOAssignmentHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
+    private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     @Setter
     protected static Collection<ComputableAttribute> computableAttributes = Arrays.asList(new AssetToAssigneeMap());
     static {
@@ -116,7 +119,10 @@ public class USPTOAssignmentHandler extends NestedHandler {
                         }
                         // for each patent or application
                         if(assets.get()!=null&&assets.get().size()>0) {
-                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null&&!o.contains("/")).collect(Collectors.toList());
+                            List<String> assetsClean = assets.get().stream().map(o->o==null?null:o.toString()).filter(o->o!=null).flatMap(asset->{
+                                return Stream.of(asset,assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset)))
+                                        .filter(a->a!=null);
+                            }).collect(Collectors.toList());
                             if(assetsClean.size()>0) {
                                 saveElasticSearch(assetsClean,toIngest);
                             }
@@ -234,7 +240,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
             if(reelFrame!=null) {
                 Document assetQuery = new Document("_id",new Document("$in", ids));
                 // update reel frames array
-                DataIngester.updateMongoArray(assetQuery, Constants.REEL_FRAME, reelFrame);
+                DataIngester.updateMongoArray(DataIngester.PARENT_TYPE_NAME, assetQuery, Constants.REEL_FRAME, reelFrame);
 
                 // update complex data
                 // try add latest assignee
@@ -255,7 +261,7 @@ public class USPTOAssignmentHandler extends NestedHandler {
                 }
 
                 if(mergedDataMap.size()>0) {
-                    DataIngester.updateMongoByQuery(assetQuery, mergedDataMap);
+                    DataIngester.updateMongoByQuery(DataIngester.PARENT_TYPE_NAME, assetQuery, mergedDataMap);
                 }
             }
         }

@@ -59,7 +59,6 @@ public class SalesforceElasticSearchQuery {
             Object filingDate = item.getData(Constants.FILING_DATE);
             Object pubDate = item.getData(Constants.PUBLICATION_DATE);
 
-
             Object originalAssignee = item.getData(Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE);
             if(originalAssignee==null) {
                 // look in own map
@@ -67,9 +66,12 @@ public class SalesforceElasticSearchQuery {
                 if(originalAssignee==null) {
                     String filing = assetToFilingMap.getApplicationDataMap().get(name);
                     if (filing != null) {
-                        String patent = filingToAssetMap.getPatentDataMap().get(filing);
-                        if (patent != null) {
-                            originalAssignee = assetToAssigneeMap.getPatentDataMap().get(patent);
+                        Collection<String> patents = filingToAssetMap.getPatentDataMap().get(filing);
+                        if (patents != null) {
+                            for(String patent: patents) {
+                                originalAssignee = assetToAssigneeMap.getPatentDataMap().get(patent);
+                                if(originalAssignee!=null) break;
+                            }
                         }
                     }
                 }

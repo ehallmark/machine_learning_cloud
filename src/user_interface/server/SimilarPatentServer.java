@@ -326,7 +326,6 @@ public class SimilarPatentServer {
 
     public static void loadAttributes(boolean loadHidden) {
         if(attributesMap.isEmpty()) {
-            attributesMap.put(Constants.JAPANESE_ASSIGNEE, new JapaneseAttribute());
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
             attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
@@ -388,9 +387,9 @@ public class SimilarPatentServer {
 
     public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize) {
         List<String> applications = attributes.stream().flatMap(attr->attr.getApplicationDataMap().keySet().stream()).distinct().collect(Collectors.toList());
-        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications,false);
+        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
         List<String> patents = attributes.stream().flatMap(attr->attr.getPatentDataMap().keySet().stream()).distinct().collect(Collectors.toList());
-        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents,false);
+        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -402,7 +401,7 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type, boolean create) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type) {
         AtomicInteger cnt = new AtomicInteger(0);
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
@@ -416,7 +415,7 @@ public class SimilarPatentServer {
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());
 
-            DataIngester.ingestItems(items, create);
+            DataIngester.updateItems(items);
             cnt.getAndAdd(items.size());
             System.out.println("Seen "+cnt.get()+" "+type.toString());
         });

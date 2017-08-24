@@ -185,4 +185,27 @@ public class Constants {
 
 	public static final List<String> RELATED_DOC_TYPE_LIST = Arrays.asList(RELATED_DOC_TYPES);
 
-	}
+	public static final Collection<String> FILING_ATTRIBUTES_SET = Arrays.asList(
+			FILING_NAME,
+			FILING_COUNTRY,
+			FILING_DATE,
+			LATEST_ASSIGNEE,
+			ASSIGNEES,
+			APPLICANTS,
+			AGENTS,
+			INVENTORS,
+			REEL_FRAME,
+			CPC_CODES,
+			CITATIONS,
+			PRIORITY_DATE,
+			EXPIRATION_DATE,
+			EXPIRED,
+			LAPSED,
+			REMAINING_LIFE,
+			PATENT_TERM_ADJUSTMENT,
+			PATENT_FAMILY,
+			REINSTATED,
+			EXECUTION_DATE,
+			ASSIGNMENTS
+	);
+}
