@@ -423,7 +423,7 @@ var showDraggable = function(elem) {
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
         if($draggable.hasClass('leaf')) {
-            $draggable.parent().find('input,textarea,select').prop("disabled",false);
+            ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').prop("disabled",false);
         }
         var id = $draggable.attr('data-target');
         if(id) {
@@ -440,7 +440,7 @@ var hideDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        $draggable.find('input,textarea,select').prop("disabled",true);
+        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').prop("disabled",true);
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "start";
