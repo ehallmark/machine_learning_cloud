@@ -135,9 +135,6 @@ public class DataSearcher {
             System.out.println("\"query\": "+queryBuilder.get().toString());
 
             request = request.setQuery(queryBuilder.get());
-            //String queryStr = request.toString().replace("\n","").replace("\t","");
-            //while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
-            //System.out.println("\"query\": "+queryStr);
 
             SearchResponse response = request.get();
             //Scroll until no hits are returned
