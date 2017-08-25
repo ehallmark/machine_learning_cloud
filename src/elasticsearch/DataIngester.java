@@ -168,8 +168,8 @@ public class DataIngester {
 
     private static void insertBatch() {
         waitForMongo();
-        mongoCount.getAndIncrement();
         insertBatchMap.forEach((collection,insertBatch)->{
+            mongoCount.getAndIncrement();
             mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
                 mongoCount.getAndDecrement();
                 if(t!=null) {
