@@ -12,8 +12,10 @@ import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import seeding.ai_db_updater.tools.RelatedAssetsGraph;
+import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
+import user_interface.ui_models.attributes.computable_attributes.CompDBAssetsPurchasedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToRelatedAssetsMap;
 import user_interface.ui_models.portfolios.PortfolioList;
@@ -604,13 +606,13 @@ public class Database {
 
 	public synchronized static Map<String,Integer> getCompDBAssigneeToAssetsSoldCountMap() {
 		if(compDBAssigneeToAssetsSoldCountMap==null) {
-			compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_sold_count_map.jobj"));
+			compDBAssigneeToAssetsSoldCountMap = (Map<String,Integer>)Database.tryLoadObject(CreateCompDBAssigneeTransactionData.sellerFile);
 		}
 		return compDBAssigneeToAssetsSoldCountMap;
 	}
 	public synchronized static Map<String,Integer> getCompDBAssigneeToAssetsPurchasedCountMap() {
 		if(compDBAssigneeToAssetsPurchasedCountMap==null) {
-			compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(new File(Constants.DATA_FOLDER+"compdb_assignee_to_assets_purchased_count_map.jobj"));
+			compDBAssigneeToAssetsPurchasedCountMap = (Map<String,Integer>)Database.tryLoadObject(CreateCompDBAssigneeTransactionData.buyerFile);
 		}
 		return compDBAssigneeToAssetsPurchasedCountMap;
 	}
