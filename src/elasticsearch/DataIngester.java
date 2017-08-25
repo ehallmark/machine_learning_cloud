@@ -156,7 +156,7 @@ public class DataIngester {
         waitForMongo();
         updateBatchMap.forEach((collection,updateBatch)->{
             mongoCount.getAndIncrement();
-            mongoDB.getCollection(collection).bulkWrite(updateBatch, new BulkWriteOptions().ordered(false), (v,t)-> {
+            mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v,t)-> {
                 mongoCount.getAndDecrement();
                 if(t!=null) {
                     System.out.println("Failed in update: "+t.getMessage());
@@ -170,7 +170,7 @@ public class DataIngester {
         waitForMongo();
         mongoCount.getAndIncrement();
         insertBatchMap.forEach((collection,insertBatch)->{
-            mongoDB.getCollection(collection).insertMany(insertBatch, new InsertManyOptions().ordered(false), (v, t) -> {
+            mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
                 mongoCount.getAndDecrement();
                 if(t!=null) {
                     System.out.println("Failed in insert: "+t.getMessage());
