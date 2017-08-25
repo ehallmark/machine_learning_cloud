@@ -378,6 +378,7 @@ public class USPTOHandler extends NestedHandler {
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         Object filingName = doc.get(Constants.FILING_NAME);
         if(filingName != null) {
+            System.out.println("filing: "+filingName);
             DataIngester.ingestBulk(name, filingName.toString(), doc, true);
         }
     }

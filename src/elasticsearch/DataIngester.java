@@ -98,21 +98,17 @@ public class DataIngester {
             }
         });
         if(create) {
-            if(parent!=null) {
-                assetDoc.put("_parent", parent);
-                filingDoc.put("_id", parent);
-            }
+            assetDoc.put("_parent", parent);
+            filingDoc.put("_id", parent);
             if(id!=null) {
                 assetDoc.put("_id", id);
                 addToInsertMap(TYPE_NAME,new Document(assetDoc));
             }
-            if(parent!=null) {
-                // upsert
-                Document upsertParentDoc = new Document("$set",filingDoc);
-                Document upsertParentQuery = new Document("_id", parent);
-                WriteModel<Document> model = new UpdateOneModel<>(upsertParentQuery, upsertParentDoc, new UpdateOptions().upsert(true));
-                addToUpdateMap(PARENT_TYPE_NAME, model);
-            }
+            // upsert
+            Document upsertParentDoc = new Document("$set",filingDoc);
+            Document upsertParentQuery = new Document("_id", parent);
+            WriteModel<Document> model = new UpdateOneModel<>(upsertParentQuery, upsertParentDoc, new UpdateOptions().upsert(true));
+            addToUpdateMap(PARENT_TYPE_NAME, model);
 
         } else {
             if (id != null) {
