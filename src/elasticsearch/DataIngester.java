@@ -47,11 +47,12 @@ public class DataIngester {
     public static synchronized void ingestBulkFromMongoDB(String type, String name,  Document doc) {
         doc.remove("_id");
         Object parent = doc.get("_parent");
-        IndexRequest request = new IndexRequest(INDEX_NAME,type, name).source(doc);
+        IndexRequest request = new IndexRequest(INDEX_NAME,type, name);
         if(parent!=null) {
             request = request.parent(parent.toString());
             doc.remove("_parent");
         }
+        request = request.source(doc);
         bulkProcessor.add(request);
     }
 
