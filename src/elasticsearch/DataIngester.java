@@ -111,13 +111,13 @@ public class DataIngester {
             addToUpdateMap(PARENT_TYPE_NAME, model);
 
         } else {
-            if (id != null) {
+            if (id != null && assetDoc.size() > 0) {
                 Document updateDoc = new Document("$set", assetDoc);
                 Document updateQuery = query == null ? new Document("_id", id) : query.append("_id", id);
                 WriteModel<Document> model = new UpdateOneModel<>(updateQuery, updateDoc);
                 addToUpdateMap(TYPE_NAME, model);
             }
-            if(parent!=null) {
+            if(parent!=null && filingDoc.size() > 0) {
                 Document updateParentDoc = new Document("$set",filingDoc);
                 Document updateParentQuery = new Document("_id", parent);
                 WriteModel<Document> model = new UpdateOneModel<>(updateParentQuery, updateParentDoc);
