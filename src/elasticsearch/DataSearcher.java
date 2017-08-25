@@ -65,13 +65,13 @@ public class DataSearcher {
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
-            boolean sortByParentField;
+            boolean usingScore;
             if(isOverallScore||comparator.equals(Constants.SIMILARITY)||Constants.FILING_ATTRIBUTES_SET.contains(comparator)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
-                sortByParentField = true;
+                usingScore = true;
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
-                sortByParentField = false;
+                usingScore = false;
             }
             String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
@@ -105,19 +105,18 @@ public class DataSearcher {
                     }
                 }
             }
-            boolean alreadySorted = false;
             for(AbstractAttribute attribute : attributes) {
+                boolean componentOfScore = usingScore && (attribute.getName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getName())));
                 if(attribute instanceof AbstractScriptAttribute) {
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
                     Script script = scriptAttribute.getScript();
                     if(script!=null) {
                         request = request.addScriptField(scriptAttribute.getName(), script);
                         // add script to query
-                        if(scriptAttribute.getName().equals(comparator)) {
+                        if(componentOfScore) {
                             // try adding custom sort script
                             QueryBuilder sortScript = scriptAttribute.getSortScript();
                             if (sortScript != null) {
-                                alreadySorted = true;
                                 if (Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName())) {
                                     parentQueryBuilder.set(parentQueryBuilder.get().must(sortScript));
                                 } else {
@@ -126,19 +125,16 @@ public class DataSearcher {
                             }
                         }
                     }
-                }
-                if(attribute.getName().equals(comparator) && sortByParentField && !alreadySorted) {
+                } else if(componentOfScore) {
                     // add default sort
-                    parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
-                         new Script(ScriptType.INLINE, "expression", "_score * doc['"+attribute.getName()+"'].value", Collections.emptyMap())
-                    ))));
-                    alreadySorted = true;
+                    if(Constants.FILING_ATTRIBUTES_SET.contains(attribute.getName())) {
+                        parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
+                                new Script(ScriptType.INLINE, "expression", "doc['" + attribute.getName() + "'].empty ? 0 : (_score * doc['" + attribute.getName() + "'].value)", Collections.emptyMap())
+                        ))));
+                    } else {
+                        queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getName()).missing(0))));
+                    }
                 }
-            }
-
-            if (isOverallScore) {
-                // add in AI Value
-                parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(Constants.AI_VALUE).missing(0))));
             }
 
             // Add filter to query

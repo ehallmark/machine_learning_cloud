@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Constants {
 	public static final String MAINTENANCE_FEE_REMINDERS = "maintenanceFeeReminders";
@@ -185,7 +187,7 @@ public class Constants {
 
 	public static final List<String> RELATED_DOC_TYPE_LIST = Arrays.asList(RELATED_DOC_TYPES);
 
-	public static final Collection<String> FILING_ATTRIBUTES_SET = Arrays.asList(
+	public static final Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
 			FILING_NAME,
 			FILING_COUNTRY,
 			FILING_DATE,
@@ -212,5 +214,10 @@ public class Constants {
 			SIMILARITY,
 			"vector_obj",
 			AI_VALUE
-	);
+	).collect(Collectors.toSet());
+
+	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
+			AI_VALUE,
+			SIMILARITY
+	).collect(Collectors.toSet());
 }
