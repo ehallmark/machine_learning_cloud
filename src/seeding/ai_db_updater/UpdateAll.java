@@ -17,21 +17,22 @@ public class UpdateAll {
                     CreateCompDBAssigneeTransactionData.main(args);
                 } else if (arg.equals("1")) {
                     UpdateBaseApplicationData.main(args);
-                    UpdateBasePatentData.main(args);
                 } else if (arg.equals("2")) {
-                    UpdatePairBulkData.main(args);
+                    UpdateBasePatentData.main(args);
                 } else if (arg.equals("3")) {
-                    UpdateMaintenanceFeeData.main(args);
+                    UpdatePairBulkData.main(args);
                 } else if (arg.equals("4")) {
-                    UpdateClassificationHash.main(args);
+                    UpdateMaintenanceFeeData.main(args);
                 } else if (arg.equals("5")) {
-                    UpdatePriorityAndExpirationData.main(args);
+                    UpdateClassificationHash.main(args);
                 } else if (arg.equals("6")) {
-                    UpdateWIPOTechnologies.main(args);
+                    UpdatePriorityAndExpirationData.main(args);
                 } else if (arg.equals("7")) {
+                    UpdateWIPOTechnologies.main(args);
+                } else if (arg.equals("8")) {
                     //UpdateRelatedAssetsGraph.main(args);
                     UpdateAssignmentData.main(args);
-                } else if (arg.equals("8")) {
+                } else if (arg.equals("9")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }
