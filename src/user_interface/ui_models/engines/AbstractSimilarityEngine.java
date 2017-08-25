@@ -43,28 +43,6 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
         }
     }
 
-    static final String TEST_SIMILARITY_SCRIPT = "String vectorStr = doc['vector_str'].value;" +
-            "if(vectorStr == null || params.avg_vector == null) { return 0f; }" +
-            "String[] vector = /[,]/.split(vectorStr);" +
-            "if(vector.length!="+ ParagraphVectorModel.VECTOR_SIZE+") { return 0f; }" + // REMOVE THIS!!!!!
-            "float a = 0f;" +
-            "float b = 0f;" +
-            "float ab = 0f;" +
-            "for(int i = 0; i < vector.length; i++) {" +
-            "    float x = Float.parseFloat(vector[i]);" +
-            "    float y = (float) params.avg_vector[i];" +
-            "    a+=(x*x);" +
-            "    b+=(y*y);" +
-            "    ab+=(x*y);" +
-            "}" +
-            "if(a != 0f && b != 0f) {" +
-            "    return (ab/(Math.sqrt(a)*Math.sqrt(b))) * 100f;" +
-            "} else {" +
-            "    return 0f;" +
-            "}";
-
-
-
 
     @Override
     public String getType() {

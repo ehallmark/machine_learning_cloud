@@ -13,16 +13,14 @@ import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.Operator;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.*;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -79,7 +77,7 @@ public class DataSearcher {
                     .setTypes(TYPE_NAME)
                     .addSort(sortBuilder)
                     .setFetchSource(attrArray, null)
-                    .storedFields("_source", "_score","fields")
+                    .storedFields("_source", "_score", "inner_hits", "fields")
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
@@ -148,7 +146,10 @@ public class DataSearcher {
             // Add filter to query
             queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
-            queryBuilder.set(queryBuilder.get().must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)));
+            queryBuilder.set(queryBuilder.get().must(
+                    new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
+                            .innerHit(new InnerHitBuilder().setStoredFieldNames(Arrays.asList("_source", "fields")))
+            ));
 
             // Set query
             System.out.println("\"query\": "+queryBuilder.get().toString());
@@ -182,15 +183,29 @@ public class DataSearcher {
         hit.getSource().forEach((k,v)->{
             hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
         });
-        SearchHitField similarityField = hit.getField(Constants.SIMILARITY);
-        if(similarityField!=null) {
-            Number similarityScore = similarityField.getValue();
-            if (similarityScore != null) {
-                item.addData(Constants.SIMILARITY,similarityScore.floatValue()*100f);
+        handleFields(item, hit);
+
+        SearchHits innerHit = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+        if(innerHit != null) {
+            SearchHit[] innerHits = innerHit.getHits();
+            if(innerHits != null && innerHits.length > 0) {
+                innerHits[0].getSource().forEach((k,v)->{
+                    hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
+                });
+                handleFields(item, innerHits[0]);
             }
         }
         item.addData(Constants.OVERALL_SCORE,hit.getScore());
         return item;
+    }
+
+    private static void handleFields(Item item, SearchHit hit) {
+        hit.getFields().forEach((k,v)->{
+            Object val = v.getValue();
+            if(val!=null) {
+                item.addData(k,val);
+            }
+        });
     }
 
     private static Map<String,Object> mapAccumulator(List<Map<String,Object>> maps) {
