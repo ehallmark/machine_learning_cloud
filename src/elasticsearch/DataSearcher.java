@@ -2,6 +2,7 @@ package elasticsearch;
 
 import com.google.gson.Gson;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -17,6 +18,7 @@ import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
@@ -36,6 +38,7 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -76,16 +79,26 @@ public class DataSearcher {
                     .storedFields("_source", "_score","fields")
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
-            BoolQueryBuilder filterBuilder = QueryBuilders.boolQuery();
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
+            AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
+            AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
+            AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
+            AtomicReference<BoolQueryBuilder> parentQueryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             // filters
             for (AbstractFilter filter : filters) {
                 if(filter.getParent()==null) {
-                    if (filter.contributesToScore() && isOverallScore) {
-                        query = query.must(filter.getFilterQuery().boost(10));
+                    AtomicReference<BoolQueryBuilder> currentQuery;
+                    AtomicReference<BoolQueryBuilder> currentFilter;
+                    if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getPrerequisite())) {
+                        currentQuery = parentQueryBuilder;
+                        currentFilter = parentFilterBuilder;
                     } else {
-                        filterBuilder = filterBuilder
-                                .must(filter.getFilterQuery().boost(0));
+                        currentQuery = queryBuilder;
+                        currentFilter = filterBuilder;
+                    }
+                    if (filter.contributesToScore() && isOverallScore) {
+                        currentQuery.set(currentQuery.get().must(filter.getFilterQuery().boost(10)));
+                    } else {
+                        currentFilter.set(currentFilter.get().must(filter.getFilterQuery().boost(0)));
                     }
                 }
             }
@@ -98,25 +111,30 @@ public class DataSearcher {
                         // add script to query
                         QueryBuilder scriptQuery = scriptAttribute.getScriptQuery();
                         if(scriptQuery!=null) {
-                            query = query.must(scriptQuery);
+                            if(Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName())) {
+                                parentQueryBuilder.set(parentQueryBuilder.get().must(scriptQuery));
+                            } else {
+                                parentQueryBuilder.set(queryBuilder.get().must(scriptQuery));
+                            }
                         }
                     }
                 }
             }
 
-            // Add filter to query
-            query = query.filter(filterBuilder);
-
             if (isOverallScore) {
                 // add in AI Value
-                query = query.must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(Constants.AI_VALUE)
-                        .missing(0)
-                ));
+                parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(Constants.AI_VALUE).missing(0))));
             }
-            // Set query
-            System.out.println("\"query\": "+query.toString());
 
-            request = request.setQuery(query);
+            // Add filter to query
+            queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
+            parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
+            queryBuilder.set(queryBuilder.get().must(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)));
+
+            // Set query
+            System.out.println("\"query\": "+queryBuilder.get().toString());
+
+            request = request.setQuery(queryBuilder.get());
             //String queryStr = request.toString().replace("\n","").replace("\t","");
             //while(queryStr.contains("  ")) queryStr=queryStr.replace("  "," ");
             //System.out.println("\"query\": "+queryStr);
