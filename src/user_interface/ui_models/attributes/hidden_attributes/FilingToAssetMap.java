@@ -28,6 +28,6 @@ public class FilingToAssetMap extends HiddenAttribute<Collection<String>> {
 
     @Override
     public String getName() {
-        return Constants.FILING_NAME+"_to_"+Constants.NAME;
+        return Constants.FILING_NAME+"_to_"+Constants.NAME+"_set";
     }
 }
