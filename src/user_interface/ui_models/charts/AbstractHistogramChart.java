@@ -49,7 +49,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
-        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE);
+        searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
         // what to do if not present?
         if(searchTypes.isEmpty()) {
             searchTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());

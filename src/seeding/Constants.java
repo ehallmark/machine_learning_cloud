@@ -2,8 +2,8 @@ package seeding;
 
 
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
+import user_interface.ui_models.filters.AbstractFilter;
 
-import java.io.File;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
@@ -220,4 +220,7 @@ public class Constants {
 			AI_VALUE,
 			SIMILARITY
 	).collect(Collectors.toSet());
+
+	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
+
 }

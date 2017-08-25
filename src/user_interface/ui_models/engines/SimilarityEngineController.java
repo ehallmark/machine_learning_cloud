@@ -30,7 +30,6 @@ import static user_interface.server.SimilarPatentServer.*;
  */
 public class SimilarityEngineController {
     private Collection<AbstractFilter> preFilters;
-    private Collection<String> resultTypes;
     @Getter
     protected PortfolioList portfolioList;
     @Getter
@@ -74,14 +73,9 @@ public class SimilarityEngineController {
         System.out.println("Beginning extract relevant info...");
         // init
         int limit = extractInt(req, LIMIT_FIELD, 10);
-        int maxResultLimit = 50000;
+        int maxResultLimit = 100000;
         if(limit > maxResultLimit) {
             throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
-        }
-        resultTypes = SimilarPatentServer.extractArray(req, Constants.DOC_TYPE);
-        // what to do if not present?
-        if(resultTypes.isEmpty()) {
-            resultTypes = Arrays.asList(PortfolioList.Type.values()).stream().map(type->type.toString()).collect(Collectors.toList());
         }
 
         String comparator = extractString(req, COMPARATOR_FIELD, Constants.OVERALL_SCORE);
