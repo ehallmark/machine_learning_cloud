@@ -39,7 +39,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
     protected List<INDArray> simVectors;
 
     @Override
-    public QueryBuilder getScriptQuery() {
+    public QueryBuilder getSortScript() {
         Script searchScript = getScript();
         if(searchScript==null) return null;
         return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(100))

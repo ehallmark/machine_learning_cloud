@@ -65,10 +65,13 @@ public class DataSearcher {
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
-            if(isOverallScore||comparator.equals(Constants.SIMILARITY)) {
+            boolean sortByParentField;
+            if(isOverallScore||comparator.equals(Constants.SIMILARITY)||Constants.FILING_ATTRIBUTES_SET.contains(comparator)) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
+                sortByParentField = true;
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
+                sortByParentField = false;
             }
             String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
@@ -102,6 +105,7 @@ public class DataSearcher {
                     }
                 }
             }
+            boolean alreadySorted = false;
             for(AbstractAttribute attribute : attributes) {
                 if(attribute instanceof AbstractScriptAttribute) {
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
@@ -109,15 +113,26 @@ public class DataSearcher {
                     if(script!=null) {
                         request = request.addScriptField(scriptAttribute.getName(), script);
                         // add script to query
-                        QueryBuilder scriptQuery = scriptAttribute.getScriptQuery();
-                        if(scriptQuery!=null) {
-                            if(Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName())) {
-                                parentQueryBuilder.set(parentQueryBuilder.get().must(scriptQuery));
-                            } else {
-                                parentQueryBuilder.set(queryBuilder.get().must(scriptQuery));
+                        if(scriptAttribute.getName().equals(comparator)) {
+                            // try adding custom sort script
+                            QueryBuilder sortScript = scriptAttribute.getSortScript();
+                            if (sortScript != null) {
+                                alreadySorted = true;
+                                if (Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName())) {
+                                    parentQueryBuilder.set(parentQueryBuilder.get().must(sortScript));
+                                } else {
+                                    queryBuilder.set(queryBuilder.get().must(sortScript));
+                                }
                             }
                         }
                     }
+                }
+                if(attribute.getName().equals(comparator) && sortByParentField && !alreadySorted) {
+                    // add default sort
+                    parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
+                         new Script(ScriptType.INLINE, "expression", "_score * doc['"+attribute.getName()+"'].value", Collections.emptyMap())
+                    ))));
+                    alreadySorted = true;
                 }
             }
 

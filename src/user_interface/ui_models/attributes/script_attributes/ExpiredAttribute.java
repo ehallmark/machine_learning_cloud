@@ -33,7 +33,7 @@ public class ExpiredAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public QueryBuilder getScriptQuery() {
+    public QueryBuilder getSortScript() {
         return null;
     }
 

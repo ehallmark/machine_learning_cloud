@@ -33,7 +33,7 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public QueryBuilder getScriptQuery() {
+    public QueryBuilder getSortScript() {
         return null;
     }
 

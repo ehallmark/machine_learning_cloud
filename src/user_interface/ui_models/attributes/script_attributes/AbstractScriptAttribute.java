@@ -27,7 +27,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
         return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : (doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value * 86400000))";
     }
 
-    public abstract QueryBuilder getScriptQuery();
+    public abstract QueryBuilder getSortScript();
     public abstract Script getScript();
 
 }
