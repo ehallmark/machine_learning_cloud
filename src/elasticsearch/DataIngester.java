@@ -120,7 +120,7 @@ public class DataIngester {
             if(parent!=null) {
                 Document updateParentDoc = new Document("$set",filingDoc);
                 Document updateParentQuery = new Document("_id", parent);
-                WriteModel<Document> model = new UpdateOneModel<>(updateParentDoc, updateParentQuery);
+                WriteModel<Document> model = new UpdateOneModel<>(updateParentQuery, updateParentDoc);
                 addToUpdateMap(PARENT_TYPE_NAME, model);
             }
         }
