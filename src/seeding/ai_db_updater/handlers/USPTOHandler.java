@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
-    private static boolean debug = true;
+    private static boolean debug = false;
     protected final String topLevelTag;
     @Setter
     protected static Map<String,INDArray> lookupTable;
