@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 public class USPTOHandler extends NestedHandler {
     private static final AtomicLong cnt = new AtomicLong(0);
     private static final AtomicLong errors = new AtomicLong(0);
+    private static boolean debug = true;
     protected final String topLevelTag;
     @Setter
     protected static Map<String,INDArray> lookupTable;
@@ -34,17 +35,6 @@ public class USPTOHandler extends NestedHandler {
     public USPTOHandler(String topLevelTag, boolean applications) {
         this.topLevelTag=topLevelTag;
         this.applications=applications;
-    }
-
-    private static void debug(EndFlag endFlag, boolean debug, Collection<String> onlyAttrs) {
-        if(debug) {
-            endFlag.getTransform(onlyAttrs).forEach((flag, val) -> {
-                String str = val.toString();
-                String cleanVal = str.substring(0, Math.min(str.length(), 20));
-                if (str.length() > 20) cleanVal += "...";
-                System.out.println(flag + ": " + cleanVal);
-            });
-        }
     }
 
     @Override
@@ -378,7 +368,7 @@ public class USPTOHandler extends NestedHandler {
     private void saveElasticSearch(String name, Map<String,Object> doc) {
         Object filingName = doc.get(Constants.FILING_NAME);
         if(filingName != null) {
-            System.out.println("filing: "+filingName);
+            if(debug)System.out.println("filing: "+filingName);
             DataIngester.ingestBulk(name, filingName.toString(), doc, true);
         }
     }
