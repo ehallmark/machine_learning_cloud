@@ -154,7 +154,7 @@ public class Constants {
 	};
 
 	public static final UrlCreator MAINTENANCE_FEE_URL_CREATOR = date-> {
-		String url = "https://bulkdata.uspto.gov/data2/patent/maintenancefee/MaintFeeEvents.zip";
+		String url = "https://bulkdata.uspto.gov/data/patent/maintenancefee/MaintFeeEvents.zip";
 		return url;
 	};
 
