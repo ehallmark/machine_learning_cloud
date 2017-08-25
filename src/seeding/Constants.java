@@ -119,15 +119,15 @@ public class Constants {
 	public static final Set<String> STOP_WORD_SET = CLAIM_STOP_WORD_SET;
 
 	public static final String GOOGLE_URL = "http://storage.googleapis.com/patents/grant_full_text";
-	public static final String USPTO_URL = "https://bulkdata.uspto.gov/data2/patent/grant/redbook/fulltext";
+	public static final String USPTO_URL = "https://bulkdata.uspto.gov/data/patent/grant/redbook/fulltext";
 	public static final String GOOGLE_APP_URL = "http://storage.googleapis.com/patents/appl_full_text";
-	public static final String USPTO_APP_URL = "https://bulkdata.uspto.gov/data2/patent/application/redbook/fulltext";
+	public static final String USPTO_APP_URL = "https://bulkdata.uspto.gov/data/patent/application/redbook/fulltext";
 	public static final UrlCreator GOOGLE_URL_CREATOR = defaultPatentUrlCreator(GOOGLE_URL);
 	public static final UrlCreator USPTO_URL_CREATOR = defaultPatentUrlCreator(USPTO_URL);
 	public static final UrlCreator GOOGLE_APP_URL_CREATOR = defaultAppUrlCreator(GOOGLE_APP_URL);
 	public static final UrlCreator USPTO_APP_URL_CREATOR = defaultAppUrlCreator(USPTO_APP_URL);
-	public static final UrlCreator PATENT_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_Grant_CPC_MCF_Text_");
-	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data2/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
+	public static final UrlCreator PATENT_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data/patent/classification/cpc/US_Grant_CPC_MCF_Text_");
+	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
 	public static final UrlCreator PAIR_BULK_URL_CREATOR = date -> "https://pairbulkdata.uspto.gov/api/full-download?format=XML";
 
 	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
