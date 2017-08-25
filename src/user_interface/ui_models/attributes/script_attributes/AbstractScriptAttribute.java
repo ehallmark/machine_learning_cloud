@@ -20,7 +20,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
     }
 
     protected String getPriorityDateField() {
-        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'] : doc['"+Constants.PRIORITY_DATE+"'])";
+        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'].value : doc['"+Constants.PRIORITY_DATE+"'].value)";
     }
 
     protected String getTermExtensionMillis() {
