@@ -87,8 +87,10 @@ public class DataSearcher {
             AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> parentQueryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             // filters
+            System.out.println("Starting ES filters...");
             for (AbstractFilter filter : filters) {
                 if(filter.getParent()==null) {
+                    System.out.println("  filter: "+filter.getName());
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
                     if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getPrerequisite())) {
@@ -105,9 +107,12 @@ public class DataSearcher {
                     }
                 }
             }
+            System.out.println("Starting ES attributes...");
             for(AbstractAttribute attribute : attributes) {
+                System.out.println("  attribute: "+attribute.getName());
                 boolean componentOfScore = usingScore && (attribute.getName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getName())));
                 if(attribute instanceof AbstractScriptAttribute) {
+                    System.out.println("  Script Component...");
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
                     Script script = scriptAttribute.getScript();
                     if(script!=null) {
@@ -126,6 +131,7 @@ public class DataSearcher {
                         }
                     }
                 } else if(componentOfScore) {
+                    System.out.println("  Score Component...");
                     // add default sort
                     if(Constants.FILING_ATTRIBUTES_SET.contains(attribute.getName())) {
                         parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
@@ -137,6 +143,8 @@ public class DataSearcher {
                 }
             }
 
+
+            System.out.println("Combining Query...");
             // Add filter to query
             queryBuilder.set(queryBuilder.get().filter(filterBuilder.get()));
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));

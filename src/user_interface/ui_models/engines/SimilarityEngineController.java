@@ -12,11 +12,14 @@ import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractNestedFilter;
+import user_interface.ui_models.filters.AdvancedKeywordFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -29,6 +32,7 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class SimilarityEngineController {
+    private static AdvancedKeywordFilter assigneeNameFilter;
     private Collection<AbstractFilter> preFilters;
     @Getter
     protected PortfolioList portfolioList;
@@ -63,7 +67,19 @@ public class SimilarityEngineController {
             preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
-            preFilters.add(new AbstractExcludeFilter(new LatestAssigneeNestedAttribute(), AbstractFilter.FilterType.Exclude,  AbstractFilter.FieldType.Text, assigneesToRemove, Constants.ASSIGNEE));
+            if(assigneeNameFilter==null) {
+                // lazily create assignee name filter
+                AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
+                AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
+                if(assigneeFilter != null) {
+                    assigneeNameFilter = (AdvancedKeywordFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)).findAny().orElse(null);
+
+                }
+            }
+            if(assigneeNameFilter!=null) {
+                assigneeNameFilter.setQueryStr("\""+ String.join("\" | \"", assigneesToRemove)+"\"");
+                preFilters.add(assigneeNameFilter);
+            }
         }
 
         preFilters = preFilters.stream().filter(filter->filter.isActive()).collect(Collectors.toList());

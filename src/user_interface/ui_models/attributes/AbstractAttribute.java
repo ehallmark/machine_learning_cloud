@@ -85,7 +85,7 @@ public abstract class AbstractAttribute {
                 }
                 case Nested: {
                     if(!(this instanceof NestedAttribute)) throw new RuntimeException("Only nested attributes support nested filterType");
-                    filter = new AbstractNestedFilter((NestedAttribute)this, filterType);
+                    filter = new AbstractNestedFilter((NestedAttribute)this);
                     break;
                 }
                 default: {

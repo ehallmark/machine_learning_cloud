@@ -28,8 +28,8 @@ public class AbstractNestedFilter extends AbstractFilter {
     @Getter
     protected Collection<AbstractFilter> filters;
     protected Collection<AbstractFilter> filterSubset;
-    public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, FilterType filterType) {
-        super(nestedAttribute,filterType);
+    public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute) {
+        super(nestedAttribute,FilterType.Nested);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
         this.filters = attributes.stream().flatMap(attr->{
             Collection<AbstractFilter> filters = attr.createFilters();

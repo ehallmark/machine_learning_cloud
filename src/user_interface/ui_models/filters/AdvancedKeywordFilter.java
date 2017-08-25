@@ -2,6 +2,7 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.NonNull;
+import lombok.Setter;
 import org.elasticsearch.index.query.Operator;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -20,6 +21,7 @@ import static user_interface.server.SimilarPatentServer.extractString;
  * Created by Evan on 7/9/2017.
  */
 public class AdvancedKeywordFilter extends AbstractFilter {
+    @Setter
     protected String queryStr;
 
     public AdvancedKeywordFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
