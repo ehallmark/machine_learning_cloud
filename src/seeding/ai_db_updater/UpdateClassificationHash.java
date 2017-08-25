@@ -35,16 +35,15 @@ public class UpdateClassificationHash {
         AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         assetToCPCMap.initMaps();
         {
-            PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
-            downloader.pullMostRecentData();
-            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(assetToCPCMap.getPatentDataMap()));
-        }
-        {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(assetToCPCMap.getApplicationDataMap()));
         }
-
+        {
+            PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
+            downloader.pullMostRecentData();
+            setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(assetToCPCMap.getPatentDataMap()));
+        }
         assetToCPCMap.save();
 
     }
