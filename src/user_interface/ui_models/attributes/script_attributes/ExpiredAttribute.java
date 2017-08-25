@@ -39,7 +39,7 @@ public class ExpiredAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value ? true : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+") <= 0)", new HashMap<>());
+        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value ? 0 : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+") <= 0)", new HashMap<>());
     }
 
     @Override
