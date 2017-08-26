@@ -39,7 +39,7 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", "doc['"+Constants.LAPSED+"'].value ? 0 : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+")/31536000000)", new HashMap<>());
+        return new Script(ScriptType.INLINE, "expression", "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+")/"+millisecondsPerYear+")", new HashMap<>());
     }
 
     @Override

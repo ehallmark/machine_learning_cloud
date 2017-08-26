@@ -14,6 +14,8 @@ import java.util.Collection;
  */
 public abstract class AbstractScriptAttribute extends AbstractAttribute {
     protected static final long millisecondsToday = ZonedDateTime.now().toEpochSecond()*1000;
+    protected static final long millisecondsPerYear = 31557600000L;
+    protected static final long millisecondsPerDay = 86400000L;
 
     public AbstractScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         super(filterTypes);
@@ -24,7 +26,7 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
     }
 
     protected String getTermExtensionMillis() {
-        return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : (doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value * 86400000))";
+        return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : (doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value * "+millisecondsPerDay+"))";
     }
 
     public abstract QueryBuilder getSortScript();
