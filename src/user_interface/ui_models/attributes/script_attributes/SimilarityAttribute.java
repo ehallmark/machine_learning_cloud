@@ -51,6 +51,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
     public Script getScript() {
         Script searchScript = null;
         if(simVectors!=null&&simVectors.size()>0) {
+            System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
             params.put("avg_vector", simVectors.size() == 1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
             searchScript = new Script(
@@ -59,6 +60,8 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
                     DEFAULT_SIMILARITY_SCRIPT,
                     params
             );
+        } else {
+            System.out.println("No similarity vectors found :(");
         }
         return searchScript;
     }

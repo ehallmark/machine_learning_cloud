@@ -18,6 +18,7 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import seeding.Constants;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -37,6 +38,7 @@ public class DataIngester {
     public static final String PARENT_TYPE_NAME = "filings";
     private static MongoDatabase mongoDB = MongoDBClient.get().getDatabase(INDEX_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
+    private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
     public static synchronized void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
@@ -92,7 +94,7 @@ public class DataIngester {
         Map<String,Object> assetDoc = new HashMap<>();
         Map<String,Object> filingDoc = new HashMap<>();
         doc.forEach((key,val)->{
-            if(filingAttributes.contains(key)) {
+            if(filingAttributes.contains(key)||(key.contains(".")&&filingAttributes.contains(key.substring(0,key.indexOf("."))))) {
                 filingDoc.put(key,val);
             } else {
                 assetDoc.put(key,val);
@@ -210,8 +212,12 @@ public class DataIngester {
 
     public static synchronized void updateAssets(Map<String,Map<String,Object>> labelToTextMap) {
         try {
-            labelToTextMap.forEach((name,data)->{
-                ingestBulk(name,null,data,false);
+            labelToTextMap.entrySet().parallelStream().forEach(e->{
+                String name = e.getKey();
+                Map<String,Object> data = e.getValue();
+                String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(name,assetToFilingMap.getPatentDataMap().get(name));
+                if(filing == null) return;
+                ingestBulk(name,filing,data,false);
             });
 
         } catch (Exception e) {
