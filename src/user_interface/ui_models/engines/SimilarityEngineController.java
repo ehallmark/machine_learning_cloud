@@ -12,10 +12,7 @@ import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
-import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
@@ -98,6 +95,13 @@ public class SimilarityEngineController {
         setPrefilters(req);
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
+        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes();
+        topLevelAttributes.forEach(attr->{
+            if(attr instanceof DependentAttribute) {
+                System.out.println("Extracting info for dependent attribute: "+attr.getName());
+                ((DependentAttribute) attr).extractRelevantInformationFromParams(req);
+            }
+        });
         Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllTopLevelAttributes(), preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 

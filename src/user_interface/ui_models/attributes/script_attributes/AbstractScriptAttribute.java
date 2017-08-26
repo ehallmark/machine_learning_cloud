@@ -3,17 +3,19 @@ package user_interface.ui_models.attributes.script_attributes;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.script.Script;
 import seeding.Constants;
+import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
-import java.time.ZonedDateTime;
 import java.util.Collection;
+
 
 /**
  * Created by ehallmark on 8/18/17.
  */
-public abstract class AbstractScriptAttribute extends AbstractAttribute {
+public abstract class AbstractScriptAttribute extends AbstractAttribute implements DependentAttribute {
     public static double getCurrentYearAndMonth() {
         return new Double(LocalDate.now().getYear()) + (new Double(LocalDate.now().getMonthValue() - 1) / 12d);
     }
@@ -35,5 +37,10 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
 
     public String getRemainingLifeQuery() {
         return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
+    }
+
+    @Override
+    public void extractRelevantInformationFromParams(Request req) {
+        // default do nothing
     }
 }
