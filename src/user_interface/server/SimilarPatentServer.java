@@ -392,7 +392,7 @@ public class SimilarPatentServer {
         System.out.println("Num applications found: "+applications.size());
         handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
-        System.out.println("Num applications found: "+patents.size());
+        System.out.println("Num patents found: "+patents.size());
         handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents);
     }
 
