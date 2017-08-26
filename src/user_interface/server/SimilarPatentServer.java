@@ -60,6 +60,7 @@ import models.value_models.*;
  * Created by ehallmark on 7/27/16.
  */
 public class SimilarPatentServer {
+    private static final boolean debug = true;
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
     private static final String PROTECTED_URL_PREFIX = "/secure";
@@ -413,6 +414,7 @@ public class SimilarPatentServer {
                         item.addData(model.getMongoDBName(),obj);
                     }
                 });
+                if(debug) System.out.println("Item: "+item.getName());
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());
 
