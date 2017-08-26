@@ -158,13 +158,17 @@ public class DataIngester {
     private static void updateBatch() {
         waitForMongo();
         updateBatchMap.forEach((collection,updateBatch)->{
-            mongoCount.getAndIncrement();
-            mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v,t)-> {
-                mongoCount.getAndDecrement();
-                if(t!=null) {
-                    System.out.println("Failed in update: "+t.getMessage());
+            synchronized (updateBatch) {
+                if (updateBatch.size() > 0) {
+                    mongoCount.getAndIncrement();
+                    mongoDB.getCollection(collection).bulkWrite(new ArrayList<>(updateBatch), new BulkWriteOptions().ordered(false), (v, t) -> {
+                        mongoCount.getAndDecrement();
+                        if (t != null) {
+                            System.out.println("Failed in update: " + t.getMessage());
+                        }
+                    });
                 }
-            });
+            }
             updateBatch.clear();
         });
     }
@@ -172,14 +176,18 @@ public class DataIngester {
     private static void insertBatch() {
         waitForMongo();
         insertBatchMap.forEach((collection,insertBatch)->{
-            mongoCount.getAndIncrement();
-            mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
-                mongoCount.getAndDecrement();
-                if(t!=null) {
-                    System.out.println("Failed in insert: "+t.getMessage());
+            synchronized (insertBatch) {
+                if (insertBatch.size() > 0) {
+                    mongoCount.getAndIncrement();
+                    mongoDB.getCollection(collection).insertMany(new ArrayList<>(insertBatch), new InsertManyOptions().ordered(false), (v, t) -> {
+                        mongoCount.getAndDecrement();
+                        if (t != null) {
+                            System.out.println("Failed in insert: " + t.getMessage());
+                        }
+                    });
+                    insertBatch.clear();
                 }
-            });
-            insertBatch.clear();
+            }
         });
     }
 
