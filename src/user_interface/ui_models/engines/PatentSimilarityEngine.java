@@ -28,19 +28,9 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     protected Collection<String> getInputsToSearchFor(Request req, Collection<String> resultTypes) {
         System.out.println("Collecting inputs to search for...");
         // get input data
-        Collection<String> inputsToSearchFor = new HashSet<>();
         Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
-        for(String resultType : resultTypes) {
-            PortfolioList.Type searchType = PortfolioList.Type.valueOf(resultType);
-            if (searchType.equals(PortfolioList.Type.applications)) {
-                inputsToSearchFor.addAll(patents.stream().filter(patent -> Database.isApplication(patent)).collect(Collectors.toList()));
-            } else if (searchType.equals(PortfolioList.Type.patents)) {
-                inputsToSearchFor.addAll(patents.stream().filter(patent -> !Database.isApplication(patent)).collect(Collectors.toList()));
-            } else {
-                inputsToSearchFor.addAll(patents);
-            }
-        }
-        return inputsToSearchFor;
+        System.out.println("Found "+patents.size()+" patents...");
+        return patents;
     }
 
 

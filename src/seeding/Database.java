@@ -16,8 +16,10 @@ import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import tools.AssigneeTrimmer;
 import models.classification_models.TechTaggerNormalizer;
 import user_interface.ui_models.attributes.computable_attributes.CompDBAssetsPurchasedAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToRelatedAssetsMap;
+import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.io.*;
@@ -43,8 +45,8 @@ public class Database {
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,String> technologyMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
-	private static Map<String,Set<String>>  assigneeToPatentsMap;
-	private static Map<String,Set<String>> assigneeToAppsMap;
+	private static Map<String,Collection<String>>  assigneeToPatentsMap;
+	private static Map<String,Collection<String>> assigneeToAppsMap;
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
@@ -365,37 +367,16 @@ public class Database {
 		// nothing to do
 	}
 
-
-	public synchronized static Collection<String> getLargeEntityPatents() {
-		if(largeEntityPatents==null) {
-			largeEntityPatents = Collections.unmodifiableSet((Set<String>) tryLoadObject(new File(Constants.DATA_FOLDER + "large_entity_patents_set.jobj")));
-		}
-		return largeEntityPatents;
-	}
-
-	public synchronized static Collection<String> getSmallEntityPatents() {
-		if(smallEntityPatents==null) {
-			smallEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"small_entity_patents_set.jobj")));
-		}
-		return smallEntityPatents;
-	}
-	public synchronized static Collection<String> getMicroEntityPatents() {
-		if(microEntityPatents==null) {
-			microEntityPatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(new File(Constants.DATA_FOLDER+"micro_entity_patents_set.jobj")));
-		}
-		return microEntityPatents;
-	}
-
-	public synchronized static Map<String,Set<String>> getAssigneeToPatentsMap() {
+	public synchronized static Map<String,Collection<String>> getAssigneeToPatentsMap() {
 		if(assigneeToPatentsMap==null) {
-			assigneeToPatentsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToPatentsMapFile));
+			assigneeToPatentsMap = new AssigneeToAssetsMap().getPatentDataMap();
 		}
 		return assigneeToPatentsMap;
 	}
 
-	public synchronized static Map<String,Set<String>> getAssigneeToAppsMap() {
+	public synchronized static Map<String,Collection<String>> getAssigneeToAppsMap() {
 		if(assigneeToAppsMap==null) {
-			assigneeToAppsMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(assigneeToAppsMapFile));
+			assigneeToAppsMap = new AssigneeToAssetsMap().getApplicationDataMap();
 		}
 		return assigneeToAppsMap;
 	}
@@ -428,14 +409,14 @@ public class Database {
 
 	public synchronized static Map<String,Set<String>> getPatentToClassificationMap() {
 		if(patentToClassificationMap==null) {
-			patentToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(patentToClassificationMapFile));
+			patentToClassificationMap = new AssetToCPCMap().getPatentDataMap();
 		}
 		return patentToClassificationMap;
 	}
 
 	public synchronized static Map<String,Set<String>> getAppToClassificationMap() {
 		if(appToClassificationMap==null) {
-			appToClassificationMap = Collections.unmodifiableMap((Map<String,Set<String>>)tryLoadObject(appToClassificationMapFile));
+			appToClassificationMap = new AssetToCPCMap().getApplicationDataMap();
 		}
 		return appToClassificationMap;
 	}
@@ -685,7 +666,7 @@ public class Database {
 		if(cleanBase.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
 		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
-		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase+" ").forEach(a->possible.add(a));
+		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
 		return possible;
 	}
 
