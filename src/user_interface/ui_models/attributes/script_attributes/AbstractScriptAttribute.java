@@ -16,6 +16,8 @@ import java.util.Collection;
  * Created by ehallmark on 8/18/17.
  */
 public abstract class AbstractScriptAttribute extends AbstractAttribute implements DependentAttribute {
+    protected static final long millisecondsPerYear = 31557600000L;
+
     public static double getCurrentYearAndMonth() {
         return new Double(LocalDate.now().getYear()) + (new Double(LocalDate.now().getMonthValue() - 1) / 12d);
     }
