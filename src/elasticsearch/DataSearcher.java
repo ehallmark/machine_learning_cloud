@@ -21,6 +21,7 @@ import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -72,10 +73,11 @@ public class DataSearcher {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
                 usingScore = false;
             }
-            String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
+            //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
+                    .setFetchSource(true)
                     .addSort(sortBuilder)
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
