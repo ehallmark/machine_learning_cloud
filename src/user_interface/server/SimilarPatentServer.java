@@ -10,6 +10,7 @@ import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
 import user_interface.ui_models.attributes.hidden_attributes.*;
+import user_interface.ui_models.attributes.script_attributes.ExpirationDateAttribute;
 import user_interface.ui_models.attributes.script_attributes.ExpiredAttribute;
 import user_interface.ui_models.attributes.script_attributes.RemainingLifeAttribute;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
