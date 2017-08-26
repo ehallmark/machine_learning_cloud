@@ -17,6 +17,7 @@ import java.util.HashMap;
  * Created by ehallmark on 7/20/17.
  */
 public class ExpirationDateAttribute extends AbstractScriptAttribute {
+    private static final long millisecondsPerYear = 31557600000L;
     public ExpirationDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
@@ -44,6 +45,6 @@ public class ExpirationDateAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", "("+getPriorityDateField("year")+"+"+20+").toString()+'-'+"+getPriorityDateField("monthOfYear")+"+'-'+"+getPriorityDateField("dayOfMonth"), new HashMap<>());
+        return new Script(ScriptType.INLINE, "expression", getPriorityDateField("value") + "+" + (millisecondsPerYear*20), new HashMap<>());
     }
 }
