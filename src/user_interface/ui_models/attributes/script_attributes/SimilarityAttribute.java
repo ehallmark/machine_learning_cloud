@@ -35,7 +35,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             "for(int i = 0; i < length; i++) {" +
             "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
             "}" +
-            "return ab;";
+            "return ab * 100;";
     protected List<INDArray> simVectors;
 
     @Override
@@ -54,7 +54,9 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
         if(simVectors!=null&&simVectors.size()>0) {
             System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
-            params.put("avg_vector", simVectors.size() == 1 ? simVectors.get(0).data().asFloat() : Nd4j.vstack(simVectors).mean(0).data().asFloat());
+            INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
+            avgVector.divi(avgVector.norm2Number().doubleValue()).data().asFloat();
+            params.put("avg_vector", avgVector.data().asFloat());
             searchScript = new Script(
                     ScriptType.INLINE,
                     "painless",
