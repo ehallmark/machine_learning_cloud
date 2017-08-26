@@ -108,6 +108,7 @@ public class DataSearcher {
                 }
             }
             System.out.println("Starting ES attributes...");
+            InnerHitBuilder innerHitBuilder = new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true));
             for(AbstractAttribute attribute : attributes) {
                 System.out.println("  attribute: "+attribute.getName());
                 boolean componentOfScore = usingScore && (attribute.getName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getName())));
@@ -116,13 +117,18 @@ public class DataSearcher {
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
                     Script script = scriptAttribute.getScript();
                     if(script!=null) {
-                        request = request.addScriptField(scriptAttribute.getName(), script);
+                        boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName());
+                        if(isParentAttr) {
+                            innerHitBuilder = innerHitBuilder.addScriptField(scriptAttribute.getName(),script);
+                        } else {
+                            request = request.addScriptField(scriptAttribute.getName(), script);
+                        }
                         // add script to query
                         if(componentOfScore) {
                             // try adding custom sort script
                             QueryBuilder sortScript = scriptAttribute.getSortScript();
                             if (sortScript != null) {
-                                if (Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName())) {
+                                if (isParentAttr) {
                                     parentQueryBuilder.set(parentQueryBuilder.get().must(sortScript));
                                 } else {
                                     queryBuilder.set(queryBuilder.get().must(sortScript));
@@ -150,7 +156,7 @@ public class DataSearcher {
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
             queryBuilder.set(queryBuilder.get().must(
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
-                            .innerHit(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true)))
+                            .innerHit(innerHitBuilder)
             ));
 
             // Set query
