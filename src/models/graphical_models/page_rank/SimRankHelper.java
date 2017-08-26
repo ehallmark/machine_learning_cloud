@@ -13,7 +13,7 @@ public class SimRankHelper {
 
     // run sim rank algorithm
     public static void main(String[] args) {
-        Map<String,Set<String>> citedPatentsMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
+        Map<String,Collection<String>> citedPatentsMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
         citedPatentsMap.putAll(Database.getAppToCitedPatentsMap());
 
         SimRank algorithm = new SimRank(citedPatentsMap, new ArrayList<>(citedPatentsMap.keySet()),0.75);
@@ -31,7 +31,7 @@ public class SimRankHelper {
     }
 
 
-    private static void saveRankTable(File file, Map<String,Set<String>> map, SimRank algorithm) {
+    private static void saveRankTable(File file, Map<String,Collection<String>> map, SimRank algorithm) {
         System.out.println("Starting to create similarity map!");
         Map<String, List<Pair<String, Float>>> similarityMap = Collections.synchronizedMap(new HashMap<>(map.size()));
         algorithm.rankTable.forEach((edge, sim) -> {

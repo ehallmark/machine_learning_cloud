@@ -27,7 +27,7 @@ public class CitationEvaluator extends ValueAttr {
         System.out.println("Starting to load citation evaluator...");
         List<String> patents = new ArrayList<>(((Map<String,Set<String>>) Database.tryLoadObject(new File("patent_to_cited_patents_map.jobj"))).keySet());
         Map<String,Set<String>> patentToReferencedByMap = (Map<String,Set<String>>)Database.tryLoadObject(new File("patent_to_referenced_by_map.jobj"));
-        Map<String,Set<String>> patentToCitationsMap = Database.getPatentToCitedPatentsMap();
+        Map<String,Collection<String>> patentToCitationsMap = Database.getPatentToCitedPatentsMap();
         Map<String,LocalDate> patentToDateMap = Database.getPatentToPubDateMap();
 
         Map<String,Double> model = new HashMap<>();
@@ -73,7 +73,7 @@ public class CitationEvaluator extends ValueAttr {
                 totalScore += Math.max(1.0, score + bonus);
             }
             if(patentToCitationsMap.containsKey(patent)) {
-                Set<String> citations = patentToCitationsMap.get(patent);
+                Collection<String> citations = patentToCitationsMap.get(patent);
                 for(String citation : citations) {
                     if(oldScores.containsKey(citation)) {
                         totalScore-=Math.log(oldScores.get(citation));

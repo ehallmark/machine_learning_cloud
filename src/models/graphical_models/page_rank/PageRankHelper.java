@@ -3,6 +3,7 @@ package models.graphical_models.page_rank;
 import seeding.Database;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -16,7 +17,7 @@ public class PageRankHelper {
     // run sim rank algorithm
     public static void main(String[] args) {
         long t1 = System.currentTimeMillis();
-        Map<String,Set<String>> citedPatentMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
+        Map<String,Collection<String>> citedPatentMap = new HashMap<>(Database.getPatentToCitedPatentsMap());
         citedPatentMap.putAll(Database.getAppToCitedPatentsMap());
 
         PageRank algorithm = new PageRank(citedPatentMap,0.75);
