@@ -39,7 +39,9 @@ public class ExpiredAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value > 0.5 ? 1 : ("+getRemainingLifeQuery()+" <= 0)", new HashMap<>());
+        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 1 : ("+getRemainingLifeQuery()+" <= 0)";
+        System.out.println("Script for expired: "+script);
+        return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
     }
 
     @Override

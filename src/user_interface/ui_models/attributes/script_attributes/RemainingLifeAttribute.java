@@ -40,7 +40,9 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : "+getRemainingLifeQuery(), new HashMap<>());
+        String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : "+getRemainingLifeQuery();
+        System.out.println("Script for remaining life: "+script);
+        return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
     }
 
     @Override

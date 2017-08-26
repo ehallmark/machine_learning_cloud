@@ -22,8 +22,8 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
         super(filterTypes);
     }
 
-    protected String getPriorityDateField() {
-        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'] : doc['"+Constants.PRIORITY_DATE+"'])";
+    protected String getPriorityDateField(String dateField) {
+        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'].date."+dateField+" : doc['"+Constants.PRIORITY_DATE+"'].date."+dateField+")";
     }
 
     protected String getTermExtensionField() {
@@ -34,6 +34,6 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute {
     public abstract Script getScript();
 
     public String getRemainingLifeQuery() {
-        return "("+getPriorityDateField()+".date.year+20+("+getPriorityDateField()+".date.monthOfYear-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
+        return "("+getPriorityDateField("year")+"+20+("+getPriorityDateField("monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
     }
 }
