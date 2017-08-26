@@ -40,13 +40,13 @@ public class DataIngester {
     private static AtomicLong mongoCount = new AtomicLong(0);
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
-    public static synchronized void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
+    public static void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
        // else bulkProcessor.add(new UpdateRequest(INDEX_NAME,TYPE_NAME, name).doc(doc));
         ingestMongo(name, parent, null, doc, create);
     }
 
-    public static synchronized void ingestBulkFromMongoDB(String type, String name,  Document doc) {
+    public static void ingestBulkFromMongoDB(String type, String name,  Document doc) {
         doc.remove("_id");
         Object parent = doc.get("_parent");
         IndexRequest request = new IndexRequest(INDEX_NAME,type, name);
@@ -55,7 +55,7 @@ public class DataIngester {
             doc.remove("_parent");
         }
         request = request.source(doc);
-        bulkProcessor.add(request);
+        synchronized (bulkProcessor) { bulkProcessor.add(request); }
     }
 
     static Map<String,List<Document>> insertBatchMap = Collections.synchronizedMap(new HashMap<>());
@@ -90,7 +90,7 @@ public class DataIngester {
 
     static Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
 
-    public static synchronized void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
+    public static void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
         Map<String,Object> assetDoc = new HashMap<>();
         Map<String,Object> filingDoc = new HashMap<>();
         doc.forEach((key,val)->{
@@ -129,13 +129,13 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void updateMongoByQuery(String collection, Document query, Map<String,Object> doc) {
+    public static void updateMongoByQuery(String collection, Document query, Map<String,Object> doc) {
         Document updateDoc = new Document("$set",doc);
         WriteModel<Document> model = new UpdateOneModel<>(query, updateDoc);
         addToUpdateMap(collection,model);
     }
 
-    public static synchronized void updateMongoArray(String collection, Document query, String arrayName, String value) {
+    public static void updateMongoArray(String collection, Document query, String arrayName, String value) {
         Document updateDoc = new Document("$push",new Document(arrayName,value));
         Map<String,String> ne = new HashMap<>();
         ne.put("$ne",value);
@@ -183,7 +183,7 @@ public class DataIngester {
         });
     }
 
-    public static synchronized void close() {
+    public static void finishCurrentMongoBatch() {
         if(updateCounter.get()>0) {
             updateBatch();
         }
@@ -198,6 +198,11 @@ public class DataIngester {
 
             }
         }
+    }
+
+    public static synchronized void close() {
+        finishCurrentMongoBatch();
+
         if(mongoDB!=null) {
             MongoDBClient.close();
         }
@@ -210,7 +215,7 @@ public class DataIngester {
         }
     }
 
-    public static synchronized void updateAssets(Map<String,Map<String,Object>> labelToTextMap) {
+    public static void updateAssets(Map<String,Map<String,Object>> labelToTextMap) {
         try {
             labelToTextMap.entrySet().parallelStream().forEach(e->{
                 String name = e.getKey();
@@ -245,7 +250,9 @@ public class DataIngester {
             for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
                 itemData.put(e.getKey(), e.getValue());
             }
-            data.put(item.getName(),itemData);
+            if(itemData.size()>0) {
+                data.put(item.getName(), itemData);
+            }
         });
         updateAssets(data);
     }
