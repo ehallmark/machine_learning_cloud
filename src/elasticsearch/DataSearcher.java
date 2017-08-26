@@ -52,6 +52,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
+    private static final boolean debug = true;
 
     public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<? extends AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
@@ -178,8 +179,11 @@ public class DataSearcher {
 
     private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap) {
         Item item = new Item(hit.getId());
-        //System.out.println("Hit id: "+item.getName());
-        //System.out.println(" Source: "+hit.getSourceAsString());
+        if(debug) {
+            System.out.println("fields: "+new Gson().toJson(hit.getFields()));
+            System.out.println("source: "+new Gson().toJson(hit.getSource()));
+        }
+
         hit.getSource().forEach((k,v)->{
             hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
         });
@@ -193,6 +197,10 @@ public class DataSearcher {
                     hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
                 });
                 handleFields(item, innerHits[0]);
+                if(debug) {
+                    System.out.println("  inner fields: " + new Gson().toJson(hit.getFields()));
+                    System.out.println("  inner source: " + new Gson().toJson(hit.getSource()));
+                }
             }
         }
         item.addData(Constants.OVERALL_SCORE,hit.getScore());
