@@ -44,6 +44,6 @@ public class ExpirationDateAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", "("+getPriorityDateField("year")+20+").toString()+'-'+"+getPriorityDateField("monthOfYear")+"+'-'+"+getPriorityDateField("dayOfMonth"), new HashMap<>());
+        return new Script(ScriptType.INLINE, "expression", "("+getPriorityDateField("year")+"+"+20+").toString()+'-'+"+getPriorityDateField("monthOfYear")+"+'-'+"+getPriorityDateField("dayOfMonth"), new HashMap<>());
     }
 }

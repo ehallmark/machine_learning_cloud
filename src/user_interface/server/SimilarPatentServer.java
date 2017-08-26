@@ -702,6 +702,11 @@ public class SimilarPatentServer {
             boolean onlyExcel = extractBool(req, "onlyExcel");
             String html;
 
+            Map<String,Object> excelRequestMap = new HashMap<>();
+            excelRequestMap.put("headers", tableHeaders);
+            excelRequestMap.put("rows", tableData);
+            req.session().attribute(EXCEL_SESSION, excelRequestMap);
+
             if(onlyExcel) {
                 System.out.println("ONLY EXCEL:: Skipping chart building and html building...");
                 Map<String,String> results = new HashMap<>();
@@ -728,11 +733,6 @@ public class SimilarPatentServer {
 
                 ).render(), finishedCharts));
             }
-
-            Map<String,Object> excelRequestMap = new HashMap<>();
-            excelRequestMap.put("headers", tableHeaders);
-            excelRequestMap.put("rows", tableData);
-            req.session().attribute(EXCEL_SESSION, excelRequestMap);
 
             return html;
         } catch (Exception e) {
