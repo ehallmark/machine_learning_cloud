@@ -385,9 +385,9 @@ public class SimilarPatentServer {
 
 
     public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize) {
-        List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
-        System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
+       // List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
+       // System.out.println("Num applications found: "+applications.size());
+       // handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
         handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents);
