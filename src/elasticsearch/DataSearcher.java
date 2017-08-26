@@ -77,8 +77,6 @@ public class DataSearcher {
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
                     .addSort(sortBuilder)
-                    .setFetchSource(attrArray, null)
-                    .storedFields("_source", "_score", "inner_hits", "fields")
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0);
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
@@ -149,7 +147,7 @@ public class DataSearcher {
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
             queryBuilder.set(queryBuilder.get().must(
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
-                            .innerHit(new InnerHitBuilder().setStoredFieldNames(Arrays.asList("_source", "fields")))
+                            .innerHit(new InnerHitBuilder())
             ));
 
             // Set query
