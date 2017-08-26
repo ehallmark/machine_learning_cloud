@@ -199,8 +199,8 @@ public class DataSearcher {
                 });
                 handleFields(item, innerHits[0]);
                 if(debug) {
-                    System.out.println("  inner fields: " + new Gson().toJson(hit.getFields()));
-                    System.out.println("  inner source: " + new Gson().toJson(hit.getSource()));
+                    System.out.println("  inner fields: " + new Gson().toJson(innerHits[0].getFields()));
+                    System.out.println("  inner source: " + new Gson().toJson(innerHits[0].getSource()));
                 }
             }
         }

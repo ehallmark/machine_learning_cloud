@@ -8,6 +8,7 @@ import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +40,7 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : (("+String.valueOf(millisecondsToday)+"-"+getPriorityDateField()+"+"+getTermExtensionMillis()+")/"+millisecondsPerYear+")", new HashMap<>());
+        return new Script(ScriptType.INLINE,"expression","doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : "+getRemainingLifeQuery(), new HashMap<>());
     }
 
     @Override

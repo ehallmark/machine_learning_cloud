@@ -6,6 +6,7 @@ import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 
@@ -13,23 +14,26 @@ import java.util.Collection;
  * Created by ehallmark on 8/18/17.
  */
 public abstract class AbstractScriptAttribute extends AbstractAttribute {
-    protected static final long millisecondsToday = ZonedDateTime.now().toEpochSecond()*1000;
-    protected static final long millisecondsPerYear = 31557600000L;
-    protected static final long millisecondsPerDay = 86400000L;
+    public static double getCurrentYearAndMonth() {
+        return new Double(LocalDate.now().getYear()) + (new Double(LocalDate.now().getMonthValue() - 1) / 12d);
+    }
 
     public AbstractScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         super(filterTypes);
     }
 
     protected String getPriorityDateField() {
-        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'].value : doc['"+Constants.PRIORITY_DATE+"'].value)";
+        return "(doc['"+ Constants.PRIORITY_DATE+"'].empty ? doc['"+Constants.FILING_DATE+"'] : doc['"+Constants.PRIORITY_DATE+"'])";
     }
 
-    protected String getTermExtensionMillis() {
-        return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : (doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value * "+millisecondsPerDay+"))";
+    protected String getTermExtensionField() {
+        return "(doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].empty ? 0 : doc['"+Constants.PATENT_TERM_ADJUSTMENT+"'].value)";
     }
 
     public abstract QueryBuilder getSortScript();
     public abstract Script getScript();
 
+    public String getRemainingLifeQuery() {
+        return "("+getPriorityDateField()+".date.year+20+("+getPriorityDateField()+".date.monthOfYear-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
+    }
 }
