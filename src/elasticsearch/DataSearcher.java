@@ -37,6 +37,9 @@ import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
@@ -218,6 +221,11 @@ public class DataSearcher {
         hit.getFields().forEach((k,v)->{
             Object val = v.getValue();
             if(val!=null) {
+                // check for date field
+                if(k.endsWith("Date") && val instanceof Number) {
+                    long longValue = ((Number)val).longValue();
+                    val = Instant.ofEpochMilli(longValue).atZone(ZoneId.systemDefault()).toLocalDate().format(DateTimeFormatter.ISO_DATE);
+                }
                 item.addData(k,val);
             }
         });
