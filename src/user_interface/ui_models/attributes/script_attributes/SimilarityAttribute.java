@@ -42,6 +42,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
     public QueryBuilder getSortScript() {
         Script searchScript = getScript();
         if(searchScript==null) return null;
+        System.out.println("Getting similarity sort script");
         return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(100))
                     .boostMode(CombineFunction.AVG)
                     .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
