@@ -22,6 +22,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -149,7 +150,7 @@ public class DataSearcher {
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
             queryBuilder.set(queryBuilder.get().must(
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
-                            .innerHit(new InnerHitBuilder())
+                            .innerHit(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true)))
             ));
 
             // Set query
