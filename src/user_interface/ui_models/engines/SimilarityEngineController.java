@@ -74,8 +74,10 @@ public class SimilarityEngineController {
                 }
             }
             if(assigneeNameFilter!=null) {
-                assigneeNameFilter.setQueryStr("\""+ String.join("\" | \"", assigneesToRemove)+"\"");
+                assigneeNameFilter.setQueryStr("!\""+ String.join("\" + !\"", assigneesToRemove)+"\"");
                 preFilters.add(assigneeNameFilter);
+            } else {
+                throw new RuntimeException("Unable to create assignee name filter");
             }
         }
 
