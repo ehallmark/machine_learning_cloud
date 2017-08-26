@@ -388,9 +388,11 @@ public class SimilarPatentServer {
 
 
     public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize) {
-        List<String> applications = attributes.stream().flatMap(attr->attr.getApplicationDataMap().keySet().stream()).distinct().collect(Collectors.toList());
+        List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
+        System.out.println("Num applications found: "+applications.size());
         handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
-        List<String> patents = attributes.stream().flatMap(attr->attr.getPatentDataMap().keySet().stream()).distinct().collect(Collectors.toList());
+        List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
+        System.out.println("Num applications found: "+patents.size());
         handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents);
     }
 
@@ -422,6 +424,7 @@ public class SimilarPatentServer {
             cnt.getAndAdd(items.size());
             System.out.println("Seen "+cnt.get()+" "+type.toString());
         });
+        if(debug)System.out.println("Finished Batch");
     }
 
     private static List<Collection<String>> chunked(List<String> items, int batchSize) {
