@@ -742,31 +742,7 @@ public class SimilarPatentServer {
             }
 
             res.type("application/json");
-            // add chart futures
-            List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
-            charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
-            AtomicInteger totalChartCnt = new AtomicInteger(0);
-            charts.forEach(chart->{
-                for(int i = 0; i < chart.getAttributes().size(); i++) {
-                    final int idx = i;
-                    RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
-                        @Override
-                        protected List<? extends AbstractChart> compute() {
-                            return chart.create(portfolioList, idx);
-                        }
-                    };
-                    chartTask.fork();
-                    req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
-                }
-            });
-
-            List<String> chartTypes = new ArrayList<>();
-            charts.forEach(chart->{
-                for(int i = 0; i < chart.getAttributes().size(); i++) {
-                    chartTypes.add(chart.getType());
-                }
-            });
 
             System.out.println("Rendering table...");
             List<List<String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
@@ -785,6 +761,32 @@ public class SimilarPatentServer {
                 results.put("message","success");
                 html = new Gson().toJson(results);
             } else {
+                // add chart futures
+                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
+
+                AtomicInteger totalChartCnt = new AtomicInteger(0);
+                charts.forEach(chart->{
+                    for(int i = 0; i < chart.getAttributes().size(); i++) {
+                        final int idx = i;
+                        RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
+                            @Override
+                            protected List<? extends AbstractChart> compute() {
+                                return chart.create(portfolioList, idx);
+                            }
+                        };
+                        chartTask.fork();
+                        req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
+                    }
+                });
+
+                List<String> chartTypes = new ArrayList<>();
+                charts.forEach(chart->{
+                    for(int i = 0; i < chart.getAttributes().size(); i++) {
+                        chartTypes.add(chart.getType());
+                    }
+                });
+
                 AtomicInteger chartCnt = new AtomicInteger(0);
                 Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
                         h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
