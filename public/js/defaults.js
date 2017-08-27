@@ -107,8 +107,7 @@ $(document).ready(function() {
                  dataType: "json",
                  url: "dataTable",
                  success: function(tableData) {
-                   $('#results #data-table table').remove();
-                   $(tableData.message).appendTo($('#results #data-table'));
+                   $('#results #data-table table tbody').html($(table.message).find('tbody'));
                    setupDataTable($('#results #data-table').get(0));
                    setCollapsibleHeaders('#results .collapsible-header');
                  }
