@@ -2,6 +2,7 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.NonNull;
+import lombok.Setter;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -22,6 +23,7 @@ import static user_interface.server.SimilarPatentServer.preProcess;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractExcludeFilter extends AbstractFilter {
+    @Setter
     protected Collection<String> labels;
     protected FieldType fieldType;
     protected String nestedField;

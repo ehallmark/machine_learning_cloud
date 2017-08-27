@@ -67,9 +67,9 @@ public class SimilarityEngineController {
             AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
             AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
             if(assigneeFilter != null) {
-                AdvancedKeywordFilter assigneeNameFilter = (AdvancedKeywordFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)).findAny().orElse(null);
+                AbstractExcludeFilter assigneeNameFilter = (AbstractExcludeFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)&&attr.getFilterType().equals(AbstractFilter.FilterType.Exclude)).findAny().orElse(null);
                 if(assigneeNameFilter!=null) {
-                    assigneeNameFilter.setQueryStr("!\""+ String.join("\" + !\"", assigneesToRemove)+"\"");
+                    assigneeNameFilter.setLabels(assigneesToRemove);
                     assigneeFilter.setFilterSubset(Arrays.asList(assigneeNameFilter));
                     preFilters.add(assigneeFilter);
                 } else {
