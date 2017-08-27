@@ -29,7 +29,6 @@ import static user_interface.server.SimilarPatentServer.*;
  * Created by ehallmark on 2/28/17.
  */
 public class SimilarityEngineController {
-    private static AdvancedKeywordFilter assigneeNameFilter;
     private Collection<AbstractFilter> preFilters;
     @Getter
     protected PortfolioList portfolioList;
@@ -64,20 +63,17 @@ public class SimilarityEngineController {
             preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
         }
         if(assigneesToRemove.size()>0) {
-            if(assigneeNameFilter==null) {
-                // lazily create assignee name filter
-                AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
-                AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
-                if(assigneeFilter != null) {
-                    assigneeNameFilter = (AdvancedKeywordFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)).findAny().orElse(null);
-
+            // lazily create assignee name filter
+            AbstractAttribute assignee = new LatestAssigneeNestedAttribute();
+            AbstractNestedFilter assigneeFilter = (AbstractNestedFilter) assignee.createFilters().stream().findFirst().orElse(null);
+            if(assigneeFilter != null) {
+                AdvancedKeywordFilter assigneeNameFilter = (AdvancedKeywordFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)).findAny().orElse(null);
+                if(assigneeNameFilter!=null) {
+                    assigneeNameFilter.setQueryStr("!\""+ String.join("\" + !\"", assigneesToRemove)+"\"");
+                    preFilters.add(assigneeFilter);
+                } else {
+                    throw new RuntimeException("Unable to create assignee name filter");
                 }
-            }
-            if(assigneeNameFilter!=null) {
-                assigneeNameFilter.setQueryStr("!\""+ String.join("\" + !\"", assigneesToRemove)+"\"");
-                preFilters.add(assigneeNameFilter);
-            } else {
-                throw new RuntimeException("Unable to create assignee name filter");
             }
         }
 

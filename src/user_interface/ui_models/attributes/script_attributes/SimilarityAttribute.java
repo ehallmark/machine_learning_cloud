@@ -40,7 +40,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
     public static String EXPRESSION_SIMILARITY_SCRIPT;
     static {
         int vectorSize = 50; // test
-        StringJoiner sj = new StringJoiner("+","doc['vector.0'].empty ? 0 : ((",") * 100.0)");
+        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? 0 : ((",") * 100.0)");
         for(int i = 0; i < vectorSize; i++) {
             sj.add("(doc['vector_obj."+i+"'].value*avg_vector["+i+"])");
         }
