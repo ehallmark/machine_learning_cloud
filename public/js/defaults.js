@@ -105,7 +105,7 @@ $(document).ready(function() {
                $.ajax({
                  type: "POST",
                  dataType: "json",
-                 url: "secure/dataTable",
+                 url: "dataTable",
                  success: function(tableData) {
                    $('#results #datatable table').remove();
                    $('#results #datatable').append(tableData.message);
@@ -122,7 +122,7 @@ $(document).ready(function() {
                        $.ajax({
                          type: "POST",
                          dataType: "json",
-                         url: "secure/charts",
+                         url: "charts",
                          data: { chartNum: i },
                          success: function(charts) {
                            var $chartDiv = $('#chart-'+i.toString());
