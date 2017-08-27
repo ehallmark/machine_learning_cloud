@@ -34,11 +34,6 @@ public class ExpirationDateAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public QueryBuilder getSortScript() {
-        return null;
-    }
-
-    @Override
     public Script getScript() {
         return new Script(ScriptType.INLINE, "expression", getPriorityDateField("value") + "+" + (millisecondsPerYear*20), new HashMap<>());
     }

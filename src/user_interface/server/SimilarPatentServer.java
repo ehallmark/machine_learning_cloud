@@ -128,14 +128,14 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
-            humanAttrToJavaAttrMap.put("Remaining Life (Years)",Constants.REMAINING_LIFE);
+            humanAttrToJavaAttrMap.put("Est. Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Filing Country", Constants.FILING_COUNTRY);
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
-            humanAttrToJavaAttrMap.put("Expiration Date", Constants.EXPIRATION_DATE);
+            humanAttrToJavaAttrMap.put("Original Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
-            humanAttrToJavaAttrMap.put("Priority Date", Constants.PRIORITY_DATE);
+            humanAttrToJavaAttrMap.put("Original Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
@@ -165,6 +165,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Independent Claim", Constants.INDEPENDENT_CLAIM);
             humanAttrToJavaAttrMap.put("Abstract", Constants.ABSTRACT);
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
+            humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);
+            humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
@@ -334,11 +336,13 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.REMAINING_LIFE, new RemainingLifeAttribute());
             attributesMap.put(Constants.CPC_CODES, new CPCAttribute());
             attributesMap.put(Constants.EXPIRATION_DATE, new ExpirationDateAttribute());
+            attributesMap.put(Constants.ESTIMATED_EXPIRATION_DATE, new CalculatedExpirationDateAttribute());
+            attributesMap.put(Constants.ESTIMATED_PRIORITY_DATE, new CalculatedPriorityDateAttribute());
             attributesMap.put(Constants.PATENT_TERM_ADJUSTMENT, new PatentTermAdjustmentAttribute());
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
-            attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
+            attributesMap.put(Constants.PRIORITY_DATE, new CalculatedPriorityDateAttribute());
             attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());

@@ -49,15 +49,6 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
     }
     protected List<INDArray> simVectors;
 
-    @Override
-    public QueryBuilder getSortScript() {
-        Script searchScript = getScript();
-        if(searchScript==null) return null;
-        System.out.println("Getting similarity sort script");
-        return  QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(searchScript).setWeight(100))
-                    .boostMode(CombineFunction.AVG)
-                    .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
-    }
 
     @Override
     public Script getScript() {
@@ -80,6 +71,11 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             System.out.println("No similarity vectors found :(");
         }
         return searchScript;
+    }
+
+    @Override
+    public int getWeight() {
+        return 100;
     }
 
     public SimilarityAttribute() {

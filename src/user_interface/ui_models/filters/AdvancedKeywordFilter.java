@@ -40,6 +40,11 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         }
     }
 
+    @Override
+    protected String transformAttributeScript(String attributeScript) {
+        throw new UnsupportedOperationException("Include Filter not supported by scripts");
+    }
+
     public boolean isActive() {return queryStr!=null && queryStr.length()>0; }
 
     @Override

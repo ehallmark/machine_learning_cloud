@@ -4,10 +4,16 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.script.Script;
 import seeding.Constants;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Arrays;
@@ -36,10 +42,12 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     protected FilterType filterType;
     @Setter @Getter
     protected AbstractFilter parent;
+    protected boolean isScriptFilter;
     public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
         super(Arrays.asList(filterType));
         this.attribute=attribute;
         this.filterType=filterType;
+        this.isScriptFilter = attribute instanceof AbstractScriptAttribute;
     }
 
     public String getPrerequisite() {
@@ -81,4 +89,22 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     @Override
     public FieldType getFieldType() { return attribute.getFieldType(); }
+
+    public QueryBuilder getScriptFilter() {
+        AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
+        Script searchScript = scriptAttribute.getScript();
+        int weight = scriptAttribute.getWeight();
+        Script filterScript = new Script(
+                searchScript.getType(),
+                searchScript.getLang(),
+                transformAttributeScript(searchScript.getIdOrCode()),
+                searchScript.getParams()
+        );
+        return QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(filterScript).setWeight(weight))
+                .boostMode(CombineFunction.AVG)
+                .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
+    }
+
+    protected abstract String transformAttributeScript(String attributeScript);
+
 }

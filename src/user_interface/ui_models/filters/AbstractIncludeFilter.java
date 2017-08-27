@@ -2,15 +2,20 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.NonNull;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.script.Script;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;
 import tools.ClassCodeHandler;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Arrays;
@@ -38,12 +43,16 @@ public class AbstractIncludeFilter extends AbstractFilter {
     }
 
     @Override
+    protected String transformAttributeScript(String attributeScript) {
+        throw new UnsupportedOperationException("Include Filter not supported by scripts");
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(attribute.getType().equals("text")) {
             return QueryBuilders.matchQuery(getFullPrerequisite(),labels);
-
         } else {
-            return QueryBuilders.termsQuery(getFullPrerequisite(),labels);
+            return QueryBuilders.termsQuery(getFullPrerequisite(), labels);
         }
     }
 

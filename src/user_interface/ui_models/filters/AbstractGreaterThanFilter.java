@@ -2,13 +2,18 @@ package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
 import lombok.NonNull;
+import org.elasticsearch.common.lucene.search.function.CombineFunction;
+import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+import org.elasticsearch.script.Script;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;
@@ -32,9 +37,18 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
         if(limit == null || limit.doubleValue() < 0d) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getFullPrerequisite())
-                    .gt(limit);
+            if(isScriptFilter) {
+                return getScriptFilter();
+            } else {
+                return QueryBuilders.rangeQuery(getFullPrerequisite())
+                        .gt(limit);
+            }
         }
+    }
+
+    @Override
+    protected String transformAttributeScript(String script) {
+        return "("+script+") > "+limit;
     }
 
     public boolean isActive() { return limit!=null&&limit.doubleValue() > 0d; }

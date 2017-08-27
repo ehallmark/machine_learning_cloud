@@ -11,15 +11,16 @@ import java.util.HashMap;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PriorityDateAttribute extends AbstractScriptAttribute {
-    public PriorityDateAttribute() {
+public class CalculatedExpirationDateAttribute extends AbstractScriptAttribute {
+    public CalculatedExpirationDateAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     @Override
     public String getName() {
-        return Constants.PRIORITY_DATE;
+        return Constants.ESTIMATED_EXPIRATION_DATE;
     }
+
 
     @Override
     public String getType() {
@@ -33,6 +34,6 @@ public class PriorityDateAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        return new Script(ScriptType.INLINE, "expression", getPriorityDateField("value"), new HashMap<>());
+        return new Script(ScriptType.INLINE, "expression", getCalculatedPriorityDateField() + "+" + (millisecondsPerYear*20), new HashMap<>());
     }
 }

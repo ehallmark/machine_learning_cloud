@@ -94,6 +94,8 @@ public class Constants {
 	public static final String FILING_DATE = "filingDate";
 	public static final String ABSTRACT = "abstract";
 	public static final String CPC_CODES = "cpcCodes";
+	public static final String ESTIMATED_EXPIRATION_DATE = "estimatedExpirationDate";
+	public static final String ESTIMATED_PRIORITY_DATE = "estimatedPriorityDate";
 	public static final String JAPANESE_ASSIGNEE = "japaneseAssignee";
 	public static final String PARAGRAPH_VECTOR_MODEL = "paragraphVectorModel";
 	public static final String TECHNOLOGY = "technology";

@@ -52,6 +52,11 @@ public class AbstractNestedFilter extends AbstractFilter {
     }
 
     @Override
+    protected String transformAttributeScript(String attributeScript) {
+        throw new UnsupportedOperationException("Include Filter not supported by scripts");
+    }
+
+    @Override
     public void extractRelevantInformationFromParams(Request params) {
         Collection<String> nestedAttributesToFilter = SimilarPatentServer.extractArray(params, getName());
         filterSubset = new ArrayList<>();

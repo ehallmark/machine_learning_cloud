@@ -27,9 +27,18 @@ public class AbstractLessThanFilter extends AbstractFilter {
         if(limit == null || limit.doubleValue() <= 0d) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getFullPrerequisite())
-                    .lt(limit);
+            if(isScriptFilter) {
+                return getScriptFilter();
+            } else {
+                return QueryBuilders.rangeQuery(getFullPrerequisite())
+                        .lt(limit);
+            }
         }
+    }
+
+    @Override
+    protected String transformAttributeScript(String script) {
+        return "("+script+") < "+limit;
     }
 
     public boolean isActive() { return limit!=null && limit.doubleValue() > 0d; }

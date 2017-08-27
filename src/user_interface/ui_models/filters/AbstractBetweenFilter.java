@@ -32,10 +32,19 @@ public class AbstractBetweenFilter extends AbstractFilter {
         if(min == null || max == null) {
             return QueryBuilders.boolQuery();
         } else {
-            return QueryBuilders.rangeQuery(getFullPrerequisite())
-                    .gt(min)
-                    .lt(max);
+            if (isScriptFilter) {
+                return getScriptFilter();
+            } else {
+                return QueryBuilders.rangeQuery(getFullPrerequisite())
+                        .gt(min)
+                        .lt(max);
+            }
         }
+    }
+
+    @Override
+    protected String transformAttributeScript(String script) {
+        return "(("+script+") > "+min+") && (("+script+") < "+max+")";
     }
 
     public boolean isActive() { return min!=null&&max!=null && max.doubleValue()>min.doubleValue();  }

@@ -39,6 +39,10 @@ public class AbstractExcludeFilter extends AbstractFilter {
         this(attribute,filterType,fieldType,labels,null);
     }
 
+    @Override
+    protected String transformAttributeScript(String attributeScript) {
+        throw new UnsupportedOperationException("Exclude Filter not supported by scripts");
+    }
 
     @Override
     public QueryBuilder getFilterQuery() {

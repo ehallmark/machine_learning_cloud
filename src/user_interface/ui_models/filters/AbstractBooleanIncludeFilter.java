@@ -26,13 +26,22 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        return QueryBuilders.termQuery(getFullPrerequisite(), true);
+        if (isScriptFilter) {
+            return getScriptFilter();
+        } else {
+            return QueryBuilders.termQuery(getFullPrerequisite(), true);
+        }
     }
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
         // do nothing
         filters = SimilarPatentServer.extractArray(params, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
+    }
+
+    @Override
+    protected String transformAttributeScript(String script) {
+        return "("+script+") > 0.5";
     }
 
     @Override

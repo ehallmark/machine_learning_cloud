@@ -34,11 +34,6 @@ public class RemainingLifeAttribute extends AbstractScriptAttribute {
     }
 
     @Override
-    public QueryBuilder getSortScript() {
-        return null;
-    }
-
-    @Override
     public Script getScript() {
         String script = "doc['"+Constants.LAPSED+"'].value > 0.5 ? 0 : "+getRemainingLifeQuery();
         System.out.println("Script for remaining life: "+script);
