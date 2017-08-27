@@ -475,6 +475,10 @@ var showTemplateFunction = function(e){
     showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
     showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
     showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
+    // show all visible
+    $('#searchOptionsForm,#attributesForm,#filtersForm,#chartsForm').each(function() {
+        $(this).find('select:visible,input:visible,textarea:visible').prop("disabled",false);
+    });
     return false;
 };
 
