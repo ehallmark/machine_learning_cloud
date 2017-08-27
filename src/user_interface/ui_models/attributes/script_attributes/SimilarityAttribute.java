@@ -28,7 +28,7 @@ import static user_interface.server.SimilarPatentServer.SIMILARITY_ENGINES_ARRAY
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute {
-    static int vectorSize = 50; // test
+    static int vectorSize = 30; // test
     public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
             "float ab = 0f;" +
