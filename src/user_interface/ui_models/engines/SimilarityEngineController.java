@@ -60,7 +60,7 @@ public class SimilarityEngineController {
         assigneesToRemove.addAll(assignees);
 
         if(labelsToRemove.size()>0) {
-            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove));
+            preFilters.add(new AbstractExcludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Exclude, AbstractFilter.FieldType.Text, labelsToRemove.stream().collect(Collectors.toList())));
         }
         if(assigneesToRemove.size()>0) {
             // lazily create assignee name filter
@@ -69,7 +69,7 @@ public class SimilarityEngineController {
             if(assigneeFilter != null) {
                 AbstractExcludeFilter assigneeNameFilter = (AbstractExcludeFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)&&attr.getFilterType().equals(AbstractFilter.FilterType.Exclude)).findAny().orElse(null);
                 if(assigneeNameFilter!=null) {
-                    assigneeNameFilter.setLabels(assigneesToRemove);
+                    assigneeNameFilter.setLabels(assigneesToRemove.stream().collect(Collectors.toList()));
                     assigneeFilter.setFilterSubset(Arrays.asList(assigneeNameFilter));
                     preFilters.add(assigneeFilter);
                 } else {
