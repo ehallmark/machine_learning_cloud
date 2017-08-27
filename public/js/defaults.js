@@ -427,6 +427,7 @@ var showDraggable = function(elem) {
         } else {
             // enable the select option
             $draggable.find('select.nested-filter-select,select.nested-attribute-select').prop('disabled', false);
+            $draggable.children().first().children('input.mychecckbox').prop('disabled',false);
         }
         var id = $draggable.attr('data-target');
         if(id) {
@@ -475,10 +476,6 @@ var showTemplateFunction = function(e){
     showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
     showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
     showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
-    // show all visible
-    $('#searchOptionsForm,#attributesForm,#filtersForm,#chartsForm').each(function() {
-        $(this).find('select:visible,input:visible,textarea:visible').prop("disabled",false);
-    });
     return false;
 };
 
