@@ -620,7 +620,9 @@ public class Database {
 			System.out.println("Building assignee trie...");
 			assigneePrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
 			getAssignees().forEach(assignee -> {
-				assigneePrefixTrie.put(assignee, assignee);
+				if(assignee!=null&&assignee.length() > 0) {
+					assigneePrefixTrie.put(assignee, assignee);
+				}
 			});
 		}
 		return assigneePrefixTrie;
