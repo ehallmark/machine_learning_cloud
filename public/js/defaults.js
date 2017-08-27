@@ -107,8 +107,8 @@ $(document).ready(function() {
                  dataType: "json",
                  url: "dataTable",
                  success: function(tableData) {
-                   $('#results #datatable table').remove();
-                   $('#results #datatable').append(tableData.message);
+                   $('#results #data-table table').remove();
+                   $(tableData.message).appendTo($('#results #data-table'));
                    setupDataTable($('#results #data-table').get(0));
                    setCollapsibleHeaders('#results .collapsible-header');
                  }
@@ -133,7 +133,7 @@ $(document).ready(function() {
                               for(var j = 0; j < charts.length; j++) {
                                 var chartJson = charts[j];
                                 var chartId ='chart-'+i.toString()+"-"+j.toString();
-                                $chartDiv.append($('<div id="'+ chartId +'" />'));
+                                $('<div id="'+ chartId +'"></div>').appendTo($chartDiv);
                                 var chart = null;
                                 if($chartDiv.hasClass('stock')) {
                                   chart = Highcharts.stockChart(chartId, chartJson);
