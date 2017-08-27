@@ -73,11 +73,6 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
         return searchScript;
     }
 
-    @Override
-    public int getWeight() {
-        return 100;
-    }
-
     public SimilarityAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
     }

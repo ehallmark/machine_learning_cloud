@@ -93,16 +93,13 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     public QueryBuilder getScriptFilter() {
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
         Script searchScript = scriptAttribute.getScript();
-        int weight = scriptAttribute.getWeight();
         Script filterScript = new Script(
                 searchScript.getType(),
                 searchScript.getLang(),
                 transformAttributeScript(searchScript.getIdOrCode()),
                 searchScript.getParams()
         );
-        return QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(filterScript).setWeight(weight))
-                .boostMode(CombineFunction.AVG)
-                .scoreMode(FiltersFunctionScoreQuery.ScoreMode.AVG);
+        return QueryBuilders.scriptQuery(filterScript);
     }
 
     protected abstract String transformAttributeScript(String attributeScript);
