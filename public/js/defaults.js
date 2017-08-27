@@ -124,22 +124,16 @@ $(document).ready(function() {
                          dataType: "json",
                          url: "charts",
                          data: { chartNum: idx },
-                         success: function(charts) {
-                           var $chartDiv = $('#chart-'+idx.toString());
-                           if(charts.hasOwnProperty('message')) {
+                         success: function(chartData) {
+                           if(chartData.hasOwnProperty('message')) {
                             // error
-                              $chartDiv.html(charts.message);
+                              $chartDiv.html(chartData.message);
                            } else {
-                              for(var j = 0; j < charts.length; j++) {
-                                var chartJson = charts[j];
-                                var chartId ='chart-'+idx.toString()+"-"+j.toString();
-                                $('<div id="'+ chartId +'"></div>').appendTo($chartDiv);
-                                var chart = null;
-                                if($chartDiv.hasClass('stock')) {
-                                  chart = Highcharts.stockChart(chartId, chartJson);
-                                } else {
-                                  chart = Highcharts.chart(chartId, chartJson);
-                                }
+                              var $chartDiv = $('#'+chartData.chartId.toString());
+                              for(var j = 0; j < chartData.charts.length; j++) {
+                                $('<div id="'+ chartData.chartId+"-"+j.toString() +'"></div>').appendTo($chartDiv);
+                                var chartJson = chartData.charts[j];
+                                var chart = Highcharts.chart(chartData.chartId+"-"+j.toString(), chartJson);
                                 chart.redraw();
                               }
                            }
