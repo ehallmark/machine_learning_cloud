@@ -342,7 +342,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.SIMILARITY, new SimilarityAttribute());
             attributesMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH, new LengthOfSmallestIndependentClaimAttribute());
             attributesMap.put(Constants.MEANS_PRESENT, new MeansPresentAttribute());
-            attributesMap.put(Constants.PRIORITY_DATE, new CalculatedPriorityDateAttribute());
+            attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
             attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
