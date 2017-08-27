@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * Created by ehallmark on 2/13/17.
  */
 public class AjaxChartMessage extends ServerResponse {
-    public AjaxChartMessage(String message, List<AbstractChart> charts) {
-        super(new JsonRenderer().toJson(charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList())),message);
+    public AjaxChartMessage(String message, int chartNum) {
+        super(chartNum,message);
     }
 }

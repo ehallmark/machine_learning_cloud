@@ -3,6 +3,7 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import lombok.Getter;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.PieChart;
 import j2html.tags.Tag;
@@ -14,11 +15,13 @@ import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 6/17/2017.
  */
 public class AbstractDistributionChart extends ChartAttribute {
+    @Getter
     protected List<String> attributes;
     protected Collection<String> searchTypes;
 
@@ -26,6 +29,11 @@ public class AbstractDistributionChart extends ChartAttribute {
     public Tag getOptionsTag() {
         return SimilarPatentServer.technologySelect(Constants.PIE_CHART,Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE));
 
+    }
+
+    @Override
+    public String getType() {
+        return "pie";
     }
 
     @Override
@@ -39,8 +47,8 @@ public class AbstractDistributionChart extends ChartAttribute {
     }
 
     @Override
-    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
-        return attributes.stream().map(attribute-> {
+    public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
+        return Stream.of(attributes.get(i)).map(attribute-> {
             String title = SimilarPatentServer.humanAttributeFor(attribute) + " Distribution";
             return new PieChart(title, collectDistributionData(portfolioList, attribute, title), combineTypesToString(searchTypes));
         }).collect(Collectors.toList());

@@ -19,7 +19,7 @@ public abstract class ChartAttribute extends AbstractAttribute implements Depend
         super(Collections.emptyList());
     }
 
-    public abstract List<? extends AbstractChart> create(PortfolioList portfolioList);
+    public abstract List<? extends AbstractChart> create(PortfolioList portfolioList, int i);
 
     @Override
     public String getName() {
@@ -27,11 +27,8 @@ public abstract class ChartAttribute extends AbstractAttribute implements Depend
     }
 
     @Override
-    public String getType() {
-        throw new UnsupportedOperationException("getType not defined for charts.");
-    }
-
-    @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}
+
+    public abstract List<String> getAttributes();
 
 }

@@ -3,6 +3,7 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
+import lombok.Getter;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 import j2html.tags.Tag;
@@ -18,6 +19,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.select;
@@ -27,6 +29,7 @@ import static j2html.TagCreator.span;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart extends ChartAttribute {
+    @Getter
     protected List<String> attributes;
     protected String groupedBy;
     protected Collection<String> searchTypes;
@@ -47,6 +50,11 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     @Override
+    public String getType() {
+        return "histogram";
+    }
+
+    @Override
     public void extractRelevantInformationFromParams(Request params) {
         attributes = SimilarPatentServer.extractArray(params, Constants.HISTOGRAM);
         searchTypes = SimilarPatentServer.extractArray(params, Constants.DOC_TYPE_INCLUDE_FILTER_STR);
@@ -58,8 +66,8 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     @Override
-    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
-        return attributes.stream().flatMap(attribute->{
+    public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
+        return Stream.of(attributes.get(i)).flatMap(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Histogram";
@@ -76,8 +84,8 @@ public class AbstractHistogramChart extends ChartAttribute {
             }
             List<String> categories = new ArrayList<>();
             int step = (int) Math.round((max-min)/nBins);
-            for(int i = 0; i < max; i += step) {
-                categories.add(String.valueOf(i) + "-" + String.valueOf(i+step));
+            for(int j = 0; j < max; j += step) {
+                categories.add(String.valueOf(j) + "-" + String.valueOf(j+step));
             }
             final double _min = min;
             final double _max = max;

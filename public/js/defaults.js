@@ -102,24 +102,53 @@ $(document).ready(function() {
                 $downloadForm.appendTo('body').submit().remove();
              } else {
                $('#results').html(data.message);
-               setupDataTable($('#results #data-table').get(0));
-               setCollapsibleHeaders('#results .collapsible-header');
-               if (data.hasOwnProperty('charts')) {
+               $.ajax({
+                 type: "POST",
+                 dataType: "json",
+                 url: "secure/dataTable",
+                 success: function(tableData) {
+                   $('#results #datatable table').remove();
+                   $('#results #datatable').append(tableData.message);
+                   setupDataTable($('#results #data-table').get(0));
+                   setCollapsibleHeaders('#results .collapsible-header');
+                 }
+               });
+
+               if (data.hasOwnProperty('chartCnt')) {
                  try {
-                   var charts = JSON.parse(data.charts);
-                   if(charts) {
-                     for(var i = 0; i<charts.length; i++) {
-                       var chart = null;
-                       if($('#chart-'+i.toString()).hasClass('stock')) {
-                         chart = Highcharts.stockChart('chart-'+i.toString(), charts[i]);
-                       } else {
-                         chart = Highcharts.chart('chart-'+i.toString(), charts[i]);
-                       }
-                       chart.redraw();
+                   var chartCnt = data.chartCnt;
+                   if(chartCnt > 0) {
+                     for(var i = 0; i<chartCnt; i++) {
+                       $.ajax({
+                         type: "POST",
+                         dataType: "json",
+                         url: "secure/charts",
+                         data: { chartNum: i },
+                         success: function(charts) {
+                           var $chartDiv = $('#chart-'+i.toString());
+                           if(charts.hasOwnProperty('message')) {
+                            // error
+                              $chartDiv.html(charts.message);
+                           } else {
+                              for(var j = 0; j < charts.length; j++) {
+                                var chartJson = charts[j];
+                                var chartId ='chart-'+i.toString()+"-"+j.toString();
+                                $chartDiv.append($('<div id="'+ chartId +'" />'));
+                                var chart = null;
+                                if($chartDiv.hasClass('stock')) {
+                                  chart = Highcharts.stockChart(chartId, chartJson);
+                                } else {
+                                  chart = Highcharts.chart(chartId, chartJson);
+                                }
+                                chart.redraw();
+                              }
+                           }
+                         }
+                       });
                      }
                    }
                  } catch (err) {
-                   $('#results').html("<div style='color:red;'>JavaScript error occured: " + err.message + '</div>');
+                   $('#results').html("<div style='color:red;'>JavaScript error occured while rendering charts: " + err.message + '</div>');
                  }
                }
              }
@@ -132,7 +161,6 @@ $(document).ready(function() {
     $('#generate-reports-form-button').click(function(e) {return submitFormFunction(e,false);});
 
     $('#download-to-excel-button').click(function(e) {return submitFormFunction(e,true);});
-
 
     $('.template-remove-button').click(function(e){
         e.preventDefault();

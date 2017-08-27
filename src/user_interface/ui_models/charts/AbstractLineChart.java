@@ -4,6 +4,7 @@ import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.Tag;
+import lombok.Getter;
 import models.value_models.ValueMapNormalizer;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
@@ -22,6 +23,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
 
@@ -29,6 +31,7 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractLineChart extends ChartAttribute {
+    @Getter
     protected List<String> attributes;
     protected Collection<String> searchTypes;
     protected Integer max;
@@ -49,6 +52,12 @@ public class AbstractLineChart extends ChartAttribute {
     }
 
     @Override
+    public String getType() {
+        return "line";
+    }
+
+
+    @Override
     public void extractRelevantInformationFromParams(Request params) {
         attributes = SimilarPatentServer.extractArray(params, Constants.LINE_CHART);
         searchTypes = SimilarPatentServer.extractArray(params,  Constants.DOC_TYPE_INCLUDE_FILTER_STR);
@@ -62,8 +71,8 @@ public class AbstractLineChart extends ChartAttribute {
     }
     
     @Override
-    public List<? extends AbstractChart> create(PortfolioList portfolioList) {
-        return attributes.stream().map(attribute->{
+    public List<? extends AbstractChart> create(PortfolioList portfolioList, int i) {
+        return Stream.of(attributes.get(i)).map(attribute->{
             String humanAttr = SimilarPatentServer.humanAttributeFor(attribute);
             String humanSearchType = combineTypesToString(searchTypes);
             String title = humanAttr + " Timeline";

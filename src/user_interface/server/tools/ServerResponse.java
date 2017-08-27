@@ -4,11 +4,11 @@ package user_interface.server.tools;
  * Created by ehallmark on 8/2/16.
  */
 public class ServerResponse {
-    public String charts;
+    public int chartCnt;
     public String message;
-    public ServerResponse(String charts, String message) {
+    public ServerResponse(int chartCnt, String message) {
         //this.results=results;
-        this.charts=charts;
+        this.chartCnt=chartCnt;
         this.message=message;
     }
 }

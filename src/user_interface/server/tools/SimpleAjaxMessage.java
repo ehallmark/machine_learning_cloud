@@ -6,6 +6,6 @@ package user_interface.server.tools;
  */
 public class SimpleAjaxMessage extends ServerResponse {
     public SimpleAjaxMessage(String message) {
-        super(null,message);
+        super(0,message);
     }
 }

@@ -1,6 +1,7 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
 
@@ -43,6 +44,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -80,6 +82,8 @@ public class SimilarPatentServer {
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
+    public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable";
+    public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
@@ -553,6 +557,16 @@ public class SimilarPatentServer {
             return handleDeleteForm(req,res);
         });
 
+        post(SHOW_DATATABLE_URL, (req, res) -> {
+            authorize(req,res);
+            return handleDataTable(req,res);
+        });
+
+        post(SHOW_CHART_URL, (req, res) -> {
+            authorize(req,res);
+            return handleCharts(req,res);
+        });
+
         // Host my own image asset!
         get("/images/brand.png", (request, response) -> {
             response.type("image/png");
@@ -585,9 +599,42 @@ public class SimilarPatentServer {
             return raw;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
+            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), 0));
         }
     }
+
+    private static synchronized Object handleDataTable(Request req, Response res) {
+        try {
+            System.out.println("Received datatable request");
+            Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
+            if(map==null) return null;
+            List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
+            System.out.println("Number of headers: "+headers.size());
+            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
+            return new Gson().toJson(new SimpleAjaxMessage(dataTableFromHeadersAndData(data,headers).render()));
+        } catch (Exception e) {
+            System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
+        }
+    }
+
+    private static synchronized Object handleCharts(Request req, Response res) {
+        try {
+            System.out.println("Received chart request");
+            Integer chartNum = extractInt(req,"chartNum", null);
+            if(chartNum != null) {
+                RecursiveTask<List<? extends AbstractChart>> task = req.session(false).attribute("chart-"+chartNum);
+                List<? extends AbstractChart> charts = task.get();
+                return new JsonRenderer().toJson(charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
+            } else {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to create chart"));
+            }
+        } catch (Exception e) {
+            System.out.println(e.getClass().getName() + ": " + e.getMessage());
+            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
+        }
+    }
+
 
 
     private static synchronized Object handleSaveForm(Request req, Response res) {
@@ -695,14 +742,30 @@ public class SimilarPatentServer {
             }
 
             res.type("application/json");
+            // add chart futures
             List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
             charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
+            AtomicInteger totalChartCnt = new AtomicInteger(0);
+            charts.forEach(chart->{
+                for(int i = 0; i < chart.getAttributes().size(); i++) {
+                    final int idx = i;
+                    RecursiveTask<List<? extends AbstractChart>> chartTask = new RecursiveTask<List<? extends AbstractChart>>() {
+                        @Override
+                        protected List<? extends AbstractChart> compute() {
+                            return chart.create(portfolioList, idx);
+                        }
+                    };
+                    chartTask.fork();
+                    req.session().attribute("chart-" + totalChartCnt.getAndIncrement(), chartTask);
+                }
+            });
 
-            List<AbstractChart> finishedCharts = new ArrayList<>();
-            // adding charts
-            charts.forEach(chartModel->{
-                finishedCharts.addAll(chartModel.create(portfolioList));
+            List<String> chartTypes = new ArrayList<>();
+            charts.forEach(chart->{
+                for(int i = 0; i < chart.getAttributes().size(); i++) {
+                    chartTypes.add(chart.getType());
+                }
             });
 
             System.out.println("Rendering table...");
@@ -723,15 +786,15 @@ public class SimilarPatentServer {
                 html = new Gson().toJson(results);
             } else {
                 AtomicInteger chartCnt = new AtomicInteger(0);
-                Tag chartTag = finishedCharts.isEmpty() ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
+                Tag chartTag = totalChartCnt.get() == 0 ? div() : div().withClass("row").attr("style", "margin-bottom: 10px;").with(
                         h4("Charts").withClass("collapsible-header").attr("data-target", "#data-charts"),
                         span().withId("data-charts").withClass("collapse show").with(
-                                finishedCharts.stream().map(c -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(c.getType()).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
+                                chartTypes.stream().map(type -> div().attr("style", "width: 80%; margin-left: 10%; margin-bottom: 30px;").withClass(type).withId("chart-" + chartCnt.getAndIncrement())).collect(Collectors.toList())
                         )
                 );
                 Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
                         h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                        tableFromPatentList(tableData, tableHeaders)
+                        tableFromPatentList(Collections.emptyList(), tableHeaders)
                 );
                 long timeEnd = System.currentTimeMillis();
                 double timeSeconds = new Double(timeEnd-timeStart)/1000;
@@ -740,14 +803,14 @@ public class SimilarPatentServer {
                         chartTag, br(),
                         tableTag, br()
 
-                ).render(), finishedCharts));
+                ).render(), totalChartCnt.get()));
             }
 
             return html;
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
             e.printStackTrace();
-            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), Collections.emptyList()));
+            return new Gson().toJson(new AjaxChartMessage("ERROR "+e.getClass().getName()+": " + e.getMessage(), 0));
         }
     }
 
@@ -755,19 +818,24 @@ public class SimilarPatentServer {
     static Tag tableFromPatentList(List<List<String>> data, List<String> attributes) {
         return span().withClass("collapse show").withId("data-table").with(
                 form().withMethod("post").withTarget("_blank").withAction(DOWNLOAD_URL).with(
-                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 35%; margin-right: 35%; margin-bottom: 20px;")
-                ), table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
-                        thead().with(
-                                tr().with(
-                                        attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
-                                )
-                        ), tbody().with(
-                                data.stream().map(results -> {
-                                    return addAttributesToRow(tr().with(
-                                            results.stream().map(value -> td(value)).collect(Collectors.toList())
-                                    ), results, attributes);
-                                }).collect(Collectors.toList())
+                        button("Download to Excel").withType("submit").withClass("btn btn-secondary div-button").attr("style","margin-left: 35%; margin-right: 35%; margin-bottom: 20px;"),
+                        dataTableFromHeadersAndData(data,attributes)
+                )
+        );
+    }
+
+    static Tag dataTableFromHeadersAndData(List<List<String>> data, List<String> attributes) {
+        return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
+                thead().with(
+                        tr().with(
+                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
                         )
+                ), tbody().with(
+                        data.stream().map(results -> {
+                            return addAttributesToRow(tr().with(
+                                    results.stream().map(value -> td(value)).collect(Collectors.toList())
+                            ), results, attributes);
+                        }).collect(Collectors.toList())
                 )
         );
     }
