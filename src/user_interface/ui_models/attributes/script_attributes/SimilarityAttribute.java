@@ -28,6 +28,7 @@ import static user_interface.server.SimilarPatentServer.SIMILARITY_ENGINES_ARRAY
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute {
+    static int vectorSize = 50; // test
     public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
             "float ab = 0f;" +
@@ -39,10 +40,9 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
 
     public static String EXPRESSION_SIMILARITY_SCRIPT;
     static {
-        int vectorSize = 50; // test
         StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? 0 : ((",") * 100.0)");
         for(int i = 0; i < vectorSize; i++) {
-            sj.add("(doc['vector_obj."+i+"'].value*avg_vector["+i+"])");
+            sj.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
         EXPRESSION_SIMILARITY_SCRIPT=sj.toString();
         System.out.println("New similarity script: "+EXPRESSION_SIMILARITY_SCRIPT);
@@ -66,8 +66,10 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
             INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-            avgVector.divi(avgVector.norm2Number().doubleValue()).data().asFloat();
-            params.put("avg_vector", avgVector.data().asFloat());
+            float[] data = avgVector.divi(avgVector.norm2Number().doubleValue()).data().asFloat();
+            for(int i = 0; i < vectorSize; i++) {
+                params.put("avg_vector"+i,data[i]);
+            }
             searchScript = new Script(
                     ScriptType.INLINE,
                     "expression",
