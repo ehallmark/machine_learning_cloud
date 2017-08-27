@@ -8,6 +8,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -17,7 +18,7 @@ import static j2html.TagCreator.div;
  */
 public class CPCAttribute extends AbstractAttribute {
     public CPCAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.PrefixInclude, AbstractFilter.FilterType.PrefixExclude));
     }
 
     @Override
@@ -35,4 +36,5 @@ public class CPCAttribute extends AbstractAttribute {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
     }
+
 }

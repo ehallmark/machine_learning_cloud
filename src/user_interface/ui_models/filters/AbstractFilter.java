@@ -25,7 +25,7 @@ import java.util.Collection;
 public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute {
 
     public enum FilterType {
-        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword
+        Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude
     }
 
     public static boolean isPrefix(FilterType type) {

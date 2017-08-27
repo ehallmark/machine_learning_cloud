@@ -140,6 +140,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
+            humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
+            humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
             humanAttrToJavaAttrMap.put("Exclude All", AbstractFilter.FilterType.Exclude.toString());
             humanAttrToJavaAttrMap.put("Advanced Keyword Filter", AbstractFilter.FilterType.AdvancedKeyword.toString());
             humanAttrToJavaAttrMap.put("Include", AbstractFilter.FilterType.BoolTrue.toString());

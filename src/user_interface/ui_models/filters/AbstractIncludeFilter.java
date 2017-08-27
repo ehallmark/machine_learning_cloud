@@ -18,10 +18,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -33,10 +30,10 @@ import static user_interface.server.SimilarPatentServer.preProcess;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractIncludeFilter extends AbstractFilter {
-    protected Collection<String> labels;
+    protected List<String> labels;
     protected FieldType fieldType;
 
-    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
+    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
         super(attribute, filterType);
         this.fieldType=fieldType;
         this.labels = labels;

@@ -366,9 +366,16 @@ public class Database {
 	public synchronized static Set<String> getClassCodes() {
 		if(allClassCodes==null) {
 			// load dependent objects
-			allClassCodes=(Set<String>)tryLoadObject(allClassCodesFile);
+			File classCodeTempFile = new File(Constants.DATA_FOLDER+"all_cpc_codes.jobj");
+			if(!classCodeTempFile.exists()) {
+				allClassCodes = new AssetToCPCMap().getApplicationDataMap().values().parallelStream().flatMap(set->set.stream()).distinct().collect(Collectors.toSet());
+				Database.trySaveObject(allClassCodes,classCodeTempFile);
+			} else {
+				allClassCodes = (Set<String>) Database.tryLoadObject(classCodeTempFile);
+			}
+			// save to file
 		}
-		return new HashSet<>(allClassCodes);
+		return allClassCodes;
 	}
 
 
@@ -634,7 +641,9 @@ public class Database {
 			// class codes trie
 			classCodesPrefixTrie = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
 			getClassCodes().forEach(code->{
-				classCodesPrefixTrie.put(code,code);
+				if(code!=null&&code.length() >0) {
+					classCodesPrefixTrie.put(code, code);
+				}
 			});
 		}
 		return classCodesPrefixTrie;
@@ -653,6 +662,9 @@ public class Database {
 	public synchronized static Set<String> subClassificationsForClass(String formattedCPC) {
 		if(formattedCPC==null||formattedCPC.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
+		if(getClassCodes().contains(formattedCPC)) {
+			possible.add(formattedCPC);
+		}
 		getClassCodesPrefixTrie().getValuesForKeysStartingWith(formattedCPC).forEach(a->possible.add(a));
 		return possible;
 	}

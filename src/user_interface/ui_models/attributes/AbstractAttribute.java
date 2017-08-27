@@ -83,6 +83,14 @@ public abstract class AbstractAttribute {
                     filter = new AdvancedKeywordFilter(this, filterType);
                     break;
                 }
+                case PrefixExclude: {
+                    filter = new AbstractPrefixExcludeFilter(this, filterType, getFieldType(), null);
+                    break;
+                }
+                case PrefixInclude: {
+                    filter = new AbstractPrefixIncludeFilter(this, filterType, getFieldType(), null);
+                    break;
+                }
                 case Nested: {
                     if(!(this instanceof NestedAttribute)) throw new RuntimeException("Only nested attributes support nested filterType");
                     filter = new AbstractNestedFilter((NestedAttribute)this);
