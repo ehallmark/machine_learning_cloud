@@ -36,6 +36,17 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
             "}" +
             "return ab * 100;";
+
+    public static String EXPRESSION_SIMILARITY_SCRIPT;
+    static {
+        int vectorSize = 50; // test
+        StringJoiner sj = new StringJoiner("+","doc['vector.0'].empty ? 0 : ((",") * 100.0)");
+        for(int i = 0; i < vectorSize; i++) {
+            sj.add("(doc['vector_obj."+i+"'].value*avg_vector["+i+"])");
+        }
+        EXPRESSION_SIMILARITY_SCRIPT=sj.toString();
+        System.out.println("New similarity script: "+EXPRESSION_SIMILARITY_SCRIPT);
+    }
     protected List<INDArray> simVectors;
 
     @Override
@@ -59,8 +70,8 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             params.put("avg_vector", avgVector.data().asFloat());
             searchScript = new Script(
                     ScriptType.INLINE,
-                    "painless",
-                    DEFAULT_SIMILARITY_SCRIPT,
+                    "expression",
+                    EXPRESSION_SIMILARITY_SCRIPT,
                     params
             );
         } else {
