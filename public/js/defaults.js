@@ -119,20 +119,21 @@ $(document).ready(function() {
                    var chartCnt = data.chartCnt;
                    if(chartCnt > 0) {
                      for(var i = 0; i<chartCnt; i++) {
+                       var idx = i;
                        $.ajax({
                          type: "POST",
                          dataType: "json",
                          url: "charts",
-                         data: { chartNum: i },
+                         data: { chartNum: idx },
                          success: function(charts) {
-                           var $chartDiv = $('#chart-'+i.toString());
+                           var $chartDiv = $('#chart-'+idx.toString());
                            if(charts.hasOwnProperty('message')) {
                             // error
                               $chartDiv.html(charts.message);
                            } else {
                               for(var j = 0; j < charts.length; j++) {
                                 var chartJson = charts[j];
-                                var chartId ='chart-'+i.toString()+"-"+j.toString();
+                                var chartId ='chart-'+idx.toString()+"-"+j.toString();
                                 $('<div id="'+ chartId +'"></div>').appendTo($chartDiv);
                                 var chart = null;
                                 if($chartDiv.hasClass('stock')) {
