@@ -44,6 +44,11 @@ public class SalesforceElasticSearchQuery {
             }
 
             @Override
+            protected String transformAttributeScript(String attributeScript) {
+                return null;
+            }
+
+            @Override
             public void extractRelevantInformationFromParams(Request params) {
 
             }
