@@ -70,6 +70,7 @@ public class SimilarityEngineController {
                 AdvancedKeywordFilter assigneeNameFilter = (AdvancedKeywordFilter) assigneeFilter.getFilters().stream().filter(attr->attr.getPrerequisite().equals(Constants.ASSIGNEE)).findAny().orElse(null);
                 if(assigneeNameFilter!=null) {
                     assigneeNameFilter.setQueryStr("!\""+ String.join("\" + !\"", assigneesToRemove)+"\"");
+                    assigneeFilter.setFilterSubset(Arrays.asList(assigneeNameFilter));
                     preFilters.add(assigneeFilter);
                 } else {
                     throw new RuntimeException("Unable to create assignee name filter");

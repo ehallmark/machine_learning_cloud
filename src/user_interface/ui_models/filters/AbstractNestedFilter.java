@@ -3,6 +3,7 @@ package user_interface.ui_models.filters;
 import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -27,6 +28,7 @@ import static j2html.TagCreator.label;
 public class AbstractNestedFilter extends AbstractFilter {
     @Getter
     protected Collection<AbstractFilter> filters;
+    @Setter
     protected Collection<AbstractFilter> filterSubset;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute) {
         super(nestedAttribute,FilterType.Nested);
