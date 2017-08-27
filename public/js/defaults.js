@@ -427,7 +427,7 @@ var showDraggable = function(elem) {
         } else {
             // enable the select option
             $draggable.find('select.nested-filter-select,select.nested-attribute-select').prop('disabled', false);
-            $draggable.children().first().children('input.mychecckbox').prop('disabled',false);
+            $draggable.children().first().children('input.mycheckbox').prop('disabled',false);
         }
         var id = $draggable.attr('data-target');
         if(id) {
