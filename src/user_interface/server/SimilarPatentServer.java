@@ -93,6 +93,7 @@ public class SimilarPatentServer {
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
+    private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
 
     @Getter
     static Collection<AbstractAttribute> allTopLevelAttributes;
@@ -712,6 +713,13 @@ public class SimilarPatentServer {
     };
 
     private static synchronized Object handleReport(Request req, Response res) {
+        try {
+            ProcessBuilder ps = new ProcessBuilder("curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
+            ps.start();
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("While pinging platform starter...");
+        }
         try {
             System.out.println("Getting parameters...");
             System.out.println("Getting models...");
