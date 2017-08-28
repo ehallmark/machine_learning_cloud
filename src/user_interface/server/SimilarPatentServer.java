@@ -625,7 +625,10 @@ public class SimilarPatentServer {
             if(chartNum != null) {
                 RecursiveTask<List<? extends AbstractChart>> task = req.session(false).attribute("chart-"+chartNum);
                 List<? extends AbstractChart> charts = task.get();
-                return new JsonRenderer().toJson(charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
+                Map<String,Object> ret = new HashMap<>();
+                ret.put("charts", charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
+                ret.put("chartId", chartNum);
+                return new JsonRenderer().toJson(ret);
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to create chart"));
             }
