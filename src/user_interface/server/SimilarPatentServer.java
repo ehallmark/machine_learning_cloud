@@ -611,7 +611,7 @@ public class SimilarPatentServer {
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of headers: "+headers.size());
             List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
-            return new Gson().toJson(new SimpleAjaxMessage(dataTableFromHeadersAndData(data,headers).render()));
+            return new Gson().toJson(new SimpleAjaxMessage(String.join("",dataTableBodyFromData(data,headers).stream().map(t->t.render()).collect(Collectors.toList()))));
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
             return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
@@ -836,13 +836,17 @@ public class SimilarPatentServer {
                                 attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
                         )
                 ), tbody().with(
-                        data.stream().map(results -> {
-                            return addAttributesToRow(tr().with(
-                                    results.stream().map(value -> td(value)).collect(Collectors.toList())
-                            ), results, attributes);
-                        }).collect(Collectors.toList())
+                        dataTableBodyFromData(data,attributes)
                 )
         );
+    }
+
+    static List<Tag> dataTableBodyFromData(List<List<String>> data, List<String> attributes) {
+        return data.stream().map(results -> {
+            return addAttributesToRow(tr().with(
+                    results.stream().map(value -> td(value)).collect(Collectors.toList())
+            ), results, attributes);
+        }).collect(Collectors.toList());
     }
 
     static List<List<String>> getTableRowData(Item[] items, List<String> attributes) {
