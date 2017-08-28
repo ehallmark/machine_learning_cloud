@@ -714,7 +714,7 @@ public class SimilarPatentServer {
 
     private static synchronized Object handleReport(Request req, Response res) {
         try {
-            ProcessBuilder ps = new ProcessBuilder("curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
+            ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
             ps.start();
         } catch(Exception e) {
             e.printStackTrace();
