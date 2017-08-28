@@ -627,7 +627,7 @@ public class SimilarPatentServer {
                 List<? extends AbstractChart> charts = task.get();
                 Map<String,Object> ret = new HashMap<>();
                 ret.put("charts", charts.stream().map(chart->chart.getOptions()).collect(Collectors.toList()));
-                ret.put("chartId", chartNum);
+                ret.put("chartId", "chart-"+chartNum);
                 return new JsonRenderer().toJson(ret);
             } else {
                 return new Gson().toJson(new SimpleAjaxMessage("Unable to create chart"));
