@@ -27,7 +27,7 @@ public class UpdateValueModels {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile))) {
             writer.write("asset,gatherValue,"+String.join(",",attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))+"\n");
             for(String asset : gatherPatents) {
-                writer.write(asset+","+gatherValueMap.get(asset)+","+String.join(",",attributes.stream().map(attr-> {
+                writer.write(asset.replace(",","")+","+gatherValueMap.get(asset)+","+String.join(",",attributes.stream().map(attr-> {
                     Number value = attr.getPatentDataMap().get(asset);
                     if(value==null) value = 0;
                     return value.toString();
