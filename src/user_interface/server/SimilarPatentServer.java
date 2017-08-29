@@ -7,6 +7,7 @@ import lombok.Getter;
 
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
+import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
@@ -490,16 +491,13 @@ public class SimilarPatentServer {
         // HOST ASSETS
         staticFiles.externalLocation("/home/ehallmark1122/machine_learning_cloud/public");
 
-        Map<String,String> users = new HashMap<>();
-        users.put("ehallmark","Evan1040");
-        users.put("gtt","password");
-        users.put("form_creator","casolekjgoozckbz1894376lkjdxg09345lkzjdx34975ldfogi340975");
+        PasswordHandler passwordHandler = new PasswordHandler();
 
         post("/login", (req,res)->{
             Session session = req.session(true);
             String username = extractString(req, "username", "");
             String password = extractString(req, "password", "");
-            boolean authorized = users.containsKey(username)&&users.get(username).equals(password);
+            boolean authorized = passwordHandler.authorizeUser(username,password);
             session.attribute("authorized",authorized);
             if(!authorized) {
                 halt("User not found.");
