@@ -788,7 +788,7 @@ public class Database {
 	private synchronized static Map<String,Collection<String>> loadGatherTechMap() throws SQLException {
 		Database.setupGatherConn();
 		//Database.setupSeedConn();
-		Map<String, Collection<String>> techToPatentMap = new HashMap<>();
+		Map<String, Collection<String>> techToPatentMap = Collections.synchronizedMap(new HashMap<>());
 		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherTechnologiesQuery);
 		ps.setFetchSize(10);
 		//ps.setArray(1, gatherDBConn.createArrayOf("int4",badTech.toArray()));
@@ -796,7 +796,7 @@ public class Database {
 		while (rs.next()) {
 			String[] data = (String[])rs.getArray(1).getArray();
 			if(data.length<3) continue;
-			techToPatentMap.put(rs.getString(2),new HashSet<>(Arrays.asList(data)));
+			techToPatentMap.put(rs.getString(2),Collections.synchronizedCollection(new HashSet<>(Arrays.asList(data))));
 		}
 		ps.close();
 		Database.close();
@@ -820,7 +820,7 @@ public class Database {
 	public synchronized static Map<String,Boolean> loadGatherValueMap() throws SQLException {
 		Database.setupGatherConn();
 		Database.setupSeedConn();
-		Map<String, Boolean> map = new HashMap<>();
+		Map<String, Boolean> map = Collections.synchronizedMap(new HashMap<>());
 		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherRatingsQuery);
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
@@ -900,16 +900,18 @@ public class Database {
 			sql.printStackTrace();
 		}
 
-		allClassCodes = new HashSet<>();
-		getPatentToClassificationMap().values().forEach(classSet -> {
+		allClassCodes = Collections.synchronizedSet(new HashSet<>());
+		getPatentToClassificationMap().values().parallelStream().forEach(classSet -> {
 			classSet.forEach(cpcClass -> {
 				allClassCodes.add(cpcClass);
 			});
 		});
 		trySaveObject(allClassCodes,allClassCodesFile);
 
-		classCodeToPatentMap = new HashMap<>();
-		getPatentToClassificationMap().forEach((patent, classes) -> {
+		classCodeToPatentMap = Collections.synchronizedMap(new HashMap<>());
+		getPatentToClassificationMap().entrySet().parallelStream().forEach((e) -> {
+			String patent = e.getKey();
+			Collection<String> classes = e.getValue();
 			classes.forEach(klass -> {
 				if (classCodeToPatentMap.containsKey(klass)) {
 					classCodeToPatentMap.get(klass).add(patent);
