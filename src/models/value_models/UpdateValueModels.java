@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
         File dataFile = new File(Constants.DATA_FOLDER+"value-models-testing.csv");
-        List<ComputableAttribute<? extends Number>> attributes = Arrays.asList(new AssetToMaintenanceFeeReminderCountMap(), new PageRankEvaluator(), new CompDBAssetsSoldAttribute(), new CompDBAssetsPurchasedAttribute());
+        List<ComputableAttribute<? extends Number>> attributes = Arrays.asList(new AssetToMaintenanceFeeReminderCountMap(), new PageRankEvaluator());
 
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         Collection<String> gatherPatents = new ArrayList<>(gatherValueMap.keySet());
