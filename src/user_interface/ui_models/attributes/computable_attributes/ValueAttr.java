@@ -19,18 +19,16 @@ import static j2html.TagCreator.div;
  */
 public abstract class ValueAttr extends ComputableAttribute<Number> {
     // Instance class
-    protected ValueMapNormalizer.DistributionType distributionType;
-    private static final double DEFAULT_VAL = (ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
+    private static final double DEFAULT_VAL = 0; //(ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
     protected double defaultVal;
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType, double defaultVal) {
-        super(Arrays.asList(AbstractFilter.FilterType.GreaterThan));
+    public ValueAttr(double defaultVal) {
+        super(Arrays.asList(AbstractFilter.FilterType.Between));
         this.defaultVal=defaultVal;
-        this.distributionType=distributionType;
     }
 
-    public ValueAttr(ValueMapNormalizer.DistributionType distributionType) {
-        this(distributionType, DEFAULT_VAL);
+    public ValueAttr() {
+        this(DEFAULT_VAL);
     }
 
     // Returns value between 1 and 5
@@ -40,28 +38,19 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
                 .collect(Collectors.averagingDouble(token->evaluate(token)));
     }
 
-    @Override
-    public synchronized Map<String,Number> getPatentDataMap() {
-        if(patentDataMap==null) {
-            patentDataMap = super.getPatentDataMap();
-            if(distributionType!=null&&patentDataMap!=null) patentDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(patentDataMap));
-        }
-        return patentDataMap;
-    }
-
-    @Override
-    public synchronized Map<String,Number> getApplicationDataMap() {
-        if(applicationDataMap==null) {
-            applicationDataMap = super.getApplicationDataMap();
-            if(distributionType!=null&&applicationDataMap!=null) applicationDataMap = new ValueMapNormalizer(distributionType).normalizeAndMergeModels(Arrays.asList(applicationDataMap));
-        }
-        return applicationDataMap;
-    }
-
     public double evaluate(String token) {
-        Map<String,Number> model = Database.isApplication(token) ? getApplicationDataMap() : getPatentDataMap();
-        if(model.containsKey(token)) {
-            return model.get(token).doubleValue();
+        Map<String,Number> model;
+        Map<String,Number> backupModel;
+        if(Database.isApplication(token)) {
+            model = getApplicationDataMap();
+            backupModel = getPatentDataMap();
+        } else {
+            model = getPatentDataMap();
+            backupModel = getApplicationDataMap();
+        }
+        Number val = model.getOrDefault(token, backupModel.get(token));
+        if(val!=null) {
+            return val.doubleValue();
         } else {
             return defaultVal;
         }

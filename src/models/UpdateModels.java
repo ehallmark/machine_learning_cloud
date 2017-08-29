@@ -13,19 +13,15 @@ public class UpdateModels {
         seeding.ai_db_updater.UpdateAll.main(args);
         seeding.Database.main(args);
 
-        ParagraphVectorModel.main(args);
+        //ParagraphVectorModel.main(args);
 
         // models
-        models.similarity_models.UpdateSimilarityModels.main(args);
-        models.graphical_models.UpdateGraphicalModels.main(args); // sim rank and page rank
-        models.classification_models.UpdateClassificationModels.main(args);
-        // TODO update value models
+        //models.similarity_models.UpdateSimilarityModels.main(args);
+        models.graphical_models.UpdateGraphicalModels.main(args); // page rank
+        //models.classification_models.UpdateClassificationModels.main(args);
         models.value_models.UpdateValueModels.main(args);
 
-        // update elasticsearch attributes
-        UpdateExtraneousComputableAttributeData.main(args);
-
         // test
-        TestSpecificModels.main(args); // test models
+        TestSpecificModels.main(args);
     }
 }

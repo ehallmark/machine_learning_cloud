@@ -20,10 +20,6 @@ public class OverallEvaluator extends ValueAttr {
         return Constants.AI_VALUE;
     }
 
-    public OverallEvaluator() {
-        super(null);
-    }
-
     @Override
     public Double attributesFor(Collection<String> portfolio, int limit) {
         synchronized (OverallEvaluator.class) {
@@ -49,21 +45,11 @@ public class OverallEvaluator extends ValueAttr {
 
         Map<String,Double> mergedModel = new HashMap<>();
 
-        Database.getValuablePatents().forEach(asset->{
+        Database.getCopyOfAllPatents().parallelStream().forEach(asset->{
             mergedModel.put(asset,average(asset,evaluators,weights));
         });
-        Database.getExpiredPatentSet().forEach(asset->{
-            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
-        });
-        Database.getLapsedPatentSet().forEach(asset->{
-            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
-        });
-
-        Database.getValuableApplications().forEach(asset->{
+        Database.getCopyOfAllApplications().parallelStream().forEach(asset->{
             mergedModel.put(asset,average(asset,evaluators,weights));
-        });
-        Database.getLapsedAppSet().forEach(asset->{
-            mergedModel.put(asset,ValueMapNormalizer.DEFAULT_START);
         });
 
         Database.trySaveObject(mergedModel,mergedValueModelFile);

@@ -14,10 +14,6 @@ import java.util.*;
 public class CitationEvaluator extends ValueAttr {
     static final File file = new File("data/citation_value_model.jobj");
 
-    public CitationEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
-    }
-
     @Override
     public String getName() {
         return Constants.CITATION_VALUE;

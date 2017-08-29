@@ -1,12 +1,10 @@
 package models.graphical_models.page_rank;
 
+import models.value_models.PageRankEvaluator;
 import seeding.Database;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by ehallmark on 4/24/17.
@@ -22,12 +20,32 @@ public class PageRankHelper {
 
         PageRank algorithm = new PageRank(citedPatentMap,0.75);
         algorithm.solve(100);
-        algorithm.save(file);
-        Map<String,Float> rankTable = new PageRank.Loader().loadRankTable(file);
+        System.out.println("Finished algorithm");
+        Map<String,Float> rankTable = algorithm.getRankTable();
+
+        // update page rank evaluator
+        PageRankEvaluator pageRankEvaluator = new PageRankEvaluator();
+        Collection<String> patents = Database.getCopyOfAllPatents();
+        Collection<String> applications = Database.getCopyOfAllApplications();
+
+        System.out.println("Saving page rank evaluator...");
+        pageRankEvaluator.setPatentDataMap(getDataMap(patents,rankTable));
+        pageRankEvaluator.setApplicationDataMap(getDataMap(applications,rankTable));
+        pageRankEvaluator.save();
+
         System.out.println("Rank Table size: "+rankTable.size());
         long t2 = System.currentTimeMillis();
         System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
+    }
 
-
+    private static Map<String,Number> getDataMap(Collection<String> assets, Map<String,Float> rankTable) {
+        Map<String,Number> data = Collections.synchronizedMap(new HashMap<>());
+        assets.parallelStream().forEach(asset->{
+            Float rank = rankTable.get(asset);
+            if(rank != null) {
+                data.put(asset,rank.doubleValue());
+            }
+        });
+        return data;
     }
 }

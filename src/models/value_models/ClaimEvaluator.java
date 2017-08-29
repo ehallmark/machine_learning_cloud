@@ -23,9 +23,6 @@ public class ClaimEvaluator extends ValueAttr {
             claimRatioModelFile
     };
 
-    public ClaimEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Normal);
-    }
 
     private static void runModel(){
         System.out.println("Starting to load claim evaluator...");

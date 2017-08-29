@@ -7,9 +7,6 @@ import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
  * Created by Evan on 1/27/2017.
  */
 public class MeansPresentEvaluator extends ValueAttr {
-    public MeansPresentEvaluator() {
-        super(ValueMapNormalizer.DistributionType.Uniform);
-    }
 
     @Override
     public String getName() {

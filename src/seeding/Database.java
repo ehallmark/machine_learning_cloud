@@ -464,51 +464,11 @@ public class Database {
 		return appToOriginalAssigneeMap;
 	}
 
-	public synchronized static Map<String,String> getPatentToInventionTitleMap() {
-		if(patentToInventionTitleMap==null) {
-			patentToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(patentToInventionTitleMapFile));
-		}
-		return patentToInventionTitleMap;
-	}
-
-	public synchronized static Map<String,String> getAppToInventionTitleMap() {
-		if(appToInventionTitleMap==null) {
-			appToInventionTitleMap = Collections.unmodifiableMap((Map<String,String>)tryLoadObject(appToInventionTitleMapFile));
-		}
-		return appToInventionTitleMap;
-	}
-
 	public synchronized static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
 			//seedConn.setAutoCommit(false);
 		}
-	}
-
-	public synchronized static Set<String> getLapsedPatentSet() {
-		if(lapsedPatentSet==null) lapsedPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedPatentSetFile));
-		return lapsedPatentSet;
-	}
-
-	public synchronized static Set<String> getLapsedAppSet() {
-		if(lapsedAppSet==null) lapsedAppSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(lapsedAppSetFile));
-		return lapsedAppSet;
-	}
-
-	public synchronized static Collection<String> getValuablePatents() {
-		if(valuablePatents==null) valuablePatents = Collections.unmodifiableSet((Set<String>)tryLoadObject(valuablePatentsFile));
-		return valuablePatents;
-	}
-
-	public synchronized static Collection<String> getValuableApplications() {
-		if(valuableApps==null) valuableApps = Collections.unmodifiableSet((Set<String>)tryLoadObject(valuableAppsFile));
-		return valuableApps;
-	}
-
-
-	public synchronized static Set<String> getExpiredPatentSet() {
-		if(expiredPatentSet==null) expiredPatentSet = Collections.unmodifiableSet((Set<String>)tryLoadObject(expiredPatentSetFile));
-		return expiredPatentSet;
 	}
 
 	public synchronized static void setupCompDBConn() throws SQLException {
@@ -715,18 +675,14 @@ public class Database {
 	}
 
 
-	public synchronized static Collection<String> assigneesFor(String patent) {
-		List<String> assignees;
+	public synchronized static String assigneeFor(String patent) {
+		String assignee;
 		if(isApplication(patent)) {
-			assignees=getAppToOriginalAssigneeMap().get(patent);
+			assignee = new AssetToAssigneeMap().getApplicationDataMap().get(patent);
 		} else {
-			assignees = getPatentToLatestAssigneeMap().get(patent);
-			if(assignees==null) {
-				assignees = getPatentToOriginalAssigneeMap().get(patent);
-			}
+			assignee = new AssetToAssigneeMap().getPatentDataMap().get(patent);
 		}
-		if(assignees==null) assignees = Collections.emptyList();
-		return Collections.unmodifiableCollection(assignees);
+		return assignee;
 	}
 
 	public synchronized static Collection<String> selectPatentNumbersFromAssignee(String assignee){
@@ -777,13 +733,6 @@ public class Database {
 		return Collections.unmodifiableCollection(gatherPatentSet);
 	}
 
-	public synchronized static boolean isExpired(String patent) {
-		if(isApplication(patent)) {
-			return getLapsedAppSet().contains(patent);
-		} else {
-			return getExpiredPatentSet().contains(patent) || getLapsedPatentSet().contains(patent);
-		}
-	}
 
 	public synchronized static void close(){
 		try {
@@ -973,26 +922,6 @@ public class Database {
 		});
 		trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
 
-		System.out.println("Starting to build valuable patents...");
-		Set<String> allPatents = new HashSet<>();
-		allPatents.addAll(getPatentToInventionTitleMap().keySet());
-		allPatents.addAll(getPatentToPubDateMap().keySet());
-		allPatents.addAll(getPatentToOriginalAssigneeMap().keySet());
-		valuablePatents=allPatents.stream().filter(patent -> !(getExpiredPatentSet().contains(patent)||getLapsedPatentSet().contains(patent))).collect(Collectors.toSet());
-		trySaveObject(valuablePatents,valuablePatentsFile);
-
-
-		Set<String> allApplications = new HashSet<>();
-		allApplications.addAll(getAppToInventionTitleMap().keySet());
-		allApplications.addAll(getAppToPubDateMap().keySet());
-		allApplications.addAll(getAppToOriginalAssigneeMap().keySet());
-		valuableApps=allApplications.stream().filter(patent -> !(getLapsedAppSet().contains(patent))).collect(Collectors.toSet());
-		trySaveObject(valuableApps,valuableAppsFile);
-		//check("Invention Title",getAppToInventionTitleMap().keySet());
-		//check("Assignee",getAppToOriginalAssigneeMap().keySet());
-		//check("PubDate", getAppToPubDateMap().keySet());
-		check("All Apps",valuableApps);
-		//check("Classifications",getAppToClassificationMap().keySet());
 	}
 
 	public static void check(String name, Collection<String> collection) {

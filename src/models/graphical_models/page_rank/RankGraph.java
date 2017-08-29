@@ -1,5 +1,6 @@
 package models.graphical_models.page_rank;
 
+import lombok.Getter;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.learning.algorithms.LearningAlgorithm;
@@ -16,6 +17,7 @@ public abstract class RankGraph<K> {
     protected Graph graph;
     protected List<Node> nodes;
     protected double damping;
+    @Getter
     protected Map<K,Float> rankTable;
 
     protected RankGraph(Map<String, ? extends Collection<String>> labelToCitationLabelsMap, Collection<String> importantLabels, double damping, Graph graph) {
@@ -37,10 +39,6 @@ public abstract class RankGraph<K> {
 
     public void solve(int numEpochs) {
         graph.applyLearningAlgorithm(getLearningAlgorithm(),numEpochs);
-    }
-
-    public void save(File file) {
-        new ObjectIO().save(file, rankTable);
     }
 
 }

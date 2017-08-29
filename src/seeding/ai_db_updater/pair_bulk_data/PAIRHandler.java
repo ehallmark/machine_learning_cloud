@@ -54,7 +54,12 @@ public class PAIRHandler extends NestedHandler {
                         String standardizedPubNumber = dataMap.get(publicationNumber).toString();
                         if (standardizedPubNumber.startsWith("US") && standardizedPubNumber.length() == 15) {
                             standardizedPubNumber = standardizedPubNumber.substring(2, 13);
-                            if (loadExternalAssignees) assignees.addAll(Database.assigneesFor(standardizedPubNumber));
+                            if (loadExternalAssignees) {
+                                String assignee = Database.assigneeFor(standardizedPubNumber);
+                                if(assignee!=null) {
+                                    assignees.add(assignee);
+                                }
+                            }
                             dataMap.put(publicationNumber, standardizedPubNumber);
                         } else {
                             dataMap.remove(publicationNumber);

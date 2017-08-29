@@ -135,9 +135,4 @@ public class SimRank extends RankGraph<Edge<String>> {
         //System.out.println("Similar to n4: "+String.join("; ",pr.findSimilarDocuments(Arrays.asList("n4"),3,4,2)));
     }
 
-    public static class Loader {
-        public Map<String,List<Pair<String,Float>>> loadSimilarityMap(File file) {
-            return new ObjectIO<Map<String,List<Pair<String,Float>>>>().load(file);
-        }
-    }
 }
