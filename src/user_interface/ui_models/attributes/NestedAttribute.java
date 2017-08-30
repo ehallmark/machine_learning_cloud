@@ -4,7 +4,6 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.script_attributes.CountAggregationScriptAttribute;
 import user_interface.ui_models.filters.*;
 
 import java.util.ArrayList;
@@ -29,7 +28,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
 
         // include count
-        this.attributes.add(new CountAggregationScriptAttribute(getName(),this.getName()+ Constants.COUNT_SUFFIX));
+        this.attributes.add(new CountAttribute(getName(),this.getName()+ Constants.COUNT_SUFFIX));
         this.attributes.forEach(attr->{
            attr.setParent(this);
         });

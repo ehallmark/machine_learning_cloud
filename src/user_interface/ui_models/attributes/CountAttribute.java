@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes.script_attributes;
+package user_interface.ui_models.attributes;
 
 import lombok.Getter;
 import org.elasticsearch.script.Script;
@@ -13,11 +13,11 @@ import java.util.HashMap;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CountAggregationScriptAttribute extends AggregateScriptAttribute {
+public class CountAttribute extends AbstractAttribute {
     @Getter
     private String name;
-    public CountAggregationScriptAttribute(String fieldName, String name) {
-        super(Arrays.asList(AbstractFilter.FilterType.Between), "painless", name, fieldName, "0", "values.size()");
+    public CountAttribute(String name) {
+        super(Arrays.asList(AbstractFilter.FilterType.Between));
         this.name=name;
     }
 
