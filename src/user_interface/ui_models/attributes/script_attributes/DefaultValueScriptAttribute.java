@@ -14,7 +14,7 @@ import java.util.HashMap;
  */
 public abstract class DefaultValueScriptAttribute extends AggregateScriptAttribute {
     public DefaultValueScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, String defaultVal) {
-        super(filterTypes,fieldName,defaultVal, "value");
+        super(filterTypes,"expression", fieldName, fieldName,defaultVal, "value");
     }
 
     @Override

@@ -17,7 +17,7 @@ public class CountAggregationScriptAttribute extends AggregateScriptAttribute {
     @Getter
     private String name;
     public CountAggregationScriptAttribute(String fieldName, String name) {
-        super(Arrays.asList(AbstractFilter.FilterType.Between), "painless", fieldName, "0", "values.size()");
+        super(Arrays.asList(AbstractFilter.FilterType.Between), "painless", name, fieldName, "0", "values.size()");
         this.name=name;
     }
 
