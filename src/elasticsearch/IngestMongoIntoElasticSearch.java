@@ -14,8 +14,12 @@ import com.mongodb.connection.ServerDescription;
 import com.mongodb.operation.ParallelCollectionScanOperation;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
+import seeding.Constants;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,7 +75,7 @@ public class IngestMongoIntoElasticSearch {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
                 try {
-                    DataIngester.ingestBulkFromMongoDB(type, doc.getString("_id"), doc);
+                    DataIngester.ingestBulkFromMongoDB(type, doc.getString("_id"), addCountsToDoc(doc));
                 } finally {
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         System.out.println("Ingested: " + cnt.get());
@@ -80,5 +84,24 @@ public class IngestMongoIntoElasticSearch {
             });
             cursor.next(helper(cursor, type));
         };
+    }
+
+    private static Document addCountsToDoc(Document doc) {
+        new ArrayList<>(doc.keySet()).forEach(e->{
+            addCountsToDocHelper(e,doc.get(e), doc);
+        });
+        return doc;
+    }
+
+    private static void addCountsToDocHelper(String field, Object val, Document currentDoc) {
+        if(val instanceof List || val instanceof Object[]) {
+            int count;
+            if(val instanceof Object[]) {
+                count = ((Object[]) val).length;
+            } else {
+                count = ((List)val).size();
+            }
+            currentDoc.put(field + Constants.COUNT_SUFFIX, count);
+        }
     }
 }
