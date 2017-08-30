@@ -1,4 +1,4 @@
-package user_interface.ui_models.attributes;
+package user_interface.ui_models.attributes.script_attributes;
 
 import j2html.tags.Tag;
 import seeding.Constants;
@@ -16,9 +16,9 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class PatentTermAdjustmentAttribute extends AbstractAttribute {
+public class PatentTermAdjustmentAttribute extends DefaultValueScriptAttribute {
     public PatentTermAdjustmentAttribute() {
-        super(Collections.emptyList());
+        super(Collections.emptyList(), "0");
     }
 
     @Override
