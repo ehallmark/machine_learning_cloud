@@ -29,8 +29,15 @@ public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
 
     @Override
     public Script getScript() {
-        String script = "(doc['"+aggFieldName+"'].empty ? (doc['"+fieldName+"'].empty ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+")) : doc['"+aggFieldName+"'].value)";
+        String script = "("+emptyDocFieldCheck(aggFieldName, language)+" ? ("+emptyDocFieldCheck(fieldName,language)+" ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+")) : doc['"+aggFieldName+"'].value)";
         return new Script(ScriptType.INLINE,language,script, new HashMap<>());
     }
 
+    private static String emptyDocFieldCheck(String name, String language) {
+        if(language.equals("expression")) {
+            return "doc['"+name+"'].empty";
+        } else {
+            return "doc.containsKey('"+name+"')";
+        }
+    }
 }

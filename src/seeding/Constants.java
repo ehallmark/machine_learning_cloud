@@ -76,7 +76,7 @@ public class Constants {
 	public static final String NAME = "name";
 	public static final String FILING_NAME = "filingName";
 	public static final String FILING_COUNTRY = "filingCountry";
-	public static final String COUNT_SUFFIX = "_countSuffix_";
+	public static final String COUNT_SUFFIX = "_countSuffix";
 	public static final String SIMILARITY = "similarity";
 	public static final String OVERALL_SCORE = "overallScore";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCount";
