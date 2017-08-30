@@ -29,7 +29,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
 
         // include count
-        this.attributes.add(new CountAggregationScriptAttribute(this,this.getName()+ Constants.FILTER_SUFFIX));
+        this.attributes.add(new CountAggregationScriptAttribute(this,this.getName()+ Constants.COUNT_SUFFIX));
         this.attributes.forEach(attr->{
            attr.setParent(this);
         });

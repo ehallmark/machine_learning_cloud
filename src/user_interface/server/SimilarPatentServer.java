@@ -365,7 +365,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.LAPSED, new LapsedAttribute());
             attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
             attributesMap.put(Constants.REEL_FRAME, new ReelFrameAttribute());
-            attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
+            //attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
