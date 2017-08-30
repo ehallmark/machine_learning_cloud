@@ -534,12 +534,12 @@ public class SimilarPatentServer {
 
         get("/create_user", (req, res)->{
             authorize(req,res);
-            Tag form = form().withId("create-user-form").withAction("/new_user").withMethod("POST").with(
+            Tag form = form().withId("create-user-form").withAction("/new_user").withMethod("POST").attr("style","margin-top: 100px;").with(
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
-                    ), label("Password").with(
+                    ), br(), br(), label("Password").with(
                             input().withType("password").withClass("form-control").withName("password")
-                    ), button("Create User").withClass("btn btn-secondary")
+                    ), br(), br(), button("Create User").withClass("btn btn-secondary")
             );
             return templateWrapper(true, req, res, form);
         });
@@ -944,11 +944,11 @@ public class SimilarPatentServer {
                 body().with(
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
-                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 15px;").with(
+                                        nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
                                                 (authorized ? a("Sign Out").withHref("/logout").withClass("nav-link") : a("Log In").withHref("/").withClass("nav-link")),
                                                 (authorized ? a("Create User").withHref("/create_user").withClass("nav-link") : span()),
                                                 br(),
-                                                h4("Templates").attr("style","margin-top: 50px;"),br(),
+                                                h4("Templates"),br(),
                                                 (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
                                                                 h5("Save as Template"),

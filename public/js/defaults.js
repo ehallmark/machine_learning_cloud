@@ -26,6 +26,21 @@ $(document).ready(function() {
         $(hiddenValueSelector).val(json);
     };
 
+    $('#create-user-form').submit(function(e){
+        e.preventDefault();
+        $form = $(this);
+        $.ajax({
+          type: "POST",
+          url: $(this).attr('action'),
+          data: $(this).serialize(),
+          dataType: "json",
+          success: function(data) {
+            $form.html(data.message);
+          }
+        });
+        return false;
+    });
+
     $('#save-template-form-id').submit(function(e){
         e.preventDefault();
         saveTemplateFormHelper("#searchOptionsForm",".attributeElement","#save-template-form-id #searchOptionsMap");
@@ -38,7 +53,7 @@ $(document).ready(function() {
         $.ajax({
           type: "POST",
           url: $(this).attr('action'),
-          data: $('#save-template-form-id').serialize(),
+          data: $(this).serialize(),
           success: function(data) {
             // add button
             if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
