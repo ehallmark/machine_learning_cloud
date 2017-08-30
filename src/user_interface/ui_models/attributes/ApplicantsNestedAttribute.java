@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class ApplicantsNestedAttribute extends NestedAttribute {
 
     public ApplicantsNestedAttribute() {
-        super(Arrays.asList(new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
+        super(Arrays.asList(new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()), Constants.LAST_NAME);
     }
 
     @Override

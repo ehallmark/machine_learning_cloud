@@ -1,7 +1,6 @@
 package models;
 
-import seeding.ai_db_updater.UpdateExtraneousComputableAttributeData;
-import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
+import models.value_models.regression.UpdateValueModels;
 import models.model_testing.TestSpecificModels;
 
 /**
@@ -19,7 +18,7 @@ public class UpdateModels {
         //models.similarity_models.UpdateSimilarityModels.main(args);
         models.graphical_models.UpdateGraphicalModels.main(args); // page rank
         //models.classification_models.UpdateClassificationModels.main(args);
-        models.value_models.UpdateValueModels.main(args);
+        UpdateValueModels.main(args);
 
         // test
         TestSpecificModels.main(args);

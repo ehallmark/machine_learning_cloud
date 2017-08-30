@@ -1,4 +1,4 @@
-package models.value_models;
+package models.value_models.regression;
 
 import seeding.Constants;
 import seeding.Database;

@@ -1,4 +1,4 @@
-package models.value_models;
+package models.value_models.regression;
 
 import seeding.Constants;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;

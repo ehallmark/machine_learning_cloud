@@ -1,9 +1,7 @@
-package models.value_models;
+package models.value_models.regression;
 
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.computable_attributes.CompDBAssetsPurchasedAttribute;
-import user_interface.ui_models.attributes.computable_attributes.CompDBAssetsSoldAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
 

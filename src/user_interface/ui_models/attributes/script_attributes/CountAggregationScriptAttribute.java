@@ -16,8 +16,8 @@ import java.util.HashMap;
 public class CountAggregationScriptAttribute extends AggregateScriptAttribute {
     @Getter
     private String name;
-    public CountAggregationScriptAttribute(AbstractAttribute parent, String name) {
-        super(Arrays.asList(AbstractFilter.FilterType.Between),parent.getName(), "0",AggregationType.length);
+    public CountAggregationScriptAttribute(String fieldName, String name) {
+        super(Arrays.asList(AbstractFilter.FilterType.Between),fieldName, "0",AggregationType.length);
         this.name=name;
     }
 

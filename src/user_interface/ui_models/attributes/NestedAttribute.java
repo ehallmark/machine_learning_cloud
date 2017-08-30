@@ -24,12 +24,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Getter
     protected Collection<AbstractAttribute> attributes;
 
-    public NestedAttribute(Collection<AbstractAttribute> attributes) {
+    public NestedAttribute(Collection<AbstractAttribute> attributes, String primaryField) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
 
         // include count
-        this.attributes.add(new CountAggregationScriptAttribute(this,this.getName()+ Constants.COUNT_SUFFIX));
+        this.attributes.add(new CountAggregationScriptAttribute(getName()+"."+primaryField,this.getName()+ Constants.COUNT_SUFFIX));
         this.attributes.forEach(attr->{
            attr.setParent(this);
         });

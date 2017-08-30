@@ -1,6 +1,6 @@
 package models.graphical_models.page_rank;
 
-import models.value_models.PageRankEvaluator;
+import models.value_models.regression.PageRankEvaluator;
 import seeding.Database;
 
 import java.io.File;

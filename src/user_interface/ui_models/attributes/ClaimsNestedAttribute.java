@@ -9,7 +9,7 @@ import java.util.Arrays;
  */
 public class ClaimsNestedAttribute extends NestedAttribute {
     public ClaimsNestedAttribute() {
-        super(Arrays.asList(new ClaimNumberAttribute(), new ClaimTextAttribute(), new ClaimLengthAttribute(), new ParentClaimNumAttribute()));
+        super(Arrays.asList(new ClaimNumberAttribute(), new ClaimTextAttribute(), new ClaimLengthAttribute(), new ParentClaimNumAttribute()), Constants.CLAIM_NUM);
     }
 
     @Override

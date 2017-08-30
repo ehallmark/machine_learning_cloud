@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
 
+import models.value_models.regression.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
 import user_interface.server.tools.PasswordHandler;
@@ -54,7 +55,6 @@ import java.util.stream.Stream;
 import static j2html.TagCreator.*;
 import static j2html.TagCreator.head;
 import static spark.Spark.*;
-import models.value_models.*;
 
 /**
  * Created by ehallmark on 7/27/16.
