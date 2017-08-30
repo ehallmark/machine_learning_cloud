@@ -11,35 +11,28 @@ import java.util.HashMap;
  * Created by ehallmark on 7/20/17.
  */
 public abstract class AggregateScriptAttribute extends AbstractScriptAttribute {
-    enum AggregationType {
-        value,
-        empty,
-        length,
-        min_,
-        max_,
-        avg_,
-        median_,
-        sum_
-    }
 
-    private AggregationType type;
+
+    private String type;
     private String defaultVal;
     protected String fieldName;
-    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, String defaultVal, AggregationType type) {
+    private String language;
+    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String language, String fieldName, String defaultVal, String type) {
         super(filterTypes);
         this.type=type;
         this.defaultVal=defaultVal;
         this.fieldName = fieldName;
+        this.language = language;
+    }
+
+    public AggregateScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, String defaultVal, String type) {
+        this(filterTypes, "expression", fieldName, defaultVal, type);
     }
 
     @Override
     public Script getScript() {
-        String script = "doc['"+fieldName+"'].empty ? ("+defaultVal+") : (doc['"+fieldName+"']."+type()+")";
-        return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
-    }
-
-    private String type() {
-        return type.toString().endsWith("_") ? type.toString().substring(0,type.toString().length()-1)+"()" : type.toString();
+        String script = "doc['"+fieldName+"'].empty ? ("+defaultVal+") : (doc['"+fieldName+"']."+type+")";
+        return new Script(ScriptType.INLINE,language,script, new HashMap<>());
     }
 
 }

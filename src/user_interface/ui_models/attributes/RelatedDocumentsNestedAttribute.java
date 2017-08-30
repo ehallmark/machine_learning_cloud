@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class RelatedDocumentsNestedAttribute extends NestedAttribute {
 
     public RelatedDocumentsNestedAttribute() {
-        super(Arrays.asList(new AssetNumberAttribute(), new DocKindAttribute(), new CountryAttribute(), new RelationTypeAttribute()), Constants.NAME);
+        super(Arrays.asList(new AssetNumberAttribute(), new DocKindAttribute(), new CountryAttribute(), new RelationTypeAttribute()));
     }
 
     @Override

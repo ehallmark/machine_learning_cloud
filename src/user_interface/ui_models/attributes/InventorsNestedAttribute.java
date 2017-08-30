@@ -13,7 +13,7 @@ import java.util.Collection;
 public class InventorsNestedAttribute extends NestedAttribute {
 
     public InventorsNestedAttribute() {
-        super(Arrays.asList(new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()), Constants.LAST_NAME);
+        super(Arrays.asList(new FirstNameAttribute(), new LastNameAttribute(), new CityAttribute(), new CountryAttribute(), new StateAttribute()));
     }
 
     @Override

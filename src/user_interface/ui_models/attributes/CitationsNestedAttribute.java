@@ -10,7 +10,7 @@ import java.util.Arrays;
 public class CitationsNestedAttribute extends NestedAttribute {
 
     public CitationsNestedAttribute() {
-        super(Arrays.asList(new AssetNumberAttribute(), new DocKindAttribute(), new CitedDateAttribute(), new CountryAttribute()), Constants.NAME);
+        super(Arrays.asList(new AssetNumberAttribute(), new DocKindAttribute(), new CitedDateAttribute(), new CountryAttribute()));
     }
 
     @Override
