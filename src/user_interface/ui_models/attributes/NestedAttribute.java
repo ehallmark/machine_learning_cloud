@@ -10,6 +10,7 @@ import user_interface.ui_models.filters.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -25,8 +26,8 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     public NestedAttribute(Collection<AbstractAttribute> attributes) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
-        this.attributes = attributes;
-        if(this.attributes == null) this.attributes = new ArrayList<>();
+        this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
+
         // include count
         this.attributes.add(new CountAggregationScriptAttribute(this,this.getName()+ Constants.FILTER_SUFFIX));
         this.attributes.forEach(attr->{
