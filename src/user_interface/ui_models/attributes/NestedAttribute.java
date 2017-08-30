@@ -2,9 +2,12 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
+import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.script_attributes.CountAggregationScriptAttribute;
 import user_interface.ui_models.filters.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -23,11 +26,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
     public NestedAttribute(Collection<AbstractAttribute> attributes) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = attributes;
-        if(this.attributes!=null) {
-            this.attributes.forEach(attr->{
-               attr.setParent(this);
-            });
-        }
+        if(this.attributes == null) this.attributes = new ArrayList<>();
+        // include count
+        this.attributes.add(new CountAggregationScriptAttribute(this,this.getName()+ Constants.FILTER_SUFFIX));
+        this.attributes.forEach(attr->{
+           attr.setParent(this);
+        });
     }
 
     @Override

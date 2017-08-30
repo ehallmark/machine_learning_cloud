@@ -76,6 +76,7 @@ public class Constants {
 	public static final String NAME = "name";
 	public static final String FILING_NAME = "filingName";
 	public static final String FILING_COUNTRY = "filingCountry";
+	public static final String COUNT_SUFFIX = "<<_countSuffix_>>";
 	public static final String SIMILARITY = "similarity";
 	public static final String OVERALL_SCORE = "overallScore";
 	public static final String TOTAL_ASSET_COUNT = "totalAssetCount";
@@ -105,6 +106,7 @@ public class Constants {
 	public static final String HISTOGRAM = "histogram[]";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
+	public static final String NUM_ASSIGNMENTS = "numAssignments"+COUNT_SUFFIX;
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";

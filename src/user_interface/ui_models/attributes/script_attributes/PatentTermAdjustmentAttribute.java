@@ -18,12 +18,7 @@ import static j2html.TagCreator.div;
  */
 public class PatentTermAdjustmentAttribute extends DefaultValueScriptAttribute {
     public PatentTermAdjustmentAttribute() {
-        super(Collections.emptyList(), "0");
-    }
-
-    @Override
-    public String getName() {
-        return Constants.PATENT_TERM_ADJUSTMENT;
+        super(Collections.emptyList(), Constants.PATENT_TERM_ADJUSTMENT,"0");
     }
 
     @Override

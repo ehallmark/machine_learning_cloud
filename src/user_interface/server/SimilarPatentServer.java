@@ -145,6 +145,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
             humanAttrToJavaAttrMap.put("Timeline Chart", Constants.LINE_CHART);
+            humanAttrToJavaAttrMap.put("Reel Frames", Constants.REEL_FRAME);
             humanAttrToJavaAttrMap.put("Include All", AbstractFilter.FilterType.Include.toString());
             humanAttrToJavaAttrMap.put("Include By Prefix", AbstractFilter.FilterType.PrefixInclude.toString());
             humanAttrToJavaAttrMap.put("Exclude By Prefix", AbstractFilter.FilterType.PrefixExclude.toString());
@@ -262,6 +263,10 @@ public class SimilarPatentServer {
             int commaIdx = attr.indexOf(".");
             if(commaIdx>=0&&commaIdx<attr.length()-1) {
                 human = humanAttributeFor(attr.substring(attr.indexOf(".")+1));
+            } else {
+                if(attr.endsWith(Constants.COUNT_SUFFIX)) {
+                    human = "Number of "+humanAttributeFor(attr.substring(0,attr.length()-Constants.COUNT_SUFFIX.length()));
+                }
             }
         }
         if(human.endsWith(RANDOM_TOKEN)) {
@@ -359,6 +364,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.REINSTATED, new ReinstatedAttribute());
             attributesMap.put(Constants.LAPSED, new LapsedAttribute());
             attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
+            attributesMap.put(Constants.REEL_FRAME, new ReelFrameAttribute());
+            attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
@@ -369,7 +376,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
-            //attributesMap.put(Constants.ASSIGNMENTS, new AssignmentsNestedAttribute());
 
             if(loadHidden) {
                 // hidden attrs

@@ -12,17 +12,14 @@ import java.util.HashMap;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public abstract class DefaultValueScriptAttribute extends AbstractScriptAttribute {
-    private String defaultVal;
-    public DefaultValueScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String defaulVal) {
-        super(filterTypes);
-        this.defaultVal=defaulVal;
+public abstract class DefaultValueScriptAttribute extends AggregateScriptAttribute {
+    public DefaultValueScriptAttribute(Collection<AbstractFilter.FilterType> filterTypes, String fieldName, String defaultVal) {
+        super(filterTypes,fieldName,defaultVal, AggregationType.value);
     }
 
     @Override
-    public Script getScript() {
-        String script = "doc['"+getName()+"'].empty ? ("+defaultVal+") : (doc['"+getName()+"'])";
-        return new Script(ScriptType.INLINE,"expression",script, new HashMap<>());
+    public String getName() {
+        return fieldName;
     }
 
 }
