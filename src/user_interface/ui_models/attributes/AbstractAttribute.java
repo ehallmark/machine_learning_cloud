@@ -29,7 +29,15 @@ public abstract class AbstractAttribute {
     public abstract String getName();
 
     public String getMongoDBName() {
+        return getFullName();
+    }
+
+    public String getFullName() {
         return parent==null? getName() : (parent.getName() + "." + getName());
+    }
+
+    public String getRootName() {
+        return parent==null? getName() : parent.getRootName();
     }
 
     public Tag getOptionsTag() { return div(); }

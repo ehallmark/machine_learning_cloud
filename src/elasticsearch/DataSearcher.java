@@ -70,13 +70,17 @@ public class DataSearcher {
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
             boolean usingScore;
-            if(isOverallScore||comparator.equals(Constants.SIMILARITY)||Constants.FILING_ATTRIBUTES_SET.contains(comparator)) {
+            if(isOverallScore||comparator.equals(Constants.SIMILARITY)||Constants.FILING_ATTRIBUTES_SET.contains(comparator)||(comparator.contains(".")&&Constants.FILING_ATTRIBUTES_SET.contains(comparator.substring(0,comparator.indexOf("."))))) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
                 usingScore = true;
+
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
                 usingScore = false;
             }
+
+            System.out.println("Filtering by score: "+usingScore);
+
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
@@ -96,7 +100,7 @@ public class DataSearcher {
                     System.out.println("  filter: "+filter.getName());
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
-                    if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getPrerequisite())) {
+                    if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getAttribute().getRootName())) {
                         currentQuery = parentQueryBuilder;
                         currentFilter = parentFilterBuilder;
                     } else {
@@ -114,17 +118,20 @@ public class DataSearcher {
             InnerHitBuilder innerHitBuilder = new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true));
             for(AbstractAttribute attribute : attributes) {
                 System.out.println("  attribute: "+attribute.getName());
-                boolean componentOfScore = usingScore && (attribute.getName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getName())));
+                boolean componentOfScore = usingScore && (attribute.getFullName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName())));
                 if(attribute instanceof AbstractScriptAttribute) {
-                    System.out.println("  Script Component...");
+                    System.out.println("  Script Component... "+attribute.getFullName());
                     AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
                     Script script = scriptAttribute.getScript();
                     if(script!=null) {
-                        boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getName());
+                        boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getRootName());
                         if(isParentAttr) {
                             innerHitBuilder = innerHitBuilder.addScriptField(scriptAttribute.getName(),script);
+                            System.out.println("Adding script to inner hit builder: "+script.getIdOrCode());
+
                         } else {
                             request = request.addScriptField(scriptAttribute.getName(), script);
+                            System.out.println("Adding script to main request: "+script.getIdOrCode());
                         }
                         // add script to query
                         if(componentOfScore) {
@@ -140,13 +147,16 @@ public class DataSearcher {
                         }
                     }
                 } else if(componentOfScore) {
-                    System.out.println("  Score Component...");
+                    System.out.println("  Score Component... "+attribute.getFullName());
                     // add default sort
-                    if(Constants.FILING_ATTRIBUTES_SET.contains(attribute.getName())) {
+                    if(Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName())) {
+                        String sortScript = "doc['" + attribute.getName() + "'].empty ? 0 : (_score * doc['" + attribute.getName() + "'].value)";
+                        System.out.println("Using custom score component on filings: "+sortScript);
                         parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE, "expression", "doc['" + attribute.getName() + "'].empty ? 0 : (_score * doc['" + attribute.getName() + "'].value)", Collections.emptyMap())
+                                new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())
                         ))));
                     } else {
+                        System.out.println("Adding score field value factor for: "+attribute.getName());
                         queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getName()).missing(0))));
                     }
                 }

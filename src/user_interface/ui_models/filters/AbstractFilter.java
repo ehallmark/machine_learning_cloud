@@ -37,6 +37,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword, NestedObject, Object
     }
 
+    @Getter
     protected AbstractAttribute attribute;
     @Getter
     protected FilterType filterType;
