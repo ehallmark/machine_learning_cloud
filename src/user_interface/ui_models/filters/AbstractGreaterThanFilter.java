@@ -41,14 +41,14 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
                 return getScriptFilter();
             } else {
                 return QueryBuilders.rangeQuery(getFullPrerequisite())
-                        .gt(limit);
+                        .gte(limit);
             }
         }
     }
 
     @Override
     protected String transformAttributeScript(String script) {
-        return "("+script+") > "+limit;
+        return "("+script+") >= "+limit;
     }
 
     public boolean isActive() { return limit!=null&&limit.doubleValue() > 0d; }

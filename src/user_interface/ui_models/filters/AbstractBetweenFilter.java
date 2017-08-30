@@ -4,10 +4,13 @@ import j2html.tags.Tag;
 import lombok.NonNull;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+
+import java.util.StringJoiner;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
@@ -29,25 +32,37 @@ public class AbstractBetweenFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(min == null || max == null) {
+        if(min == null && max == null) {
             return QueryBuilders.boolQuery();
         } else {
             if (isScriptFilter) {
                 return getScriptFilter();
             } else {
-                return QueryBuilders.rangeQuery(getFullPrerequisite())
-                        .gt(min)
-                        .lt(max);
+                RangeQueryBuilder query = QueryBuilders.rangeQuery(getFullPrerequisite());
+                if(min!=null) {
+                    query = query.gte(min);
+                }
+                if(max!=null) {
+                    query = query.lt(max);
+                }
+                return query;
             }
         }
     }
 
     @Override
     protected String transformAttributeScript(String script) {
-        return "(("+script+") > "+min+") && (("+script+") < "+max+")";
+        StringJoiner query = new StringJoiner(" && ");
+        if(min!=null) {
+            query.add("(("+script+") >= "+min+")");
+        }
+        if(max!=null) {
+            query.add("(("+script+") < "+max+")");
+        }
+        return query.toString();
     }
 
-    public boolean isActive() { return min!=null&&max!=null && max.doubleValue()>min.doubleValue();  }
+    public boolean isActive() { return min!=null||max!=null;  }
 
     @Override
     public void extractRelevantInformationFromParams(Request params) {
