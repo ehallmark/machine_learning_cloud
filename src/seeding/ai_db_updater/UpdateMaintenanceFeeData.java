@@ -3,7 +3,6 @@ package seeding.ai_db_updater;
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
-import user_interface.ui_models.attributes.LapsedAttribute;
 
 import java.io.*;
 import java.util.Arrays;

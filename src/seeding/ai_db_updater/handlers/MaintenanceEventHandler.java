@@ -2,10 +2,8 @@ package seeding.ai_db_updater.handlers;
 
 import elasticsearch.DataIngester;
 import seeding.Constants;
-import user_interface.ui_models.attributes.LapsedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
