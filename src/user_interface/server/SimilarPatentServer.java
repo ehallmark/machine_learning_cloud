@@ -170,7 +170,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Claim Length", Constants.CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Length of Smallest Independent Claim", Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH);
             humanAttrToJavaAttrMap.put("Claim Text", Constants.CLAIM);
-            humanAttrToJavaAttrMap.put("Independent Claim", Constants.INDEPENDENT_CLAIM);
             humanAttrToJavaAttrMap.put("Abstract", Constants.ABSTRACT);
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);

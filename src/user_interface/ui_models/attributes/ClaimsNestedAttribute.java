@@ -1,7 +1,6 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
-import user_interface.ui_models.attributes.script_attributes.IndependentClaimAttribute;
 
 import java.util.Arrays;
 
@@ -10,7 +9,7 @@ import java.util.Arrays;
  */
 public class ClaimsNestedAttribute extends NestedAttribute {
     public ClaimsNestedAttribute() {
-        super(Arrays.asList(new ClaimNumberAttribute(), new ClaimTextAttribute(), new ClaimLengthAttribute(), new ParentClaimNumAttribute(), new IndependentClaimAttribute()));
+        super(Arrays.asList(new ClaimNumberAttribute(), new ClaimTextAttribute(), new ClaimLengthAttribute(), new ParentClaimNumAttribute()));
     }
 
     @Override
