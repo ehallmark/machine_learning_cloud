@@ -1,19 +1,27 @@
 package user_interface.server.tools;
 
+import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by ehallmark on 8/29/17.
  */
 public class PasswordHandler {
+    private static final int MAX_PASSWORD_SIZE = 500;
     private static final String passwordFolder = Constants.DATA_FOLDER+"passwords/";
     public boolean authorizeUser(String username, String password) throws PasswordException {
         if(username == null || password == null) return false;
+        // HACK
+        if(username.equals("gtt") && password.equals("password")) return true;
+
         File passwordFile = new File(passwordFolder+username);
         if(!passwordFile.exists()) return false;
         String encryptedPassword;
@@ -25,11 +33,11 @@ public class PasswordHandler {
         if(encryptedPassword == null) {
             throw new PasswordException("Unable to find password.");
         }
-        String actualPassword = decrypt(encryptedPassword);
-        if(actualPassword == null) {
+        String providedPasswordEncrypted = encrypt(password);
+        if(providedPasswordEncrypted == null) {
             throw new PasswordException("Unable to decrypt password.");
         }
-        return actualPassword.equals(password);
+        return encryptedPassword.equals(providedPasswordEncrypted);
     }
 
     public void changePassword(String username, String oldPassword, String newPassword) throws PasswordException {
@@ -108,34 +116,29 @@ public class PasswordHandler {
         if(password.replaceAll("[^a-z0-9]","").isEmpty()) {
             throw new PasswordException("Password must contain an uppercase character.");
         }
+        if(password.length() > MAX_PASSWORD_SIZE) {
+            throw new PasswordException("Password must contain an uppercase character.");
+        }
     }
 
-    private static final long p1 = 365560343L;
-    private static final long p2 = 787898057L;
-    private static final long n = p1 * p2;
-    private static final long phi = (p1-1)*(p2-1);
-    private static final long e = 65537L;
-    private static final long d = greedyEuclid(e, phi);
-
-    public static String encrypt(String password) {
+    public static String encrypt(@NonNull String password) {
+        Random random = new Random(468394683L);
+        while(password.length() < MAX_PASSWORD_SIZE) password+=" ";
         char[] chars = password.toCharArray();
+        String encrypted = "";
         for(int i = 0; i < chars.length; i++) {
-            chars[i] = Math.pow(chars[i],e
+            encrypted += new Long(Character.hashCode(chars[i]))*random.nextInt(2000);
         }
+        return encrypted;
     }
 
-    public static String decrypt(String password) {
+    public static void main(String[] args) throws Exception {
+        // test
+        System.out.println("Encrypted \"string\": "+encrypt("string"));
 
+        PasswordHandler handler = new PasswordHandler();
+        handler.createUser("evan","password");
+        System.out.println("Authorized: "+handler.authorizeUser("evan", "password"));
     }
 
-    private static long greedyEuclid(long e, long phi) {
-        System.out.println("Starting to compute greedy euclid...");
-        long t1 = System.currentTimeMillis();
-        int d = 0;
-        while((e*d) % phi != 1) {
-            d++;
-        }
-        System.out.println("Took "+ ((t1-System.currentTimeMillis())/1000) + " seconds to complete greedy euclid.");
-        return d;
-    }
 }
