@@ -67,13 +67,14 @@ public class WIPOValueModel {
             // add other values
 
             attributes.forEach(attr->{
-                if(attr.getParent()==null) {
-
-                } else {
-                    Object obj = item.getData(attr.getRootName());
-                    if(obj!=null) {
-
-                    }
+                Object obj = item.getData(attr.getFullName());
+                if(obj!=null) {
+                    nestedHelper(attr.getFullName(), obj, attrNameSet, valueVariableName, variableToValuesMap);
+                }
+                if(attr.equals(assignee)) {
+                    System.out.println("Attr for assignee.getName: "+item.getData(assignee.getName()));
+                    System.out.println("Attr for assignee.getFullName: "+item.getData(assignee.getFullName()));
+                    System.out.println("Attr for assignee.rootName: "+item.getData(assignee.getRootName()));
                 }
             });
             item.getDataMap().forEach((attr,obj)->{
