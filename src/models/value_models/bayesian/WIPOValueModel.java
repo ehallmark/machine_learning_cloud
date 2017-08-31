@@ -79,7 +79,7 @@ public class WIPOValueModel {
         });
         attributes.forEach(attr->{
             if(!variableToValuesMap.keySet().contains(attr.getFullName())) {
-                System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
+                //System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
                 throw new RuntimeException("Missing attribute: "+attr.getFullName());
             }
         });
@@ -108,6 +108,7 @@ public class WIPOValueModel {
 
     private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, String valueVariableName, Map<String,List<String>> variableToValuesMap) {
         if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
+        System.out.println("Checking attr: "+attr);
         if(variableToValuesMap.containsKey(attr)) {
             if(!variableToValuesMap.get(attr).contains(obj.toString())) {
                 variableToValuesMap.get(attr).add(obj.toString());
