@@ -28,7 +28,7 @@ import static user_interface.server.SimilarPatentServer.SIMILARITY_ENGINES_ARRAY
  * Created by ehallmark on 6/15/17.
  */
 public class SimilarityAttribute extends AbstractScriptAttribute {
-    static int vectorSize = 30; // test
+    public static final int vectorSize = 30; // test
     public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
             "float ab = 0f;" +
@@ -57,7 +57,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
             INDArray avgVector = simVectors.size() == 1 ? simVectors.get(0) : Nd4j.vstack(simVectors).mean(0);
-            float[] data = avgVector.divi(avgVector.norm2Number().doubleValue()).data().asFloat();
+            float[] data = avgVector.data().asFloat();
             for(int i = 0; i < vectorSize; i++) {
                 params.put("avg_vector"+i,data[i]);
             }

@@ -412,7 +412,7 @@ public class SimilarPatentServer {
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
-        float[] data = vector.divi(vector.norm2Number().doubleValue()).data().asFloat();
+        float[] data = vector.data().asFloat();
         Map<String, Float> obj = new HashMap<>();
         for (int i = 0; i < data.length; i++) {
             obj.put(String.valueOf(i), data[i]);
