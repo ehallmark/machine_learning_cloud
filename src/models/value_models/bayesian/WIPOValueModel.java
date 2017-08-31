@@ -15,6 +15,7 @@ import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 8/30/2017.
@@ -34,6 +35,7 @@ public class WIPOValueModel {
                 factor,
                 new AssetNumberAttribute()
         );
+        Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
@@ -49,7 +51,7 @@ public class WIPOValueModel {
             item.addData(valueVariableName, value ? 1 : 0);
             // add other values
             item.getDataMap().forEach((attr,obj)->{
-                if(obj==null) return;
+                if(obj==null||!attrNameSet.contains(attr)) return;
                 if(variableToValuesMap.containsKey(attr) && !variableToValuesMap.get(attr).contains(obj.toString())) {
                     variableToValuesMap.get(attr).add(obj.toString());
                 } else {
