@@ -82,6 +82,7 @@ public class WIPOValueModel {
         });
         attributes.forEach(attr->{
             if(!variableToValuesMap.keySet().contains(attr.getFullName())) {
+                System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
                 throw new RuntimeException("Missing attribute: "+attr.getFullName());
             }
         });
