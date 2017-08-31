@@ -41,7 +41,7 @@ public class BayesianValueModel {
         if(variableToValuesMap==null||graph==null) throw new RuntimeException("Must train the model first");
         Map<String,Integer> assignment = createAssignment(token,variableToValuesMap);
         graph.setCurrentAssignment(assignment);
-        FactorNode resultingFactor = graph.variableElimination(assignment.keySet().stream().filter(var->!var.equals(valueVariableName)).toArray(size->new String[size]));
+        FactorNode resultingFactor = graph.variableElimination(new String[]{valueVariableName});
         if(resultingFactor.getCardinality()==1) {
             if(resultingFactor.getWeights().length!=2) throw new RuntimeException("Error in factor weights");
             resultingFactor.reNormalize(new DivideByPartition());
