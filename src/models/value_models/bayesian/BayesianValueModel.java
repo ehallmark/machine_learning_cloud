@@ -1,5 +1,6 @@
 package models.value_models.bayesian;
 
+import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import lombok.NonNull;
 import model.functions.normalization.DivideByPartition;
@@ -54,12 +55,11 @@ public class BayesianValueModel {
     }
 
     private Collection<Map<String,Integer>> createTrainingData(Item[] items) {
-        Collection<Map<String,Integer>> data = Collections.synchronizedCollection(new HashSet<>());
-        // now create assignments
-        Arrays.stream(items).parallel().forEach(item->{
-            data.add(createAssignment(item,variableToValuesMap));
-        });
-        return data;
+        return Arrays.stream(items).parallel().map(item->{
+            Map<String,Integer> assignment = createAssignment(item,variableToValuesMap);
+            System.out.println("Assignment: "+new Gson().toJson(assignment));
+            return assignment;
+        }).filter(assignment->assignment!=null&&assignment.size()>0).collect(Collectors.toSet());
     }
 
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
