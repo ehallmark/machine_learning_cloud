@@ -64,15 +64,12 @@ public class WIPOValueModel {
             item.addData(valueVariableName, value ? 1 : 0);
             // add other values
             item.getDataMap().forEach((attr,obj)->{
-                if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
-                if(variableToValuesMap.containsKey(attr)) {
-                    if(!variableToValuesMap.get(attr).contains(obj.toString())) {
-                        variableToValuesMap.get(attr).add(obj.toString());
-                    }
+                if(obj instanceof Map) {
+                    ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
+                        nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, valueVariableName, variableToValuesMap);
+                    });
                 } else {
-                    List<String> valuesSet = Collections.synchronizedList(new ArrayList<>());
-                    valuesSet.add(obj.toString());
-                    variableToValuesMap.put(attr,valuesSet);
+                    nestedHelper(attr, obj, attrNameSet, valueVariableName, variableToValuesMap);
                 }
             });
         });
@@ -107,6 +104,19 @@ public class WIPOValueModel {
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
+    }
+
+    private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, String valueVariableName, Map<String,List<String>> variableToValuesMap) {
+        if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
+        if(variableToValuesMap.containsKey(attr)) {
+            if(!variableToValuesMap.get(attr).contains(obj.toString())) {
+                variableToValuesMap.get(attr).add(obj.toString());
+            }
+        } else {
+            List<String> valuesSet = Collections.synchronizedList(new ArrayList<>());
+            valuesSet.add(obj.toString());
+            variableToValuesMap.put(attr,valuesSet);
+        }
     }
 
     public static void main(String[] args) {
