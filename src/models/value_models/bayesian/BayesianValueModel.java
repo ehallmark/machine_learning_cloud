@@ -1,19 +1,69 @@
 package models.value_models.bayesian;
 
+import elasticsearch.DataSearcher;
+import lombok.NonNull;
+import model.functions.normalization.DivideByPartition;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
+import model.learning.algorithms.BayesianLearningAlgorithm;
+import model.nodes.FactorNode;
+import seeding.Database;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
+import user_interface.ui_models.portfolios.items.Item;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by ehallmark on 8/30/17.
  */
 public class BayesianValueModel {
     protected Graph graph;
-    public BayesianValueModel() {
-
+    protected double alpha;
+    protected Item[] trainingItems;
+    protected Map<String,List<String>> variableToValuesMap;
+    protected String valueVariableName;
+    public BayesianValueModel(@NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
+        this.graph=graph;
+        this.variableToValuesMap = variableToValuesMap;
+        this.alpha=alpha;
+        this.trainingItems=trainingItems;
+        this.valueVariableName=valueVariableName;
     }
 
-    public void initModel() {
-        graph = new BayesianNet();
-       // graph.addNode
+    public void train() {
+        graph.setTrainingData(createTrainingData(trainingItems));
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 1);
+    }
+
+    public double evaluate(Item token) {
+        if(variableToValuesMap==null||graph==null) throw new RuntimeException("Must train the model first");
+        Map<String,Integer> assignment = createAssignment(token,variableToValuesMap);
+        graph.setCurrentAssignment(assignment);
+        FactorNode resultingFactor = graph.variableElimination(assignment.keySet().stream().filter(var->!var.equals(valueVariableName)).toArray(size->new String[size]));
+        if(resultingFactor.getCardinality()==1) {
+            if(resultingFactor.getWeights().length!=2) throw new RuntimeException("Error in factor weights");
+            resultingFactor.reNormalize(new DivideByPartition());
+            return resultingFactor.getWeights()[1]*100;
+        } else {
+            FactorNode finalFactor = resultingFactor.sumOut(Arrays.stream(resultingFactor.getVarLabels()).filter(var->!var.equals(valueVariableName)).toArray(size->new String[size]));
+            if(finalFactor.getWeights().length!=2) throw new RuntimeException("Error in factor weights");
+            finalFactor.reNormalize(new DivideByPartition());
+            return finalFactor.getWeights()[1]*100;
+        }
+    }
+
+    private Collection<Map<String,Integer>> createTrainingData(Item[] items) {
+        Collection<Map<String,Integer>> data = Collections.synchronizedCollection(new HashSet<>());
+        // now create assignments
+        Arrays.stream(items).parallel().forEach(item->{
+            data.add(createAssignment(item,variableToValuesMap));
+        });
+        return data;
+    }
+
+    private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
+        return item.getDataMap().entrySet().parallelStream().filter(e->variableToValuesMap.containsKey(e.getKey())&&e.getValue()!=null&&variableToValuesMap.get(e.getKey()).contains(e.getValue()))
+                .collect(Collectors.toMap(e->e.getKey(),e->variableToValuesMap.get(e.getKey()).indexOf(e.getValue())));
     }
 }
