@@ -32,7 +32,7 @@ public class WIPOValueModel {
 
     public void init() {
         final String valueVariableName = "gatherValue";
-        final double alpha = 20d;
+        final double alpha = 50d;
         final int maxLimit = 10000;
         final Graph graph = new BayesianNet();
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
