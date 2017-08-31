@@ -21,15 +21,17 @@ import java.util.*;
  */
 public class WIPOValueModel {
     private BayesianValueModel bayesianValueModel;
+    private Item[] testItems;
 
     public void init() {
         final String valueVariableName = "gatherValue";
         final double alpha = 20d;
         final int maxLimit = 10000;
         final Graph graph = new BayesianNet();
+        AbstractAttribute factor = new WIPOTechnologyAttribute();
 
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                new WIPOTechnologyAttribute(),
+                factor,
                 new AssetNumberAttribute()
         );
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
@@ -37,6 +39,8 @@ public class WIPOValueModel {
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
         Item[] trainingItems = DataSearcher.searchForAssets(attributes, filters, "name", SortOrder.ASC, maxLimit, new HashMap<>());
+        testItems = Arrays.copyOfRange(trainingItems, 0, trainingItems.length/2);
+        trainingItems = Arrays.copyOfRange(trainingItems, trainingItems.length/2, trainingItems.length);
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(trainingItems).parallel().forEach(item->{
             // add gather value
@@ -65,13 +69,24 @@ public class WIPOValueModel {
             }
         });
         variableToValuesMap.forEach((attr,values)->{
+            if(values.size()<2) throw new RuntimeException("Each variable must have at least 2 states: "+attr);
             graph.addNode(attr,values.size());
         });
 
         // connect and add factors
-
-
+        graph.connectNodes(valueVariableName, factor.getFullName());
+        graph.addFactorNode(null, graph.findNode(valueVariableName),graph.findNode(factor.getFullName()));
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
+        bayesianValueModel.train();
+    }
+
+    public static void main(String[] args) {
+        WIPOValueModel model = new WIPOValueModel();
+        model.init();
+        for(Item item : model.testItems) {
+            double value = model.bayesianValueModel.evaluate(item);
+            System.out.print(item.getName()+","+value);
+        }
     }
 }
