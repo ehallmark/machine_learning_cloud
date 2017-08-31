@@ -149,7 +149,7 @@ public class WIPOValueModel {
             writer.write("asset,wipoValue,gatherValue\n");
             for (Item item : model.testItems) {
                 double value = model.bayesianValueModel.evaluate(item);
-                System.out.println(item.getName() + "," + value);
+               // System.out.println(item.getName() + "," + value);
                 writer.write(item.getName() + "," + value + "," + Database.getGatherValueMap().get(item.getName())+"\n");
             }
             writer.flush();
