@@ -82,6 +82,7 @@ public class WIPOValueModel {
 
         // connect and add factors
         graph.connectNodes(valueVariableName, factor.getFullName());
+        graph.addFactorNode(null, graph.findNode(valueVariableName));
         graph.addFactorNode(null, graph.findNode(valueVariableName),graph.findNode(factor.getFullName()));
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
