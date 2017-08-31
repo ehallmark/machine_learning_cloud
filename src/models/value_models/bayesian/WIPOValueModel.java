@@ -65,6 +65,7 @@ public class WIPOValueModel {
             // add other values
             item.getDataMap().forEach((attr,obj)->{
                 if(obj instanceof Map) {
+                    System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
                         nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, valueVariableName, variableToValuesMap);
                     });
@@ -75,11 +76,11 @@ public class WIPOValueModel {
         });
         // sanity check
         variableToValuesMap.forEach((var,values)->{
-            System.out.println("Values for "+var+": "+String.join("; ",values));
+            //System.out.println("Values for "+var+": "+String.join("; ",values));
         });
         attributes.forEach(attr->{
             if(!variableToValuesMap.keySet().contains(attr.getFullName())) {
-                //System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
+                System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
                 throw new RuntimeException("Missing attribute: "+attr.getFullName());
             }
         });
