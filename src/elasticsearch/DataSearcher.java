@@ -1,8 +1,10 @@
 package elasticsearch;
 
 import com.google.gson.Gson;
+import lombok.NonNull;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
+import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -82,13 +84,13 @@ public class DataSearcher {
             System.out.println("Filtering by score: "+usingScore);
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
-            SearchRequestBuilder request = client.prepareSearch(INDEX_NAME)
+            AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
                     .setFetchSource(true)
                     .addSort(sortBuilder)
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
-                    .setFrom(0);
+                    .setFrom(0));
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
@@ -115,51 +117,19 @@ public class DataSearcher {
                 }
             }
             System.out.println("Starting ES attributes...");
-            InnerHitBuilder innerHitBuilder = new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true));
+            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true)));
             for(AbstractAttribute attribute : attributes) {
-                System.out.println("  attribute: "+attribute.getName());
-                boolean componentOfScore = usingScore && (attribute.getFullName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName())));
-                if(attribute instanceof AbstractScriptAttribute) {
-                    System.out.println("  Script Component... "+attribute.getFullName());
-                    AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
-                    Script script = scriptAttribute.getScript();
-                    if(script!=null) {
-                        boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getRootName());
-                        if(isParentAttr) {
-                            innerHitBuilder = innerHitBuilder.addScriptField(scriptAttribute.getName(),script);
-                            System.out.println("Adding script to inner hit builder: "+script.getIdOrCode());
-
-                        } else {
-                            request = request.addScriptField(scriptAttribute.getName(), script);
-                            System.out.println("Adding script to main request: "+script.getIdOrCode());
-                        }
-                        // add script to query
-                        if(componentOfScore) {
-                            // try adding custom sort script
-                            QueryBuilder sortScript = scriptAttribute.getSortScript();
-                            if (sortScript != null) {
-                                if (isParentAttr) {
-                                    parentQueryBuilder.set(parentQueryBuilder.get().must(sortScript));
-                                } else {
-                                    queryBuilder.set(queryBuilder.get().must(sortScript));
-                                }
-                            }
-                        }
-                    }
-                } else if(componentOfScore) {
-                    System.out.println("  Score Component... "+attribute.getFullName());
-                    // add default sort
-                    if(Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName())) {
-                        String sortScript = "doc['" + attribute.getName() + "'].empty ? 0 : (_score * doc['" + attribute.getName() + "'].value)";
-                        System.out.println("Using custom score component on filings: "+sortScript);
-                        parentQueryBuilder.set(parentQueryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(
-                                new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())
-                        ))));
-                    } else {
-                        System.out.println("Adding score field value factor for: "+attribute.getName());
-                        queryBuilder.set(queryBuilder.get().must(QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getName()).missing(0))));
-                    }
+                boolean isFilingType = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
+                AtomicReference<BoolQueryBuilder> queryBuilderToUse = isFilingType ? parentQueryBuilder : queryBuilder;
+                System.out.println("  attribute: " + attribute.getName());
+                if(attribute instanceof NestedAttribute) {
+                    ((NestedAttribute) attribute).getAttributes().forEach(childAttr->{
+                        handleAttributesHelper(childAttr, comparator, usingScore, queryBuilderToUse, request, innerHitBuilder);
+                    });
+                } else {
+                    handleAttributesHelper(attribute, comparator, usingScore, queryBuilderToUse, request, innerHitBuilder);
                 }
+
             }
 
 
@@ -169,15 +139,15 @@ public class DataSearcher {
             parentQueryBuilder.set(parentQueryBuilder.get().filter(parentFilterBuilder.get()));
             queryBuilder.set(queryBuilder.get().must(
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
-                            .innerHit(innerHitBuilder)
+                            .innerHit(innerHitBuilder.get())
             ));
 
             // Set query
             System.out.println("\"query\": "+queryBuilder.get().toString());
 
-            request = request.setQuery(queryBuilder.get());
+            request.set(request.get().setQuery(queryBuilder.get()));
 
-            SearchResponse response = request.get();
+            SearchResponse response = request.get().get();
             //Scroll until no hits are returned
             Item[] items = new Item[]{};
             do {
@@ -190,6 +160,66 @@ public class DataSearcher {
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error during keyword search: "+e.getMessage());
+        }
+    }
+
+    private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
+        boolean componentOfScore = usingScore && (attribute.getFullName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getRootName())));
+        if (attribute instanceof AbstractScriptAttribute) {
+            System.out.println("  Script Component... " + attribute.getFullName());
+            AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;
+            Script script = scriptAttribute.getScript();
+            if (script != null) {
+                boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(scriptAttribute.getRootName());
+                if (isParentAttr) {
+                    innerHitBuilder.set(innerHitBuilder.get().addScriptField(scriptAttribute.getName(), script));
+                    System.out.println("Adding script to inner hit builder: " + script.getIdOrCode());
+
+                } else {
+                    request.set(request.get().addScriptField(scriptAttribute.getFullName(), script));
+                    System.out.println("Adding script to main request: " + script.getIdOrCode());
+                }
+                // add script to query
+                if (componentOfScore) {
+                    System.out.println("Componenet of script score...");
+                    // try adding custom sort script
+                    QueryBuilder sortScript = scriptAttribute.getSortScript();
+                    if (sortScript != null) {
+                        if(attribute.getParent()!=null) {
+                            System.out.println("Is nested");
+                            queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Max)));
+                        } else {
+                            System.out.println("Not nested.");
+                            queryBuilder.set(queryBuilder.get().must(sortScript));
+                        }
+                    }
+                }
+            }
+        } else if (componentOfScore) {
+            System.out.println("  Score Component... " + attribute.getFullName());
+            // add default sort
+            if (Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName())) {
+                String sortScript = "doc['" + attribute.getFullName() + "'].empty ? 0 : (_score * doc['" + attribute.getFullName() + "'].value)";
+                System.out.println("Using custom score component on filings: " + sortScript);
+                QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "expression", sortScript, Collections.emptyMap())));
+                if(attribute.getParent()!=null) {
+                    System.out.println("Is nested");
+                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
+                } else {
+                    System.out.println("Not nested");
+                    queryBuilder.set(queryBuilder.get().must(query));
+                }
+            } else {
+                System.out.println("Adding score field value factor for: " + attribute.getFullName());
+                QueryBuilder query = QueryBuilders.functionScoreQuery(ScoreFunctionBuilders.fieldValueFactorFunction(attribute.getFullName()).missing(0));
+                if(attribute.getParent()!=null) {
+                    System.out.println("Is nested");
+                    queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), query, ScoreMode.Max)));
+                } else {
+                    System.out.println("Not nested");
+                    queryBuilder.set(queryBuilder.get().must(query));
+                }
+            }
         }
     }
 
