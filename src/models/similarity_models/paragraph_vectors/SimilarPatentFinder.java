@@ -11,6 +11,7 @@ import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.BaseSimilarityModel;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.portfolios.items.Item;

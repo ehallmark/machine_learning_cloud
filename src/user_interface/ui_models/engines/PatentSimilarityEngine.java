@@ -29,6 +29,7 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
         System.out.println("Collecting inputs to search for...");
         // get input data
         Collection<String> patents = preProcess(extractString(req, PATENTS_TO_SEARCH_FOR_FIELD, ""), "\\s+", "[^0-9]");
+        patents = patents.stream().map(patent->assetToFilingMap.getPatentDataMap().getOrDefault(patent, assetToFilingMap.getApplicationDataMap().getOrDefault(patent,patent))).collect(Collectors.toList());
         System.out.println("Found "+patents.size()+" patents...");
         return patents;
     }

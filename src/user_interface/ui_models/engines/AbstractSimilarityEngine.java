@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
 
@@ -24,6 +25,7 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute {
     protected Collection<String> inputs;
     @Getter
     protected INDArray avg;
+    protected static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
     public AbstractSimilarityEngine(AbstractSimilarityModel similarityModel) {
         super(Collections.emptyList());
