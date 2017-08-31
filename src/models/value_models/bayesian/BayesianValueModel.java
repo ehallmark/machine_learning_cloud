@@ -3,10 +3,13 @@ package models.value_models.bayesian;
 import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import lombok.NonNull;
+import model.functions.inference_methods.BeliefPropagation;
+import model.functions.inference_methods.InferenceMethod;
 import model.functions.normalization.DivideByPartition;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.learning.algorithms.BayesianLearningAlgorithm;
+import model.learning.algorithms.ExpectationMaximizationAlgorithm;
 import model.nodes.FactorNode;
 import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
@@ -34,7 +37,7 @@ public class BayesianValueModel {
 
     public void train() {
         graph.setTrainingData(createTrainingData(trainingItems));
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 1);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,alpha, new BeliefPropagation()), 1);
     }
 
     public double evaluate(Item token) {

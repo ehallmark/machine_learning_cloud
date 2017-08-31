@@ -10,6 +10,8 @@ import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
+import user_interface.ui_models.attributes.CPCAttribute;
+import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -34,10 +36,14 @@ public class WIPOValueModel {
         final double alpha = 20d;
         final int maxLimit = 10000;
         final Graph graph = new BayesianNet();
-        AbstractAttribute factor = new WIPOTechnologyAttribute();
+        AbstractAttribute wipo = new WIPOTechnologyAttribute();
+        AbstractAttribute cpc = new CPCAttribute();
+        AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
 
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                factor
+                wipo,
+                cpc,
+                assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
@@ -85,12 +91,18 @@ public class WIPOValueModel {
         });
 
         Node valueNode = graph.findNode(valueVariableName);
-        Node wipoNode = graph.findNode(factor.getFullName());
+        Node wipoNode = graph.findNode(wipo.getFullName());
+        Node cpcNode = graph.findNode(cpc.getFullName());
+        Node assigneeNode = graph.findNode(assignee.getFullName());
 
         // connect and add factors
         graph.connectNodes(valueNode, wipoNode);
+        graph.connectNodes(valueNode, cpcNode);
+        graph.connectNodes(valueNode, assigneeNode);
+        graph.connectNodes(wipoNode, cpcNode);
         graph.addFactorNode(null, valueNode);
-        graph.addFactorNode(null, valueNode, wipoNode);
+        graph.addFactorNode(null, valueNode, wipoNode, cpcNode);
+        graph.addFactorNode(null, valueNode, assigneeNode);
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
