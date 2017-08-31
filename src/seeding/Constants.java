@@ -26,6 +26,8 @@ public class Constants {
 	public static final String ADDRESS_3 = "addressThree";
 	public static final String PURGE_INDICATOR = "purgeIndicator";
 	public static final String CORRESPONDENT = "correspondent";
+	public static final String EXISTS_IN_COMPDB_FILTER = "existsInCompDBFilter";
+	public static final String EXISTS_IN_GATHER_FILTER = "existsInGatherFilter";
 	public static final String CORRESPONDENT_ADDRESS_ID = "correspondentAddressId";
 	public static final String APPLICATION_TYPE = "applicationType";
 	public static final String APPLICATION_CONFIRMATION_NUM = "applicationConfirmationNumber";
@@ -223,7 +225,11 @@ public class Constants {
 
 	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
 			AI_VALUE,
-			SIMILARITY
+			SIMILARITY,
+			CLAIMS+"."+CLAIM,
+			INVENTION_TITLE,
+			ABSTRACT
+
 	).collect(Collectors.toSet());
 
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;

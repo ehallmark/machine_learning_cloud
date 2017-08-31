@@ -164,7 +164,7 @@ public class DataSearcher {
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
-        boolean componentOfScore = usingScore && (attribute.getFullName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getRootName())));
+        boolean componentOfScore = usingScore && (attribute.getFullName().equals(comparator) || (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName())));
         if (attribute instanceof AbstractScriptAttribute) {
             System.out.println("  Script Component... " + attribute.getFullName());
             AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute) attribute;

@@ -71,7 +71,6 @@ public class SimilarPatentServer {
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
-    public static final String SIMILARITY_FILTER_ARRAY_FIELD = "similarityFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String COMPARATOR_FIELD = "comparator";
@@ -93,7 +92,7 @@ public class SimilarPatentServer {
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
-    static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
+    private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
 
     @Getter
@@ -175,6 +174,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Lapsed", Constants.LAPSED);
             humanAttrToJavaAttrMap.put("Priority Date (estimated)", Constants.ESTIMATED_PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
+            humanAttrToJavaAttrMap.put("Exists in CompDB", Constants.EXISTS_IN_COMPDB_FILTER);
+            humanAttrToJavaAttrMap.put("Exists in Gather", Constants.EXISTS_IN_GATHER_FILTER);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
@@ -306,6 +307,8 @@ public class SimilarPatentServer {
                         filterNameHelper(filter);
                     });
                 });
+                preFilterModelMap.put(Constants.EXISTS_IN_COMPDB_FILTER, new ExistsInCompDBFilter());
+                preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
                 buildJavaToHumanAttrMap();
 
             }catch(Exception e) {
@@ -757,25 +760,11 @@ public class SimilarPatentServer {
             // Sorted by
             String comparator = extractString(req,COMPARATOR_FIELD,Constants.OVERALL_SCORE);
             // Get Models to use
-            List<String> similarityFilterModels = extractArray(req, SIMILARITY_FILTER_ARRAY_FIELD);
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
             List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
 
-            System.out.println(" ... Similarity Filters");
-            // Get filters
-            List<AbstractFilter> similarityFilters = similarityFilterModels.stream().map(modelName -> {
-                AbstractFilter filter = similarityFilterModelMap.get(modelName);
-                if(filter==null) {
-                    System.out.println("Unable to find model: "+modelName);
-                }
-                return filter;
-            }).filter(model->model!=null).collect(Collectors.toList());
-
-            // Update filters based on params
-            similarityFilters.stream().forEach(filter -> filter.extractRelevantInformationFromParams(req));
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
-            // ensure attrs
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
             if(comparator.equals(Constants.OVERALL_SCORE)) {
@@ -1026,7 +1015,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
                                                         customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD)
                                                 ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(),similarityFilterModelMap, preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,SIMILARITY_FILTER_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
                                                 )
                                         )
                                 ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(

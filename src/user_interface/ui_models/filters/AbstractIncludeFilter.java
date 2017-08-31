@@ -30,10 +30,10 @@ import static user_interface.server.SimilarPatentServer.preProcess;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractIncludeFilter extends AbstractFilter {
-    protected List<String> labels;
+    protected Collection<String> labels;
     protected FieldType fieldType;
 
-    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
+    public AbstractIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, Collection<String> labels) {
         super(attribute, filterType);
         this.fieldType=fieldType;
         this.labels = labels;

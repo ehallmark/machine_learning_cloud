@@ -37,8 +37,6 @@ public class Database {
 	private static Map<String,Set<String>> appToClassificationMap;
 	private static Map<String,List<String>> appToOriginalAssigneeMap;
 	private static Map<String,List<String>> patentToOriginalAssigneeMap;
-	private static Map<String,String> appToInventionTitleMap;
-	private static Map<String,String> patentToInventionTitleMap;
 	private static Map<String,String> classCodeToClassTitleMap;
 	private static Map<String,String> technologyMap;
 	private static Map<String,List<String>> patentToLatestAssigneeMap;
@@ -47,12 +45,12 @@ public class Database {
 	private static Map<String,Collection<String>> etsiStandardToPatentsMap;
 	private static RadixTree<String> assigneePrefixTrie;
 	private static RadixTree<String> classCodesPrefixTrie;
-	private static Set<String> expiredPatentSet;
-	private static Set<String> lapsedPatentSet;
 	public static Set<String> lapsedAppSet;
 	public static Set<String> allAssignees;
-	public static Set<String> valuablePatents;
-	public static Set<String> valuableApps;
+	public static Set<String> gatherAssets;
+	public static final File gatherAssetsFile = new File(Constants.DATA_FOLDER+"gather_assets_set.jobj");
+	public static Set<String> compdbReelFrames;
+	public static final File compdbReelFramesFile = new File(Constants.DATA_FOLDER+"compdb_assets_set.jobj");
 	public static Set<String> allClassCodes;
 	public static Map<String,LocalDate> expirationDateMap;
 	public static final File expirationDateMapFile = new File(Constants.DATA_FOLDER+"expiration_date_map.jobj");
@@ -279,31 +277,7 @@ public class Database {
 		}
 	}
 
-	public synchronized static LocalDate calculatePriorityDate(String patent) {
-		if(isAssignee(patent)||lapsedAppSet.contains(patent)||lapsedPatentSet.contains(patent)||expiredPatentSet.contains(patent)) {
-			return null;
-		}
-		Set<String> related = new HashSet<>();
-		related.add(patent); // add self
-		boolean isApplication = isApplication(patent);
-		Collection<String> family = Database.getRelatedAssetsFor(patent,isApplication);
-		if (family!=null) related.addAll(family);
-		Collection<LocalDate> dates = related.stream().map(rel->Database.getPriorityDateFor(rel,isApplication)).filter(date->date!=null).collect(Collectors.toList());
-		if (dates.isEmpty()) return null;
-		LocalDate priorityDate = dates.stream().min(LocalDate::compareTo).get();
-		return priorityDate;
-	}
 
-	public static int lifeRemainingFromPriorityDate(LocalDate priorityDate) {
-		return Math.max(0,20 - LocalDate.now().getYear() + priorityDate.getYear());
-	}
-
-	public synchronized static Map<String,Integer> getLifeRemainingMap() {
-		if(lifeRemainingMap==null) {
-			lifeRemainingMap = (Map<String,Integer>) tryLoadObject(lifeRemainingMapFile);
-		}
-		return lifeRemainingMap;
-	}
 
 	public synchronized static LocalDate getPriorityDateFor(String patent, boolean isApplication) {
 		if(isApplication) {
@@ -723,16 +697,6 @@ public class Database {
 		return apps;
 	}
 
-	public synchronized static Collection<String> getGatherPatents() {
-		if(gatherPatentSet==null) {
-			gatherPatentSet = new HashSet<>();
-			getGatherTechMap().forEach((tech,patents)->{
-				gatherPatentSet.addAll(patents);
-			});
-		}
-		return Collections.unmodifiableCollection(gatherPatentSet);
-	}
-
 
 	public synchronized static void close(){
 		try {
@@ -831,9 +795,52 @@ public class Database {
 			});
 		}
 		ps.close();
-		Database.close();
 		return map;
 	}
+
+	public synchronized static Set<String> getGatherAssets() {
+		if(gatherAssets==null) {
+			gatherAssets=(Set<String>)Database.tryLoadObject(gatherAssetsFile);
+		}
+		return gatherAssets;
+	}
+
+	public synchronized static Set<String> loadGatherAssets() throws SQLException {
+		Database.setupGatherConn();
+		Database.setupSeedConn();
+		PreparedStatement ps = gatherDBConn.prepareStatement("select distinct number from patents where number is not null");
+		ResultSet rs = ps.executeQuery();
+		Set<String> set = Collections.synchronizedSet(new HashSet<>());
+		while (rs.next()) {
+			String patent = rs.getString(1);
+			set.add(patent);
+		}
+		ps.close();
+		return set;
+	}
+
+	public synchronized static Set<String> getCompDBReelFrames() {
+		if(compdbReelFrames==null) {
+			compdbReelFrames=(Set<String>)Database.tryLoadObject(compdbReelFramesFile);
+		}
+		return compdbReelFrames;
+	}
+
+	public synchronized static Set<String> loadCompDBReelFrames() throws SQLException {
+		Database.setupCompDBConn();
+		Database.setupSeedConn();
+		PreparedStatement ps = compDBConn.prepareStatement("select distinct reel::text||':'||frame as rf from recordings where deal_id is not null and reel is not null and frame is not null");
+		ResultSet rs = ps.executeQuery();
+		Set<String> set = Collections.synchronizedSet(new HashSet<>());
+		while (rs.next()) {
+			String patent = rs.getString(1);
+			set.add(patent);
+		}
+		ps.close();
+		return set;
+	}
+
+
 
 	public synchronized static Map<String, List<String>> getCompDBMap() throws SQLException {
 		Database.setupCompDBConn();
@@ -896,6 +903,20 @@ public class Database {
 		try {
 			gatherValueMap = loadGatherValueMap();
 			Database.trySaveObject(gatherValueMap,gatherValueMapFile);
+		} catch(SQLException sql) {
+			sql.printStackTrace();
+		}
+
+		try {
+			gatherAssets = loadGatherAssets();
+			Database.trySaveObject(gatherAssets,gatherAssetsFile);
+		} catch(SQLException sql) {
+			sql.printStackTrace();
+		}
+
+		try {
+			compdbReelFrames = loadCompDBReelFrames();
+			Database.trySaveObject(compdbReelFrames,compdbReelFramesFile);
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
