@@ -1,5 +1,6 @@
 package models.value_models.bayesian;
 
+import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
 import lombok.NonNull;
 import model.graphs.BayesianNet;
@@ -63,7 +64,18 @@ public class WIPOValueModel {
             if(value==null) return;
             item.addData(valueVariableName, value ? 1 : 0);
             // add other values
+            System.out.println(new Gson().toJson(item.getDataMap()));
             item.getDataMap().forEach((attr,obj)->{
+                if(obj instanceof List) {
+                    for(Object obji : (List)obj) {
+                        if(obji instanceof Map) {
+                            System.out.println("Checking map: "+attr);
+                            ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
+                                nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, valueVariableName, variableToValuesMap);
+                            });
+                        }
+                    }
+                }
                 if(obj instanceof Map) {
                     System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
