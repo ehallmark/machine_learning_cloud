@@ -225,10 +225,10 @@ public class Constants {
 
 	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
 			AI_VALUE,
-			SIMILARITY,
-			CLAIMS+"."+CLAIM,
-			INVENTION_TITLE,
-			ABSTRACT
+			SIMILARITY//,
+			//CLAIMS+"."+CLAIM,
+			//INVENTION_TITLE,
+			//ABSTRACT
 
 	).collect(Collectors.toSet());
 
