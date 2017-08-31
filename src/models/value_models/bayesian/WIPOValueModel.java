@@ -16,6 +16,9 @@ import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,9 +99,17 @@ public class WIPOValueModel {
     public static void main(String[] args) {
         WIPOValueModel model = new WIPOValueModel();
         model.init();
-        for(Item item : model.testItems) {
-            double value = model.bayesianValueModel.evaluate(item);
-            System.out.print(item.getName()+","+value);
+        File csv = new File(Constants.DATA_FOLDER+"value-graph-wipo.csv");
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(csv))) {
+            writer.write("asset,wipoValue,gatherValue\n");
+            for (Item item : model.testItems) {
+                double value = model.bayesianValueModel.evaluate(item);
+                System.out.println(item.getName() + "," + value);
+                writer.write(item.getName() + "," + value + "," + Database.getGatherValueMap().get(item.getName())+"\n");
+            }
+            writer.flush();
+        } catch(Exception e) {
+            e.printStackTrace();
         }
     }
 }
