@@ -51,7 +51,7 @@ public class WIPOValueModel {
             item.addData(valueVariableName, value ? 1 : 0);
             // add other values
             item.getDataMap().forEach((attr,obj)->{
-                if(obj==null||!attrNameSet.contains(attr)) return;
+                if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
                 if(variableToValuesMap.containsKey(attr) && !variableToValuesMap.get(attr).contains(obj.toString())) {
                     variableToValuesMap.get(attr).add(obj.toString());
                 } else {
