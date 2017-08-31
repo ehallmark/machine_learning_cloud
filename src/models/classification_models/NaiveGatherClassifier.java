@@ -187,7 +187,7 @@ public class NaiveGatherClassifier extends ClassificationAttr implements Seriali
             classes.forEach(cpc->{
                 technologies.forEach(tech->{
                     // create assignment
-                    Map<String,Integer> assignment = new HashMap<>(orderedClassifications.size()+orderedTechnologies.size());
+                    Map<String,Integer> assignment = new HashMap<>(2);
                     assignment.put("CPC",orderedClassifications.indexOf(cpc));
                     assignment.put("Technology",orderedTechnologies.indexOf(tech));
                     assignments.add(assignment);

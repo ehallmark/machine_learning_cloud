@@ -59,7 +59,7 @@ public class BayesianValueModel {
             Map<String,Integer> assignment = createAssignment(item,variableToValuesMap);
             System.out.println("Assignment: "+new Gson().toJson(assignment));
             return assignment;
-        }).filter(assignment->assignment!=null&&assignment.size()>0).collect(Collectors.toSet());
+        }).filter(assignment->assignment!=null&&assignment.size()==variableToValuesMap.size()).collect(Collectors.toSet());
     }
 
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {

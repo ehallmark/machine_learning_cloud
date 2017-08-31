@@ -4,6 +4,7 @@ import elasticsearch.DataSearcher;
 import lombok.NonNull;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
+import model.nodes.Node;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
@@ -80,10 +81,13 @@ public class WIPOValueModel {
             graph.addNode(attr,values.size());
         });
 
+        Node valueNode = graph.findNode(valueVariableName);
+        Node wipoNode = graph.findNode(factor.getFullName());
+
         // connect and add factors
-        graph.connectNodes(valueVariableName, factor.getFullName());
-        graph.addFactorNode(null, graph.findNode(valueVariableName));
-        graph.addFactorNode(null, graph.findNode(valueVariableName),graph.findNode(factor.getFullName()));
+        graph.connectNodes(valueNode, wipoNode);
+        graph.addFactorNode(null, valueNode);
+        graph.addFactorNode(null, valueNode, wipoNode);
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
