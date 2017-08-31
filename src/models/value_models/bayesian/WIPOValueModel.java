@@ -5,6 +5,7 @@ import lombok.NonNull;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import org.elasticsearch.search.sort.SortOrder;
+import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
@@ -39,7 +40,7 @@ public class WIPOValueModel {
         AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
-        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, factor.getFullName(), SortOrder.ASC, maxLimit, new HashMap<>())));
+        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, new HashMap<>())));
         System.out.println("Num items: "+items.size());
         Collections.shuffle(items, new Random(69));
         testItems = items.subList(0, items.size()/2).toArray(new Item[]{});
