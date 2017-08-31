@@ -10,10 +10,7 @@ import model.nodes.Node;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
-import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.AssetNumberAttribute;
-import user_interface.ui_models.attributes.CPCAttribute;
-import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -41,10 +38,11 @@ public class WIPOValueModel {
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         AbstractAttribute cpc = new CPCAttribute();
         AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
-
+        AbstractAttribute docKind = new DocKindAttribute();
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo,
                 cpc,
+                docKind,
                 assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
@@ -52,7 +50,9 @@ public class WIPOValueModel {
         AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
-        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, new HashMap<>())));
+        Map<String,NestedAttribute> nestedMap = new HashMap<>();
+        nestedMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
+        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap)));
         System.out.println("Num items: "+items.size());
         Collections.shuffle(items, new Random(69));
         testItems = items.subList(0, items.size()/2).toArray(new Item[]{});
@@ -66,18 +66,17 @@ public class WIPOValueModel {
             item.addData(valueVariableName, value ? 1 : 0);
             // add other values
 
-            System.out.println(new GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(item.getDataMap()));
-            item.getDataMap().forEach((attr,obj)->{
-                if(obj instanceof List) {
-                    for(Object obji : (List)obj) {
-                        if(obji instanceof Map) {
-                            System.out.println("Checking map: "+attr);
-                            ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
-                                nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, valueVariableName, variableToValuesMap);
-                            });
-                        }
+            attributes.forEach(attr->{
+                if(attr.getParent()==null) {
+
+                } else {
+                    Object obj = item.getData(attr.getRootName());
+                    if(obj!=null) {
+
                     }
                 }
+            });
+            item.getDataMap().forEach((attr,obj)->{
                 if(obj instanceof Map) {
                     System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
@@ -106,6 +105,7 @@ public class WIPOValueModel {
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         Node cpcNode = graph.findNode(cpc.getFullName());
+        Node docKindNode = graph.findNode(docKind.getFullName());
         Node assigneeNode = graph.findNode(assignee.getFullName());
 
         // connect and add factors
@@ -113,9 +113,11 @@ public class WIPOValueModel {
         graph.connectNodes(valueNode, cpcNode);
         graph.connectNodes(valueNode, assigneeNode);
         graph.connectNodes(wipoNode, cpcNode);
+        graph.connectNodes(valueNode, docKindNode);
         graph.addFactorNode(null, valueNode);
         graph.addFactorNode(null, valueNode, wipoNode, cpcNode);
         graph.addFactorNode(null, valueNode, assigneeNode);
+        graph.addFactorNode(null, valueNode, docKindNode);
 
         bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
@@ -124,13 +126,16 @@ public class WIPOValueModel {
     private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, String valueVariableName, Map<String,List<String>> variableToValuesMap) {
         if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
         System.out.println("Checking attr: "+attr);
+        Collection<String> objects = obj.toString().contains("; ") ? Arrays.asList(obj.toString().split("; ")) : Arrays.asList(obj.toString());
         if(variableToValuesMap.containsKey(attr)) {
-            if(!variableToValuesMap.get(attr).contains(obj.toString())) {
-                variableToValuesMap.get(attr).add(obj.toString());
-            }
+            objects.forEach(val->{
+                if(!variableToValuesMap.get(attr).contains(val)) {
+                    variableToValuesMap.get(attr).add(val);
+                }
+            });
         } else {
             List<String> valuesSet = Collections.synchronizedList(new ArrayList<>());
-            valuesSet.add(obj.toString());
+            valuesSet.addAll(objects);
             variableToValuesMap.put(attr,valuesSet);
         }
     }
