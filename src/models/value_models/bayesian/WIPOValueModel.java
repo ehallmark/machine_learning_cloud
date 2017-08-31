@@ -32,17 +32,19 @@ public class WIPOValueModel {
         AbstractAttribute factor = new WIPOTechnologyAttribute();
 
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                factor,
-                new AssetNumberAttribute()
+                factor
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
-        Item[] trainingItems = DataSearcher.searchForAssets(attributes, filters, "name", SortOrder.ASC, maxLimit, new HashMap<>());
-        testItems = Arrays.copyOfRange(trainingItems, 0, trainingItems.length/2);
-        trainingItems = Arrays.copyOfRange(trainingItems, trainingItems.length/2, trainingItems.length);
+        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, factor.getFullName(), SortOrder.ASC, maxLimit, new HashMap<>())));
+        System.out.println("Num items: "+items.size());
+        Collections.shuffle(items, new Random(69));
+        testItems = items.subList(0, items.size()/2).toArray(new Item[]{});
+        Item[] trainingItems = items.subList(items.size()/2, items.size()).toArray(new Item[]{});
+
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(trainingItems).parallel().forEach(item->{
             // add gather value
@@ -52,8 +54,10 @@ public class WIPOValueModel {
             // add other values
             item.getDataMap().forEach((attr,obj)->{
                 if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
-                if(variableToValuesMap.containsKey(attr) && !variableToValuesMap.get(attr).contains(obj.toString())) {
-                    variableToValuesMap.get(attr).add(obj.toString());
+                if(variableToValuesMap.containsKey(attr)) {
+                    if(!variableToValuesMap.get(attr).contains(obj.toString())) {
+                        variableToValuesMap.get(attr).add(obj.toString());
+                    }
                 } else {
                     List<String> valuesSet = Collections.synchronizedList(new ArrayList<>());
                     valuesSet.add(obj.toString());
