@@ -253,6 +253,7 @@ public class DataSearcher {
                 }
             }
         }
+        // potentially override similarity
         item.addData(Constants.OVERALL_SCORE,hit.getScore());
         return item;
     }
