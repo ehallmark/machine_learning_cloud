@@ -27,7 +27,7 @@ h4, h5 {
 }
 
 .not-implemented {
-    background-color: rgba(255,0,0,0.5);
+    background-color: rgba(255,0,0,0.2) !important;
 }
 
 .template-remove-button {

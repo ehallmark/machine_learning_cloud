@@ -274,6 +274,8 @@ $(document).ready(function() {
 
     setCollapsibleHeaders(".collapsible-header");
 
+    $(document).tooltip();
+
     resetSearchForm();
 });
 

@@ -935,6 +935,7 @@ public class SimilarPatentServer {
                         link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css"),
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
+                        link().withRel("stylesheet").withHref("http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
                 ),
                 body().with(
