@@ -27,4 +27,8 @@ public class ReelFrameAttribute extends AbstractAttribute {
         return Constants.REEL_FRAME;
     }
 
+    @Override
+    public boolean isNotYetImplemented() {
+        return true;
+    }
 }
