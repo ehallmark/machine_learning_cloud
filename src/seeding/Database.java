@@ -45,6 +45,8 @@ public class Database {
 	private static Map<String,Collection<String>> patentToCitedPatentsMap;
 	private static Map<String,Collection<String>> appToCitedPatentsMap;
 	private static Map<String,Collection<String>> gatherPatentToStagesCompleteMap;
+	private static Map<String,Boolean> gatherBoolValueMap;
+	private static final File gatherBoolValueFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_bool_map.jobj");
 	private static File gatherPatentToStagesCompleteFile = new File(Constants.DATA_FOLDER+"gather_patent_to_stages_complete_map.jobj");
 	@Getter
 	public static Map<String,Set<String>> classCodeToPatentMap;
@@ -69,7 +71,7 @@ public class Database {
 	private static Map<String,Collection<String>> gatherTechnologyToPatentMap;
 	private static final File gatherPatentToTechnologyFile = new File(Constants.DATA_FOLDER+"gather_patent_to_technology_map.jobj");
 	private static Map<String,Collection<String>> gatherPatentToTechnologyMap;
-	private static final File gatherValueMapFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_bool_map.jobj");
+	private static final File gatherValueMapFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_int_map.jobj");
 	private static Map<String,Integer> gatherValueMap;
 	private static volatile boolean init=false;
 
@@ -689,11 +691,18 @@ public class Database {
 		return gatherPatentToTechnologyMap;
 	}
 
-	public synchronized static Map<String,Integer> getGatherValueMap() {
+	public synchronized static Map<String,Boolean> getGatherValueMap() {
+		if(gatherBoolValueMap==null) {
+			gatherBoolValueMap=(Map<String,Boolean>)Database.tryLoadObject(gatherBoolValueFile);
+		}
+		return gatherBoolValueMap;
+	}
+
+	public synchronized static Map<String,Integer> getGatherIntValueMap() {
 		if(gatherValueMap==null) {
 			gatherValueMap=(Map<String,Integer>)Database.tryLoadObject(gatherValueMapFile);
 		}
-		return new HashMap<>(gatherValueMap);
+		return gatherValueMap;
 	}
 
 	public synchronized static Map<String,Integer> loadGatherValueMap() throws SQLException {
@@ -825,13 +834,22 @@ public class Database {
 			sql.printStackTrace();
 		}
 
-
 		try {
 			gatherValueMap = loadGatherValueMap();
 			Database.trySaveObject(gatherValueMap,gatherValueMapFile);
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}
+
+		gatherBoolValueMap = Collections.synchronizedMap(new HashMap<>());
+		gatherValueMap.entrySet().parallelStream().forEach(e->{
+			boolean val = false;
+			if(e.getValue()>=4 || (e.getValue()==3 && gatherPatentToStagesCompleteMap.getOrDefault(e.getKey(), Collections.emptyList()).contains(Constants.GATHER_MA))) {
+				val = true;
+			}
+			gatherBoolValueMap.put(e.getKey(),val);
+		});
+		Database.trySaveObject(gatherBoolValueMap,gatherBoolValueFile);
 
 		try {
 			gatherAssets = loadGatherAssets();

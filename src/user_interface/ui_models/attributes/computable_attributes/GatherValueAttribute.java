@@ -21,7 +21,7 @@ public class GatherValueAttribute extends ComputableAttribute<Integer> {
 
     @Override
     public Integer attributesFor(Collection<String> items, int limit) {
-        return Database.getGatherValueMap().get(items.stream().findAny().get());
+        return Database.getGatherIntValueMap().get(items.stream().findAny().get());
     }
 
     @Override
