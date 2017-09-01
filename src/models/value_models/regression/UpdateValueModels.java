@@ -19,7 +19,7 @@ public class UpdateValueModels {
         File dataFile = new File(Constants.DATA_FOLDER+"value-models-testing.csv");
         List<ComputableAttribute<? extends Number>> attributes = Arrays.asList(new AssetToMaintenanceFeeReminderCountMap(), new PageRankEvaluator());
 
-        Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
+        Map<String,Integer> gatherValueMap = Database.getGatherValueMap();
         Collection<String> gatherPatents = new ArrayList<>(gatherValueMap.keySet());
 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile))) {

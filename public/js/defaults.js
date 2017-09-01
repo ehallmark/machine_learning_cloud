@@ -67,6 +67,7 @@ $(document).ready(function() {
                 var file = data.file;
                 $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
+                $('.template-remove-button').filter(':last').click(removeTemplateFunction);
             }
           },
           dataType: "json"
@@ -171,25 +172,7 @@ $(document).ready(function() {
 
     $('#download-to-excel-button').click(function(e) {return submitFormFunction(e,true);});
 
-    $('.template-remove-button').click(function(e){
-        e.preventDefault();
-        var $this = $(this);
-        var $li = $this.closest('li');
-        $this.remove();
-        $.ajax({
-          type: "POST",
-          url: $(this).attr('data-action'),
-          data: {
-            path_to_remove: $(this).attr("data-file")
-          },
-          success: function(data) {
-            $li.remove();
-          },
-          dataType: "json"
-        });
-
-        return false;
-    });
+    $('.template-remove-button').click(removeTemplateFunction);
 
     // display-item-select
     $('.display-item-select').each(function(){
@@ -515,6 +498,25 @@ var showTemplateFunction = function(e){
     showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
     return false;
 };
+
+var removeTemplateFunction = function(e){
+     e.preventDefault();
+     var $this = $(this);
+     var $li = $this.closest('li');
+     $this.remove();
+     $.ajax({
+       type: "POST",
+       url: $(this).attr('data-action'),
+       data: {
+         path_to_remove: $(this).attr("data-file")
+       },
+       success: function(data) {
+         $li.remove();
+       },
+       dataType: "json"
+     });
+     return false;
+}
 
 var loadEvent = function(){
  // do nothing :(

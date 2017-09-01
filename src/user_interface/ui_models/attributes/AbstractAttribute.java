@@ -55,6 +55,10 @@ public abstract class AbstractAttribute {
         return Collections.emptyList();
     }
 
+    public boolean isNotYetImplemented() { return false; }
+
+    public String getDescription() { return ""; }
+
     public Collection<AbstractFilter> createFilters() {
         return filterTypes.stream().map(filterType->{
             AbstractFilter filter;

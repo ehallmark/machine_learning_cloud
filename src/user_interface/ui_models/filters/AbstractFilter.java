@@ -106,4 +106,9 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     protected abstract String transformAttributeScript(String attributeScript);
 
+    @Override
+    public boolean isNotYetImplemented() {
+        return attribute.isNotYetImplemented();
+    }
+
 }

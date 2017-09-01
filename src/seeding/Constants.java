@@ -12,6 +12,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Constants {
+	public static final String GATHER = "gather";
+	public static final String GATHER_VALUE = "gatherValue";
+	public static final String GATHER_STAGE = "gatherStage";
+	public static final String GATHER_TECHNOLOGY = "gatherTechnology";
+	public static final String COMPDB = "compDB";
+	public static final String COMPDB_TECHNOLOGY = "compDBTechnology";
+	public static final String COMPDB_DEAL_ID = "compDBDealId";
 	public static final String MAINTENANCE_FEE_REMINDERS = "maintenanceFeeReminders";
 	public static final String SMALL = "small";
 	public static final String MICRO = "micro";
@@ -108,7 +115,7 @@ public class Constants {
 	public static final String HISTOGRAM = "histogram[]";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
-	public static final String NUM_ASSIGNMENTS = "numAssignments"+COUNT_SUFFIX;
+	public static final String NUM_ASSIGNMENTS = REEL_FRAME+COUNT_SUFFIX;
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";

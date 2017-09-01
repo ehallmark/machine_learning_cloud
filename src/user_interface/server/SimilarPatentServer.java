@@ -74,6 +74,7 @@ public class SimilarPatentServer {
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String COMPARATOR_FIELD = "comparator";
+    public static final String NOT_IMPLEMENTED_STRING = "This functionality is not yet implemented.";
     public static final String SORT_DIRECTION_FIELD = "sortDirection";
     public static final String CHARTS_GROUPED_BY_FIELD = "chartsGroupedBy";
     public static final String CHART_MODELS_ARRAY_FIELD = "chartModels[]";
@@ -159,6 +160,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignor Name", Constants.ASSIGNOR);
             humanAttrToJavaAttrMap.put("Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
+            humanAttrToJavaAttrMap.put("Number of Assignments", Constants.NUM_ASSIGNMENTS);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
             humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
@@ -1082,7 +1084,7 @@ public class SimilarPatentServer {
                                                     return pair._1.entrySet().stream().map(e->{
                                                         if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter);
+                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter, e.getValue().isNotYetImplemented(), e.getValue().getDescription());
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
@@ -1092,11 +1094,11 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedParent, boolean isFilter) {
+    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedParent, boolean isFilter, boolean notImplemented, String description) {
         String groupID = type+"-row";
         boolean isLeaf = ! nestedParent;
         String toggleID = groupID+"-panel-toggle";
-        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target",type).with(
+        return div().attr("data-model",modelName).attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "") + (notImplemented ? " not-implemented" : "")).attr("data-target",type).with(
                 div().attr("style","width: 100%;").withClass("collapsible-header"+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)),
                         (nestedParent && ! isFilter) || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),

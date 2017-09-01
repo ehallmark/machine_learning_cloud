@@ -112,7 +112,7 @@ public class SplitModelData {
     }
 
     public static void main(String[] args) {
-        Map<String,Collection<String>> gatherTechMap = Database.getGatherTechMap();
+        Map<String,Collection<String>> gatherTechMap = Database.getGatherTechnologyToPatentMap();
         splitData(gatherTechMap);
     }
 

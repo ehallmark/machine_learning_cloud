@@ -46,7 +46,7 @@ public class WIPOValueModel {
                 assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
-        Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
+        Map<String,Integer> gatherValueMap = Database.getGatherValueMap();
         AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
@@ -61,9 +61,9 @@ public class WIPOValueModel {
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(trainingItems).parallel().forEach(item->{
             // add gather value
-            Boolean value = gatherValueMap.get(item.getName());
+            Integer value = gatherValueMap.get(item.getName());
             if(value==null) return;
-            item.addData(valueVariableName, value ? 1 : 0);
+            item.addData(valueVariableName, value >= 4 ? 1 : 0);
             // add other values
 
             attributes.forEach(attr->{
