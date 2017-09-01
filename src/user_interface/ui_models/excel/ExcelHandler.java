@@ -119,7 +119,7 @@ public class ExcelHandler {
         return widths;
     }
 
-    private static int charToPixelLength(int numChars) { return numChars + 8; }
+    private static int charToPixelLength(int numChars) { return Math.min(numChars + 8,80); }
 
     private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<List<String>> data, List<String> headers) throws Exception{
         try {
