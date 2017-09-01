@@ -656,7 +656,7 @@ public class Database {
 		while(rs.next()) {
 			Set<String> stages = Collections.synchronizedSet(new HashSet<>());
 			String asset = rs.getString("number");
-			for(String stage : stages) {
+			for(String stage : Constants.GATHER_STAGES) {
 				if(rs.getBoolean(stage+"_complete")) {
 					stages.add(stage);
 				}
