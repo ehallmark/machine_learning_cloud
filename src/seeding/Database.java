@@ -661,8 +661,10 @@ public class Database {
 					stages.add(stage);
 				}
 			}
-			System.out.println(asset+": "+String.join("; ",stages));
-			gatherPatentToStagesCompleteMap.put(asset,stages);
+			if(asset.startsWith("US")) asset = asset.replace("US","");
+			if(stages.size() > 0) {
+				gatherPatentToStagesCompleteMap.put(asset, stages);
+			}
 		}
 	}
 
