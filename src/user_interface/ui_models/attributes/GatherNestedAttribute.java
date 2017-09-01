@@ -1,6 +1,8 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
+import user_interface.ui_models.attributes.NestedAttribute;
+import user_interface.ui_models.attributes.computable_attributes.GatherStageAttribute;
 import user_interface.ui_models.attributes.computable_attributes.GatherValueAttribute;
 
 import java.util.Arrays;

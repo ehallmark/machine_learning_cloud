@@ -128,6 +128,10 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
+            humanAttrToJavaAttrMap.put("Gather", Constants.GATHER);
+            humanAttrToJavaAttrMap.put("Stage Complete", Constants.GATHER_STAGE);
+            humanAttrToJavaAttrMap.put("Gather Technology", Constants.GATHER_TECHNOLOGY);
+            humanAttrToJavaAttrMap.put("Patent Rating", Constants.GATHER_VALUE);
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
@@ -381,6 +385,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CITATIONS, new CitationsNestedAttribute());
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
+            attributesMap.put(Constants.GATHER, new GatherNestedAttribute());
+
 
             if(loadHidden) {
                 // hidden attrs
