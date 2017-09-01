@@ -44,6 +44,8 @@ public class Database {
 	private static Map<String,Integer> compDBAssigneeToAssetsPurchasedCountMap;
 	private static Map<String,Collection<String>> patentToCitedPatentsMap;
 	private static Map<String,Collection<String>> appToCitedPatentsMap;
+	private static Map<String,Collection<String>> gatherPatentToStagesCompleteMap;
+	private static File gatherPatentToStagesCompleteFile = new File(Constants.DATA_FOLDER+"gather_patent_to_stages_complete_map.jobj");
 	@Getter
 	public static Map<String,Set<String>> classCodeToPatentMap;
 	public static Map<String,LocalDate> patentToPubDateMap;
@@ -645,6 +647,32 @@ public class Database {
 		ps.close();
 	}
 
+	private synchronized static void loadGatherPatentToStages() throws SQLException {
+		gatherPatentToStagesCompleteMap = Collections.synchronizedMap(new HashMap<>());
+		Database.setupGatherConn();
+		PreparedStatement ps = gatherDBConn.prepareStatement("select * from assessments as a join patents as p on (p.id=a.patent_id)");
+		ps.setFetchSize(10);
+		ResultSet rs = ps.executeQuery();
+		while(rs.next()) {
+			Set<String> stages = Collections.synchronizedSet(new HashSet<>());
+			String asset = rs.getString("number");
+			for(String stage : stages) {
+				if(rs.getBoolean(stage+"_complete")) {
+					stages.add(stage);
+				}
+			}
+			System.out.println(asset+": "+String.join("; ",stages));
+			gatherPatentToStagesCompleteMap.put(asset,stages);
+		}
+	}
+
+	public synchronized static Map<String,Collection<String>> getGatherPatentToStagesCompleteMap() {
+		if(gatherPatentToStagesCompleteMap==null) {
+			gatherPatentToStagesCompleteMap=(Map<String,Collection<String>>)Database.tryLoadObject(gatherPatentToStagesCompleteFile);
+		}
+		return gatherPatentToStagesCompleteMap;
+	}
+
 	public synchronized static Map<String,Collection<String>> getGatherTechnologyToPatentMap() {
 		if(gatherTechnologyToPatentMap==null) {
 			gatherTechnologyToPatentMap=(Map<String,Collection<String>>)Database.tryLoadObject(gatherTechnologyToPatentFile);
@@ -778,6 +806,16 @@ public class Database {
 
 	public static void main(String[] args) {
 		// updates the database
+
+		try {
+			loadGatherPatentToStages();
+			Database.trySaveObject(gatherPatentToStagesCompleteMap,gatherPatentToStagesCompleteFile);
+		} catch(Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+
 		try {
 			loadGatherTechMap();
 			Database.trySaveObject(gatherTechnologyToPatentMap,gatherTechnologyToPatentFile);

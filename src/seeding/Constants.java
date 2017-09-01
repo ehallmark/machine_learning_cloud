@@ -230,6 +230,24 @@ public class Constants {
 			AI_VALUE
 	).collect(Collectors.toSet());
 
+	public static final String GATHER_IS = "is";
+	public static final String GATHER_MA = "ma";
+	public static final String GATHER_SA = "sa";
+	public static final String GATHER_PC = "pc";
+	public static final String GATHER_PH = "ph";
+	public static final String GATHER_FC = "fc";
+	public static final String GATHER_QC = "qc";
+
+	public static final Collection<String> GATHER_STAGES = Arrays.asList(
+			GATHER_IS,
+			GATHER_MA,
+			GATHER_SA,
+			GATHER_PC,
+			GATHER_PH,
+			GATHER_FC,
+			GATHER_QC
+	);
+
 	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
 			AI_VALUE,
 			SIMILARITY//,
