@@ -814,7 +814,6 @@ public class Database {
 			Database.trySaveObject(gatherPatentToStagesCompleteMap,gatherPatentToStagesCompleteFile);
 		} catch(Exception e) {
 			e.printStackTrace();
-			System.exit(1);
 		}
 
 
