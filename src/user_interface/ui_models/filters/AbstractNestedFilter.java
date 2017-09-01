@@ -41,6 +41,11 @@ public class AbstractNestedFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractNestedFilter((NestedAttribute)attribute);
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
         for(AbstractFilter filter : filterSubset) {

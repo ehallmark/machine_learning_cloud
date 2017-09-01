@@ -23,6 +23,12 @@ public class AbstractLessThanFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractLessThanFilter(attribute,filterType);
+    }
+
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(limit == null || limit.doubleValue() <= 0d) {
             return QueryBuilders.boolQuery();

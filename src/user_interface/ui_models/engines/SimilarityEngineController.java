@@ -46,7 +46,7 @@ public class SimilarityEngineController {
             if(filter==null) {
                 System.out.println("Unable to find model: "+modelName);
             }
-            return filter;
+            return filter.dup();
         }).filter(i->i!=null).collect(Collectors.toList()));
         preFilters.forEach(filter -> filter.extractRelevantInformationFromParams(req));
 
@@ -94,14 +94,15 @@ public class SimilarityEngineController {
         setPrefilters(req);
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
-        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes();
-        topLevelAttributes.forEach(attr->{
+        Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().map(attr->{
             if(attr instanceof DependentAttribute) {
                 System.out.println("Extracting info for dependent attribute: "+attr.getName());
                 ((DependentAttribute) attr).extractRelevantInformationFromParams(req);
-            }
-        });
-        Item[] scope = DataSearcher.searchForAssets(SimilarPatentServer.getAllTopLevelAttributes(), preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
+                return ((DependentAttribute) attr).dup();
+            } else return attr;
+        }).collect(Collectors.toList());
+
+        Item[] scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap());
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);

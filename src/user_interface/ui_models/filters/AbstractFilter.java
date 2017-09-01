@@ -22,7 +22,7 @@ import java.util.Collection;
 /**
  * Created by Evan on 5/9/2017.
  */
-public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute {
+public abstract class AbstractFilter extends AbstractAttribute implements DependentAttribute<AbstractFilter> {
 
     public enum FilterType {
         Include, Exclude, GreaterThan, LessThan, BoolTrue, BoolFalse, Between, Nested, AdvancedKeyword, PrefixExclude, PrefixInclude

@@ -31,6 +31,11 @@ public class AbstractBetweenFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractBetweenFilter(attribute,filterType);
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(min == null && max == null) {
             return QueryBuilders.boolQuery();

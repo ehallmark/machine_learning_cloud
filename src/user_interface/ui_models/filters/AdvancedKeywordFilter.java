@@ -29,6 +29,11 @@ public class AdvancedKeywordFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AdvancedKeywordFilter(attribute,filterType);
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(queryStr==null) {
             return QueryBuilders.boolQuery();

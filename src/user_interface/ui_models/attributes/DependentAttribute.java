@@ -10,6 +10,7 @@ import java.util.Collections;
 /**
  * Created by Evan on 6/17/2017.
  */
-public interface DependentAttribute {
+public interface DependentAttribute<T extends AbstractAttribute> {
     void extractRelevantInformationFromParams(Request params);
+    T dup();
 }

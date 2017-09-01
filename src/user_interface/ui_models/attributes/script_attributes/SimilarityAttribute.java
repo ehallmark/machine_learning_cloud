@@ -1,19 +1,13 @@
 package user_interface.ui_models.attributes.script_attributes;
 
 import models.similarity_models.AbstractSimilarityModel;
-import org.elasticsearch.common.lucene.search.function.CombineFunction;
-import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
+
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import spark.Request;
-import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;

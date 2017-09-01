@@ -91,7 +91,6 @@ public class SimilarPatentServer {
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
-    public static Map<String,AbstractFilter> similarityFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
@@ -120,8 +119,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
-            humanAttrToJavaAttrMap.put("CompDB Assets Sold", Constants.COMPDB_ASSETS_SOLD);
-            humanAttrToJavaAttrMap.put("CompDB Assets Purchased", Constants.COMPDB_ASSETS_PURCHASED);
+            humanAttrToJavaAttrMap.put("Assignee Divestments (CompDB)", Constants.COMPDB_ASSETS_SOLD);
+            humanAttrToJavaAttrMap.put("Assignee Acquisitions (CompDB)", Constants.COMPDB_ASSETS_PURCHASED);
             humanAttrToJavaAttrMap.put("Portfolio Size", Constants.PORTFOLIO_SIZE);
             humanAttrToJavaAttrMap.put("Patents",PortfolioList.Type.patents.toString());
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
@@ -623,7 +622,7 @@ public class SimilarPatentServer {
         });
     }
 
-    private static synchronized Object handleExcel(Request req, Response res) {
+    private static Object handleExcel(Request req, Response res) {
         try {
             System.out.println("Received excel request");
             long t0 = System.currentTimeMillis();
@@ -645,7 +644,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static synchronized Object handleDataTable(Request req, Response res) {
+    private static Object handleDataTable(Request req, Response res) {
         try {
             System.out.println("Received datatable request");
             Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
@@ -660,7 +659,7 @@ public class SimilarPatentServer {
         }
     }
 
-    private static synchronized Object handleCharts(Request req, Response res) {
+    private static Object handleCharts(Request req, Response res) {
         try {
             System.out.println("Received chart request");
             Integer chartNum = extractInt(req,"chartNum", null);
@@ -682,7 +681,7 @@ public class SimilarPatentServer {
 
 
 
-    private static synchronized Object handleSaveForm(Request req, Response res) {
+    private static Object handleSaveForm(Request req, Response res) {
         String attributesMap = req.queryParams("attributesMap");
         String searchOptionsMap = req.queryParams("searchOptionsMap");
         String filtersMap = req.queryParams("filtersMap");
@@ -726,7 +725,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(responseMap);
     };
 
-    private static synchronized Object handleDeleteForm(Request req, Response res) {
+    private static Object handleDeleteForm(Request req, Response res) {
         String fileName = req.queryParams("path_to_remove");
         String message;
         if(fileName!=null && fileName.replaceAll("[^0-9]","").length() > 0) {
@@ -753,7 +752,7 @@ public class SimilarPatentServer {
         return new Gson().toJson(new SimpleAjaxMessage(message));
     };
 
-    private static synchronized Object handleReport(Request req, Response res) {
+    private static Object handleReport(Request req, Response res) {
         try {
             ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", "curl http://"+PLATFORM_STARTER_IP_ADDRESS+":8080/ping");
             ps.start();
@@ -800,7 +799,7 @@ public class SimilarPatentServer {
                 html = new Gson().toJson(results);
             } else {
                 // add chart futures
-                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart)).collect(Collectors.toList());
+                List<ChartAttribute> charts = chartModels.stream().map(chart->chartModelMap.get(chart).dup()).collect(Collectors.toList());
                 charts.forEach(chart->chart.extractRelevantInformationFromParams(req));
 
                 AtomicInteger totalChartCnt = new AtomicInteger(0);

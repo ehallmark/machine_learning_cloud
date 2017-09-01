@@ -40,6 +40,11 @@ public class AbstractIncludeFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractIncludeFilter(attribute,filterType,fieldType, new ArrayList<>(labels));
+    }
+
+    @Override
     protected String transformAttributeScript(String attributeScript) {
         throw new UnsupportedOperationException("Include Filter not supported by scripts");
     }

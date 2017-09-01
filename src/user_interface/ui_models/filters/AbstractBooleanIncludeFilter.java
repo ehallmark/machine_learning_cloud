@@ -25,6 +25,11 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractBooleanIncludeFilter(attribute,filterType);
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if (isScriptFilter) {
             return getScriptFilter();

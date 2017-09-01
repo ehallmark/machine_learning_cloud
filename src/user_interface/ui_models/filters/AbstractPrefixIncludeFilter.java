@@ -9,6 +9,7 @@ import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -22,6 +23,12 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 public class AbstractPrefixIncludeFilter extends AbstractIncludeFilter {
     public AbstractPrefixIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
         super(attribute, filterType, fieldType, labels);
+    }
+
+
+    @Override
+    public AbstractFilter dup() {
+        return new AbstractPrefixIncludeFilter(attribute,filterType,fieldType,new ArrayList<>(labels));
     }
 
     @Override

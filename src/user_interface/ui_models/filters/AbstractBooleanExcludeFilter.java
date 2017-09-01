@@ -23,6 +23,11 @@ public class AbstractBooleanExcludeFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractBooleanExcludeFilter(attribute,filterType);
+    }
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(isScriptFilter) {
             return getScriptFilter();

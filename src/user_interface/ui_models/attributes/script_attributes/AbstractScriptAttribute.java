@@ -10,18 +10,16 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.DependentAttribute;
-import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.filters.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 
 /**
  * Created by ehallmark on 8/18/17.
  */
-public abstract class AbstractScriptAttribute extends AbstractAttribute implements DependentAttribute {
+public abstract class AbstractScriptAttribute extends AbstractAttribute implements DependentAttribute<AbstractScriptAttribute> {
     protected static final long millisecondsPerYear = 31557600000L;
     protected static final long millisecondsPerDay = 86400000L;
 

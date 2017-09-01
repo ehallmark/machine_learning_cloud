@@ -33,6 +33,12 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
     }
 
     @Override
+    public AbstractFilter dup() {
+        return new AbstractGreaterThanFilter(attribute,filterType);
+    }
+
+
+    @Override
     public QueryBuilder getFilterQuery() {
         if(limit == null || limit.doubleValue() < 0d) {
             return QueryBuilders.boolQuery();

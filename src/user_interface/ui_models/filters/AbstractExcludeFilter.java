@@ -12,6 +12,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -37,6 +38,11 @@ public class AbstractExcludeFilter extends AbstractFilter {
 
     public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
         this(attribute,filterType,fieldType,labels,null);
+    }
+
+    @Override
+    public AbstractFilter dup() {
+        return new AbstractExcludeFilter(attribute,filterType,fieldType, new ArrayList<>(labels));
     }
 
     @Override
