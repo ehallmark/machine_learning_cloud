@@ -2,6 +2,7 @@ package seeding;
 
 
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
+import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
@@ -261,4 +262,14 @@ public class Constants {
 
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
 
+	public static final Collection<String> NESTED_ATTRIBUTES = Arrays.asList(
+			ASSIGNEES,
+			APPLICANTS,
+			INVENTORS,
+			AGENTS,
+			CITATIONS,
+			CLAIMS,
+			PATENT_FAMILY,
+			GATHER
+	);
 }

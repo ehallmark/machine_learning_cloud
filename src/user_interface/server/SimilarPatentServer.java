@@ -387,6 +387,11 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.GATHER, new GatherNestedAttribute());
 
+            // include count
+            Constants.NESTED_ATTRIBUTES.forEach(attr->{
+                attributesMap.put(attr+Constants.COUNT_SUFFIX,new CountAttribute(attr + Constants.COUNT_SUFFIX));
+            });
+
 
             if(loadHidden) {
                 // hidden attrs
