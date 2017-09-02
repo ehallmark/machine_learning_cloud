@@ -8,6 +8,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import static j2html.TagCreator.div;
@@ -17,7 +18,7 @@ import static j2html.TagCreator.div;
  */
 public class WIPOTechnologyAttribute extends AbstractAttribute {
     public WIPOTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
     }
 
     @Override
@@ -32,7 +33,7 @@ public class WIPOTechnologyAttribute extends AbstractAttribute {
 
     @Override
     public String getType() {
-        return "keyword";
+        return "text";
     }
 
     @Override
@@ -44,5 +45,14 @@ public class WIPOTechnologyAttribute extends AbstractAttribute {
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Multiselect;
+    }
+
+    @Override
+    public Map<String,Object> getNestedFields() {
+        Map<String,Object> fields = new HashMap<>();
+        Map<String,String> rawType = new HashMap<>();
+        rawType.put("type","keyword");
+        fields.put("raw",rawType);
+        return fields;
     }
 }

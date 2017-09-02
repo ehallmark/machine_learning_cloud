@@ -25,6 +25,6 @@ public class ClaimTextAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.AdvancedKeyword;
+        return AbstractFilter.FieldType.Text;
     }
 }

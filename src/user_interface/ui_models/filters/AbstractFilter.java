@@ -34,7 +34,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     public enum FieldType {
-        Text, Multiselect, Select, Integer, Double, Date, Boolean, AdvancedKeyword, NestedObject, Object
+        Text, Multiselect, Select, Integer, Double, Date, Boolean, NestedObject, Object
     }
 
     @Getter

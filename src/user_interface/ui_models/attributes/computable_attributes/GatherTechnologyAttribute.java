@@ -6,37 +6,51 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class GatherTechnologyAttribute extends ComputableAttribute<String[]> {
+public class GatherTechnologyAttribute extends ComputableAttribute<Collection<String>> {
 
     public GatherTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
+        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword));
     }
 
     @Override
-    public String[] attributesFor(Collection<String> items, int limit) {
-        Collection<String> tech = Database.getGatherPatentToTechnologyMap().get(items.stream().findAny().get());
-        if(tech==null) return null;
-        return tech.toArray(new String[tech.size()]);
+    public Collection<String> attributesFor(Collection<String> items, int limit) {
+        return Database.getGatherPatentToTechnologyMap().get(items.stream().findAny().get());
     }
 
     @Override
     public String getName() {
-        return Constants.GATHER_VALUE;
+        return Constants.GATHER_TECHNOLOGY;
     }
 
     @Override
     public String getType() {
-        return "integer";
+        return "text";
     }
 
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return AbstractFilter.FieldType.Multiselect;
+    }
+
+    @Override
+    public Collection<String> getAllValues() {
+        return Database.getGatherTechnologyToPatentMap().keySet();
+    }
+
+    @Override
+    public Map<String,Object> getNestedFields() {
+        Map<String,Object> fields = new HashMap<>();
+        Map<String,String> rawType = new HashMap<>();
+        rawType.put("type","keyword");
+        fields.put("raw",rawType);
+        return fields;
     }
 
 }

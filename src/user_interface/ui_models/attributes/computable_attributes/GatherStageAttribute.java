@@ -11,7 +11,7 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class GatherStageAttribute extends ComputableAttribute<String[]> {
+public class GatherStageAttribute extends ComputableAttribute<Collection<String>> {
     public GatherStageAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
     }
@@ -31,10 +31,8 @@ public class GatherStageAttribute extends ComputableAttribute<String[]> {
     }
 
     @Override
-    public String[] attributesFor(Collection<String> items, int limit) {
-        Collection<String> stages = Database.getGatherPatentToStagesCompleteMap().get(items.stream().findAny().get());
-        if(stages==null) return null;
-        return stages.toArray(new String[stages.size()]);
+    public Collection<String> attributesFor(Collection<String> items, int limit) {
+        return Database.getGatherPatentToStagesCompleteMap().get(items.stream().findAny().get());
     }
 
     @Override

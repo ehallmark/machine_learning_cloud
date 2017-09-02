@@ -7,6 +7,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  */
 public class TechnologyAttribute extends ComputableAttribute<String> {
     public TechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude));
+        super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
     }
 
     @Override
@@ -25,7 +26,7 @@ public class TechnologyAttribute extends ComputableAttribute<String> {
 
     @Override
     public String getType() {
-        return "keyword";
+        return "text";
     }
 
     @Override
@@ -42,5 +43,14 @@ public class TechnologyAttribute extends ComputableAttribute<String> {
     public String attributesFor(Collection<String> items, int limit) {
         if(items.isEmpty())return null;
         return Database.getItemToTechnologyMap().get(items.stream().findAny().get());
+    }
+
+    @Override
+    public Map<String,Object> getNestedFields() {
+        Map<String,Object> fields = new HashMap<>();
+        Map<String,String> rawType = new HashMap<>();
+        rawType.put("type","keyword");
+        fields.put("raw",rawType);
+        return fields;
     }
 }
