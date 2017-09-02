@@ -2,6 +2,7 @@ package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
 import elasticsearch.MongoDBClient;
+import seeding.Database;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import user_interface.server.SimilarPatentServer;
 
@@ -14,6 +15,7 @@ public class UpdateAll {
             for (String arg : args) {
                 if(args.equals("0")) {
                     // udpate compdb
+                    Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
                 } else if (arg.equals("1")) {
                     UpdateBaseApplicationData.main(args);
