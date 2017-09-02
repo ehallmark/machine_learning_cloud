@@ -28,7 +28,6 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
     }
 
     private static Set<String> runModel(){
-        System.out.println("Starting to load ExistsInCompDBAttribute evaluator...");
         if(MODEL==null) {
             MODEL = Database.getGatherAssets();
         }

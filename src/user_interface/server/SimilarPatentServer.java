@@ -653,6 +653,10 @@ public class SimilarPatentServer {
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of headers: "+headers.size());
             List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
+            int maxResults = 100;
+            if(data.size()>maxResults) {
+                data = data.subList(0, maxResults);
+            }
             return new Gson().toJson(new SimpleAjaxMessage(String.join("",dataTableBodyFromData(data,headers).stream().map(t->t.render()).collect(Collectors.toList()))));
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
