@@ -466,7 +466,7 @@ var hideDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').prop("disabled",true);
+        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true);
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "start";
