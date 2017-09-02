@@ -2,8 +2,9 @@
 #ufw allow 22
 cd /home/ehallmark1122/machine_learning_cloud
 sudo -u ehallmark1122 bash -c '    echo "Changed Dirs"'
-sudo -u ehallmark1122 bash -c '    git pull origin development'
-sudo -u ehallmark1122 bash -c '    git checkout development'
+sudo -u ehallmark1122 bash -c '    git pull origin master'
+#sudo -u ehallmark1122 bash -c '    git pull origin development'
+#sudo -u ehallmark1122 bash -c '    git checkout development'
 sudo -u ehallmark1122 bash -c '    echo "Pulled from git"'
 sudo -u ehallmark1122 bash -c '    mvn clean install'
 sudo -u ehallmark1122 bash -c '    echo "Mvn clean installed"'
