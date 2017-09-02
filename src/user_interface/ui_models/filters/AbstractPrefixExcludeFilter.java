@@ -20,7 +20,7 @@ public class AbstractPrefixExcludeFilter extends AbstractExcludeFilter {
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractPrefixExcludeFilter(attribute,filterType,fieldType,new ArrayList<>(labels));
+        return new AbstractPrefixExcludeFilter(attribute,filterType,fieldType,labels==null?null:new ArrayList<>(labels));
     }
 
     @Override

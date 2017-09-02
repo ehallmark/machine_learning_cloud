@@ -46,7 +46,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     protected boolean isScriptFilter;
     public AbstractFilter(AbstractAttribute attribute, FilterType filterType) {
         super(Arrays.asList(filterType));
-        this.attribute=attribute;
+        this.attribute=attribute instanceof DependentAttribute ? ((DependentAttribute) attribute).dup() : attribute;
         this.filterType=filterType;
         this.isScriptFilter = attribute instanceof AbstractScriptAttribute;
     }

@@ -41,7 +41,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractIncludeFilter(attribute,filterType,fieldType, new ArrayList<>(labels));
+        return new AbstractIncludeFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
     }
 
     @Override

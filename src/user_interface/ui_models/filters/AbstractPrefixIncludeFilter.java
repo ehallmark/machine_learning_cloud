@@ -28,7 +28,7 @@ public class AbstractPrefixIncludeFilter extends AbstractIncludeFilter {
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractPrefixIncludeFilter(attribute,filterType,fieldType,new ArrayList<>(labels));
+        return new AbstractPrefixIncludeFilter(attribute,filterType,fieldType,labels==null?null:new ArrayList<>(labels));
     }
 
     @Override

@@ -10,6 +10,7 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class AbstractExcludeFilter extends AbstractFilter {
 
     @Override
     public AbstractFilter dup() {
-        return new AbstractExcludeFilter(attribute,filterType,fieldType, new ArrayList<>(labels));
+        return new AbstractExcludeFilter(attribute,filterType,fieldType, labels==null?null:new ArrayList<>(labels));
     }
 
     @Override
