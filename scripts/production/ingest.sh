@@ -11,4 +11,4 @@ sudo -u ehallmark1122 bash -c '    gcsfuse machine_learning_cloud_data data'
 sudo -u ehallmark1122 bash -c '    echo "Finished gcsfuse"'
 cd /home/ehallmark1122/machine_learning_cloud
 sudo -u ehallmark1122 bash -c '    echo "Back to src dir" '
-sudo -u ehallmark1122 bash -c '    java -cp target/classes:"target/dependency/*" -Xms50000m -Xmx50000m -Dcom.sun.management.jmxremote.port=4567 -Dcom.sun.management.jmxremote.rmi.port=4567 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 seeding.ai_db_updater.UpdateAll 0 1 2 3 4 5 6 7 8 9 10 &'
+#sudo -u ehallmark1122 bash -c '    java -cp target/classes:"target/dependency/*" -Xms50000m -Xmx50000m -Dcom.sun.management.jmxremote.port=4567 -Dcom.sun.management.jmxremote.rmi.port=4567 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=127.0.0.1 seeding.ai_db_updater.UpdateAll 0 1 2 3 4 5 6 7 8 9 10 &'
