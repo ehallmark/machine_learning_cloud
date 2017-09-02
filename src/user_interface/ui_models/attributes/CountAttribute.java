@@ -31,10 +31,5 @@ public class CountAttribute extends AbstractAttribute {
         return AbstractFilter.FieldType.Integer;
     }
 
-    // FOR NOW
-    @Override
-    public boolean isNotYetImplemented() {
-        return true;
-    }
 
 }

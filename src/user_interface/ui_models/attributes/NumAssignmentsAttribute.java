@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Created by ehallmark on 6/15/17.
  */
 public class NumAssignmentsAttribute extends CountAttribute {
-    public NumAssignmentsAttribute(String name) {
+    public NumAssignmentsAttribute() {
         super(Constants.NUM_ASSIGNMENTS);
     }
 }
