@@ -226,6 +226,8 @@ public class Constants {
 			WIPO_TECHNOLOGY,
 			TECHNOLOGY,
 			SIMILARITY,
+			GATHER,
+			COMPDB,
 			"vector_obj",
 			AI_VALUE
 	).collect(Collectors.toSet());
