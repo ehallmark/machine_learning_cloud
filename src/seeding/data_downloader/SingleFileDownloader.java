@@ -32,10 +32,10 @@ public abstract class SingleFileDownloader implements DataDownloader {
     @Override
     public void pullMostRecentData() {
         // pull and unzip
-        if(destinationFile!=null&&destinationFile.exists()&&(System.currentTimeMillis()-destinationFile.lastModified()) < SHOULD_REDOWNLOAD_PERIOD_MILLIS) {
-            System.out.println("FILE IS ALREADY UP TO DATE... SKIPPING DOWNLOAD: "+destinationFile.getName());
-            return;
-        }
+        //if(destinationFile!=null&&destinationFile.exists()&&(System.currentTimeMillis()-destinationFile.lastModified()) < SHOULD_REDOWNLOAD_PERIOD_MILLIS) {
+        //    System.out.println("FILE IS ALREADY UP TO DATE... SKIPPING DOWNLOAD: "+destinationFile.getName());
+        //    return;
+        //}
         boolean found = false;
         LocalDate date = LocalDate.now();
         try {
