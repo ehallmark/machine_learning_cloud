@@ -51,7 +51,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(attribute.getType().equals("text")) {
+        if(!attribute.getType().equals("keyword")) {
             return QueryBuilders.matchQuery(getFullPrerequisite(),labels);
         } else {
             return QueryBuilders.termsQuery(getFullPrerequisite(), labels);

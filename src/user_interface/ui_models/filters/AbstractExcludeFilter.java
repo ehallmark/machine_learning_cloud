@@ -28,17 +28,12 @@ public class AbstractExcludeFilter extends AbstractFilter {
     @Setter
     protected List<String> labels;
     protected FieldType fieldType;
-    protected String nestedField;
-    public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels, String nestedField) {
+    public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
         super(attribute,filterType);
         this.fieldType=fieldType;
         this.labels = labels;
-        this.nestedField=nestedField;
     }
 
-    public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
-        this(attribute,filterType,fieldType,labels,null);
-    }
 
     @Override
     public AbstractFilter dup() {
@@ -53,9 +48,7 @@ public class AbstractExcludeFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder builder = QueryBuilders.boolQuery();
-        if(attribute.getType().equals("nested") && nestedField!=null) {
-            builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite()+"."+nestedField,labels));
-        } else if(attribute.getType().equals("text")) {
+        if(!attribute.getType().equals("keyword")) {
             builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite(),labels));
         } else {
             builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite(),labels));

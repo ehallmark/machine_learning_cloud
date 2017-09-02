@@ -32,7 +32,7 @@ public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
         // ingest filings (aka parents)
-        //ingestByType(DataIngester.PARENT_TYPE_NAME);
+        ingestByType(DataIngester.PARENT_TYPE_NAME);
         // ingest assets (aka children)
         ingestByType(DataIngester.TYPE_NAME);
         DataIngester.close();
