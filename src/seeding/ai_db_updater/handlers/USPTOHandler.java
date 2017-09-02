@@ -65,9 +65,12 @@ public class USPTOHandler extends NestedHandler {
                         toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString());
                     }
                     // try to add vector
-                    INDArray vec = lookupTable.get(name);
-                    if(vec!=null) {
-                        toIngest.put("vector_obj", SimilarPatentServer.vectorToElasticSearchObject(vec));
+                    Object filingName = toIngest.get(Constants.FILING_NAME);
+                    if(filingName!=null) {
+                        INDArray vec = lookupTable.get(filingName.toString());
+                        if (vec != null) {
+                            toIngest.put("vector_obj", SimilarPatentServer.vectorToElasticSearchObject(vec));
+                        }
                     }
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;
