@@ -106,7 +106,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
             if(parent!=null) {
                 allData = (Map<String,Object>)allData.get(parent.getName());
             }
-            allData.put(getName(), val);
+            if(allData!=null) {
+                allData.put(getName(), val);
+            }
         }
     }
 
@@ -116,7 +118,9 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
             if(parent!=null) {
                 allData = (Map<String,Object>)allData.get(parent.getName());
             }
-            allData.put(getName(), val);
+            if(allData!=null) {
+                allData.put(getName(), val);
+            }
         }
     }
 

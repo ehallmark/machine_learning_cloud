@@ -10,7 +10,6 @@ import java.util.*;
  * Created by ehallmark on 4/24/17.
  */
 public class PageRankHelper {
-    public static final File file = new File("data/page_rank_table.jobj");
 
     // run sim rank algorithm
     public static void main(String[] args) {
