@@ -14,7 +14,7 @@ import java.util.List;
 /*
  * Created by Evan on 6/17/2017.
  */
-public abstract class ChartAttribute extends AbstractAttribute implements DependentAttribute {
+public abstract class ChartAttribute extends AbstractAttribute implements DependentAttribute<ChartAttribute> {
     public ChartAttribute() {
         super(Collections.emptyList());
     }

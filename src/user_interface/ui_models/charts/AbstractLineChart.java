@@ -38,6 +38,11 @@ public class AbstractLineChart extends ChartAttribute {
     protected Integer min;
 
     @Override
+    public ChartAttribute dup() {
+        return new AbstractLineChart();
+    }
+
+    @Override
     public Tag getOptionsTag() {
         return div().with(
                 div().withClass("row").with(

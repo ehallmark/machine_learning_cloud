@@ -37,6 +37,11 @@ public class AbstractHistogramChart extends ChartAttribute {
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
 
     @Override
+    public ChartAttribute dup() {
+        return new AbstractHistogramChart();
+    }
+
+    @Override
     public Tag getOptionsTag() {
         return div().with(
                 label("Group By"),br(),select().withId(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD.replaceAll("[\\[\\]]","")).withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(

@@ -19,7 +19,7 @@ import java.util.Collection;
 /**
  * Created by ehallmark on 8/18/17.
  */
-public abstract class AbstractScriptAttribute extends AbstractAttribute implements DependentAttribute<AbstractScriptAttribute> {
+public abstract class AbstractScriptAttribute extends AbstractAttribute  {
     protected static final long millisecondsPerYear = 31557600000L;
     protected static final long millisecondsPerDay = 86400000L;
 
@@ -49,10 +49,6 @@ public abstract class AbstractScriptAttribute extends AbstractAttribute implemen
         return "("+getPriorityDateField("date.year")+"+20+("+getPriorityDateField("date.monthOfYear")+"-1)/12)+("+getTermExtensionField()+"/365.25)-"+getCurrentYearAndMonth();
     }
 
-    @Override
-    public void extractRelevantInformationFromParams(Request req) {
-        // default do nothing
-    }
 
     public QueryBuilder getSortScript() {
         Script searchScript = getScript();

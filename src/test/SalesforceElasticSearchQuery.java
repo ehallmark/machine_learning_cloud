@@ -52,6 +52,11 @@ public class SalesforceElasticSearchQuery {
             public void extractRelevantInformationFromParams(Request params) {
 
             }
+
+            @Override
+            public AbstractFilter dup() {
+                return this;
+            }
         };
         Map<String,NestedAttribute> nestedAttributeMap = new HashMap<>();
         nestedAttributeMap.put(Constants.ASSIGNEES,new AssigneesNestedAttribute());

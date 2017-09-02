@@ -8,6 +8,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import spark.Request;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.engines.SimilarityEngineController;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -21,7 +22,7 @@ import static user_interface.server.SimilarPatentServer.SIMILARITY_ENGINES_ARRAY
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class SimilarityAttribute extends AbstractScriptAttribute {
+public class SimilarityAttribute extends AbstractScriptAttribute implements DependentAttribute<AbstractScriptAttribute> {
     public static final int vectorSize = 30; // test
     public static final String DEFAULT_SIMILARITY_SCRIPT = "" +
             "if(doc['vector_obj.0'].value == null || params.avg_vector == null) { return 0f; }" +
@@ -88,6 +89,11 @@ public class SimilarityAttribute extends AbstractScriptAttribute {
             engine.extractRelevantInformationFromParams(req);
             return engine.getAvg();
         }).filter(avg->avg!=null).collect(Collectors.toList());
+    }
+
+    @Override
+    public AbstractScriptAttribute dup() {
+        return new SimilarityAttribute();
     }
 
     @Override
