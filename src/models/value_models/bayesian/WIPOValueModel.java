@@ -51,7 +51,7 @@ public class WIPOValueModel extends ValueAttr {
         final int maxLimit = 100000;
         final Graph graph = new BayesianNet();
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
-        AbstractAttribute cpc = new CPCAttribute();
+        //AbstractAttribute cpc = new CPCAttribute();
         //AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo
