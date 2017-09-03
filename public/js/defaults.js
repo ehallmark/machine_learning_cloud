@@ -469,7 +469,7 @@ var hideDraggable = function(elem) {
     if($draggable.length > 0) {
         ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true);
         if(!$draggable.hasClass('leaf')) {
-         $draggable.children().each(function(){ $(this).find('.draggable').hide();});
+            $draggable.children().each(function(){ $(this).find('.draggable').each(function(){$(this).parent().hide();}); });
         }
         var id = $draggable.attr('data-target');
         if(id) {
