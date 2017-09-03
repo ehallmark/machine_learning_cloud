@@ -69,7 +69,7 @@ public abstract class AbstractAttribute {
             String simple = "";
             for(char c : name.toCharArray()) {
                 if(Character.isUpperCase(c)) {
-                    simple+=" "+c;
+                    simple+=(" "+c).toLowerCase();
                 }else {
                     simple += c;
                 }

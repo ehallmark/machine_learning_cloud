@@ -275,8 +275,8 @@ $(document).ready(function() {
     setCollapsibleHeaders(".collapsible-header");
 
     $(document).tooltip({
-        items: '.attributeElement',
-        content: function() { return $(this).prop('title'); }
+        items: '.attributeElement:not(.nested) .collapsible-header',
+        content: function() { return $(this).parent().prop('title'); }
     });
 
     resetSearchForm();
