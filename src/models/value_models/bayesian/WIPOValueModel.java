@@ -16,6 +16,7 @@ import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -60,11 +61,11 @@ public class WIPOValueModel extends ValueAttr {
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         AbstractIncludeFilter gatherFilter = new ExistsInGatherFilter();
-        Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
+        Collection<AbstractFilter> filters = Arrays.asList(gatherFilter, new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("patents")));
 
         Map<String,NestedAttribute> nestedMap = new HashMap<>();
         nestedMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
-        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap)));
+        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap)).stream().filter(item->Database.getGatherValueMap().containsKey(item.getName())).collect(Collectors.toList()));
         System.out.println("Num items: "+items.size());
         Collections.shuffle(items, new Random(69));
         testItems = items.subList(0, items.size()/2).toArray(new Item[]{});
