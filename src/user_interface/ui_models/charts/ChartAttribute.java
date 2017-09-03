@@ -22,13 +22,13 @@ public abstract class ChartAttribute extends AbstractAttribute implements Depend
     public abstract List<? extends AbstractChart> create(PortfolioList portfolioList, int i);
 
     @Override
-    public String getName() {
-        throw new UnsupportedOperationException("getName not defined for charts.");
-    }
-
-    @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}
 
     public abstract List<String> getAttributes();
+
+    @Override
+    public String getName() {
+        return getType();
+    }
 
 }
