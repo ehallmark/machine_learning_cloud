@@ -54,8 +54,8 @@ public class WIPOValueModel extends ValueAttr {
         AbstractAttribute cpc = new CPCAttribute();
         //AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                wipo,
-                cpc
+                wipo
+                //,cpc
                 //,assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
