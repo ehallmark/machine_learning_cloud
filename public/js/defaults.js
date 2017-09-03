@@ -467,7 +467,7 @@ var hideDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true);
+        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true).each(function(){ $(this).closest('.draggable').hide();});
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "start";
@@ -476,13 +476,6 @@ var hideDraggable = function(elem) {
                   resetCheckbox($draggable.get(0),$target.get(0),false);
             }
         }
-
-        $draggable.children().each(function() {
-            $(this).find('.draggable:visible').each(function() {
-                hideDraggable(this);
-            });
-        });
-
     }
 };
 
