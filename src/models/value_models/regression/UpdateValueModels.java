@@ -1,9 +1,17 @@
 package models.value_models.regression;
 
+import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
+import models.value_models.bayesian.WIPOValueModel;
+import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
+import user_interface.ui_models.portfolios.items.Item;
+import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,28 +24,29 @@ import java.util.stream.Collectors;
  */
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
-        File dataFile = new File(Constants.DATA_FOLDER+"value-models-testing.csv");
-        List<ComputableAttribute<? extends Number>> attributes = Arrays.asList(new AssetToMaintenanceFeeReminderCountMap(), new PageRankEvaluator());
+        // train wipo model
+        WIPOValueModel wipoValueModel = new WIPOValueModel();
+        wipoValueModel.init();
 
-        Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
-        Collection<String> gatherPatents = new ArrayList<>(gatherValueMap.keySet());
+        Collection<ValueAttr> regressionModels = Arrays.asList(
+                new OverallEvaluator(),
+                wipoValueModel
+        );
 
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(dataFile))) {
-            writer.write("asset,gatherValue,"+String.join(",",attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))+"\n");
-            for(String asset : gatherPatents) {
-                writer.write(asset.replace(",","")+","+gatherValueMap.get(asset)+","+String.join(",",attributes.stream().map(attr-> {
-                    Number value = attr.getPatentDataMap().get(asset);
-                    if(value==null) value = 0;
-                    return value.toString();
-                }).collect(Collectors.toList()))+"\n");
+        ItemTransformer transformer = new ItemTransformer() {
+            @Override
+            public Item transform(Item item) {
+                Object parent = item.getData("_parent");
+                if(parent==null) return item;
+                Map<String,Object> updates = new HashMap<>();
+                regressionModels.forEach(evaluator->{
+                    updates.put(evaluator.getFullName(),evaluator.evaluate(item));
+                });
+                DataIngester.ingestBulk(item.getName(),parent.toString(),updates,false);
+                return item;
             }
-            writer.flush();
-            writer.close();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
-
-
-        //OverallEvaluator.main(args);
+        };
+        DataSearcher.searchForAssets(SimilarPatentServer.getAllTopLevelAttributes(),Collections.emptyList(),null, SortOrder.ASC, 8000000,SimilarPatentServer.getNestedAttrMap(), transformer, false);
+        DataIngester.close();
     }
 }

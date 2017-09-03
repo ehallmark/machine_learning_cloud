@@ -9,7 +9,6 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -32,7 +31,8 @@ public abstract class RegressionValueModel extends ValueAttr {
         }
     }
 
-    protected double predict(Item item) {
+    @Override
+    public double evaluate(Item item) {
         return 1d/(1d+Math.exp(-(intercept+attributesAndWeights.stream().mapToDouble(pair->(valueFromAttribute(item,pair.getFirst(),blankVal)).doubleValue()*pair.getSecond()).sum())));
     }
 
@@ -47,7 +47,7 @@ public abstract class RegressionValueModel extends ValueAttr {
 
     public static void main(String[] args) {
         //test
-        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(20000000d), 0) {
+        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200000d), 0) {
             @Override
             public String getName() {
                 return "test";
@@ -56,7 +56,7 @@ public abstract class RegressionValueModel extends ValueAttr {
 
         Database.getCopyOfAllPatents().stream().limit(100).forEach(patent->{
            Item item = new Item(patent);
-           System.out.println("Prediction for model: "+model.predict(item));
+           System.out.println("Prediction for model: "+model.evaluate(item));
         });
     }
 }

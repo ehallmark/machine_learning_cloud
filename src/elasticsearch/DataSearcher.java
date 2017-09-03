@@ -65,9 +65,10 @@ public class DataSearcher {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
     }
 
-    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
+    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
         try {
             // Run elasticsearch
+            String comparator = _comparator == null ? "" : _comparator;
             boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
@@ -88,9 +89,11 @@ public class DataSearcher {
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
                     .setFetchSource(true)
-                    .addSort(sortBuilder)
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setFrom(0));
+            if(!comparator.isEmpty()) {
+                request.set(request.get().addSort(sortBuilder));
+            }
             AtomicReference<BoolQueryBuilder> filterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> queryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());

@@ -24,7 +24,7 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
     }
 
     public ExistsInGatherFilter() {
-        super(new AssetNumberAttribute(), FilterType.BoolTrue, FieldType.Boolean, runModel());
+        super(new AssetNumberAttribute(), FilterType.Include, FieldType.Boolean, runModel());
     }
 
     private static Set<String> runModel(){

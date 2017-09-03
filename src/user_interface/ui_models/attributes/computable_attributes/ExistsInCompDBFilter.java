@@ -27,7 +27,7 @@ public class ExistsInCompDBFilter extends AbstractIncludeFilter {
     }
 
     public ExistsInCompDBFilter() {
-        super(new ReelFrameAttribute(), FilterType.BoolTrue, FieldType.Boolean, runModel());
+        super(new ReelFrameAttribute(), FilterType.Include, FieldType.Boolean, runModel());
     }
 
     private static Set<String> runModel(){

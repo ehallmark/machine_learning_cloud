@@ -2,6 +2,7 @@ package models.value_models.bayesian;
 
 import com.google.gson.Gson;
 import elasticsearch.DataSearcher;
+import lombok.Getter;
 import lombok.NonNull;
 import model.functions.inference_methods.BeliefPropagation;
 import model.functions.inference_methods.InferenceMethod;
@@ -21,18 +22,21 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 8/30/17.
  */
-public class BayesianValueModel {
+public class BayesianValueModel extends ValueAttr {
     protected Graph graph;
     protected double alpha;
     protected Item[] trainingItems;
     protected Map<String,List<String>> variableToValuesMap;
     protected String valueVariableName;
-    public BayesianValueModel(@NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
+    @Getter
+    protected String name;
+    public BayesianValueModel(String name, @NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
         this.graph=graph;
         this.variableToValuesMap = variableToValuesMap;
         this.alpha=alpha;
         this.trainingItems=trainingItems;
         this.valueVariableName=valueVariableName;
+        this.name=name;
     }
 
     public void train() {
@@ -40,6 +44,7 @@ public class BayesianValueModel {
         graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,alpha, new BeliefPropagation()), 1);
     }
 
+    @Override
     public double evaluate(Item token) {
         if(variableToValuesMap==null||graph==null) throw new RuntimeException("Must train the model first");
         Map<String,Integer> assignment = createAssignment(token,variableToValuesMap);

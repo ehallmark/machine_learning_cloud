@@ -11,6 +11,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.computable_attributes.ExistsInGatherFilter;
+import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
@@ -26,14 +28,26 @@ import java.util.stream.Collectors;
 /**
  * Created by Evan on 8/30/2017.
  */
-public class WIPOValueModel {
+public class WIPOValueModel extends ValueAttr {
     private BayesianValueModel bayesianValueModel;
     private Item[] testItems;
+
+    @Override
+    public double evaluate(Item item) {
+        if(bayesianValueModel==null) throw new NullPointerException("bayesianValueModel for: "+getName());
+        return bayesianValueModel.evaluate(item);
+    }
+
+
+    @Override
+    public String getName() {
+        return "wipoTechnologyValue";
+    }
 
     public void init() {
         final String valueVariableName = "gatherValue";
         final double alpha = 50d;
-        final int maxLimit = 10000;
+        final int maxLimit = 100000;
         final Graph graph = new BayesianNet();
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         AbstractAttribute cpc = new CPCAttribute();
@@ -47,7 +61,7 @@ public class WIPOValueModel {
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
-        AbstractIncludeFilter gatherFilter = new AbstractIncludeFilter(new AssetNumberAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, new ArrayList<>(gatherValueMap.keySet()));
+        AbstractIncludeFilter gatherFilter = new ExistsInGatherFilter();
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter);
 
         Map<String,NestedAttribute> nestedMap = new HashMap<>();
@@ -120,7 +134,7 @@ public class WIPOValueModel {
         graph.addFactorNode(null, valueNode, assigneeNode);
         graph.addFactorNode(null, valueNode, docKindNode);
 
-        bayesianValueModel = new BayesianValueModel(graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
+        bayesianValueModel = new BayesianValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
     }
 
@@ -157,4 +171,5 @@ public class WIPOValueModel {
             e.printStackTrace();
         }
     }
+
 }

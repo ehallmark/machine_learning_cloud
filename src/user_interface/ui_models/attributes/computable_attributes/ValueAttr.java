@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 import models.value_models.*;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.stream.Collectors;
 
@@ -19,26 +20,20 @@ import static j2html.TagCreator.div;
  */
 public abstract class ValueAttr extends ComputableAttribute<Number> {
     // Instance class
-    private static final double DEFAULT_VAL = 0; //(ValueMapNormalizer.DEFAULT_START+ValueMapNormalizer.DEFAULT_END)/2d;
     protected double defaultVal;
-
-    public ValueAttr(double defaultVal) {
-        super(Arrays.asList(AbstractFilter.FilterType.Between));
-        this.defaultVal=defaultVal;
-    }
-
     public ValueAttr() {
-        this(DEFAULT_VAL);
+        super(Arrays.asList(AbstractFilter.FilterType.Between));
     }
 
     // Returns value between 1 and 5
     @Override
     public Double attributesFor(Collection<String> portfolio, int n) {
         return portfolio.stream()
-                .collect(Collectors.averagingDouble(token->evaluate(token)));
+                .collect(Collectors.averagingDouble(token->evaluate(new Item(token))));
     }
 
-    public double evaluate(String token) {
+    public double evaluate(Item item) {
+        String token = item.getName();
         Map<String,Number> model;
         Map<String,Number> backupModel;
         if(Database.isApplication(token)) {
