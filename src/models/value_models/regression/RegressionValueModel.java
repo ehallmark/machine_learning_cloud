@@ -46,14 +46,14 @@ public abstract class RegressionValueModel extends ValueAttr {
 
     public static void main(String[] args) {
         //test
-        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200d), 0) {
+        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200000d), 0) {
             @Override
             public String getName() {
                 return "test";
             }
         };
 
-        Database.getCopyOfAllPatents().stream().limit(10).forEach(patent->{
+        Database.getCopyOfAllPatents().stream().limit(100).forEach(patent->{
            Item item = new Item(patent);
            System.out.println("Prediction for model: "+model.predict(item));
         });
