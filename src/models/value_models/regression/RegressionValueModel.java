@@ -37,10 +37,11 @@ public abstract class RegressionValueModel extends ValueAttr {
     }
 
     private static Number valueFromAttribute(Item item, AbstractAttribute attribute, Number defaultVal) {
-        Number val = (Number) item.getDataMap().getOrDefault(attribute.getFullName(), defaultVal);
+        Number val = (Number) item.getDataMap().get(attribute.getFullName());
         if(val == null && attribute instanceof ComputableAttribute) {
-            val = (Number) ((ComputableAttribute) attribute).getApplicationDataMap().getOrDefault(item.getName(),((ComputableAttribute) attribute).getPatentDataMap().getOrDefault(item.getName(),defaultVal));
+            val = (Number) ((ComputableAttribute) attribute).getApplicationDataMap().getOrDefault(item.getName(),((ComputableAttribute) attribute).getPatentDataMap().get(item.getName()));
         }
+        if(val == null) val = defaultVal;
         return val;
     }
 
