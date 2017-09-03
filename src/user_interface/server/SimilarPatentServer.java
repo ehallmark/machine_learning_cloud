@@ -583,6 +583,7 @@ public class SimilarPatentServer {
 
         get("/create_user", (req, res)->{
             authorize(req,res);
+            String ownerRole = req.session().attribute("role");
             Tag form = form().withId("create-user-form").withAction("/new_user").withMethod("POST").attr("style","margin-top: 100px;").with(
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
@@ -590,7 +591,7 @@ public class SimilarPatentServer {
                             input().withType("password").withClass("form-control").withName("password")
                     ), br(), br(), label("Role").with(
                             select().withClass("form-control single-select2").withName("role").with(
-                                    USER_ROLES.stream().map(role->{
+                                    USER_ROLES.stream().filter(role->canCreateUser(ownerRole,role)).map(role->{
                                         return option(role).withValue(role);
                                     }).collect(Collectors.toList())
                             )
