@@ -47,7 +47,7 @@ public abstract class RegressionValueModel extends ValueAttr {
 
     public static void main(String[] args) {
         //test
-        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200000d), 0) {
+        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(20000000d), 0) {
             @Override
             public String getName() {
                 return "test";
