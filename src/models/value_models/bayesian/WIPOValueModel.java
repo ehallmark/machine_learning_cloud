@@ -155,7 +155,7 @@ public class WIPOValueModel extends ValueAttr {
             for (Item item : model.testItems) {
                 double value = model.bayesianValueModel.evaluate(item);
                // System.out.println(item.getName() + "," + value);
-                writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()).equals("FALSE") ? 0 : 1)+"\n");
+                writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()) ? 0 : 1)+"\n");
             }
             writer.flush();
         } catch(Exception e) {
