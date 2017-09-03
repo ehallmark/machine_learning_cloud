@@ -2,7 +2,6 @@ package user_interface.ui_models.attributes;
 
 import j2html.tags.Tag;
 import lombok.Getter;
-import seeding.Constants;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
@@ -13,7 +12,6 @@ import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
-import static j2html.TagCreator.label;
 
 
 /**
@@ -46,6 +44,13 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.NestedObject;
+    }
+
+    @Override
+    public Tag getDescription() {
+        return div().withClass("row").with(
+                attributes.stream().map(attr->div().withClass("col-10 col-offset-1").with(attr.getDescription())).collect(Collectors.toList())
+        );
     }
 
 }

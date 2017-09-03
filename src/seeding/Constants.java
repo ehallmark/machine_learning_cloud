@@ -3,6 +3,7 @@ package seeding;
 
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
+import user_interface.ui_models.attributes.LengthOfSmallestIndependentClaimAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
@@ -284,5 +285,13 @@ public class Constants {
 
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
 
+	public static final Map<String,String> ATTRIBUTE_DESCRIPTION_MAP = Collections.synchronizedMap(new HashMap<>());
+	static {
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM, "The full text of a claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM_LENGTH, "The number of words in a claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM_NUM, "The number the claim in the document.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(SMALLEST_INDEPENDENT_CLAIM_LENGTH, "The number of words in the document's smallest independent claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(AI_VALUE, "The AI value of the document. Developed by GTT Group.");
+	}
 
 }

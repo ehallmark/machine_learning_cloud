@@ -19,6 +19,9 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static j2html.TagCreator.div;
+import static j2html.TagCreator.p;
+
 /**
  * Created by Evan on 5/9/2017.
  */
@@ -111,4 +114,66 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         return attribute.isNotYetImplemented();
     }
 
+    @Override
+    public Tag getDescription() {
+        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription());
+    }
+
+
+    protected static Tag getDescriptionFor(FilterType filterType) {
+        String description;
+        switch(filterType) {
+            case Exclude: {
+                description = "This filter excludes results that match a value";
+                break;
+            }
+            case Include: {
+                description = "This filter only includes results that match a value";
+                break;
+            }
+            case AdvancedKeyword: {
+                description = "This filter only includes results that match an advanced keyword value";
+                break;
+            }
+            case Between: {
+                description = "This filter only includes results between values";
+                break;
+            }
+            case GreaterThan: {
+                description = "This filter only includes results greater than a value";
+                break;
+            }
+            case LessThan: {
+                description = "This filter only includes results less than a value";
+                break;
+            }
+            case PrefixExclude: {
+                description = "This filter only includes results starting with a value";
+                break;
+            }
+            case PrefixInclude: {
+                description = "This filter excludes results starting with a value";
+                break;
+            }
+            case Nested: {
+                description = "This nested filter contains the following values to filter";
+                break;
+            }
+            case BoolTrue: {
+                description = "This filter only includes results that match a value";
+                break;
+            }
+            case BoolFalse: {
+                description = "This filter excludes results that match a value";
+                break;
+            }
+            default: {
+                description = "";
+                break;
+            }
+        };
+        return div().with(
+                p(description)
+        );
+    }
 }

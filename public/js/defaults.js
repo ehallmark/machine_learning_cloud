@@ -274,7 +274,10 @@ $(document).ready(function() {
 
     setCollapsibleHeaders(".collapsible-header");
 
-    $(document).tooltip();
+    $(document).tooltip({
+        items: '.attributeElement',
+        content: function() { return $(this).prop('title'); }
+    });
 
     resetSearchForm();
 });

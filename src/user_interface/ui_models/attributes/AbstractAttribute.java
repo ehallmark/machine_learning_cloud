@@ -14,6 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.p;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -58,7 +59,24 @@ public abstract class AbstractAttribute {
 
     public boolean isNotYetImplemented() { return false; }
 
-    public String getDescription() { return ""; }
+    public Tag getDescription() { return p(Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),"The " +createSimpleNameText(getFullName())+".")); }
+
+    private static String createSimpleNameText(String name) {
+        if(name.contains(".")) {
+            String[] split = name.split("\\.",2);
+            return createSimpleNameText(split[1]) + " of " + createSimpleNameText(split[0]);
+        } else {
+            String simple = "";
+            for(char c : name.toCharArray()) {
+                if(Character.isUpperCase(c)) {
+                    simple+=" "+c;
+                }else {
+                    simple += c;
+                }
+            }
+            return simple;
+        }
+    }
 
     public Collection<AbstractFilter> createFilters() {
         return filterTypes.stream().map(filterType->{

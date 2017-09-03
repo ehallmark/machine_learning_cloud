@@ -26,5 +26,4 @@ public class StateAttribute extends AbstractAttribute {
     public String getName() {
         return Constants.STATE;
     }
-
 }
