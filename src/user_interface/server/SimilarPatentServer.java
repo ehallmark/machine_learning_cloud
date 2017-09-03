@@ -541,7 +541,7 @@ public class SimilarPatentServer {
             String password = extractString(req, "password", "");
             String role = passwordHandler.authorizeUser(username,password);
             session.attribute("authorized",role!=null);
-            if(role!=null) {
+            if(role==null) {
                 halt("User not found.");
             }
             session.attribute("username",username);
