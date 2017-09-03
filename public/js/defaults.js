@@ -467,7 +467,10 @@ var hideDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true).each(function(){ $(this).closest('.draggable').hide();});
+        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').val(null).trigger('change').prop("disabled",true);
+        if(!$draggable.hasClass('leaf')) {
+         $draggable.children().each(function(){ $(this).find('.draggable').hide();});
+        }
         var id = $draggable.attr('data-target');
         if(id) {
             var target = "start";
