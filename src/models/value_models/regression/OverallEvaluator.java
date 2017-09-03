@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class OverallEvaluator extends RegressionValueModel {
     private static final double INTERCEPT = 0;
     private static final List<Double> WEIGHTS = null;
-    private static final Number DEFAULT_VAL = 0;
     private static final List<AbstractAttribute> MODELS = Arrays.asList(
             new CitationEvaluator(),
             new ClaimEvaluator(),
@@ -23,7 +22,7 @@ public class OverallEvaluator extends RegressionValueModel {
             new MeansPresentEvaluator());
 
     public OverallEvaluator() {
-        super(INTERCEPT, MODELS, WEIGHTS, DEFAULT_VAL);
+        super(INTERCEPT, MODELS, WEIGHTS);
     }
 
     @Override
