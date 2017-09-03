@@ -18,11 +18,14 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 8/30/17.
  */
 public class BayesianValueModel extends ValueAttr {
+    private static final Random rand = new Random(569);
     protected Graph graph;
     protected double alpha;
     protected Item[] trainingItems;
@@ -41,7 +44,7 @@ public class BayesianValueModel extends ValueAttr {
 
     public void train() {
         graph.setTrainingData(createTrainingData(trainingItems));
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,alpha, new BeliefPropagation()), 1);
+        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,alpha, new BeliefPropagation()), 5);
     }
 
     @Override
@@ -76,6 +79,11 @@ public class BayesianValueModel extends ValueAttr {
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
         return item.getDataMap().entrySet().stream().filter(e->variableToValuesMap.containsKey(e.getKey())&&e.getValue()!=null).filter(e->{
             return Arrays.stream(e.getValue().toString().split("; ")).anyMatch(obj->variableToValuesMap.containsKey(obj));
-        }).collect(Collectors.toMap(e->e.getKey(),e->Arrays.stream(e.getValue().toString().split("; ")).map(obj->variableToValuesMap.get(e.getKey()).indexOf(obj)).filter(i->i>=0).findFirst().get()));
+        }).collect(Collectors.toMap(e->e.getKey(),e->randomValue(Arrays.stream(e.getValue().toString().split("; ")).mapToInt(obj->variableToValuesMap.get(e.getKey()).indexOf(obj)).filter(i->i>=0))));
+    }
+
+    private static int randomValue(IntStream stream) {
+        int[] ints = stream.toArray();
+        return ints[rand.nextInt(ints.length)];
     }
 }
