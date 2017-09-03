@@ -200,7 +200,18 @@ public class Constants {
 
 	public static final List<String> RELATED_DOC_TYPE_LIST = Arrays.asList(RELATED_DOC_TYPES);
 
-	public static final Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
+	public static final Collection<String> NESTED_ATTRIBUTES = Arrays.asList(
+			ASSIGNEES,
+			APPLICANTS,
+			INVENTORS,
+			AGENTS,
+			CITATIONS,
+			CLAIMS,
+			PATENT_FAMILY,
+			GATHER
+	);
+
+	public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
 			FILING_NAME,
 			FILING_COUNTRY,
 			FILING_DATE,
@@ -226,12 +237,24 @@ public class Constants {
 			ASSIGNMENTS,
 			WIPO_TECHNOLOGY,
 			TECHNOLOGY,
+			NUM_ASSIGNMENTS,
 			SIMILARITY,
 			GATHER,
 			COMPDB,
 			"vector_obj",
 			AI_VALUE
 	).collect(Collectors.toSet());
+
+	static {
+		List<String> temp = new ArrayList<>();
+		NESTED_ATTRIBUTES.forEach(attr->{
+			if(FILING_ATTRIBUTES_SET.contains(attr)) {
+				temp.add(attr+COUNT_SUFFIX);
+			}
+		});
+		FILING_ATTRIBUTES_SET = Stream.of(FILING_ATTRIBUTES_SET,temp).flatMap(set->set.stream()).collect(Collectors.toSet());
+
+	}
 
 	public static final String GATHER_IS = "is";
 	public static final String GATHER_MA = "ma";
@@ -262,14 +285,5 @@ public class Constants {
 
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
 
-	public static final Collection<String> NESTED_ATTRIBUTES = Arrays.asList(
-			ASSIGNEES,
-			APPLICANTS,
-			INVENTORS,
-			AGENTS,
-			CITATIONS,
-			CLAIMS,
-			PATENT_FAMILY,
-			GATHER
-	);
+
 }

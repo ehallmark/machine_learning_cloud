@@ -31,5 +31,4 @@ public class CountAttribute extends AbstractAttribute {
         return AbstractFilter.FieldType.Integer;
     }
 
-
 }
