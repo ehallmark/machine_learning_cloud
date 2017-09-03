@@ -30,6 +30,11 @@ public class ExistsInCompDBFilter extends AbstractIncludeFilter {
         super(new ReelFrameAttribute(), FilterType.Include, FieldType.Boolean, runModel());
     }
 
+    @Override
+    public AbstractFilter dup() {
+        return new ExistsInCompDBFilter();
+    }
+
     private static Set<String> runModel(){
         System.out.println("Starting to load ExistsInCompDBAttribute evaluator...");
         if(MODEL==null) {

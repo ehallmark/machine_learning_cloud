@@ -19,11 +19,9 @@ public abstract class RegressionValueModel extends ValueAttr {
     protected List<Double> weights;
     protected List<Pair<AbstractAttribute,Double>> attributesAndWeights;
     protected double intercept;
-    protected Number blankVal;
-    public RegressionValueModel(double intercept, List<AbstractAttribute> attributes, List<Double> weights, Number blankVal) {
+    public RegressionValueModel(double intercept, List<AbstractAttribute> attributes, List<Double> weights) {
         this.attributes=attributes;
         this.weights = weights;
-        this.blankVal=blankVal;
         this.intercept=intercept;
         attributesAndWeights = new ArrayList<>();
         for(int i = 0; i < attributes.size(); i++) {
@@ -33,7 +31,7 @@ public abstract class RegressionValueModel extends ValueAttr {
 
     @Override
     public double evaluate(Item item) {
-        return 1d/(1d+Math.exp(-(intercept+attributesAndWeights.stream().mapToDouble(pair->(valueFromAttribute(item,pair.getFirst(),blankVal)).doubleValue()*pair.getSecond()).sum())));
+        return 1d/(1d+Math.exp(-(intercept+attributesAndWeights.stream().mapToDouble(pair->(valueFromAttribute(item,pair.getFirst(),defaultVal)).doubleValue()*pair.getSecond()).sum())));
     }
 
     private static Number valueFromAttribute(Item item, AbstractAttribute attribute, Number defaultVal) {
@@ -47,7 +45,7 @@ public abstract class RegressionValueModel extends ValueAttr {
 
     public static void main(String[] args) {
         //test
-        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200000d), 0) {
+        RegressionValueModel model = new RegressionValueModel(0.5, Arrays.asList(new PageRankEvaluator()),Arrays.asList(200000d)) {
             @Override
             public String getName() {
                 return "test";

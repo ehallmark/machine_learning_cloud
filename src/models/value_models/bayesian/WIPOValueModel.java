@@ -52,11 +52,11 @@ public class WIPOValueModel extends ValueAttr {
         final Graph graph = new BayesianNet();
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         AbstractAttribute cpc = new CPCAttribute();
-        AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
+        //AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo,
-                cpc,
-                assignee
+                cpc
+                //,assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
@@ -83,11 +83,6 @@ public class WIPOValueModel extends ValueAttr {
                 Object obj = item.getData(attr.getFullName());
                 if(obj!=null) {
                     nestedHelper(attr.getFullName(), obj, attrNameSet, valueVariableName, variableToValuesMap);
-                }
-                if(attr.equals(assignee)) {
-                    System.out.println("Attr for assignee.getName: "+item.getData(assignee.getName()));
-                    System.out.println("Attr for assignee.getFullName: "+item.getData(assignee.getFullName()));
-                    System.out.println("Attr for assignee.rootName: "+item.getData(assignee.getRootName()));
                 }
             });
             item.getDataMap().forEach((attr,obj)->{
@@ -119,16 +114,16 @@ public class WIPOValueModel extends ValueAttr {
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         Node cpcNode = graph.findNode(cpc.getFullName());
-        Node assigneeNode = graph.findNode(assignee.getFullName());
+        //Node assigneeNode = graph.findNode(assignee.getFullName());
 
         // connect and add factors
         graph.connectNodes(valueNode, wipoNode);
         graph.connectNodes(valueNode, cpcNode);
-        graph.connectNodes(valueNode, assigneeNode);
+        //graph.connectNodes(valueNode, assigneeNode);
         graph.connectNodes(wipoNode, cpcNode);
         graph.addFactorNode(null, valueNode);
         graph.addFactorNode(null, valueNode, wipoNode, cpcNode);
-        graph.addFactorNode(null, valueNode, assigneeNode);
+        //graph.addFactorNode(null, valueNode, assigneeNode);
 
         bayesianValueModel = new BayesianValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
@@ -160,7 +155,7 @@ public class WIPOValueModel extends ValueAttr {
             for (Item item : model.testItems) {
                 double value = model.bayesianValueModel.evaluate(item);
                // System.out.println(item.getName() + "," + value);
-                writer.write(item.getName() + "," + value + "," + Database.getGatherValueMap().get(item.getName())+"\n");
+                writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()).equals("FALSE") ? 0 : 1)+"\n");
             }
             writer.flush();
         } catch(Exception e) {

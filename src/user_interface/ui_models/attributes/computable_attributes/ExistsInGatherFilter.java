@@ -6,8 +6,10 @@ import seeding.Database;
 import spark.Request;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
 import user_interface.ui_models.attributes.ReelFrameAttribute;
+import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 
+import java.util.ArrayList;
 import java.util.Set;
 
 import static j2html.TagCreator.div;
@@ -26,6 +28,12 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
     public ExistsInGatherFilter() {
         super(new AssetNumberAttribute(), FilterType.Include, FieldType.Boolean, runModel());
     }
+
+    @Override
+    public AbstractFilter dup() {
+        return new ExistsInGatherFilter();
+    }
+
 
     private static Set<String> runModel(){
         if(MODEL==null) {

@@ -20,7 +20,7 @@ import static j2html.TagCreator.div;
  */
 public abstract class ValueAttr extends ComputableAttribute<Number> {
     // Instance class
-    protected double defaultVal;
+    protected double defaultVal = 0;
     public ValueAttr() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
     }

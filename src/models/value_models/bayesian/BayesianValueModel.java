@@ -50,16 +50,19 @@ public class BayesianValueModel extends ValueAttr {
         Map<String,Integer> assignment = createAssignment(token,variableToValuesMap);
         graph.setCurrentAssignment(assignment);
         FactorNode resultingFactor = graph.variableElimination(new String[]{valueVariableName});
+        Double val;
         if(resultingFactor.getCardinality()==1) {
             if(resultingFactor.getWeights().length!=2) throw new RuntimeException("Error in factor weights");
             resultingFactor.reNormalize(new DivideByPartition());
-            return resultingFactor.getWeights()[1]*100;
+            val = resultingFactor.getWeights()[1]*100;
         } else {
             FactorNode finalFactor = resultingFactor.sumOut(Arrays.stream(resultingFactor.getVarLabels()).filter(var->!var.equals(valueVariableName)).toArray(size->new String[size]));
             if(finalFactor.getWeights().length!=2) throw new RuntimeException("Error in factor weights");
             finalFactor.reNormalize(new DivideByPartition());
-            return finalFactor.getWeights()[1]*100;
+            val = finalFactor.getWeights()[1]*100;
         }
+        if(Double.isNaN(val)) val = defaultVal;
+        return val;
     }
 
     private Collection<Map<String,Integer>> createTrainingData(Item[] items) {
