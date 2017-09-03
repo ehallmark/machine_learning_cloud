@@ -1131,7 +1131,8 @@ public class SimilarPatentServer {
                         div().withClass("row collapsible-form").with(
                                 div().withClass("col-12 attributeElement").with(
                                         label("Sort By"),br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                Stream.of(Constants.OVERALL_SCORE,Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD)
+                                                Stream.of(Stream.of(Constants.OVERALL_SCORE,Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+                                                        getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)).map(attr->attr.getFullName())).flatMap(stream->stream)
                                                         .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                                         )
                                 ),
