@@ -74,7 +74,8 @@ public class BayesianValueModel extends ValueAttr {
     }
 
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
-        return item.getDataMap().entrySet().stream().filter(e->variableToValuesMap.containsKey(e.getKey())&&e.getValue()!=null&&variableToValuesMap.get(e.getKey()).contains(e.getValue().toString()))
-                .collect(Collectors.toMap(e->e.getKey(),e->variableToValuesMap.get(e.getKey()).indexOf(e.getValue().toString())));
+        return item.getDataMap().entrySet().stream().filter(e->variableToValuesMap.containsKey(e.getKey())&&e.getValue()!=null).filter(e->{
+            return Arrays.stream(e.getValue().toString().split("; ")).anyMatch(obj->variableToValuesMap.containsKey(obj));
+        }).collect(Collectors.toMap(e->e.getKey(),e->Arrays.stream(e.getValue().toString().split("; ")).map(obj->variableToValuesMap.get(e.getKey()).indexOf(obj)).filter(i->i>=0).findFirst().get()));
     }
 }
