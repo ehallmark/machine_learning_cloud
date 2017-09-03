@@ -74,7 +74,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     public Tag getOptionsTag() {
         if (!fieldType.equals(FieldType.Multiselect)) {
             return div().with(
-                    textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
+                    textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
             return div().with(
