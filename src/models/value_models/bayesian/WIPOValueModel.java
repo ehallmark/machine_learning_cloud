@@ -113,16 +113,16 @@ public class WIPOValueModel extends ValueAttr {
 
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
-        Node cpcNode = graph.findNode(cpc.getFullName());
+       // Node cpcNode = graph.findNode(cpc.getFullName());
         //Node assigneeNode = graph.findNode(assignee.getFullName());
 
         // connect and add factors
         graph.connectNodes(valueNode, wipoNode);
-        graph.connectNodes(valueNode, cpcNode);
+       // graph.connectNodes(valueNode, cpcNode);
         //graph.connectNodes(valueNode, assigneeNode);
-        graph.connectNodes(wipoNode, cpcNode);
+       // graph.connectNodes(wipoNode, cpcNode);
         graph.addFactorNode(null, valueNode);
-        graph.addFactorNode(null, valueNode, wipoNode, cpcNode);
+        graph.addFactorNode(null, valueNode, wipoNode);
         //graph.addFactorNode(null, valueNode, assigneeNode);
 
         bayesianValueModel = new BayesianValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
