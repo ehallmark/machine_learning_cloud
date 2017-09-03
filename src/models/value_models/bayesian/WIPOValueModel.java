@@ -52,11 +52,9 @@ public class WIPOValueModel extends ValueAttr {
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         AbstractAttribute cpc = new CPCAttribute();
         AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
-        AbstractAttribute docKind = new DocKindAttribute();
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo,
                 cpc,
-                docKind,
                 assignee
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
@@ -120,7 +118,6 @@ public class WIPOValueModel extends ValueAttr {
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         Node cpcNode = graph.findNode(cpc.getFullName());
-        Node docKindNode = graph.findNode(docKind.getFullName());
         Node assigneeNode = graph.findNode(assignee.getFullName());
 
         // connect and add factors
@@ -128,11 +125,9 @@ public class WIPOValueModel extends ValueAttr {
         graph.connectNodes(valueNode, cpcNode);
         graph.connectNodes(valueNode, assigneeNode);
         graph.connectNodes(wipoNode, cpcNode);
-        graph.connectNodes(valueNode, docKindNode);
         graph.addFactorNode(null, valueNode);
         graph.addFactorNode(null, valueNode, wipoNode, cpcNode);
         graph.addFactorNode(null, valueNode, assigneeNode);
-        graph.addFactorNode(null, valueNode, docKindNode);
 
         bayesianValueModel = new BayesianValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
