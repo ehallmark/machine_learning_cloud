@@ -24,8 +24,10 @@ public abstract class RegressionValueModel extends ValueAttr {
         this.weights = weights;
         this.intercept=intercept;
         attributesAndWeights = new ArrayList<>();
-        for(int i = 0; i < attributes.size(); i++) {
-            attributesAndWeights.add(new Pair<>(attributes.get(i),weights.get(i)));
+        if(weights!=null&&attributes!=null) {
+            for (int i = 0; i < attributes.size(); i++) {
+                attributesAndWeights.add(new Pair<>(attributes.get(i), weights.get(i)));
+            }
         }
     }
 
