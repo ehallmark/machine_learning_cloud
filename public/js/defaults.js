@@ -437,6 +437,7 @@ var resetCheckbox = function(elem,target,shouldShow) {
 
         var $checkbox = $draggable.find(".mycheckbox")
         $checkbox.prop("checked", shouldShow);
+
     }
 };
 
@@ -475,6 +476,13 @@ var hideDraggable = function(elem) {
                   resetCheckbox($draggable.get(0),$target.get(0),false);
             }
         }
+
+        $draggable.children().each(function() {
+            $(this).find('.draggable:visible').each(function() {
+                hideDraggable(this);
+            });
+        });
+
     }
 };
 

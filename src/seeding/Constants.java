@@ -207,8 +207,7 @@ public class Constants {
 			AGENTS,
 			CITATIONS,
 			CLAIMS,
-			PATENT_FAMILY,
-			GATHER
+			PATENT_FAMILY
 	);
 
 	public static Collection<String> FILING_ATTRIBUTES_SET = Stream.of(
