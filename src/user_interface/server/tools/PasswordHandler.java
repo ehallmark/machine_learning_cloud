@@ -3,6 +3,7 @@ package user_interface.server.tools;
 import lombok.NonNull;
 import org.apache.commons.io.FileUtils;
 import seeding.Constants;
+import user_interface.server.SimilarPatentServer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -17,13 +18,15 @@ import java.util.Random;
 public class PasswordHandler {
     private static final int MAX_PASSWORD_SIZE = 500;
     private static final String passwordFolder = Constants.DATA_FOLDER+"passwords/";
-    public boolean authorizeUser(String username, String password) throws PasswordException {
-        if(username == null || password == null) return false;
+    private static final String roleFolder = Constants.DATA_FOLDER+"roles/";
+    // Returns the role of the user (or null if not authorized)
+    public String authorizeUser(String username, String password) throws PasswordException {
+        if(username == null || password == null) return null;
         // HACK
-        if(username.equals("gtt") && password.equals("password")) return true;
+        if(username.equals("gtt") && password.equals("password")) return SimilarPatentServer.ANALYST_USER;
 
         File passwordFile = new File(passwordFolder+username);
-        if(!passwordFile.exists()) return false;
+        if(!passwordFile.exists()) return null;
         String encryptedPassword;
         try {
             encryptedPassword = FileUtils.readFileToString(passwordFile);
@@ -37,31 +40,40 @@ public class PasswordHandler {
         if(providedPasswordEncrypted == null) {
             throw new PasswordException("Unable to decrypt password.");
         }
-        return encryptedPassword.equals(providedPasswordEncrypted);
+        if(encryptedPassword.equals(providedPasswordEncrypted)) {
+            String role;
+            try {
+                File roleFile = new File(roleFolder+username);
+                role = FileUtils.readFileToString(roleFile);
+            } catch(Exception e) {
+                throw new PasswordException("Error reading user role file.");
+            }
+            return role;
+        } else return null;
     }
 
     public void changePassword(String username, String oldPassword, String newPassword) throws PasswordException {
         // authorize
-        boolean authorized = authorizeUser(username, oldPassword);
-        if(!authorized) {
+        String authorized = authorizeUser(username, oldPassword);
+        if(authorized==null) {
             throw new PasswordException("User is not authorized.");
         }
         // validate password
         validatePassword(newPassword);
-        saveUserToFile(username, newPassword);
+        saveUserToFile(username, newPassword,null);
     }
 
-    public void createUser(String username, String password) throws PasswordException {
+    public void createUser(String username, String password, String role) throws PasswordException {
         // validate
         validateUsername(username);
         validatePassword(password);
         // encrypt and save
-        saveUserToFile(username, password);
+        saveUserToFile(username, password, role);
     }
 
     public void deleteUser(String username, String password) throws PasswordException {
-        boolean authorized = authorizeUser(username, password);
-        if(!authorized) {
+        String authorized = authorizeUser(username, password);
+        if(authorized==null) {
             throw new PasswordException("User is not authorized.");
         }
         File fileToRemove = new File(passwordFolder+username);
@@ -77,7 +89,7 @@ public class PasswordHandler {
 
     // HELPER METHODS
 
-    private static void saveUserToFile(String username, String password) throws PasswordException{
+    private static void saveUserToFile(String username, String password, String role) throws PasswordException{
         // encrypt
         File passwordFile = new File(passwordFolder+username);
         String encryptedPassword = encrypt(password);
@@ -87,6 +99,15 @@ public class PasswordHandler {
             writer.flush();
         } catch(Exception e) {
             throw new PasswordException("Error creating password file.");
+        }
+        if(role!=null) {
+            File roleFile = new File(roleFolder + username);
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(roleFile))) {
+                writer.write(role);
+                writer.flush();
+            } catch (Exception e) {
+                throw new PasswordException("Error creating role file.");
+            }
         }
     }
 
@@ -137,8 +158,8 @@ public class PasswordHandler {
         System.out.println("Encrypted \"string\": "+encrypt("string"));
 
         PasswordHandler handler = new PasswordHandler();
-        handler.createUser("evan","password");
-        System.out.println("Authorized: "+handler.authorizeUser("evan", "password"));
+        handler.createUser(SimilarPatentServer.SUPER_USER,"klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg", SimilarPatentServer.SUPER_USER);
+        System.out.println("Authorized: "+handler.authorizeUser("form_creator", "klerjhdgtklh34h5jkhjkdsfhg39804758gjkhs834jhgs3y5456454bv4x5b5h55y45bfdcgjiytusvg"));
     }
 
 }

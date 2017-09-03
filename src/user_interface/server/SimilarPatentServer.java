@@ -49,6 +49,7 @@ import java.util.*;
 import java.util.concurrent.RecursiveTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,6 +87,10 @@ public class SimilarPatentServer {
     public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
+    public static final String SUPER_USER = "form_creator";
+    public static final String ANALYST_USER = "analyst";
+    public static final String INTERNAL_USER = "internal";
+    public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
     private static AbstractSimilarityModel DEFAULT_SIMILARITY_MODEL;
     private static TokenizerFactory tokenizerFactory = new DefaultTokenizerFactory();
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
@@ -93,7 +98,15 @@ public class SimilarPatentServer {
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
+    private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
+    private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
+
+    static {
+        roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
+        roleToAttributeFunctionMap.put(INTERNAL_USER, str -> true);
+        roleToAttributeFunctionMap.put(SUPER_USER, str -> true);
+    }
 
     @Getter
     static Collection<AbstractAttribute> allTopLevelAttributes;
@@ -458,6 +471,14 @@ public class SimilarPatentServer {
         if(debug)System.out.println("Finished Batch");
     }
 
+    private static boolean canCreateUser(String creatorRole, String childRole) {
+        if(creatorRole==null||childRole==null) return false;
+        if(creatorRole.equals(ANALYST_USER) && childRole.equals(ANALYST_USER)) return true;
+        if(creatorRole.equals(INTERNAL_USER) && (childRole.equals(ANALYST_USER) || childRole.equals(INTERNAL_USER))) return true;
+        if(creatorRole.equals(SUPER_USER)) return true;
+        return false;
+    }
+
     private static List<Collection<String>> chunked(List<String> items, int batchSize) {
         List<Collection<String>> chunks = new ArrayList<>((items.size()+1)/batchSize);
         for(int i = 0; i < items.size(); i+= batchSize) {
@@ -518,12 +539,13 @@ public class SimilarPatentServer {
             Session session = req.session(true);
             String username = extractString(req, "username", "");
             String password = extractString(req, "password", "");
-            boolean authorized = passwordHandler.authorizeUser(username,password);
-            session.attribute("authorized",authorized);
-            if(!authorized) {
+            String role = passwordHandler.authorizeUser(username,password);
+            session.attribute("authorized",role!=null);
+            if(role!=null) {
                 halt("User not found.");
             }
             session.attribute("username",username);
+            session.attribute("role", role);
             res.status(200);
             res.redirect(HOME_URL);
             return null;
@@ -531,6 +553,8 @@ public class SimilarPatentServer {
 
         get("/logout", (req,res)->{
             req.session(true).attribute("authorized",false);
+            req.session().removeAttribute("role");
+            req.session().removeAttribute("username");
             res.redirect("/");
             res.status(200);
             return null;
@@ -540,11 +564,15 @@ public class SimilarPatentServer {
             authorize(req,res);
             String username = extractString(req, "username", null);
             String password = extractString(req, "password", null);
-            if(password == null || username == null) {
+            String role = extractString(req, "role",null);
+            if(password == null || username == null || role == null) {
                 return new Gson().toJson(new SimpleAjaxMessage("Please enter a username and password."));
             }
+            if(!canCreateUser(req.session().attribute("role"),role)) {
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to create user with specified role."));
+            }
             try {
-                passwordHandler.createUser(username, password);
+                passwordHandler.createUser(username, password, role);
             } catch(Exception e) {
                 System.out.println("Error while creating user...");
                 e.printStackTrace();
@@ -560,6 +588,12 @@ public class SimilarPatentServer {
                             input().withType("text").withClass("form-control").withName("username")
                     ), br(), br(), label("Password").with(
                             input().withType("password").withClass("form-control").withName("password")
+                    ), br(), br(), label("Role").with(
+                            select().withClass("form-control single-select2").withName("role").with(
+                                    USER_ROLES.stream().map(role->{
+                                        return option(role).withValue(role);
+                                    }).collect(Collectors.toList())
+                            )
                     ), br(), br(), button("Create User").withClass("btn btn-secondary")
             );
             return templateWrapper(true, req, res, form);
@@ -578,7 +612,7 @@ public class SimilarPatentServer {
 
         get(HOME_URL, (req, res) -> {
             if(softAuthorize(req,res)) {
-                return templateWrapper(true, req, res, candidateSetModelsForm());
+                return templateWrapper(true, req, res, candidateSetModelsForm(req.session().attribute("role")));
             } else {
                 return null;
             }
@@ -957,13 +991,13 @@ public class SimilarPatentServer {
                         div().withClass("container-fluid text-center").attr("style","height: 100%;").with(
                                 div().withClass("row").attr("style","height: 100%;").with(
                                         nav().withClass("col-3 sidebar").attr("style","height: 100%; position: fixed; padding: 0px; padding-top: 75px;").with(
-                                                (authorized ? a("Sign Out").withHref("/logout").withClass("nav-link") : a("Log In").withHref("/").withClass("nav-link")),
-                                                (authorized ? a("Create User").withHref("/create_user").withClass("nav-link") : span()),
-                                                br(),
-                                                h4("Templates"),br(),
+                                                (authorized ? a("Sign Out").attr("style","padding: 0;").withHref("/logout").withClass("nav-link") : a("Log In").withHref("/").withClass("nav-link").attr("style","padding: 0;")),
+                                                (authorized ? a("Create User").attr("style","padding: 0;").withHref("/create_user").withClass("nav-link") : span()),
+                                                (authorized ? p("Signed in as "+req.session().attribute("username")+". Role: "+req.session().attribute("role")+".") : p("Not signed in.")),
+                                                h4("Saved Forms"),
                                                 (!authorized) ? div() : ul().withClass("nav nav-pills flex-column").with(
                                                         div().with(
-                                                                h5("Save as Template"),
+                                                                h5("Save Current Form"),
                                                                 form().withAction(SAVE_TEMPLATE_URL).withId("save-template-form-id").withMethod("post").with(
                                                                         input().withType("hidden").withName("chartsMap").withId("chartsMap"),
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
@@ -973,11 +1007,11 @@ public class SimilarPatentServer {
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
                                                         ), div().attr("style","max-height: 50%; overflow-y: auto;").with(
-                                                                h5("Default Templates"),
+                                                                h5("Default Forms"),
                                                                 div().with(
-                                                                        getTemplatesForUser("form_creator",false)
+                                                                        getTemplatesForUser(SUPER_USER,false)
                                                                 ),
-                                                                h5("My Templates"),
+                                                                h5("My Forms"),
                                                                 div().withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
@@ -1017,7 +1051,8 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag candidateSetModelsForm() {
+    private static Tag candidateSetModelsForm(String role) {
+        if(role==null) return null;
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse show").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
@@ -1027,13 +1062,13 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
                                                         mainOptionsRow()
                                                 ),div().withClass("col-6 form-right form-top").withId("chartsForm").with(
-                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD)
+                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD,roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
                                                 )
                                         ), div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
-                                                        customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD)
+                                                        customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD,roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
                                                 ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD))
+                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD),roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
                                                 )
                                         )
                                 ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
@@ -1074,11 +1109,11 @@ public class SimilarPatentServer {
                 )
         );
     }
-    private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName) {
-        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName));
+    private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName, Function<String,Boolean> shouldKeep) {
+        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName), shouldKeep);
     }
 
-    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames) {
+    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames, Function<String,Boolean> shouldKeep) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
@@ -1098,6 +1133,7 @@ public class SimilarPatentServer {
                                                 modelFields.stream().flatMap(pair->{
                                                     String arrayFieldName = pair._2;
                                                     return pair._1.entrySet().stream().map(e->{
+                                                        if(!shouldKeep.apply(e.getKey())) return null;
                                                         if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
                                                         return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter, e.getValue().isNotYetImplemented(), e.getValue().getDescription());
