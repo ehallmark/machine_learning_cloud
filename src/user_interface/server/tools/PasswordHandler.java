@@ -115,7 +115,7 @@ public class PasswordHandler {
         if(username == null) {
             throw new PasswordException("Please include username.");
         }
-        if(username.replaceAll("[^a-zA-Z0-9]","").length()!=username.length()) {
+        if(username.replaceAll("[^a-zA-Z0-9_\\-]","").length()!=username.length()) {
             throw new PasswordException("Username must be alphanumeric.");
         }
         File passwordFile = new File(passwordFolder+username);
