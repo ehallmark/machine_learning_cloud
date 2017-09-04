@@ -209,7 +209,7 @@ public class DataSearcher {
                             }
                         }
                     }
-                    System.out.println("Is Script and Component of score: "+sortScript.toString());
+                    System.out.println("Is Script and Component of score: "+sortScript);
                 }
             }
         } else if (componentOfScore) {

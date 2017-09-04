@@ -54,4 +54,9 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
     }
+
+    @Override
+    public AbstractSimilarityEngine dup() {
+        return new AssigneeSimilarityEngine(similarityModel);
+    }
 }

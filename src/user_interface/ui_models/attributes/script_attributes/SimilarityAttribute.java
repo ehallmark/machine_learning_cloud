@@ -83,6 +83,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getEngines().stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
         simVectors = relevantEngines.stream().map(engine->{
+            engine = engine.dup();
             engine.setSimilarityModel(finderPrototype);
             engine.extractRelevantInformationFromParams(req);
             return engine.getAvg();

@@ -51,4 +51,9 @@ public class PatentSimilarityEngine extends AbstractSimilarityEngine {
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Text;
     }
+
+    @Override
+    public AbstractSimilarityEngine dup() {
+        return new PatentSimilarityEngine(similarityModel);
+    }
 }

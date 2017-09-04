@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import models.similarity_models.AbstractSimilarityModel;
 import spark.Request;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.DependentAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.util.*;
@@ -19,7 +20,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 2/28/17.
  */
-public abstract class AbstractSimilarityEngine extends AbstractAttribute {
+public abstract class AbstractSimilarityEngine extends AbstractAttribute implements DependentAttribute<AbstractSimilarityEngine> {
     @Setter
     protected AbstractSimilarityModel similarityModel;
     protected Collection<String> inputs;
