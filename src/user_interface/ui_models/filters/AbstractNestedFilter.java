@@ -30,8 +30,6 @@ public class AbstractNestedFilter extends AbstractFilter {
     protected Collection<AbstractFilter> filters;
     @Setter
     protected Collection<AbstractFilter> filterSubset;
-    protected Collection<AbstractFilter> scorableSubset;
-    protected Collection<AbstractFilter> nonScorableSubset;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute) {
         super(nestedAttribute,FilterType.Nested);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
@@ -53,11 +51,11 @@ public class AbstractNestedFilter extends AbstractFilter {
     }
 
     public QueryBuilder getScorableQuery() {
-        return queryHelper(scorableSubset);
+        return queryHelper(filterSubset.stream().filter(filter->filter.contributesToScore()).collect(Collectors.toList()));
     }
 
     public QueryBuilder getNonScorableQuery() {
-        return queryHelper(nonScorableSubset);
+        return queryHelper(filterSubset.stream().filter(filter->!filter.contributesToScore()).collect(Collectors.toList()));
     }
 
 
@@ -80,17 +78,10 @@ public class AbstractNestedFilter extends AbstractFilter {
     public void extractRelevantInformationFromParams(Request params) {
         Collection<String> nestedAttributesToFilter = SimilarPatentServer.extractArray(params, getName());
         filterSubset = new ArrayList<>();
-        scorableSubset = new ArrayList<>();
-        nonScorableSubset = new ArrayList<>();
         filters.forEach(filter->{
             if(nestedAttributesToFilter.contains(filter.getName())) {
                 filter.extractRelevantInformationFromParams(params);
                 filterSubset.add(filter);
-                if(filter.contributesToScore()) {
-                    scorableSubset.add(filter);
-                } else {
-                    nonScorableSubset.add(filter);
-                }
             }
         });
     }

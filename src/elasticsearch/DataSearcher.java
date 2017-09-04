@@ -119,8 +119,14 @@ public class DataSearcher {
                         currentQuery.set(currentQuery.get().must(filter.getFilterQuery().boost(10)));
                     } else if (isOverallScore && filter instanceof AbstractNestedFilter) {
                         AbstractNestedFilter nestedFilter = (AbstractNestedFilter)filter;
-                        currentQuery.set(currentQuery.get().must(nestedFilter.getScorableQuery().boost(10)));
-                        currentFilter.set(currentFilter.get().must(nestedFilter.getNonScorableQuery().boost(0)));
+                        QueryBuilder scoreQuery = nestedFilter.getScorableQuery();
+                        QueryBuilder nonScoreQuery = nestedFilter.getNonScorableQuery();
+                        if(scoreQuery!=null) {
+                            currentQuery.set(currentQuery.get().must(scoreQuery.boost(10)));
+                        }
+                        if(nonScoreQuery!=null) {
+                            currentFilter.set(currentFilter.get().must(nonScoreQuery.boost(0)));
+                        }
                     } else {
                         currentFilter.set(currentFilter.get().must(filter.getFilterQuery().boost(0)));
                     }
