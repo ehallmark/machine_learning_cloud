@@ -116,7 +116,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     @Override
     public Tag getDescription() {
-        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription(true));
+        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription(this));
     }
 
 

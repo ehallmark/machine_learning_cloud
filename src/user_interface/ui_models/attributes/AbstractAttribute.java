@@ -86,7 +86,7 @@ public abstract class AbstractAttribute {
     private static String capitalize(String str) {
         return str==null||str.length()==0 ? str : (str.substring(0,1).toUpperCase()+str.substring(1));
     }
-    
+
     private static String createSimpleNameText(String name) {
         if(name.contains(".")) {
             String[] split = name.split("\\.",2);
