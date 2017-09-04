@@ -878,7 +878,7 @@ public class SimilarPatentServer {
                 );
                 Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
                         h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                        p("Showing "+Math.min(MAX_DATATABLE_RESULTS,tableData.size())+" out of "+tableData.size()+ " matched results."),
+                        p("Showing "+Math.min(MAX_DATATABLE_RESULTS,tableData.size())+" out of "+tableData.size()+ " matched results.").attr("style","margin-right: auto; margin-left: auto;"),
                         tableFromPatentList(Collections.emptyList(), tableHeaders)
                 );
                 long timeEnd = System.currentTimeMillis();

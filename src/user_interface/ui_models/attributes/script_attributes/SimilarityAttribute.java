@@ -35,7 +35,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     public static String EXPRESSION_SIMILARITY_SCRIPT;
     static {
-        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? 0 : ((((",") * 50.0) + 50.0) * _score)");
+        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? _score : ((((",") * 50.0) + 50.0) * _score)");
         for(int i = 0; i < vectorSize; i++) {
             sj.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
