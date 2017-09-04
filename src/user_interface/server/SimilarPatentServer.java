@@ -1095,7 +1095,7 @@ public class SimilarPatentServer {
                                  div().withClass("col-12").with(
                                         h3("Artificial Intelligence Platform").withClass("collapsible-header")
                                                 .attr("data-target","#main-content-id")
-                                                .attr("style","margin-top: -5px;")
+                                                .attr("style","margin-top: -10px;")
                                 )
                         )
                 )

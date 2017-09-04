@@ -77,7 +77,7 @@ public abstract class AbstractAttribute {
             }
             return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),name+"."));
         } else {
-            String prefix = parent==null ? "":"The ";
+            String prefix = parent!=null ? "":"The ";
             String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),createSimpleNameText(getFullName())+".");
             if(parent!=null) text = capitalize(text);
             return div().withText(text);
