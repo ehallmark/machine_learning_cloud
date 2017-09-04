@@ -191,14 +191,25 @@ public class DataSearcher {
                     // try adding custom sort script
                     QueryBuilder sortScript = scriptAttribute.getSortScript();
                     if (sortScript != null) {
-                        if(attribute.getParent()!=null) {
-                            System.out.println("Is nested");
-                            queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Avg)));
+                        if(isParentAttr) {
+                            if (attribute.getParent() != null) {
+                                System.out.println("Is nested");
+                                queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Avg)));
+                            } else {
+                                System.out.println("Not nested.");
+                                queryBuilder.set(queryBuilder.get().must(sortScript));
+                            }
                         } else {
-                            System.out.println("Not nested.");
-                            queryBuilder.set(queryBuilder.get().must(sortScript));
+                            if (attribute.getParent() != null) {
+                                System.out.println("Is nested");
+                                queryBuilder.set(queryBuilder.get().must(QueryBuilders.nestedQuery(attribute.getRootName(), sortScript, ScoreMode.Avg)));
+                            } else {
+                                System.out.println("Not nested.");
+                                queryBuilder.set(queryBuilder.get().must(sortScript));
+                            }
                         }
                     }
+                    System.out.println("Is Script and Component of score: "+sortScript.toString());
                 }
             }
         } else if (componentOfScore) {

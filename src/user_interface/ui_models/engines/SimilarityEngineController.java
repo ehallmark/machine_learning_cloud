@@ -97,8 +97,9 @@ public class SimilarityEngineController {
         Collection<AbstractAttribute> topLevelAttributes = SimilarPatentServer.getAllTopLevelAttributes().stream().map(attr->{
             if(attr instanceof DependentAttribute) {
                 System.out.println("Extracting info for dependent attribute: "+attr.getName());
-                ((DependentAttribute) attr).extractRelevantInformationFromParams(req);
-                return ((DependentAttribute) attr).dup();
+                AbstractAttribute attrDup =  ((DependentAttribute) attr).dup();
+                ((DependentAttribute)attrDup).extractRelevantInformationFromParams(req);
+                return attrDup;
             } else return attr;
         }).collect(Collectors.toList());
 
