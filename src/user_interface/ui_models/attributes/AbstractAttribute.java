@@ -76,12 +76,12 @@ public abstract class AbstractAttribute {
             } else {
                 prefix = " a ";
             }
-            return span().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
+            return (parent!=null?div():span()).withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
         } else {
             String prefix = parent!=null ? "":"The ";
             String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),createSimpleNameText(getFullName())+".");
             if(parent!=null) text = capitalize(text);
-            return span().withText(text);
+            return (parent!=null?div():span()).withText(text);
         }
     }
     private static String capitalize(String str) {
