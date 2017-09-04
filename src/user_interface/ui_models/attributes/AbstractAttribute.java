@@ -63,7 +63,7 @@ public abstract class AbstractAttribute {
 
     public boolean isNotYetImplemented() { return false; }
 
-    public Tag getDescription() { return p(Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),"The " +createSimpleNameText(getFullName())+".")); }
+    public Tag getDescription() { return div().withText(Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),"The " +createSimpleNameText(getFullName())+".")); }
 
 
     private static String createSimpleNameText(String name) {

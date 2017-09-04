@@ -275,7 +275,6 @@ $(document).ready(function() {
     setCollapsibleHeaders(".collapsible-header");
 
     $(document).tooltip({
-        items: '.attributeElement:not(.nested) .collapsible-header',
         content: function() { return $(this).attr('title'); }
     });
 
