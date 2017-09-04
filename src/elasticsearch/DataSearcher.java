@@ -35,6 +35,7 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
@@ -116,6 +117,10 @@ public class DataSearcher {
                     }
                     if (filter.contributesToScore() && isOverallScore) {
                         currentQuery.set(currentQuery.get().must(filter.getFilterQuery().boost(10)));
+                    } else if (isOverallScore && filter instanceof AbstractNestedFilter) {
+                        AbstractNestedFilter nestedFilter = (AbstractNestedFilter)filter;
+                        currentQuery.set(currentQuery.get().must(nestedFilter.getScorableQuery().boost(10)));
+                        currentFilter.set(currentFilter.get().must(nestedFilter.getNonScorableQuery().boost(0)));
                     } else {
                         currentFilter.set(currentFilter.get().must(filter.getFilterQuery().boost(0)));
                     }

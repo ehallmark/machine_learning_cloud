@@ -30,6 +30,8 @@ public class AbstractNestedFilter extends AbstractFilter {
     protected Collection<AbstractFilter> filters;
     @Setter
     protected Collection<AbstractFilter> filterSubset;
+    protected Collection<AbstractFilter> scorableSubset;
+    protected Collection<AbstractFilter> nonScorableSubset;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute) {
         super(nestedAttribute,FilterType.Nested);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
@@ -47,8 +49,21 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
+        return queryHelper(filterSubset);
+    }
+
+    public QueryBuilder getScorableQuery() {
+        return queryHelper(scorableSubset);
+    }
+
+    public QueryBuilder getNonScorableQuery() {
+        return queryHelper(nonScorableSubset);
+    }
+
+
+    private QueryBuilder queryHelper(Collection<AbstractFilter> subset) {
         BoolQueryBuilder boolQuery = QueryBuilders.boolQuery();
-        for(AbstractFilter filter : filterSubset) {
+        for(AbstractFilter filter : subset) {
             if(filter.isActive()) {
                 boolQuery = boolQuery.must(filter.getFilterQuery());
             }
@@ -65,10 +80,17 @@ public class AbstractNestedFilter extends AbstractFilter {
     public void extractRelevantInformationFromParams(Request params) {
         Collection<String> nestedAttributesToFilter = SimilarPatentServer.extractArray(params, getName());
         filterSubset = new ArrayList<>();
+        scorableSubset = new ArrayList<>();
+        nonScorableSubset = new ArrayList<>();
         filters.forEach(filter->{
             if(nestedAttributesToFilter.contains(filter.getName())) {
                 filter.extractRelevantInformationFromParams(params);
                 filterSubset.add(filter);
+                if(filter.contributesToScore()) {
+                    scorableSubset.add(filter);
+                } else {
+                    nonScorableSubset.add(filter);
+                }
             }
         });
     }
