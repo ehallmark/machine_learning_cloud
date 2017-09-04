@@ -300,6 +300,9 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(ESTIMATED_EXPIRATION_DATE, "expiration date computed from the original expiration date and any term adjustment information.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(ASSIGNEES+"."+JAPANESE_ASSIGNEE,"original assignee is japanese.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(LATEST_ASSIGNEE+"."+JAPANESE_ASSIGNEE,"latest assignee is japanese.");
+		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart of");
+		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart of");
+		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram of");
 	}
 
 }

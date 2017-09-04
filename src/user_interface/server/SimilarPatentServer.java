@@ -62,6 +62,7 @@ import static spark.Spark.*;
  */
 public class SimilarPatentServer {
     private static final boolean debug = false;
+    private static final int MAX_DATATABLE_RESULTS = 100;
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
     private static final String PROTECTED_URL_PREFIX = "/secure";
@@ -693,9 +694,8 @@ public class SimilarPatentServer {
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of headers: "+headers.size());
             List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
-            int maxResults = 100;
-            if(data.size()>maxResults) {
-                data = data.subList(0, maxResults);
+            if(data.size()>MAX_DATATABLE_RESULTS) {
+                data = data.subList(0, MAX_DATATABLE_RESULTS);
             }
             return new Gson().toJson(new SimpleAjaxMessage(String.join("",dataTableBodyFromData(data,headers).stream().map(t->t.render()).collect(Collectors.toList()))));
         } catch (Exception e) {
@@ -878,12 +878,13 @@ public class SimilarPatentServer {
                 );
                 Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
                         h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
+                        p("Showing "+Math.min(MAX_DATATABLE_RESULTS,tableData.size())+" out of "+tableData.size()+ " matched results."),
                         tableFromPatentList(Collections.emptyList(), tableHeaders)
                 );
                 long timeEnd = System.currentTimeMillis();
                 double timeSeconds = new Double(timeEnd-timeStart)/1000;
                 html = new Gson().toJson(new AjaxChartMessage(div().with(
-                        p("Found "+tableData.size()+" results in "+timeSeconds+" seconds."), br(),
+                        p("Matched "+tableData.size()+" results in "+timeSeconds+" seconds."), br(),
                         chartTag, br(),
                         tableTag, br()
 

@@ -8,6 +8,7 @@ import seeding.Constants;
 import seeding.Database;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.charts.ChartAttribute;
 import user_interface.ui_models.filters.*;
 
 import java.io.File;
@@ -84,7 +85,7 @@ public abstract class AbstractAttribute {
             return (parent!=null?div():span()).withText(text);
         }
     }
-    private static String capitalize(String str) {
+    protected static String capitalize(String str) {
         return str==null||str.length()==0 ? str : (str.substring(0,1).toUpperCase()+str.substring(1));
     }
 
