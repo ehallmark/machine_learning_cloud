@@ -69,11 +69,11 @@ public class DataSearcher {
         try {
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
-            boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE);
+            boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE)||comparator.equals(Constants.SIMILARITY);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
             boolean usingScore;
-            if(isOverallScore||comparator.equals(Constants.SIMILARITY)) {
+            if(isOverallScore) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
                 usingScore = true;
             } else if (Constants.FILING_ATTRIBUTES_SET.contains(comparator)||(comparator.contains(".")&&Constants.FILING_ATTRIBUTES_SET.contains(comparator.substring(0,comparator.indexOf("."))))) {

@@ -90,7 +90,7 @@ public class SimilarityEngineController {
             throw new RuntimeException("Error: Maximum result limit is "+maxResultLimit+ " which is less than "+limit);
         }
 
-        String comparator = extractString(req, COMPARATOR_FIELD, Constants.OVERALL_SCORE);
+        String comparator = extractString(req, COMPARATOR_FIELD, Constants.SIMILARITY);
         setPrefilters(req);
 
         SortOrder sortOrder = SortOrder.fromString(extractString(req,SORT_DIRECTION_FIELD,"desc"));
