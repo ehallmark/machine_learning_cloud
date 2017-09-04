@@ -7,6 +7,7 @@ import lombok.Setter;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;
+import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
 import java.io.File;
@@ -61,20 +62,13 @@ public abstract class AbstractAttribute {
 
     public Tag getDescription() { return p(Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),"The " +createSimpleNameText(getFullName())+".")); }
 
+
     private static String createSimpleNameText(String name) {
         if(name.contains(".")) {
             String[] split = name.split("\\.",2);
             return createSimpleNameText(split[1]) + " of " + createSimpleNameText(split[0]);
         } else {
-            String simple = "";
-            for(char c : name.toCharArray()) {
-                if(Character.isUpperCase(c)) {
-                    simple+=(" "+c).toLowerCase();
-                }else {
-                    simple += c;
-                }
-            }
-            return simple;
+            return SimilarPatentServer.humanAttributeFor(name).toLowerCase();
         }
     }
 
