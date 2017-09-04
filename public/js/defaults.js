@@ -143,7 +143,7 @@ $(document).ready(function() {
                          success: function(chartData) {
                            if(chartData.hasOwnProperty('message')) {
                             // error
-                              $chartDiv.html(chartData.message);
+                              alert(chartData.message);
                            } else {
                               var $chartDiv = $('#'+chartData.chartId.toString());
                               for(var j = 0; j < chartData.charts.length; j++) {
