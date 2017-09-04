@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.p;
+import static j2html.TagCreator.span;
 
 import java.util.Arrays;
 import java.util.List;
@@ -75,12 +76,12 @@ public abstract class AbstractAttribute {
             } else {
                 prefix = " a ";
             }
-            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
+            return span().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
         } else {
             String prefix = parent!=null ? "":"The ";
             String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),createSimpleNameText(getFullName())+".");
             if(parent!=null) text = capitalize(text);
-            return div().withText(text);
+            return span().withText(text);
         }
     }
     private static String capitalize(String str) {

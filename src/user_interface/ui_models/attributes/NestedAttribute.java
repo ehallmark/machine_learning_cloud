@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
+import static j2html.TagCreator.span;
 
 
 /**
@@ -50,7 +51,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         if(tagList.size()>10) {
             tagList = Stream.of(tagList,Arrays.asList(div().withText("And more..."))).flatMap(list->list.stream().limit(10)).collect(Collectors.toList());
         }
-        return div().with(tagList);
+        return span().with(tagList);
     }
 
 }

@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.p;
+import static j2html.TagCreator.span;
 
 /**
  * Created by Evan on 5/9/2017.
@@ -116,7 +117,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     @Override
     public Tag getDescription() {
-        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription(this));
+        return span().with(getDescriptionFor(getFilterType()),attribute.getDescription(this));
     }
 
 
@@ -172,8 +173,6 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 break;
             }
         };
-        return div().with(
-                div().withText(description)
-        );
+        return span(description);
     }
 }
