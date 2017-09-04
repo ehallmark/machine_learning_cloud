@@ -275,13 +275,11 @@ public class Constants {
 	);
 
 	public static final Collection<String> OVERALL_SCORE_ATTRIBUTES = Stream.of(
-			AI_VALUE,
-			SIMILARITY//,
-			//CLAIMS+"."+CLAIM,
-			//INVENTION_TITLE,
-			//ABSTRACT
+			//AI_VALUE,
+			SIMILARITY
 
 	).collect(Collectors.toSet());
+
 
 	public static final String DOC_TYPE_INCLUDE_FILTER_STR = DOC_TYPE + AbstractFilter.FilterType.Include.toString() + FILTER_SUFFIX;
 

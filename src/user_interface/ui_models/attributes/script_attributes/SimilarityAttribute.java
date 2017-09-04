@@ -31,11 +31,11 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
             "for(int i = 0; i < length; i++) {" +
             "    ab+=params.avg_vector[i] * (float) doc['vector_obj.'+i].value;" +
             "}" +
-            "return ab * 100;";
+            "return ((ab * 50.0)+50.0);";
 
     public static String EXPRESSION_SIMILARITY_SCRIPT;
     static {
-        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? 0 : ((",") * 100.0)");
+        StringJoiner sj = new StringJoiner("+","doc['vector_obj.0'].empty ? 0 : ((((",") * 50.0) + 50.0) * _score)");
         for(int i = 0; i < vectorSize; i++) {
             sj.add("(doc['vector_obj."+i+"'].value*avg_vector"+i+")");
         }
