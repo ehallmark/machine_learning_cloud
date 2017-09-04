@@ -63,23 +63,30 @@ public abstract class AbstractAttribute {
 
     public boolean isNotYetImplemented() { return false; }
 
-    public Tag getDescription() { return getDescription(false); }
-    public Tag getDescription(boolean afterFilter) {
-        if(afterFilter) {
+    public Tag getDescription() { return getDescription(null); }
+    public Tag getDescription(AbstractFilter filter) {
+        if(filter!=null) {
             String prefix;
             String name = createSimpleNameText(getFullName());
-            if(Arrays.asList("a","e","i","o","u","h").contains(name.substring(0,1))) {
+            if(filter instanceof AbstractBooleanExcludeFilter || filter instanceof AbstractBooleanIncludeFilter) {
+                prefix = " ";
+            } else if(Arrays.asList("a","e","i","o","u","h").contains(name.substring(0,1))) {
                 prefix = " an ";
             } else {
                 prefix = " a ";
             }
             return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),name+"."));
         } else {
-            String prefix = "The ";
-            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),createSimpleNameText(getFullName())+"."));
+            String prefix = parent==null ? "":"The ";
+            String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),createSimpleNameText(getFullName())+".");
+            if(parent!=null) text = capitalize(text);
+            return div().withText(text);
         }
     }
-
+    private static String capitalize(String str) {
+        return str==null||str.length()==0 ? str : (str.substring(0,1).toUpperCase()+str.substring(1));
+    }
+    
     private static String createSimpleNameText(String name) {
         if(name.contains(".")) {
             String[] split = name.split("\\.",2);

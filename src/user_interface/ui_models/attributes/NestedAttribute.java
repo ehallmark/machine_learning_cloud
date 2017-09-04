@@ -47,9 +47,9 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getDescription() {
-        return div().withClass("row").with(
-                attributes.stream().map(attr->div().withClass("col-10 col-offset-1").with(attr.getDescription())).collect(Collectors.toList())
+    public Tag getDescription(AbstractFilter filter) {
+        return div().with(
+                attributes.stream().map(attr->attr.getDescription()).collect(Collectors.toList())
         );
     }
 
