@@ -12,11 +12,14 @@ import user_interface.ui_models.filters.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.p;
 
+import java.util.Arrays;
+import java.util.List;
 /**
  * Created by Evan on 5/9/2017.
  */
@@ -66,10 +69,16 @@ public abstract class AbstractAttribute {
     private static String createSimpleNameText(String name) {
         if(name.contains(".")) {
             String[] split = name.split("\\.",2);
-            return createSimpleNameText(split[1]) + " of " + createSimpleNameText(split[0]);
+            return createSimpleNameText(split[1]) + " of the " + singularize(createSimpleNameText(split[0]));
         } else {
             return SimilarPatentServer.humanAttributeFor(name).toLowerCase();
         }
+    }
+
+    private static String singularize(String name) {
+        if(name.endsWith("es")&&name.length()>2) return name.substring(0,name.length()-2);
+        else if(name.endsWith("s")&&name.length()>1) return name.substring(0,name.length()-1);
+        return name;
     }
 
     public Collection<AbstractFilter> createFilters() {
