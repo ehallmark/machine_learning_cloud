@@ -116,7 +116,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
 
     @Override
     public Tag getDescription() {
-        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription());
+        return div().with(getDescriptionFor(getFilterType()),attribute.getDescription(true));
     }
 
 
@@ -124,35 +124,35 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         String description;
         switch(filterType) {
             case Exclude: {
-                description = "This filter excludes results that match a value";
+                description = "This filter excludes results that match";
                 break;
             }
             case Include: {
-                description = "This filter only includes results that match a value";
+                description = "This filter only includes results that match";
                 break;
             }
             case AdvancedKeyword: {
-                description = "This filter only includes results that match an advanced keyword value";
+                description = "This filter only includes results that match";
                 break;
             }
             case Between: {
-                description = "This filter only includes results between values";
+                description = "This filter only includes results between";
                 break;
             }
             case GreaterThan: {
-                description = "This filter only includes results greater than a value";
+                description = "This filter only includes results greater than";
                 break;
             }
             case LessThan: {
-                description = "This filter only includes results less than a value";
+                description = "This filter only includes results less than";
                 break;
             }
             case PrefixExclude: {
-                description = "This filter only includes results starting with a value";
+                description = "This filter only includes results starting with";
                 break;
             }
             case PrefixInclude: {
-                description = "This filter excludes results starting with a value";
+                description = "This filter excludes results starting with";
                 break;
             }
             case Nested: {
@@ -160,11 +160,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 break;
             }
             case BoolTrue: {
-                description = "This filter only includes results that match a value";
+                description = "This filter only includes results that are";
                 break;
             }
             case BoolFalse: {
-                description = "This filter excludes results that match a value";
+                description = "This filter excludes results that are";
                 break;
             }
             default: {
@@ -173,7 +173,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             }
         };
         return div().with(
-                p(description)
+                div().withText(description)
         );
     }
 }

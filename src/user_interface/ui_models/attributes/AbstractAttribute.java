@@ -63,16 +63,35 @@ public abstract class AbstractAttribute {
 
     public boolean isNotYetImplemented() { return false; }
 
-    public Tag getDescription() { return div().withText(Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),"The " +createSimpleNameText(getFullName())+".")); }
-
+    public Tag getDescription() { return getDescription(false); }
+    public Tag getDescription(boolean afterFilter) {
+        if(afterFilter) {
+            String prefix;
+            String name = createSimpleNameText(getFullName());
+            if(Arrays.asList("a","e","i","o","u","h").contains(name.substring(0,1))) {
+                prefix = " an ";
+            } else {
+                prefix = " a ";
+            }
+            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),name+"."));
+        } else {
+            String prefix = "The ";
+            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),createSimpleNameText(getFullName())+"."));
+        }
+    }
 
     private static String createSimpleNameText(String name) {
         if(name.contains(".")) {
             String[] split = name.split("\\.",2);
-            return createSimpleNameText(split[1]) + " of the " + singularize(createSimpleNameText(split[0]));
+            return createSimpleNameText(split[1])+" of "+theOrAnd(split[0])+" "+singularize(createSimpleNameText(split[0]));
         } else {
             return SimilarPatentServer.humanAttributeFor(name).toLowerCase();
         }
+    }
+
+    private static String theOrAnd(String rootName) {
+        if(Constants.NESTED_ATTRIBUTES.contains(rootName)) return "an";
+        else return "the";
     }
 
     private static String singularize(String name) {
