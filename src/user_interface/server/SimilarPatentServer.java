@@ -156,7 +156,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Original Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
-            humanAttrToJavaAttrMap.put("Overall Score", Constants.OVERALL_SCORE);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
             humanAttrToJavaAttrMap.put("Original Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
@@ -819,9 +818,6 @@ public class SimilarPatentServer {
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
             List<String> tableHeaders = new ArrayList<>(itemAttributes);
-            if(comparator.equals(Constants.OVERALL_SCORE)) {
-                tableHeaders.add(0,Constants.OVERALL_SCORE);
-            }
 
             res.type("application/json");
 

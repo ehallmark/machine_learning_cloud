@@ -69,7 +69,7 @@ public class DataSearcher {
         try {
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
-            boolean isOverallScore = comparator.equals(Constants.OVERALL_SCORE)||comparator.equals(Constants.SIMILARITY);
+            boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
             boolean usingScore;
@@ -170,7 +170,7 @@ public class DataSearcher {
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
         boolean isParentAttr = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
-        boolean componentOfScore = (usingScore && (comparator.equals(Constants.OVERALL_SCORE) && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName())))
+        boolean componentOfScore = (usingScore && Constants.OVERALL_SCORE_ATTRIBUTES.contains(attribute.getFullName()))
                 || (attribute.getFullName().equals(comparator) && isParentAttr);
         if (attribute instanceof AbstractScriptAttribute) {
             System.out.println("  Script Component... " + attribute.getFullName());
@@ -270,8 +270,6 @@ public class DataSearcher {
                 }
             }
         }
-        // potentially override similarity
-        item.addData(Constants.OVERALL_SCORE,hit.getScore());
         return item;
     }
 
