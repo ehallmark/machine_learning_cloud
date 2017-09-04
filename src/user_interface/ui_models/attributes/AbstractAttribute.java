@@ -75,10 +75,10 @@ public abstract class AbstractAttribute {
             } else {
                 prefix = " a ";
             }
-            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),name+"."));
+            return div().withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
         } else {
             String prefix = parent!=null ? "":"The ";
-            String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getName(),createSimpleNameText(getFullName())+".");
+            String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),createSimpleNameText(getFullName())+".");
             if(parent!=null) text = capitalize(text);
             return div().withText(text);
         }

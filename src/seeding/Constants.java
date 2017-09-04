@@ -287,11 +287,14 @@ public class Constants {
 
 	public static final Map<String,String> ATTRIBUTE_DESCRIPTION_MAP = Collections.synchronizedMap(new HashMap<>());
 	static {
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM, "full text of a claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM_LENGTH, "number of words in a claim.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIM_NUM, "number of the claim in the document.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM, "full text of a claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_LENGTH, "number of words in a claim.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_NUM, "number of the claim in the document.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(SMALLEST_INDEPENDENT_CLAIM_LENGTH, "number of words in the document's smallest independent claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(AI_VALUE, "AI value of the document. Developed by GTT Group.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(JAPANESE_ASSIGNEE, "is japanese");
+		ATTRIBUTE_DESCRIPTION_MAP.put(ASSIGNEES+"."+JAPANESE_ASSIGNEE,"original assignee is japanese.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(LATEST_ASSIGNEE+"."+JAPANESE_ASSIGNEE,"latest assignee is japanese.");
 	}
 
 }
