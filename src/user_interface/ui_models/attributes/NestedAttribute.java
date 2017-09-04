@@ -5,11 +5,9 @@ import lombok.Getter;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static j2html.TagCreator.div;
 
@@ -48,9 +46,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getDescription(AbstractFilter filter) {
-        return div().with(
-                attributes.stream().map(attr->attr.getDescription()).collect(Collectors.toList())
-        );
+        List<Tag> tagList = attributes.stream().map(attr->attr.getDescription()).collect(Collectors.toList());
+        if(tagList.size()>10) {
+            tagList = Stream.of(tagList,Arrays.asList(div().withText("And more..."))).flatMap(list->list.stream().limit(10)).collect(Collectors.toList());
+        }
+        return div().with(tagList);
     }
 
 }
