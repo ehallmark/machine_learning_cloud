@@ -276,7 +276,7 @@ $(document).ready(function() {
 
     $(document).tooltip({
         items: '.attributeElement:not(.nested) .collapsible-header',
-        content: function() { return $(this).parent().attr('title'); }
+        content: function() { return $(this).attr('title'); }
     });
 
     resetSearchForm();
