@@ -157,7 +157,7 @@ public class DataSearcher {
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
-                Item[] newItems = Arrays.stream(response.getHits().getHits()).map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap))).toArray(size->new Item[size]);
+                Item[] newItems = Arrays.stream(response.getHits().getHits()).map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore))).toArray(size->new Item[size]);
                 if(merge) items=merge(items,newItems);
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
             } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
@@ -244,7 +244,7 @@ public class DataSearcher {
         return (Item[]) ArrayUtils.addAll(v1, v2);
     }
 
-    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap) {
+    private static Item hitToItem(SearchHit hit, Map<String,NestedAttribute> nestedAttrNameMap, boolean isUsingScore) {
         Item item = new Item(hit.getId());
         if(debug) {
             System.out.println("fields: "+new Gson().toJson(hit.getFields()));
@@ -269,6 +269,9 @@ public class DataSearcher {
                     System.out.println("  inner source: " + new Gson().toJson(innerHits[0].getSource()));
                 }
             }
+        }
+        if(isUsingScore) {
+            item.addData(Constants.SIMILARITY, hit.getScore());
         }
         return item;
     }

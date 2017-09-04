@@ -47,7 +47,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     @Override
     public Script getScript() {
-        Script searchScript;
+        Script searchScript = null;
         if(simVectors!=null&&simVectors.size()>0) {
             System.out.println("Found similarity vectors!!!");
             Map<String, Object> params = new HashMap<>();
@@ -61,14 +61,6 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
                     "expression",
                     EXPRESSION_SIMILARITY_SCRIPT,
                     params
-            );
-        } else {
-            System.out.println("No similarity vectors found :(");
-            searchScript = new Script(
-                    ScriptType.INLINE,
-                    "expression",
-                    "_score",
-                    Collections.emptyMap()
             );
         }
         return searchScript;
