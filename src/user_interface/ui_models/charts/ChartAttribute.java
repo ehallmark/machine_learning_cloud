@@ -1,6 +1,7 @@
 package user_interface.ui_models.charts;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
@@ -22,16 +23,17 @@ import static j2html.TagCreator.span;
  * Created by Evan on 6/17/2017.
  */
 public abstract class ChartAttribute extends AbstractAttribute implements DependentAttribute<ChartAttribute> {
-    public ChartAttribute() {
+    @Getter
+    protected List<String> attributes;
+    public ChartAttribute(List<String> attributes) {
         super(Collections.emptyList());
+        this.attributes=attributes;
     }
 
     public abstract List<? extends AbstractChart> create(PortfolioList portfolioList, int i);
 
     @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}
-
-    public abstract List<String> getAttributes();
 
     @Override
     public String getName() {

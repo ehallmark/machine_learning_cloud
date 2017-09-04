@@ -21,9 +21,11 @@ import java.util.stream.Stream;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractDistributionChart extends ChartAttribute {
-    @Getter
-    protected List<String> attributes;
     protected Collection<String> searchTypes;
+
+    public AbstractDistributionChart() {
+        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE));
+    }
 
     @Override
     public ChartAttribute dup() {
@@ -32,7 +34,7 @@ public class AbstractDistributionChart extends ChartAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE));
+        return SimilarPatentServer.technologySelect(Constants.PIE_CHART,getAttributes());
 
     }
 

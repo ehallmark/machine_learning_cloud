@@ -31,11 +31,13 @@ import static j2html.TagCreator.*;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractLineChart extends ChartAttribute {
-    @Getter
-    protected List<String> attributes;
     protected Collection<String> searchTypes;
     protected Integer max;
     protected Integer min;
+
+    public AbstractLineChart() {
+        super(Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE));
+    }
 
     @Override
     public ChartAttribute dup() {
@@ -52,7 +54,7 @@ public class AbstractLineChart extends ChartAttribute {
                                 label("Max"),br(),input().withId(SimilarPatentServer.LINE_CHART_MAX).withName(SimilarPatentServer.LINE_CHART_MAX).withType("number").withClass("form-control")
                         )
                 ),
-                SimilarPatentServer.technologySelect(Constants.LINE_CHART,Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE))
+                SimilarPatentServer.technologySelect(Constants.LINE_CHART,getAttributes())
         );
     }
 

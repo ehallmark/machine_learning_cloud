@@ -29,12 +29,14 @@ import static j2html.TagCreator.span;
  * Created by Evan on 6/18/2017.
  */
 public class AbstractHistogramChart extends ChartAttribute {
-    @Getter
-    protected List<String> attributes;
     protected String groupedBy;
     protected Collection<String> searchTypes;
     protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
     protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
+
+    public AbstractHistogramChart() {
+        super(Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE));
+    }
 
     @Override
     public ChartAttribute dup() {
@@ -50,7 +52,7 @@ public class AbstractHistogramChart extends ChartAttribute {
                                 Arrays.asList(Constants.LATEST_ASSIGNEE,Constants.ASSIGNEE, Constants.TECHNOLOGY, Constants.WIPO_TECHNOLOGY).stream()
                                         .map(key->option(SimilarPatentServer.humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
                         )
-                ),SimilarPatentServer.technologySelect(Constants.HISTOGRAM,Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE))
+                ),SimilarPatentServer.technologySelect(Constants.HISTOGRAM,getAttributes())
         );
     }
 
