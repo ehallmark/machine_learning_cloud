@@ -97,7 +97,13 @@ public abstract class AbstractAttribute {
     }
 
     private static String theOrAnd(String rootName) {
-        if(Constants.NESTED_ATTRIBUTES.contains(rootName)) return "an";
+        if(Constants.NESTED_ATTRIBUTES.contains(rootName)) {
+            if(Arrays.asList("a","e","i","o","u","h").contains(rootName.substring(0,1))) {
+                return "an";
+            } else {
+                return "a";
+            }
+        }
         else return "the";
     }
 

@@ -290,6 +290,7 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM, "full text of a claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_LENGTH, "number of words in a claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+CLAIM_NUM, "number of the claim in the document.");
+		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+PARENT_CLAIM_NUM, "parent claim number of the claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(SMALLEST_INDEPENDENT_CLAIM_LENGTH, "number of words in the document's smallest independent claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(AI_VALUE, "AI value of the document. Developed by GTT Group.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(JAPANESE_ASSIGNEE, "is japanese");
