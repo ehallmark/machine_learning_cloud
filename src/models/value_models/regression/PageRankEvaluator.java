@@ -24,6 +24,8 @@ public class PageRankEvaluator extends ValueAttr {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(excelFile))) {
             writer.write("asset,pageRank\n");
             for (String asset : Database.getGatherAssets()) {
+                if(asset.contains(",")) return;
+                if(asset.startsWith("US")) asset = asset.replace("US","");
                 writer.write(asset+","+pageRank.getPatentDataMap().getOrDefault(asset,pageRank.getApplicationDataMap().getOrDefault(asset,0))+"\n");
             }
             writer.flush();
