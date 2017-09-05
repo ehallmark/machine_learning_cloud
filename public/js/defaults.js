@@ -39,7 +39,18 @@ $(document).ready(function() {
         $.ajax({
           type: "POST",
           url: $(this).attr('action'),
-          data: $(this).serialize(),
+          data: $(this).serialize(),<html>
+                                        <head>
+                                            <title>AI Platform Startup</title>
+                                            <meta http-equiv="refresh" content="30">
+                                        </head>
+                                        <body>
+                                            <div>
+                                                <h4>Platform is starting up now...</h4>
+                                                <h5>Please check back in a few minutes.</h5>
+                                            </div>
+                                        </body>
+                                    </html>
           success: function(data) {
             // add button
             if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
@@ -315,7 +326,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable').find('select,textarea,input:not(.mycheckbox)').val(null).trigger('change').prop('disabled',true);
+    $('.draggable').find('select,textarea,input').prop("disabled",true).not("input.mycheckbox").val(null).trigger('change');
     $('#results').html('');
 };
 
@@ -455,7 +466,7 @@ var hideDraggable = function(elem) {
     var $draggable = $(elem);
     if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
     if($draggable.length > 0) {
-        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('select,textarea,input:not(.mycheckbox)').val(null).trigger('change').prop("disabled",true);
+        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('select,textarea,input').prop("disabled",true).not("input.mycheckbox").val(null).trigger('change');
         if(!$draggable.hasClass('leaf')) {
             $draggable.children().each(function(){ $(this).find('.draggable').each(function(){$(this).parent().hide();}); });
         }
