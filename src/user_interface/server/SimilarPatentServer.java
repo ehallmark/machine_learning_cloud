@@ -565,26 +565,42 @@ public class SimilarPatentServer {
             String username = extractString(req, "username", null);
             String password = extractString(req, "password", null);
             String role = extractString(req, "role",null);
+            String redirect;
+            String message = null;
             if(password == null || username == null || role == null) {
-                return new Gson().toJson(new SimpleAjaxMessage("Please enter a username and password."));
+                message = "Please enter a username and password.";
             }
             if(!canCreateUser(req.session().attribute("role"),role)) {
-                return new Gson().toJson(new SimpleAjaxMessage("Unable to create user with specified role."));
+                message = "Unable to create user with specified role.";
             }
-            try {
-                passwordHandler.createUser(username, password, role);
-            } catch(Exception e) {
-                System.out.println("Error while creating user...");
-                e.printStackTrace();
-                return new Gson().toJson(new SimpleAjaxMessage(e.getMessage()));
+            if(message == null) {
+                try {
+                    passwordHandler.createUser(username, password, role);
+                    redirect = HOME_URL;
+                    message = "Successfully created user "+username+".";
+                } catch (Exception e) {
+                    System.out.println("Error while creating user...");
+                    e.printStackTrace();
+                    redirect = "/create_user";
+                    message = e.getMessage();
+                }
+            } else {
+                redirect = "/create_user";
             }
-            return new Gson().toJson(new SimpleAjaxMessage("Sucessfully created."));
+            res.redirect(redirect);
+            req.session().attribute("message", message);
+            return null;
         });
 
         get("/create_user", (req, res)->{
             authorize(req,res);
             String ownerRole = req.session().attribute("role");
+            String message = req.session().attribute("message");
+            req.session().removeAttribute("message");
             Tag form = form().withId("create-user-form").withAction("/new_user").withMethod("POST").attr("style","margin-top: 100px;").with(
+                    (message == null ? span() : div().withClass("not-implemented").withText(
+                            message
+                    )),br(),
                     label("Username").with(
                             input().withType("text").withClass("form-control").withName("username")
                     ), br(), br(), label("Password").with(
@@ -809,7 +825,6 @@ public class SimilarPatentServer {
             System.out.println("Getting models...");
             long timeStart = System.currentTimeMillis();
             // Sorted by
-            String comparator = extractString(req,COMPARATOR_FIELD,Constants.SIMILARITY);
             // Get Models to use
             List<String> itemAttributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
             List<String> chartModels = extractArray(req, CHART_MODELS_ARRAY_FIELD);
@@ -965,6 +980,8 @@ public class SimilarPatentServer {
 
     static Tag templateWrapper(boolean authorized, Request req, Response res, Tag form) {
         res.type("text/html");
+        String message = req.session().attribute("message");
+        req.session().removeAttribute("message");
         return html().with(
                 head().with(
                         script().withSrc("https://code.jquery.com/jquery-3.1.0.js"),
@@ -1017,6 +1034,7 @@ public class SimilarPatentServer {
                                                 )
                                         ),div().withClass("col-9 offset-3").attr("style","padding-top: 58px; padding-left:0px; padding-right:0px;").with(
                                                 customFormHeader(),
+                                                (message==null ? span() : div().withText(message)),
                                                 form,
                                                 br(),
                                                 br(),
