@@ -99,6 +99,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         if(!(attribute instanceof AbstractScriptAttribute)) throw new RuntimeException("Getting script filter for non script attribute: "+attribute.getName());
         AbstractScriptAttribute scriptAttribute = (AbstractScriptAttribute)attribute;
         Script searchScript = scriptAttribute.getScript();
+        if(searchScript==null) return QueryBuilders.boolQuery();
         Script filterScript = new Script(
                 searchScript.getType(),
                 searchScript.getLang(),

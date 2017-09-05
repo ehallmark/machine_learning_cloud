@@ -1,6 +1,7 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import lombok.NonNull;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
@@ -26,6 +27,7 @@ import static j2html.TagCreator.label;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractGreaterThanFilter extends AbstractFilter {
+    @Getter
     protected Number limit;
 
     public AbstractGreaterThanFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {

@@ -35,6 +35,7 @@ import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.engines.AbstractSimilarityEngine;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractNestedFilter;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
@@ -73,19 +74,26 @@ public class DataSearcher {
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
             SortBuilder sortBuilder;
             // only pull ids by setting first parameter to empty list
-            boolean usingScore;
             if(isOverallScore) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
-                usingScore = true;
             } else if (Constants.FILING_ATTRIBUTES_SET.contains(comparator)||(comparator.contains(".")&&Constants.FILING_ATTRIBUTES_SET.contains(comparator.substring(0,comparator.indexOf("."))))) {
                 sortBuilder = SortBuilders.scoreSort().order(sortOrder);
-                usingScore = false;
             } else {
                 sortBuilder = SortBuilders.fieldSort(comparator).order(sortOrder);
-                usingScore = false;
             }
 
-            System.out.println("Filtering by score: "+usingScore);
+            System.out.println("Filtering by score: "+isOverallScore);
+            float similarityThreshold = 0f;
+            for(AbstractFilter filter : filters) {
+                if((filter instanceof AbstractGreaterThanFilter) && filter.getPrerequisite().equals(Constants.SIMILARITY)) {
+                    Number threshold = ((AbstractGreaterThanFilter)filter).getLimit();
+                    if(threshold!=null) {
+                        similarityThreshold = threshold.floatValue();
+                        System.out.println("Setting custom minimum score: " + similarityThreshold);
+                        break;
+                    }
+                }
+            }
 
             //String[] attrArray = attributes.stream().flatMap(attr->SimilarPatentServer.attributeNameHelper(attr,"").stream()).toArray(size -> new String[size]);
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
@@ -93,6 +101,7 @@ public class DataSearcher {
                     .setTypes(TYPE_NAME)
                     .setFetchSource(true)
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
+                    .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
             if(!comparator.isEmpty()) {
                 request.set(request.get().addSort(sortBuilder));
@@ -140,10 +149,10 @@ public class DataSearcher {
                 System.out.println("  attribute: " + attribute.getName());
                 if(attribute instanceof NestedAttribute) {
                     ((NestedAttribute) attribute).getAttributes().forEach(childAttr->{
-                        handleAttributesHelper(childAttr, comparator, usingScore, queryBuilderToUse, request, innerHitBuilder);
+                        handleAttributesHelper(childAttr, comparator, isOverallScore, queryBuilderToUse, request, innerHitBuilder);
                     });
                 } else {
-                    handleAttributesHelper(attribute, comparator, usingScore, queryBuilderToUse, request, innerHitBuilder);
+                    handleAttributesHelper(attribute, comparator, isOverallScore, queryBuilderToUse, request, innerHitBuilder);
                 }
 
             }
