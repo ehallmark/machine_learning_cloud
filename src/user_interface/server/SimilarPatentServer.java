@@ -984,6 +984,7 @@ public class SimilarPatentServer {
         req.session().removeAttribute("message");
         return html().with(
                 head().with(
+                        title("AI Platform"),
                         script().withSrc("https://code.jquery.com/jquery-3.1.0.js"),
                         script().withSrc("https://code.jquery.com/ui/1.12.1/jquery-ui.js"),
                         script().withSrc("http://code.highcharts.com/stock/highstock.js"),

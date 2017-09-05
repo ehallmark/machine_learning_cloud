@@ -54,6 +54,7 @@ $(document).ready(function() {
                 $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
                 $('.template-remove-button').filter(':last').click(removeTemplateFunction);
+                $('#template_name').val(null);
             }
           },
           dataType: "json"
