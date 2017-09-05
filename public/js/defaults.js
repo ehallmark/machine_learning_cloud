@@ -26,20 +26,6 @@ $(document).ready(function() {
         $(hiddenValueSelector).val(json);
     };
 
-    $('#create-user-form').submit(function(e){
-        e.preventDefault();
-        $form = $(this);
-        $.ajax({
-          type: "POST",
-          url: $(this).attr('action'),
-          data: $(this).serialize(),
-          dataType: "json",
-          success: function(data) {
-            $form.html(data.message);
-          }
-        });
-        return false;
-    });
 
     $('#save-template-form-id').submit(function(e){
         e.preventDefault();
