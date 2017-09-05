@@ -1,6 +1,6 @@
 package models;
 
-import models.value_models.regression.UpdateValueModels;
+import models.value_models.UpdateValueModels;
 import models.model_testing.TestSpecificModels;
 
 /**

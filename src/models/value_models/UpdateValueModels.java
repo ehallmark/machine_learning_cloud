@@ -1,8 +1,9 @@
-package models.value_models.regression;
+package models.value_models;
 
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.value_models.bayesian.WIPOValueModel;
+import models.value_models.regression.OverallEvaluator;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
