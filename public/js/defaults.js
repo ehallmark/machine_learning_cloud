@@ -39,18 +39,7 @@ $(document).ready(function() {
         $.ajax({
           type: "POST",
           url: $(this).attr('action'),
-          data: $(this).serialize(),<html>
-                                        <head>
-                                            <title>AI Platform Startup</title>
-                                            <meta http-equiv="refresh" content="30">
-                                        </head>
-                                        <body>
-                                            <div>
-                                                <h4>Platform is starting up now...</h4>
-                                                <h5>Please check back in a few minutes.</h5>
-                                            </div>
-                                        </body>
-                                    </html>
+          data: $(this).serialize(),
           success: function(data) {
             // add button
             if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
