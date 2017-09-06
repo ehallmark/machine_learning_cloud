@@ -46,7 +46,6 @@ public class WIPOValueModel extends ValueAttr {
     }
 
     public void init() {
-        final String valueVariableName = "gatherValue";
         final double alpha = 10d;
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
@@ -70,17 +69,17 @@ public class WIPOValueModel extends ValueAttr {
             attributes.forEach(attr->{
                 Object obj = item.getData(attr.getFullName());
                 if(obj!=null) {
-                    nestedHelper(attr.getFullName(), obj, attrNameSet, valueVariableName, variableToValuesMap);
+                    nestedHelper(attr.getFullName(), obj, attrNameSet, variableToValuesMap);
                 }
             });
             item.getDataMap().forEach((attr,obj)->{
                 if(obj instanceof Map) {
                     System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
-                        nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, valueVariableName, variableToValuesMap);
+                        nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, variableToValuesMap);
                     });
                 } else {
-                    nestedHelper(attr, obj, attrNameSet, valueVariableName, variableToValuesMap);
+                    nestedHelper(attr, obj, attrNameSet, variableToValuesMap);
                 }
             });
         });
@@ -106,7 +105,7 @@ public class WIPOValueModel extends ValueAttr {
 
         graph.addFactorNode(null, wipoNode);
 
-        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap,valueVariableName);
+        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, null);
         bayesianValueModel.train();
 
         bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
@@ -120,8 +119,8 @@ public class WIPOValueModel extends ValueAttr {
         }
     }
 
-    private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, String valueVariableName, Map<String,List<String>> variableToValuesMap) {
-        if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
+    private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, Map<String,List<String>> variableToValuesMap) {
+        if(obj==null|!attrNameSet.contains(attr)) return;
         System.out.println("Checking attr: "+attr);
         Collection<String> objects = obj.toString().contains("; ") ? Arrays.asList(obj.toString().split("; ")) : Arrays.asList(obj.toString());
         if(variableToValuesMap.containsKey(attr)) {

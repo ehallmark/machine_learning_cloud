@@ -28,7 +28,7 @@ public class GraphicalValueModel extends ValueAttr {
     protected String valueVariableName;
     @Getter
     protected String name;
-    public GraphicalValueModel(String name, @NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
+    public GraphicalValueModel(String name, @NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap,  String valueVariableName) {
         this.graph=graph;
         this.variableToValuesMap = variableToValuesMap;
         this.alpha=alpha;
@@ -68,7 +68,7 @@ public class GraphicalValueModel extends ValueAttr {
             Map<String,Integer> assignment = createAssignment(item,variableToValuesMap);
             System.out.println("Assignment: "+new Gson().toJson(assignment));
             return assignment;
-        }).filter(assignment->assignment!=null&&assignment.size()==variableToValuesMap.size()).collect(Collectors.toSet());
+        }).filter(assignment->assignment!=null&&!assignment.isEmpty()).collect(Collectors.toSet());
     }
 
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
