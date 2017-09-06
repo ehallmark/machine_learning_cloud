@@ -40,6 +40,7 @@ public class GraphicalValueModel extends ValueAttr {
 
     public void train() {
         graph.setTrainingData(createTrainingData(trainingItems));
+        System.out.println("Original data size: "+trainingItems.length);
         System.out.println("Training data size: "+graph.getTrainingData().size());
         graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 1);
     }
@@ -70,7 +71,7 @@ public class GraphicalValueModel extends ValueAttr {
             Map<String,Integer> assignment = createAssignment(item,variableToValuesMap);
             System.out.println("Assignment: "+new Gson().toJson(assignment));
             return assignment;
-        }).filter(assignment->assignment!=null&&!assignment.isEmpty()).collect(Collectors.toSet());
+        }).filter(assignment->assignment!=null&&!assignment.isEmpty()).collect(Collectors.toList());
     }
 
     private static Map<String,Integer> createAssignment(Item item, Map<String,List<String>> variableToValuesMap) {
