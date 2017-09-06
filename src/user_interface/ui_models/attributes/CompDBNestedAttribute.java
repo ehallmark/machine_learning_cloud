@@ -20,7 +20,4 @@ public class CompDBNestedAttribute extends NestedAttribute {
         return Constants.COMPDB;
     }
 
-    public boolean isNotYetImplemented() {
-        return true;
-    }
 }
