@@ -43,7 +43,7 @@ public class UpdateCompDBAndGatherData {
         System.out.println("Starting to ingest into elasticsearch...");
         // add to elastic search
         Map<String,Object> idMap = new HashMap<>();
-        idMap.put("$in",union(gatherAssets,compDBAssets));
+        idMap.put("$in",union(gatherAssets,compDBAssets).stream().map(asset->assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset))).filter(filing->filing!=null).distinct().collect(Collectors.toList()));
         Document query = new Document("_id", idMap);
         IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME,query);
 
