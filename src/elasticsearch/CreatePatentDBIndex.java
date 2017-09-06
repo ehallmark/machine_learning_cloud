@@ -1,6 +1,7 @@
 package elasticsearch;
 
 import com.google.gson.Gson;
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
@@ -8,6 +9,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.HiddenAttribute;
+import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,7 +33,11 @@ public class CreatePatentDBIndex {
 
         Collection<? extends AbstractAttribute> parentAttributes = allAttributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getName())).collect(Collectors.toList());
         Map<String,Object> parentProperties = createPropertiesMap(parentAttributes);
-        parentProperties.put("vector_obj",typeMap("object",null,null));
+        Map<String,Object> vectorProperties = new HashMap<>();
+        for(int i = 0; i < SimilarityAttribute.vectorSize; i++) {
+            vectorProperties.put(String.valueOf(i),typeMap("float",null,null));
+        }
+        parentProperties.put("vector_obj",typeMap("object",vectorProperties,null));
         builder = createMapping(builder, parentProperties, DataIngester.PARENT_TYPE_NAME, null);
 
         // get response
@@ -56,8 +62,11 @@ public class CreatePatentDBIndex {
     }
 
     private static Object typeMap(String type, Map<String,Object> props, Map<String,Object> nestedFields) {
+        if(type==null&&props==null&&nestedFields==null) throw new RuntimeException("Not all fields can be null in typeMap");
         Map<String,Object> typeMap = new HashMap<>();
-        typeMap.put("type",type);
+        if(type!=null) {
+            typeMap.put("type",type);
+        }
         if(props!=null) {
             typeMap.put("properties",props);
         }

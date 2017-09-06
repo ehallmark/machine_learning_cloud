@@ -72,7 +72,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
 
     @Override
     public String getType() {
-        return "double";
+        return "float";
     }
 
     @Override

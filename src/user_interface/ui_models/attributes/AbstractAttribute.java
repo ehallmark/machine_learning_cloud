@@ -27,7 +27,8 @@ import java.util.List;
  */
 public abstract class AbstractAttribute {
     protected Collection<AbstractFilter.FilterType> filterTypes;
-    public boolean isObject = false;
+    @Getter @Setter
+    protected boolean isObject = false;
     @Getter @Setter
     protected AbstractAttribute parent;
 

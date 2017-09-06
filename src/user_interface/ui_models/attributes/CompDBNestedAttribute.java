@@ -12,7 +12,7 @@ public class CompDBNestedAttribute extends NestedAttribute {
 
     public CompDBNestedAttribute() {
         super(Arrays.asList(new CompDBTechnologyAttribute(),new CompDBDealIDAttribute()));
-        this.isObject=true; // TODO Remove this after remapping
+        this.isObject=true;
     }
 
     @Override
