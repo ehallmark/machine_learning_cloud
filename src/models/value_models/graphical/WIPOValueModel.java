@@ -115,6 +115,7 @@ public class WIPOValueModel extends ValueAttr {
         technologyToFactorMap = Collections.synchronizedMap(new HashMap<>());
         if(technologies.size()!=wipoFactor.getWeights().length) throw new RuntimeException("Illegal number of weights: "+technologies.size()+" != "+wipoFactor.getWeights().length);
         for(int i = 0; i < wipoFactor.getWeights().length; i++) {
+            System.out.println("Weight for "+technologies.get(i)+": "+wipoFactor.getWeights()[i]);
             technologyToFactorMap.put(technologies.get(i),wipoFactor.getWeights()[i]);
         }
     }
