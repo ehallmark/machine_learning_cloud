@@ -28,12 +28,15 @@ import java.util.stream.Collectors;
  */
 public class WIPOValueModel extends ValueAttr {
     private GraphicalValueModel bayesianValueModel;
-    private Item[] testItems;
+    private Item[] allItems;
+    private Map<String,Double> technologyToFactorMap;
 
     @Override
     public double evaluate(Item item) {
-        if(bayesianValueModel==null) throw new NullPointerException("bayesianValueModel for: "+getName());
-        return bayesianValueModel.evaluate(item);
+        if(technologyToFactorMap==null) throw new NullPointerException("no technology factor map for: "+getName());
+        Object wipoTech = item.getData(Constants.WIPO_TECHNOLOGY);
+        if(wipoTech==null)return 0d;
+        return technologyToFactorMap.getOrDefault(wipoTech,0d);
     }
 
 
@@ -44,17 +47,14 @@ public class WIPOValueModel extends ValueAttr {
 
     public void init() {
         final String valueVariableName = "gatherValue";
-        final double alpha = 15d;
+        final double alpha = 10d;
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
-        //AbstractAttribute filingCountry = new FilingCountryAttribute();
-        //AbstractAttribute filingCountry = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.COUNTRY)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo//,
                 //filingCountry
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
-        Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         AbstractIncludeFilter gatherFilter = new ExistsInGatherFilter();
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter, new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("patents")));
 
@@ -62,18 +62,11 @@ public class WIPOValueModel extends ValueAttr {
         nestedMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
         List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap)).stream().filter(item->Database.getGatherValueMap().containsKey(item.getName())).collect(Collectors.toList()));
         System.out.println("Num items: "+items.size());
-        Collections.shuffle(items, new Random(69));
-        testItems = items.subList(0, items.size()/2).toArray(new Item[]{});
-        Item[] trainingItems = items.subList(items.size()/2, items.size()).toArray(new Item[]{});
+        allItems = items.toArray(new Item[items.size()]);
 
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
-        Arrays.stream(trainingItems).parallel().forEach(item->{
-            // add gather value
-            Boolean value = gatherValueMap.get(item.getName());
-            if(value==null) return;
-            item.addData(valueVariableName, value ? 1 : 0);
-            // add other values
-
+        Arrays.stream(allItems).parallel().forEach(item->{
+            // add values
             attributes.forEach(attr->{
                 Object obj = item.getData(attr.getFullName());
                 if(obj!=null) {
@@ -109,21 +102,22 @@ public class WIPOValueModel extends ValueAttr {
             graph.addNode(attr,values.size());
         });
 
-        Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
-        //Node filingCountryNode = graph.findNode(filingCountry.getFullName());
 
-        // connect and add factors
-        graph.connectNodes(valueNode, wipoNode);
-        //graph.connectNodes(filingCountryNode, valueNode);
-        //graph.connectNodes(filingCountryNode,wipoNode);
+        graph.addFactorNode(null, wipoNode);
 
-        graph.addFactorNode(null, valueNode);
-        //graph.addFactorNode(null, filingCountryNode);
-        graph.addFactorNode(null, valueNode, wipoNode);
-
-        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
+        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
+
+        bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
+        FactorNode wipoFactor = bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
+        wipoFactor.reNormalize(new DivideByPartition());
+        List<String> technologies = bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
+        technologyToFactorMap = Collections.synchronizedMap(new HashMap<>());
+        if(technologies.size()!=wipoFactor.getWeights().length) throw new RuntimeException("Illegal number of weights: "+technologies.size()+" != "+wipoFactor.getWeights().length);
+        for(int i = 0; i < wipoFactor.getWeights().length; i++) {
+            technologyToFactorMap.put(technologies.get(i),wipoFactor.getWeights()[i]);
+        }
     }
 
     private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, String valueVariableName, Map<String,List<String>> variableToValuesMap) {
@@ -146,23 +140,13 @@ public class WIPOValueModel extends ValueAttr {
     public static void main(String[] args) {
         WIPOValueModel model = new WIPOValueModel();
         model.init();
-        // write frequencies
-        System.out.println("Getting wipoFrequencies");
-
-        model.bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
-        FactorNode wipoFactor = model.bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
-        wipoFactor.reNormalize(new DivideByPartition());
-        List<String> technologies = model.bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
-        for(int i = 0; i < wipoFactor.getWeights().length; i++) {
-            System.out.println(technologies.get(i)+": "+wipoFactor.getWeights()[i]);
-        }
 
         System.out.println("Writing values");
         File csv = new File(Constants.DATA_FOLDER+"value-graph-wipo.csv");
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(csv))) {
             writer.write("asset,wipoValue,gatherValue\n");
-            for (Item item : model.testItems) {
-                double value = model.bayesianValueModel.evaluate(item);
+            for (Item item : model.allItems) {
+                double value = model.evaluate(item);
                // System.out.println(item.getName() + "," + value);
                 writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()) ? 0 : 1)+"\n");
             }
