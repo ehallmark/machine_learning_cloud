@@ -19,6 +19,7 @@ public class PageRankEvaluator extends ValueAttr {
     }
 
     public static void main(String[] args) throws Exception {
+        // for getting gather page rank values
         PageRankEvaluator pageRank = new PageRankEvaluator();
         File excelFile = new File("data/page-rank-gather.csv");
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(excelFile))) {

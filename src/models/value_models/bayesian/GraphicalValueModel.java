@@ -24,16 +24,17 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 8/30/17.
  */
-public class BayesianValueModel extends ValueAttr {
+public class GraphicalValueModel extends ValueAttr {
     private static final Random rand = new Random(569);
     protected Graph graph;
     protected double alpha;
     protected Item[] trainingItems;
+    @Getter
     protected Map<String,List<String>> variableToValuesMap;
     protected String valueVariableName;
     @Getter
     protected String name;
-    public BayesianValueModel(String name, @NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
+    public GraphicalValueModel(String name, @NonNull Graph graph, double alpha, Item[] trainingItems, Map<String,List<String>> variableToValuesMap, @NonNull String valueVariableName) {
         this.graph=graph;
         this.variableToValuesMap = variableToValuesMap;
         this.alpha=alpha;

@@ -1,11 +1,10 @@
 package models.value_models.bayesian;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import elasticsearch.DataSearcher;
-import lombok.NonNull;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
+import model.graphs.MarkovNet;
+import model.nodes.FactorNode;
 import model.nodes.Node;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
@@ -14,9 +13,7 @@ import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ExistsInGatherFilter;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
-import user_interface.ui_models.filters.AbstractExcludeFilter;
 import user_interface.ui_models.filters.AbstractFilter;
-import user_interface.ui_models.filters.AbstractGreaterThanFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -30,7 +27,7 @@ import java.util.stream.Collectors;
  * Created by Evan on 8/30/2017.
  */
 public class WIPOValueModel extends ValueAttr {
-    private BayesianValueModel bayesianValueModel;
+    private GraphicalValueModel bayesianValueModel;
     private Item[] testItems;
 
     @Override
@@ -47,16 +44,14 @@ public class WIPOValueModel extends ValueAttr {
 
     public void init() {
         final String valueVariableName = "gatherValue";
-        final double alpha = 50d;
+        final double alpha = 20d;
         final int maxLimit = 100000;
-        final Graph graph = new BayesianNet();
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
-        //AbstractAttribute cpc = new CPCAttribute();
+        AbstractAttribute filingCountry = new FilingCountryAttribute();
         //AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                wipo
-                //,cpc
-                //,assignee
+                wipo,
+                filingCountry
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
@@ -97,15 +92,18 @@ public class WIPOValueModel extends ValueAttr {
             });
         });
         // sanity check
-        variableToValuesMap.forEach((var,values)->{
+        //variableToValuesMap.forEach((var,values)->{
             //System.out.println("Values for "+var+": "+String.join("; ",values));
-        });
+        //});
         attributes.forEach(attr->{
             if(!variableToValuesMap.keySet().contains(attr.getFullName())) {
                 System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
                 throw new RuntimeException("Missing attribute: "+attr.getFullName());
             }
         });
+
+        // Create graphical model
+        final Graph graph = new MarkovNet();
         variableToValuesMap.forEach((attr,values)->{
             if(values.size()<2) throw new RuntimeException("Each variable must have at least 2 states: "+attr);
             graph.addNode(attr,values.size());
@@ -113,19 +111,17 @@ public class WIPOValueModel extends ValueAttr {
 
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
-       // Node cpcNode = graph.findNode(cpc.getFullName());
-        //Node assigneeNode = graph.findNode(assignee.getFullName());
+        Node filingCountryNode = graph.findNode(filingCountry.getFullName());
 
         // connect and add factors
         graph.connectNodes(valueNode, wipoNode);
-       // graph.connectNodes(valueNode, cpcNode);
-        //graph.connectNodes(valueNode, assigneeNode);
-       // graph.connectNodes(wipoNode, cpcNode);
-        graph.addFactorNode(null, valueNode);
-        graph.addFactorNode(null, valueNode, wipoNode);
-        //graph.addFactorNode(null, valueNode, assigneeNode);
+        graph.connectNodes(valueNode, filingCountryNode);
+        graph.connectNodes(wipoNode,filingCountryNode);
 
-        bayesianValueModel = new BayesianValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
+        graph.addFactorNode(null, wipoNode);
+        graph.addFactorNode(null, valueNode, wipoNode, filingCountryNode);
+
+        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
         bayesianValueModel.train();
     }
 
@@ -149,6 +145,17 @@ public class WIPOValueModel extends ValueAttr {
     public static void main(String[] args) {
         WIPOValueModel model = new WIPOValueModel();
         model.init();
+        // write frequencies
+        System.out.println("Getting wipoFrequencies");
+
+        Node wipoNode = model.bayesianValueModel.graph.findNode(Constants.WIPO_TECHNOLOGY);
+        FactorNode wipoFactor = wipoNode.getFactors().stream().filter(factor->factor.getCardinality()==1).findAny().get();
+        List<String> technologies = model.bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
+        for(int i = 0; i < wipoFactor.getWeights().length; i++) {
+            System.out.println(technologies.get(i)+": "+wipoFactor.getWeights()[i]);
+        }
+
+        System.out.println("Writing values");
         File csv = new File(Constants.DATA_FOLDER+"value-graph-wipo.csv");
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(csv))) {
             writer.write("asset,wipoValue,gatherValue\n");

@@ -45,6 +45,7 @@ public class Constants {
 	public static final String APPLICATION_STATUS_DATE = "applicationStatusDate";
 	public static final String GRANT_NAME = "grantName";
 	public static final String PAGE_COUNT = "pageCount";
+	public static final String GRANTED = "granted";
 	public static final String POSTAL_CODE = "postalCode";
 	public static final String LAPSED = "lapsed";
 	public static final String ASSIGNMENTS = "assignments";
