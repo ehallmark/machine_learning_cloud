@@ -131,6 +131,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
             humanAttrToJavaAttrMap.put("Expired", Constants.EXPIRED);
             humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
+            humanAttrToJavaAttrMap.put("Technology", Constants.COMPDB_TECHNOLOGY);
+            humanAttrToJavaAttrMap.put("Deal ID", Constants.COMPDB_DEAL_ID);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Assignee Entity Type", Constants.ASSIGNEE_ENTITY_TYPE);
             humanAttrToJavaAttrMap.put("Assignee Divestments (CompDB)", Constants.COMPDB_ASSETS_SOLD);
@@ -147,6 +149,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Patent Rating", Constants.GATHER_VALUE);
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
+            humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
@@ -399,6 +402,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.CLAIMS, new ClaimsNestedAttribute());
             attributesMap.put(Constants.PATENT_FAMILY, new RelatedDocumentsNestedAttribute());
             attributesMap.put(Constants.GATHER, new GatherNestedAttribute());
+            attributesMap.put(Constants.COMPDB, new CompDBNestedAttribute());
 
             // include count
             Constants.NESTED_ATTRIBUTES.forEach(attr->{
