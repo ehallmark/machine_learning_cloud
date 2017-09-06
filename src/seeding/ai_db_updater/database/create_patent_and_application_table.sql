@@ -18,3 +18,8 @@ pg_dump -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t p
 
 -- To restore
 pg_restore -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/patentdb -t patents_and_applications data/patents_and_applications.dump
+
+-- COMPDB AND GATHER
+-- Make sure to create the database first!!
+-- pg_restore -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/compdb_production data/compdb_production.dump
+-- pg_restore -Fc --dbname=postgresql://postgres:password@127.0.0.1:5432/gather_production data/gather_production.dump
