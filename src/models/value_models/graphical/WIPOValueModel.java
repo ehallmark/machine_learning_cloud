@@ -149,6 +149,7 @@ public class WIPOValueModel extends ValueAttr {
         // write frequencies
         System.out.println("Getting wipoFrequencies");
 
+        model.bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
         FactorNode wipoFactor = model.bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
         wipoFactor.reNormalize(new DivideByPartition());
         List<String> technologies = model.bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
