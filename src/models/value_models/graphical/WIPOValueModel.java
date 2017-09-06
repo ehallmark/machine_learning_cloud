@@ -110,7 +110,7 @@ public class WIPOValueModel extends ValueAttr {
 
         bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
         FactorNode wipoFactor = bayesianValueModel.graph.getFactorNodes().get(0);
-        wipoFactor.reNormalize(new DivideByPartition());
+       // wipoFactor.reNormalize(new DivideByPartition());
         List<String> technologies = bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
         technologyToFactorMap = Collections.synchronizedMap(new HashMap<>());
         if(technologies.size()!=wipoFactor.getWeights().length) throw new RuntimeException("Illegal number of weights: "+technologies.size()+" != "+wipoFactor.getWeights().length);
