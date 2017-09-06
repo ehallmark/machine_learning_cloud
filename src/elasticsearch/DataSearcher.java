@@ -111,10 +111,10 @@ public class DataSearcher {
             AtomicReference<BoolQueryBuilder> parentFilterBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             AtomicReference<BoolQueryBuilder> parentQueryBuilder = new AtomicReference<>(QueryBuilders.boolQuery());
             // filters
-            System.out.println("Starting ES filters...");
+            if(debug)System.out.println("Starting ES filters...");
             for (AbstractFilter filter : filters) {
                 if(filter.getParent()==null) {
-                    System.out.println("  filter: "+filter.getName());
+                    if(debug)System.out.println("  filter: "+filter.getName());
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
                     if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getAttribute().getRootName())) {
@@ -146,7 +146,7 @@ public class DataSearcher {
             for(AbstractAttribute attribute : attributes) {
                 boolean isFilingType = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
                 AtomicReference<BoolQueryBuilder> queryBuilderToUse = isFilingType ? parentQueryBuilder : queryBuilder;
-                System.out.println("  attribute: " + attribute.getName());
+                if(debug)System.out.println("  attribute: " + attribute.getName());
                 if(attribute instanceof NestedAttribute) {
                     ((NestedAttribute) attribute).getAttributes().forEach(childAttr->{
                         handleAttributesHelper(childAttr, comparator, isOverallScore, queryBuilderToUse, request, innerHitBuilder);
@@ -168,7 +168,7 @@ public class DataSearcher {
             ));
 
             // Set query
-            System.out.println("\"query\": "+queryBuilder.get().toString());
+            if(debug)System.out.println("\"query\": "+queryBuilder.get().toString());
 
             request.set(request.get().setQuery(queryBuilder.get()));
 
