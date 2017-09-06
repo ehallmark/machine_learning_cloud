@@ -111,10 +111,9 @@ public class WIPOValueModel extends ValueAttr {
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         // connect and add factors
-        graph.connectNodes(valueNode, wipoNode);
-        graph.addFactorNode(null, valueNode);
+        graph.connectNodes(wipoNode, valueNode);
+        graph.addFactorNode(null, wipoNode);
         graph.addFactorNode(null, valueNode, wipoNode);
-
 
         bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, valueVariableName);
         bayesianValueModel.train();
@@ -159,9 +158,8 @@ public class WIPOValueModel extends ValueAttr {
             writer.write("asset,wipoPercent,wipoValue,gatherValue\n");
             for (Item item : model.allItems) {
                 double value = model.evaluate(item);
-                double modelValue = model.bayesianValueModel.evaluate(item);
                // System.out.println(item.getName() + "," + value);
-                writer.write(item.getName() + "," + value + "," + modelValue + "," + (Database.getGatherValueMap().get(item.getName()) ? 1 : 0)+"\n");
+                writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()) ? 1 : 0)+"\n");
             }
             writer.flush();
         } catch(Exception e) {
