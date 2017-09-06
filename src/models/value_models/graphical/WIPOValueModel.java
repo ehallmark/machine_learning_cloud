@@ -30,11 +30,14 @@ import java.util.stream.Collectors;
 public class WIPOValueModel extends ValueAttr {
     private GraphicalValueModel bayesianValueModel;
     private Item[] allItems;
-    private Map<String,Double> technologyToFactorMap;
+    private static Map<String,Double> technologyToFactorMap;
+    private static final File technologyToFactorFile = new File(Constants.DATA_FOLDER+"wipo_technology_to_gather_factor_map.jobj");
 
     @Override
     public double evaluate(Item item) {
-        if(technologyToFactorMap==null) throw new NullPointerException("no technology factor map for: "+getName());
+        if(technologyToFactorMap==null) {
+            technologyToFactorMap = (Map<String,Double>)Database.loadObject(technologyToFactorFile);
+        }
         Object wipoTech = item.getData(Constants.WIPO_TECHNOLOGY);
         if(wipoTech==null)return 0d;
         return technologyToFactorMap.getOrDefault(wipoTech,0d);
@@ -148,9 +151,17 @@ public class WIPOValueModel extends ValueAttr {
         }
     }
 
+    @Override
+    public void save() {
+        if (technologyToFactorMap != null && technologyToFactorMap.size() > 0) {
+            Database.trySaveObject(technologyToFactorMap,technologyToFactorFile);
+        }
+    }
+
     public static void main(String[] args) {
         WIPOValueModel model = new WIPOValueModel();
         model.init();
+        model.save();
 
         System.out.println("Writing values");
         File csv = new File(Constants.DATA_FOLDER+"value-graph-wipo.csv");
