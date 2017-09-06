@@ -46,7 +46,7 @@ public class IngestMongoIntoElasticSearch {
         String index = DataIngester.INDEX_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
-        collection.count(new Document(), (count,t)->{
+        collection.count(query, (count,t)->{
             total.set(count);
         });
         while(total.get()==0) {

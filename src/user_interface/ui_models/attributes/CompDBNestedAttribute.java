@@ -18,10 +18,5 @@ public class CompDBNestedAttribute extends NestedAttribute {
     public String getName() {
         return Constants.COMPDB;
     }
-
-    // TODO IMPLEMENT!!!!
-    @Override
-    public boolean isNotYetImplemented() {
-        return true;
-    }
+    
 }
