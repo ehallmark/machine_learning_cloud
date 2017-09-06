@@ -3,7 +3,6 @@ package user_interface.ui_models.charts;
 import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
-import lombok.Getter;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
 import user_interface.ui_models.charts.highcharts.ColumnChart;
 import j2html.tags.Tag;
@@ -17,7 +16,6 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,8 +29,8 @@ import static j2html.TagCreator.span;
 public class AbstractHistogramChart extends ChartAttribute {
     protected String groupedBy;
     protected Collection<String> searchTypes;
-    protected static final double MIN = ValueMapNormalizer.DEFAULT_START;
-    protected static final double MAX = ValueMapNormalizer.DEFAULT_END;
+    protected static final double MIN = ValueModelCombination.DEFAULT_START;
+    protected static final double MAX = ValueModelCombination.DEFAULT_END;
 
     public AbstractHistogramChart() {
         super(Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE));

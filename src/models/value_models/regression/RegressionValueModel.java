@@ -15,6 +15,8 @@ import java.util.List;
  * Created by Evan on 9/3/2017.
  */
 public abstract class RegressionValueModel extends ValueAttr {
+    private static final boolean debug = true;
+
     protected List<AbstractAttribute> attributes;
     protected List<Double> weights;
     protected List<Pair<AbstractAttribute,Double>> attributesAndWeights;
@@ -42,6 +44,7 @@ public abstract class RegressionValueModel extends ValueAttr {
             val = (Number) ((ComputableAttribute) attribute).getApplicationDataMap().getOrDefault(item.getName(),((ComputableAttribute) attribute).getPatentDataMap().get(item.getName()));
         }
         if(val == null) val = defaultVal;
+        if(debug) System.out.println("Val for "+attribute.getName()+": "+val);
         return val;
     }
 

@@ -4,24 +4,15 @@ import com.googlecode.wickedcharts.highcharts.options.series.Point;
 import com.googlecode.wickedcharts.highcharts.options.series.PointSeries;
 import com.googlecode.wickedcharts.highcharts.options.series.Series;
 import j2html.tags.Tag;
-import lombok.Getter;
-import models.value_models.ValueMapNormalizer;
-import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
-import user_interface.ui_models.charts.highcharts.ColumnChart;
 import user_interface.ui_models.charts.highcharts.LineChart;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

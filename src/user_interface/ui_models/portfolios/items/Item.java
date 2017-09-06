@@ -1,9 +1,8 @@
 package user_interface.ui_models.portfolios.items;
 
 import lombok.Getter;
-import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
-import models.value_models.ValueMapNormalizer;
+import models.value_models.ValueModelCombination;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ public class Item implements Comparable<Item> {
     }
 
     public double getSimilarity() {
-        return similarityCache == null ? ValueMapNormalizer.DEFAULT_START : similarityCache;
+        return similarityCache == null ? ValueModelCombination.DEFAULT_START : similarityCache;
     }
 
     public void setName(String name) {

@@ -28,6 +28,8 @@ import java.util.stream.Collectors;
  * Created by Evan on 8/30/2017.
  */
 public class WIPOValueModel extends ValueAttr {
+    private static final boolean debug = true;
+
     private GraphicalValueModel bayesianValueModel;
     private Item[] allItems;
     private static Map<String,Double> technologyToFactorMap;
@@ -39,8 +41,11 @@ public class WIPOValueModel extends ValueAttr {
             technologyToFactorMap = (Map<String,Double>)Database.loadObject(technologyToFactorFile);
         }
         Object wipoTech = item.getData(Constants.WIPO_TECHNOLOGY);
-        if(wipoTech==null)return 0d;
-        return technologyToFactorMap.getOrDefault(wipoTech,0d);
+        double val;
+        if(wipoTech==null) val = 0d;
+        else val = technologyToFactorMap.getOrDefault(wipoTech,0d);
+        if(debug) System.out.println("WIPO TECHNOLOGY VALUE: "+val);
+        return val;
     }
 
 
@@ -162,20 +167,6 @@ public class WIPOValueModel extends ValueAttr {
         WIPOValueModel model = new WIPOValueModel();
         model.init();
         model.save();
-
-        System.out.println("Writing values");
-        File csv = new File(Constants.DATA_FOLDER+"value-graph-wipo.csv");
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(csv))) {
-            writer.write("asset,wipoPercent,wipoValue,gatherValue\n");
-            for (Item item : model.allItems) {
-                double value = model.evaluate(item);
-               // System.out.println(item.getName() + "," + value);
-                writer.write(item.getName() + "," + value + "," + (Database.getGatherValueMap().get(item.getName()) ? 1 : 0)+"\n");
-            }
-            writer.flush();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }
