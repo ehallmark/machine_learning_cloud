@@ -39,6 +39,10 @@ public class IngestMongoIntoElasticSearch {
     }
 
     private static void ingestByType(String type) {
+        ingestByType(type, new Document());
+    }
+
+    public static void ingestByType(String type, Document query) {
         String index = DataIngester.INDEX_NAME;
         MongoCollection<Document> collection = MongoDBClient.get().getDatabase(index).getCollection(type);
         AtomicLong total = new AtomicLong(0);
@@ -53,7 +57,7 @@ public class IngestMongoIntoElasticSearch {
             }
         }
         System.out.println("Total count of "+type+": "+total.get());
-        FindIterable<Document> iterator = collection.find(new Document());
+        FindIterable<Document> iterator = collection.find(query);
 
         iterator.batchSize(200).batchCursor((cursor,t)->{
             cursor.next(helper(cursor, type));
