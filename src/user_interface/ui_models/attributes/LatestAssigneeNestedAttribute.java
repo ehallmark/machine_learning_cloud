@@ -23,4 +23,9 @@ public class LatestAssigneeNestedAttribute extends NestedAttribute {
     public String getName() {
         return Constants.LATEST_ASSIGNEE;
     }
+
+    @Override
+    public boolean isNotYetImplemented() {
+        return true;
+    }
 }
