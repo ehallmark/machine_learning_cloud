@@ -111,8 +111,8 @@ public class WIPOValueModel extends ValueAttr {
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         // connect and add factors
-        graph.connectNodes(wipoNode, valueNode);
-        graph.addFactorNode(null, wipoNode);
+        graph.connectNodes(valueNode, wipoNode);
+        graph.addFactorNode(null, valueNode);
         graph.addFactorNode(null, valueNode, wipoNode);
 
 
