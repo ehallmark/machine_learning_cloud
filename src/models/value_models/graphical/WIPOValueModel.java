@@ -51,10 +51,9 @@ public class WIPOValueModel extends ValueAttr {
         final String valueVariableName = "gatherValue";
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
-        AbstractAttribute filingCountry = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.COUNTRY)).findFirst().get();
+        //AbstractAttribute filingCountry = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.COUNTRY)).findFirst().get();
         Collection<AbstractAttribute> attributes = Arrays.asList(
-                wipo,
-                filingCountry
+                wipo
         );
         Set<String> attrNameSet = attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toSet());
         AbstractIncludeFilter gatherFilter = new ExistsInGatherFilter();
@@ -111,13 +110,10 @@ public class WIPOValueModel extends ValueAttr {
 
         Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
-        Node filingCountryNode = graph.findNode(filingCountry.getFullName());
-// connect and add factors
+        // connect and add factors
         graph.connectNodes(wipoNode, valueNode);
-        graph.connectNodes(filingCountryNode, valueNode);
-        graph.connectNodes(filingCountryNode,wipoNode);
         graph.addFactorNode(null, wipoNode);
-        graph.addFactorNode(null, valueNode, wipoNode, filingCountryNode);
+        graph.addFactorNode(null, valueNode, wipoNode);
 
 
         bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, valueVariableName);
