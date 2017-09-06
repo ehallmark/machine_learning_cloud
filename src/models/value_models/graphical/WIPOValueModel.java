@@ -1,6 +1,7 @@
 package models.value_models.graphical;
 
 import elasticsearch.DataSearcher;
+import model.functions.normalization.DivideByPartition;
 import model.graphs.Graph;
 import model.graphs.MarkovNet;
 import model.nodes.FactorNode;
@@ -113,11 +114,12 @@ public class WIPOValueModel extends ValueAttr {
         Node filingCountryNode = graph.findNode(filingCountry.getFullName());
 
         // connect and add factors
-        graph.connectNodes(valueNode, wipoNode);
-        graph.connectNodes(valueNode, filingCountryNode);
-        graph.connectNodes(wipoNode,filingCountryNode);
+        graph.connectNodes(wipoNode, valueNode);
+        graph.connectNodes(filingCountryNode, valueNode);
+        graph.connectNodes(filingCountryNode,wipoNode);
 
-        graph.addFactorNode(null, wipoNode);
+        graph.addFactorNode(null, wipoNode,filingCountryNode);
+        graph.addFactorNode(null, filingCountryNode);
         graph.addFactorNode(null, valueNode, wipoNode, filingCountryNode);
 
         bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,trainingItems,variableToValuesMap,valueVariableName);
@@ -147,8 +149,8 @@ public class WIPOValueModel extends ValueAttr {
         // write frequencies
         System.out.println("Getting wipoFrequencies");
 
-        Node wipoNode = model.bayesianValueModel.graph.findNode(Constants.WIPO_TECHNOLOGY);
-        FactorNode wipoFactor = wipoNode.getFactors().stream().filter(factor->factor.getCardinality()==1).findAny().get();
+        FactorNode wipoFactor = model.bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
+        wipoFactor.reNormalize(new DivideByPartition());
         List<String> technologies = model.bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
         for(int i = 0; i < wipoFactor.getWeights().length; i++) {
             System.out.println(technologies.get(i)+": "+wipoFactor.getWeights()[i]);
