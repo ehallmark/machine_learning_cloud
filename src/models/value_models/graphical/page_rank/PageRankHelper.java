@@ -1,4 +1,4 @@
-package models.value_models.bayesian.page_rank;
+package models.value_models.graphical.page_rank;
 
 import models.value_models.regression.PageRankEvaluator;
 import seeding.Database;

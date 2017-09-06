@@ -1,4 +1,4 @@
-package models.value_models.bayesian.page_rank;
+package models.value_models.graphical.page_rank;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import model.edges.Edge;

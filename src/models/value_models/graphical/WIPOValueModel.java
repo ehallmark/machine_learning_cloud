@@ -1,7 +1,6 @@
-package models.value_models.bayesian;
+package models.value_models.graphical;
 
 import elasticsearch.DataSearcher;
-import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.graphs.MarkovNet;
 import model.nodes.FactorNode;
@@ -47,8 +46,8 @@ public class WIPOValueModel extends ValueAttr {
         final double alpha = 20d;
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
-        AbstractAttribute filingCountry = new FilingCountryAttribute();
-        //AbstractAttribute assignee = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.ASSIGNEE)).findFirst().orElse(null);
+        //AbstractAttribute filingCountry = new FilingCountryAttribute();
+        AbstractAttribute filingCountry = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.COUNTRY)).findFirst().orElse(null);
         Collection<AbstractAttribute> attributes = Arrays.asList(
                 wipo,
                 filingCountry

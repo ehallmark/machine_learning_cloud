@@ -1,25 +1,19 @@
-package models.value_models.bayesian;
+package models.value_models.graphical;
 
 import com.google.gson.Gson;
-import elasticsearch.DataSearcher;
 import lombok.Getter;
 import lombok.NonNull;
 import model.functions.inference_methods.BeliefPropagation;
-import model.functions.inference_methods.InferenceMethod;
 import model.functions.normalization.DivideByPartition;
-import model.graphs.BayesianNet;
 import model.graphs.Graph;
-import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.learning.algorithms.ExpectationMaximizationAlgorithm;
 import model.nodes.FactorNode;
-import seeding.Database;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 8/30/17.

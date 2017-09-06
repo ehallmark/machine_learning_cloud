@@ -1,7 +1,7 @@
-package models.graphical_models;
+package models.value_models.graphical;
 
-import models.value_models.bayesian.page_rank.PageRankHelper;
-import models.value_models.bayesian.page_rank.SimRankHelper;
+import models.value_models.graphical.page_rank.PageRankHelper;
+import models.value_models.graphical.page_rank.SimRankHelper;
 
 /**
  * Created by ehallmark on 7/11/17.

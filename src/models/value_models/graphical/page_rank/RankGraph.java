@@ -1,4 +1,4 @@
-package models.value_models.bayesian.page_rank;
+package models.value_models.graphical.page_rank;
 
 import lombok.Getter;
 import model.graphs.BayesianNet;
