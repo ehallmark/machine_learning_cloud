@@ -786,12 +786,34 @@ public class Database {
 	public synchronized static void loadCompDBData() throws SQLException {
 		Database.setupCompDBConn();
 		Database.setupSeedConn();
+		// get Reelframes Map
+		Set<String> reelFrames = getCompDBReelFrames();
+		// Collect patent numbers
+		Item[] items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, reelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap());
+		Map<String,Collection<String>> reelFrameToAssetsMap = Collections.synchronizedMap(new HashMap<>());
+		Stream.of(items).parallel().forEach(item->{
+			Object reelFrameStr = item.getData(Constants.REEL_FRAME);
+			if(reelFrameStr==null) return;
+			String[] reelFramesStr = reelFrameStr.toString().split("; ");
+			if(reelFramesStr.length==0) return;
+			Stream.of(reelFramesStr).forEach(reelFrame->{
+				if(reelFrameToAssetsMap.containsKey(reelFrame)) {
+					reelFrameToAssetsMap.get(reelFrame).add(item.getName());
+				} else {
+					Set<String> set = Collections.synchronizedSet(new HashSet<>());
+					set.add(item.getName());
+					reelFrameToAssetsMap.put(reelFrame,set);
+				}
+			});
+		});
 		compDBTechnologyToAssetsMap = Collections.synchronizedMap(new HashMap<>());
 		compDBAssetToDealIDMap = Collections.synchronizedMap(new HashMap<>());
 		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
 		ps.setArray(1, compDBConn.createArrayOf("int4",badCompDBTechnologyIds.toArray()));
 		Map<Integer, String> technologyMap = Database.compdbTechnologyMap();
 		ResultSet rs = ps.executeQuery();
+
+		System.out.println("Finished collecting reelframe to assets map.");
 		while(rs.next()) {
 			Collection<String> technologies = new HashSet<>();
 			for(Integer tech : (Integer[])rs.getArray(1).getArray()) {
@@ -802,23 +824,23 @@ public class Database {
 			Integer dealID = rs.getInt(3);
 			if(dealID==null) continue;
 
-			Array reelFrames = rs.getArray(2);
-			if(reelFrames==null) continue;
-			String[] reelFramesStr = (String[]) reelFrames.getArray();
-			// Collect patent numbers
-			Item[] items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList(reelFramesStr))),null, SortOrder.ASC, 100000, Collections.emptyMap());
-			List<String> patentNumbers = Stream.of(items).map(item->item.getName()).collect(Collectors.toList());
-			if(!patentNumbers.isEmpty()) {
-				technologies.forEach(tech -> {
-					if (!compDBTechnologyToAssetsMap.containsKey(tech)) {
-						compDBTechnologyToAssetsMap.put(tech, Collections.synchronizedCollection(new HashSet<String>()));
-					}
-					Collection<String> list = compDBTechnologyToAssetsMap.get(tech);
-					list.addAll(patentNumbers);
-				});
-				patentNumbers.forEach(patent->{
-					compDBAssetToDealIDMap.put(patent,dealID.toString());
-				});
+			Array reelFramesForDeal = rs.getArray(2);
+			if(reelFramesForDeal==null) continue;
+			String[] reelFramesStr = (String[]) reelFramesForDeal.getArray();
+			if(reelFramesStr.length>0) {
+				Collection<String> patents = Stream.of(reelFramesStr).flatMap(reelFrame->reelFrameToAssetsMap.getOrDefault(reelFrame,Collections.emptyList()).stream()).collect(Collectors.toList());
+				if(patents.size()>0) {
+					technologies.forEach(tech -> {
+						if (!compDBTechnologyToAssetsMap.containsKey(tech)) {
+							compDBTechnologyToAssetsMap.put(tech, Collections.synchronizedCollection(new HashSet<>()));
+						}
+						Collection<String> list = compDBTechnologyToAssetsMap.get(tech);
+						list.addAll(patents);
+					});
+					patents.forEach(patent -> {
+						compDBAssetToDealIDMap.put(patent, dealID.toString());
+					});
+				}
 			}
 
 		}
@@ -868,16 +890,6 @@ public class Database {
 			sql.printStackTrace();
 		}
 
-		try {
-			loadCompDBData();
-			Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
-			Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
-			Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
-			Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-
 		gatherBoolValueMap = Collections.synchronizedMap(new HashMap<>());
 		gatherValueMap.entrySet().parallelStream().forEach(e->{
 			boolean val = false;
@@ -900,6 +912,16 @@ public class Database {
 			Database.trySaveObject(compdbReelFrames,compdbReelFramesFile);
 		} catch(SQLException sql) {
 			sql.printStackTrace();
+		}
+
+		try {
+			loadCompDBData();
+			Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
+			Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
+			Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
+			Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
 
 		allClassCodes = Collections.synchronizedSet(new HashSet<>());
