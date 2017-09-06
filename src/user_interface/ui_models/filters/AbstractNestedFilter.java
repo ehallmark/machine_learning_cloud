@@ -66,6 +66,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                 boolQuery = boolQuery.must(filter.getFilterQuery());
             }
         }
+        if(attribute.isObject) return boolQuery; // hack for objects that haven't been mapped as nested yet (CompDB at the moment.)
         return QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max);
     }
 
