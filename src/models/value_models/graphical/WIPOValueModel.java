@@ -110,7 +110,7 @@ public class WIPOValueModel extends ValueAttr {
         bayesianValueModel.train();
 
         bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
-        FactorNode wipoFactor = bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
+        FactorNode wipoFactor = bayesianValueModel.graph.getFactorNodes().get(0);
         wipoFactor.reNormalize(new DivideByPartition());
         List<String> technologies = bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
         technologyToFactorMap = Collections.synchronizedMap(new HashMap<>());
