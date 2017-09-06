@@ -40,7 +40,8 @@ public class GraphicalValueModel extends ValueAttr {
 
     public void train() {
         graph.setTrainingData(createTrainingData(trainingItems));
-        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 5);
+        System.out.println("Training data size: "+graph.getTrainingData().size());
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 1);
     }
 
     @Override

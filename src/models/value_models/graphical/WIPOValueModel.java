@@ -2,6 +2,7 @@ package models.value_models.graphical;
 
 import elasticsearch.DataSearcher;
 import model.functions.normalization.DivideByPartition;
+import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.graphs.MarkovNet;
 import model.nodes.FactorNode;
@@ -95,7 +96,7 @@ public class WIPOValueModel extends ValueAttr {
         });
 
         // Create graphical model
-        final Graph graph = new MarkovNet();
+        final Graph graph = new BayesianNet();
         variableToValuesMap.forEach((attr,values)->{
             if(values.size()<2) throw new RuntimeException("Each variable must have at least 2 states: "+attr + " ["+String.join("; ",values)+"]");
             graph.addNode(attr,values.size());
