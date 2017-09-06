@@ -6,6 +6,7 @@ import lombok.NonNull;
 import model.functions.inference_methods.BeliefPropagation;
 import model.functions.normalization.DivideByPartition;
 import model.graphs.Graph;
+import model.learning.algorithms.BayesianLearningAlgorithm;
 import model.learning.algorithms.ExpectationMaximizationAlgorithm;
 import model.nodes.FactorNode;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
@@ -39,7 +40,7 @@ public class GraphicalValueModel extends ValueAttr {
 
     public void train() {
         graph.setTrainingData(createTrainingData(trainingItems));
-        graph.applyLearningAlgorithm(new ExpectationMaximizationAlgorithm(graph,alpha, new BeliefPropagation()), 5);
+        graph.applyLearningAlgorithm(new BayesianLearningAlgorithm(graph,alpha), 5);
     }
 
     @Override
