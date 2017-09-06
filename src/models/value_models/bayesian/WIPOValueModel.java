@@ -105,7 +105,7 @@ public class WIPOValueModel extends ValueAttr {
         // Create graphical model
         final Graph graph = new MarkovNet();
         variableToValuesMap.forEach((attr,values)->{
-            if(values.size()<2) throw new RuntimeException("Each variable must have at least 2 states: "+attr);
+            if(values.size()<2) throw new RuntimeException("Each variable must have at least 2 states: "+attr + " ["+String.join("; ",values)+"]");
             graph.addNode(attr,values.size());
         });
 

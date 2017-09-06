@@ -1,13 +1,11 @@
-package models.graphical_models.page_rank;
+package models.value_models.bayesian.page_rank;
 
 import lombok.Getter;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
-import util.ObjectIO;
 
-import java.io.*;
 import java.util.*;
 
 /**

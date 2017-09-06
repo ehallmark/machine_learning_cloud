@@ -1,4 +1,4 @@
-package models.graphical_models.page_rank;
+package models.value_models.bayesian.page_rank;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import model.learning.algorithms.LearningAlgorithm;

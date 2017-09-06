@@ -1,4 +1,4 @@
-package models.graphical_models.page_rank;
+package models.value_models.bayesian.page_rank;
 
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;

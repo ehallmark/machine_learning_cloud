@@ -1,4 +1,4 @@
-package models.graphical_models.page_rank;
+package models.value_models.bayesian.page_rank;
 
 import com.google.common.util.concurrent.AtomicDouble;
 import model.edges.Edge;
@@ -6,10 +6,7 @@ import model.edges.UndirectedEdge;
 import model.graphs.BayesianNet;
 import model.learning.algorithms.LearningAlgorithm;
 import model.nodes.Node;
-import org.deeplearning4j.berkeley.Pair;
-import util.ObjectIO;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;

@@ -1,11 +1,9 @@
-package models.graphical_models.page_rank;
+package models.value_models.bayesian.page_rank;
 
 import models.value_models.regression.PageRankEvaluator;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToRelatedAssetsMap;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
