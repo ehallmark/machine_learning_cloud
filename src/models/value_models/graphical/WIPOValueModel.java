@@ -44,7 +44,7 @@ public class WIPOValueModel extends ValueAttr {
 
     public void init() {
         final String valueVariableName = "gatherValue";
-        final double alpha = 20d;
+        final double alpha = 15d;
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         //AbstractAttribute filingCountry = new FilingCountryAttribute();
