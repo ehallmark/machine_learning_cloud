@@ -90,7 +90,6 @@ public class WIPOValueModel extends ValueAttr {
             });
             item.getDataMap().forEach((attr,obj)->{
                 if(obj instanceof Map) {
-                    System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
                         nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, variableToValuesMap, null);
                     });
@@ -147,7 +146,6 @@ public class WIPOValueModel extends ValueAttr {
 
     private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, Map<String,List<String>> variableToValuesMap, String valueVariableName) {
         if(obj==null||(!attrNameSet.contains(attr)&&(valueVariableName==null||!attr.equals(valueVariableName)))) return;
-        System.out.println("Checking attr: "+attr);
         Collection<String> objects = obj.toString().contains("; ") ? Arrays.asList(obj.toString().split("; ")) : Arrays.asList(obj.toString());
         if(variableToValuesMap.containsKey(attr)) {
             objects.forEach(val->{
