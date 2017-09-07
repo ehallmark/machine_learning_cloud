@@ -22,7 +22,8 @@ public class OverallEvaluator extends RegressionValueModel {
             -5.715e-3,
             4.852e5
     );
-    private static final List<AbstractAttribute> MODELS = Arrays.asList(
+
+    public static final List<AbstractAttribute> MODELS = Arrays.asList(
             new NestedAttribute(Arrays.asList(new JapaneseAttribute())) {
                 @Override
                 public String getName() {

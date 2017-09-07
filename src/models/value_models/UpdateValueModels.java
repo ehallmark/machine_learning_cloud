@@ -8,7 +8,10 @@ import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
+import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
@@ -51,7 +54,10 @@ public class UpdateValueModels {
                 return item;
             }
         };
-        DataSearcher.searchForAssets(SimilarPatentServer.getAllTopLevelAttributes(),Collections.emptyList(),null, SortOrder.ASC, 8000000,SimilarPatentServer.getNestedAttrMap(), transformer, false);
+        Collection<AbstractAttribute> toSearchFor = new ArrayList<>();
+        toSearchFor.addAll(OverallEvaluator.MODELS);
+        toSearchFor.add(new WIPOTechnologyAttribute());
+        DataSearcher.searchForAssets(toSearchFor,Collections.emptyList(),null, SortOrder.ASC, 8000000,SimilarPatentServer.getNestedAttrMap(), transformer, false);
         DataIngester.close();
     }
 }
