@@ -2,10 +2,7 @@ package user_interface.ui_models.attributes.hidden_attributes;
 
 import seeding.Constants;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +15,7 @@ public class AssetToRelatedAssetsMap extends HiddenAttribute<Collection<String>>
         if(relatedAssets!=null&&name!=null) {
             Collection<String> currentFamily = myData.get(name);
             if(currentFamily==null) {
-                currentFamily = new HashSet<>();
+                currentFamily = Collections.synchronizedCollection(new HashSet<>());
             }
             Collection<String> related = relatedAssets.stream().map(map->(String) map.get(Constants.NAME)).filter(n->n!=null).collect(Collectors.toList());
             currentFamily.addAll(related);
