@@ -1,18 +1,15 @@
 package models.value_models.regression;
 
 import seeding.Constants;
-import seeding.Database;
 import user_interface.ui_models.attributes.*;
-import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by ehallmark on 3/10/17.
  */
-public class OverallEvaluator extends RegressionValueModel {
+public class AIValueModel extends RegressionValueModel {
     private static final double INTERCEPT = -7.899e-1;
     private static final List<Double> WEIGHTS = Arrays.asList(
             -9.028e-1,
@@ -37,13 +34,13 @@ public class OverallEvaluator extends RegressionValueModel {
             new PageRankEvaluator()
     );
 
-    public OverallEvaluator() {
+    public AIValueModel() {
         super(INTERCEPT, MODELS, WEIGHTS);
     }
 
     @Override
     public String getName() {
-        return Constants.AI_VALUE;
+        return "aiValueRegressionModel";
     }
 
 }

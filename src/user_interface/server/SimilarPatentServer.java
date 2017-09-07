@@ -5,7 +5,7 @@ import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
 
-import models.value_models.regression.OverallEvaluator;
+import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
 import user_interface.server.tools.PasswordHandler;

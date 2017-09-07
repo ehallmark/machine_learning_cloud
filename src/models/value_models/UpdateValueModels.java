@@ -3,20 +3,20 @@ package models.value_models;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.value_models.graphical.WIPOValueModel;
-import models.value_models.regression.OverallEvaluator;
+import models.value_models.regression.AIValueModel;
+import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
-import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
-import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
+import user_interface.ui_models.attributes.ResultTypeAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -28,36 +28,39 @@ public class UpdateValueModels {
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);
-        List<ValueAttr> models = Arrays.asList(
-                new OverallEvaluator(),
-                new WIPOValueModel()
-        );
-        List<Double> weights = Arrays.asList(
-                70d,
-                30d
-        );
-        ValueAttr aiValueModel = new ValueModelCombination(Constants.AI_VALUE,models,weights);
-        AtomicLong cnt = new AtomicLong(0);
+
+        ValueAttr aiValueModel = new OverallEvaluator();
+        aiValueModel.initMaps();
+
+        AtomicLong patentCnt = new AtomicLong(0);
+        AtomicLong appCnt = new AtomicLong(0);
         ItemTransformer transformer = new ItemTransformer() {
             @Override
             public Item transform(Item item) {
-                Object parent = item.getData("_parent");
-                if(parent==null) return item;
-                Map<String,Object> updates = new HashMap<>();
+
                 double aiValue = aiValueModel.evaluate(item);
                 if(debug) System.out.println("Value: "+aiValue);
-                updates.put(aiValueModel.getFullName(),aiValue);
-                DataIngester.ingestBulk(item.getName(),parent.toString(),updates,false);
-                if(cnt.getAndIncrement()%10000==0) {
-                    System.out.println("Seen: "+cnt.get());
+                boolean isPatent = item.getData(Constants.DOC_TYPE).toString().equals(PortfolioList.Type.patents.toString());
+                if(isPatent) {
+                    aiValueModel.getPatentDataMap().put(item.getName(),aiValue);
+                    if(patentCnt.getAndIncrement()%10000==0) {
+                        System.out.println("Seen patents: "+patentCnt.get());
+                    }
+                } else {
+                    aiValueModel.getApplicationDataMap().put(item.getName(),aiValue);
+                    if(appCnt.getAndIncrement()%10000==0) {
+                        System.out.println("Seen applications: "+appCnt.get());
+                    }
                 }
                 return item;
             }
         };
         Collection<AbstractAttribute> toSearchFor = new ArrayList<>();
-        toSearchFor.addAll(OverallEvaluator.MODELS);
+        toSearchFor.addAll(AIValueModel.MODELS);
         toSearchFor.add(new WIPOTechnologyAttribute());
+        toSearchFor.add(new ResultTypeAttribute());
         DataSearcher.searchForAssets(toSearchFor,Collections.emptyList(),null, SortOrder.ASC, 8000000,SimilarPatentServer.getNestedAttrMap(), transformer, false);
         DataIngester.close();
+        aiValueModel.save();
     }
 }
