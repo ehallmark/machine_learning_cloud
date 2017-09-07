@@ -56,7 +56,7 @@ public class WIPOValueModel extends ValueAttr {
 
     public void init() {
         final double alpha = 10d;
-        final String valueVariableName = "gatherValue";
+       // final String valueVariableName = "gatherValue";
         final int maxLimit = 100000;
         AbstractAttribute wipo = new WIPOTechnologyAttribute();
         //AbstractAttribute filingCountry = new LatestAssigneeNestedAttribute().getAttributes().stream().filter(attr->attr.getName().equals(Constants.COUNTRY)).findFirst().get();
@@ -76,25 +76,25 @@ public class WIPOValueModel extends ValueAttr {
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(allItems).parallel().forEach(item->{
             // add gather value
-            Boolean value = gatherValueMap.get(item.getName());
-            if(value==null) value = false;
-            item.addData(valueVariableName, value ? 1 : 0);
+          //  Boolean value = gatherValueMap.get(item.getName());
+          //  if(value==null) value = false;
+          //  item.addData(valueVariableName, value ? 1 : 0);
 
             // add values
             attributes.forEach(attr->{
                 Object obj = item.getData(attr.getFullName());
                 if(obj!=null) {
-                    nestedHelper(attr.getFullName(), obj, attrNameSet, variableToValuesMap, valueVariableName);
+                    nestedHelper(attr.getFullName(), obj, attrNameSet, variableToValuesMap, null);
                 }
             });
             item.getDataMap().forEach((attr,obj)->{
                 if(obj instanceof Map) {
                     System.out.println("Checking map: "+attr);
                     ((Map<String,Object>)obj).forEach((innerAttr,innerObj)->{
-                        nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, variableToValuesMap, valueVariableName);
+                        nestedHelper(attr+"."+innerAttr, innerObj, attrNameSet, variableToValuesMap, null);
                     });
                 } else {
-                    nestedHelper(attr, obj, attrNameSet, variableToValuesMap, valueVariableName);
+                    nestedHelper(attr, obj, attrNameSet, variableToValuesMap, null);
                 }
             });
         });
@@ -116,14 +116,14 @@ public class WIPOValueModel extends ValueAttr {
             graph.addNode(attr,values.size());
         });
 
-        Node valueNode = graph.findNode(valueVariableName);
+        //Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
         // connect and add factors
-        graph.connectNodes(wipoNode, valueNode);
+       // graph.connectNodes(wipoNode, valueNode);
         graph.addFactorNode(null, wipoNode);
-        graph.addFactorNode(null, valueNode, wipoNode);
+        //graph.addFactorNode(null, valueNode, wipoNode);
 
-        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, valueVariableName);
+        bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, null);
         bayesianValueModel.train();
 
         bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
@@ -140,7 +140,7 @@ public class WIPOValueModel extends ValueAttr {
     }
 
     private static void nestedHelper(String attr, Object obj, Collection<String> attrNameSet, Map<String,List<String>> variableToValuesMap, String valueVariableName) {
-        if(obj==null||(!attrNameSet.contains(attr)&&!attr.equals(valueVariableName))) return;
+        if(obj==null||(!attrNameSet.contains(attr)&&(valueVariableName==null||!attr.equals(valueVariableName)))) return;
         System.out.println("Checking attr: "+attr);
         Collection<String> objects = obj.toString().contains("; ") ? Arrays.asList(obj.toString().split("; ")) : Arrays.asList(obj.toString());
         if(variableToValuesMap.containsKey(attr)) {
