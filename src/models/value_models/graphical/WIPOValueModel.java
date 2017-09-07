@@ -77,7 +77,7 @@ public class WIPOValueModel extends ValueAttr {
         Arrays.stream(allItems).parallel().forEach(item->{
             // add gather value
             Boolean value = gatherValueMap.get(item.getName());
-            if(value==null) return;
+            if(value==null) value = false;
             item.addData(valueVariableName, value ? 1 : 0);
 
             // add values

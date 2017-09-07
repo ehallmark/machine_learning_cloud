@@ -6,6 +6,7 @@ import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.OverallEvaluator;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
 import user_interface.ui_models.portfolios.items.Item;
@@ -19,6 +20,7 @@ import java.util.*;
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
         // train wipo
+        SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);
         List<ValueAttr> models = Arrays.asList(
                 new OverallEvaluator(),
