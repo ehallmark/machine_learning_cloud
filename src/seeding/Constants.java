@@ -240,8 +240,7 @@ public class Constants {
 			SIMILARITY,
 			GATHER,
 			COMPDB,
-			"vector_obj",
-			AI_VALUE
+			"vector_obj"
 	).collect(Collectors.toSet());
 
 	static {

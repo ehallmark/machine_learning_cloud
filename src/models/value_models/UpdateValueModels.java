@@ -13,6 +13,8 @@ import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by ehallmark on 7/12/17.
@@ -32,6 +34,7 @@ public class UpdateValueModels {
                 30d
         );
         ValueAttr aiValueModel = new ValueModelCombination(Constants.AI_VALUE,models,weights);
+        AtomicLong cnt = new AtomicLong(0);
         ItemTransformer transformer = new ItemTransformer() {
             @Override
             public Item transform(Item item) {
@@ -42,6 +45,9 @@ public class UpdateValueModels {
                 if(debug) System.out.println("Value: "+aiValue);
                 updates.put(aiValueModel.getFullName(),aiValue);
                 DataIngester.ingestBulk(item.getName(),parent.toString(),updates,false);
+                if(cnt.getAndIncrement()%10000==0) {
+                    System.out.println("Seen: "+cnt.get());
+                }
                 return item;
             }
         };
