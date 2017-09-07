@@ -30,7 +30,7 @@ public class OverallEvaluator extends RegressionValueModel {
                 }
             }.getAttributes().stream().findFirst().get(),
             new CountAttribute(Constants.CLAIMS+Constants.COUNT_SUFFIX),
-            new CountAttribute(Constants.ASSIGNMENTS+Constants.COUNT_SUFFIX),
+            new NumAssignmentsAttribute(),
             new CountAttribute(Constants.PATENT_FAMILY+Constants.COUNT_SUFFIX),
             new LengthOfSmallestIndependentClaimAttribute(),
             new PageRankEvaluator()
