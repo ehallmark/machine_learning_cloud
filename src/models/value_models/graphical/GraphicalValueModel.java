@@ -69,7 +69,6 @@ public class GraphicalValueModel extends ValueAttr {
     private Collection<Map<String,Integer>> createTrainingData(Item[] items) {
         return Arrays.stream(items).parallel().map(item->{
             Map<String,Integer> assignment = createAssignment(item,variableToValuesMap);
-            System.out.println("Assignment: "+new Gson().toJson(assignment));
             return assignment;
         }).filter(assignment->assignment!=null&&!assignment.isEmpty()).collect(Collectors.toList());
     }

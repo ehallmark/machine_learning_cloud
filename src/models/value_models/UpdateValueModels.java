@@ -19,7 +19,7 @@ import java.util.*;
  */
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
-        final boolean debug = true;
+        final boolean debug = false;
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);
@@ -28,8 +28,8 @@ public class UpdateValueModels {
                 new WIPOValueModel()
         );
         List<Double> weights = Arrays.asList(
-                80d,
-                20d
+                70d,
+                30d
         );
         ValueAttr aiValueModel = new ValueModelCombination(Constants.AI_VALUE,models,weights);
         ItemTransformer transformer = new ItemTransformer() {
