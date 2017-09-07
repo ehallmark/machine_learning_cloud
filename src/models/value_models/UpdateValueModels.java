@@ -19,6 +19,7 @@ import java.util.*;
  */
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
+        final boolean debug = true;
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);
@@ -27,8 +28,8 @@ public class UpdateValueModels {
                 new WIPOValueModel()
         );
         List<Double> weights = Arrays.asList(
-                75d,
-                25d
+                80d,
+                20d
         );
         ValueAttr aiValueModel = new ValueModelCombination(Constants.AI_VALUE,models,weights);
         ItemTransformer transformer = new ItemTransformer() {
@@ -37,7 +38,9 @@ public class UpdateValueModels {
                 Object parent = item.getData("_parent");
                 if(parent==null) return item;
                 Map<String,Object> updates = new HashMap<>();
-                updates.put(aiValueModel.getFullName(),aiValueModel.evaluate(item));
+                double aiValue = aiValueModel.evaluate(item);
+                if(debug) System.out.println("Value: "+aiValue);
+                updates.put(aiValueModel.getFullName(),aiValue);
                 DataIngester.ingestBulk(item.getName(),parent.toString(),updates,false);
                 return item;
             }

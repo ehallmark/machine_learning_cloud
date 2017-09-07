@@ -23,12 +23,13 @@ import java.io.File;
 import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 /**
  * Created by Evan on 8/30/2017.
  */
 public class WIPOValueModel extends ValueAttr {
-    private static final boolean debug = true;
+    private static final boolean debug = false;
 
     private GraphicalValueModel bayesianValueModel;
     private Item[] allItems;
@@ -128,7 +129,12 @@ public class WIPOValueModel extends ValueAttr {
 
         bayesianValueModel.graph.setCurrentAssignment(new HashMap<>());
         FactorNode wipoFactor = bayesianValueModel.graph.variableElimination(new String[]{Constants.WIPO_TECHNOLOGY});
-        wipoFactor.reNormalize(new DivideByPartition());
+        wipoFactor.reNormalize(array->{
+            double max = DoubleStream.of(array).max().getAsDouble();
+            for(int i = 0; i < array.length; i++ ) {
+                array[i] /= max;
+            }
+        });
 
         List<String> technologies = bayesianValueModel.getVariableToValuesMap().get(Constants.WIPO_TECHNOLOGY);
         technologyToFactorMap = Collections.synchronizedMap(new HashMap<>());

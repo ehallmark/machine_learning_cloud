@@ -15,7 +15,7 @@ import java.util.List;
  * Created by Evan on 9/3/2017.
  */
 public abstract class RegressionValueModel extends ValueAttr {
-    private static final boolean debug = true;
+    private static final boolean debug = false;
 
     protected List<AbstractAttribute> attributes;
     protected List<Double> weights;

@@ -22,9 +22,7 @@ public class ValueModelCombination extends ValueAttr {
     protected String name;
     public ValueModelCombination(String name, List<ValueAttr> valueAttrs, List<Double> weights) {
         if(valueAttrs.size()!=weights.size()) throw new RuntimeException("Weights and models must have same cardinality");
-        final double sum = weights.stream().mapToDouble(d->d).sum();
         // normalize weights to sum to 1
-        weights = weights.stream().map(weight->weight/sum).collect(Collectors.toList());
         this.name=name;
         this.pairs = new ArrayList<>();
         for(int i = 0; i < weights.size(); i++ ){
