@@ -177,7 +177,12 @@ public class DataSearcher {
             Item[] items = new Item[]{};
             do {
                 System.out.println("Starting new batch. Num items = " + items.length);
-                Item[] newItems = Arrays.stream(response.getHits().getHits()).map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore))).toArray(size->new Item[size]);
+                Stream<SearchHit> searchHitStream = Arrays.stream(response.getHits().getHits());
+                if(!merge) {
+                    // run in parallel
+                    searchHitStream = searchHitStream.parallel();
+                }
+                Item[] newItems = searchHitStream.map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore))).toArray(size->new Item[size]);
                 if(merge) items=merge(items,newItems);
                 response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
             } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
