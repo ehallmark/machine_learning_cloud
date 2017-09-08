@@ -720,6 +720,15 @@ public class SimilarPatentServer {
             System.out.println("Number of headers: "+headers.size());
             List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
             long totalCount = data.size();
+            // check for search
+            List<Map<String,String>> queriedData;
+            if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
+                String searchStr = req.queryMap("queries").value("search").toLowerCase();
+                queriedData = new ArrayList<>(data.stream().filter(m->m.values().stream().anyMatch(val->val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
+            } else {
+                queriedData = data;
+            }
+            long queriedCount = queriedData.size();
             // check for sorting
             String previousSort = req.session().attribute("previousSort");
             if(req.queryMap("sorts")!=null) {
@@ -737,7 +746,7 @@ public class SimilarPatentServer {
                         if (v.length > 0 && v[0].equals("-1")) {
                             comp = comp.reversed();
                         }
-                        data.sort(comp);
+                        queriedData.sort(comp);
                     }
                     req.session().attribute("previousSort",sortStr);
                 });
@@ -749,7 +758,7 @@ public class SimilarPatentServer {
                 dataPage = Collections.emptyList();
             }
             response.put("totalRecordCount",totalCount);
-            response.put("queryRecordCount",totalCount);
+            response.put("queryRecordCount",queriedCount);
             response.put("records", dataPage);
             return new Gson().toJson(response);
         } catch (Exception e) {
@@ -880,7 +889,7 @@ public class SimilarPatentServer {
 
 
             System.out.println("Rendering table...");
-            List<Map<String,String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
+            List<Map<String,String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders));
 
             boolean onlyExcel = extractBool(req, "onlyExcel");
             String html;
