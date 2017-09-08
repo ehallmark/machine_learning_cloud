@@ -202,7 +202,6 @@ $(document).ready(function() {
                 $this.append('<option value="'+value+'">'+$(elem).text()+"</option>");
             }
         });
-        initSelect2(this);
         $this.trigger('change');
     });
 
