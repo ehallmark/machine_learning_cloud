@@ -722,19 +722,22 @@ public class SimilarPatentServer {
             long totalCount = data.size();
             // check for search
             List<Map<String,String>> queriedData;
+            String searchStr;
             if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
                 String previousSearch = req.session().attribute("previousSearch");
-                String searchStr = req.queryMap("queries").value("search").toLowerCase();
+                searchStr = req.queryMap("queries").value("search").toLowerCase();
                 if(searchStr==null||searchStr.trim().isEmpty()) {
                     queriedData = data;
                 } else if(previousSearch!=null&&previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
                     queriedData = req.session().attribute("queriedData");
+
                 } else {
                     queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
                     req.session().attribute("previousSearch",searchStr);
                     req.session().attribute("queriedData", queriedData);
                 }
             } else {
+                searchStr = "";
                 queriedData = data;
             }
             long queriedCount = queriedData.size();
@@ -743,7 +746,7 @@ public class SimilarPatentServer {
             if(req.queryMap("sorts")!=null) {
                 req.queryMap("sorts").toMap().forEach((k,v)->{
                     if(v==null||k==null) return;
-                    String sortStr = k+String.join("",v);
+                    String sortStr = k+String.join("",v)+searchStr;
                     if(previousSort==null||!sortStr.equals(previousSort)) {
                         Comparator<Map<String, String>> comp = (d1, d2) -> {
                             try {
