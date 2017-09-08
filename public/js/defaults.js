@@ -161,16 +161,25 @@ $(document).ready(function() {
 
     $('.template-remove-button').click(removeTemplateFunction);
 
+    var initSelect2 = function(elem) {
+        var $this = $(elem);
+        var displayItemSelectOptions = {width: '100%', placeholder: $this.find('option.placeholder').text()};
+        $this.select2(displayItemSelectOptions);r
+        return $this;
+    };
+
     // display-item-select
     $('.display-item-select').each(function(){
-        $this = $(this);
-        var displayItemSelectOptions = {width: '100%', placeholder: $this.find('option.placeholder').text()};
-        $this.select2(displayItemSelectOptions);
+        initSelect2(this);
     });
+
+
 
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
-        $this = $(this);
+        var $this = $(this);
+        $this.select2("destroy");
+        $this = initSelect(this);
 
         // placeholder data
         var $placeholder = $this.find('option.placeholder').detach();
