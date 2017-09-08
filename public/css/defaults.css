@@ -194,3 +194,8 @@ input.form-control {
     font-weight: 500;
     width: 30%;
 }
+
+
+.collapsible-form .select2 .select2-results__option[role="treeitem"] {
+   padding-left: 1em !important;
+}
