@@ -50,6 +50,9 @@ public class AbstractExcludeFilter extends AbstractFilter {
     public QueryBuilder getFilterQuery() {
         BoolQueryBuilder builder = QueryBuilders.boolQuery();
         if(!attribute.getType().equals("keyword")) {
+            if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
+                builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite()+".raw", labels));
+            }
             builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite(),labels));
         } else {
             builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite(),labels));

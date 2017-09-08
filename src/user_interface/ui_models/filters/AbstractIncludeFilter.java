@@ -52,6 +52,9 @@ public class AbstractIncludeFilter extends AbstractFilter {
     @Override
     public QueryBuilder getFilterQuery() {
         if(!attribute.getType().equals("keyword")) {
+            if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
+                return QueryBuilders.termsQuery(getFullPrerequisite()+".raw", labels);
+            }
             return QueryBuilders.matchQuery(getFullPrerequisite(),labels);
         } else {
             return QueryBuilders.termsQuery(getFullPrerequisite(), labels);
