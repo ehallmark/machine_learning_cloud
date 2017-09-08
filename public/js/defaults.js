@@ -177,7 +177,7 @@ $(document).ready(function() {
 
         // delete all items of the native select element
         $this.parent().find(".hidden-placeholder").html($placeholder);
-        $this.find("optgroup").each(function(){$(this).empty();});
+        $this.find("optgroup").each(function(){$(this).empty().trigger('change');});
         $this.find("option").each(function(){$(this).remove();});
 
         // add hidden elements
@@ -195,10 +195,7 @@ $(document).ready(function() {
             }
         });
 
-        var select2Instance = $(this).data('select2');
-        var resetOptions = select2Instance.options.options;
         $this.trigger('change');
-        $this.select2('destroy').select2(resetOptions);
     });
 
     // on select
