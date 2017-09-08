@@ -723,8 +723,17 @@ public class SimilarPatentServer {
             // check for search
             List<Map<String,String>> queriedData;
             if(req.queryMap("queries")!=null&&req.queryMap("queries").hasKey("search")) {
+                String previousSearch = req.session().attribute("previousSearch");
                 String searchStr = req.queryMap("queries").value("search").toLowerCase();
-                queriedData = new ArrayList<>(data.stream().filter(m->m.values().stream().anyMatch(val->val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
+                if(searchStr==null||searchStr.trim().isEmpty()) {
+                    queriedData = data;
+                } else if(previousSearch!=null&&previousSearch.toLowerCase().equals(searchStr.toLowerCase())) {
+                    queriedData = req.session().attribute("queriedData");
+                } else {
+                    queriedData = new ArrayList<>(data.stream().filter(m -> m.values().stream().anyMatch(val -> val.toLowerCase().contains(searchStr))).collect(Collectors.toList()));
+                    req.session().attribute("previousSearch",searchStr);
+                    req.session().attribute("queriedData", queriedData);
+                }
             } else {
                 queriedData = data;
             }
@@ -753,7 +762,7 @@ public class SimilarPatentServer {
             }
             List<Map<String,String>> dataPage;
             if(offset < totalCount) {
-                dataPage = data.subList(offset, Math.min(data.size(), offset + perPage));
+                dataPage = queriedData.subList(offset, Math.min(queriedData.size(), offset + perPage));
             } else {
                 dataPage = Collections.emptyList();
             }
