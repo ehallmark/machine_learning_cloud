@@ -195,7 +195,10 @@ $(document).ready(function() {
             }
         });
 
+        var select2Instance = $select.data('select2');
+        var resetOptions = select2Instance.options.options;
         $this.trigger('change');
+        $this.select2('destroy').select2(resetOptions)
     });
 
     // on select
