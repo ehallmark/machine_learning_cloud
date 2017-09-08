@@ -202,7 +202,7 @@ $(document).ready(function() {
             }
         });
 
-        $this.val(null).trigger('change');
+        $this.trigger('change');
     });
 
     // on select
@@ -228,7 +228,7 @@ $(document).ready(function() {
             }
         }
         $this.prepend($placeholder);
-        $this.val(null).trigger('change');
+        $this.trigger('change');
     });
 
     // nested forms
