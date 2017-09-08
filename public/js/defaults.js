@@ -187,10 +187,11 @@ $(document).ready(function() {
         // add new items
         $items.each(function(index, elem) {
             var $optGroup = $(elem).attr('opt-group');
+            var value = $(elem).closest('.attributeElement').attr("data-model");
             if($optGroup.length>0) {
-                $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+                $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+value+'">'+$(elem).text()+"</option>");
             } else {
-                $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+                $this.append('<option value="'+value+'">'+$(elem).text()+"</option>");
             }
         });
 
@@ -202,8 +203,8 @@ $(document).ready(function() {
         $this = $(this);
         var value = $(this).attr('data-value');
         if($.isNumeric(value)) {
-            var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(parseInt(value,10));
-            showDraggable(toDisplay.parentElement);
+            var toDisplay = $this.parent().next().find('.attributeElement[data-model="'+value+'"]').get(0));
+            showDraggable(toDisplay);
         }
     });
 
