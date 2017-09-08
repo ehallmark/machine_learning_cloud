@@ -162,7 +162,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 break;
             }
             case Nested: {
-                description = "This nested filter contains the following values to filter";
+                description = "This nested filter contains the following values to filter:";
                 break;
             }
             case BoolTrue: {

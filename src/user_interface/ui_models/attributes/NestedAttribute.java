@@ -51,7 +51,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
         if(tagList.size()>10) {
             tagList = Stream.of(tagList,Arrays.asList(div().withText("And more..."))).flatMap(list->list.stream().limit(10)).collect(Collectors.toList());
         }
-        return filter != null ? span().with(tagList) : div().withText("Contains the following nested attributes").with(span().with(tagList).attr("style","padding-left: 1em;"));
+        return filter != null ? span().with(tagList) : div().withText("Contains the following nested attributes:").with(span().with(tagList));
     }
 
 }
