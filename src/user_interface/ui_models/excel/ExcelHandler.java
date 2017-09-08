@@ -85,7 +85,7 @@ public class ExcelHandler {
 
     }
 
-    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<List<String>> data, List<String> headers) throws Exception {
+    public static void writeDefaultSpreadSheetToRaw(HttpServletResponse raw, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers) throws Exception {
         WritableWorkbook workbook = Workbook.createWorkbook(raw.getOutputStream());
 
         createSheetWithTemplate(workbook, sheetName, sheetTitle, data, headers);
@@ -102,11 +102,12 @@ public class ExcelHandler {
         System.out.println("Time to write sheet to outputstream: "+(t1-t0)/1000+ " seconds");
     }
 
-    private static int[] computeColWidths(List<List<String>> data, List<String> attributes) {
+    private static int[] computeColWidths(List<Map<String,String>> data, List<String> attributes) {
         Stream<int[]> stream = data.parallelStream().limit(100).map(row->{
             int[] rowWidths = new int[attributes.size()];
+            Collection<Map.Entry<String,String>> entries = row.entrySet();
             for(int i = 0; i < attributes.size(); i++) {
-                rowWidths[i] = charToPixelLength(row.get(i).toString().length());
+                rowWidths[i] = charToPixelLength(row.get(attributes.get(i)).length());
             }
             return rowWidths;
         });
@@ -119,9 +120,9 @@ public class ExcelHandler {
         return widths;
     }
 
-    private static int charToPixelLength(int numChars) { return Math.min(numChars + 8,80); }
+    private static int charToPixelLength(int numChars) { return Math.min(numChars + 8,70); }
 
-    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<List<String>> data, List<String> headers) throws Exception{
+    private static WritableSheet createSheetWithTemplate(WritableWorkbook workbook, String sheetName, String sheetTitle, List<Map<String,String>> data, List<String> headers) throws Exception{
         try {
             setupExcelFormats();
         } catch(Exception e) {
@@ -176,7 +177,7 @@ public class ExcelHandler {
         return sheet;
     }
 
-    private static void writeHeadersAndData(WritableSheet sheet, List<List<String>> data, int rowOffset, List<String> attributes) throws Exception {
+    private static void writeHeadersAndData(WritableSheet sheet, List<Map<String,String>> data, int rowOffset, List<String> attributes) throws Exception {
         System.out.println("Starting sheet with "+data.size()+ " elements");
 
         //int headerRow = 6 + rowOffset;
@@ -190,12 +191,12 @@ public class ExcelHandler {
         }
 
         for (int r = 0; r < data.size(); r++) {
-            List<String> rowData = data.get(r);
+            Map<String,String> rowData = data.get(r);
             for (int c = 0; c < attributes.size(); c++) {
                 int col = c + 1;
                 int row = headerRow + 1 + r;
                 WritableCell cell;
-                String excelCell = rowData.get(c);
+                String excelCell = rowData.get(attributes.get(c));
 
                 if(excelCell==null) {
                     cell = new Label(col, row, "", getDefaultFormat());

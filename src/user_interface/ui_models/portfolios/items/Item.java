@@ -1,6 +1,7 @@
 package user_interface.ui_models.portfolios.items;
 
 import lombok.Getter;
+import org.deeplearning4j.berkeley.Pair;
 import seeding.Constants;
 import models.value_models.ValueModelCombination;
 
@@ -51,6 +52,13 @@ public class Item implements Comparable<Item> {
             Object cell = dataMap.get(attr);
             return cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString());
         }).collect(Collectors.toList());
+    }
+
+    public Map<String,String> getDataAsMap(List<String> attributes) {
+        return attributes.stream().map(attr->{
+            Object cell = dataMap.get(attr);
+            return new Pair<>(attr,cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString()));
+        }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }
 
     public Object getData(String param) {

@@ -101,20 +101,20 @@ $(document).ready(function() {
            },
            success: function(data) {
              if(onlyExcel) {
-                var $downloadForm = $('<form method="post" target="_blank" action="/secure/excel_generation"></form>');
+                var $downloadForm = $('<form method="post" action="/secure/excel_generation"></form>');
                 $downloadForm.appendTo('body').submit().remove();
              } else {
                $('#results').html(data.message);
-               $.ajax({
-                 type: "POST",
-                 dataType: "json",
-                 url: "dataTable",
-                 success: function(tableData) {
-                   $('#results #data-table table tbody')[0].innerHTML = tableData.message;
-                   setupDataTable($('#results #data-table').get(0));
-                   setCollapsibleHeaders('#results .collapsible-header');
+               $('#results #data-table table').dynatable({
+                 dataset: {
+                   ajax: true,
+                   ajaxUrl: 'dataTable.json',
+                   ajaxOnLoad: true,
+                   records: []
                  }
                });
+
+               setCollapsibleHeaders('#results .collapsible-header');
 
                if (data.hasOwnProperty('chartCnt')) {
                  try {

@@ -693,7 +693,7 @@ public class SimilarPatentServer {
             if(map==null) return null;
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of excel headers: "+headers.size());
-            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
+            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
             res.header("Content-Disposition", "attachment; filename=download.xls");
             res.type("application/force-download");
             ExcelHandler.writeDefaultSpreadSheetToRaw(raw, "Data", "Data", data,  headers);
@@ -707,21 +707,29 @@ public class SimilarPatentServer {
     }
 
     private static Object handleDataTable(Request req, Response res) {
+        Map<String,Object> response = new HashMap<>();
         try {
             System.out.println("Received datatable request");
             Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
             if(map==null) return null;
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of headers: "+headers.size());
-            List<List<String>> data = (List<List<String>>)map.getOrDefault("rows",Collections.emptyList());
-            if(data.size()>MAX_DATATABLE_RESULTS) {
+            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
+            long totalCount = data.size();
+            if(totalCount>MAX_DATATABLE_RESULTS) {
                 data = data.subList(0, MAX_DATATABLE_RESULTS);
             }
-            return new Gson().toJson(new SimpleAjaxMessage(String.join("",dataTableBodyFromData(data,headers).stream().map(t->t.render()).collect(Collectors.toList()))));
+            response.put("totalRecordCount",totalCount);
+            response.put("queryRecordCount",data.size());
+            response.put("records", data);
+            return new Gson().toJson(response);
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
-            return new Gson().toJson(new SimpleAjaxMessage("ERROR "+e.getClass().getName()+": " + e.getMessage()));
+            response.put("totalRecordCount",0);
+            response.put("queryRecordCount",0);
+            response.put("records",Collections.emptyList());
         }
+        return new Gson().toJson(response);
     }
 
     private static Object handleCharts(Request req, Response res) {
@@ -843,7 +851,7 @@ public class SimilarPatentServer {
 
 
             System.out.println("Rendering table...");
-            List<List<String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
+            List<Map<String,String>> tableData = getTableRowData(portfolioList.getItemList(), tableHeaders);
 
             boolean onlyExcel = extractBool(req, "onlyExcel");
             String html;
@@ -945,8 +953,8 @@ public class SimilarPatentServer {
         }).collect(Collectors.toList());
     }
 
-    static List<List<String>> getTableRowData(Item[] items, List<String> attributes) {
-        return Arrays.stream(items).map(item -> item.getDataAsRow(attributes)).collect(Collectors.toList());
+    static List<Map<String,String>> getTableRowData(Item[] items, List<String> attributes) {
+        return Arrays.stream(items).map(item -> item.getDataAsMap(attributes)).collect(Collectors.toList());
     }
 
     public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {
@@ -996,6 +1004,7 @@ public class SimilarPatentServer {
                         script().withSrc("http://code.highcharts.com/modules/exporting.js"),
                         script().withSrc("http://code.highcharts.com/modules/offline-exporting.js"),
                         script().withSrc("/js/customEvents.js"),
+                        script().withSrc("/js/jquery.dynatable.js"),
                         script().withSrc("/js/defaults.js"),
                         script().withSrc("/js/jquery.miniTip.js"),
                         script().withSrc("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/js/select2.min.js"),
@@ -1004,6 +1013,7 @@ public class SimilarPatentServer {
                         link().withRel("stylesheet").withHref("https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"),
                         link().withRel("stylesheet").withHref("https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.3/css/select2.min.css"),
                         link().withRel("stylesheet").withHref("/css/defaults.css"),
+                        link().withRel("stylesheet").withHref("/css/jquery.dynatable.css"),
                         link().withRel("stylesheet").withHref("/css/miniTip.css"),
                         link().withRel("stylesheet").withHref("http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"),
                         script().withText("function disableEnterKey(e){var key;if(window.event)key = window.event.keyCode;else key = e.which;return (key != 13);}")
