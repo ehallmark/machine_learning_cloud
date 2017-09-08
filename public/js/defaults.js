@@ -185,7 +185,8 @@ $(document).ready(function() {
 
         // add new items
         $items.each(function(index, elem) {
-            $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+            var $optGroup = $(elem).attr('opt-group');
+            $this.find('optgroup[name="'+$optGroup+"']").append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
 
         $this.trigger('change');
@@ -195,7 +196,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
         var value = $this.parent().find(".value").val();
-        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(parseInt(value,10));
+        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').filter('[value="'+value.toString()+"']").get(0);
         showDraggable(toDisplay.parentElement);
     });
 
