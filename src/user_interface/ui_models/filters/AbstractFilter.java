@@ -121,6 +121,10 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
         return span().with(getDescriptionFor(getFilterType()),attribute.getDescription(this));
     }
 
+    public String getOptionGroup() {
+        return getFullPrerequisite();
+    }
+
 
     protected static Tag getDescriptionFor(FilterType filterType) {
         String description;

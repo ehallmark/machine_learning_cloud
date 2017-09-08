@@ -97,6 +97,7 @@ public class SimilarPatentServer {
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
+    private static List<String> filterGroupSet;
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
@@ -331,6 +332,8 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.EXISTS_IN_COMPDB_FILTER, new ExistsInCompDBFilter());
                 preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
                 buildJavaToHumanAttrMap();
+
+                filterGroupSet = preFilterModelMap.entrySet().stream().collect(Collectors.groupingBy(e->e.getValue().getOptionGroup())).keySet().stream().sorted().collect(Collectors.toList());
 
             }catch(Exception e) {
                 e.printStackTrace();
@@ -1126,8 +1129,21 @@ public class SimilarPatentServer {
 
     public static Tag technologySelectWithCustomClass(String name, String clazz, Collection<String> orderedClassifications) {
         return select().attr("style","width:100%;").withName(name).withId(("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","")).withClass(clazz).attr("multiple","multiple").with(
-                orderedClassifications.stream().map(technology-> {
+                orderedClassifications.stream().map(technology->{
                     return div().with(option(humanAttributeFor(technology)).withValue(technology));
+                }).collect(Collectors.toList())
+        );
+    }
+
+    public static Tag technologySelectWithCustomClass(String name, String clazz, Map<String,List<String>> orderedClassifications) {
+        return select().attr("style","width:100%;").withName(name).withId(("multiselect-"+clazz+"-"+name).replaceAll("[\\[\\] ]","")).withClass(clazz).attr("multiple","multiple").with(
+                orderedClassifications.entrySet().stream().map(e-> {
+                    String optGroup = e.getKey();
+                    return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup).with(
+                            e.getValue().stream().map(technology->{
+                                return div().with(option(humanAttributeFor(technology)).withValue(technology));
+                            }).collect(Collectors.toList())
+                    );
                 }).collect(Collectors.toList())
         );
     }
@@ -1149,7 +1165,7 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
                                                         customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD,roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
                                                 ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD),roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
+                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD),roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION), filterGroupSet)
                                                 )
                                         )
                                 ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
@@ -1191,10 +1207,10 @@ public class SimilarPatentServer {
         );
     }
     private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName, Function<String,Boolean> shouldKeep) {
-        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName), shouldKeep);
+        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName), shouldKeep, Collections.emptyList());
     }
 
-    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames, Function<String,Boolean> shouldKeep) {
+    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames, Function<String,Boolean> shouldKeep, Collection<String> optGroups) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
         for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
@@ -1221,7 +1237,11 @@ public class SimilarPatentServer {
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
-                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
+                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type).with(
+                                        optGroups.stream().map(optGroup->{
+                                            return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup);
+                                        }).collect(Collectors.toList())
+                                )
                         )
                 )
         );
@@ -1233,7 +1253,7 @@ public class SimilarPatentServer {
         String toggleID = groupID+"-panel-toggle";
         return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "") + (notImplemented ? " not-implemented" : "")).attr("data-target",type).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header"+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target","#"+collapseId).with(
-                        label(humanAttributeFor(modelName)),
+                        label(humanAttributeFor(modelName)).attr("opt-group",modelName),
                         (nestedParent && ! isFilter) || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)

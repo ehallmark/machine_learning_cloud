@@ -52,4 +52,8 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
         return div();
     }
 
+    public String getOptionGroup() {
+        return Constants.GATHER;
+    }
+
 }

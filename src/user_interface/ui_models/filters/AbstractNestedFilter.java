@@ -13,9 +13,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -90,9 +88,11 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag() {
+        Map<String,List<String>> filterGroups = new TreeMap<>(filters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
+                .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getName()).collect(Collectors.toList()))));
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", filters.stream().map(filter->filter.getName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", filterGroups)
                 ), div().withClass("nested-form-list").with(
                         filters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");

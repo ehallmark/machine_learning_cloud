@@ -55,4 +55,8 @@ public class ExistsInCompDBFilter extends AbstractIncludeFilter {
         return div();
     }
 
+    public String getOptionGroup() {
+        return Constants.COMPDB;
+    }
+
 }
