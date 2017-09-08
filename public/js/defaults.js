@@ -221,7 +221,7 @@ $(document).ready(function() {
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         if(e.params.hasOwnProperty('originalSelect2Event')) {
             var value = e.params.originalSelect2Event.data.id;
-            if(value) {
+            if(typeof value !== "undefined") {
                 $(this).attr('data-value',value);
             } else {
                 $(this).attr('data-value', null);
