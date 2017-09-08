@@ -24,8 +24,4 @@ public class LatestAssigneeNestedAttribute extends NestedAttribute {
         return Constants.LATEST_ASSIGNEE;
     }
 
-    @Override
-    public boolean isNotYetImplemented() {
-        return true;
-    }
 }

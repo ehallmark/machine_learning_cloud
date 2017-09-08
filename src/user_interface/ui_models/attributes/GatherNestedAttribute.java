@@ -23,8 +23,4 @@ public class GatherNestedAttribute extends NestedAttribute {
         return Constants.GATHER;
     }
 
-    @Override
-    public boolean isNotYetImplemented() {
-        return true;
-    }
 }
