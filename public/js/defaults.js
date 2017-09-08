@@ -196,7 +196,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
         var value = $this.parent().find(".value").val();
-        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').filter('[value="'+value.toString()+"']").get(0);
+        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(value);
         showDraggable(toDisplay.parentElement);
     });
 
