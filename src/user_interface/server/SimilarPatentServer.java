@@ -1222,7 +1222,11 @@ public class SimilarPatentServer {
                 span().withId(groupID).with(
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
-                                        select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected")),
+                                        select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected"),span().with(
+                                                optGroups.stream().map(optGroup->{
+                                                    return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup);
+                                                }).collect(Collectors.toList())
+                                        )),
                                         div().withClass("hidden-placeholder").attr("style","display: none;"),
                                         div().withClass("value").attr("style","display: none;")
                                 ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start"+type).with(
@@ -1237,11 +1241,7 @@ public class SimilarPatentServer {
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
-                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type).with(
-                                        optGroups.stream().map(optGroup->{
-                                            return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup);
-                                        }).collect(Collectors.toList())
-                                )
+                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
                         )
                 )
         );

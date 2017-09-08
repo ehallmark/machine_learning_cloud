@@ -186,7 +186,7 @@ $(document).ready(function() {
         // add new items
         $items.each(function(index, elem) {
             var $optGroup = $(elem).attr('opt-group');
-            $this.find('optgroup[name="'+$optGroup+"']").append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+            $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
         });
 
         $this.trigger('change');
