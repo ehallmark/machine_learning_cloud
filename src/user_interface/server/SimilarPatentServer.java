@@ -660,7 +660,7 @@ public class SimilarPatentServer {
             return handleDeleteForm(req,res);
         });
 
-        post(SHOW_DATATABLE_URL, (req, res) -> {
+        get(SHOW_DATATABLE_URL, (req, res) -> {
             authorize(req,res);
             return handleDataTable(req,res);
         });
@@ -709,6 +709,9 @@ public class SimilarPatentServer {
     private static Object handleDataTable(Request req, Response res) {
         Map<String,Object> response = new HashMap<>();
         try {
+            int perPage = extractInt(req,"perPage",10);
+            int page = extractInt(req, "page", 1);
+            int offset = extractInt(req,"offset",0);
             System.out.println("Received datatable request");
             Map<String,Object> map = req.session(false).attribute(EXCEL_SESSION);
             if(map==null) return null;
@@ -716,8 +719,10 @@ public class SimilarPatentServer {
             System.out.println("Number of headers: "+headers.size());
             List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
             long totalCount = data.size();
-            if(totalCount>MAX_DATATABLE_RESULTS) {
-                data = data.subList(0, MAX_DATATABLE_RESULTS);
+            if(offset < totalCount) {
+                data = data.subList(offset, Math.min(data.size(), offset + perPage));
+            } else {
+                data = Collections.emptyList();
             }
             response.put("totalRecordCount",totalCount);
             response.put("queryRecordCount",data.size());
@@ -937,7 +942,7 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-field", attr.toLowerCase())).collect(Collectors.toList())
+                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-dynatable-column", attr.toLowerCase())).collect(Collectors.toList())
                         )
                 ), tbody().with(
                         dataTableBodyFromData(data,attributes)
