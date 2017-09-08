@@ -202,7 +202,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
         var value = $(this).attr('data-value');
-        if($.isNumeric(value)) {
+        if(value!=null&&value.length>0) {
             var toDisplay = $this.parent().next().find('.attributeElement[data-model="'+value+'"]').get(0));
             showDraggable(toDisplay);
         }
