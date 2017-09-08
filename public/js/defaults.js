@@ -202,7 +202,7 @@ $(document).ready(function() {
             }
         });
 
-        $this.trigger('change');
+        $this.val(null).trigger('change');
     });
 
     // on select
