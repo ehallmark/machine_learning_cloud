@@ -13,7 +13,7 @@ public class UpdateAll {
     public static void main(String[] args) throws Exception {
         try {
             for (String arg : args) {
-                if(args.equals("0")) {
+                if (args.equals("0")) {
                     // udpate compdb
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
@@ -33,7 +33,9 @@ public class UpdateAll {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("8")) {
                     UpdateAssignmentData.main(args);
-                } else if (arg.equals("9")) {
+                } else if(arg.equals("9")) {
+                    UpdateCompDBAndGatherData.main(args);
+                } else if (arg.equals("10")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }
