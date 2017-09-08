@@ -178,7 +178,6 @@ $(document).ready(function() {
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
         var $this = $(this);
-        $this.select2("destroy");
 
         // placeholder data
         var $placeholder = $this.find('option.placeholder').detach();
@@ -186,7 +185,7 @@ $(document).ready(function() {
         // delete all items of the native select element
         $this.parent().find(".hidden-placeholder").html($placeholder);
         $this.find("option").remove();
-        $this.find("optgroup").empty();
+        $this.find("optgroup").empty().hide();
 
         // add hidden elements
         $this.prepend('<option></option>');
@@ -197,7 +196,7 @@ $(document).ready(function() {
             var $optGroup = $(elem).attr('opt-group');
             var value = $(elem).closest('.attributeElement').attr("data-model");
             if($optGroup.length>0) {
-                $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+value+'">'+$(elem).text()+"</option>");
+                $this.find('optgroup[name="'+$optGroup+'"]').show().append('<option value="'+value+'">'+$(elem).text()+"</option>");
             } else {
                 $this.append('<option value="'+value+'">'+$(elem).text()+"</option>");
             }
