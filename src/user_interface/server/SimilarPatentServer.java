@@ -85,7 +85,7 @@ public class SimilarPatentServer {
     public static final String SAVE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/save_template";
     public static final String DOWNLOAD_URL = PROTECTED_URL_PREFIX+"/excel_generation";
     public static final String DELETE_TEMPLATE_URL = PROTECTED_URL_PREFIX+"/delete_template";
-    public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable";
+    public static final String SHOW_DATATABLE_URL = PROTECTED_URL_PREFIX+"/dataTable.json";
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
@@ -661,6 +661,7 @@ public class SimilarPatentServer {
         });
 
         get(SHOW_DATATABLE_URL, (req, res) -> {
+            System.out.println("Reached SHOW DATATABLE URL");
             authorize(req,res);
             return handleDataTable(req,res);
         });
@@ -707,6 +708,7 @@ public class SimilarPatentServer {
     }
 
     private static Object handleDataTable(Request req, Response res) {
+        System.out.println("Received data table request.....");
         Map<String,Object> response = new HashMap<>();
         try {
             int perPage = extractInt(req,"perPage",10);
