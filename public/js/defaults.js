@@ -201,7 +201,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:select", function(e){
         $this = $(this);
         var value = $this.parent().find(".value").val();
-        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(value);
+        var toDisplay = $this.parent().next().find('.draggable .collapsible-header:not(.nested)').get(parseInt(value,10));
         showDraggable(toDisplay.parentElement);
     });
 
@@ -209,7 +209,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
         // place holder stuff
-        var value = $(e.currentTarget).find("option:selected").val();
+        var value = $(e.currentTarget).val();
         if($.isNumeric(value)) {
             $this.parent().find(".value").val(value);
         }
