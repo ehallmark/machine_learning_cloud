@@ -203,7 +203,7 @@ $(document).ready(function() {
         $this = $(this);
         var value = $(this).attr('data-value');
         if(value!=null&&value.length>0) {
-            var toDisplay = $this.parent().next().find('.attributeElement[data-model="'+value+'"]').get(0));
+            var toDisplay = $this.parent().next().find('.attributeElement[data-model="'+value+'"]').get(0);
             showDraggable(toDisplay);
         }
     });
