@@ -178,6 +178,7 @@ $(document).ready(function() {
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
         var $this = $(this);
+        $this.select2("destroy");
 
         // placeholder data
         var $placeholder = $this.find('option.placeholder').detach();
@@ -201,8 +202,8 @@ $(document).ready(function() {
                 $this.append('<option value="'+value+'">'+$(elem).text()+"</option>");
             }
         });
-
-        $this.val(null).trigger('change');
+        initSelect2(this);
+        $this.trigger('change');
     });
 
     // on select
