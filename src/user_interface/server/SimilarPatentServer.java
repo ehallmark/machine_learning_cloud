@@ -661,7 +661,6 @@ public class SimilarPatentServer {
         });
 
         get(SHOW_DATATABLE_URL, (req, res) -> {
-            System.out.println("Reached SHOW DATATABLE URL");
             authorize(req,res);
             return handleDataTable(req,res);
         });
@@ -727,7 +726,7 @@ public class SimilarPatentServer {
                 data = Collections.emptyList();
             }
             response.put("totalRecordCount",totalCount);
-            response.put("queryRecordCount",data.size());
+            response.put("queryRecordCount",totalCount);
             response.put("records", data);
             return new Gson().toJson(response);
         } catch (Exception e) {
@@ -944,7 +943,7 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).withClass("sortable").attr("data-dynatable-column", attr.toLowerCase())).collect(Collectors.toList())
+                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).attr("style","color: black !important;").attr("data-dynatable-column", attr)).collect(Collectors.toList())
                         )
                 ), tbody().with(
                         dataTableBodyFromData(data,attributes)
