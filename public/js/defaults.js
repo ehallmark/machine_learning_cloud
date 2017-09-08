@@ -211,8 +211,10 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:close", function(e){
         $this = $(this);
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-        var value = e.params.originalSelect2Event.data.id;
-        $(this).attr('data-value',value);
+        if(e.params.hasOwnProperty('originalSelect2Event')) {
+            var value = e.params.originalSelect2Event.data.id;
+            $(this).attr('data-value',value);
+        }
         $this.prepend($placeholder);
         $this.trigger('change');
     });
