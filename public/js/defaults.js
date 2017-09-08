@@ -179,7 +179,7 @@ $(document).ready(function() {
     $('.display-item-select').on("select2:opening", function(e){
         var $this = $(this);
         $this.select2("destroy");
-        $this = initSelect(this);
+        $this = initSelect2(this);
 
         // placeholder data
         var $placeholder = $this.find('option.placeholder').detach();
