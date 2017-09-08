@@ -177,7 +177,7 @@ $(document).ready(function() {
 
         // delete all items of the native select element
         $this.parent().find(".hidden-placeholder").html($placeholder);
-        $this.empty();
+        $this.find("optgroup").each(function(){$(this).empty();});
 
         // add hidden elements
         $this.append('<option></option>');

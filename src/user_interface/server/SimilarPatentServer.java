@@ -1237,7 +1237,13 @@ public class SimilarPatentServer {
                                                         if(!shouldKeep.apply(e.getKey())) return null;
                                                         if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
                                                         String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        return createAttributeElement(type,e.getKey(),collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter, e.getValue().isNotYetImplemented(), e.getValue().getDescription().render());
+                                                        String optGroup;
+                                                        if(e.getValue() instanceof AbstractFilter) {
+                                                            optGroup = ((AbstractFilter) e.getValue()).getOptionGroup();
+                                                        } else if(e.getValue() instanceof AbstractSimilarityEngine) {
+                                                            optGroup = ((AbstractSimilarityEngine) e.getValue()).getOptionGroup();
+                                                        } else optGroup = "";
+                                                        return createAttributeElement(type,e.getKey(),optGroup,collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter, e.getValue().isNotYetImplemented(), e.getValue().getDescription().render());
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
@@ -1247,13 +1253,13 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedParent, boolean isFilter, boolean notImplemented, String description) {
+    public static Tag createAttributeElement(String type, String modelName, String optGroup, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedParent, boolean isFilter, boolean notImplemented, String description) {
         String groupID = type+"-row";
         boolean isLeaf = ! nestedParent;
         String toggleID = groupID+"-panel-toggle";
         return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "") + (notImplemented ? " not-implemented" : "")).attr("data-target",type).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header"+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target","#"+collapseId).with(
-                        label(humanAttributeFor(modelName)).attr("opt-group",modelName),
+                        label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
                         (nestedParent && ! isFilter) || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse").withId(collapseId).with(optionTag)

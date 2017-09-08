@@ -47,6 +47,11 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     }
 
 
+    public String getOptionGroup() {
+        return Constants.SIMILARITY;
+    }
+
+
     @Override
     public String getType() {
         throw new UnsupportedOperationException("getType unsupported on similarity engines");
