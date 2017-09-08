@@ -1,5 +1,7 @@
 package models;
 
+import elasticsearch.CreatePatentDBIndex;
+import elasticsearch.IngestMongoIntoElasticSearch;
 import models.value_models.UpdateValueModels;
 import models.model_testing.TestSpecificModels;
 import models.value_models.graphical.UpdateGraphicalModels;
@@ -12,6 +14,12 @@ public class UpdateModels {
         // pre data
         seeding.ai_db_updater.UpdateAll.main(args);
         seeding.Database.main(args);
+
+        // delete ai_db
+        IngestMongoIntoElasticSearch.deleteIndex();
+        // seed elasticsearch
+        CreatePatentDBIndex.main(args);
+        IngestMongoIntoElasticSearch.main(args);
 
         //ParagraphVectorModel.main(args);
 

@@ -39,7 +39,11 @@ public class WIPOValueModel extends ValueAttr {
     @Override
     public double evaluate(Item item) {
         if(technologyToFactorMap==null) {
-            technologyToFactorMap = (Map<String,Double>)Database.loadObject(technologyToFactorFile);
+            synchronized (WIPOValueModel.class) {
+                if(technologyToFactorMap==null) {
+                    technologyToFactorMap = (Map<String, Double>) Database.loadObject(technologyToFactorFile);
+                }
+            }
         }
         Object wipoTech = item.getData(Constants.WIPO_TECHNOLOGY);
         double val;

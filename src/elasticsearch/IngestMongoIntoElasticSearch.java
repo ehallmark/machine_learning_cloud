@@ -14,6 +14,7 @@ import com.mongodb.connection.ServerDescription;
 import com.mongodb.operation.ParallelCollectionScanOperation;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
+import org.elasticsearch.action.delete.DeleteRequest;
 import seeding.Constants;
 
 import java.util.ArrayList;
@@ -36,6 +37,14 @@ public class IngestMongoIntoElasticSearch {
         // ingest assets (aka children)
         ingestByType(DataIngester.TYPE_NAME);
         DataIngester.close();
+    }
+
+    public static void deleteIndex() {
+        try {
+            MyClient.get().delete(new DeleteRequest("ai_db")).get();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void ingestByType(String type) {
