@@ -178,8 +178,6 @@ $(document).ready(function() {
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
         var $this = $(this);
-        //$this.select2("destroy");
-        //$this = initSelect2(this);
 
         // placeholder data
         var $placeholder = $this.find('option.placeholder').detach();
@@ -223,7 +221,11 @@ $(document).ready(function() {
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
         if(e.params.hasOwnProperty('originalSelect2Event')) {
             var value = e.params.originalSelect2Event.data.id;
-            $(this).attr('data-value',value);
+            if(value) {
+                $(this).attr('data-value',value);
+            } else {
+                $(this).attr('data-value', null);
+            }
         }
         $this.prepend($placeholder);
         $this.trigger('change');
