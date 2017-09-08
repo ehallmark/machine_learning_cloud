@@ -178,15 +178,20 @@ $(document).ready(function() {
         // delete all items of the native select element
         $this.parent().find(".hidden-placeholder").html($placeholder);
         $this.find("optgroup").each(function(){$(this).empty();});
+        $this.find("option").each(function(){$(this).remove();});
 
         // add hidden elements
-        $this.append('<option></option>');
+        $this.prepend('<option></option>');
         var $items = $this.parent().next().find('.draggable .collapsible-header:not(.nested) label');
 
         // add new items
         $items.each(function(index, elem) {
             var $optGroup = $(elem).attr('opt-group');
-            $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+            if($optGroup.length>0) {
+                $this.find('optgroup[name="'+$optGroup+'"]').append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+            } else {
+                $this.append('<option value="'+index.toString()+'">'+$(elem).text()+"</option>");
+            }
         });
 
         $this.trigger('change');
@@ -209,7 +214,7 @@ $(document).ready(function() {
             $this.parent().find(".value").val(value);
         }
         var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-        $this.html($placeholder);
+        $this.prepend($placeholder);
         $this.trigger('change');
     });
 
