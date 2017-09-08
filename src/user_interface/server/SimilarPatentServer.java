@@ -720,14 +720,37 @@ public class SimilarPatentServer {
             System.out.println("Number of headers: "+headers.size());
             List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
             long totalCount = data.size();
+            // check for sorting
+            String previousSort = req.session().attribute("previousSort");
+            if(req.queryMap("sorts")!=null) {
+                req.queryMap("sorts").toMap().forEach((k,v)->{
+                    if(v==null||k==null) return;
+                    String sortStr = k+String.join("",v);
+                    if(previousSort==null||!sortStr.equals(previousSort)) {
+                        Comparator<Map<String, String>> comp = (d1, d2) -> {
+                            try {
+                                return Double.valueOf(d1.get(k)).compareTo(Double.valueOf(d2.get(k)));
+                            } catch (Exception nfe) {
+                                return d1.get(k).compareTo(d2.get(k));
+                            }
+                        };
+                        if (v.length > 0 && v[0].equals("-1")) {
+                            comp = comp.reversed();
+                        }
+                        data.sort(comp);
+                    }
+                    req.session().attribute("previousSort",sortStr);
+                });
+            }
+            List<Map<String,String>> dataPage;
             if(offset < totalCount) {
-                data = data.subList(offset, Math.min(data.size(), offset + perPage));
+                dataPage = data.subList(offset, Math.min(data.size(), offset + perPage));
             } else {
-                data = Collections.emptyList();
+                dataPage = Collections.emptyList();
             }
             response.put("totalRecordCount",totalCount);
             response.put("queryRecordCount",totalCount);
-            response.put("records", data);
+            response.put("records", dataPage);
             return new Gson().toJson(response);
         } catch (Exception e) {
             System.out.println(e.getClass().getName() + ": " + e.getMessage());
@@ -908,7 +931,6 @@ public class SimilarPatentServer {
                 );
                 Tag tableTag = portfolioList == null ? div() : div().withClass("row").attr("style", "margin-top: 10px;").with(
                         h4("Data").withClass("collapsible-header").attr("data-target", "#data-table"),
-                        p("Showing "+Math.min(MAX_DATATABLE_RESULTS,tableData.size())+" out of "+tableData.size()+ " matched results.").attr("style","margin-right: auto; margin-left: auto;"),
                         tableFromPatentList(Collections.emptyList(), tableHeaders)
                 );
                 long timeEnd = System.currentTimeMillis();
@@ -943,7 +965,7 @@ public class SimilarPatentServer {
         return table().withClass("table table-striped").attr("style","margin-left: 3%; margin-right: 3%; width: 94%;").with(
                 thead().with(
                         tr().with(
-                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).attr("style","color: black !important;").attr("data-dynatable-column", attr)).collect(Collectors.toList())
+                                attributes.stream().map(attr -> th(humanAttributeFor(attr)).attr("data-dynatable-column", attr)).collect(Collectors.toList())
                         )
                 ), tbody().with(
                         dataTableBodyFromData(data,attributes)
