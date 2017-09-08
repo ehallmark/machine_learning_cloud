@@ -163,7 +163,7 @@ $(document).ready(function() {
 
     var initSelect2 = function(elem) {
         var $this = $(elem);
-        var displayItemSelectOptions = {width: '100%', placeholder: $this.find('option.placeholder').text()};
+        var displayItemSelectOptions = {width: '100%', closeOnSelect: true, placeholder: $this.find('option.placeholder').text()};
         $this.select2(displayItemSelectOptions);
         return $this;
     };
