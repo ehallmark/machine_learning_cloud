@@ -178,7 +178,7 @@ $(document).ready(function() {
     // On opening
     $('.display-item-select').on("select2:opening", function(e){
         var $this = $(this);
-        $this.select2("destroy");
+        //$this.select2("destroy");
         $this = initSelect2(this);
 
         // placeholder data
