@@ -25,7 +25,7 @@ import static j2html.TagCreator.label;
  * Created by Evan on 6/13/2017.
  */
 public class AbstractNestedFilter extends AbstractFilter {
-    public static boolean debug = true;
+    public static boolean debug = false;
     @Getter
     protected Collection<AbstractFilter> filters;
     @Setter

@@ -914,8 +914,8 @@ public class SimilarPatentServer {
             long timeStart = System.currentTimeMillis();
             // Sorted by
             // Get Models to use
-            List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD).stream().map(attr->attr.startsWith("attributes.")?attr.replaceFirst("attributes\\.",""):attr).collect(Collectors.toList());
-            List<String> nestedAttributes = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, (ATTRIBUTES_ARRAY_FIELD.substring(0,ATTRIBUTES_ARRAY_FIELD.length()-2))+attr+"[]").stream()).collect(Collectors.toList());
+            List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
+            List<String> nestedAttributes = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, attr+"[]").stream()).collect(Collectors.toList());
             List<String> itemAttributes = Stream.of(attributes.stream().filter(attr->!getNestedAttrMap().containsKey(attr)),nestedAttributes.stream()).flatMap(stream->stream).collect(Collectors.toList());
 
             System.out.println("FOUND ATTRIBUTES: "+String.join("; ",itemAttributes));
