@@ -168,26 +168,9 @@ $(document).ready(function() {
         $this.select2(displayItemSelectOptions);
     });
 
-   /* $('select.nested-filter-select').on("select2:select", function(e) {
-        var id = e.params.data.id;
-        var $draggable = $('.draggable[data-model="'+id+'"]');
-        $draggable.find('input, select, textarea').prop('disabled', false);
-        $draggable.parent().show();
-        return true;
-    });
-
-    $('select.nested-filter-select').on("select2:unselect", function(e) {
-        var id = e.params.data.id;
-        var $draggable = $('.draggable[data-model="'+id+'"]');
-        $draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
-        $draggable.parent().hide();
-        return true;
-    });*/
-
     $('select.nested-filter-select').on("change", function(e) {
         var $options = $(e.currentTarget.selectedOptions);
         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
-
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
@@ -197,14 +180,10 @@ $(document).ready(function() {
         });
         $options.each(function(i,option){
             var id = $(option).val();
-            alert(id);
             var $draggable = $('.draggable[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false);
             $draggable.parent().show();
         });
-        //var $draggable = $('.draggable[data-model="'+id+'"]');
-        //$draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
-        //$draggable.parent().hide();
         return true;
     });
 
@@ -224,10 +203,13 @@ $(document).ready(function() {
         e.stopPropagation();
         var $draggable = $(this).closest('.draggable');
         // get name
-        var label = $(this).siblings('label').text();
-        var values = $draggable.closest('select.nested-filter-select').val();
-        alert("label: "+label);
-        alert(values);
+        var label = $draggable.attr('data-model');
+        var $select = $draggable.closest('.nested-form-list').prev().find('select.nested-filter-select');
+        var values = $select.val();
+        if($.inArray(label,values)) {
+            values.splice(label,1);
+            $select.val(values).trigger('change');
+        }
     });
 
     $('.multiselect').select2({
