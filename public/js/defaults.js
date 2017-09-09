@@ -180,7 +180,7 @@ $(document).ready(function() {
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false);
-            $draggable.find(".nested-form-list").find('input, select, textarea').prop('disabled', true);
+            $draggable.find(".nested-form-list:first").find('input, select, textarea').prop('disabled', true);
             $draggable.parent().show();
         });
         return true;
