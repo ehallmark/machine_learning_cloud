@@ -71,7 +71,7 @@ public class SimilarPatentServer {
     public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
-    public static final String PRE_FILTER_ARRAY_FIELD = "attributesNested_filter[]";
+    public static final String PRE_FILTER_ARRAY_FIELD = "attributes[]Nested_filter[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String NOT_IMPLEMENTED_STRING = "This functionality is not yet implemented.";
@@ -916,7 +916,7 @@ public class SimilarPatentServer {
             // Get Models to use
             List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD).stream().map(attr->attr.startsWith("attributes.")?attr.replaceFirst("attributes\\.",""):attr).collect(Collectors.toList());
             List<String> nestedAttributes = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, (ATTRIBUTES_ARRAY_FIELD.substring(0,ATTRIBUTES_ARRAY_FIELD.length()-2))+attr+"[]").stream()).collect(Collectors.toList());
-            List<String> itemAttributes = Stream.of(attributes,nestedAttributes).flatMap(list->list.stream()).collect(Collectors.toList());
+            List<String> itemAttributes = Stream.of(attributes.stream().filter(attr->!getNestedAttrMap().containsKey(attr)),nestedAttributes.stream()).flatMap(stream->stream).collect(Collectors.toList());
 
             System.out.println("FOUND ATTRIBUTES: "+String.join("; ",itemAttributes));
             System.out.println("FOUND NESTED ATTRIBUTES: "+String.join("; ",nestedAttributes));
