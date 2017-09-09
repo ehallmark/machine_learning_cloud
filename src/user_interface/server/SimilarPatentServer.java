@@ -1249,7 +1249,7 @@ public class SimilarPatentServer {
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
-                                )
+                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
                         )
                 )
         );
