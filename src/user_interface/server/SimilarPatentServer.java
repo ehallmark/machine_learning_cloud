@@ -70,8 +70,8 @@ public class SimilarPatentServer {
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
+    public static final String PRE_FILTER_ARRAY_FIELD = "attributesNested_filter[]";
     public static final String LIMIT_FIELD = "limit";
     public static final String COMPARATOR_FIELD = "comparator";
     public static final String NOT_IMPLEMENTED_STRING = "This functionality is not yet implemented.";
@@ -280,7 +280,7 @@ public class SimilarPatentServer {
 
     public static String humanAttributeFor(String attr) {
         String human = attr;
-        if(javaAttrToHumanAttrMap.containsKey(attr))  {
+        if(javaAttrToHumanAttrMap.containsKey(human))  {
             human = javaAttrToHumanAttrMap.get(attr);
         } else {
             int commaIdx = attr.indexOf(".");
@@ -340,7 +340,7 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
                 buildJavaToHumanAttrMap();
 
-                allFilters = new AbstractNestedFilter(allAttributes);
+                allFilters = new AbstractNestedFilter(allAttributes,false);
             } catch(Exception e) {
                 e.printStackTrace();
             }

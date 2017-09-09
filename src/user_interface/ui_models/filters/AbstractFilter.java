@@ -88,7 +88,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
             return getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX;
         } else {
             // nested form field
-            return parent.getName().replaceAll("[\\[\\]]","")+"["+getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX.replaceAll("[\\[\\]\\]]","")+"]"+"[]";
+            return parent.getName().replaceAll("[\\[\\]]","")+getPrerequisite()+filterType.toString()+Constants.FILTER_SUFFIX.replaceAll("[\\[\\]\\]]","")+"[]";
         }
     }
 

@@ -43,7 +43,7 @@ public abstract class AbstractAttribute {
     }
 
     public String getFullName() {
-        return parent==null? getName() : (parent.getName() + "." + getName());
+        return parent==null? getName() : (parent.getName().replaceAll("[\\[\\]]","") + "." + getName()).trim();
     }
 
     public String getRootName() {
