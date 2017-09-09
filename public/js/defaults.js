@@ -232,6 +232,7 @@ $(document).ready(function() {
     });
 
     resetSearchForm();
+    $('#main-content-id').addClass('show');
 });
 
 var resetSearchForm = function() {

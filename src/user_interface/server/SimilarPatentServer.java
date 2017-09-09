@@ -1165,7 +1165,7 @@ public class SimilarPatentServer {
     private static Tag candidateSetModelsForm(String role) {
         if(role==null) return null;
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
-                span().withId("main-content-id").withClass("collapse show").with(
+                span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12").with(
@@ -1240,7 +1240,7 @@ public class SimilarPatentServer {
         return div().attr("data-model",modelName).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
-                        input().attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
+                        input().attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
                         span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse show").withId(collapseId).with(optionTag)
         );
