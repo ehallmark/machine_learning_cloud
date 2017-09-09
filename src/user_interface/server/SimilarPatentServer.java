@@ -336,8 +336,7 @@ public class SimilarPatentServer {
                 buildJavaToHumanAttrMap();
 
                 filterGroupSet = preFilterModelMap.entrySet().stream().collect(Collectors.groupingBy(e->e.getValue().getOptionGroup())).keySet().stream().sorted().collect(Collectors.toList());
-                allFilters = new AbstractNestedFilter(allAttributes);
-                preFilterModelMap.put("test",allFilters);
+
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -437,15 +436,6 @@ public class SimilarPatentServer {
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
-
-
-            allAttributes = new NestedAttribute(allTopLevelAttributes) {
-                @Override
-                public String getName() {
-                    return "";
-                }
-            };
-            attributesMap.put("attrTest",allAttributes);
         }
     }
 
