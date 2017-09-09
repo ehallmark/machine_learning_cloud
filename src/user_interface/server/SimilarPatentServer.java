@@ -1229,14 +1229,16 @@ public class SimilarPatentServer {
                 span().withId(groupID).with(
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
-                                        attribute.getOptionsTag()
+                                        div().withClass("attributeElement").with(
+                                                attribute.getOptionsTag()
+                                        )
                                 )
                         )
                 )
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String optGroup, String collapseId, String arrayFieldName, Tag optionTag, boolean notImplemented, String description) {
+    public static Tag createAttributeElement(String modelName, String optGroup, String collapseId, Tag optionTag, boolean notImplemented, String description) {
         return div().attr("data-model",modelName).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
                 div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),

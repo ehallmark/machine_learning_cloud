@@ -14,13 +14,11 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector).each(function() {
-            $(this).find("textarea,input,select").each(function() {
-                var $elem = $(this);
-                if($elem.attr('id') && ! $elem.prop('disabled')) {
-                    dataMap[$elem.attr("id")]=$elem.val();
-                }
-            });
+        $(containerSelector+" "+itemSelector).find('textarea,input,select').each(function() {
+            var $elem = $(this);
+            if($elem.attr('id') && ! $elem.prop('disabled')) {
+                dataMap[$elem.attr("id")]=$elem.val();
+            }
         });
         var json = JSON.stringify(dataMap);
         $(hiddenValueSelector).val(json);

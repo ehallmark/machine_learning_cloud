@@ -110,7 +110,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             String type = "filters";
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(type,filter.getName(),filter.getOptionGroup(),collapseId,SimilarPatentServer.PRE_FILTER_ARRAY_FIELD,filter.getOptionsTag(),filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(),filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

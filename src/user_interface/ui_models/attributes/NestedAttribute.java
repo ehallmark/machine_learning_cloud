@@ -49,7 +49,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             String type = "filters";
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(type,filter.getName(),null,collapseId,SimilarPatentServer.PRE_FILTER_ARRAY_FIELD,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
