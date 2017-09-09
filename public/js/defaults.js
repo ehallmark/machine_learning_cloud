@@ -181,7 +181,8 @@ $(document).ready(function() {
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
-            $draggable.find(":not(.nested-form-list)").find('input, select, textarea').prop('disabled', false);
+            $draggable.find('input, select, textarea').prop('disabled', false);
+            $draggable.find(".nested-form-list").find('input, select, textarea').prop('disabled', true);
             $draggable.parent().show();
         });
         return true;
