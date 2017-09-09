@@ -244,7 +244,7 @@ $(document).ready(function() {
 
     $('select.nested-filter-select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').parent().hide().find('input, select, textarea').prop('disabled', true).not('.mycheckbox').val(null).trigger('change');
+        $('.draggable[data-model="'+id+'"]').parent().hide().find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
         return true;
     });
 
