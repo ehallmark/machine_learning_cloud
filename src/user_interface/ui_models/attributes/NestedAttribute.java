@@ -6,6 +6,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.*;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,17 +37,17 @@ public abstract class NestedAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         String name = getFullName().replace(".","");
         return div().with(
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
-                        attributes.stream().map(filter->{
+                        attributes.stream().filter(attr->userRoleFunction.apply(attr.getRootName())).map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(userRoleFunction), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

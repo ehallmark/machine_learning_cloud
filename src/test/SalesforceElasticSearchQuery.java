@@ -22,6 +22,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Created by Evan on 8/18/2017.
@@ -39,7 +40,7 @@ public class SalesforceElasticSearchQuery {
             }
 
             @Override
-            public Tag getOptionsTag() {
+            public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
                 return null;
             }
 

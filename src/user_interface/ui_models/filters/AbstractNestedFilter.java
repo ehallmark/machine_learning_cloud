@@ -14,6 +14,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -102,7 +103,7 @@ public class AbstractNestedFilter extends AbstractFilter {
 
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         Map<String,List<String>> filterGroups = new TreeMap<>(filters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getName()).collect(Collectors.toList()))));
@@ -110,10 +111,10 @@ public class AbstractNestedFilter extends AbstractFilter {
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", filterGroups)
                 ), div().withClass("nested-form-list").with(
-                        filters.stream().map(filter->{
+                        filters.stream().filter(filter->userRoleFunction.apply(filter.getAttribute().getRootName())).map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(),filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(userRoleFunction),filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )

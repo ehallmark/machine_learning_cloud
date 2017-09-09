@@ -11,6 +11,7 @@ import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.function.Function;
 
 import static j2html.TagCreator.*;
 import static user_interface.server.SimilarPatentServer.*;
@@ -44,7 +45,7 @@ public class AssigneeSimilarityEngine extends AbstractSimilarityEngine {
 
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 textarea().withClass("form-control").attr("placeholder","1 assignee per line").withName(SimilarPatentServer.ASSIGNEES_TO_SEARCH_FOR_FIELD)
         );

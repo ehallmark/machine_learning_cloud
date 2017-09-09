@@ -1177,6 +1177,7 @@ public class SimilarPatentServer {
 
     private static Tag candidateSetModelsForm(String role) {
         if(role==null) return null;
+        Function<String,Boolean> userRoleFunction = roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION);
         return div().withClass("row").attr("style","margin-left: 0px; margin-right: 0px;").with(
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
@@ -1186,13 +1187,13 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
                                                         mainOptionsRow()
                                                 ),div().withClass("col-6 form-right form-top").withId("chartsForm").with(
-                                                        customFormRow("charts",allCharts)
+                                                        customFormRow("charts",allCharts, userRoleFunction)
                                                 )
                                         ), div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
-                                                        customFormRow("attributes", allAttributes)
+                                                        customFormRow("attributes", allAttributes, userRoleFunction)
                                                 ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", allFilters)
+                                                        customFormRow("filters", allFilters, userRoleFunction)
                                                 )
                                         )
                                 ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
@@ -1234,7 +1235,7 @@ public class SimilarPatentServer {
         );
     }
 
-    private static Tag customFormRow(String type, AbstractAttribute attribute) {
+    private static Tag customFormRow(String type, AbstractAttribute attribute, Function<String,Boolean> userRoleFunction) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
         String groupID = type+"-row";
         return span().with(
@@ -1243,7 +1244,7 @@ public class SimilarPatentServer {
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
                                         div().withClass("attributeElement").with(
-                                                attribute.getOptionsTag()
+                                                attribute.getOptionsTag(userRoleFunction)
                                         )
                                 )
                         )

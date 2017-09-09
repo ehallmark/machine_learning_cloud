@@ -9,6 +9,8 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.function.Function;
+
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
 
@@ -56,7 +58,7 @@ public class AbstractLessThanFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType("number").withValue("0").withName(getName())
         );

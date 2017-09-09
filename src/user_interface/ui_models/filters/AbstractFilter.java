@@ -18,6 +18,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.p;
@@ -70,7 +71,7 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
     @Override
-    public abstract Tag getOptionsTag();
+    public abstract Tag getOptionsTag(Function<String,Boolean> userRoleFunction);
 
     @Override
     public Collection<String> getAllValues() {

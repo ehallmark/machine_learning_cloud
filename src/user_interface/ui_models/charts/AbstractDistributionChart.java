@@ -14,6 +14,7 @@ import spark.Request;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +34,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return SimilarPatentServer.technologySelect(Constants.PIE_CHART,getAttributes());
 
     }

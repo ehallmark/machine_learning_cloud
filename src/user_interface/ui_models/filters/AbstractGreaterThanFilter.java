@@ -18,6 +18,7 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.Collection;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
@@ -69,7 +70,7 @@ public class AbstractGreaterThanFilter extends AbstractFilter {
 
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 input().withClass("form-control").withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withType("number").withValue("0").withName(getName())
         );

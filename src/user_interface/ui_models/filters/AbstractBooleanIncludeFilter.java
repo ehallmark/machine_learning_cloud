@@ -12,6 +12,7 @@ import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.List;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 
@@ -50,7 +51,7 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div();
     }
 

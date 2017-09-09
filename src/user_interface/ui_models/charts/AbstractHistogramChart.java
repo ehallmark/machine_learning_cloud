@@ -16,6 +16,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -42,7 +43,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().with(
                 label("Group By"),br(),select().withId(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD.replaceAll("[\\[\\]]","")).withClass("form-control single-select2").withName(SimilarPatentServer.CHARTS_GROUPED_BY_FIELD).with(
                         option("No Group (default)").attr("selected","selected").withValue(""),

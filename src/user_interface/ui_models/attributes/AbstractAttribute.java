@@ -50,7 +50,7 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag() { return div(); }
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) { return div(); }
 
     public abstract String getType();
 

@@ -11,6 +11,7 @@ import models.value_models.*;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -52,7 +53,7 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div();
     }
 

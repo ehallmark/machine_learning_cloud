@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+
 import static j2html.TagCreator.*;
 
 /**
@@ -51,7 +53,7 @@ public class ExistsInCompDBFilter extends AbstractIncludeFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div();
     }
 

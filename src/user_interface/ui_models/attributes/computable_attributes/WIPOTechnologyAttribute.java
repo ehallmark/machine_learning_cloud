@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 
@@ -24,11 +25,6 @@ public class WIPOTechnologyAttribute extends AbstractAttribute {
     @Override
     public String getName() {
         return Constants.WIPO_TECHNOLOGY;
-    }
-
-    @Override
-    public Tag getOptionsTag() {
-        return div();
     }
 
     @Override

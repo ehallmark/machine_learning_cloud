@@ -11,6 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 
 import java.util.StringJoiner;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 import static j2html.TagCreator.input;
@@ -79,7 +80,7 @@ public class AbstractBetweenFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div().withClass("row").with(
                 div().withClass("col-6").with(
                         label("Min"),

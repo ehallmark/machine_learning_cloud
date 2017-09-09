@@ -18,6 +18,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
+import java.util.function.Function;
 
 
 /**
@@ -54,8 +55,8 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
     public Collection<AbstractFilter> createFilters() {
         return Arrays.asList(new AbstractFilter(this, AbstractFilter.FilterType.Include) {
             @Override
-            public Tag getOptionsTag() {
-                return AbstractSimilarityEngine.this.getOptionsTag();
+            public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
+                return AbstractSimilarityEngine.this.getOptionsTag(userRoleFunction);
             }
 
             @Override

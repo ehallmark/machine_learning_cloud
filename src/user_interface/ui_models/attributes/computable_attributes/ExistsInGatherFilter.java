@@ -11,6 +11,7 @@ import user_interface.ui_models.filters.AbstractIncludeFilter;
 
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.function.Function;
 
 import static j2html.TagCreator.div;
 
@@ -48,7 +49,7 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div();
     }
 

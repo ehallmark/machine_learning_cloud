@@ -19,6 +19,7 @@ import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttri
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static j2html.TagCreator.div;
@@ -74,7 +75,7 @@ public class AbstractIncludeFilter extends AbstractFilter {
     }
 
     @Override
-    public Tag getOptionsTag() {
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         if (!fieldType.equals(FieldType.Multiselect)) {
             return div().with(
                     textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
