@@ -170,7 +170,7 @@ $(document).ready(function() {
 
     $('select.nested-filter-select').on("change", function(e) {
         var $options = $(e.currentTarget.selectedOptions);
-        var $hiddenOptions = $(e.currentTarget).find("option").not($options);
+        var $hiddenOptions = $(e.currentTarget).find("option").not($options).not(":disabled");
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
@@ -181,7 +181,7 @@ $(document).ready(function() {
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', false);
+            $draggable.find(":not(.nested-form-list)").find('input, select, textarea').prop('disabled', false);
             $draggable.parent().show();
         });
         return true;
