@@ -193,13 +193,6 @@ $(document).ready(function() {
         $(this).addClass('active');
     });
 
-    $(".mycheckbox").on("click", function (e) {
-        var checkbox = $(this);
-        // do the confirmation thing here
-        e.preventDefault();
-        return false;
-    });
-
     $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
         var $draggable = $(this).closest('.draggable');
@@ -239,7 +232,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable').find('select,textarea,input').prop("disabled",true).not("input.mycheckbox").val(null).trigger('change');
+    $('.draggable').find('select,textarea,input').prop("disabled",true).trigger('change');
     $('#results').html('');
 };
 
@@ -300,10 +293,8 @@ var showTemplateFormHelper = function(formSelector,json) {
     $.each(dataMap,function(id,value) {
         var $elem = $('#'+id);
         $elem.closest('draggable').parent().show();
-        if(! $elem.hasClass("mycheckbox")) {
-            $elem.val(value);
-            $elem.trigger('change');
-        }
+        $elem.val(value);
+        $elem.trigger('change');
     });
 };
 
