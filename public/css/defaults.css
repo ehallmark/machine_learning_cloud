@@ -15,6 +15,7 @@ label {
     border: 1px rgba(0,0,0,.1) solid;
     border-radius: 4px;
     border-collapse: collapse;
+    background-color: #e6e6e6;
 }
 
 .start .draggable .collapse {
@@ -62,15 +63,6 @@ body {
     background-color: #white;
 }
 
-.target .draggable {
-    background-color: #e6e6e6;
-}
-
-.start .draggable {
-    background-color: #e6e6e6;
-    z-index: 1;
-}
-
 .mycheckbox {
     float: right;
     display: none;
@@ -106,13 +98,6 @@ label {
     margin-bottom: 0px;
 }
 
-.highlighted {
-    /* background-color: #87CEFA; */
-}
-
-/*.highlighted-special {
-    background-color: #FFCC66 !important;
-}*/
 
 .sidebar {
     background-color: #c4c4c4;
