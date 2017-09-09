@@ -62,6 +62,14 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
             public String getOptionGroup() {
                 return Constants.SIMILARITY;
             }
+            @Override
+            public String getFullPrerequisite() {
+                return getOptionGroup();
+            }
+            @Override
+            public String getPrerequisite() {
+                return getOptionGroup();
+            }
 
             @Override
             public void extractRelevantInformationFromParams(Request params) {}
