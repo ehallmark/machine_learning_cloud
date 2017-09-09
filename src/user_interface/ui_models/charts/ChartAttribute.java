@@ -25,8 +25,11 @@ import static j2html.TagCreator.span;
 public abstract class ChartAttribute extends AbstractAttribute implements DependentAttribute<ChartAttribute> {
     @Getter
     protected List<String> attributes;
-    public ChartAttribute(List<String> attributes) {
+    @Getter
+    protected String name;
+    public ChartAttribute(List<String> attributes, String name) {
         super(Collections.emptyList());
+        this.name=name;
         this.attributes=attributes;
     }
 
@@ -35,13 +38,8 @@ public abstract class ChartAttribute extends AbstractAttribute implements Depend
     @Override
     public AbstractFilter.FieldType getFieldType() { throw new UnsupportedOperationException("fieldType not defined for charts.");}
 
-    @Override
-    public String getName() {
-        return getType();
-    }
-
     public Tag getDescription() {
-        String text = Constants.ATTRIBUTE_DESCRIPTION_MAP.get(getFullName());
+        String text = Constants.ATTRIBUTE_DESCRIPTION_MAP.get(getType());
         if(text==null) return span();
         return div().with(
                 div().withText(text),

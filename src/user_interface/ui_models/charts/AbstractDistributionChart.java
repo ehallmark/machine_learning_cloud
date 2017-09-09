@@ -24,7 +24,7 @@ public class AbstractDistributionChart extends ChartAttribute {
     protected Collection<String> searchTypes;
 
     public AbstractDistributionChart() {
-        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE));
+        super(Arrays.asList(Constants.TECHNOLOGY,Constants.WIPO_TECHNOLOGY,Constants.LATEST_ASSIGNEE+"."+Constants.ASSIGNEE), Constants.PIE_CHART);
     }
 
     @Override

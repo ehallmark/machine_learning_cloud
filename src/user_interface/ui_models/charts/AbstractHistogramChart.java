@@ -33,7 +33,7 @@ public class AbstractHistogramChart extends ChartAttribute {
     protected static final double MAX = ValueModelCombination.DEFAULT_END;
 
     public AbstractHistogramChart() {
-        super(Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE));
+        super(Arrays.asList(Constants.AI_VALUE,Constants.SIMILARITY,Constants.REMAINING_LIFE), Constants.HISTOGRAM);
     }
 
     @Override

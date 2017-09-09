@@ -27,7 +27,7 @@ public class AbstractLineChart extends ChartAttribute {
     protected Integer min;
 
     public AbstractLineChart() {
-        super(Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE));
+        super(Arrays.asList(Constants.FILING_DATE, Constants.RECORDED_DATE, Constants.PUBLICATION_DATE, Constants.EXPIRATION_DATE, Constants.PRIORITY_DATE),Constants.LINE_CHART);
     }
 
     @Override

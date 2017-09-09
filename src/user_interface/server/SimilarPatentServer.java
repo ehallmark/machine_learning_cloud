@@ -1236,15 +1236,12 @@ public class SimilarPatentServer {
         );
     }
 
-    public static Tag createAttributeElement(String type, String modelName, String optGroup, String collapseId, String arrayFieldName, Tag optionTag, boolean nestedFilterChild, boolean nestedParent, boolean isFilter, boolean notImplemented, String description) {
-        String groupID = type+"-row";
-        boolean isLeaf = ! nestedParent;
-        String toggleID = groupID+"-panel-toggle";
-        return div().attr("data-model",modelName).withClass("attributeElement draggable "+type+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "") + (notImplemented ? " not-implemented" : "")).attr("data-target",type).with(
-                div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header"+(nestedFilterChild ? " nested" : "") + (isLeaf ? " leaf" : "")).attr("data-target","#"+collapseId).with(
+    public static Tag createAttributeElement(String type, String modelName, String optGroup, String collapseId, String arrayFieldName, Tag optionTag, boolean notImplemented, String description) {
+        return div().attr("data-model",modelName).withClass("attributeElement draggable " + (notImplemented ? " not-implemented" : "")).with(
+                div().attr("style","width: 100%;").attr("title", notImplemented ? NOT_IMPLEMENTED_STRING : description).withClass("collapsible-header").attr("data-target","#"+collapseId).with(
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
-                        (nestedParent && ! isFilter) || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
-                        nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
+                        input().attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
+                        span().withClass("remove-button").withText("x")
                 ), span().withClass("collapse show").withId(collapseId).with(optionTag)
         );
     }
