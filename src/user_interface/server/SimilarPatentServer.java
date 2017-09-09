@@ -221,7 +221,7 @@ public class SimilarPatentServer {
         humanAttrToJavaAttrMap.forEach((k, v) -> javaAttrToHumanAttrMap.put(v, k));
     }
 
-    public static Map<String,NestedAttribute> nestedAttrMap;
+    private static Map<String,NestedAttribute> nestedAttrMap;
     public static Map<String,NestedAttribute> getNestedAttrMap() {
         if(nestedAttrMap==null) {
             nestedAttrMap = new HashMap<>();
@@ -915,7 +915,7 @@ public class SimilarPatentServer {
             // Sorted by
             // Get Models to use
             List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD).stream().map(attr->attr.startsWith("attributes.")?attr.replaceFirst("attributes\\.",""):attr).collect(Collectors.toList());
-            List<String> nestedAttributes = nestedAttrMap.keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, (ATTRIBUTES_ARRAY_FIELD.substring(0,ATTRIBUTES_ARRAY_FIELD.length()-2))+attr+"[]").stream()).collect(Collectors.toList());
+            List<String> nestedAttributes = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, (ATTRIBUTES_ARRAY_FIELD.substring(0,ATTRIBUTES_ARRAY_FIELD.length()-2))+attr+"[]").stream()).collect(Collectors.toList());
             List<String> itemAttributes = Stream.of(attributes,nestedAttributes).flatMap(list->list.stream()).collect(Collectors.toList());
 
             System.out.println("FOUND ATTRIBUTES: "+String.join("; ",itemAttributes));
