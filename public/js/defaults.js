@@ -206,7 +206,8 @@ $(document).ready(function() {
         var label = $draggable.attr('data-model');
         var $select = $draggable.closest('.nested-form-list').prev().find('select.nested-filter-select');
         var values = $select.val();
-        if($.inArray(label,values)) {
+        var idx = $.inArray(label,values);
+        if(idx >= 0) {
             values.splice(label,1);
             $select.val(values).trigger('change');
         }
