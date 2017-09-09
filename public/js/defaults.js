@@ -161,74 +161,6 @@ $(document).ready(function() {
 
     $('.template-remove-button').click(removeTemplateFunction);
 
-    var initSelect2 = function(elem) {
-        var $this = $(elem);
-        var displayItemSelectOptions = {width: '100%', closeOnSelect: true, placeholder: $this.find('option.placeholder').text()};
-        $this.select2(displayItemSelectOptions);
-        return $this;
-    };
-
-    // display-item-select
-    $('.display-item-select').each(function(){
-        initSelect2(this);
-    });
-
-
-
-    // On opening
-    $('.display-item-select').on("select2:opening", function(e){
-        var $this = $(this);
-
-        // placeholder data
-        var $placeholder = $this.find('option.placeholder').detach();
-
-        // delete all items of the native select element
-        $this.parent().find(".hidden-placeholder").html($placeholder);
-        $this.find("option").remove();
-
-        // add hidden elements
-        $this.prepend('<option></option>');
-        var $items = $this.parent().next().find('.draggable .collapsible-header:not(.nested) label');
-
-        // add new items
-        $items.each(function(index, elem) {
-            var $optGroup = $(elem).attr('opt-group');
-            var value = $(elem).closest('.attributeElement').attr("data-model");
-            if($optGroup.length>0) {
-                $('<option value="'+value+'">'+$(elem).text()+"</option>").insertAfter($this.find('optgroup[name="'+$optGroup+'"]'));
-            } else {
-                $this.append('<option value="'+value+'">'+$(elem).text()+"</option>");
-            }
-        });
-        $this.trigger('change');
-    });
-
-    // on select
-    $('.display-item-select').on("select2:select", function(e){
-        $this = $(this);
-        var value = $(this).attr('data-value');
-        if(value!=null&&value.length>0) {
-            var toDisplay = $this.parent().next().find('.attributeElement[data-model="'+value+'"]').get(0);
-            showDraggable(toDisplay);
-        }
-    });
-
-    // on close
-    $('.display-item-select').on("select2:close", function(e){
-        $this = $(this);
-        var $placeholder = $this.parent().find(".hidden-placeholder").find('option.placeholder').clone();
-        if(e.params.hasOwnProperty('originalSelect2Event')) {
-            var value = e.params.originalSelect2Event.data.id;
-            if(typeof value !== "undefined") {
-                $(this).attr('data-value',value);
-            } else {
-                $(this).attr('data-value', '');
-            }
-        }
-        $this.prepend($placeholder);
-        $this.trigger('change');
-    });
-
     // nested forms
     $('select.nested-filter-select').each(function() {
         $this = $(this);
@@ -252,7 +184,7 @@ $(document).ready(function() {
         return true;
     });
 
-    $('select.nested-filter-select').on("select2:change", function(e) {
+    $('select.nested-filter-select').on("change", function(e) {
         var id = e.params.data.id;
         alert(id);
         //var $draggable = $('.draggable[data-model="'+id+'"]');
@@ -275,7 +207,12 @@ $(document).ready(function() {
 
     $('.draggable .collapsible-header .remove-button').click(function(e) {
         e.stopPropagation();
-        hideDraggable($(this).parent().get(0));
+        var $draggable = $(this).closest('.draggable');
+        // get name
+        var label = $(this).siblings('label').text();
+        var values = $draggable.closest('select.nested-filter-select').val();
+        alert("label: "+label);
+        alert(values);
     });
 
     $('.multiselect').select2({
@@ -298,50 +235,6 @@ $(document).ready(function() {
     resetSearchForm();
 });
 
-var setupDataTable = function (dataTable) {
-    $(dataTable).find('th.sortable').on("click",function() {
-        var f = -1;
-        if($(this).attr("data-sorted")) {
-            f=1;
-            $(this).removeAttr("data-sorted");
-        } else {
-            $(this).attr("data-sorted","true");
-        }
-
-        var sortOnField = $(this).data('field');
-        var $wrapper = $(dataTable).find('tbody');
-        var rows = $wrapper.find("tr").get();
-
-        rows.sort(function(a, b) {
-
-            var A = getVal(a,sortOnField);
-            var B = getVal(b,sortOnField);
-
-            if(A > B) {
-                return 1*f;
-            } else if(A < B) {
-                return -1*f;
-            }
-            return 0;
-        });
-
-
-        $.each(rows, function(){
-            $wrapper.append(this);
-        });
-
-
-    });
-
-    var getVal = function (elm,sortOnField) {
-        var v = $(elm).data(sortOnField);
-        if($.isNumeric(v)){
-            v = parseFloat(v);
-        }
-        return v;
-    };
-};
-
 var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
@@ -357,27 +250,6 @@ var findByValue = function(inputs, value) {
     return null;
 };
 
-
-var paramsHelper = function(input,value) {
-    var $checkbox = input;
-    if(! input.hasClass("mycheckbox")) {
-        $checkbox = input.closest('.draggable').find('.mycheckbox');
-        input.val(value);
-        if(input.hasClass("multiselect")) {
-            input.trigger('change');
-        }
-    }
-    var $dropZone = $checkbox.closest('.droppable');
-    if(! $dropZone.hasClass('target')) {
-        if($checkbox.hasClass('mycheckbox')) {
-            showDraggable($checkbox.parent().get(0));
-        }
-    }
-    if(!$checkbox.parent().hasClass("highlighted")) {
-        $checkbox.parent().addClass('highlighted');
-    }
-    return $checkbox;
-};
 
 var setCollapsibleHeaders = function(selector) {
     $(selector).click(function () {
@@ -421,84 +293,6 @@ var setCollapsibleHeaders = function(selector) {
             });
         }
     });
-};
-
-var resetCheckbox = function(elem,target,shouldShow) {
-    var $draggable = $(elem);
-    // check for nested
-    if($draggable.hasClass('nested')) {
-        resetCheckbox($draggable.parent().closest('.draggable').get(0), target, shouldShow);
-        var $handle = $draggable.find(".collapsible-header");
-        var $collapse = $draggable.find(".collapse");
-        $collapse.css('display','');
-        if(shouldShow && !$collapse.hasClass('show')) {
-            $collapse.addClass('show');
-        } else if ($collapse.hasClass('show') && !shouldShow) {
-            $collapse.removeClass('show');
-        }
-        // actually show element incase it's not shown
-        if(shouldShow && !$draggable.is(':visible')) {
-            $draggable.parent().show();
-        } else if ($draggable.is(':visible') && !shouldShow) {
-            $draggable.parent().hide();
-        }
-
-    } else {
-        $draggable.detach().css({top: 0,left: 0}).appendTo(target);
-        var $handle = $draggable.find(".collapsible-header");
-        var $collapse = $draggable.find(".collapse");
-        $collapse.css('display','');
-        if(shouldShow && !$collapse.hasClass('show')) {
-            $collapse.addClass('show');
-        } else if ($collapse.hasClass('show') && !shouldShow) {
-            $collapse.removeClass('show');
-        }
-
-        var $checkbox = $draggable.find(".mycheckbox")
-        $checkbox.prop("checked", shouldShow);
-
-    }
-};
-
-var showDraggable = function(elem) {
-    var $draggable = $(elem);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
-    if($draggable.length > 0) {
-        if($draggable.hasClass('leaf')) {
-            ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('input,textarea,select').prop("disabled",false);
-        } else {
-            // enable the select option
-            $draggable.find('select.nested-filter-select,select.nested-attribute-select').prop('disabled', false);
-            $draggable.children().first().children('input.mycheckbox').prop('disabled',false);
-        }
-        var id = $draggable.attr('data-target');
-        if(id) {
-            var target = "target";
-            $target = $('#'+id+'-'+target);
-            if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0),true);
-            }
-        }
-    }
-};
-
-var hideDraggable = function(elem) {
-    var $draggable = $(elem);
-    if(!$draggable.hasClass("draggable")) $draggable = $draggable.closest('.draggable');
-    if($draggable.length > 0) {
-        ($draggable.hasClass('nested') ? $draggable.parent() : $draggable).find('select,textarea,input').prop("disabled",true).not("input.mycheckbox").val(null).trigger('change');
-        if(!$draggable.hasClass('leaf')) {
-            $draggable.children().each(function(){ $(this).find('.draggable').each(function(){$(this).parent().hide();}); });
-        }
-        var id = $draggable.attr('data-target');
-        if(id) {
-            var target = "start";
-            $target = $('#'+id+'-'+target);
-            if($target) {
-                  resetCheckbox($draggable.get(0),$target.get(0),false);
-            }
-        }
-    }
 };
 
 var showTemplateFormHelper = function(formSelector,json) {
