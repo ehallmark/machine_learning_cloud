@@ -35,12 +35,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getOptionsTag() {
-        String styleString;
-        if(setParent) {
-            styleString = "display: none; margin-left: 5%; margin-right: 5%;";
-        } else {
-            styleString = "display: none;";
-        }
+        String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         String name = getName();
         return div().with(
                 div().with(

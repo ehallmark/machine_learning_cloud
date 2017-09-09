@@ -94,12 +94,7 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag() {
-        String styleString;
-        if(setParent) {
-            styleString = "display: none; margin-left: 5%; margin-right: 5%;";
-        } else {
-            styleString = "display: none;";
-        }
+        String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
         Map<String,List<String>> filterGroups = new TreeMap<>(filters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getName()).collect(Collectors.toList()))));
         return div().with(

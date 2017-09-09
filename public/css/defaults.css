@@ -114,14 +114,10 @@ label {
 }
 
 .form-right {
-    padding-left: 30px;
-    padding-right: 30px;
 }
 
 .form-left {
     border-right: 1px rgba(0,0,0,.1) solid;
-    padding-left: 30px;
-    padding-right: 30px;
 }
 
 .form-top {
