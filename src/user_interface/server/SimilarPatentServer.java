@@ -1216,7 +1216,7 @@ public class SimilarPatentServer {
     private static Tag toggleButton(String id, String text) {
         return div().withClass("row").with(
                 div().withId(id+"-panel-toggle").withClass("col-12").with(
-                        h5(text)
+                        h5(text).attr("style","margin-bottom: 15px;")
                 )
         );
     }
