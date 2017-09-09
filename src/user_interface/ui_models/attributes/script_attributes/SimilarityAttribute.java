@@ -17,7 +17,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static user_interface.server.SimilarPatentServer.*;
-import static user_interface.server.SimilarPatentServer.SIMILARITY_ENGINES_ARRAY_FIELD;
 
 /**
  * Created by ehallmark on 6/15/17.
@@ -80,7 +79,7 @@ public class SimilarityAttribute extends AbstractScriptAttribute implements Depe
         String similarityModelStr = Constants.PARAGRAPH_VECTOR_MODEL;
         AbstractSimilarityModel finderPrototype = similarityModelMap.get(similarityModelStr);
 
-        List<String> similarityEngines = extractArray(req, SIMILARITY_ENGINES_ARRAY_FIELD);
+        List<String> similarityEngines = extractArray(req, PRE_FILTER_ARRAY_FIELD);
         List<AbstractSimilarityEngine> relevantEngines = SimilarityEngineController.getEngines().stream().filter(engine->similarityEngines.contains(engine.getName())).collect(Collectors.toList());
         simVectors = relevantEngines.stream().map(engine->{
             engine = engine.dup();

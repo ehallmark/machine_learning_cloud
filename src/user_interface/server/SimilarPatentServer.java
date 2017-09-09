@@ -62,7 +62,6 @@ import static spark.Spark.*;
  */
 public class SimilarPatentServer {
     private static final boolean debug = false;
-    private static final int MAX_DATATABLE_RESULTS = 100;
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
     private static ClassificationAttr tagger;
     private static final String PROTECTED_URL_PREFIX = "/secure";
@@ -71,7 +70,6 @@ public class SimilarPatentServer {
     public static final String LINE_CHART_MAX = "lineChartMax";
     public static final String LINE_CHART_MIN = "lineChartMin";
     public static final String ASSIGNEES_TO_SEARCH_FOR_FIELD = "assigneesToSearchFor";
-    public static final String SIMILARITY_ENGINES_ARRAY_FIELD = "similarityEngines[]";
     public static final String PRE_FILTER_ARRAY_FIELD = "preFilters[]";
     public static final String ATTRIBUTES_ARRAY_FIELD = "attributes[]";
     public static final String LIMIT_FIELD = "limit";
@@ -97,7 +95,6 @@ public class SimilarPatentServer {
     public static Map<String,AbstractSimilarityModel> similarityModelMap = new HashMap<>();
     public static SimilarityEngineController similarityEngine;
     public static Map<String,AbstractFilter> preFilterModelMap = new HashMap<>();
-    private static List<String> filterGroupSet;
     public static Map<String,AbstractAttribute> attributesMap = new HashMap<>();
     private static Map<String,ChartAttribute> chartModelMap = new HashMap<>();
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
@@ -105,6 +102,7 @@ public class SimilarPatentServer {
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
     private static NestedAttribute allAttributes;
     private static AbstractNestedFilter allFilters;
+    private static NestedAttribute allCharts;
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -314,6 +312,13 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.PIE_CHART, new AbstractDistributionChart());
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart());
+
+        allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList())) {
+            @Override
+            public String getName() {
+                return CHART_MODELS_ARRAY_FIELD;
+            }
+        };
     }
 
 
@@ -335,10 +340,8 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
                 buildJavaToHumanAttrMap();
 
-                filterGroupSet = preFilterModelMap.entrySet().stream().collect(Collectors.groupingBy(e->e.getValue().getOptionGroup())).keySet().stream().sorted().collect(Collectors.toList());
                 allFilters = new AbstractNestedFilter(allAttributes);
-                preFilterModelMap.put("test",allFilters);
-            }catch(Exception e) {
+            } catch(Exception e) {
                 e.printStackTrace();
             }
         }
@@ -439,13 +442,12 @@ public class SimilarPatentServer {
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 
 
-            allAttributes = new NestedAttribute(allTopLevelAttributes) {
+            allAttributes = new NestedAttribute(Stream.of(allTopLevelAttributes,(Collection<AbstractAttribute>)similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList())).flatMap(set->set.stream()).collect(Collectors.toList())) {
                 @Override
                 public String getName() {
-                    return "";
+                    return ATTRIBUTES_ARRAY_FIELD;
                 }
             };
-            attributesMap.put("attrTest",allAttributes);
         }
     }
 
@@ -1171,13 +1173,13 @@ public class SimilarPatentServer {
                                                 div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
                                                         mainOptionsRow()
                                                 ),div().withClass("col-6 form-right form-top").withId("chartsForm").with(
-                                                        customFormRow("charts",chartModelMap,CHART_MODELS_ARRAY_FIELD,roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
+                                                        customFormRow("charts",allCharts)
                                                 )
                                         ), div().withClass("row").with(
                                                 div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
-                                                        customFormRow("attributes", attributesMap, ATTRIBUTES_ARRAY_FIELD,roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION))
+                                                        customFormRow("attributes", allAttributes)
                                                 ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", Arrays.asList(similarityEngine.getEngineMap(), preFilterModelMap), Arrays.asList(SIMILARITY_ENGINES_ARRAY_FIELD,PRE_FILTER_ARRAY_FIELD),roleToAttributeFunctionMap.getOrDefault(role,DEFAULT_ROLE_TO_ATTR_FUNCTION), filterGroupSet)
+                                                        customFormRow("filters", allFilters)
                                                 )
                                         )
                                 ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
@@ -1218,48 +1220,17 @@ public class SimilarPatentServer {
                 )
         );
     }
-    private static Tag customFormRow(String type, Map<String, ? extends AbstractAttribute> modelMap, String arrayFieldName, Function<String,Boolean> shouldKeep) {
-        return customFormRow(type,Arrays.asList(modelMap),Arrays.asList(arrayFieldName), shouldKeep, Collections.emptyList());
-    }
 
-    private static Tag customFormRow(String type, List<Map<String, ? extends AbstractAttribute>> modelMaps, List<String> arrayFieldNames, Function<String,Boolean> shouldKeep, Collection<String> optGroups) {
+    private static Tag customFormRow(String type, AbstractAttribute attribute) {
         String shortTitle = type.substring(0,1).toUpperCase()+type.substring(1);
-        List<Pair<Map<String,? extends AbstractAttribute>,String>> modelFields = new ArrayList<>();
-        for(int i = 0; i < Math.min(modelMaps.size(),arrayFieldNames.size()); i++) {
-            modelFields.add(new Pair<>(modelMaps.get(i),arrayFieldNames.get(i)));
-        }
         String groupID = type+"-row";
         return span().with(
                 toggleButton(groupID, shortTitle),
                 span().withId(groupID).with(
                         div().withClass("collapsible-form row").with(
                                 div().withClass("col-12").with(
-                                        select().withClass("display-item-select form-control").with(option("Search Available "+shortTitle+"...").withClass("placeholder").attr("selected","selected"),span().with(
-                                                optGroups.stream().map(optGroup->{
-                                                    return optgroup().attr("label",humanAttributeFor(optGroup)).attr("name",optGroup);
-                                                }).collect(Collectors.toList())
-                                        )),
-                                        div().withClass("hidden-placeholder").attr("style","display: none;"),
-                                        div().withClass("value").attr("style","display: none;")
-                                ), div().attr("style","display: none;").withId(type+"-start").withClass("droppable start"+type).with(
-                                        div().with(
-                                                modelFields.stream().flatMap(pair->{
-                                                    String arrayFieldName = pair._2;
-                                                    return pair._1.entrySet().stream().map(e->{
-                                                        if(!shouldKeep.apply(e.getKey())) return null;
-                                                        if(e.getValue() instanceof HiddenAttribute || (e.getValue() instanceof AbstractFilter && ((AbstractFilter)e.getValue()).getParent()!=null)) return null;
-                                                        String collapseId = "collapse-"+type+"-"+e.getKey().replaceAll("[\\[\\]]","");
-                                                        String optGroup;
-                                                        if(e.getValue() instanceof AbstractFilter) {
-                                                            optGroup = ((AbstractFilter) e.getValue()).getOptionGroup();
-                                                        } else if(e.getValue() instanceof AbstractSimilarityEngine) {
-                                                            optGroup = ((AbstractSimilarityEngine) e.getValue()).getOptionGroup();
-                                                        } else optGroup = "";
-                                                        return createAttributeElement(type,e.getKey(),optGroup,collapseId,arrayFieldName,e.getValue().getOptionsTag(), false,e.getValue() instanceof NestedAttribute || e.getValue() instanceof AbstractNestedFilter, e.getValue() instanceof AbstractFilter, e.getValue().isNotYetImplemented(), e.getValue().getDescription().render());
-                                                    }).filter(r->r!=null);
-                                                }).collect(Collectors.toList())
-                                        )
-                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
+                                        attribute.getOptionsTag()
+                                )
                         )
                 )
         );
