@@ -45,6 +45,7 @@ public class SimilarityEngineController {
             AbstractFilter filter = SimilarPatentServer.preFilterModelMap.get(modelName);
             if(filter==null) {
                 System.out.println("Unable to find model: "+modelName);
+                return null;
             }
             return filter.dup();
         }).filter(i->i!=null).collect(Collectors.toList()));
