@@ -223,6 +223,10 @@ $(document).ready(function() {
     });
 
     resetSearchForm();
+
+    $('.nested-form-list').sortable();
+    $('.nested-form-list').disableSelection();
+
     $('#main-content-id').addClass('show');
 });
 
