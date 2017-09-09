@@ -31,7 +31,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Override
     public Tag getOptionsTag() {
         return div().with(
-                SimilarPatentServer.technologySelectWithCustomClass(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,"multiselect nested-attribute-select "+getName(), attributes.stream().map(attr->getName()+"."+attr.getName()).collect(Collectors.toList()))
+                SimilarPatentServer.technologySelectWithCustomClass(SimilarPatentServer.ATTRIBUTES_ARRAY_FIELD,"nested-filter-select", attributes.stream().map(attr->getName()+"."+attr.getName()).collect(Collectors.toList()))
         );
     }
 
