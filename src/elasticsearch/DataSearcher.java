@@ -69,6 +69,14 @@ public class DataSearcher {
 
     public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
         try {
+            if(debug) {
+                attributes.forEach(attr->{
+                   System.out.println("Root name for "+attr.getFullName()+": "+attr.getRootName());
+                });
+                filters.forEach(filter->{
+                    System.out.println("Root name for filter "+filter.getName()+": "+filter.getAttribute().getRootName());
+                });
+            }
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
@@ -118,11 +126,11 @@ public class DataSearcher {
                     AtomicReference<BoolQueryBuilder> currentQuery;
                     AtomicReference<BoolQueryBuilder> currentFilter;
                     if(Constants.FILING_ATTRIBUTES_SET.contains(filter.getAttribute().getRootName())) {
-                        System.out.println("IS FILING");
+                        System.out.println("IS FILING: "+filter.getAttribute().getRootName());
                         currentQuery = parentQueryBuilder;
                         currentFilter = parentFilterBuilder;
                     } else {
-                        System.out.println("NOT FILING");
+                        System.out.println("NOT FILING: "+filter.getAttribute().getRootName());
                         currentQuery = queryBuilder;
                         currentFilter = filterBuilder;
                     }
