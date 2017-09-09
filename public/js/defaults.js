@@ -172,15 +172,14 @@ $(document).ready(function() {
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
+            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
             $draggable.parent().hide();
             return true;
         });
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', false);
-            $draggable.find(".nested-form-list:first").find('input, select, textarea').prop('disabled', true);
+            $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
             $draggable.parent().show();
         });
         return true;
