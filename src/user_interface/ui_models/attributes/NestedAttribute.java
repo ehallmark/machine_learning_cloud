@@ -36,7 +36,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Override
     public Tag getOptionsTag() {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
-        String name = getFullName();
+        String name = getFullName().replace(".","");
         return div().with(
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
