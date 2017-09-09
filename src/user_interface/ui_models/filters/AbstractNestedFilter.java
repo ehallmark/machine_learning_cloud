@@ -99,7 +99,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getName()).collect(Collectors.toList()))));
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", filterGroups)
+                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select" + (setParent ? " dontClear":""), filterGroups)
                 ), div().withClass("nested-form-list").with(
                         filters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
