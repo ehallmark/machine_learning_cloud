@@ -168,7 +168,7 @@ $(document).ready(function() {
         $this.select2(displayItemSelectOptions);
     });
 
-    $('select.nested-filter-select').on("select2:select", function(e) {
+   /* $('select.nested-filter-select').on("select2:select", function(e) {
         var id = e.params.data.id;
         var $draggable = $('.draggable[data-model="'+id+'"]');
         $draggable.find('input, select, textarea').prop('disabled', false);
@@ -182,11 +182,26 @@ $(document).ready(function() {
         $draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
         $draggable.parent().hide();
         return true;
-    });
+    });*/
 
     $('select.nested-filter-select').on("change", function(e) {
-        var id = e.params.data.id;
-        alert(id);
+        var $options = $(e.currentTarget.selectedOptions);
+        var $hiddenOptions = $(e.currentTarget).find("option").not($options);
+
+        $hiddenOptions.each(function(i,option){
+            var id = $(option).val();
+            var $draggable = $('.draggable[data-model="'+id+'"]');
+            $draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
+            $draggable.parent().hide();
+            return true;
+        });
+        $options.each(function(i,option){
+            var id = $(option).val();
+            alert(id);
+            var $draggable = $('.draggable[data-model="'+id+'"]');
+            $draggable.find('input, select, textarea').prop('disabled', false);
+            $draggable.parent().show();
+        });
         //var $draggable = $('.draggable[data-model="'+id+'"]');
         //$draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
         //$draggable.parent().hide();
@@ -299,7 +314,7 @@ var showTemplateFormHelper = function(formSelector,json) {
     var dataMap = jQuery.parseJSON(json);
     $.each(dataMap,function(id,value) {
         var $elem = $('#'+id);
-        showDraggable($elem.get(0));
+        $elem.closest('draggable').parent().show();
         if(! $elem.hasClass("mycheckbox")) {
             $elem.val(value);
             $elem.trigger('change');
