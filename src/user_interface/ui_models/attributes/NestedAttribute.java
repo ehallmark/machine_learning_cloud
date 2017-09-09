@@ -19,10 +19,11 @@ import static j2html.TagCreator.span;
 public abstract class NestedAttribute extends AbstractAttribute {
     @Getter
     protected Collection<AbstractAttribute> attributes;
-
+    protected boolean setParent;
     public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
+        this.setParent=setParent;
         if(setParent)this.attributes.forEach(attr->{
            attr.setParent(this);
         });
@@ -34,6 +35,12 @@ public abstract class NestedAttribute extends AbstractAttribute {
 
     @Override
     public Tag getOptionsTag() {
+        String styleString;
+        if(setParent) {
+            styleString = "display: none; margin-left: 5%; margin-right: 5%;";
+        } else {
+            styleString = "display: none;";
+        }
         return div().with(
                 div().with(
                         SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
@@ -41,7 +48,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         attributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             String type = "filters";
-                            return div().attr("style", "display: none; margin-left: 5%; margin-right: 5%;").with(
+                            return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(type,filter.getName(),null,collapseId,SimilarPatentServer.PRE_FILTER_ARRAY_FIELD,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())

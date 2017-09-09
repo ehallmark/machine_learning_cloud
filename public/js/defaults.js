@@ -170,7 +170,7 @@ $(document).ready(function() {
 
     $('select.nested-filter-select').on("change", function(e) {
         var $options = $(e.currentTarget.selectedOptions);
-        var $hiddenOptions = $(e.currentTarget).find("option").not($options).not(":disabled");
+        var $hiddenOptions = $(e.currentTarget).find("option").not($options);
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.draggable[data-model="'+id+'"]');

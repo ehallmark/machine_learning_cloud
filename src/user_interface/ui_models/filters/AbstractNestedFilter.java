@@ -28,6 +28,7 @@ public class AbstractNestedFilter extends AbstractFilter {
     protected Collection<AbstractFilter> filters;
     @Setter
     protected Collection<AbstractFilter> filterSubset;
+    protected boolean setParent;
     public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, boolean setParent) {
         super(nestedAttribute,FilterType.Nested);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
@@ -35,6 +36,7 @@ public class AbstractNestedFilter extends AbstractFilter {
             Collection<AbstractFilter> filters = attr.createFilters();
             return filters.stream();
         }).collect(Collectors.toList());
+        this.setParent=setParent;
         if(setParent)filters.forEach(filter->filter.setParent(this));
     }
 
@@ -92,6 +94,12 @@ public class AbstractNestedFilter extends AbstractFilter {
 
     @Override
     public Tag getOptionsTag() {
+        String styleString;
+        if(setParent) {
+            styleString = "display: none; margin-left: 5%; margin-right: 5%;";
+        } else {
+            styleString = "display: none;";
+        }
         Map<String,List<String>> filterGroups = new TreeMap<>(filters.stream().collect(Collectors.groupingBy(filter->filter.getFullPrerequisite())).entrySet()
                 .stream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue().stream().map(attr->attr.getName()).collect(Collectors.toList()))));
         return div().with(
@@ -101,7 +109,7 @@ public class AbstractNestedFilter extends AbstractFilter {
                         filters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             String type = "filters";
-                            return div().attr("style", "display: none; margin-left: 5%; margin-right: 5%;").with(
+                            return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(type,filter.getName(),filter.getOptionGroup(),collapseId,SimilarPatentServer.PRE_FILTER_ARRAY_FIELD,filter.getOptionsTag(),filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
