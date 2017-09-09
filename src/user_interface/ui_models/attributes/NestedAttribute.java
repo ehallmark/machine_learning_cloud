@@ -24,9 +24,11 @@ public abstract class NestedAttribute extends AbstractAttribute {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
         this.setParent=setParent;
-        if(setParent)this.attributes.forEach(attr->{
-           attr.setParent(this);
-        });
+        if(setParent){
+            this.attributes.forEach(attr->{
+                attr.setParent(this);
+            });
+        }
     }
 
     public NestedAttribute(Collection<AbstractAttribute> attributes) {
