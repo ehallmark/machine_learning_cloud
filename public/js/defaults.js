@@ -238,14 +238,13 @@ $(document).ready(function() {
 
     $('select.nested-filter-select').on("select2:select", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').parent().show().find('input, select, textarea').prop('disabled', false);
+        $('.draggable[data-model="'+id+'"]').find('input, select, textarea').prop('disabled', false).show();
         return true;
     });
 
     $('select.nested-filter-select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        var $element = $('.draggable[data-model="'+id+'"]').parent().hide();
-        $element.find('input, select, textarea').prop('disabled', true).not('select.nested-filter-select').val(null).trigger('change');
+        $('.draggable[data-model="'+id+'"]').find('input, select, textarea').prop('disabled', true).hide().val(null).trigger('change');
         return true;
     });
 
