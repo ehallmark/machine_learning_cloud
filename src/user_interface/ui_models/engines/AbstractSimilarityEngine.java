@@ -72,6 +72,11 @@ public abstract class AbstractSimilarityEngine extends AbstractAttribute impleme
             }
 
             @Override
+            public String getName() {
+                return AbstractSimilarityEngine.this.getName();
+            }
+
+            @Override
             public void extractRelevantInformationFromParams(Request params) {}
 
             @Override
