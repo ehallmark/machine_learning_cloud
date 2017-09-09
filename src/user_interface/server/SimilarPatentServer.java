@@ -313,7 +313,7 @@ public class SimilarPatentServer {
         chartModelMap.put(Constants.HISTOGRAM, new AbstractHistogramChart());
         chartModelMap.put(Constants.LINE_CHART, new AbstractLineChart());
 
-        allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList())) {
+        allCharts = new NestedAttribute(chartModelMap.values().stream().map(chart->(AbstractAttribute)chart).collect(Collectors.toList()),false) {
             @Override
             public String getName() {
                 return CHART_MODELS_ARRAY_FIELD;
@@ -442,7 +442,7 @@ public class SimilarPatentServer {
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 
 
-            allAttributes = new NestedAttribute(Stream.of(allTopLevelAttributes,(Collection<AbstractAttribute>)similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList())).flatMap(set->set.stream()).collect(Collectors.toList())) {
+            allAttributes = new NestedAttribute(Stream.of(allTopLevelAttributes,(Collection<AbstractAttribute>)similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList())).flatMap(set->set.stream()).collect(Collectors.toList()),false) {
                 @Override
                 public String getName() {
                     return ATTRIBUTES_ARRAY_FIELD;

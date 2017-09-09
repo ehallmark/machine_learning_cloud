@@ -20,12 +20,16 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Getter
     protected Collection<AbstractAttribute> attributes;
 
-    public NestedAttribute(Collection<AbstractAttribute> attributes) {
+    public NestedAttribute(Collection<AbstractAttribute> attributes, boolean setParent) {
         super(Arrays.asList(AbstractFilter.FilterType.Nested));
         this.attributes = new ArrayList<>(attributes == null ? Collections.emptyList() : attributes);
-        this.attributes.forEach(attr->{
+        if(setParent)this.attributes.forEach(attr->{
            attr.setParent(this);
         });
+    }
+
+    public NestedAttribute(Collection<AbstractAttribute> attributes) {
+        this(attributes,true);
     }
 
     @Override
