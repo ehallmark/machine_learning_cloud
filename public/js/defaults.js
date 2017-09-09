@@ -230,7 +230,7 @@ var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
     $('.highlighted').removeClass('highlighted');
     $('.highlighted-special').removeClass('highlighted-special');
-    $('.draggable').find('select,textarea,input').prop("disabled",true).trigger('change');
+    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
     $('#results').html('');
 };
 
