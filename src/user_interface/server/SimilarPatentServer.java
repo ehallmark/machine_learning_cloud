@@ -103,6 +103,8 @@ public class SimilarPatentServer {
     private static Map<String,Function<String,Boolean>> roleToAttributeFunctionMap = new HashMap<>();
     private static final Function<String,Boolean> DEFAULT_ROLE_TO_ATTR_FUNCTION = (str) -> false;
     private static final String PLATFORM_STARTER_IP_ADDRESS = "104.196.199.81";
+    private static NestedAttribute allAttributes;
+    private static AbstractNestedFilter allFilters;
 
     static {
         roleToAttributeFunctionMap.put(ANALYST_USER, str -> !str.startsWith("gather"));
@@ -334,7 +336,8 @@ public class SimilarPatentServer {
                 buildJavaToHumanAttrMap();
 
                 filterGroupSet = preFilterModelMap.entrySet().stream().collect(Collectors.groupingBy(e->e.getValue().getOptionGroup())).keySet().stream().sorted().collect(Collectors.toList());
-
+                allFilters = new AbstractNestedFilter(allAttributes);
+                preFilterModelMap.put("test",allFilters);
             }catch(Exception e) {
                 e.printStackTrace();
             }
@@ -434,6 +437,15 @@ public class SimilarPatentServer {
             similarityEngine = new SimilarityEngineController(Arrays.asList(new PatentSimilarityEngine(DEFAULT_SIMILARITY_MODEL), new AssigneeSimilarityEngine(DEFAULT_SIMILARITY_MODEL)));
 
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
+
+
+            allAttributes = new NestedAttribute(allTopLevelAttributes) {
+                @Override
+                public String getName() {
+                    return "";
+                }
+            };
+            attributesMap.put("attrTest",allAttributes);
         }
     }
 
@@ -1247,7 +1259,7 @@ public class SimilarPatentServer {
                                                     }).filter(r->r!=null);
                                                 }).collect(Collectors.toList())
                                         )
-                                ), div().withId(type+"-target").withClass("droppable target col-12 "+type)
+                                )
                         )
                 )
         );
