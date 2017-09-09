@@ -36,15 +36,15 @@ public abstract class NestedAttribute extends AbstractAttribute {
     @Override
     public Tag getOptionsTag() {
         String styleString = "display: none; margin-left: 5%; margin-right: 5%;";
-        String name = getName();
+        String name = getFullName();
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         attributes.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
+                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
-                                    SimilarPatentServer.createAttributeElement(filter.getName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
+                                    SimilarPatentServer.createAttributeElement(filter.getFullName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
                         }).collect(Collectors.toList())
                 )
