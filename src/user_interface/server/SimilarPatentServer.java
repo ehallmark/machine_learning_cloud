@@ -123,7 +123,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Similarity", Constants.SIMILARITY);
             humanAttrToJavaAttrMap.put("Technology Similarity", Constants.TECHNOLOGY_SIMILARITY);
             humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Assignee Similarity", Constants.ASSIGNEE_SIMILARITY+AbstractFilter.FilterType.Include.toString()+Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY);
+            humanAttrToJavaAttrMap.put("Asset Similarity", Constants.PATENT_SIMILARITY+ AbstractFilter.FilterType.Include.toString()+Constants.FILTER_SUFFIX);
             humanAttrToJavaAttrMap.put("Total Asset Count", Constants.TOTAL_ASSET_COUNT);
             humanAttrToJavaAttrMap.put("Assignee Name", Constants.ASSIGNEE);
             humanAttrToJavaAttrMap.put("Invention Title", Constants.INVENTION_TITLE);
