@@ -24,6 +24,7 @@ import static j2html.TagCreator.label;
  * Created by Evan on 6/13/2017.
  */
 public class AbstractNestedFilter extends AbstractFilter {
+    public static boolean debug = true;
     @Getter
     protected Collection<AbstractFilter> filters;
     @Setter
@@ -70,8 +71,16 @@ public class AbstractNestedFilter extends AbstractFilter {
                 boolQuery = boolQuery.must(filter.getFilterQuery());
             }
         }
-        if(attribute.isObject()) return boolQuery; // hack for objects that haven't been mapped as nested yet (CompDB at the moment.)
-        else return QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max);
+        QueryBuilder query;
+        if(attribute.isObject()) {
+            System.out.println("Is object");
+            query = boolQuery; // hack for objects that haven't been mapped as nested yet (CompDB at the moment.)
+        } else {
+            System.out.print("Is nested");
+            query = QueryBuilders.nestedQuery(getFullPrerequisite(), boolQuery, ScoreMode.Max);
+        }
+        if(debug) System.out.println("Query for "+getName()+": "+query.toString());
+        return query;
     }
 
     @Override
