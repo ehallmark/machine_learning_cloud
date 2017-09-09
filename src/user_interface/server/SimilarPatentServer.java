@@ -339,8 +339,16 @@ public class SimilarPatentServer {
                 preFilterModelMap.put(Constants.EXISTS_IN_COMPDB_FILTER, new ExistsInCompDBFilter());
                 preFilterModelMap.put(Constants.EXISTS_IN_GATHER_FILTER, new ExistsInGatherFilter());
                 buildJavaToHumanAttrMap();
+                List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
+                nestedAttributes.addAll(similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
 
-                allFilters = new AbstractNestedFilter(allAttributes,false);
+                NestedAttribute attributeWithSimilarity = new NestedAttribute(nestedAttributes) {
+                    @Override
+                    public String getName() {
+                        return allAttributes.getName();
+                    }
+                };
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false);
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -442,7 +450,7 @@ public class SimilarPatentServer {
             allTopLevelAttributes = new ArrayList<>(attributesMap.values());
 
 
-            allAttributes = new NestedAttribute(Stream.of(allTopLevelAttributes,(Collection<AbstractAttribute>)similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList())).flatMap(set->set.stream()).collect(Collectors.toList()),false) {
+            allAttributes = new NestedAttribute(allTopLevelAttributes,false) {
                 @Override
                 public String getName() {
                     return ATTRIBUTES_ARRAY_FIELD;
