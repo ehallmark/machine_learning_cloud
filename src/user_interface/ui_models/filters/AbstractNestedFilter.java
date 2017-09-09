@@ -103,7 +103,6 @@ public class AbstractNestedFilter extends AbstractFilter {
                 ), div().withClass("nested-form-list").with(
                         filters.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
-                            String type = "filters";
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getName(),filter.getOptionGroup(),collapseId,filter.getOptionsTag(),filter.isNotYetImplemented(), filter.getDescription().render())
                             );

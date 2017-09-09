@@ -42,7 +42,7 @@ public abstract class NestedAttribute extends AbstractAttribute {
                         SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         attributes.stream().map(filter->{
-                            String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
+                            String collapseId = "collapse-filters-"+filter.getName().replaceAll("[\\[\\]]","");
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
