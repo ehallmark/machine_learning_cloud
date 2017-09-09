@@ -41,13 +41,13 @@ public abstract class NestedAttribute extends AbstractAttribute {
         } else {
             styleString = "display: none;";
         }
+        String name = getName();
         return div().with(
                 div().with(
-                        SimilarPatentServer.technologySelectWithCustomClass(getName(),"nested-filter-select", attributes.stream().map(attr->attr.getFullName()).collect(Collectors.toList()))
+                        SimilarPatentServer.technologySelectWithCustomClass(name+(name.endsWith("[]")?"":"[]"),"nested-filter-select", attributes.stream().map(attr->attr.getName()).collect(Collectors.toList()))
                 ), div().withClass("nested-form-list").with(
                         attributes.stream().map(filter->{
                             String collapseId = "collapse-filters-"+filter.getFullName().replaceAll("[\\[\\]]","");
-                            String type = "filters";
                             return div().attr("style", styleString).with(
                                     SimilarPatentServer.createAttributeElement(filter.getName(),null,collapseId,filter.getOptionsTag(), filter.isNotYetImplemented(), filter.getDescription().render())
                             );
