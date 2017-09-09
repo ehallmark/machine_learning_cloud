@@ -1245,7 +1245,7 @@ public class SimilarPatentServer {
                         label(humanAttributeFor(modelName)).attr("opt-group",optGroup),
                         (nestedParent && ! isFilter) || nestedFilterChild ? span() : input().attr("group-id",groupID).attr("toggle-id",toggleID).attr("disabled","true").withType("checkbox").withClass("mycheckbox").withId((arrayFieldName+modelName+type+collapseId).replaceAll("[\\[\\]#]","")).withName(arrayFieldName).withValue(modelName),
                         nestedFilterChild ? span() : span().withClass("remove-button").withText("x")
-                ), span().withClass("collapse").withId(collapseId).with(optionTag)
+                ), span().withClass("collapse show").withId(collapseId).with(optionTag)
         );
     }
 
