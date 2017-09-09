@@ -208,7 +208,7 @@ $(document).ready(function() {
         var values = $select.val();
         var idx = $.inArray(label,values);
         if(idx >= 0) {
-            values.splice(label,1);
+            values.splice(idx,1);
             $select.val(values).trigger('change');
         }
     });
