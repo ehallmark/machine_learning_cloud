@@ -238,13 +238,26 @@ $(document).ready(function() {
 
     $('select.nested-filter-select').on("select2:select", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').find('input, select, textarea').prop('disabled', false).show();
+        var $draggable = $('.draggable[data-model="'+id+'"]');
+        $draggable.find('input, select, textarea').prop('disabled', false);
+        $draggable.parent().show();
         return true;
     });
 
     $('select.nested-filter-select').on("select2:unselect", function(e) {
         var id = e.params.data.id;
-        $('.draggable[data-model="'+id+'"]').find('input, select, textarea').prop('disabled', true).hide().val(null).trigger('change');
+        var $draggable = $('.draggable[data-model="'+id+'"]');
+        $draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
+        $draggable.parent().hide();
+        return true;
+    });
+
+    $('select.nested-filter-select').on("select2:change", function(e) {
+        var id = e.params.data.id;
+        alert(id);
+        //var $draggable = $('.draggable[data-model="'+id+'"]');
+        //$draggable.find('input, select, textarea').prop('disabled', true).val(null).trigger('change');
+        //$draggable.parent().hide();
         return true;
     });
 
