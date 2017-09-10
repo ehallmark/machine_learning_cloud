@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 public class ValueModelCombination extends ValueAttr {
     public static final Double DEFAULT_START = 0.0;
     public static final Double DEFAULT_END = 100.0;
+    private static final boolean debug = true;
 
     protected List<Pair<ValueAttr,Double>> pairs;
     @Getter
@@ -32,6 +33,13 @@ public class ValueModelCombination extends ValueAttr {
 
     @Override
     public double evaluate(Item item) {
+        if(debug) {
+            int i = 0;
+            for(Pair<ValueAttr,Double> pair : pairs) {
+                System.out.println("Contribution "+i+": "+pair.getFirst().evaluate(item)*pair.getSecond());
+                i++;
+            }
+        }
         return pairs.stream().collect(Collectors.summingDouble(pair->pair.getFirst().evaluate(item)*pair.getSecond()));
     }
 }
