@@ -129,17 +129,22 @@ public class KeywordModelRunner {
                     String word = token.get(CoreAnnotations.TextAnnotation.class);
                     // could be the stem
                     String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
-                    String stem = stemmer.stem(lemma);
-                    if(stem.length()>0) {
-                        // this is the POS tag of the token
-                        String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                        if (validPOS.contains(pos)) {
-                            MultiStem multiStem = new MultiStem(new String[]{stem},multiStems.size());
-                            if(!multiStems.contains(multiStem)) {
-                                if(debug)System.out.println("Adding: "+multiStem);
-                                multiStems.add(multiStem);
+                    try {
+                        String stem = stemmer.stem(lemma);
+                        if (stem.length() > 0) {
+                            // this is the POS tag of the token
+                            String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                            if (validPOS.contains(pos)) {
+                                MultiStem multiStem = new MultiStem(new String[]{stem}, multiStems.size());
+                                if (!multiStems.contains(multiStem)) {
+                                    if (debug) System.out.println("Adding: " + multiStem);
+                                    multiStems.add(multiStem);
+                                }
                             }
                         }
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                        System.out.println("Error while stemming: "+lemma);
                     }
                 }
             }
