@@ -113,7 +113,9 @@ public class KeywordModelRunner {
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
             Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^A-Za-z ]"," ");
+            String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .]"," ");
+
+            System.out.println("Text: "+text);
 
             Annotation doc = new Annotation(text);
 
@@ -136,9 +138,11 @@ public class KeywordModelRunner {
                             String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                             if (validPOS.contains(pos)) {
                                 MultiStem multiStem = new MultiStem(new String[]{stem}, multiStems.size());
-                                if (!multiStems.contains(multiStem)) {
-                                    if (debug) System.out.println("Adding: " + multiStem);
-                                    multiStems.add(multiStem);
+                                synchronized (multiStems) {
+                                    if (!multiStems.contains(multiStem)) {
+                                        if (debug) System.out.println("Adding: " + multiStem);
+                                        multiStems.add(multiStem);
+                                    }
                                 }
                             }
                         }
