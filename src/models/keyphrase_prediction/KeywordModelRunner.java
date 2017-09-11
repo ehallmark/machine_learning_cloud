@@ -45,7 +45,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/11/17.
  */
 public class KeywordModelRunner {
-    public static final boolean debug = true;
+    public static final boolean debug = false;
     private static final Stemmer stemmer = new Stemmer();
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     public static void main(String[] args) {
@@ -121,7 +121,7 @@ public class KeywordModelRunner {
 
             synchronized (pipeline) {
                 pipeline.annotate(doc,d->{
-                    //System.out.println("Text: "+text);
+                    if(debug) System.out.println("Text: "+text);
                     List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
                     for(CoreMap sentence: sentences) {
                         // traversing the words in the current sentence
