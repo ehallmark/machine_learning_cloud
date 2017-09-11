@@ -1,6 +1,11 @@
 package models.keyphrase_prediction;
 
 import com.google.gson.Gson;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.scorers.KeywordScorer;
@@ -24,14 +29,13 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
+import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -94,20 +98,46 @@ public class KeywordModelRunner {
 
         SearchResponse response = search.get();
 
+        Properties props = new Properties();
+        props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
-            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString();
+            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString();
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
             Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList()));
+
+            Annotation doc = new Annotation(text);
+
+            pipeline.annotate(doc);
             if(debug) {
                 System.out.println("Asset: "+asset);
                 System.out.println("abstractText: "+abstractText);
                 System.out.println("inventionTitle: "+inventionTitle);
                 System.out.println("date: "+date);
                 System.out.println("text: "+text);
+                List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
+
+                for(CoreMap sentence: sentences) {
+                    // traversing the words in the current sentence
+                    // a CoreLabel is a CoreMap with additional token-specific methods
+                    for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                        // this is the text of the token
+                        String word = token.get(CoreAnnotations.TextAnnotation.class);
+                        // could be the stem
+                        String stem = token.get(CoreAnnotations.StemAnnotation.class);
+                        // this is the POS tag of the token
+                        String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+
+                        System.out.println("POS for "+word+": "+pos);
+                        System.out.println("Stem for "+word+": "+stem);
+                    }
+
+                }
             }
             return null;
         };
