@@ -5,20 +5,19 @@ import lombok.NonNull;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
+import java.io.Serializable;
 import java.util.*;
 
 /**
  * Created by Evan on 9/11/2017.
  */
-public class MultiStem {
+public class MultiStem implements Serializable{
+    private static final long serialVersionUID = 1L;
     protected String[] stems;
     @Getter
     protected int index;
     @Getter
     private int length;
-    private Double unitHood;
-    private Double termHood;
-    private Double techScore;
     public MultiStem(@NonNull String[] stems, @NonNull int index) {
         this.stems=stems;
         this.index=index;

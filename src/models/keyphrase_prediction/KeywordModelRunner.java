@@ -30,9 +30,11 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
+import seeding.Database;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +57,10 @@ public class KeywordModelRunner {
         final int k2 = 4;
 
 
-        Collection<MultiStem> keywords = buildVocabulary(2010);
+        Map<MultiStem,AtomicLong> keywordsCounts = buildVocabularyCounts(2010);
+        Database.trySaveObject(keywordsCounts,new File("data/keyword_model_counts_2010.jobj"));
+
+        Collection<MultiStem> keywords = new HashSet<>(keywordsCounts.keySet());
 
         // apply filter 1
         INDArray F = null; //buildFMatrix(keywords);
@@ -82,7 +87,7 @@ public class KeywordModelRunner {
                 .collect(Collectors.toList());
     }
 
-    private static Collection<MultiStem> buildVocabulary(int year) {
+    private static Map<MultiStem,AtomicLong> buildVocabularyCounts(int year) {
         LocalDate dateMin = LocalDate.of(year,1,1);
         LocalDate dateMax = dateMin.plusYears(1);
         TransportClient client = DataSearcher.getClient();
@@ -91,7 +96,7 @@ public class KeywordModelRunner {
                 //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
-                .setSize(1000)
+                .setSize(10000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
                 .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString()),true).innerHit(
                         new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
@@ -112,7 +117,7 @@ public class KeywordModelRunner {
         }
         Random random = new Random(67);
 
-        Collection<MultiStem> multiStems = Collections.synchronizedCollection(new HashSet<>());
+        Map<MultiStem,AtomicLong> multiStemMap = Collections.synchronizedMap(new HashMap<>());
 
         AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
@@ -126,7 +131,7 @@ public class KeywordModelRunner {
 
             Annotation doc = new Annotation(text);
             if(cnt.getAndIncrement() % 10000 == 9999) {
-                System.out.println("Num distinct multistems: "+multiStems.size());
+                System.out.println("Num distinct multistems: "+multiStemMap.size());
             }
             StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
             synchronized (pipeline) {
@@ -156,11 +161,11 @@ public class KeywordModelRunner {
                                     // this is the POS tag of the token
                                     String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                     if (validPOS.contains(pos)) {
-                                        multiStemChecker(new String[]{stem},multiStems);
+                                        multiStemChecker(new String[]{stem},multiStemMap);
                                         if(prevWord != null) {
-                                            multiStemChecker(new String[]{prevWord,stem},multiStems);
+                                            multiStemChecker(new String[]{prevWord,stem},multiStemMap);
                                             if(prevPrevWord != null) {
-                                                multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStems);
+                                                multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStemMap);
                                             }
                                         }
                                     } else {
@@ -186,15 +191,20 @@ public class KeywordModelRunner {
         };
 
         DataSearcher.iterateOverSearchResults(response, transformer, 5, false);
-        return multiStems;
+        return multiStemMap;
     }
 
-    private static void multiStemChecker(String[] stems, Collection<MultiStem> multiStems) {
+    private static void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems) {
         MultiStem multiStem = new MultiStem(stems, multiStems.size());
         synchronized (multiStems) {
-            if (!multiStems.contains(multiStem)) {
-                if (debug) System.out.println("Adding word "+multiStem.index+": " + multiStem);
-                multiStems.add(multiStem);
+            AtomicLong currentCount = multiStems.get(multiStem);
+            if(currentCount == null) {
+                if (multiStems.containsKey(multiStem)) {
+                    if (debug) System.out.println("Adding word " + multiStem.index + ": " + multiStem);
+                    multiStems.put(multiStem, new AtomicLong(1L));
+                }
+            } else {
+                currentCount.getAndIncrement();
             }
         }
     }
