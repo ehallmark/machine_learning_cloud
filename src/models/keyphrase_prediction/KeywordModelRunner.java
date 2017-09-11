@@ -80,7 +80,7 @@ public class KeywordModelRunner {
                 ).innerHit(new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(false)).addScriptField(Constants.ABSTRACT,new Script(
                         ScriptType.INLINE,
                         "painless",
-                        "doc[field].values",
+                        "doc[params.field].values",
                         Stream.of(Arrays.asList("field",Constants.ABSTRACT)).collect(Collectors.toMap(e->e.get(0),e->e.get(1)))
                 ))));
         if(debug) {
