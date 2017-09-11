@@ -126,7 +126,8 @@ public class KeywordModelRunner {
 
             StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
             synchronized (pipeline) {
-                pipeline.annotate(doc,d->{
+                pipeline.annotate(doc);
+                {
                     if(debug) System.out.println("Text: "+text);
                     List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
                     for(CoreMap sentence: sentences) {
@@ -175,7 +176,7 @@ public class KeywordModelRunner {
                             }
                         }
                     }
-                });
+                }
             }
 
             return null;
