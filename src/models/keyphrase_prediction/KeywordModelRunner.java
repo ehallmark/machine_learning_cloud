@@ -37,6 +37,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -113,6 +114,7 @@ public class KeywordModelRunner {
 
         Collection<MultiStem> multiStems = Collections.synchronizedCollection(new HashSet<>());
 
+        AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -123,7 +125,9 @@ public class KeywordModelRunner {
             String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
             Annotation doc = new Annotation(text);
-
+            if(cnt.getAndIncrement() % 10000 == 9999) {
+                System.out.println("Num distinct multistems: "+multiStems.size());
+            }
             StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
             synchronized (pipeline) {
                 pipeline.annotate(doc, d -> {
