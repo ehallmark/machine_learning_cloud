@@ -5,6 +5,8 @@ import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
+import models.keyphrase_prediction.scorers.TermhoodScorer;
+import models.keyphrase_prediction.scorers.UnithoodScorer;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -44,11 +46,11 @@ public class KeywordModelRunner {
 
         // apply filter 1
         INDArray F = null; //buildFMatrix(keywords);
-        applyFilters(new TechnologyScorer(), F, keywords, Kw * k1, 0, Double.MAX_VALUE);
+        applyFilters(new UnithoodScorer(), F, keywords, Kw * k1, 0, Double.MAX_VALUE);
 
         // apply filter 2
         INDArray M = null;
-        applyFilters(new TechnologyScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
+        applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
 
         // apply filter 3
         INDArray T = null;
@@ -72,7 +74,7 @@ public class KeywordModelRunner {
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.PARENT_TYPE_NAME)
                 .addSort(Constants.FILING_DATE, SortOrder.ASC)
-                .addDocValueField(Constants.FILING_DATE)
+                .addStoredField(Constants.FILING_DATE)
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10000)
@@ -95,9 +97,9 @@ public class KeywordModelRunner {
 
         Function<SearchHit,Item> transformer = hit-> {
             if(debug) {
+                System.out.println("Hit: "+hit.toString());
                 System.out.println("Search hit source: " + new Gson().toJson(hit.getFields()));
                 System.out.println("Search hit inner fields: " + hit.getInnerHits().values().stream().map(h->h.getHits()[0].getFields()));
-
             }
             return null;
         };
