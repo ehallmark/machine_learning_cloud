@@ -45,6 +45,8 @@ import java.util.stream.Stream;
  */
 public class KeywordModelRunner {
     public static final boolean debug = true;
+    private static final Stemmer stemmer = new Stemmer();
+    private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     public static void main(String[] args) {
         final long Kw = 5000;
         final int k1 = 10;
@@ -102,6 +104,8 @@ public class KeywordModelRunner {
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
+        Collection<MultiStem> multiStems = Collections.synchronizedCollection(new HashSet<>());
+
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -114,35 +118,35 @@ public class KeywordModelRunner {
             Annotation doc = new Annotation(text);
 
             pipeline.annotate(doc);
-            if(debug) {
-                System.out.println("Asset: "+asset);
-                System.out.println("abstractText: "+abstractText);
-                System.out.println("inventionTitle: "+inventionTitle);
-                System.out.println("date: "+date);
-                System.out.println("text: "+text);
-                List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
 
-                for(CoreMap sentence: sentences) {
-                    // traversing the words in the current sentence
-                    // a CoreLabel is a CoreMap with additional token-specific methods
-                    for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                        // this is the text of the token
-                        String word = token.get(CoreAnnotations.TextAnnotation.class);
-                        // could be the stem
-                        String stem = token.get(CoreAnnotations.StemAnnotation.class);
+            List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
+
+            for(CoreMap sentence: sentences) {
+                // traversing the words in the current sentence
+                // a CoreLabel is a CoreMap with additional token-specific methods
+                for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                    // this is the text of the token
+                    String word = token.get(CoreAnnotations.TextAnnotation.class);
+                    // could be the stem
+                    String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+                    String stem = stemmer.stem(lemma);
+                    if(stem.length()>0) {
                         // this is the POS tag of the token
                         String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-
-                        System.out.println("POS for "+word+": "+pos);
-                        System.out.println("Stem for "+word+": "+stem);
+                        if (validPOS.contains(pos)) {
+                            MultiStem multiStem = new MultiStem(new String[]{stem},multiStems.size());
+                            if(!multiStems.contains(multiStem)) {
+                                if(debug)System.out.println("Adding: "+multiStem);
+                                multiStems.add(multiStem);
+                            }
+                        }
                     }
-
                 }
             }
             return null;
         };
 
         DataSearcher.iterateOverSearchResults(response, transformer, 5, false);
-        return null;
+        return multiStems;
     }
 }
