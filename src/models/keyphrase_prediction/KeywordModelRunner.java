@@ -19,12 +19,15 @@ import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Constants;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -78,7 +81,7 @@ public class KeywordModelRunner {
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.FILING_DATE},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
                 .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
                         new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
                 ));
@@ -89,10 +92,19 @@ public class KeywordModelRunner {
         SearchResponse response = search.get();
 
         Function<SearchHit,Item> transformer = hit-> {
+            String asset = hit.getId();
+            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString();
+            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString();
+            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+            String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList()));
             if(debug) {
-                System.out.println("Hit: "+hit.toString());
-                System.out.println("Search hit source: " + new Gson().toJson(hit.getSource()));
-                System.out.println("Search hit inner fields: " + new Gson().toJson(hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource()).collect(Collectors.toList())));
+                System.out.println("Asset: "+asset);
+                System.out.println("abstractText: "+abstractText);
+                System.out.println("inventionTitle: "+inventionTitle);
+                System.out.println("date: "+date);
+                System.out.println("text: "+text);
             }
             return null;
         };
