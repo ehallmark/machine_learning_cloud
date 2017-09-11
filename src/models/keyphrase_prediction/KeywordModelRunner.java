@@ -72,20 +72,13 @@ public class KeywordModelRunner {
     private static Collection<MultiStem> buildVocabulary() {
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.PARENT_TYPE_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
                 //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
-                .setSize(10000)
-                .setFetchSource(new String[]{Constants.FILING_DATE},new String[]{})
-                .setQuery(new HasChildQueryBuilder(
-                                DataIngester.TYPE_NAME,
-                                QueryBuilders.matchAllQuery(),
-                                ScoreMode.Max
-                        ).innerHit(new InnerHitBuilder()
-                                .setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.ABSTRACT},new String[]{}))
-                        )
-                );
+                .setSize(10)
+                .setFetchSource(new String[]{Constants.PUBLICATION_DATE, Constants.ABSTRACT},new String[]{})
+                .setQuery(QueryBuilders.matchAllQuery());
         if(debug) {
             System.out.println(search.request().toString());
         }
@@ -96,7 +89,7 @@ public class KeywordModelRunner {
             if(debug) {
                 System.out.println("Hit: "+hit.toString());
                 System.out.println("Search hit source: " + new Gson().toJson(hit.getSource()));
-                System.out.println("Search hit inner fields: " + hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource()));
+                System.out.println("Search hit inner fields: " + new Gson().toJson(hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource())));
             }
             return null;
         };
