@@ -15,16 +15,23 @@ public class MultiStem {
     private int length;
     private Double unitHood;
     private Double termHood;
-
+    private Double techScore;
     public MultiStem(@NonNull String[] stems, @NonNull int index) {
         this.stems=stems;
         this.index=index;
         this.length=stems.length;
     }
 
-    public double computeUnithoodScore(double frequency) {
+    public double computeTechnologyScore(INDArray T, Collection<String> allCPCs) {
+        if(techScore == null) {
+
+        }
+        return techScore;
+    }
+
+    public double computeUnithoodScore(double numAppearances) {
         if(unitHood==null) {
-            unitHood = frequency * Math.log(length + 1);
+            unitHood = numAppearances * Math.log(length + 1);
         }
         return unitHood;
     }
