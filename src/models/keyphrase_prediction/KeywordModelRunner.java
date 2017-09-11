@@ -68,7 +68,8 @@ public class KeywordModelRunner {
 
     private static Collection<MultiStem> buildVocabulary() {
         TransportClient client = DataSearcher.getClient();
-        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME,DataIngester.PARENT_TYPE_NAME)
+        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.PARENT_TYPE_NAME)
                 .addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .addDocValueField(Constants.FILING_DATE)
                 .setFetchSource(false)
