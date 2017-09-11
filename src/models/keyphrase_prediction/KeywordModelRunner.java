@@ -101,7 +101,7 @@ public class KeywordModelRunner {
             return null;
         };
 
-        DataSearcher.iterateOverSearchResults(response, transformer, Integer.MAX_VALUE, false);
+        DataSearcher.iterateOverSearchResults(response, transformer, 5, false);
         return null;
     }
 }
