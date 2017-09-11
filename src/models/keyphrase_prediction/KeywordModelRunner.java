@@ -80,7 +80,7 @@ public class KeywordModelRunner {
                 .setSize(10)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.FILING_DATE},new String[]{})
                 .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
-                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true))
+                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
                 ));
         if(debug) {
             System.out.println(search.request().toString());
@@ -92,7 +92,7 @@ public class KeywordModelRunner {
             if(debug) {
                 System.out.println("Hit: "+hit.toString());
                 System.out.println("Search hit source: " + new Gson().toJson(hit.getSource()));
-                System.out.println("Search hit inner fields: " + new Gson().toJson(hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource())));
+                System.out.println("Search hit inner fields: " + new Gson().toJson(hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource()).collect(Collectors.toList())));
             }
             return null;
         };
