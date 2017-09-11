@@ -126,10 +126,9 @@ public class KeywordModelRunner {
 
             StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
             synchronized (pipeline) {
-                pipeline.annotate(doc);
-                {
+                pipeline.annotate(doc, d -> {
                     if(debug) System.out.println("Text: "+text);
-                    List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
+                    List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
                     for(CoreMap sentence: sentences) {
                         // traversing the words in the current sentence
                         // a CoreLabel is a CoreMap with additional token-specific methods
@@ -176,7 +175,7 @@ public class KeywordModelRunner {
                             }
                         }
                     }
-                }
+                });
             }
 
             return null;
