@@ -27,6 +27,7 @@ import seeding.Constants;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,7 +47,7 @@ public class KeywordModelRunner {
         final int k2 = 4;
 
 
-        Collection<MultiStem> keywords = buildVocabulary();
+        Collection<MultiStem> keywords = buildVocabulary(2010);
 
         // apply filter 1
         INDArray F = null; //buildFMatrix(keywords);
@@ -73,16 +74,18 @@ public class KeywordModelRunner {
                 .collect(Collectors.toList());
     }
 
-    private static Collection<MultiStem> buildVocabulary() {
+    private static Collection<MultiStem> buildVocabulary(int year) {
+        LocalDate dateMin = LocalDate.of(year,1,1);
+        LocalDate dateMax = dateMin.plusYears(1);
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
                 //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
-                .setSize(10)
+                .setSize(1000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
+                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin).lt(dateMax),true).innerHit(
                         new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
                 ));
         if(debug) {
