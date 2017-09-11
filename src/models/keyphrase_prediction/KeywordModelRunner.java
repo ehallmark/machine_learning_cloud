@@ -9,6 +9,7 @@ import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.HasChildQueryBuilder;
@@ -72,6 +73,9 @@ public class KeywordModelRunner {
                 .setTypes(DataIngester.PARENT_TYPE_NAME)
                 .addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .addDocValueField(Constants.FILING_DATE)
+                .setScroll(new TimeValue(60000))
+                .setFrom(0)
+                .setSize(10000)
                 .setFetchSource(false)
                 .setQuery(new HasChildQueryBuilder(
                         DataIngester.TYPE_NAME,
