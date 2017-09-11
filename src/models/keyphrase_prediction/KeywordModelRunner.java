@@ -115,12 +115,12 @@ public class KeywordModelRunner {
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .]"," ");
 
-            System.out.println("Text: "+text);
 
             Annotation doc = new Annotation(text);
 
             synchronized (pipeline) {
                 pipeline.annotate(doc,d->{
+                    System.out.println("Text: "+text);
                     List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
                     for(CoreMap sentence: sentences) {
                         // traversing the words in the current sentence
