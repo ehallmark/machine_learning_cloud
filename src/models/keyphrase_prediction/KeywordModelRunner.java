@@ -80,7 +80,7 @@ public class KeywordModelRunner {
                 .setSize(10)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.FILING_DATE},new String[]{})
                 .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
-                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true))
                 ));
         if(debug) {
             System.out.println(search.request().toString());
