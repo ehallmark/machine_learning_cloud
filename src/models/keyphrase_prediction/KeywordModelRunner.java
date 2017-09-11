@@ -91,7 +91,7 @@ public class KeywordModelRunner {
                 .setFrom(0)
                 .setSize(1000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin).lt(dateMax),true).innerHit(
+                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString()),true).innerHit(
                         new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
                 ));
         if(debug) {
