@@ -32,7 +32,7 @@ public class Test {
                 // this is the text of the token
                 String word = token.get(CoreAnnotations.TextAnnotation.class);
                 // could be the stem
-                String stem = token.get(CoreAnnotations.StemAnnotation.class);
+                String stem = token.get(CoreAnnotations.LemmaAnnotation.class);
                 // this is the POS tag of the token
                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
 
