@@ -78,9 +78,9 @@ public class KeywordModelRunner {
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10)
-                .setFetchSource(new String[]{Constants.ABSTRACT},new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.FILING_DATE},new String[]{})
                 .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
-                        new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
                 ));
         if(debug) {
             System.out.println(search.request().toString());
