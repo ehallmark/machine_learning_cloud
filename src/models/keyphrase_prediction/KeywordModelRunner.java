@@ -103,7 +103,13 @@ public class KeywordModelRunner {
 
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+        int parallelism = 10;
+        List<StanfordCoreNLP> pipelines = Collections.synchronizedList(new ArrayList<>(parallelism));
+        for(int i = 0; i < parallelism; i++) {
+            StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+            pipelines.add(pipeline);
+        }
+        Random random = new Random(67);
 
         Collection<MultiStem> multiStems = Collections.synchronizedCollection(new HashSet<>());
 
@@ -116,9 +122,9 @@ public class KeywordModelRunner {
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
-
             Annotation doc = new Annotation(text);
 
+            StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
             synchronized (pipeline) {
                 pipeline.annotate(doc,d->{
                     if(debug) System.out.println("Text: "+text);

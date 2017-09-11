@@ -198,14 +198,16 @@ public class DataSearcher {
     public static Item[] iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
         //Scroll until no hits are returned
         Item[] items = new Item[]{};
+        long count = 0;
         do {
-            System.out.println("Starting new batch. Num items = " + items.length);
+            System.out.println("Starting new batch. Num items = " + count);
             Stream<SearchHit> searchHitStream = Arrays.stream(response.getHits().getHits());
             if(!merge) {
                 // run in parallel
                 searchHitStream = searchHitStream.parallel();
             }
-            Item[] newItems = searchHitStream.map(hit->hitTransformer.apply(hit)).filter(hit->hit!=null).toArray(size->new Item[size]);
+            Item[] newItems = searchHitStream.map(hit->hitTransformer.apply(hit)).toArray(size->new Item[size]);
+            count+=newItems.length;
             if(merge) items=merge(items,newItems);
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
         } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
