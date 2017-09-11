@@ -1,6 +1,7 @@
 package elasticsearch;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import lombok.NonNull;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
@@ -47,6 +48,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -57,6 +59,7 @@ import static user_interface.server.SimilarPatentServer.extractString;
  * Created by Evan on 7/22/2017.
  */
 public class DataSearcher {
+    @Getter
     private static TransportClient client = MyClient.get();
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
@@ -183,24 +186,30 @@ public class DataSearcher {
             request.set(request.get().setQuery(queryBuilder.get()));
 
             SearchResponse response = request.get().get();
-            //Scroll until no hits are returned
-            Item[] items = new Item[]{};
-            do {
-                System.out.println("Starting new batch. Num items = " + items.length);
-                Stream<SearchHit> searchHitStream = Arrays.stream(response.getHits().getHits());
-                if(!merge) {
-                    // run in parallel
-                    searchHitStream = searchHitStream.parallel();
-                }
-                Item[] newItems = searchHitStream.map(hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore))).toArray(size->new Item[size]);
-                if(merge) items=merge(items,newItems);
-                response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-            } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
-            return items;
+
+            return iterateOverSearchResults(response, hit->transformer.transform(hitToItem(hit,nestedAttrNameMap, isOverallScore)), maxLimit, merge);
+
         } catch(Exception e) {
             e.printStackTrace();
             throw new RuntimeException("Error during keyword search: "+e.getMessage());
         }
+    }
+
+    public static Item[] iterateOverSearchResults(SearchResponse response, Function<SearchHit,Item> hitTransformer, int maxLimit, boolean merge) {
+        //Scroll until no hits are returned
+        Item[] items = new Item[]{};
+        do {
+            System.out.println("Starting new batch. Num items = " + items.length);
+            Stream<SearchHit> searchHitStream = Arrays.stream(response.getHits().getHits());
+            if(!merge) {
+                // run in parallel
+                searchHitStream = searchHitStream.parallel();
+            }
+            Item[] newItems = searchHitStream.map(hit->hitTransformer.apply(hit)).filter(hit->hit!=null).toArray(size->new Item[size]);
+            if(merge) items=merge(items,newItems);
+            response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
+        } while(response.getHits().getHits().length != 0 && items.length < maxLimit); // Zero hits mark the end of the scroll and the while loop.
+        return items;
     }
 
     private static void handleAttributesHelper(@NonNull AbstractAttribute attribute, @NonNull String comparator, boolean usingScore, AtomicReference<BoolQueryBuilder> queryBuilder, AtomicReference<SearchRequestBuilder> request, AtomicReference<InnerHitBuilder> innerHitBuilder) {
