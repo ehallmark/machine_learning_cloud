@@ -15,6 +15,7 @@ import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.HasChildQueryBuilder;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
@@ -77,8 +78,10 @@ public class KeywordModelRunner {
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10)
-                .setFetchSource(new String[]{Constants.PUBLICATION_DATE, Constants.ABSTRACT},new String[]{})
-                .setQuery(QueryBuilders.matchAllQuery());
+                .setFetchSource(new String[]{Constants.ABSTRACT},new String[]{})
+                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.matchAllQuery(),true).innerHit(
+                        new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                ));
         if(debug) {
             System.out.println(search.request().toString());
         }
