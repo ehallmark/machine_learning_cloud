@@ -114,7 +114,7 @@ public class KeywordModelRunner {
             SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
             Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
             LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
-            String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .]"," ");
+            String text = String.join(". ",Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
 
             Annotation doc = new Annotation(text);
@@ -146,6 +146,8 @@ public class KeywordModelRunner {
                                                 multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStems);
                                             }
                                         }
+                                    } else {
+                                        stem = null;
                                     }
                                 } else {
                                     stem = null;
