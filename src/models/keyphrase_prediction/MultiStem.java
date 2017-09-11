@@ -1,8 +1,6 @@
 package models.keyphrase_prediction;
 
 import lombok.NonNull;
-import model.edges.DirectedEdge;
-import model.edges.Edge;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.*;
@@ -59,10 +57,6 @@ public class MultiStem {
 
     private double sumAcrossSingleRow(INDArray M, int idx) {
         return M.getRow(idx).sumNumber().doubleValue();
-    }
-
-    private double sumAcrossSingleColumn(INDArray M, int idx) {
-        return M.getColumn(idx).sumNumber().doubleValue();
     }
 
     @Override
