@@ -133,9 +133,16 @@ public class KeywordModelRunner {
                             String word = token.get(CoreAnnotations.TextAnnotation.class);
                             // could be the stem
                             String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+
+                            if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
+                                prevPrevWord=null;
+                                prevWord=null;
+                                continue;
+                            }
+
                             try {
                                 String stem = stemmer.stem(lemma);
-                                if (stem.length() > 0) {
+                                if (stem.length() > 0 && !Constants.STOP_WORD_SET.contains(word)) {
                                     // this is the POS tag of the token
                                     String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                     if (validPOS.contains(pos)) {
