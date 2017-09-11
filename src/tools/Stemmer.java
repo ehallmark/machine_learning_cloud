@@ -592,7 +592,7 @@ public class Stemmer implements Function<Word,Word> {
    * Stems <code>s</code> and returns stemmed <code>String</code>.
    */
 
-  public String stem(String s) {
+  public synchronized String stem(String s) {
     char[] characters = s.toCharArray();
     for (char character : characters) {
       add(character);
