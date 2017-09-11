@@ -79,11 +79,12 @@ public class KeywordModelRunner {
                 .setSize(10000)
                 .setFetchSource(new String[]{Constants.FILING_DATE},new String[]{})
                 .setQuery(new HasChildQueryBuilder(
-                        DataIngester.TYPE_NAME,
-                        QueryBuilders.matchAllQuery(),
-                        ScoreMode.Max
-                ).innerHit(new InnerHitBuilder()
-                        .setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.ABSTRACT},new String[]{})))
+                                DataIngester.TYPE_NAME,
+                                QueryBuilders.matchAllQuery(),
+                                ScoreMode.Max
+                        ).innerHit(new InnerHitBuilder()
+                                .setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.ABSTRACT},new String[]{}))
+                        )
                 );
         if(debug) {
             System.out.println(search.request().toString());
