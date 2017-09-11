@@ -119,39 +119,41 @@ public class KeywordModelRunner {
 
             Annotation doc = new Annotation(text);
 
-            pipeline.annotate(doc);
-
-            List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
-
-            for(CoreMap sentence: sentences) {
-                // traversing the words in the current sentence
-                // a CoreLabel is a CoreMap with additional token-specific methods
-                for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                    // this is the text of the token
-                    String word = token.get(CoreAnnotations.TextAnnotation.class);
-                    // could be the stem
-                    String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
-                    try {
-                        String stem = stemmer.stem(lemma);
-                        if (stem.length() > 0) {
-                            // this is the POS tag of the token
-                            String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                            if (validPOS.contains(pos)) {
-                                MultiStem multiStem = new MultiStem(new String[]{stem}, multiStems.size());
-                                synchronized (multiStems) {
-                                    if (!multiStems.contains(multiStem)) {
-                                        if (debug) System.out.println("Adding: " + multiStem);
-                                        multiStems.add(multiStem);
+            synchronized (pipeline) {
+                pipeline.annotate(doc,d->{
+                    List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
+                    for(CoreMap sentence: sentences) {
+                        // traversing the words in the current sentence
+                        // a CoreLabel is a CoreMap with additional token-specific methods
+                        for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                            // this is the text of the token
+                            String word = token.get(CoreAnnotations.TextAnnotation.class);
+                            // could be the stem
+                            String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+                            try {
+                                String stem = stemmer.stem(lemma);
+                                if (stem.length() > 0) {
+                                    // this is the POS tag of the token
+                                    String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                                    if (validPOS.contains(pos)) {
+                                        MultiStem multiStem = new MultiStem(new String[]{stem}, multiStems.size());
+                                        synchronized (multiStems) {
+                                            if (!multiStems.contains(multiStem)) {
+                                                if (debug) System.out.println("Adding: " + multiStem);
+                                                multiStems.add(multiStem);
+                                            }
+                                        }
                                     }
                                 }
+                            } catch(Exception e) {
+                                e.printStackTrace();
+                                System.out.println("Error while stemming: "+lemma);
                             }
                         }
-                    } catch(Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Error while stemming: "+lemma);
                     }
-                }
+                });
             }
+
             return null;
         };
 
