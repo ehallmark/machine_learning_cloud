@@ -1,13 +1,15 @@
 package tools;
 
-import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.process.PTBTokenizer;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Iterator;
+
 import java.util.function.Function;
+
+
+import edu.stanford.nlp.ling.Word;
+import edu.stanford.nlp.process.PTBTokenizer;
 
 /**
  * Stemmer, implementing the Porter Stemming Algorithm
@@ -22,8 +24,8 @@ import java.util.function.Function;
 public class Stemmer implements Function<Word,Word> {
   private char[] b;
   private int i,     /* offset into b */
-  i_end, /* offset to end of stemmed word */
-  j, k;
+          i_end, /* offset to end of stemmed word */
+          j, k;
   private static final int INC = 50;
 
   /* unit of size whereby b is increased */

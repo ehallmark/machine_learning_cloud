@@ -12,6 +12,7 @@ import models.keyphrase_prediction.scorers.KeywordScorer;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
 import models.keyphrase_prediction.scorers.UnithoodScorer;
+import org.apache.lucene.analysis.util.StemmerUtil;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -120,11 +121,13 @@ public class KeywordModelRunner {
 
             synchronized (pipeline) {
                 pipeline.annotate(doc,d->{
-                    System.out.println("Text: "+text);
+                    //System.out.println("Text: "+text);
                     List<CoreMap> sentences = doc.get(CoreAnnotations.SentencesAnnotation.class);
                     for(CoreMap sentence: sentences) {
                         // traversing the words in the current sentence
                         // a CoreLabel is a CoreMap with additional token-specific methods
+                        String prevWord = null;
+                        String prevPrevWord = null;
                         for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
                             // this is the text of the token
                             String word = token.get(CoreAnnotations.TextAnnotation.class);
@@ -136,18 +139,24 @@ public class KeywordModelRunner {
                                     // this is the POS tag of the token
                                     String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                     if (validPOS.contains(pos)) {
-                                        MultiStem multiStem = new MultiStem(new String[]{stem}, multiStems.size());
-                                        synchronized (multiStems) {
-                                            if (!multiStems.contains(multiStem)) {
-                                                if (debug) System.out.println("Adding: " + multiStem);
-                                                multiStems.add(multiStem);
+                                        multiStemChecker(new String[]{stem},multiStems);
+                                        if(prevWord != null) {
+                                            multiStemChecker(new String[]{prevWord,stem},multiStems);
+                                            if(prevPrevWord != null) {
+                                                multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStems);
                                             }
                                         }
                                     }
+                                } else {
+                                    stem = null;
                                 }
+                                prevPrevWord = prevWord;
+                                prevWord = stem;
+
                             } catch(Exception e) {
-                                e.printStackTrace();
                                 System.out.println("Error while stemming: "+lemma);
+                                prevWord = null;
+                                prevPrevWord = null;
                             }
                         }
                     }
@@ -160,4 +169,15 @@ public class KeywordModelRunner {
         DataSearcher.iterateOverSearchResults(response, transformer, 5, false);
         return multiStems;
     }
+
+    private static void multiStemChecker(String[] stems, Collection<MultiStem> multiStems) {
+        MultiStem multiStem = new MultiStem(stems, multiStems.size());
+        synchronized (multiStems) {
+            if (!multiStems.contains(multiStem)) {
+                if (debug) System.out.println("Adding word "+multiStem.index+": " + multiStem);
+                multiStems.add(multiStem);
+            }
+        }
+    }
+
 }
