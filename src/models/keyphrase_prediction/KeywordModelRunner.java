@@ -78,17 +78,14 @@ public class KeywordModelRunner {
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10000)
-                .setFetchSource(false)
+                .setFetchSource(new String[]{Constants.FILING_DATE},new String[]{})
                 .setQuery(new HasChildQueryBuilder(
                         DataIngester.TYPE_NAME,
                         QueryBuilders.matchAllQuery(),
                         ScoreMode.Max
-                ).innerHit(new InnerHitBuilder().setFetchSourceContext(new FetchSourceContext(false)).addScriptField(Constants.ABSTRACT,new Script(
-                        ScriptType.INLINE,
-                        "painless",
-                        "doc[params.field].values",
-                        Stream.of(Arrays.asList("field",Constants.ABSTRACT)).collect(Collectors.toMap(e->e.get(0),e->e.get(1)))
-                ))));
+                ).innerHit(new InnerHitBuilder()
+                        .setFetchSourceContext(new FetchSourceContext(true,new String[]{Constants.ABSTRACT},new String[]{})))
+                );
         if(debug) {
             System.out.println(search.request().toString());
         }
@@ -98,8 +95,8 @@ public class KeywordModelRunner {
         Function<SearchHit,Item> transformer = hit-> {
             if(debug) {
                 System.out.println("Hit: "+hit.toString());
-                System.out.println("Search hit source: " + new Gson().toJson(hit.getFields()));
-                System.out.println("Search hit inner fields: " + hit.getInnerHits().values().stream().map(h->h.getHits()[0].getFields()));
+                System.out.println("Search hit source: " + new Gson().toJson(hit.getSource()));
+                System.out.println("Search hit inner fields: " + hit.getInnerHits().values().stream().map(h->h.getHits()[0].getSource()));
             }
             return null;
         };
