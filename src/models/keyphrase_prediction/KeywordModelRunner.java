@@ -199,10 +199,8 @@ public class KeywordModelRunner {
         synchronized (multiStems) {
             AtomicLong currentCount = multiStems.get(multiStem);
             if(currentCount == null) {
-                if (multiStems.containsKey(multiStem)) {
-                    if (debug) System.out.println("Adding word " + multiStem.index + ": " + multiStem);
-                    multiStems.put(multiStem, new AtomicLong(1L));
-                }
+                if (debug) System.out.println("Adding word " + multiStem.index + ": " + multiStem);
+                multiStems.put(multiStem, new AtomicLong(1L));
             } else {
                 currentCount.getAndIncrement();
             }
