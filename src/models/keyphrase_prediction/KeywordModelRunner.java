@@ -73,8 +73,7 @@ public class KeywordModelRunner {
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.PARENT_TYPE_NAME)
-                .addSort(Constants.FILING_DATE, SortOrder.ASC)
-                .addStoredField(Constants.FILING_DATE)
+                //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
                 .setFrom(0)
                 .setSize(10000)
