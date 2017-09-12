@@ -19,6 +19,8 @@ public class MultiStem implements Serializable{
     protected int index;
     @Getter
     private int length;
+    @Getter @Setter
+    protected String bestPhrase;
     public MultiStem(@NonNull String[] stems, @NonNull int index) {
         this.stems=stems;
         this.index=index;

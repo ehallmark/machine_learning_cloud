@@ -28,6 +28,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
+import org.mapdb.Atomic;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -373,6 +374,7 @@ public class KeywordModelRunner {
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         Map<MultiStem,AtomicLong> multiStemMap = Collections.synchronizedMap(new HashMap<>());
+        Map<String,Map<String,AtomicInteger>> stemToPhraseCountMap = Collections.synchronizedMap(new HashMap<>());
 
         AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
@@ -394,6 +396,8 @@ public class KeywordModelRunner {
                 for(CoreMap sentence: sentences) {
                     // traversing the words in the current sentence
                     // a CoreLabel is a CoreMap with additional token-specific methods
+                    String prevStem = null;
+                    String prevPrevStem = null;
                     String prevWord = null;
                     String prevPrevWord = null;
                     for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
@@ -403,8 +407,10 @@ public class KeywordModelRunner {
                         String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
 
                         if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                            prevPrevWord=null;
+                            prevPrevStem=null;
+                            prevStem=null;
                             prevWord=null;
+                            prevPrevWord=null;
                             continue;
                         }
 
@@ -414,11 +420,11 @@ public class KeywordModelRunner {
                                 // this is the POS tag of the token
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (validPOS.contains(pos)) {
-                                    multiStemChecker(new String[]{stem},multiStemMap);
-                                    if(prevWord != null) {
-                                        multiStemChecker(new String[]{prevWord,stem},multiStemMap);
-                                        if(prevPrevWord != null) {
-                                            multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStemMap);
+                                    multiStemChecker(new String[]{stem},multiStemMap, word, stemToPhraseCountMap);
+                                    if(prevStem != null) {
+                                        multiStemChecker(new String[]{prevStem,stem},multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);
+                                        if(prevPrevStem != null) {
+                                            multiStemChecker(new String[]{prevPrevStem,prevStem,stem},multiStemMap, String.join(" ", prevPrevWord, prevWord, word), stemToPhraseCountMap);
                                         }
                                     }
                                 } else {
@@ -427,13 +433,17 @@ public class KeywordModelRunner {
                             } else {
                                 stem = null;
                             }
+                            prevPrevStem = prevStem;
+                            prevStem = stem;
                             prevPrevWord = prevWord;
-                            prevWord = stem;
+                            prevWord = word;
 
                         } catch(Exception e) {
                             System.out.println("Error while stemming: "+lemma);
-                            prevWord = null;
-                            prevPrevWord = null;
+                            prevStem = null;
+                            prevPrevStem = null;
+                            prevWord=null;
+                            prevPrevWord=null;
                         }
                     }
                 }
@@ -442,8 +452,22 @@ public class KeywordModelRunner {
             return null;
         };
         streamElasticSearchData(year, transformer);
-
-        return multiStemMap;    }
+        System.out.println("Starting to find best phrases for each stemmed phrase.");
+        new ArrayList<>(multiStemMap.keySet()).parallelStream().forEach(stem->{
+            String stemStr = stem.toString();
+            if(stemToPhraseCountMap.containsKey(stemStr)) {
+                // extract most common representation of the stem
+                String bestPhrase = stemToPhraseCountMap.get(stemStr).entrySet().stream().sorted((e1,e2)->Integer.compare(e2.getValue().get(),e1.getValue().get())).map(e->e.getKey()).findFirst().orElse(null);
+                if(bestPhrase!=null) {
+                    stem.setBestPhrase(bestPhrase);
+                } else {
+                    multiStemMap.remove(stem);
+                }
+                if(debug) System.out.println("Best phrase for "+stemStr+": "+bestPhrase);
+            }
+        });
+        return multiStemMap;
+    }
 
 
     private static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer) {
@@ -454,6 +478,7 @@ public class KeywordModelRunner {
                 .setTypes(DataIngester.TYPE_NAME)
                 //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
+                .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
@@ -468,8 +493,13 @@ public class KeywordModelRunner {
         DataSearcher.iterateOverSearchResults(response, transformer, -1, false);
     }
 
-    private static void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems) {
+    private static void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems, String label, Map<String,Map<String,AtomicInteger>> phraseCountMap) {
         MultiStem multiStem = new MultiStem(stems, multiStems.size());
+        String stemPhrase = multiStem.toString();
+        phraseCountMap.putIfAbsent(stemPhrase,Collections.synchronizedMap(new HashMap<>()));
+        Map<String,AtomicInteger> innerMap = phraseCountMap.get(stemPhrase);
+        innerMap.putIfAbsent(label,new AtomicInteger(0));
+        innerMap.get(label).getAndIncrement();
         synchronized (multiStems) {
             AtomicLong currentCount = multiStems.get(multiStem);
             if(currentCount == null) {
@@ -483,10 +513,10 @@ public class KeywordModelRunner {
 
     private static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("Key Phrase, Score\n");
+            writer.write("Key Phrase\n");
             multiStems.forEach(e->{
                 try {
-                    writer.write(e.toString()+","+e.index+"\n");
+                    writer.write(e.toString()+"\n");
                 }catch(Exception e2) {
                     e2.printStackTrace();
                 }
