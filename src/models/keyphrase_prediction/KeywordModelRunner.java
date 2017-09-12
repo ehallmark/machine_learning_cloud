@@ -176,9 +176,8 @@ public class KeywordModelRunner {
                 for (CoreLabel token: d.get(CoreAnnotations.TokensAnnotation.class)) {
                     // this is the text of the token
                     String word = token.get(CoreAnnotations.TextAnnotation.class);
-                    // could be the stem
-                    String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
 
+                    String lemma = word; // no lemmatizer
                     if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
                         continue;
                     }
