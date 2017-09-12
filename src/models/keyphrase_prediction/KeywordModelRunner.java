@@ -112,7 +112,7 @@ public class KeywordModelRunner {
         }
 
 
-    // apply filter 3
+        // apply filter 3
         INDArray T = null;
         applyFilters(new TechnologyScorer(), T, keywords, Kw, 0, Double.MAX_VALUE);
     }
