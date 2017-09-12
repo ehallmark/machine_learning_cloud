@@ -154,8 +154,10 @@ public class KeywordModelRunner {
         Object[][] locks = new Object[multiStems.size()][multiStems.size()];
         for(int i = 0; i < matrix.length; i++) {
             matrix[i] = new double[multiStems.size()];
+            locks[i] = new Object[multiStems.size()];
             for(int j = 0; j < multiStems.size(); j++) {
                 matrix[i][j] = 0d;
+                locks[i][j] = new Object();
             }
         }
 
