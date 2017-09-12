@@ -177,7 +177,7 @@ public class KeywordModelRunner {
 
     private static INDArray buildTMatrix(Collection<MultiStem> multiStems, int year) {
         // create cpc code co-occurrrence statistics
-        final int maxCpcLength = 6;
+        final int maxCpcLength = 8;
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = new HashMap<>();
