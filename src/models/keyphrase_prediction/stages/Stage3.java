@@ -169,7 +169,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         System.out.println("Filtered multistems size: "+indicesOfMultiStems.size());
         float[][] matrix = new float[indicesOfMultiStems.size()][indicesOfMultiStems.size()];
         IntStream.range(0,matrix.length).parallel().forEach(i->{
-            matrix[i] = new float[multiStems.size()];
+            matrix[i] = new float[indicesOfMultiStems.size()];
             Arrays.fill(matrix[i],0f);
         });
 
@@ -185,6 +185,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         System.out.println("Reindexing...");
         KeywordModelRunner.reindex(multiStemList);
 
+        System.out.println("Looping thru cooccurrence map...");
         cooccurrenceMap.entrySet().parallelStream().forEach(e->{
             long index = e.getKey();
             long idx1 = index / oldMultiStemSize;
