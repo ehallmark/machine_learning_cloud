@@ -189,7 +189,9 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             long index = e.getKey();
             long idx1 = index / oldMultiStemSize;
             long idx2 = index % oldMultiStemSize;
-            matrix[(int)idx1][(int)idx2]=e.getValue().get();
+            int i = oldIdxToMultiStemMap.get((int)idx1).getIndex();
+            int j = oldIdxToMultiStemMap.get((int)idx2).getIndex();
+            matrix[i][j]=e.getValue().get();
         });
 
         return matrix;
