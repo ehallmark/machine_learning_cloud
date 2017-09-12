@@ -49,7 +49,6 @@ import java.util.stream.Stream;
  */
 public class KeywordModelRunner {
     public static final boolean debug = false;
-    private static final Stemmer stemmer = new Stemmer();
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     public static void main(String[] args) {
         final long Kw = 5000;
@@ -148,7 +147,7 @@ public class KeywordModelRunner {
                         }
 
                         try {
-                            String stem = stemmer.stem(lemma);
+                            String stem = new Stemmer().stem(lemma);
                             if (stem.length() > 0 && !Constants.STOP_WORD_SET.contains(word)) {
                                 // this is the POS tag of the token
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
