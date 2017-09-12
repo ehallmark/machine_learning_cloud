@@ -59,8 +59,8 @@ public class KeywordModelRunner {
 
         final int windowSize = 4;
 
-        boolean runStage1 = true;
-        boolean runStage2 = true;
+        boolean runStage1 = false;
+        boolean runStage2 = false;
         boolean runStage3 = true;
         boolean rebuildMMatrix = true;
         boolean runStage4 = true;

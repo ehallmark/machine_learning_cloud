@@ -1,6 +1,7 @@
 package models.keyphrase_prediction.stages;
 
 import elasticsearch.DataIngester;
+import model.edges.Edge;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
@@ -13,11 +14,13 @@ import seeding.Constants;
 import seeding.Database;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
+import util.Pair;
 
 import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,12 +32,12 @@ import java.util.stream.Stream;
 public class Stage3 implements Stage<Collection<MultiStem>> {
     private static final boolean debug = false;
     private static final File stage3File = new File("data/keyword_model_keywords_set_stage3.jobj");
-    private Collection<MultiStem> keywords;
+    private Collection<MultiStem> multiStems;
     private long targetCardinality;
     private int year;
     private boolean rebuildMMatrix;
     public Stage3(Stage2 stage2, long targetCardinality, boolean rebuildMMatrix, int year) {
-        this.keywords = stage2.get();
+        this.multiStems = new ArrayList<>(stage2.get());
         this.rebuildMMatrix=rebuildMMatrix;
         this.year=year;
         this.targetCardinality=targetCardinality;
@@ -42,12 +45,12 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     @Override
     public Collection<MultiStem> get() {
-        return keywords;
+        return multiStems;
     }
 
     @Override
     public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(getFile(year));
+        multiStems = (Collection<MultiStem>)Database.loadObject(getFile(year));
     }
 
     @Override
@@ -59,41 +62,29 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     public Collection<MultiStem> run(boolean run) {
         if(run) {
             // apply filter 2
-            KeywordModelRunner.reindex(keywords);
-            System.out.println("Num keywords before stage 3: "+keywords.size());
+            KeywordModelRunner.reindex(multiStems);
+            System.out.println("Num keywords before stage 3: "+multiStems.size());
             INDArray M;
             if(rebuildMMatrix) {
-                M = buildMMatrix(keywords, year);
+                M = buildMMatrix();
                 Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
             } else {
                 M = (INDArray) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
-            keywords = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, keywords, targetCardinality, 0, Double.MAX_VALUE);
-            System.out.println("Num keywords after stage 3: "+keywords.size());
+            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0, Double.MAX_VALUE);
+            System.out.println("Num keywords after stage 3: "+multiStems.size());
 
-            Database.saveObject(keywords, stage3File);
+            Database.saveObject(multiStems, stage3File);
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage3.csv"));
+            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3.csv"));
         } else {
             loadData();
         }
-        return keywords;
+        return multiStems;
     }
 
-    private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
-        // create co-occurrrence statistics
-        double[][] matrix = new double[multiStems.size()][multiStems.size()];
-        Object[][] locks = new Object[multiStems.size()][multiStems.size()];
-        for(int i = 0; i < matrix.length; i++) {
-            matrix[i] = new double[multiStems.size()];
-            locks[i] = new Object[multiStems.size()];
-            for(int j = 0; j < multiStems.size(); j++) {
-                matrix[i][j] = 0d;
-                locks[i][j] = new Object();
-            }
-        }
-
-
+    private INDArray buildMMatrix() {
+        Map<Long,AtomicInteger> cooccurrenceMap = Collections.synchronizedMap(new HashMap<>(multiStems.size()));
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -153,19 +144,41 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
-                double[] row = matrix[stem1.getIndex()];
-                Object[] lockRow = locks[stem1.getIndex()];
                 for (MultiStem stem2 : cooccurringStems) {
-                    synchronized(lockRow[stem2.getIndex()]) {
-                        row[stem2.getIndex()]++;
-                    }
+                    long value = ((long)stem1.getIndex())*multiStems.size() + stem2.getIndex();
+                    cooccurrenceMap.putIfAbsent(value,new AtomicInteger(0));
+                    cooccurrenceMap.get(value).getAndIncrement();
                 }
             }
-
             return null;
         };
 
         KeywordModelRunner.streamElasticSearchData(year, transformer);
+
+        System.out.println("building cooccurrence map...");
+        // create co-occurrrence statistics
+        Collection<Integer> indicesOfMultiStems = cooccurrenceMap.keySet().parallelStream().flatMap(index->{
+            long idx1 = index / multiStems.size();
+            long idx2 = index % multiStems.size();
+            return Stream.of((int)idx1,(int)idx2);
+        }).collect(Collectors.toSet());
+
+        final int originalMultiStemSize = multiStems.size();
+
+        multiStems = multiStems.parallelStream().filter(stem->{
+            return indicesOfMultiStems.contains(stem.getIndex());
+        }).collect(Collectors.toList());
+
+        KeywordModelRunner.reindex(multiStems);
+
+        System.out.println("Filtered multistems size: "+multiStems.size());
+        float[][] matrix = new float[multiStems.size()][multiStems.size()];
+        for(int i = 0; i < matrix.length; i++) {
+            matrix[i] = new float[multiStems.size()];
+            for(int j = 0; j < multiStems.size(); j++) {
+                matrix[i][j] = cooccurrenceMap.getOrDefault(((long)i)*originalMultiStemSize+j, new AtomicInteger(0)).get();
+            }
+        }
         return Nd4j.create(matrix);
     }
 
