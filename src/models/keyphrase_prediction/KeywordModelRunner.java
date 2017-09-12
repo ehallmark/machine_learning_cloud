@@ -257,7 +257,7 @@ public class KeywordModelRunner {
                 }
             });
 
-            //if(debug)
+            if(debug)
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for(MultiStem stem : cooccurringStems) {
