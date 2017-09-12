@@ -20,11 +20,14 @@ public class TermhoodScorer implements KeywordScorer {
         }
         double[] wordCountSums = matrix.sum(1).data().asDouble();
         System.out.println("Word count sums length: "+wordCountSums.length);
+        if(wordCountSums.length!=keywords.size()) {
+            throw new RuntimeException("Invalid word count sums size. Should be: "+keywords.size());
+        }
         return keywords.parallelStream().collect(Collectors.toMap(keyword->keyword,keyword->{
             double[] Mi = matrix.getRow(keyword.getIndex()).data().asDouble();
             double wordCountSumI = wordCountSums[keyword.getIndex()];
             double score = 0d;
-            for(int j = 0; j < Mi.length; j++) {
+            for(int j = 0; j < keywords.size(); j++) {
                 if(j==keyword.getIndex()) continue;
                 double sumProduct = wordCountSums[j] * wordCountSumI;
                 score += sumProduct == 0 ? 0 : (Math.pow(Mi[j] - sumProduct, 2) / sumProduct);

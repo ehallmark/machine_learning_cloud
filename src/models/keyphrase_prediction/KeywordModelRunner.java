@@ -69,6 +69,7 @@ public class KeywordModelRunner {
         boolean stage1 = false;
         boolean stage2 = false;
         boolean stage3 = true;
+        boolean rebuildMMatrix = true;
 
         Map<MultiStem, AtomicLong> keywordsCounts;
         if(stage1) {
@@ -100,7 +101,13 @@ public class KeywordModelRunner {
             // apply filter 2
             reindex(keywords);
             System.out.println("Num keywords before stage 3: "+keywords.size());
-            INDArray M = buildMMatrix(keywords, year);
+            INDArray M;
+            if(rebuildMMatrix) {
+                M = buildMMatrix(keywords, year);
+                Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"));
+            } else {
+                M = (INDArray) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"));
+            }
             keywords = applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
             System.out.println("Num keywords after stage 3: "+keywords.size());
 
