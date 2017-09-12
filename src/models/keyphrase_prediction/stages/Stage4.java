@@ -178,7 +178,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 20000);
         return Nd4j.create(matrix);
     }
 

@@ -76,7 +76,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
             Database.saveObject(multiStems, stage3File);
             // write to csv for records
-            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3.csv"));
+            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+".csv"));
         } else {
             loadData();
         }
@@ -153,7 +153,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 20000);
 
         System.out.println("building cooccurrence map...");
         // create co-occurrrence statistics

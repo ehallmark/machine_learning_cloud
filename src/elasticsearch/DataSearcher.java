@@ -210,7 +210,7 @@ public class DataSearcher {
             count+=newItems.length;
             if(merge) items=merge(items,newItems);
             response = client.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(60000)).execute().actionGet();
-        } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || items.length < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
+        } while(response.getHits().getHits().length != 0 && (maxLimit < 0 || count < maxLimit)); // Zero hits mark the end of the scroll and the while loop.
         return items;
     }
 

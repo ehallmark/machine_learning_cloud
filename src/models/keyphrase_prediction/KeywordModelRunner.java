@@ -16,13 +16,16 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
@@ -139,33 +142,43 @@ public class KeywordModelRunner {
     }
 
 
-    public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer) {
+    public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
         QueryBuilder query;
         if(year>0) {
             LocalDate dateMin = LocalDate.of(year, 1, 1);
             LocalDate dateMax = dateMin.plusYears(1);
-            query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString())),false).innerHit(
-                    new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
-            );
+            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
+                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString()));
+            if(sampling>0) {
+                boolQuery = boolQuery.must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)));
+            }
+            query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, boolQuery,false)
+                    .innerHit(new InnerHitBuilder()
+                            .setSize(1)
+                            .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                    );
         } else {
-            query = QueryBuilders.matchAllQuery();
+            query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))
+                    : QueryBuilders.matchAllQuery();
         }
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
-                //.addSort(Constants.FILING_DATE, SortOrder.ASC)
                 .setScroll(new TimeValue(60000))
                 .setExplain(false)
                 .setFrom(0)
                 .setSize(10000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
                 .setQuery(query);
+        if(sampling>0) {
+            search = search.addSort(SortBuilders.scoreSort());
+        }
         if(debug) {
             System.out.println(search.request().toString());
         }
 
         SearchResponse response = search.get();
-        DataSearcher.iterateOverSearchResults(response, transformer, -1, false);
+        DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
     }
 
 
