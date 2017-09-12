@@ -207,7 +207,7 @@ public class KeywordModelRunner {
                 }
             });
 
-            //if(debug)
+            if(debug)
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             // Unavoidable n-squared part
