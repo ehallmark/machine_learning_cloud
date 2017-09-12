@@ -151,12 +151,14 @@ public class KeywordModelRunner {
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
         // create co-occurrrence statistics
         double[][] matrix = new double[multiStems.size()][multiStems.size()];
+        Object[][] locks = new Object[multiStems.size()][multiStems.size()];
         for(int i = 0; i < matrix.length; i++) {
             matrix[i] = new double[multiStems.size()];
             for(int j = 0; j < multiStems.size(); j++) {
                 matrix[i][j] = 0d;
             }
         }
+
 
         AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
@@ -206,8 +208,8 @@ public class KeywordModelRunner {
                 }
             }
 
-            Collection<MultiStem> cooccurringStems = new ArrayList<>();
-            multiStems.forEach(stem->{
+            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
+            multiStems.parallelStream().forEach(stem->{
                 if(documentStems.contains(stem)) {
                     cooccurringStems.add(stem);
                 }
@@ -218,9 +220,11 @@ public class KeywordModelRunner {
 
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
-                synchronized (matrix[stem1.index]) {
-                    for (MultiStem stem2 : cooccurringStems) {
-                        matrix[stem1.index][stem2.index]++;
+                double[] row = matrix[stem1.index];
+                Object[] lockRow = locks[stem1.index];
+                for (MultiStem stem2 : cooccurringStems) {
+                    synchronized(lockRow[stem2.index]) {
+                        row[stem2.index]++;
                     }
                 }
             }
