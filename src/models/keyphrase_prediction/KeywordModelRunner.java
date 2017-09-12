@@ -149,10 +149,6 @@ public class KeywordModelRunner {
     }
 
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
-        Properties props = new Properties();
-        props.setProperty("annotators", "tokenize");
-        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-
         // create co-occurrrence statistics
         double[][] matrix = new double[multiStems.size()][multiStems.size()];
 
@@ -168,44 +164,41 @@ public class KeywordModelRunner {
 
             Collection<MultiStem> documentStems = new HashSet<>();
 
-            Annotation doc = new Annotation(text);
-            pipeline.annotate(doc, d -> {
-                if(debug) System.out.println("Text: "+text);
-                String prevWord = null;
-                String prevPrevWord = null;
-                for (CoreLabel token: d.get(CoreAnnotations.TokensAnnotation.class)) {
-                    // this is the text of the token
-                    String word = token.get(CoreAnnotations.TextAnnotation.class);
+            if(debug) System.out.println("Text: "+text);
+            String prevWord = null;
+            String prevPrevWord = null;
+            for (String word: text.split("\\s+")) {
+                word = word.replace(".","").replace(",","").trim();
+                // this is the text of the token
 
-                    String lemma = word; // no lemmatizer
-                    if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                        continue;
-                    }
-
-                    try {
-                        String stem = new Stemmer().stem(lemma);
-                        if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                            // this is the POS tag of the token
-                            documentStems.add(new MultiStem(new String[]{stem},-1));
-                            if(prevWord != null) {
-                                documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
-                                if (prevPrevWord != null) {
-                                    documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
-                                }
-                            }
-                        } else {
-                            stem = null;
-                        }
-                        prevPrevWord = prevWord;
-                        prevWord = stem;
-
-                    } catch(Exception e) {
-                        System.out.println("Error while stemming: "+lemma);
-                        prevWord = null;
-                        prevPrevWord = null;
-                    }
+                String lemma = word; // no lemmatizer
+                if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
+                    continue;
                 }
-            });
+
+                try {
+                    String stem = new Stemmer().stem(lemma);
+                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
+                        // this is the POS tag of the token
+                        documentStems.add(new MultiStem(new String[]{stem},-1));
+                        if(prevWord != null) {
+                            documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
+                            if (prevPrevWord != null) {
+                                documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
+                            }
+                        }
+                    } else {
+                        stem = null;
+                    }
+                    prevPrevWord = prevWord;
+                    prevWord = stem;
+
+                } catch(Exception e) {
+                    System.out.println("Error while stemming: "+lemma);
+                    prevWord = null;
+                    prevPrevWord = null;
+                }
+            }
 
             Collection<MultiStem> cooccurringStems = new ArrayList<>();
             multiStems.forEach(stem->{
