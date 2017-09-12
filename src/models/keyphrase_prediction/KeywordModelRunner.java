@@ -69,7 +69,7 @@ public class KeywordModelRunner {
         boolean stage1 = false;
         boolean stage2 = false;
         boolean stage3 = true;
-        boolean rebuildMMatrix = true;
+        boolean rebuildMMatrix = false;
 
         Map<MultiStem, AtomicLong> keywordsCounts;
         if(stage1) {
