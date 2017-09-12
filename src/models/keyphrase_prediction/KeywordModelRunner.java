@@ -33,6 +33,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.Stemmer;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.BufferedWriter;
@@ -153,6 +154,109 @@ public class KeywordModelRunner {
 
     private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {
         return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+    }
+
+    private static INDArray buildTMatrix(Collection<MultiStem> multiStems, int year) {
+        // create cpc code co-occurrrence statistics
+        List<String> allCpcCodes = new ArrayList<>(Database.getClassCodes());
+        Map<String,Integer> cpcCodeIndexMap = new HashMap<>();
+        AtomicInteger idx = new AtomicInteger(0);
+        allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
+
+        double[][] matrix = new double[multiStems.size()][multiStems.size()];
+        Object[][] locks = new Object[multiStems.size()][multiStems.size()];
+        for(int i = 0; i < matrix.length; i++) {
+            matrix[i] = new double[multiStems.size()];
+            locks[i] = new Object[multiStems.size()];
+            for(int j = 0; j < multiStems.size(); j++) {
+                matrix[i][j] = 0d;
+                locks[i][j] = new Object();
+            }
+        }
+
+        final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+
+
+        AtomicLong cnt = new AtomicLong(0);
+        Function<SearchHit,Item> transformer = hit-> {
+            String asset = hit.getId();
+
+            Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
+            if(currentCpcs==null||currentCpcs.isEmpty()) return null;
+
+            int[] cpcIndices = currentCpcs.stream().map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
+            if(cpcIndices==null||cpcIndices.length==0) return null;
+
+            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
+            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
+            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+            String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
+
+            Collection<MultiStem> documentStems = new HashSet<>();
+
+            if(debug) System.out.println("Text: "+text);
+            String prevWord = null;
+            String prevPrevWord = null;
+            for (String word: text.split("\\s+")) {
+                word = word.replace(".","").replace(",","").trim();
+                // this is the text of the token
+
+                String lemma = word; // no lemmatizer
+                if(Constants.STOP_WORD_SET.contains(lemma)) {
+                    continue;
+                }
+
+                try {
+                    String stem = new Stemmer().stem(lemma);
+                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
+                        // this is the POS tag of the token
+                        documentStems.add(new MultiStem(new String[]{stem},-1));
+                        if(prevWord != null) {
+                            documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
+                            if (prevPrevWord != null) {
+                                documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
+                            }
+                        }
+                    } else {
+                        stem = null;
+                    }
+                    prevPrevWord = prevWord;
+                    prevWord = stem;
+
+                } catch(Exception e) {
+                    System.out.println("Error while stemming: "+lemma);
+                    prevWord = null;
+                    prevPrevWord = null;
+                }
+            }
+
+            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
+            multiStems.parallelStream().forEach(stem->{
+                if(documentStems.contains(stem)) {
+                    cooccurringStems.add(stem);
+                }
+            });
+
+            if(debug)
+                System.out.println("Num coocurrences: "+cooccurringStems.size());
+
+            for(MultiStem stem : cooccurringStems) {
+                double[] row = matrix[stem.index];
+                Object[] lockRow = locks[stem.index];
+                for (int cpcIdx : cpcIndices) {
+                    synchronized(lockRow[cpcIdx]) {
+                        row[cpcIdx]++;
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        streamElasticSearchData(year, transformer);
+        return Nd4j.create(matrix);
     }
 
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
