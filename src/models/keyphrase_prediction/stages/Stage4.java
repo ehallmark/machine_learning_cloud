@@ -62,12 +62,12 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         if(run) {
             // apply filter 3
             KeywordModelRunner.reindex(keywords);
-            INDArray T;
+            float[][] T;
             if(rebuildTMatrix) {
                 T = buildTMatrix(keywords, year);
                 Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"+year));
             } else {
-                T = (INDArray) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
+                T = (float[][]) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
             }
             keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0, Double.MAX_VALUE);
             Database.saveObject(keywords, stage4File);
@@ -80,7 +80,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     }
 
 
-    private static INDArray buildTMatrix(Collection<MultiStem> multiStems, int year) {
+    private static float[][] buildTMatrix(Collection<MultiStem> multiStems, int year) {
         // create cpc code co-occurrrence statistics
         final int maxCpcLength = 8;
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
@@ -89,13 +89,13 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         AtomicInteger idx = new AtomicInteger(0);
         allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 
-        double[][] matrix = new double[multiStems.size()][allCpcCodes.size()];
+        float[][] matrix = new float[multiStems.size()][allCpcCodes.size()];
         Object[][] locks = new Object[multiStems.size()][allCpcCodes.size()];
         for(int i = 0; i < matrix.length; i++) {
-            matrix[i] = new double[multiStems.size()];
+            matrix[i] = new float[multiStems.size()];
             locks[i] = new Object[multiStems.size()];
             for(int j = 0; j < allCpcCodes.size(); j++) {
-                matrix[i][j] = 0d;
+                matrix[i][j] = 0f;
                 locks[i][j] = new Object();
             }
         }
@@ -166,7 +166,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for(MultiStem stem : cooccurringStems) {
-                double[] row = matrix[stem.getIndex()];
+                float[] row = matrix[stem.getIndex()];
                 Object[] lockRow = locks[stem.getIndex()];
                 for (int cpcIdx : cpcIndices) {
                     synchronized(lockRow[cpcIdx]) {
@@ -179,7 +179,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         };
 
         KeywordModelRunner.streamElasticSearchData(year, transformer, 20000);
-        return Nd4j.create(matrix);
+        return matrix;
     }
 
 }

@@ -64,12 +64,12 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             // apply filter 2
             KeywordModelRunner.reindex(multiStems);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
-            INDArray M;
+            float[][] M;
             if(rebuildMMatrix) {
                 M = buildMMatrix();
                 Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
             } else {
-                M = (INDArray) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
+                M = (float[][]) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
             multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0, Double.MAX_VALUE);
             System.out.println("Num keywords after stage 3: "+multiStems.size());
@@ -83,7 +83,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         return multiStems;
     }
 
-    private INDArray buildMMatrix() {
+    private float[][] buildMMatrix() {
         Map<Long,AtomicInteger> cooccurrenceMap = Collections.synchronizedMap(new HashMap<>(multiStems.size()));
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
@@ -179,7 +179,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
                 matrix[i][j] = cooccurrenceMap.getOrDefault(((long)i)*originalMultiStemSize+j, new AtomicInteger(0)).get();
             }
         }
-        return Nd4j.create(matrix);
+        return matrix;
     }
 
 

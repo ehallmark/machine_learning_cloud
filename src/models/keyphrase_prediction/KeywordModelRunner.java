@@ -129,7 +129,7 @@ public class KeywordModelRunner {
         });
     }
 
-    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, INDArray matrix, Collection<MultiStem> keywords, long targetNumToKeep, double minThreshold, double maxThreshold) {
+    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, float[][] matrix, Collection<MultiStem> keywords, long targetNumToKeep, double minThreshold, double maxThreshold) {
         return scorer.scoreKeywords(keywords,matrix).entrySet().stream().filter(e->e.getValue()>=minThreshold&&e.getValue()<=maxThreshold).sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
                 .limit(targetNumToKeep)
                 .map(e->{
