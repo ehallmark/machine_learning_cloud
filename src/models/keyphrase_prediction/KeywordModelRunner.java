@@ -81,6 +81,8 @@ public class KeywordModelRunner {
 
             keywords = new HashSet<>(keywordsCounts.keySet());
 
+            reindex(keywords);
+
             // apply filter 1
             INDArray F = buildFMatrix(keywordsCounts);
             keywords = applyFilters(new UnithoodScorer(), F, keywords, Kw * k1, 0, Double.MAX_VALUE);
@@ -133,7 +135,7 @@ public class KeywordModelRunner {
 
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems) {
         // search elasticsearch and create co-occurrrence statistics
-        
+
 
 
         return null;
