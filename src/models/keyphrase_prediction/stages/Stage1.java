@@ -30,23 +30,25 @@ import java.util.stream.Stream;
  */
 public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
-    private int year;
-    public Stage1(int year) {
-        this.year=year;
-    }
 
     private static final boolean debug = false;
     public static final File keywordCountsFile = new File("data/keyword_model_counts.jobj");
     protected Map<MultiStem, AtomicLong> keywordsCounts;
+
+    @Override
+    public File getFile(int year) {
+        return new File(keywordCountsFile.getAbsolutePath());
+    }
+
     @Override
     public void loadData() {
-        keywordsCounts = (Map<MultiStem,AtomicLong>) Database.loadObject(keywordCountsFile);
+        keywordsCounts = (Map<MultiStem,AtomicLong>) Database.loadObject(getFile(-1));
     }
 
     @Override
     public Map<MultiStem,AtomicLong> run(boolean run) {
         if(run) {
-            keywordsCounts = buildVocabularyCounts(year);
+            keywordsCounts = buildVocabularyCounts();
             Database.trySaveObject(keywordsCounts, keywordCountsFile);
         } else loadData();
         return keywordsCounts;
@@ -57,7 +59,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
         return keywordsCounts;
     }
 
-    private static Map<MultiStem,AtomicLong> buildVocabularyCounts(int year) {
+    private static Map<MultiStem,AtomicLong> buildVocabularyCounts() {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -70,9 +72,9 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+           // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+           // Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+           // LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ", Stream.of(inventionTitle,abstractText).filter(t->t!=null&&t.length()>0).collect(Collectors.toList())).replaceAll("[^a-z .,]"," ");
 
             Annotation doc = new Annotation(text);
@@ -140,7 +142,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
 
             return null;
         };
-        KeywordModelRunner.streamElasticSearchData(year, transformer);
+        KeywordModelRunner.streamElasticSearchData(-1, transformer);
         System.out.println("Starting to find best phrases for each stemmed phrase.");
         new ArrayList<>(multiStemMap.keySet()).parallelStream().forEach(stem->{
             String stemStr = stem.toString();

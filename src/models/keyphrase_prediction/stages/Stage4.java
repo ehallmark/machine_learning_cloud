@@ -35,8 +35,8 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private int year;
     private boolean rebuildTMatrix;
-    public Stage4(Stage3 stage3, long targetCardinality, boolean rebuildTMatrix, int year) {
-        this.keywords = stage3.get();
+    public Stage4(Collection<MultiStem> keywords, long targetCardinality, boolean rebuildTMatrix, int year) {
+        this.keywords = keywords;
         this.rebuildTMatrix=rebuildTMatrix;
         this.year=year;
         this.targetCardinality=targetCardinality;
@@ -49,7 +49,12 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
 
     @Override
     public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(stage4File);
+        keywords = (Collection<MultiStem>)Database.loadObject(getFile(year));
+    }
+
+    @Override
+    public File getFile(int year) {
+        return new File(stage4File.getAbsolutePath()+year);
     }
 
     @Override
@@ -60,9 +65,9 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             INDArray T;
             if(rebuildTMatrix) {
                 T = buildTMatrix(keywords, year);
-                Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"));
+                Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"+year));
             } else {
-                T = (INDArray) Database.loadObject(new File("data/keyword_t_matrix.jobj"));
+                T = (INDArray) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
             }
             keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0, Double.MAX_VALUE);
             Database.saveObject(keywords, stage4File);
@@ -107,9 +112,9 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
 
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+           // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            // Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+           // LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
             Collection<MultiStem> documentStems = new HashSet<>();

@@ -34,7 +34,12 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(stage2File);
+        keywords = (Collection<MultiStem>)Database.loadObject(getFile(-1));
+    }
+
+    @Override
+    public File getFile(int year) {
+        return new File(stage2File.getAbsolutePath());
     }
 
     @Override

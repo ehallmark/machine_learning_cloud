@@ -47,7 +47,12 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     @Override
     public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(stage3File);
+        keywords = (Collection<MultiStem>)Database.loadObject(getFile(year));
+    }
+
+    @Override
+    public File getFile(int year) {
+        return new File(stage3File.getAbsolutePath()+year);
     }
 
     @Override
@@ -59,9 +64,9 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             INDArray M;
             if(rebuildMMatrix) {
                 M = buildMMatrix(keywords, year);
-                Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"));
+                Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
             } else {
-                M = (INDArray) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"));
+                M = (INDArray) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
             keywords = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, keywords, targetCardinality, 0, Double.MAX_VALUE);
             System.out.println("Num keywords after stage 3: "+keywords.size());
@@ -89,14 +94,13 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         }
 
 
-        AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+           // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+           // Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+           // LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
             Collection<MultiStem> documentStems = new HashSet<>();

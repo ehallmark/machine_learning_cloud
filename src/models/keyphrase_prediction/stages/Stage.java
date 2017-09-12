@@ -10,4 +10,5 @@ public interface Stage<V> {
     void loadData();
     V run(boolean run);
     V get();
+    File getFile(int year);
 }

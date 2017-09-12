@@ -17,6 +17,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.query.InnerHitBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
@@ -36,6 +37,9 @@ import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -53,7 +57,7 @@ public class KeywordModelRunner {
         final int k2 = 5;
         final int k3 = 1;
 
-        int year = 2010; // test year
+        final int windowSize = 4;
 
         boolean runStage1 = true;
         boolean runStage2 = true;
@@ -62,18 +66,57 @@ public class KeywordModelRunner {
         boolean runStage4 = true;
         boolean rebuildTMatrix = true;
 
-        Stage1 stage1 = new Stage1(year);
+
+        Stage1 stage1 = new Stage1();
         stage1.run(runStage1);
 
         Stage2 stage2 = new Stage2(stage1, Kw * k1);
         stage2.run(runStage2);
 
-        Stage3 stage3 = new Stage3(stage2, Kw * k2, rebuildMMatrix, year);
-        stage3.run(runStage3);
+        final int endYear = LocalDate.now().getYear();
+        final int startYear = endYear - 20;
 
-        Stage4 stage4 = new Stage4(stage3, Kw * k3, rebuildTMatrix, year);
-        stage4.run(runStage4);
+        // stage 3
+        Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
+        for(int i = startYear; i <= endYear; i++) {
+            final int year = i;
+            // group results by time windows in years
+            Stage3 stage3 = new Stage3(stage2, Kw * k2, rebuildMMatrix, year);
+            stage3.run(runStage3);
 
+            stage3Map.put(year,stage3);
+        }
+
+        // stage 4
+        System.out.println("Pre-grouping data for stage 4...");
+        Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
+        Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
+        stage3TimeWindowStemMap.forEach((year,multiStems)->{
+            Stage4 stage4 = new Stage4(multiStems, Kw * k3, rebuildTMatrix, year);
+            stage4.run(runStage4);
+
+            stage4Map.put(year,stage4);
+        });
+
+        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
+
+        Database.trySaveObject(stage4TimeWindowStemMap, new File("data/keyword_model_stage_4_time_window_stage_map.jobj"));
+    }
+
+    private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
+        Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
+        for(int i = startYear; i < endYear; i++) {
+            List<Collection<MultiStem>> multiStems = new ArrayList<>();
+            for(int j = i; j <= i + windowSize; j++) {
+                if(!stageMap.containsKey(j)) continue;
+                multiStems.add(stageMap.get(j).get());
+            }
+            if(multiStems.isEmpty()) continue;
+            Collection<MultiStem> mergedStems = multiStems.stream().flatMap(list->list.stream()).distinct().collect(Collectors.toList());
+            timeWindowStemMap.put(i+windowSize,mergedStems);
+            System.out.println("Num stems in "+(i+windowSize)+": "+mergedStems.size());
+        }
+        return timeWindowStemMap;
     }
 
     public static void reindex(Collection<MultiStem> multiStems) {
@@ -97,8 +140,16 @@ public class KeywordModelRunner {
 
 
     public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer) {
-        LocalDate dateMin = LocalDate.of(year,1,1);
-        LocalDate dateMax = dateMin.plusYears(1);
+        QueryBuilder query;
+        if(year>0) {
+            LocalDate dateMin = LocalDate.of(year, 1, 1);
+            LocalDate dateMax = dateMin.plusYears(1);
+            query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString())),false).innerHit(
+                    new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+            );
+        } else {
+            query = QueryBuilders.matchAllQuery();
+        }
         TransportClient client = DataSearcher.getClient();
         SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
@@ -108,9 +159,7 @@ public class KeywordModelRunner {
                 .setFrom(0)
                 .setSize(10000)
                 .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString())),true).innerHit(
-                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
-                ));
+                .setQuery(query);
         if(debug) {
             System.out.println(search.request().toString());
         }
