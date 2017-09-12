@@ -154,7 +154,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 20000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 50000);
 
         System.out.println("building cooccurrence map...");
         // create co-occurrrence statistics
