@@ -19,6 +19,11 @@ public class TermhoodScorer implements KeywordScorer {
     public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, float[][] matrix) {
         // get row sums
         if(matrix.length==0||matrix.length!=matrix[0].length||keywords.size()!=matrix.length) {
+            if(matrix.length==0) System.out.println("matrix is empty");
+            else {
+                System.out.println("Matrix length: " + matrix.length + " x " + matrix[0].length);
+            }
+            System.out.println("Keywords: "+keywords.size());
             throw new RuntimeException("Matrix has invalid dimensions or is non-square.");
         }
         final double[] wordCountSums = new double[keywords.size()];
