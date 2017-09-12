@@ -109,13 +109,7 @@ public class KeywordModelRunner {
 
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
-        int parallelism = 10;
-        List<StanfordCoreNLP> pipelines = Collections.synchronizedList(new ArrayList<>(parallelism));
-        for(int i = 0; i < parallelism; i++) {
-            StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
-            pipelines.add(pipeline);
-        }
-        Random random = new Random(67);
+        StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         Map<MultiStem,AtomicLong> multiStemMap = Collections.synchronizedMap(new HashMap<>());
 
@@ -133,59 +127,56 @@ public class KeywordModelRunner {
             if(cnt.getAndIncrement() % 10000 == 9999) {
                 System.out.println("Num distinct multistems: "+multiStemMap.size());
             }
-            StanfordCoreNLP pipeline = pipelines.get(random.nextInt(pipelines.size()));
-            synchronized (pipeline) {
-                pipeline.annotate(doc, d -> {
-                    if(debug) System.out.println("Text: "+text);
-                    List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
-                    for(CoreMap sentence: sentences) {
-                        // traversing the words in the current sentence
-                        // a CoreLabel is a CoreMap with additional token-specific methods
-                        String prevWord = null;
-                        String prevPrevWord = null;
-                        for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-                            // this is the text of the token
-                            String word = token.get(CoreAnnotations.TextAnnotation.class);
-                            // could be the stem
-                            String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
+            pipeline.annotate(doc, d -> {
+                if(debug) System.out.println("Text: "+text);
+                List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
+                for(CoreMap sentence: sentences) {
+                    // traversing the words in the current sentence
+                    // a CoreLabel is a CoreMap with additional token-specific methods
+                    String prevWord = null;
+                    String prevPrevWord = null;
+                    for (CoreLabel token: sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+                        // this is the text of the token
+                        String word = token.get(CoreAnnotations.TextAnnotation.class);
+                        // could be the stem
+                        String lemma = token.get(CoreAnnotations.LemmaAnnotation.class);
 
-                            if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
-                                prevPrevWord=null;
-                                prevWord=null;
-                                continue;
-                            }
+                        if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
+                            prevPrevWord=null;
+                            prevWord=null;
+                            continue;
+                        }
 
-                            try {
-                                String stem = stemmer.stem(lemma);
-                                if (stem.length() > 0 && !Constants.STOP_WORD_SET.contains(word)) {
-                                    // this is the POS tag of the token
-                                    String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
-                                    if (validPOS.contains(pos)) {
-                                        multiStemChecker(new String[]{stem},multiStemMap);
-                                        if(prevWord != null) {
-                                            multiStemChecker(new String[]{prevWord,stem},multiStemMap);
-                                            if(prevPrevWord != null) {
-                                                multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStemMap);
-                                            }
+                        try {
+                            String stem = stemmer.stem(lemma);
+                            if (stem.length() > 0 && !Constants.STOP_WORD_SET.contains(word)) {
+                                // this is the POS tag of the token
+                                String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
+                                if (validPOS.contains(pos)) {
+                                    multiStemChecker(new String[]{stem},multiStemMap);
+                                    if(prevWord != null) {
+                                        multiStemChecker(new String[]{prevWord,stem},multiStemMap);
+                                        if(prevPrevWord != null) {
+                                            multiStemChecker(new String[]{prevPrevWord,prevWord,stem},multiStemMap);
                                         }
-                                    } else {
-                                        stem = null;
                                     }
                                 } else {
                                     stem = null;
                                 }
-                                prevPrevWord = prevWord;
-                                prevWord = stem;
-
-                            } catch(Exception e) {
-                                System.out.println("Error while stemming: "+lemma);
-                                prevWord = null;
-                                prevPrevWord = null;
+                            } else {
+                                stem = null;
                             }
+                            prevPrevWord = prevWord;
+                            prevWord = stem;
+
+                        } catch(Exception e) {
+                            System.out.println("Error while stemming: "+lemma);
+                            prevWord = null;
+                            prevPrevWord = null;
                         }
                     }
-                });
-            }
+                }
+            });
 
             return null;
         };
