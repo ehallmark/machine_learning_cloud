@@ -56,6 +56,7 @@ public class KeywordModelRunner {
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     public static final File keywordCountsFile = new File("data/keyword_model_counts_2010.jobj");
     private static final File stage2File = new File("data/keyword_model_keywords_set_stage2.jobj");
+    private static final File stage3File = new File("data/keyword_model_keywords_set_stage3.jobj");
     public static void main(String[] args) {
         final long Kw = 5000;
         final int k1 = 20;
@@ -67,6 +68,7 @@ public class KeywordModelRunner {
 
         boolean stage1 = false;
         boolean stage2 = false;
+        boolean stage3 = true;
 
         Map<MultiStem, AtomicLong> keywordsCounts;
         if(stage1) {
@@ -94,11 +96,23 @@ public class KeywordModelRunner {
             keywords = (Collection<MultiStem>)Database.loadObject(stage2File);
         }
 
-        // apply filter 2
-        INDArray M = buildMMatrix(keywords, year);
-        applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
+        if(stage3) {
+            // apply filter 2
+            reindex(keywords);
+            System.out.println("Num keywords before stage 3: "+keywords.size());
+            INDArray M = buildMMatrix(keywords, year);
+            keywords = applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
+            System.out.println("Num keywords after stage 3: "+keywords.size());
 
-        // apply filter 3
+            Database.saveObject(keywords, stage3File);
+            // write to csv for records
+            writeToCSV(keywords,new File("data/keyword_model_stage3.csv"));
+        } else {
+            keywords = (Collection<MultiStem>)Database.loadObject(stage3File);
+        }
+
+
+    // apply filter 3
         INDArray T = null;
         applyFilters(new TechnologyScorer(), T, keywords, Kw, 0, Double.MAX_VALUE);
     }
