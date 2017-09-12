@@ -151,6 +151,12 @@ public class KeywordModelRunner {
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
         // create co-occurrrence statistics
         double[][] matrix = new double[multiStems.size()][multiStems.size()];
+        for(int i = 0; i < matrix.length; i++) {
+            matrix[i] = new double[multiStems.size()];
+            for(int j = 0; j < multiStems.size(); j++) {
+                matrix[i][j] = 0d;
+            }
+        }
 
         AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {

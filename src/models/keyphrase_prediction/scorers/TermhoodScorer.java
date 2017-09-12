@@ -15,7 +15,11 @@ public class TermhoodScorer implements KeywordScorer {
     @Override
     public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, INDArray matrix) {
         // get row sums
+        if(!matrix.isSquare()||keywords.size()!=matrix.rows()||keywords.size()!=matrix.rows()) {
+            throw new RuntimeException("Matrix has invalid dimensions or is non-square.");
+        }
         double[] wordCountSums = matrix.sum(1).data().asDouble();
+        System.out.println("Word count sums length: "+wordCountSums.length);
         return keywords.parallelStream().collect(Collectors.toMap(keyword->keyword,keyword->{
             double[] Mi = matrix.getRow(keyword.getIndex()).data().asDouble();
             double wordCountSumI = wordCountSums[keyword.getIndex()];
