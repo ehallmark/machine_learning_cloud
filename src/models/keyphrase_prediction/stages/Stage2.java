@@ -44,7 +44,7 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public Collection<MultiStem> run(boolean run) {
-        final int minTokenFrequency = 30;
+        final int minTokenFrequency = 50;
         final int maxTokenFrequency = 100000;
         if(run) {
             // filter outliers
