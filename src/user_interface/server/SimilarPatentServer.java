@@ -341,14 +341,13 @@ public class SimilarPatentServer {
                 buildJavaToHumanAttrMap();
                 List<AbstractAttribute> nestedAttributes = new ArrayList<>(allAttributes.getAttributes());
                 nestedAttributes.addAll(similarityEngine.getEngineMap().values().stream().map(engine->(AbstractAttribute)engine).collect(Collectors.toList()));
-
                 NestedAttribute attributeWithSimilarity = new NestedAttribute(nestedAttributes,false) {
                     @Override
                     public String getName() {
                         return allAttributes.getName();
                     }
                 };
-                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false);
+                allFilters = new AbstractNestedFilter(attributeWithSimilarity,false, new ExistsInCompDBFilter(), new ExistsInGatherFilter());
             } catch(Exception e) {
                 e.printStackTrace();
             }

@@ -31,13 +31,16 @@ public class AbstractNestedFilter extends AbstractFilter {
     @Setter
     protected Collection<AbstractFilter> filterSubset;
     protected boolean setParent;
-    public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, boolean setParent) {
+    public AbstractNestedFilter(@NonNull NestedAttribute nestedAttribute, boolean setParent, AbstractFilter... additionalFilters) {
         super(nestedAttribute,FilterType.Nested);
         Collection<AbstractAttribute> attributes = nestedAttribute.getAttributes();
-        this.filters = attributes.stream().flatMap(attr->{
+        this.filters = new ArrayList<>(attributes.stream().flatMap(attr->{
             Collection<AbstractFilter> filters = attr.createFilters();
             return filters.stream();
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList()));
+        if(additionalFilters!=null&&additionalFilters.length>0) {
+            this.filters.addAll(Arrays.asList(additionalFilters));
+        }
         this.setParent=setParent;
         if(setParent)filters.forEach(filter->filter.setParent(this));
     }
