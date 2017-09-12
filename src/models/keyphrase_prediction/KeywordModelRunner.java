@@ -513,10 +513,10 @@ public class KeywordModelRunner {
 
     private static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("Key Phrase\n");
+            writer.write("Multi-Stem, Key Phrase\n");
             multiStems.forEach(e->{
                 try {
-                    writer.write(e.toString()+"\n");
+                    writer.write(e.toString()+","+e.getBestPhrase()+"\n");
                 }catch(Exception e2) {
                     e2.printStackTrace();
                 }
