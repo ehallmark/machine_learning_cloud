@@ -150,7 +150,7 @@ public class KeywordModelRunner {
 
     private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
         Properties props = new Properties();
-        props.setProperty("annotators", "tokenize, lemma");
+        props.setProperty("annotators", "tokenize");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
 
         // create co-occurrrence statistics
