@@ -63,12 +63,14 @@ public class KeywordModelRunner {
         final int minTokenFrequency = 50;
         final int maxTokenFrequency = 100000;
 
+        int year = 2010;
+
         boolean stage1 = false;
-        boolean stage2 = true;
+        boolean stage2 = false;
 
         Map<MultiStem, AtomicLong> keywordsCounts;
         if(stage1) {
-            keywordsCounts = buildVocabularyCounts(2010);
+            keywordsCounts = buildVocabularyCounts(year);
             Database.trySaveObject(keywordsCounts, keywordCountsFile);
         } else {
             keywordsCounts = (Map<MultiStem,AtomicLong>)Database.loadObject(keywordCountsFile);
@@ -78,7 +80,6 @@ public class KeywordModelRunner {
         if(stage2) {
             // filter outliers
             keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
-
             keywords = new HashSet<>(keywordsCounts.keySet());
 
             reindex(keywords);
@@ -94,7 +95,7 @@ public class KeywordModelRunner {
         }
 
         // apply filter 2
-        INDArray M = buildMMatrix(keywords);
+        INDArray M = buildMMatrix(keywords, year);
         applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
 
         // apply filter 3
@@ -133,34 +134,47 @@ public class KeywordModelRunner {
         return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
     }
 
-    private static INDArray buildMMatrix(Collection<MultiStem> multiStems) {
-        // search elasticsearch and create co-occurrrence statistics
+    private static INDArray buildMMatrix(Collection<MultiStem> multiStems, int year) {
+        // create co-occurrrence statistics
+        double[][] matrix = new double[multiStems.size()][multiStems.size()];
+
+        AtomicLong cnt = new AtomicLong(0);
+        Function<SearchHit,Item> transformer = hit-> {
+            String asset = hit.getId();
+            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
+            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
+            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+            String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
 
+            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
+            multiStems.forEach(stem->{
+                if(Arrays.stream(stem.stems).allMatch(prefix->text.contains(" "+prefix))) {
+                    cooccurringStems.add(stem);
+                };
+            });
 
-        return null;
+            if(debug) System.out.println("Num coocurrences: "+cooccurringStems.size());
+
+            // Unavoidable n-squared part
+            for(MultiStem stem1 : cooccurringStems) {
+                synchronized (matrix[stem1.index]) {
+                    for (MultiStem stem2 : cooccurringStems) {
+                        matrix[stem1.index][stem2.index]++;
+                    }
+                }
+            }
+
+            return null;
+        };
+
+        streamElasticSearchData(year, transformer);
+        return Nd4j.create(matrix);
     }
 
     private static Map<MultiStem,AtomicLong> buildVocabularyCounts(int year) {
-        LocalDate dateMin = LocalDate.of(year,1,1);
-        LocalDate dateMax = dateMin.plusYears(1);
-        TransportClient client = DataSearcher.getClient();
-        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                //.addSort(Constants.FILING_DATE, SortOrder.ASC)
-                .setScroll(new TimeValue(60000))
-                .setFrom(0)
-                .setSize(10000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString())),true).innerHit(
-                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
-                ));
-        if(debug) {
-            System.out.println(search.request().toString());
-        }
-
-        SearchResponse response = search.get();
-
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -203,7 +217,7 @@ public class KeywordModelRunner {
 
                         try {
                             String stem = new Stemmer().stem(lemma);
-                            if (stem.length() > 0 && !Constants.STOP_WORD_SET.contains(word)) {
+                            if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
                                 // this is the POS tag of the token
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (validPOS.contains(pos)) {
@@ -234,9 +248,31 @@ public class KeywordModelRunner {
 
             return null;
         };
+        streamElasticSearchData(year, transformer);
 
-        DataSearcher.iterateOverSearchResults(response, transformer, 5, false);
-        return multiStemMap;
+        return multiStemMap;    }
+
+
+    private static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer) {
+        LocalDate dateMin = LocalDate.of(year,1,1);
+        LocalDate dateMax = dateMin.plusYears(1);
+        TransportClient client = DataSearcher.getClient();
+        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                //.addSort(Constants.FILING_DATE, SortOrder.ASC)
+                .setScroll(new TimeValue(60000))
+                .setFrom(0)
+                .setSize(10000)
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
+                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.boolQuery().filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString())),true).innerHit(
+                        new InnerHitBuilder().setSize(1).setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                ));
+        if(debug) {
+            System.out.println(search.request().toString());
+        }
+
+        SearchResponse response = search.get();
+        DataSearcher.iterateOverSearchResults(response, transformer, -1, false);
     }
 
     private static void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems) {
