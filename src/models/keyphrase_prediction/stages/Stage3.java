@@ -12,6 +12,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
+import spire.math.algebraic.Mul;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
@@ -156,33 +157,39 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
         KeywordModelRunner.streamElasticSearchData(year, transformer, 50000);
 
+        int oldMultiStemSize = multiStems.size();
         System.out.println("building cooccurrence map...");
         // create co-occurrrence statistics
         Collection<Integer> indicesOfMultiStems = cooccurrenceMap.keySet().parallelStream().flatMap(index->{
             long idx1 = index / multiStems.size();
             long idx2 = index % multiStems.size();
             return Stream.of((int)idx1,(int)idx2);
-        }).collect(Collectors.toSet());
+        }).distinct().collect(Collectors.toSet());
 
-        final int originalMultiStemSize = multiStems.size();
-
-        multiStems = multiStems.parallelStream().filter(stem->{
-            return indicesOfMultiStems.contains(stem.getIndex());
-        }).collect(Collectors.toList());
-
-        KeywordModelRunner.reindex(multiStems);
-
-        System.out.println("Filtered multistems size: "+multiStems.size());
-        float[][] matrix = new float[multiStems.size()][multiStems.size()];
-        for(int i = 0; i < matrix.length; i++) {
-            matrix[i] = new float[multiStems.size()];
-        }
-
+        System.out.println("Filtered multistems size: "+indicesOfMultiStems.size());
+        float[][] matrix = new float[indicesOfMultiStems.size()][indicesOfMultiStems.size()];
         IntStream.range(0,matrix.length).parallel().forEach(i->{
-            float[] row = matrix[i];
-            for(int j = 0; j < multiStems.size(); j++) {
-                row[j] = cooccurrenceMap.getOrDefault(((long)i)*originalMultiStemSize+j, new AtomicInteger(0)).get();
-            }
+            matrix[i] = new float[multiStems.size()];
+            Arrays.fill(matrix[i],0f);
+        });
+
+        System.out.println("Built float[][]...");
+
+        Map<Integer,MultiStem> oldIdxToMultiStemMap = multiStems.parallelStream().filter(stem->{
+            return indicesOfMultiStems.contains(stem.getIndex());
+        }).collect(Collectors.toMap(stem->stem.getIndex(),stem->stem));
+
+        List<MultiStem> multiStemList = new ArrayList<>(oldIdxToMultiStemMap.values());
+        multiStems=multiStemList;
+
+        System.out.println("Reindexing...");
+        KeywordModelRunner.reindex(multiStemList);
+
+        cooccurrenceMap.entrySet().parallelStream().forEach(e->{
+            long index = e.getKey();
+            long idx1 = index / oldMultiStemSize;
+            long idx2 = index % oldMultiStemSize;
+            matrix[(int)idx1][(int)idx2]=e.getValue().get();
         });
 
         return matrix;
