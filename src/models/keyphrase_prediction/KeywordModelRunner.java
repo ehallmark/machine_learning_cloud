@@ -202,7 +202,7 @@ public class KeywordModelRunner {
             Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
             if(currentCpcs==null||currentCpcs.isEmpty()) return null;
 
-            int[] cpcIndices = currentCpcs.stream().map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
+            int[] cpcIndices = currentCpcs.stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
             if(cpcIndices==null||cpcIndices.length==0) return null;
 
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
