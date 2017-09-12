@@ -29,16 +29,20 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortOrder;
 import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -50,28 +54,57 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
+    public static final File keywordCountsFile = new File("data/keyword_model_counts_2010.jobj");
+    private static final File stage2File = new File("data/keyword_model_keywords_set_stage2.jobj");
     public static void main(String[] args) {
         final long Kw = 5000;
-        final int k1 = 10;
-        final int k2 = 4;
+        final int k1 = 20;
+        final int k2 = 5;
+        final int minTokenFrequency = 50;
+        final int maxTokenFrequency = 100000;
 
+        boolean stage1 = false;
+        boolean stage2 = true;
 
-        Map<MultiStem,AtomicLong> keywordsCounts = buildVocabularyCounts(2010);
-        Database.trySaveObject(keywordsCounts,new File("data/keyword_model_counts_2010.jobj"));
+        Map<MultiStem, AtomicLong> keywordsCounts;
+        if(stage1) {
+            keywordsCounts = buildVocabularyCounts(2010);
+            Database.trySaveObject(keywordsCounts, keywordCountsFile);
+        } else {
+            keywordsCounts = (Map<MultiStem,AtomicLong>)Database.loadObject(keywordCountsFile);
+        }
 
-        Collection<MultiStem> keywords = new HashSet<>(keywordsCounts.keySet());
+        Collection<MultiStem> keywords;
+        if(stage2) {
+            // filter outliers
+            keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
 
-        // apply filter 1
-        INDArray F = null; //buildFMatrix(keywords);
-        applyFilters(new UnithoodScorer(), F, keywords, Kw * k1, 0, Double.MAX_VALUE);
+            keywords = new HashSet<>(keywordsCounts.keySet());
+
+            // apply filter 1
+            INDArray F = buildFMatrix(keywordsCounts);
+            keywords = applyFilters(new UnithoodScorer(), F, keywords, Kw * k1, 0, Double.MAX_VALUE);
+            Database.saveObject(keywords, stage2File);
+            // write to csv for records
+            writeToCSV(keywords,new File("data/keyword_model_stage2.csv"));
+        } else {
+            keywords = (Collection<MultiStem>)Database.loadObject(stage2File);
+        }
 
         // apply filter 2
-        INDArray M = null;
+        INDArray M = buildMMatrix(keywords);
         applyFilters(new TermhoodScorer(), M, keywords, Kw * k2, 0, Double.MAX_VALUE);
 
         // apply filter 3
         INDArray T = null;
         applyFilters(new TechnologyScorer(), T, keywords, Kw, 0, Double.MAX_VALUE);
+    }
+
+    private static void reindex(Collection<MultiStem> multiStems) {
+        AtomicInteger cnt = new AtomicInteger(0);
+        multiStems.parallelStream().forEach(multiStem -> {
+            multiStem.setIndex(cnt.getAndIncrement());
+        });
     }
 
     private static Collection<MultiStem> applyFilters(KeywordScorer scorer, INDArray matrix, Collection<MultiStem> keywords, long targetNumToKeep, double minThreshold, double maxThreshold) {
@@ -84,6 +117,26 @@ public class KeywordModelRunner {
                     return e.getKey();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private static INDArray buildFMatrix(Map<MultiStem,AtomicLong> multiStemMap) {
+        INDArray array = Nd4j.create(multiStemMap.size());
+        multiStemMap.entrySet().parallelStream().forEach(e->{
+            array.putScalar(e.getKey().getIndex(),e.getValue().get());
+        });
+        return array;
+    }
+
+    private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {
+        return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(),e->e.getValue()));
+    }
+
+    private static INDArray buildMMatrix(Collection<MultiStem> multiStems) {
+        // search elasticsearch and create co-occurrrence statistics
+        
+
+
+        return null;
     }
 
     private static Map<MultiStem,AtomicLong> buildVocabularyCounts(int year) {
@@ -197,4 +250,19 @@ public class KeywordModelRunner {
         }
     }
 
+    private static void writeToCSV(Collection<MultiStem> multiStems, File file) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write("Key Phrase, Score\n");
+            multiStems.forEach(e->{
+                try {
+                    writer.write(e.toString()+","+e.index+"\n");
+                }catch(Exception e2) {
+                    e2.printStackTrace();
+                }
+            });
+            writer.flush();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -2,6 +2,7 @@ package models.keyphrase_prediction;
 
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.ops.transforms.Transforms;
 
@@ -14,7 +15,7 @@ import java.util.*;
 public class MultiStem implements Serializable{
     private static final long serialVersionUID = 1L;
     protected String[] stems;
-    @Getter
+    @Getter @Setter
     protected int index;
     @Getter
     private int length;
@@ -37,6 +38,6 @@ public class MultiStem implements Serializable{
 
     @Override
     public String toString() {
-        return "\""+String.join(" ",stems)+"\"";
+        return String.join(" ",stems);
     }
 }
