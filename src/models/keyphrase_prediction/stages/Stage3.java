@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -175,10 +176,16 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         float[][] matrix = new float[multiStems.size()][multiStems.size()];
         for(int i = 0; i < matrix.length; i++) {
             matrix[i] = new float[multiStems.size()];
-            for(int j = 0; j < multiStems.size(); j++) {
-                matrix[i][j] = cooccurrenceMap.getOrDefault(((long)i)*originalMultiStemSize+j, new AtomicInteger(0)).get();
-            }
+            Arrays.fill(matrix[i],0f);
         }
+
+        IntStream.range(0,matrix.length).parallel().forEach(i->{
+            float[] row = matrix[i];
+            for(int j = 0; j < multiStems.size(); j++) {
+                row[j] = cooccurrenceMap.getOrDefault(((long)i)*originalMultiStemSize+j, new AtomicInteger(0)).get();
+            }
+        });
+
         return matrix;
     }
 
