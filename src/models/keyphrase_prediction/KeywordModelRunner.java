@@ -55,15 +55,15 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        final long Kw = 5000;
+        final long Kw = 1000;
         final int k1 = 20;
         final int k2 = 5;
         final int k3 = 1;
 
         final int windowSize = 4;
 
-        boolean runStage1 = false;
-        boolean runStage2 = false;
+        boolean runStage1 = true;
+        boolean runStage2 = true;
         boolean runStage3 = true;
         boolean rebuildMMatrix = true;
         boolean runStage4 = true;
