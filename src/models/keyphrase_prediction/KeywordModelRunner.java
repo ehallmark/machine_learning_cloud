@@ -63,6 +63,7 @@ public class KeywordModelRunner {
         final long Kw = 5000;
         final int k1 = 20;
         final int k2 = 5;
+        final int k3 = 1;
         final int minTokenFrequency = 50;
         final int maxTokenFrequency = 100000;
 
@@ -126,6 +127,7 @@ public class KeywordModelRunner {
 
         if(stage4) {
             // apply filter 3
+            reindex(keywords);
             INDArray T;
             if(rebuildTMatrix) {
                 T = buildTMatrix(keywords, year);
@@ -133,7 +135,7 @@ public class KeywordModelRunner {
             } else {
                 T = (INDArray) Database.loadObject(new File("data/keyword_t_matrix.jobj"));
             }
-            keywords = applyFilters(new TechnologyScorer(), T, keywords, Kw, 0, Double.MAX_VALUE);
+            keywords = applyFilters(new TechnologyScorer(), T, keywords, Kw * k3, 0, Double.MAX_VALUE);
             Database.saveObject(keywords, stage4File);
             // write to csv for records
             writeToCSV(keywords,new File("data/keyword_model_stage4.csv"));
@@ -180,21 +182,18 @@ public class KeywordModelRunner {
         AtomicInteger idx = new AtomicInteger(0);
         allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 
-        double[][] matrix = new double[multiStems.size()][multiStems.size()];
-        Object[][] locks = new Object[multiStems.size()][multiStems.size()];
+        double[][] matrix = new double[multiStems.size()][allCpcCodes.size()];
+        Object[][] locks = new Object[multiStems.size()][allCpcCodes.size()];
         for(int i = 0; i < matrix.length; i++) {
             matrix[i] = new double[multiStems.size()];
             locks[i] = new Object[multiStems.size()];
-            for(int j = 0; j < multiStems.size(); j++) {
+            for(int j = 0; j < allCpcCodes.size(); j++) {
                 matrix[i][j] = 0d;
                 locks[i][j] = new Object();
             }
         }
-
+        
         final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
-
-
-        AtomicLong cnt = new AtomicLong(0);
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
 
