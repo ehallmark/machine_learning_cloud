@@ -172,7 +172,7 @@ public class KeywordModelRunner {
                 // this is the text of the token
 
                 String lemma = word; // no lemmatizer
-                if(Constants.STOP_WORD_SET.contains(lemma)||Constants.STOP_WORD_SET.contains(word)) {
+                if(Constants.STOP_WORD_SET.contains(lemma)) {
                     continue;
                 }
 
@@ -207,7 +207,8 @@ public class KeywordModelRunner {
                 }
             });
 
-            if(debug) System.out.println("Num coocurrences: "+cooccurringStems.size());
+            //if(debug)
+                System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
