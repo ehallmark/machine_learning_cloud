@@ -176,7 +176,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         float[][] matrix = new float[multiStems.size()][multiStems.size()];
         for(int i = 0; i < matrix.length; i++) {
             matrix[i] = new float[multiStems.size()];
-            Arrays.fill(matrix[i],0f);
         }
 
         IntStream.range(0,matrix.length).parallel().forEach(i->{
