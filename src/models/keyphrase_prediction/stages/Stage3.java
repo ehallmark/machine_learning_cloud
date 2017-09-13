@@ -88,6 +88,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     private SparseRealMatrix buildMMatrix() {
         SparseRealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),multiStems.size());
+        System.out.println("Dimensions of M matrix: ["+matrix.getRowDimension()+"x"+matrix.getColumnDimension()+"]");
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
