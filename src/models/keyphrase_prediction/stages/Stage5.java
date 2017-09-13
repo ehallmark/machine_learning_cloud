@@ -152,7 +152,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 50000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
     }
 
     private void runModel() {
@@ -210,6 +210,8 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 // find coocurrences
                 int[] row = cooccurenceTable[i];
                 int max = IntStream.of(row).max().getAsInt();
+                //if(debug)
+                    System.out.println("Max: "+max);
                 if(max > minCooccurrences) {
                     List<String> technologies = IntStream.of(row).filter(n->n==max).mapToObj(n->newMultiStemToIdxMap.get(n)).filter(tech->tech!=null).map(stem->stem.toString()).collect(Collectors.toList());
                     if(technologies.size()>0) {
