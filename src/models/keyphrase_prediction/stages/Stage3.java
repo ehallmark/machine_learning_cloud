@@ -36,11 +36,13 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     private static final boolean debug = false;
     private static final File stage3File = new File("data/keyword_model_keywords_set_stage3.jobj");
     private Collection<MultiStem> multiStems;
+    private Map<MultiStem,MultiStem> multiStemToSelfMap;
     private long targetCardinality;
     private int year;
     private boolean rebuildMMatrix;
     public Stage3(Stage2 stage2, long targetCardinality, boolean rebuildMMatrix, int year) {
-        this.multiStems = new ArrayList<>(stage2.get());
+        this.multiStems = new HashSet<>(stage2.get());
+        this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.rebuildMMatrix=rebuildMMatrix;
         this.year=year;
         this.targetCardinality=targetCardinality;
@@ -137,9 +139,9 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             }
 
             Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
-            multiStems.parallelStream().forEach(stem->{
-                if(documentStems.contains(stem)) {
-                    cooccurringStems.add(stem);
+            documentStems.forEach(docStem->{
+                if(multiStems.contains(docStem)) {
+                    cooccurringStems.add(multiStemToSelfMap.get(docStem));
                 }
             });
 
