@@ -218,7 +218,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 int max = IntStream.of(row).max().getAsInt();
                 if(debug) System.out.println("Max: " + max);
                 if (max > minCooccurrences) {
-                    List<String> technologies = IntStream.of(row).filter(n -> n == max).mapToObj(n -> idxToMultiStemMap.get(n)).filter(tech -> tech != null).map(stem -> stem.toString()).collect(Collectors.toList());
+                    List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] == max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.toString()).collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         assetToKeywordMap.put(asset, technologies);
                         //if(debug)
