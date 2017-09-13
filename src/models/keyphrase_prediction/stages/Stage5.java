@@ -28,7 +28,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     private Map<String,List<String>> assetToKeywordMap;
     private int[][] cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
-    private Map<MultiStem,Integer> newMultiStemToIdxMap;
+    private Map<Integer,MultiStem> idxToMultiStemMap;
     private Collection<MultiStem> oldMultiStems;
     private int minCooccurrences;
     public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, int year, int minOccurrences) {
@@ -36,8 +36,6 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
         this.oldMultiStems=new HashSet<>(stage1.get().keySet());
         AtomicInteger cnt = new AtomicInteger(0);
         oldMultiStemToIdxMap = oldMultiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
-        cnt.set(0);
-        newMultiStemToIdxMap = this.multiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
         this.year=year;
         this.minCooccurrences=minOccurrences;
     }
@@ -58,6 +56,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
         if(run) {
             // get cooccurrence map
             KeywordModelRunner.reindex(multiStems);
+            idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s->s.getIndex(),s->s));
             getCooccurrenceMap();
             // run model
             runModel();
@@ -206,21 +205,30 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
 
-            IntStream.of(documentStemIndices).forEach(i->{
-                // find coocurrences
-                int[] row = cooccurenceTable[i];
+
+            int[] row = IntStream.of(documentStemIndices).mapToObj(i->cooccurenceTable[i]).reduce((t1,t2)->{
+                int[] t3 = new int[t1.length];
+                for(int i = 0; i < t1.length; i++) {
+                    t3[i] = t1[i]+t2[i];
+                }
+                return t3;
+            }).orElse(null);
+
+            if(row!=null) {
                 int max = IntStream.of(row).max().getAsInt();
                 //if(debug)
-                    System.out.println("Max: "+max);
-                if(max > minCooccurrences) {
-                    List<String> technologies = IntStream.of(row).filter(n->n==max).mapToObj(n->newMultiStemToIdxMap.get(n)).filter(tech->tech!=null).map(stem->stem.toString()).collect(Collectors.toList());
-                    if(technologies.size()>0) {
-                        assetToKeywordMap.put(asset,technologies);
+                System.out.println("Max: " + max);
+                if (max > minCooccurrences) {
+                    List<String> technologies = IntStream.of(row).filter(n -> n == max).mapToObj(n -> idxToMultiStemMap.get(n)).filter(tech -> tech != null).map(stem -> stem.toString()).collect(Collectors.toList());
+                    if (technologies.size() > 0) {
+                        assetToKeywordMap.put(asset, technologies);
                         //if(debug)
-                            System.out.println("Technologies for "+asset+": "+String.join("; ",technologies));
+                        System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
+                    } else {
+                        throw new RuntimeException("Technologies should never be empty...");
                     }
                 }
-            });
+            }
             return null;
         };
 
