@@ -8,7 +8,9 @@ import seeding.Database;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -61,6 +63,20 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             // run model
             runModel();
             Database.saveObject(assetToKeywordMap, getFile(year));
+            // print sample
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/keyword_asset_to_keyword_map"+year+".csv")))) {
+                writer.write("Asset,Technologies\n");
+                assetToKeywordMap.entrySet().stream().limit(10000).forEach(e -> {
+                    try {
+                        writer.write(e.getKey()+","+String.join("; ",e.getValue())+"\n");
+                    }catch(Exception _e) {
+                        _e.printStackTrace();
+                    }
+                });
+                writer.flush();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         } else {
             loadData();
         }
@@ -219,7 +235,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 int max = IntStream.of(row).max().getAsInt();
                 if(debug) System.out.println("Max: " + max);
                 if (max > minCooccurrences) {
-                    List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] == max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.toString()).collect(Collectors.toList());
+                    List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] == max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         assetToKeywordMap.put(asset, technologies);
                         //if(debug)
