@@ -12,6 +12,8 @@ import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
 import models.keyphrase_prediction.scorers.UnithoodScorer;
 import models.keyphrase_prediction.stages.*;
+import org.apache.commons.math3.distribution.AbstractRealDistribution;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.linear.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -57,25 +59,23 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        final long Kw = 100;
-        final int k1 = 20;
-        final int k2 = 5;
+        final long Kw = 5000;
+        final int k1 = 10;
+        final int k2 = 3;
         final int k3 = 1;
 
         final int minTokenFrequency = 50;
-        final int maxTokenFrequency = 100000;
-
-        final int minOccurrencesStage5 = 10;
+        final int maxTokenFrequency = 50000;
 
         final int windowSize = 4;
         final int maxCpcLength = 8;
 
-        boolean runStage1 = false;
-        boolean runStage2 = false;
-        boolean runStage3 = false;
-        boolean rebuildMMatrix = false;
-        boolean runStage4 = false;
-        boolean rebuildTMatrix = false;
+        boolean runStage1 = true;
+        boolean runStage2 = true;
+        boolean runStage3 = true;
+        boolean rebuildMMatrix = true;
+        boolean runStage4 = true;
+        boolean rebuildTMatrix = true;
         boolean runStage5 = true;
 
 
@@ -136,7 +136,7 @@ public class KeywordModelRunner {
         System.out.println("Starting stage 5...");
         Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
-            Stage5 stage5 = new Stage5(stage1, multiStems, year, minOccurrencesStage5);
+            Stage5 stage5 = new Stage5(stage1, multiStems, year);
             stage5.run(runStage5);
 
             stage5Map.put(year,stage5);
@@ -169,9 +169,17 @@ public class KeywordModelRunner {
         });
     }
 
-    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, float[][] matrix, Collection<MultiStem> keywords, long targetNumToKeep, double minThreshold, double maxThreshold) {
-        return scorer.scoreKeywords(keywords,matrix).entrySet().stream().filter(e->e.getValue()>=minThreshold&&e.getValue()<=maxThreshold).sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
-                .limit(targetNumToKeep)
+    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, float[][] matrix, Collection<MultiStem> keywords, long maxNumToKeep, double lowerBoundPercent, double upperBoundPercent) {
+        Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
+        DoubleSummaryStatistics statistics = scoreMap.values().parallelStream().collect(Collectors.summarizingDouble(d->d));
+        double mean = statistics.getAverage();
+        long count = statistics.getCount();
+        double sd = count < 2 ? 0 : Math.sqrt(scoreMap.values().parallelStream().mapToDouble(d->Math.pow(d-mean,2)).sum()/(count-1));
+        AbstractRealDistribution distribution = new NormalDistribution(mean,sd);
+        return scorer.scoreKeywords(keywords,matrix).entrySet().stream()
+                .filter(e->percentile(distribution,e.getValue())>=lowerBoundPercent&&percentile(distribution,e.getValue())<=upperBoundPercent)
+                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
+                .limit(maxNumToKeep)
                 .map(e->{
                     if(debug) {
                         System.out.println("Value for "+e.getKey().toString()+": "+e.getValue());
@@ -180,6 +188,10 @@ public class KeywordModelRunner {
                     return e.getKey();
                 })
                 .collect(Collectors.toList());
+    }
+
+    private static double percentile(AbstractRealDistribution distribution, double val) {
+        return distribution.cumulativeProbability(val);
     }
 
 

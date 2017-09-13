@@ -53,7 +53,7 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
             // apply filter 1
             INDArray F = buildFMatrix(keywordsCounts);
-            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), new float[][]{F.data().asFloat()}, keywords, targetCardinality, 0, Double.MAX_VALUE);
+            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), new float[][]{F.data().asFloat()}, keywords, targetCardinality, 0.3, 0.9);
             Database.saveObject(keywords, stage2File);
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2.csv"));

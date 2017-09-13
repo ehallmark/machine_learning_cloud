@@ -17,7 +17,7 @@ public class UnithoodScorer implements KeywordScorer {
     public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, float[][] matrix) {
         float[] transform = matrix[0];
         return keywords.parallelStream().collect(Collectors.toMap(keyword->keyword,keyword->{
-            return transform[keyword.getIndex()]*Math.log(1+keyword.getLength());
+            return transform[keyword.getIndex()]*Math.sqrt(keyword.getLength());
         }));
     }
 }

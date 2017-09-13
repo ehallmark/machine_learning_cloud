@@ -72,7 +72,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             } else {
                 T = (float[][]) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
             }
-            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0, Double.MAX_VALUE);
+            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.3, 0.8);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+".csv"));

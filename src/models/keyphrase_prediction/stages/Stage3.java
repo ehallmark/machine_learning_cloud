@@ -73,7 +73,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             } else {
                 M = (float[][]) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
-            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0, Double.MAX_VALUE);
+            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.3, 0.8);
             System.out.println("Num keywords after stage 3: "+multiStems.size());
 
             Database.saveObject(multiStems, getFile(year));
