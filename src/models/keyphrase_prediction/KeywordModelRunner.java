@@ -70,7 +70,7 @@ public class KeywordModelRunner {
         final int windowSize = 4;
         final int maxCpcLength = 8;
 
-        boolean runStage1 = false;
+        boolean runStage1 = true;
         boolean runStage2 = true;
         boolean runStage3 = true;
         boolean rebuildMMatrix = true;
@@ -87,7 +87,7 @@ public class KeywordModelRunner {
         for(int i = startYear; i <= endYear; i++) {
             final int year = i;
             // group results by time windows in years
-            Stage1 stage1 = new Stage1(minTokenFrequency,maxTokenFrequency);
+            Stage1 stage1 = new Stage1(year,minTokenFrequency,maxTokenFrequency);
             stage1.run(runStage1);
 
             stage1Map.put(year,stage1);

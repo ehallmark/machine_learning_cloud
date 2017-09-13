@@ -36,9 +36,11 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     protected Map<MultiStem, AtomicLong> keywordsCounts;
     private int minTokenFrequency;
     private int maxTokenFrequency;
-    public Stage1(int minTokenFrequency, int maxTokenFrequency) {
+    private int year;
+    public Stage1(int year, int minTokenFrequency, int maxTokenFrequency) {
         this.minTokenFrequency=minTokenFrequency;
         this.maxTokenFrequency=maxTokenFrequency;
+        this.year = year;
     }
 
     @Override
@@ -70,7 +72,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
         return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
-    private static Map<MultiStem,AtomicLong> buildVocabularyCounts() {
+    private Map<MultiStem,AtomicLong> buildVocabularyCounts() {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
         StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
@@ -153,7 +155,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
 
             return null;
         };
-        KeywordModelRunner.streamElasticSearchData(-1, transformer,1000000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer,100000);
         System.out.println("Starting to find best phrases for each stemmed phrase.");
         new ArrayList<>(multiStemMap.keySet()).parallelStream().forEach(stem->{
             String stemStr = stem.toString();
