@@ -92,8 +92,8 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         float[][] matrix = new float[multiStems.size()][allCpcCodes.size()];
         Object[][] locks = new Object[multiStems.size()][allCpcCodes.size()];
         for(int i = 0; i < matrix.length; i++) {
-            matrix[i] = new float[multiStems.size()];
-            locks[i] = new Object[multiStems.size()];
+            matrix[i] = new float[allCpcCodes.size()];
+            locks[i] = new Object[allCpcCodes.size()];
             for(int j = 0; j < allCpcCodes.size(); j++) {
                 matrix[i][j] = 0f;
                 locks[i][j] = new Object();

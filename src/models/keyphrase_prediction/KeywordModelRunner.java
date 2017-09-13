@@ -95,7 +95,6 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
         Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
-            reindex(multiStems);
             Stage4 stage4 = new Stage4(multiStems, Kw * k3, rebuildTMatrix, year);
             stage4.run(runStage4);
 
