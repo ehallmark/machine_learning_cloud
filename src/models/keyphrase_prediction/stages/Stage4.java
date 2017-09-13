@@ -72,7 +72,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0, Double.MAX_VALUE);
             Database.saveObject(keywords, stage4File);
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4.csv"));
+            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+".csv"));
         } else {
             loadData();
         }
