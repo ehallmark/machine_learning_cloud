@@ -158,9 +158,8 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for (int idx : documentStemIndices) {
-                double[] row = cooccurenceTable.getRow(idx);
                 for(MultiStem stem : cooccurringStems) {
-                    row[stem.getIndex()]++;
+                    cooccurenceTable.addToEntry(idx,stem.getIndex(),1);
                 }
             }
 
@@ -238,7 +237,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] > max-EPSILON).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         assetToKeywordMap.put(asset, technologies);
-                        if(debug)
+                        //if(debug)
                             System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                     } else {
                         throw new RuntimeException("Technologies should never be empty...");
