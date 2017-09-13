@@ -55,7 +55,7 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        final long Kw = 1000;
+        final long Kw = 100;
         final int k1 = 20;
         final int k2 = 5;
         final int k3 = 1;
