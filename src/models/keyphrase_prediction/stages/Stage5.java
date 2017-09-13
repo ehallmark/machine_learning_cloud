@@ -57,6 +57,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     public Map<String, List<String>> run(boolean run) {
         if(run) {
             // get cooccurrence map
+            KeywordModelRunner.reindex(multiStems);
             getCooccurrenceMap();
             // run model
             runModel();
