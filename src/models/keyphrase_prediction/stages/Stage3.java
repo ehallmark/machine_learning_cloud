@@ -149,7 +149,11 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
                 for (MultiStem stem2 : cooccurringStems) {
-                    matrix.addToEntry(stem1.getIndex(),stem2.getIndex(),1);
+                    try {
+                        matrix.addToEntry(stem1.getIndex(), stem2.getIndex(), 1);
+                    } catch(ArrayIndexOutOfBoundsException aioobe) {
+                        matrix.setEntry(stem1.getIndex(), stem2.getIndex(), 1);
+                    }
                 }
             }
             return null;
