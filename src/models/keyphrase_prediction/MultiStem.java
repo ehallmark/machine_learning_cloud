@@ -17,6 +17,8 @@ public class MultiStem implements Serializable{
     protected String[] stems;
     @Getter @Setter
     protected int index;
+    @Getter @Setter
+    protected float score;
     @Getter
     private int length;
     @Getter @Setter

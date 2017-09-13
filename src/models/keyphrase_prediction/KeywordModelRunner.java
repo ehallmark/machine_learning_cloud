@@ -65,7 +65,7 @@ public class KeywordModelRunner {
         boolean runStage1 = false;
         boolean runStage2 = false;
         boolean runStage3 = true;
-        boolean rebuildMMatrix = false;
+        boolean rebuildMMatrix = true;
         boolean runStage4 = true;
         boolean rebuildTMatrix = true;
 
@@ -137,6 +137,7 @@ public class KeywordModelRunner {
                     if(debug) {
                         System.out.println("Value for "+e.getKey().toString()+": "+e.getValue());
                     }
+                    e.getKey().setScore(e.getValue().floatValue());
                     return e.getKey();
                 })
                 .collect(Collectors.toList());
@@ -185,10 +186,10 @@ public class KeywordModelRunner {
 
     public static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-            writer.write("Multi-Stem, Key Phrase\n");
+            writer.write("Multi-Stem, Key Phrase, Score\n");
             multiStems.forEach(e->{
                 try {
-                    writer.write(e.toString()+","+e.getBestPhrase()+"\n");
+                    writer.write(e.toString()+","+e.getBestPhrase()+","+e.getScore()+"\n");
                 }catch(Exception e2) {
                     e2.printStackTrace();
                 }
