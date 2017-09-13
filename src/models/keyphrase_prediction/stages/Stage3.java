@@ -76,7 +76,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0, Double.MAX_VALUE);
             System.out.println("Num keywords after stage 3: "+multiStems.size());
 
-            Database.saveObject(multiStems, stage3File);
+            Database.saveObject(multiStems, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+".csv"));
         } else {

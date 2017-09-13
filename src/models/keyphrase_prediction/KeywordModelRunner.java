@@ -64,7 +64,7 @@ public class KeywordModelRunner {
 
         boolean runStage1 = false;
         boolean runStage2 = false;
-        boolean runStage3 = false;
+        boolean runStage3 = true;
         boolean rebuildMMatrix = false;
         boolean runStage4 = true;
         boolean rebuildTMatrix = true;
