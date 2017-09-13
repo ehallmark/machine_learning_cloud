@@ -3,6 +3,8 @@ package models.keyphrase_prediction.stages;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.scorers.UnithoodScorer;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
@@ -53,7 +55,7 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
             // apply filter 1
             INDArray F = buildFMatrix(keywordsCounts);
-            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), new float[][]{F.data().asFloat()}, keywords, targetCardinality, 0.3, 0.9);
+            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, 0.3, 0.7);
             Database.saveObject(keywords, stage2File);
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2.csv"));

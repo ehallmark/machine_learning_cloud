@@ -169,7 +169,7 @@ public class KeywordModelRunner {
         });
     }
 
-    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, float[][] matrix, Collection<MultiStem> keywords, long maxNumToKeep, double lowerBoundPercent, double upperBoundPercent) {
+    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, RealMatrix matrix, Collection<MultiStem> keywords, long maxNumToKeep, double lowerBoundPercent, double upperBoundPercent) {
         Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
         DoubleSummaryStatistics statistics = scoreMap.values().parallelStream().collect(Collectors.summarizingDouble(d->d));
         double mean = statistics.getAverage();

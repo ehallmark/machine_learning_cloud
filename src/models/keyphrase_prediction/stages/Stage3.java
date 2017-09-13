@@ -5,7 +5,8 @@ import model.edges.Edge;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
-import models.keyphrase_prediction.scorers.UnithoodScorer;
+import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.SparseRealMatrix;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -66,12 +67,12 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             // apply filter 2
             KeywordModelRunner.reindex(multiStems);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
-            float[][] M;
+            SparseRealMatrix M;
             if(rebuildMMatrix) {
                 M = buildMMatrix();
                 Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
             } else {
-                M = (float[][]) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
+                M = (SparseRealMatrix) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
             multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.3, 0.8);
             System.out.println("Num keywords after stage 3: "+multiStems.size());
@@ -85,8 +86,8 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         return multiStems;
     }
 
-    private float[][] buildMMatrix() {
-        Map<Long,AtomicInteger> cooccurrenceMap = Collections.synchronizedMap(new HashMap<>(multiStems.size()));
+    private SparseRealMatrix buildMMatrix() {
+        SparseRealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),multiStems.size());
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -147,54 +148,13 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
                 for (MultiStem stem2 : cooccurringStems) {
-                    long value = ((long)stem1.getIndex())*multiStems.size() + stem2.getIndex();
-                    cooccurrenceMap.putIfAbsent(value,new AtomicInteger(0));
-                    cooccurrenceMap.get(value).getAndIncrement();
+                    matrix.addToEntry(stem1.getIndex(),stem2.getIndex(),1);
                 }
             }
             return null;
         };
 
         KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
-
-        int oldMultiStemSize = multiStems.size();
-        System.out.println("building cooccurrence map...");
-        // create co-occurrrence statistics
-        Collection<Integer> indicesOfMultiStems = cooccurrenceMap.keySet().parallelStream().flatMap(index->{
-            long idx1 = index / multiStems.size();
-            long idx2 = index % multiStems.size();
-            return Stream.of((int)idx1,(int)idx2);
-        }).distinct().collect(Collectors.toSet());
-
-        System.out.println("Filtered multistems size: "+indicesOfMultiStems.size());
-        float[][] matrix = new float[indicesOfMultiStems.size()][indicesOfMultiStems.size()];
-        IntStream.range(0,matrix.length).parallel().forEach(i->{
-            matrix[i] = new float[indicesOfMultiStems.size()];
-            Arrays.fill(matrix[i],0f);
-        });
-
-        System.out.println("Built float[][]...");
-
-        Map<Integer,MultiStem> oldIdxToMultiStemMap = multiStems.parallelStream().filter(stem->{
-            return indicesOfMultiStems.contains(stem.getIndex());
-        }).collect(Collectors.toMap(stem->stem.getIndex(),stem->stem));
-
-        List<MultiStem> multiStemList = new ArrayList<>(oldIdxToMultiStemMap.values());
-        multiStems=multiStemList;
-
-        System.out.println("Reindexing...");
-        KeywordModelRunner.reindex(multiStemList);
-
-        System.out.println("Looping thru cooccurrence map...");
-        cooccurrenceMap.entrySet().parallelStream().forEach(e->{
-            long index = e.getKey();
-            long idx1 = index / oldMultiStemSize;
-            long idx2 = index % oldMultiStemSize;
-            int i = oldIdxToMultiStemMap.get((int)idx1).getIndex();
-            int j = oldIdxToMultiStemMap.get((int)idx2).getIndex();
-            matrix[i][j]=e.getValue().get();
-        });
-
         return matrix;
     }
 

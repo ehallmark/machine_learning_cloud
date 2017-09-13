@@ -1,6 +1,8 @@
 package models.keyphrase_prediction.scorers;
 
 import models.keyphrase_prediction.MultiStem;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.nd4j.linalg.api.ndarray.INDArray;
 
 import java.util.Arrays;
@@ -16,20 +18,12 @@ import java.util.stream.IntStream;
 public class TermhoodScorer implements KeywordScorer {
     // expects a 1 dimensional vector of counts
     @Override
-    public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, float[][] matrix) {
+    public Map<MultiStem, Double> scoreKeywords(Collection<MultiStem> keywords, RealMatrix matrix) {
         // get row sums
-        if(matrix.length==0||matrix.length!=matrix[0].length||keywords.size()!=matrix.length) {
-            if(matrix.length==0) System.out.println("matrix is empty");
-            else {
-                System.out.println("Matrix length: " + matrix.length + " x " + matrix[0].length);
-            }
-            System.out.println("Keywords: "+keywords.size());
-            throw new RuntimeException("Matrix has invalid dimensions or is non-square.");
-        }
         final double[] wordCountSums = new double[keywords.size()];
-        IntStream.range(0,matrix.length).parallel().forEach(i->{
-            float[] row = matrix[i];
-            wordCountSums[i] = IntStream.range(0,row.length).mapToDouble(j->row[j]).sum();
+        IntStream.range(0,keywords.size()).parallel().forEach(i->{
+            RealVector row = matrix.getRowVector(i);
+            wordCountSums[i] = row.getL1Norm();
         });
 
         System.out.println("Word count sums length: "+wordCountSums.length);
@@ -37,13 +31,13 @@ public class TermhoodScorer implements KeywordScorer {
             throw new RuntimeException("Invalid word count sums size. Should be: "+keywords.size());
         }
         return keywords.parallelStream().collect(Collectors.toMap(keyword->keyword,keyword->{
-            float[] Mi = matrix[keyword.getIndex()];
+            RealVector Mi = matrix.getRowVector(keyword.getIndex());
             double wordCountSumI = wordCountSums[keyword.getIndex()];
             double score = 0d;
             for(int j = 0; j < keywords.size(); j++) {
                 if(j==keyword.getIndex()) continue;
                 double sumProduct = wordCountSums[j] * wordCountSumI;
-                score += sumProduct == 0 ? 0 : (Math.pow(Mi[j] - sumProduct, 2) / sumProduct);
+                score += sumProduct == 0 ? 0 : (Math.pow(Mi.getEntry(j) - sumProduct, 2) / sumProduct);
             }
             return score;
         }));

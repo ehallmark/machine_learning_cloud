@@ -5,6 +5,8 @@ import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
+import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -65,12 +67,12 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         if(run) {
             // apply filter 3
             KeywordModelRunner.reindex(keywords);
-            float[][] T;
+            RealMatrix T;
             if(rebuildTMatrix) {
                 T = buildTMatrix(keywords, year, maxCpcLength);
                 Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"+year));
             } else {
-                T = (float[][]) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
+                T = (RealMatrix) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
             }
             keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.3, 0.8);
             Database.saveObject(keywords, getFile(year));
@@ -83,7 +85,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     }
 
 
-    private static float[][] buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
+    private static RealMatrix buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
         // create cpc code co-occurrrence statistics
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
@@ -91,16 +93,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         AtomicInteger idx = new AtomicInteger(0);
         allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 
-        float[][] matrix = new float[multiStems.size()][allCpcCodes.size()];
-        Object[][] locks = new Object[multiStems.size()][allCpcCodes.size()];
-        for(int i = 0; i < matrix.length; i++) {
-            matrix[i] = new float[allCpcCodes.size()];
-            locks[i] = new Object[allCpcCodes.size()];
-            for(int j = 0; j < allCpcCodes.size(); j++) {
-                matrix[i][j] = 0f;
-                locks[i][j] = new Object();
-            }
-        }
+        RealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),allCpcCodes.size());
 
         final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         Function<SearchHit,Item> transformer = hit-> {
@@ -168,12 +161,8 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for(MultiStem stem : cooccurringStems) {
-                float[] row = matrix[stem.getIndex()];
-                Object[] lockRow = locks[stem.getIndex()];
                 for (int cpcIdx : cpcIndices) {
-                    synchronized(lockRow[cpcIdx]) {
-                        row[cpcIdx]++;
-                    }
+                    matrix.addToEntry(stem.getIndex(),cpcIdx,1);
                 }
             }
 
