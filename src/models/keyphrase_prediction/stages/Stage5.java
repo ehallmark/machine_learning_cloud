@@ -139,7 +139,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
 
-            //if(debug)
+            if(debug)
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for (int idx : documentStemIndices) {
