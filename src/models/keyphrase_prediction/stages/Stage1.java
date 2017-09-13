@@ -34,6 +34,12 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     private static final boolean debug = false;
     public static final File keywordCountsFile = new File("data/keyword_model_counts.jobj");
     protected Map<MultiStem, AtomicLong> keywordsCounts;
+    private int minTokenFrequency;
+    private int maxTokenFrequency;
+    public Stage1(int minTokenFrequency, int maxTokenFrequency) {
+        this.minTokenFrequency=minTokenFrequency;
+        this.maxTokenFrequency=maxTokenFrequency;
+    }
 
     @Override
     public File getFile(int year) {
@@ -49,6 +55,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     public Map<MultiStem,AtomicLong> run(boolean run) {
         if(run) {
             keywordsCounts = buildVocabularyCounts();
+            keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
             Database.trySaveObject(keywordsCounts, keywordCountsFile);
         } else loadData();
         return keywordsCounts;
@@ -57,6 +64,10 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     @Override
     public Map<MultiStem, AtomicLong> get() {
         return keywordsCounts;
+    }
+
+    private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {
+        return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
     private static Map<MultiStem,AtomicLong> buildVocabularyCounts() {

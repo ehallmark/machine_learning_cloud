@@ -12,6 +12,7 @@ import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
 import models.keyphrase_prediction.scorers.UnithoodScorer;
 import models.keyphrase_prediction.stages.*;
+import org.apache.commons.math3.linear.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -60,17 +62,24 @@ public class KeywordModelRunner {
         final int k2 = 5;
         final int k3 = 1;
 
+        final int minTokenFrequency = 50;
+        final int maxTokenFrequency = 100000;
+
+        final int minOccurrencesStage5 = 10;
+
         final int windowSize = 4;
+        final int maxCpcLength = 8;
 
         boolean runStage1 = false;
         boolean runStage2 = false;
-        boolean runStage3 = true;
-        boolean rebuildMMatrix = true;
-        boolean runStage4 = true;
-        boolean rebuildTMatrix = true;
+        boolean runStage3 = false;
+        boolean rebuildMMatrix = false;
+        boolean runStage4 = false;
+        boolean rebuildTMatrix = false;
+        boolean runStage5 = true;
 
 
-        Stage1 stage1 = new Stage1();
+        Stage1 stage1 = new Stage1(minTokenFrequency,maxTokenFrequency);
         stage1.run(runStage1);
 
         Stage2 stage2 = new Stage2(stage1, Kw * k1);
@@ -95,20 +104,49 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
         Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
-            Stage4 stage4 = new Stage4(multiStems, Kw * k3, rebuildTMatrix, year);
+            Stage4 stage4 = new Stage4(multiStems, Kw * k3, rebuildTMatrix, year, maxCpcLength);
             stage4.run(runStage4);
 
             stage4Map.put(year,stage4);
         });
 
         Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
-
         Database.trySaveObject(stage4TimeWindowStemMap, new File("data/keyword_model_stage_4_time_window_stage_map.jobj"));
+
+        // stage 5
+        /*// cpc statistics
+        List<String> cpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
+        System.out.println("Num cpcs: "+cpcCodes.size());
+
+        Map<String,Integer> cpcToIndexMap = IntStream.range(0,cpcCodes.size()).mapToObj(i->i).collect(Collectors.toMap(i->cpcCodes.get(i),i->i));
+
+        /SparseRealMatrix matrix = new OpenMapRealMatrix(cpcCodes.size(),cpcCodes.size());
+        AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+        assetToCPCMap.getApplicationDataMap().entrySet().parallelStream().forEach(e->{
+            Collection<String> cpcs = e.getValue().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
+            cpcs.forEach(cpc->{
+                int idx1 = cpcToIndexMap.get(cpc);
+                cpcs.forEach(cpc2->{
+                    int idx2 = cpcToIndexMap.get(cpc2);
+                    matrix.addToEntry(idx1,idx2,1);
+                });
+            });
+        });*/
+
+        System.out.println("Starting stage 5...");
+        Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
+        stage4TimeWindowStemMap.forEach((year,multiStems)->{
+            Stage5 stage5 = new Stage5(stage1, multiStems, year, minOccurrencesStage5);
+            stage5.run(runStage5);
+
+            stage5Map.put(year,stage5);
+        });
+
     }
 
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
         Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = startYear; i < endYear; i++) {
+        for(int i = endYear; i >= startYear-windowSize; i--) {
             List<Collection<MultiStem>> multiStems = new ArrayList<>();
             for(int j = i; j <= i + windowSize; j++) {
                 if(!stageMap.containsKey(j)) continue;

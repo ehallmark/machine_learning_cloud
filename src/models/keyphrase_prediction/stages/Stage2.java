@@ -44,12 +44,9 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public Collection<MultiStem> run(boolean run) {
-        final int minTokenFrequency = 50;
-        final int maxTokenFrequency = 100000;
         if(run) {
             // filter outliers
             Map<MultiStem,AtomicLong> keywordsCounts = stage1.get();
-            keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
             keywords = new HashSet<>(keywordsCounts.keySet());
 
             KeywordModelRunner.reindex(keywords);
@@ -64,10 +61,6 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
             loadData();
         }
         return keywords;
-    }
-
-    private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {
-        return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
     private static INDArray buildFMatrix(Map<MultiStem,AtomicLong> multiStemMap) {

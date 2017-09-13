@@ -35,10 +35,13 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private int year;
     private boolean rebuildTMatrix;
-    public Stage4(Collection<MultiStem> keywords, long targetCardinality, boolean rebuildTMatrix, int year) {
+    private final int maxCpcLength;
+
+    public Stage4(Collection<MultiStem> keywords, long targetCardinality, boolean rebuildTMatrix, int year, int maxCpcLength) {
         this.keywords = keywords;
         this.rebuildTMatrix=rebuildTMatrix;
         this.year=year;
+        this.maxCpcLength=maxCpcLength;
         this.targetCardinality=targetCardinality;
     }
 
@@ -64,7 +67,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(keywords);
             float[][] T;
             if(rebuildTMatrix) {
-                T = buildTMatrix(keywords, year);
+                T = buildTMatrix(keywords, year, maxCpcLength);
                 Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"+year));
             } else {
                 T = (float[][]) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
@@ -80,9 +83,8 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     }
 
 
-    private static float[][] buildTMatrix(Collection<MultiStem> multiStems, int year) {
+    private static float[][] buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
         // create cpc code co-occurrrence statistics
-        final int maxCpcLength = 8;
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = new HashMap<>();
