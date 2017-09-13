@@ -66,6 +66,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     public Collection<MultiStem> run(boolean run) {
         if(run) {
             // apply filter 3
+            System.out.println("Starting year: "+year);
             KeywordModelRunner.reindex(keywords);
             RealMatrix T;
             if(rebuildTMatrix) {

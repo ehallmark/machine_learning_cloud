@@ -40,8 +40,8 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private int year;
     private boolean rebuildMMatrix;
-    public Stage3(Stage2 stage2, long targetCardinality, boolean rebuildMMatrix, int year) {
-        this.multiStems = new HashSet<>(stage2.get());
+    public Stage3(Collection<MultiStem> multiStems, long targetCardinality, boolean rebuildMMatrix, int year) {
+        this.multiStems = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.rebuildMMatrix=rebuildMMatrix;
         this.year=year;
@@ -68,6 +68,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         if(run) {
             // apply filter 2
             KeywordModelRunner.reindex(multiStems);
+            System.out.println("Starting year: "+year);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
             SparseRealMatrix M;
             if(rebuildMMatrix) {
@@ -90,7 +91,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     private SparseRealMatrix buildMMatrix() {
         SparseRealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),multiStems.size());
-        System.out.println("Dimensions of M matrix: ["+matrix.getRowDimension()+"x"+matrix.getColumnDimension()+"]");
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();

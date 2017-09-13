@@ -71,7 +71,7 @@ public class KeywordModelRunner {
         final int maxCpcLength = 8;
 
         boolean runStage1 = false;
-        boolean runStage2 = false;
+        boolean runStage2 = true;
         boolean runStage3 = true;
         boolean rebuildMMatrix = true;
         boolean runStage4 = true;
@@ -79,25 +79,41 @@ public class KeywordModelRunner {
         boolean runStage5 = true;
 
 
-        Stage1 stage1 = new Stage1(minTokenFrequency,maxTokenFrequency);
-        stage1.run(runStage1);
-
-        Stage2 stage2 = new Stage2(stage1, Kw * k1);
-        stage2.run(runStage2);
-
         final int endYear = LocalDate.now().getYear();
         final int startYear = endYear - 20;
 
-        // stage 3
-        Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
+        // stage 2
+        Map<Integer,Stage1> stage1Map = Collections.synchronizedMap(new HashMap<>());
         for(int i = startYear; i <= endYear; i++) {
             final int year = i;
             // group results by time windows in years
-            Stage3 stage3 = new Stage3(stage2, Kw * k2, rebuildMMatrix, year);
+            Stage1 stage1 = new Stage1(minTokenFrequency,maxTokenFrequency);
+            stage1.run(runStage1);
+
+            stage1Map.put(year,stage1);
+        }
+
+        // stage 2
+        System.out.println("Pre-grouping data for stage 2...");
+        Map<Integer,Map<MultiStem,AtomicLong>> stage1TimeWindowStemMap = computeTimeWindowCountMap(startYear, endYear, windowSize, stage1Map);
+        Map<Integer,Stage2> stage2Map = Collections.synchronizedMap(new HashMap<>());
+        stage1TimeWindowStemMap.forEach((year,countMap)->{
+            Stage2 stage2 = new Stage2(countMap, year, Kw * k1);
+            stage2.run(runStage2);
+
+            stage2Map.put(year,stage2);
+        });
+
+        // stage 3
+        System.out.println("Pre-grouping data for stage 3...");
+        Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map);
+        Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
+        stage2TimeWindowStemMap.forEach((year,multiStems)->{
+            Stage3 stage3 = new Stage3(multiStems, Kw * k2, rebuildMMatrix, year);
             stage3.run(runStage3);
 
             stage3Map.put(year,stage3);
-        }
+        });
 
         // stage 4
         System.out.println("Pre-grouping data for stage 4...");
@@ -136,10 +152,13 @@ public class KeywordModelRunner {
         System.out.println("Starting stage 5...");
         Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
-            Stage5 stage5 = new Stage5(stage1, multiStems, year);
-            stage5.run(runStage5);
+            Stage1 stage1 = stage1Map.get(year);
+            if(stage1!=null) {
+                Stage5 stage5 = new Stage5(stage1, multiStems, year);
+                stage5.run(runStage5);
 
-            stage5Map.put(year,stage5);
+                stage5Map.put(year, stage5);
+            }
         });
 
     }
@@ -161,6 +180,35 @@ public class KeywordModelRunner {
         }
         return timeWindowStemMap;
     }
+
+    private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Map<MultiStem,AtomicLong>>> stageMap) {
+        Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
+        for(int i = endYear; i >= startYear-windowSize; i--) {
+            List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
+            for(int j = i; j <= i + windowSize; j++) {
+                Stage<Map<MultiStem,AtomicLong>> stage = stageMap.get(j);
+                if(stage!=null&&stage.get()!=null) {
+                    multiStems.add(stage.get());
+                }
+            }
+            if(multiStems.isEmpty()) continue;
+
+            Map<MultiStem,AtomicLong> mergedCounts = multiStems.parallelStream().reduce((m1,m2)-> {
+                Map<MultiStem, AtomicLong> m3 = Collections.synchronizedMap(new HashMap<>());
+                m1.entrySet().forEach(e -> m3.put(e.getKey(), e.getValue()));
+                m2.entrySet().forEach(e -> {
+                    m3.putIfAbsent(e.getKey(), new AtomicLong(0));
+                    m3.get(e.getKey()).getAndAdd(e.getValue().get());
+                });
+                return m3;
+            }).get();
+
+            timeWindowStemMap.put(i+windowSize,mergedCounts);
+            System.out.println("Num stems in "+(i+windowSize)+": "+mergedCounts.size());
+        }
+        return timeWindowStemMap;
+    }
+
 
     public static void reindex(Collection<MultiStem> multiStems) {
         AtomicInteger cnt = new AtomicInteger(0);

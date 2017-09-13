@@ -60,6 +60,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     @Override
     public Map<String, List<String>> run(boolean run) {
         if(run) {
+            System.out.println("Starting year: "+year);
             // get cooccurrence map
             KeywordModelRunner.reindex(multiStems);
             idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s->s.getIndex(),s->s));

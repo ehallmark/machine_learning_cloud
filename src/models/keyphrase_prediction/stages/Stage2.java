@@ -21,11 +21,13 @@ import java.util.stream.Collectors;
  */
 public class Stage2 implements Stage<Collection<MultiStem>> {
     private static final File stage2File = new File("data/keyword_model_keywords_set_stage2.jobj");
-    private Stage1 stage1;
     private Collection<MultiStem> keywords;
     private long targetCardinality;
-    public Stage2(Stage1 stage1, long targetCardinality) {
-        this.stage1=stage1;
+    private int year;
+    private Map<MultiStem,AtomicLong> keywordsCounts;
+    public Stage2(Map<MultiStem,AtomicLong> keywordsCounts, int year, long targetCardinality) {
+        this.keywordsCounts=keywordsCounts;
+        this.year = year;
         this.targetCardinality=targetCardinality;
     }
 
@@ -41,24 +43,23 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public File getFile(int year) {
-        return new File(stage2File.getAbsolutePath());
+        return new File(stage2File.getAbsolutePath()+year);
     }
 
     @Override
     public Collection<MultiStem> run(boolean run) {
         if(run) {
             // filter outliers
-            Map<MultiStem,AtomicLong> keywordsCounts = stage1.get();
             keywords = new HashSet<>(keywordsCounts.keySet());
 
             KeywordModelRunner.reindex(keywords);
 
             // apply filter 1
             INDArray F = buildFMatrix(keywordsCounts);
-            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, 0.3, 0.7);
-            Database.saveObject(keywords, stage2File);
+            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, 0.2, 0.7);
+            Database.saveObject(keywords, getFile(year));
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2.csv"));
+            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2-"+year+".csv"));
         } else {
             loadData();
         }
