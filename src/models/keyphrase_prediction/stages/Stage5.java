@@ -155,6 +155,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     }
 
     private void runModel() {
+        assetToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
 
