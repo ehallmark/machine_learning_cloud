@@ -2,6 +2,8 @@ package models.keyphrase_prediction.stages;
 
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.SparseRealMatrix;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
@@ -16,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,12 +26,13 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/13/17.
  */
 public class Stage5 implements Stage<Map<String,List<String>>> {
+    private static final double EPSILON = 0.001;
     private static final boolean debug = false;
     private static final File stage5File = new File("data/keyword_model_keywords_set_stage5.jobj");
     private Collection<MultiStem> multiStems;
     private int year;
     private Map<String,List<String>> assetToKeywordMap;
-    private int[][] cooccurenceTable;
+    private SparseRealMatrix cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
     private Map<Integer,MultiStem> idxToMultiStemMap;
     private Collection<MultiStem> oldMultiStems;
@@ -89,11 +93,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     }
 
     private void getCooccurrenceMap() {
-        cooccurenceTable = new int[oldMultiStems.size()][multiStems.size()];
-        for(int i = 0; i < oldMultiStems.size(); i++) {
-            cooccurenceTable[i] = new int[multiStems.size()];
-            Arrays.fill(cooccurenceTable[i],0);
-        }
+        cooccurenceTable = new OpenMapRealMatrix(oldMultiStems.size(),multiStems.size());
 
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
@@ -158,7 +158,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for (int idx : documentStemIndices) {
-                int[] row = cooccurenceTable[idx];
+                double[] row = cooccurenceTable.getRow(idx);
                 for(MultiStem stem : cooccurringStems) {
                     row[stem.getIndex()]++;
                 }
@@ -223,8 +223,8 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
 
 
-            int[] row = IntStream.of(documentStemIndices).mapToObj(i->cooccurenceTable[i]).reduce((t1,t2)->{
-                int[] t3 = new int[t1.length];
+            double[] row = IntStream.of(documentStemIndices).mapToObj(i->cooccurenceTable.getRow(i)).reduce((t1,t2)->{
+                double[] t3 = new double[t1.length];
                 for(int i = 0; i < t1.length; i++) {
                     t3[i] = t1[i]+t2[i];
                 }
@@ -232,14 +232,14 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             }).orElse(null);
 
             if(row!=null) {
-                int max = IntStream.of(row).max().getAsInt();
+                double max = DoubleStream.of(row).max().getAsDouble();
                 if(debug) System.out.println("Max: " + max);
                 if (max > minCooccurrences) {
-                    List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] == max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
+                    List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] > max-EPSILON).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         assetToKeywordMap.put(asset, technologies);
-                        //if(debug)
-                        System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
+                        if(debug)
+                            System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                     } else {
                         throw new RuntimeException("Technologies should never be empty...");
                     }
