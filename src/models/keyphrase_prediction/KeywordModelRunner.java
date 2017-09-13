@@ -149,8 +149,10 @@ public class KeywordModelRunner {
         for(int i = endYear; i >= startYear-windowSize; i--) {
             List<Collection<MultiStem>> multiStems = new ArrayList<>();
             for(int j = i; j <= i + windowSize; j++) {
-                if(!stageMap.containsKey(j)) continue;
-                multiStems.add(stageMap.get(j).get());
+                Stage<Collection<MultiStem>> stage = stageMap.get(j);
+                if(stage!=null&&stage.get()!=null) {
+                    multiStems.add(stage.get());
+                }
             }
             if(multiStems.isEmpty()) continue;
             Collection<MultiStem> mergedStems = multiStems.stream().flatMap(list->list.stream()).distinct().collect(Collectors.toList());
