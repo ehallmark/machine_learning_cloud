@@ -137,7 +137,7 @@ public class KeywordModelRunner {
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Stage1 stage1 = stage1Map.get(year);
             if(stage1!=null) {
-                Stage5 stage5 = new Stage5(stage1, multiStems, year);
+                Stage5 stage5 = new Stage5(stage1, multiStems, year, maxCpcLength);
                 stage5.run(runStage5);
 
                 stage5Map.put(year, stage5);
