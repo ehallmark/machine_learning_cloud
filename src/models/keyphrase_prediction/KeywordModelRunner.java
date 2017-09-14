@@ -64,7 +64,7 @@ public class KeywordModelRunner {
         final int k2 = 3;
         final int k3 = 1;
 
-        final int minTokenFrequency = 50;
+        final int minTokenFrequency = 30;
         final int maxTokenFrequency = 50000;
 
         final int windowSize = 4;
@@ -74,8 +74,8 @@ public class KeywordModelRunner {
         boolean runStage2 = false;
         boolean runStage3 = false;
         boolean rebuildMMatrix = false;
-        boolean runStage4 = true;
-        boolean rebuildTMatrix = true;
+        boolean runStage4 = false;
+        boolean rebuildTMatrix = false;
         boolean runStage5 = true;
 
 

@@ -160,7 +160,9 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             for (int idx : documentStemIndices) {
                 for(MultiStem stem : cooccurringStems) {
-                    cooccurenceTable.addToEntry(idx,stem.getIndex(),1);
+                    synchronized (cooccurenceTable) {
+                        cooccurenceTable.addToEntry(idx,stem.getIndex(),1);
+                    }
                 }
             }
 
