@@ -38,7 +38,7 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(getFile(-1));
+        keywords = (Collection<MultiStem>)Database.loadObject(getFile(year));
     }
 
     @Override
