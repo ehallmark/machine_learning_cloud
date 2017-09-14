@@ -238,7 +238,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
-                if(max > 2) {
+                if(max > 0.5) {
                     if (debug) System.out.println("Max: " + max);
                     List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
@@ -253,6 +253,6 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, -1);
     }
 }
