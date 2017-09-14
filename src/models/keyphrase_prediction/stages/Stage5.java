@@ -246,7 +246,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
                 //synchronized (T) {
-                    return T.getColumnVector(i).copy();
+                    return T.getColumnVector(i);
                 //}
 
             }).reduce((t1,t2)->{
