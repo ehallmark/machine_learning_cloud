@@ -3,6 +3,10 @@ package seeding;
 
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 import user_interface.ui_models.attributes.*;
+import user_interface.ui_models.attributes.computable_attributes.CompDBTechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.GatherTechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
+import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
@@ -180,7 +184,7 @@ public class Constants {
 		};
 	}
 
-	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
+	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(GatherTechnologyAttribute.class, CompDBTechnologyAttribute.class, WIPOTechnologyAttribute.class, TechnologyAttribute.class,ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
 
 	public static final String[] RELATED_DOC_TYPES = new String[]{
 			"addition",
