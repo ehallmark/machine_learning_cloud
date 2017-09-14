@@ -30,6 +30,7 @@ import java.util.stream.Stream;
  */
 public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
+    private static Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
 
     private static final boolean debug = false;
     public static final File keywordCountsFile = new File("data/keyword_model_counts.jobj");
@@ -124,11 +125,14 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
                                 // this is the POS tag of the token
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (validPOS.contains(pos)) {
-                                    multiStemChecker(new String[]{stem},multiStemMap, word, stemToPhraseCountMap);
-                                    if(prevStem != null) {
-                                        multiStemChecker(new String[]{prevStem,stem},multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);
-                                        if(prevPrevStem != null) {
-                                            multiStemChecker(new String[]{prevPrevStem,prevStem,stem},multiStemMap, String.join(" ", prevPrevWord, prevWord, word), stemToPhraseCountMap);
+                                    // don't want to end in adjectives
+                                    if (!adjectivesPOS.contains(pos)) {
+                                        multiStemChecker(new String[]{stem}, multiStemMap, word, stemToPhraseCountMap);
+                                        if (prevStem != null) {
+                                            multiStemChecker(new String[]{prevStem, stem}, multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);
+                                            if (prevPrevStem != null) {
+                                                multiStemChecker(new String[]{prevPrevStem, prevStem, stem}, multiStemMap, String.join(" ", prevPrevWord, prevWord, word), stemToPhraseCountMap);
+                                            }
                                         }
                                     }
                                 } else {

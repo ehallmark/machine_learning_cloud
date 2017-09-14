@@ -225,11 +225,8 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
 
             double[] row = IntStream.of(documentStemIndices).mapToObj(i->{
-                double[] r = cooccurenceTable.getRow(i);
-                double idf = -Math.log(1+oldMultiStemsCountMap.get(i).get()); // inverse document frequency
-                for(int j = 0; j < r.length; j++) {
-                    r[j]*=idf;
-                }
+                double idf = (1+Math.log(1+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
+                double[] r = cooccurenceTable.getRowVector(i).copy().mapMultiply(idf).toArray();
                 return r;
             }).reduce((t1,t2)->{
                 double[] t3 = new double[t1.length];
@@ -241,14 +238,16 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
-                if(debug) System.out.println("Max: " + max);
-                List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
-                if (technologies.size() > 0) {
-                    assetToKeywordMap.put(asset, technologies);
-                    if(debug)
-                        System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
-                } else {
-                    throw new RuntimeException("Technologies should never be empty...");
+                if(max > 2) {
+                    if (debug) System.out.println("Max: " + max);
+                    List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
+                    if (technologies.size() > 0) {
+                        assetToKeywordMap.put(asset, technologies);
+                        if (debug)
+                            System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
+                    } else {
+                        throw new RuntimeException("Technologies should never be empty...");
+                    }
                 }
             }
             return null;
