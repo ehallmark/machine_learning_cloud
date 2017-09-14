@@ -1,16 +1,9 @@
 package models.keyphrase_prediction;
 
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.scorers.KeywordScorer;
-import models.keyphrase_prediction.scorers.TechnologyScorer;
-import models.keyphrase_prediction.scorers.TermhoodScorer;
-import models.keyphrase_prediction.scorers.UnithoodScorer;
+
 import models.keyphrase_prediction.stages.*;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -26,32 +19,24 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.functionscore.ScoreFunctionBuilders;
 import org.elasticsearch.join.query.HasParentQueryBuilder;
 import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
+
 import seeding.Constants;
 import seeding.Database;
-import tools.Stemmer;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
+
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.TimeUnit;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/11/17.
@@ -65,7 +50,7 @@ public class KeywordModelRunner {
         final int k3 = 1;
 
         final int minTokenFrequency = 30;
-        final int maxTokenFrequency = 50000;
+        final int maxTokenFrequency = 30000;
 
         final int windowSize = 4;
         final int maxCpcLength = 10;
