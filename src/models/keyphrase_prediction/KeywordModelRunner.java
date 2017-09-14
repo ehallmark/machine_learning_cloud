@@ -202,16 +202,13 @@ public class KeywordModelRunner {
 
     public static Collection<MultiStem> applyFilters(KeywordScorer scorer, RealMatrix matrix, Collection<MultiStem> keywords, long maxNumToKeep, double lowerBoundPercent, double upperBoundPercent) {
         Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
-        DoubleSummaryStatistics statistics = scoreMap.values().parallelStream().collect(Collectors.summarizingDouble(d->d));
-        double mean = statistics.getAverage();
-        long count = statistics.getCount();
-        double sd = count < 2 ? 0 : Math.sqrt(scoreMap.values().parallelStream().mapToDouble(d->Math.pow(d-mean,2)).sum()/(count-1));
-        if(sd==0) return Collections.emptyList();
-        AbstractRealDistribution distribution = new NormalDistribution(mean,sd);
+        long count = scoreMap.size();
+        double skipFirst = lowerBoundPercent*count;
+        double skipLast = (1.0-upperBoundPercent)*count;
         return scoreMap.entrySet().stream()
-                .filter(e->percentile(distribution,e.getValue())>=lowerBoundPercent&&percentile(distribution,e.getValue())<=upperBoundPercent)
                 .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
-                .limit(maxNumToKeep)
+                .skip((long)skipLast)
+                .limit(Math.min(maxNumToKeep,count-(long)(skipFirst+skipLast)))
                 .map(e->{
                     if(debug) {
                         System.out.println("Value for "+e.getKey().toString()+": "+e.getValue());

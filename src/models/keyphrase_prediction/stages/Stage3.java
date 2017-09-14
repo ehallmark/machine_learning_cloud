@@ -70,7 +70,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             System.out.println("Num keywords before stage 3: "+multiStems.size());
             SparseRealMatrix M = buildMMatrix();
 
-            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.3, 0.9);
+            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.2, 0.95);
             M=null;
             System.out.println("Num keywords after stage 3: "+multiStems.size());
 

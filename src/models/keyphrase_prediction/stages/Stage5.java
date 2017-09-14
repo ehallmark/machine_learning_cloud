@@ -3,12 +3,15 @@ package models.keyphrase_prediction.stages;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.SparseRealMatrix;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
 import tools.Stemmer;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
+import util.Pair;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -30,14 +33,16 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     private static final File stage5File = new File("data/keyword_model_keywords_set_stage5.jobj");
     private Collection<MultiStem> multiStems;
     private int year;
+    private int maxCpcLength;
     private Map<String,List<String>> assetToKeywordMap;
     private SparseRealMatrix cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
     private Map<Integer,MultiStem> idxToMultiStemMap;
     private Collection<MultiStem> oldMultiStems;
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
-    public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, int year) {
+    public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, int year, int maxCpcLength) {
         this.multiStems=multiStems;
+        this.maxCpcLength=maxCpcLength;
         this.oldMultiStems=new HashSet<>(stage1.get().keySet());
         AtomicInteger cnt = new AtomicInteger(0);
         oldMultiStemToIdxMap = oldMultiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
@@ -172,6 +177,11 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     }
 
     private void runModel() {
+        Pair<Map<String,Integer>,RealMatrix> pair = Stage4.buildTMatrix(multiStems,year,maxCpcLength);
+        RealMatrix T = pair._2;
+        Map<String,Integer> cpcToIndexMap = pair._1;
+        AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+
         assetToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
@@ -223,10 +233,9 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             int[] documentStemIndices = documentStems.stream().map(stem->oldMultiStemToIdxMap.get(stem)).filter(i->i!=null).mapToInt(i->i).toArray();
 
-
-            double[] row = IntStream.of(documentStemIndices).mapToObj(i->{
-                double idf = (1+Math.log(1+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
-                double[] r = cooccurenceTable.getRowVector(i).copy().mapMultiply(idf).toArray();
+            double[] stemRow = IntStream.of(documentStemIndices).mapToObj(i->{
+                double idf = (1+Math.log(Math.E+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
+                double[] r = cooccurenceTable.getRowVector(i).copy().mapDivide(idf).toArray();
                 return r;
             }).reduce((t1,t2)->{
                 double[] t3 = new double[t1.length];
@@ -236,9 +245,38 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 return t3;
             }).orElse(null);
 
+            int[] cpcIndices = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().getOrDefault(asset,Collections.emptySet())).stream()
+                    .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
+                    .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
+
+            double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
+                double[] r = T.getRow(i);
+                return r;
+            }).reduce((t1,t2)->{
+                double[] t3 = new double[t1.length];
+                for(int i = 0; i < t1.length; i++) {
+                    t3[i] = t1[i]+t2[i];
+                }
+                return t3;
+            }).orElse(null);
+
+            double[] row;
+            if(stemRow!=null||cpcRow!=null) {
+                row = new double[cooccurenceTable.getRowDimension()];
+                Arrays.fill(row,1d);
+                for (int i = 0; i < row.length; i++) {
+                    if (stemRow != null) {
+                        row[i]*=(1d+Math.log(1d+stemRow[i]));
+                    }
+                    if (cpcRow != null) {
+                        row[i]*=(1d+cpcRow[i]);
+                    }
+                }
+            } else row = null;
+
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
-                if(max > 0.5) {
+                if(max>0) {
                     if (debug) System.out.println("Max: " + max);
                     List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {

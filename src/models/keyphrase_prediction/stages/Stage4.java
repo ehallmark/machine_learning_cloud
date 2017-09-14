@@ -16,6 +16,7 @@ import seeding.Database;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
+import util.Pair;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -65,9 +66,9 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             // apply filter 3
             System.out.println("Starting year: "+year);
             KeywordModelRunner.reindex(keywords);
-            RealMatrix T = buildTMatrix(keywords, year, maxCpcLength);
+            RealMatrix T = buildTMatrix(keywords, year, maxCpcLength)._2;
 
-            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.2, 0.9);
+            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.2, 0.95);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+".csv"));
@@ -78,7 +79,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     }
 
 
-    private static RealMatrix buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
+    public static Pair<Map<String,Integer>,RealMatrix> buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
         // create cpc code co-occurrrence statistics
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
@@ -165,7 +166,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         };
 
         KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
-        return matrix;
+        return new Pair<>(cpcCodeIndexMap,matrix);
     }
 
 }
