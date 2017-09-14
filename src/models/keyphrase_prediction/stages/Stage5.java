@@ -26,7 +26,6 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/13/17.
  */
 public class Stage5 implements Stage<Map<String,List<String>>> {
-    private static final double EPSILON = 0.001;
     private static final boolean debug = false;
     private static final File stage5File = new File("data/keyword_model_keywords_set_stage5.jobj");
     private Collection<MultiStem> multiStems;
@@ -243,7 +242,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
                 if(debug) System.out.println("Max: " + max);
-                List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] > max-EPSILON).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
+                List<String> technologies = IntStream.range(0,row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                 if (technologies.size() > 0) {
                     assetToKeywordMap.put(asset, technologies);
                     if(debug)

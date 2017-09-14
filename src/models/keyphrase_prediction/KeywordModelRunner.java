@@ -60,8 +60,8 @@ public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
         final long Kw = 5000;
-        final int k1 = 10;
-        final int k2 = 3;
+        final int k1 = 20;
+        final int k2 = 5;
         final int k3 = 1;
 
         final int minTokenFrequency = 30;

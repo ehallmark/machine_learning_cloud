@@ -75,7 +75,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             } else {
                 T = (RealMatrix) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
             }
-            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.3, 0.8);
+            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.2, 0.9);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+".csv"));
