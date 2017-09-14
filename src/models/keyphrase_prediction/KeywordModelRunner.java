@@ -68,7 +68,7 @@ public class KeywordModelRunner {
         final int maxTokenFrequency = 50000;
 
         final int windowSize = 4;
-        final int maxCpcLength = 8;
+        final int maxCpcLength = 10;
 
         boolean runStage1 = false;
         boolean runStage2 = false;
