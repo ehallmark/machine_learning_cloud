@@ -103,14 +103,16 @@ $(document).ready(function() {
                 $downloadForm.appendTo('body').submit().remove();
              } else {
                $('#results').html(data.message);
-               $('#results #data-table table').dynatable({
-                 dataset: {
-                   ajax: true,
-                   ajaxUrl: 'dataTable.json',
-                   ajaxOnLoad: true,
-                   records: []
-                 }
-               });
+                   if($('#results #data-table table thead th').length > 0) {
+                   $('#results #data-table table').dynatable({
+                     dataset: {
+                       ajax: true,
+                       ajaxUrl: 'dataTable.json',
+                       ajaxOnLoad: true,
+                       records: []
+                     }
+                   });
+               }
 
                setCollapsibleHeaders('#results .collapsible-header');
 
