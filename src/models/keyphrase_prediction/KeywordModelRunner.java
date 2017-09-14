@@ -70,12 +70,12 @@ public class KeywordModelRunner {
         final int windowSize = 4;
         final int maxCpcLength = 10;
 
-        boolean runStage1 = false;
-        boolean runStage2 = false;
-        boolean runStage3 = false;
-        boolean rebuildMMatrix = false;
-        boolean runStage4 = false;
-        boolean rebuildTMatrix = false;
+        boolean runStage1 = true;
+        boolean runStage2 = true;
+        boolean runStage3 = true;
+        boolean rebuildMMatrix = true;
+        boolean runStage4 = true;
+        boolean rebuildTMatrix = true;
         boolean runStage5 = true;
 
 
