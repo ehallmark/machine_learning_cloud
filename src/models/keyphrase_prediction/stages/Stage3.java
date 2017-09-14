@@ -154,10 +154,8 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             // Unavoidable n-squared part
             for(MultiStem stem1 : cooccurringStems) {
                 for (MultiStem stem2 : cooccurringStems) {
-                    synchronized (stem1) {
-                        synchronized (stem2) {
-                            matrix.addToEntry(stem1.getIndex(), stem2.getIndex(), 1);
-                        }
+                    synchronized (matrix) {
+                        matrix.addToEntry(stem1.getIndex(), stem2.getIndex(), 1);
                     }
                 }
             }
