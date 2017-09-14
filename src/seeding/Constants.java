@@ -2,8 +2,7 @@ package seeding;
 
 
 import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
-import user_interface.ui_models.attributes.LatestAssigneeNestedAttribute;
-import user_interface.ui_models.attributes.LengthOfSmallestIndependentClaimAttribute;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.time.LocalDate;
@@ -180,6 +179,8 @@ public class Constants {
 			return baseUrl + dateStr + ".zip";
 		};
 	}
+
+	public static final List<Class> SIMILARITY_ATTRIBUTE_CLASSES = Arrays.asList(ClaimTextAttribute.class, InventionTitleAttribute.class, AbstractTextAttribute.class);
 
 	public static final String[] RELATED_DOC_TYPES = new String[]{
 			"addition",

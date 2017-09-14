@@ -10,8 +10,10 @@ import seeding.Constants;
 import spark.Request;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.ClaimTextAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
+import java.util.Arrays;
 import java.util.function.Function;
 
 import static j2html.TagCreator.button;
@@ -67,6 +69,7 @@ public class AdvancedKeywordFilter extends AbstractFilter {
         );
     }
 
+
     @Override
-    public boolean contributesToScore() { return true; }
+    public boolean contributesToScore() { return Constants.SIMILARITY_ATTRIBUTE_CLASSES.stream().anyMatch(clazz->clazz.isInstance(attribute)); }
 }
