@@ -223,6 +223,7 @@ public class KeywordModelRunner {
         double mean = statistics.getAverage();
         long count = statistics.getCount();
         double sd = count < 2 ? 0 : Math.sqrt(scoreMap.values().parallelStream().mapToDouble(d->Math.pow(d-mean,2)).sum()/(count-1));
+        if(sd==0) return Collections.emptyList();
         AbstractRealDistribution distribution = new NormalDistribution(mean,sd);
         return scoreMap.entrySet().stream()
                 .filter(e->percentile(distribution,e.getValue())>=lowerBoundPercent&&percentile(distribution,e.getValue())<=upperBoundPercent)
