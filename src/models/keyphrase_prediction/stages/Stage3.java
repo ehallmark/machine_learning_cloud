@@ -94,7 +94,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     private SparseRealMatrix buildMMatrix() {
         SparseRealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),multiStems.size());
         Function<SearchHit,Item> transformer = hit-> {
-            String asset = hit.getId();
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
            // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
@@ -103,7 +102,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
             Collection<MultiStem> documentStems = new HashSet<>();
-            long t0 = System.currentTimeMillis();
 
             if(debug) System.out.println("Text: "+text);
             String prevWord = null;
@@ -159,8 +157,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
                     }
                 }
             }
-            long t1 = System.currentTimeMillis();
-            System.out.println("Time to complete: "+(t1-t0)/1000);
             return null;
         };
 
