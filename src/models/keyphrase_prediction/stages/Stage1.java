@@ -45,12 +45,12 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
 
     @Override
     public File getFile(int year) {
-        return new File(keywordCountsFile.getAbsolutePath());
+        return new File(keywordCountsFile.getAbsolutePath()+year);
     }
 
     @Override
     public void loadData() {
-        keywordsCounts = (Map<MultiStem,AtomicLong>) Database.loadObject(getFile(-1));
+        keywordsCounts = (Map<MultiStem,AtomicLong>) Database.loadObject(getFile(year));
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
         if(run) {
             keywordsCounts = buildVocabularyCounts();
             keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
-            Database.trySaveObject(keywordsCounts, keywordCountsFile);
+            Database.trySaveObject(keywordsCounts, getFile(year));
         } else loadData();
         return keywordsCounts;
     }
