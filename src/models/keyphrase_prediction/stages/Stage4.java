@@ -83,7 +83,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         // create cpc code co-occurrrence statistics
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
-        Map<String,Integer> cpcCodeIndexMap = new HashMap<>();
+        Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
         AtomicInteger idx = new AtomicInteger(0);
         allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 

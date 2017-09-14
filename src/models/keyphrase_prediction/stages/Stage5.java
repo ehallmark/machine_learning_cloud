@@ -2,9 +2,7 @@ package models.keyphrase_prediction.stages;
 
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
-import org.apache.commons.math3.linear.OpenMapRealMatrix;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.SparseRealMatrix;
+import org.apache.commons.math3.linear.*;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
@@ -235,30 +233,25 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             double[] stemRow = IntStream.of(documentStemIndices).mapToObj(i->{
                 double idf = (1+Math.log(Math.E+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
-                double[] r = cooccurenceTable.getRowVector(i).copy().mapDivide(idf).toArray();
-                return r;
-            }).reduce((t1,t2)->{
-                double[] t3 = new double[t1.length];
-                for(int i = 0; i < t1.length; i++) {
-                    t3[i] = t1[i]+t2[i];
+                synchronized (cooccurenceTable) {
+                    return cooccurenceTable.getRowVector(i).mapDivide(idf);
                 }
-                return t3;
-            }).orElse(new double[]{});
+            }).reduce((t1,t2)->{
+                return t1.add(t2);
+            }).orElse(new ArrayRealVector(new double[]{})).toArray();
 
             int[] cpcIndices = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().getOrDefault(asset,Collections.emptySet())).stream()
                     .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
                     .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
 
             double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
-                double[] r = T.getColumn(i);
-                return r;
-            }).reduce((t1,t2)->{
-                double[] t3 = new double[t1.length];
-                for(int i = 0; i < t1.length; i++) {
-                    t3[i] = t1[i]+t2[i];
+                synchronized (T) {
+                    return T.getColumnVector(i).copy();
                 }
-                return t3;
-            }).orElse(new double[]{});
+
+            }).reduce((t1,t2)->{
+                return t1.add(t2);
+            }).orElse(new ArrayRealVector(new double[]{})).toArray();
 
             double[] row;
             if(stemRow.length>0||cpcRow.length>0) {
