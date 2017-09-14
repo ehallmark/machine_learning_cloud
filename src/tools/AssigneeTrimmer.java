@@ -123,7 +123,7 @@ public class AssigneeTrimmer {
     }
 
     public static String cleanAssignee(String toExtract) {
-        String data = toExtract.toUpperCase().replaceAll("[^A-Z0-9 ]","");
+        String data = toExtract.toUpperCase().replace("-"," ").replace("."," ").replaceAll("[^A-Z0-9 ]","");
         while(data.contains("   ")) data=data.replaceAll("   "," "); // strip triple spaces (might be faster)
         while(data.contains("  ")) data=data.replaceAll("  "," "); // strip double spaces
         return data.trim();

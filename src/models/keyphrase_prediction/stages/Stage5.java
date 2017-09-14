@@ -243,7 +243,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     t3[i] = t1[i]+t2[i];
                 }
                 return t3;
-            }).orElse(null);
+            }).orElse(new double[]{});
 
             int[] cpcIndices = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().getOrDefault(asset,Collections.emptySet())).stream()
                     .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
@@ -258,17 +258,17 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     t3[i] = t1[i]+t2[i];
                 }
                 return t3;
-            }).orElse(null);
+            }).orElse(new double[]{});
 
             double[] row;
-            if(stemRow!=null||cpcRow!=null) {
-                row = new double[cooccurenceTable.getRowDimension()];
+            if(stemRow.length>0||cpcRow.length>0) {
+                row = new double[cooccurenceTable.getColumnDimension()];
                 Arrays.fill(row,1d);
                 for (int i = 0; i < row.length; i++) {
-                    if (stemRow != null) {
+                    if (stemRow.length>0) {
                         row[i]*=(1d+Math.log(1d+stemRow[i]));
                     }
-                    if (cpcRow != null) {
+                    if (cpcRow.length>0) {
                         row[i]*=(1d+cpcRow[i]);
                     }
                 }
