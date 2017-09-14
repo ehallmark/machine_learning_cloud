@@ -163,7 +163,9 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
 
             for(MultiStem stem : cooccurringStems) {
                 for (int cpcIdx : cpcIndices) {
-                    matrix.addToEntry(stem.getIndex(),cpcIdx,1);
+                    synchronized (matrix) {
+                        matrix.addToEntry(stem.getIndex(), cpcIdx, 1);
+                    }
                 }
             }
 
