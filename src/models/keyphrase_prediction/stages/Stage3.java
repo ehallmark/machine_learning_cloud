@@ -39,11 +39,9 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     private Map<MultiStem,MultiStem> multiStemToSelfMap;
     private long targetCardinality;
     private int year;
-    private boolean rebuildMMatrix;
-    public Stage3(Collection<MultiStem> multiStems, long targetCardinality, boolean rebuildMMatrix, int year) {
+    public Stage3(Collection<MultiStem> multiStems, long targetCardinality, int year) {
         this.multiStems = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-        this.rebuildMMatrix=rebuildMMatrix;
         this.year=year;
         this.targetCardinality=targetCardinality;
     }
@@ -70,14 +68,8 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(multiStems);
             System.out.println("Starting year: "+year);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
-            SparseRealMatrix M;
-            if(rebuildMMatrix) {
-                M = buildMMatrix();
-                System.out.println("saving matrix");
-                Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
-            } else {
-                M = (SparseRealMatrix) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
-            }
+            SparseRealMatrix M = buildMMatrix();
+
             multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.3, 0.9);
             M=null;
             System.out.println("Num keywords after stage 3: "+multiStems.size());

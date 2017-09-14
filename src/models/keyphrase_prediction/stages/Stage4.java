@@ -36,12 +36,9 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     private Collection<MultiStem> keywords;
     private long targetCardinality;
     private int year;
-    private boolean rebuildTMatrix;
     private final int maxCpcLength;
-
-    public Stage4(Collection<MultiStem> keywords, long targetCardinality, boolean rebuildTMatrix, int year, int maxCpcLength) {
+    public Stage4(Collection<MultiStem> keywords, long targetCardinality, int year, int maxCpcLength) {
         this.keywords = keywords;
-        this.rebuildTMatrix=rebuildTMatrix;
         this.year=year;
         this.maxCpcLength=maxCpcLength;
         this.targetCardinality=targetCardinality;
@@ -68,13 +65,8 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             // apply filter 3
             System.out.println("Starting year: "+year);
             KeywordModelRunner.reindex(keywords);
-            RealMatrix T;
-            if(rebuildTMatrix) {
-                T = buildTMatrix(keywords, year, maxCpcLength);
-                Database.trySaveObject(T, new File("data/keyword_t_matrix.jobj"+year));
-            } else {
-                T = (RealMatrix) Database.loadObject(new File("data/keyword_t_matrix.jobj"+year));
-            }
+            RealMatrix T = buildTMatrix(keywords, year, maxCpcLength);
+
             keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.2, 0.9);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
