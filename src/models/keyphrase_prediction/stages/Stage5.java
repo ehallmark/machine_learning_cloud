@@ -250,7 +250,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
 
             double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
-                double[] r = T.getRow(i);
+                double[] r = T.getColumn(i);
                 return r;
             }).reduce((t1,t2)->{
                 double[] t3 = new double[t1.length];
