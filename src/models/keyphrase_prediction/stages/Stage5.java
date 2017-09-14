@@ -233,9 +233,9 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
             double[] stemRow = IntStream.of(documentStemIndices).mapToObj(i->{
                 double idf = (1+Math.log(Math.E+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
-                synchronized (cooccurenceTable) {
+                //synchronized (cooccurenceTable) {
                     return cooccurenceTable.getRowVector(i).mapDivide(idf);
-                }
+                //}
             }).reduce((t1,t2)->{
                 return t1.add(t2);
             }).orElse(new ArrayRealVector(new double[]{})).toArray();
@@ -245,9 +245,9 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
 
             double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
-                synchronized (T) {
+                //synchronized (T) {
                     return T.getColumnVector(i).copy();
-                }
+                //}
 
             }).reduce((t1,t2)->{
                 return t1.add(t2);
