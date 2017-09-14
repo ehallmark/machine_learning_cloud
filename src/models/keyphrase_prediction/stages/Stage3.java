@@ -73,11 +73,13 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             SparseRealMatrix M;
             if(rebuildMMatrix) {
                 M = buildMMatrix();
+                System.out.println("saving matrix");
                 Database.trySaveObject(M, new File("data/keyword_m_matrix.jobj"+year));
             } else {
                 M = (SparseRealMatrix) Database.tryLoadObject(new File("data/keyword_m_matrix.jobj"+year));
             }
             multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.3, 0.8);
+            M=null;
             System.out.println("Num keywords after stage 3: "+multiStems.size());
 
             Database.saveObject(multiStems, getFile(year));
