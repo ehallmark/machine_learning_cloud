@@ -224,7 +224,7 @@ public class KeywordModelRunner {
         long count = statistics.getCount();
         double sd = count < 2 ? 0 : Math.sqrt(scoreMap.values().parallelStream().mapToDouble(d->Math.pow(d-mean,2)).sum()/(count-1));
         AbstractRealDistribution distribution = new NormalDistribution(mean,sd);
-        return scorer.scoreKeywords(keywords,matrix).entrySet().stream()
+        return scoreMap.entrySet().stream()
                 .filter(e->percentile(distribution,e.getValue())>=lowerBoundPercent&&percentile(distribution,e.getValue())<=upperBoundPercent)
                 .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
                 .limit(maxNumToKeep)

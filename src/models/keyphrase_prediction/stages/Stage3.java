@@ -103,6 +103,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
             Collection<MultiStem> documentStems = new HashSet<>();
+            long t0 = System.currentTimeMillis();
 
             if(debug) System.out.println("Text: "+text);
             String prevWord = null;
@@ -156,6 +157,8 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
                     matrix.addToEntry(stem1.getIndex(), stem2.getIndex(), 1);
                 }
             }
+            long t1 = System.currentTimeMillis();
+            System.out.println("Time to complete: "+(t1-t0)/1000);
             return null;
         };
 
