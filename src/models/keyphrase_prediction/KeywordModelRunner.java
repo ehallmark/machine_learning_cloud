@@ -72,8 +72,8 @@ public class KeywordModelRunner {
 
         boolean runStage1 = false;
         boolean runStage2 = false;
-        boolean runStage3 = true;
-        boolean rebuildMMatrix = true;
+        boolean runStage3 = false;
+        boolean rebuildMMatrix = false;
         boolean runStage4 = true;
         boolean rebuildTMatrix = true;
         boolean runStage5 = true;
@@ -185,7 +185,7 @@ public class KeywordModelRunner {
         Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = endYear; i >= startYear-windowSize; i--) {
             List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
-            for(int j = i; j <= i + windowSize; j++) {
+            for(int j = i; j <= Math.min(i + windowSize, endYear); j++) {
                 Stage<Map<MultiStem,AtomicLong>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
                     multiStems.add(stage.get());
