@@ -34,6 +34,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/12/17.
  */
 public class Stage3 implements Stage<Collection<MultiStem>> {
+    private static final Random rand = new Random(235235);
     private static final boolean debug = false;
     private static final File stage3File = new File("data/keyword_model_keywords_set_stage3.jobj");
     private Collection<MultiStem> multiStems;
@@ -72,6 +73,14 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     public Collection<MultiStem> run(boolean run) {
         if(run) {
             // apply filter 2
+            if(Math.pow((long)multiStems.size(),2)>=Integer.MAX_VALUE) {
+                multiStems = new ArrayList<>(multiStems);
+                while (Math.pow((long) multiStems.size(), 2) >= Integer.MAX_VALUE) {
+                    multiStems.remove(rand.nextInt(multiStems.size()));
+                }
+                multiStems = new HashSet<>(multiStems);
+            }
+
             KeywordModelRunner.reindex(multiStems);
             System.out.println("Starting year: "+year);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
