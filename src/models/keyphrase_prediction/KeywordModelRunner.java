@@ -4,6 +4,7 @@ import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.models.OriginalModel;
+import models.keyphrase_prediction.models.TestModel1;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 
 import models.keyphrase_prediction.stages.*;
@@ -46,17 +47,9 @@ import java.util.stream.Collectors;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        Model model = new OriginalModel();
-        final long Kw = model.getKw();
-        final int k1 = model.getK1();
-        final int k2 = model.getK2();
-        final int k3 = model.getK3();
-
-        final int minTokenFrequency = model.getMinTokenFrequency();
-        final int maxTokenFrequency = model.getMaxTokenFrequency();
+        Model model = new TestModel1();
 
         final int windowSize = model.getWindowSize();
-        final int maxCpcLength = model.getMaxCpcLength();
 
         boolean runStage1 = model.isRunStage1();
         boolean runStage2 = model.isRunStage2();
