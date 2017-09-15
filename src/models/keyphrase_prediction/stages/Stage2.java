@@ -2,6 +2,7 @@ package models.keyphrase_prediction.stages;
 
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.UnithoodScorer;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -25,10 +26,16 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private int year;
     private Map<MultiStem,AtomicLong> keywordsCounts;
-    public Stage2(Map<MultiStem,AtomicLong> keywordsCounts, int year, long targetCardinality) {
+    private double upperBound;
+    private double lowerBound;
+    private String name;
+    public Stage2(Map<MultiStem,AtomicLong> keywordsCounts, Model model, int year) {
         this.keywordsCounts=keywordsCounts;
         this.year = year;
-        this.targetCardinality=targetCardinality;
+        this.targetCardinality=model.getKw()*model.getK1();
+        this.upperBound=model.getStage2Upper();
+        this.lowerBound=model.getStage2Lower();
+        this.name=model.getModelName();
     }
 
     @Override
@@ -43,7 +50,7 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public File getFile(int year) {
-        return new File(stage2File.getAbsolutePath()+year);
+        return new File(stage2File.getAbsolutePath()+name+year);
     }
 
     @Override
@@ -56,10 +63,10 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
             // apply filter 1
             INDArray F = buildFMatrix(keywordsCounts);
-            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, 0.0, 0.7);
+            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, lowerBound,upperBound);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2-"+year+".csv"));
+            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2-"+year+name+".csv"));
         } else {
             loadData();
         }

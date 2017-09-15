@@ -2,6 +2,7 @@ package models.keyphrase_prediction.stages;
 
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.Model;
 import org.apache.commons.math3.linear.*;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
@@ -38,11 +39,13 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     private Map<Integer,MultiStem> idxToMultiStemMap;
     private Collection<MultiStem> oldMultiStems;
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
-    public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, int year, int maxCpcLength) {
+    private String name;
+    public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, Model model, int year) {
         this.multiStems=multiStems;
-        this.maxCpcLength=maxCpcLength;
+        this.maxCpcLength=model.getMaxCpcLength();
         this.oldMultiStems=new HashSet<>(stage1.get().keySet());
         AtomicInteger cnt = new AtomicInteger(0);
+        this.name=model.getModelName();
         oldMultiStemToIdxMap = oldMultiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
         this.oldMultiStemsCountMap = stage1.get().entrySet().stream().collect(Collectors.toMap(e->oldMultiStemToIdxMap.get(e.getKey()),e->e.getValue()));
         this.year=year;
@@ -55,7 +58,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
     @Override
     public File getFile(int year) {
-        return new File(stage5File.getAbsolutePath()+year);
+        return new File(stage5File.getAbsolutePath()+name+year);
     }
 
 
@@ -71,7 +74,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             runModel();
             Database.saveObject(assetToKeywordMap, getFile(year));
             // print sample
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/keyword_asset_to_keyword_map"+year+".csv")))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/keyword_asset_to_keyword_map"+year+name+".csv")))) {
                 writer.write("Asset,Technologies\n");
                 assetToKeywordMap.entrySet().stream().limit(10000).forEach(e -> {
                     try {

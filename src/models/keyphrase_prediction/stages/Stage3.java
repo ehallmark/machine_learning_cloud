@@ -4,6 +4,7 @@ import elasticsearch.DataIngester;
 import model.edges.Edge;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
 import org.apache.commons.math3.linear.SparseRealMatrix;
@@ -39,11 +40,17 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     private Map<MultiStem,MultiStem> multiStemToSelfMap;
     private long targetCardinality;
     private int year;
-    public Stage3(Collection<MultiStem> multiStems, long targetCardinality, int year) {
+    private double lowerBound;
+    private double upperBound;
+    private String name;
+    public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
         this.multiStems = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
         this.year=year;
-        this.targetCardinality=targetCardinality;
+        this.targetCardinality=model.getK2()*model.getKw();
+        this.lowerBound=model.getStage3Lower();
+        this.upperBound=model.getStage3Upper();
+        this.name = model.getModelName();
     }
 
     @Override
@@ -58,7 +65,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     @Override
     public File getFile(int year) {
-        return new File(stage3File.getAbsolutePath()+year);
+        return new File(stage3File.getAbsolutePath()+name+year);
     }
 
     @Override
@@ -70,13 +77,13 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             System.out.println("Num keywords before stage 3: "+multiStems.size());
             SparseRealMatrix M = buildMMatrix();
 
-            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, 0.2, 0.95);
+            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, lowerBound,upperBound);
             M=null;
             System.out.println("Num keywords after stage 3: "+multiStems.size());
 
             Database.saveObject(multiStems, getFile(year));
             // write to csv for records
-            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+".csv"));
+            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+name+".csv"));
         } else {
             loadData();
         }

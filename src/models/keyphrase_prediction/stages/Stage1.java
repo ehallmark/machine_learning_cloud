@@ -8,6 +8,7 @@ import edu.stanford.nlp.util.CoreMap;
 import elasticsearch.DataIngester;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.Model;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import seeding.Constants;
@@ -38,15 +39,17 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
     private int minTokenFrequency;
     private int maxTokenFrequency;
     private int year;
-    public Stage1(int year, int minTokenFrequency, int maxTokenFrequency) {
-        this.minTokenFrequency=minTokenFrequency;
-        this.maxTokenFrequency=maxTokenFrequency;
+    private String name;
+    public Stage1(int year, Model model) {
+        this.minTokenFrequency=model.getMinTokenFrequency();
+        this.maxTokenFrequency=model.getMaxTokenFrequency();
         this.year = year;
+        this.name=model.getModelName();
     }
 
     @Override
     public File getFile(int year) {
-        return new File(keywordCountsFile.getAbsolutePath()+year);
+        return new File(keywordCountsFile.getAbsolutePath()+name+year);
     }
 
     @Override

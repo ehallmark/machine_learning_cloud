@@ -2,6 +2,8 @@ package models.keyphrase_prediction;
 
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
+import models.keyphrase_prediction.models.Model;
+import models.keyphrase_prediction.models.OriginalModel;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 
 import models.keyphrase_prediction.stages.*;
@@ -44,22 +46,23 @@ import java.util.stream.Collectors;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        final long Kw = 5000;
-        final int k1 = 20;
-        final int k2 = 5;
-        final int k3 = 1;
+        Model model = new OriginalModel();
+        final long Kw = model.getKw();
+        final int k1 = model.getK1();
+        final int k2 = model.getK2();
+        final int k3 = model.getK3();
 
-        final int minTokenFrequency = 30;
-        final int maxTokenFrequency = 30000;
+        final int minTokenFrequency = model.getMinTokenFrequency();
+        final int maxTokenFrequency = model.getMaxTokenFrequency();
 
-        final int windowSize = 4;
-        final int maxCpcLength = 9;
+        final int windowSize = model.getWindowSize();
+        final int maxCpcLength = model.getMaxCpcLength();
 
-        boolean runStage1 = false;
-        boolean runStage2 = false;
-        boolean runStage3 = false;
-        boolean runStage4 = false;
-        boolean runStage5 = true;
+        boolean runStage1 = model.isRunStage1();
+        boolean runStage2 = model.isRunStage2();
+        boolean runStage3 = model.isRunStage3();
+        boolean runStage4 = model.isRunStage4();
+        boolean runStage5 = model.isRunStage5();
 
 
         final int endYear = LocalDate.now().getYear();
@@ -70,7 +73,7 @@ public class KeywordModelRunner {
         for(int i = startYear; i <= endYear; i++) {
             final int year = i;
             // group results by time windows in years
-            Stage1 stage1 = new Stage1(year,minTokenFrequency,maxTokenFrequency);
+            Stage1 stage1 = new Stage1(year,model);
             stage1.run(runStage1);
 
             stage1Map.put(year,stage1);
@@ -81,7 +84,7 @@ public class KeywordModelRunner {
         Map<Integer,Map<MultiStem,AtomicLong>> stage1TimeWindowStemMap = computeTimeWindowCountMap(startYear, endYear, windowSize, stage1Map);
         Map<Integer,Stage2> stage2Map = Collections.synchronizedMap(new HashMap<>());
         stage1TimeWindowStemMap.forEach((year,countMap)->{
-            Stage2 stage2 = new Stage2(countMap, year, Kw * k1);
+            Stage2 stage2 = new Stage2(countMap, model, year);
             stage2.run(runStage2);
 
             stage2Map.put(year,stage2);
@@ -92,7 +95,7 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map);
         Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
         stage2TimeWindowStemMap.forEach((year,multiStems)->{
-            Stage3 stage3 = new Stage3(multiStems, Kw * k2, year);
+            Stage3 stage3 = new Stage3(multiStems, model, year);
             stage3.run(runStage3);
 
             stage3Map.put(year,stage3);
@@ -103,7 +106,7 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
         Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
-            Stage4 stage4 = new Stage4(multiStems, Kw * k3, year, maxCpcLength);
+            Stage4 stage4 = new Stage4(multiStems, model, year);
             stage4.run(runStage4);
 
             stage4Map.put(year,stage4);
@@ -137,7 +140,7 @@ public class KeywordModelRunner {
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Stage1 stage1 = stage1Map.get(year);
             if(stage1!=null) {
-                Stage5 stage5 = new Stage5(stage1, multiStems, year, maxCpcLength);
+                Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
                 stage5.run(runStage5);
 
                 stage5Map.put(year, stage5);

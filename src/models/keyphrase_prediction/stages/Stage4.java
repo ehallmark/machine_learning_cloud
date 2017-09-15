@@ -3,6 +3,7 @@ package models.keyphrase_prediction.stages;
 import elasticsearch.DataIngester;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
+import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.scorers.TermhoodScorer;
 import org.apache.commons.math3.linear.OpenMapRealMatrix;
@@ -38,11 +39,17 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private int year;
     private final int maxCpcLength;
-    public Stage4(Collection<MultiStem> keywords, long targetCardinality, int year, int maxCpcLength) {
+    private double lowerBound;
+    private double upperBound;
+    private String name;
+    public Stage4(Collection<MultiStem> keywords, Model model, int year) {
         this.keywords = keywords;
         this.year=year;
-        this.maxCpcLength=maxCpcLength;
-        this.targetCardinality=targetCardinality;
+        this.maxCpcLength=model.getMaxCpcLength();
+        this.targetCardinality=model.getKw()*model.getK3();
+        this.upperBound=model.getStage4Upper();
+        this.lowerBound=model.getStage4Lower();
+        this.name=model.getModelName();
     }
 
     @Override
@@ -57,7 +64,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
 
     @Override
     public File getFile(int year) {
-        return new File(stage4File.getAbsolutePath()+year);
+        return new File(stage4File.getAbsolutePath()+name+year);
     }
 
     @Override
@@ -68,10 +75,10 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(keywords);
             RealMatrix T = buildTMatrix(keywords, year, maxCpcLength)._2;
 
-            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, 0.2, 0.95);
+            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, lowerBound, upperBound);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+".csv"));
+            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+name+".csv"));
         } else {
             loadData();
         }
