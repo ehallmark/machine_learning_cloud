@@ -5,11 +5,11 @@ import lombok.Getter;
 /**
  * Created by Evan on 9/15/2017.
  */
-public class TestModel1 implements Model {
+public class TestModel2 implements Model {
     @Getter
-    final long Kw = 5000;
+    final long Kw = 10000;
     @Getter
-    final int k1 = 20;
+    final int k1 = 10;
     @Getter
     final int k2 = 5;
     @Getter
@@ -38,7 +38,7 @@ public class TestModel1 implements Model {
 
     @Override
     public String getModelName() {
-        return "test0";
+        return "test1";
     }
 
     @Getter

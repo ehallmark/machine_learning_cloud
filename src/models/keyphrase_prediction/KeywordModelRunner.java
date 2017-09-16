@@ -5,6 +5,7 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.Model;
 import models.keyphrase_prediction.models.OriginalModel;
 import models.keyphrase_prediction.models.TestModel1;
+import models.keyphrase_prediction.models.TestModel2;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 
 import models.keyphrase_prediction.stages.*;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
 public class KeywordModelRunner {
     public static final boolean debug = false;
     public static void main(String[] args) {
-        Model model = new TestModel1();
+        Model model = new TestModel2();
 
         final int windowSize = model.getWindowSize();
 
