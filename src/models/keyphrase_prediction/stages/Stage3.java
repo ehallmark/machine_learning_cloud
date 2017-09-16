@@ -76,7 +76,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             if(Math.pow((long)multiStems.size(),2)>=Integer.MAX_VALUE) {
                 multiStems = new ArrayList<>(multiStems);
                 while (Math.pow((long) multiStems.size(), 2) >= Integer.MAX_VALUE) {
-                    multiStems.remove(rand.nextInt(multiStems.size()));
+                    ((List)multiStems).remove(rand.nextInt(multiStems.size()));
                 }
                 multiStems = new HashSet<>(multiStems);
             }
