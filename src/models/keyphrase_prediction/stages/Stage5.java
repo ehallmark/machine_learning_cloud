@@ -7,6 +7,7 @@ import org.apache.commons.math3.linear.*;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
+import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
@@ -99,7 +100,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     }
 
     private void getCooccurrenceMap() {
-        cooccurenceTable = new OpenMapRealMatrix(oldMultiStems.size(),multiStems.size());
+        cooccurenceTable = new OpenMapBigRealMatrix(oldMultiStems.size(),multiStems.size());
 
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();

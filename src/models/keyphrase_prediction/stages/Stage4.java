@@ -11,6 +11,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.Database;
+import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
@@ -91,7 +92,7 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         AtomicInteger idx = new AtomicInteger(0);
         allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 
-        RealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),allCpcCodes.size());
+        RealMatrix matrix = new OpenMapBigRealMatrix(multiStems.size(),allCpcCodes.size());
 
         final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
         Function<SearchHit,Item> transformer = hit-> {

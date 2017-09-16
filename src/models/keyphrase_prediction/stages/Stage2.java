@@ -62,8 +62,8 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(keywords);
 
             // apply filter 1
-            INDArray F = buildFMatrix(keywordsCounts);
-            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F.data().asDouble()}), keywords, targetCardinality, lowerBound,upperBound);
+            double[] F = buildFMatrix(keywordsCounts);
+            keywords = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F}), keywords, targetCardinality, lowerBound,upperBound);
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2-"+year+name+".csv"));
@@ -73,10 +73,10 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
         return keywords;
     }
 
-    private static INDArray buildFMatrix(Map<MultiStem,AtomicLong> multiStemMap) {
-        INDArray array = Nd4j.create(multiStemMap.size());
+    private static double[] buildFMatrix(Map<MultiStem,AtomicLong> multiStemMap) {
+        double[] array = new double[multiStemMap.size()];
         multiStemMap.entrySet().parallelStream().forEach(e->{
-            array.putScalar(e.getKey().getIndex(),e.getValue().get());
+            array[e.getKey().getIndex()]=e.getValue().get();
         });
         return array;
     }

@@ -15,6 +15,7 @@ import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 import spire.math.algebraic.Mul;
+import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
@@ -73,14 +74,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     public Collection<MultiStem> run(boolean run) {
         if(run) {
             // apply filter 2
-            if(Math.pow((long)multiStems.size(),2)>=Integer.MAX_VALUE) {
-                multiStems = new ArrayList<>(multiStems);
-                while (Math.pow((long) multiStems.size(), 2) >= Integer.MAX_VALUE) {
-                    ((List)multiStems).remove(rand.nextInt(multiStems.size()));
-                }
-                multiStems = new HashSet<>(multiStems);
-            }
-
             KeywordModelRunner.reindex(multiStems);
             System.out.println("Starting year: "+year);
             System.out.println("Num keywords before stage 3: "+multiStems.size());
@@ -100,7 +93,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
     }
 
     private SparseRealMatrix buildMMatrix() {
-        SparseRealMatrix matrix = new OpenMapRealMatrix(multiStems.size(),multiStems.size());
+        SparseRealMatrix matrix = new OpenMapBigRealMatrix(multiStems.size(),multiStems.size());
         Function<SearchHit,Item> transformer = hit-> {
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
