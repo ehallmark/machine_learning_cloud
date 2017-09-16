@@ -59,11 +59,19 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
 
     @Override
     public Map<MultiStem,AtomicLong> run(boolean run) {
+        if(getFile(year).exists()) {
+            try {
+                loadData();
+                run = false;
+            } catch(Exception e) {
+                run = true;
+            }
+        }
         if(run) {
             keywordsCounts = buildVocabularyCounts();
             keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
             Database.trySaveObject(keywordsCounts, getFile(year));
-        } else loadData();
+        }
         return keywordsCounts;
     }
 

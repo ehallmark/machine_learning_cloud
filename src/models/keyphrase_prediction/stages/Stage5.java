@@ -65,6 +65,14 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
 
     @Override
     public Map<String, List<String>> run(boolean run) {
+        if(getFile(year).exists()) {
+            try {
+                loadData();
+                run = false;
+            } catch(Exception e) {
+                run = true;
+            }
+        }
         if(run) {
             System.out.println("Starting year: "+year);
             // get cooccurrence map
@@ -88,8 +96,6 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             } catch(Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            loadData();
         }
         return assetToKeywordMap;
     }

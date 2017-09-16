@@ -55,6 +55,14 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
 
     @Override
     public Collection<MultiStem> run(boolean run) {
+        if(getFile(year).exists()) {
+            try {
+                loadData();
+                run = false;
+            } catch(Exception e) {
+                run = true;
+            }
+        }
         if(run) {
             // filter outliers
             keywords = new HashSet<>(keywordsCounts.keySet());
@@ -67,8 +75,6 @@ public class Stage2 implements Stage<Collection<MultiStem>> {
             Database.saveObject(keywords, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage2-"+year+name+".csv"));
-        } else {
-            loadData();
         }
         return keywords;
     }

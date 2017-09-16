@@ -72,6 +72,14 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
     @Override
     public Collection<MultiStem> run(boolean run) {
+        if(getFile(year).exists()) {
+            try {
+                loadData();
+                run = false;
+            } catch(Exception e) {
+                run = true;
+            }
+        }
         if(run) {
             // apply filter 2
             KeywordModelRunner.reindex(multiStems);
@@ -86,8 +94,6 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             Database.saveObject(multiStems, getFile(year));
             // write to csv for records
             KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+name+".csv"));
-        } else {
-            loadData();
         }
         return multiStems;
     }
