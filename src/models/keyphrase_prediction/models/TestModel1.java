@@ -30,7 +30,7 @@ public class TestModel1 implements Model {
     @Getter
     boolean runStage2 = false;
     @Getter
-    boolean runStage3 = true;
+    boolean runStage3 = false;
     @Getter
     boolean runStage4 = true;
     @Getter
