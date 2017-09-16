@@ -268,10 +268,12 @@ public class OpenMapBigRealMatrix extends AbstractRealMatrix
         throws OutOfRangeException {
         MatrixUtils.checkRowIndex(this, row);
         MatrixUtils.checkColumnIndex(this, column);
-        if (value == 0.0) {
-            entries.remove(computeKey(row, column));
-        } else {
-            entries.put(computeKey(row, column), value);
+        synchronized (entries) {
+            if (value == 0.0) {
+                entries.remove(computeKey(row, column));
+            } else {
+                entries.put(computeKey(row, column), value);
+            }
         }
     }
 
@@ -282,11 +284,13 @@ public class OpenMapBigRealMatrix extends AbstractRealMatrix
         MatrixUtils.checkRowIndex(this, row);
         MatrixUtils.checkColumnIndex(this, column);
         final long key = computeKey(row, column);
-        final double value = entries.get(key) + increment;
-        if (value == 0.0) {
-            entries.remove(key);
-        } else {
-            entries.put(key, value);
+        synchronized (entries) {
+            final double value = entries.get(key) + increment;
+            if (value == 0.0) {
+                entries.remove(key);
+            } else {
+                entries.put(key, value);
+            }
         }
     }
 
@@ -297,11 +301,13 @@ public class OpenMapBigRealMatrix extends AbstractRealMatrix
         MatrixUtils.checkRowIndex(this, row);
         MatrixUtils.checkColumnIndex(this, column);
         final long key = computeKey(row, column);
-        final double value = entries.get(key) * factor;
-        if (value == 0.0) {
-            entries.remove(key);
-        } else {
-            entries.put(key, value);
+        synchronized (entries) {
+            final double value = entries.get(key) * factor;
+            if (value == 0.0) {
+                entries.remove(key);
+            } else {
+                entries.put(key, value);
+            }
         }
     }
 
