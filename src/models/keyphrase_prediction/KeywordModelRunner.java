@@ -148,7 +148,7 @@ public class KeywordModelRunner {
             });
         });
 
-        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_map.jobj"));
+        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
         System.out.println("Num assets classified: "+assetToTechnologyMap.size());
     }
 
