@@ -141,6 +141,15 @@ public class KeywordModelRunner {
             }
         });
 
+        Map<String,List<String>> assetToTechnologyMap = Collections.synchronizedMap(new HashMap<>());
+        stage5Map.entrySet().stream().parallel().forEach((e)->{
+            e.getValue().get().forEach((asset,techList)->{
+                assetToTechnologyMap.put(asset,techList);
+            });
+        });
+
+        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_map.jobj"));
+        System.out.println("Num assets classified: "+assetToTechnologyMap.size());
     }
 
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
