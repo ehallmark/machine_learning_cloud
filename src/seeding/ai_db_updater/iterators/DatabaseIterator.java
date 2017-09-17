@@ -63,6 +63,8 @@ public class DatabaseIterator {
         Database.setupSeedConn();
         this.init();
 
+        System.out.println("Attrs: "+String.join(", ",topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())).map(attr->attr.getFullName()).collect(Collectors.toList())));
+
         Map<String,String> pgNamesToAttrNames = topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr),attr->attr.getFullName()));
         List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
         List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
