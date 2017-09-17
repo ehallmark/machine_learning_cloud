@@ -23,6 +23,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     protected Map<String,T> patentDataMap;
     @Setter
     protected Map<String,T> applicationDataMap;
+    protected int originalPatentSize;
+    protected int originalApplicationSize;
    // protected LocalDate saveDate;
 
     private static Map<String,Map<String,?>> allPatentDataMaps = Collections.synchronizedMap(new HashMap<>());
@@ -60,6 +62,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                             System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
                         }
                     }
+                    originalPatentSize = patentDataMap.size();
                     allPatentDataMaps.put(getName(), patentDataMap);
                 }
             }
@@ -83,6 +86,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                             System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
                         }
                     }
+                    originalApplicationSize = applicationDataMap.size();
                     allApplicationDataMaps.put(getName(),applicationDataMap);
                 }
             }
@@ -125,8 +129,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     }
 
     public void save() {
-        if(patentDataMap!=null && patentDataMap.size()>0) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
-        if(applicationDataMap!=null && applicationDataMap.size()>0) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
+        if(patentDataMap!=null && patentDataMap.size()>originalPatentSize) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null && applicationDataMap.size()>originalApplicationSize) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
     protected static void safeSaveFile(Object obj, File file) {
