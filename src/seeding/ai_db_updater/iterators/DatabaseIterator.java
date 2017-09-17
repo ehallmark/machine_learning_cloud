@@ -176,10 +176,9 @@ public class DatabaseIterator {
         System.out.println("starting");
         while(rs.next()) {
             // computable attrs
-            cnt.getAndIncrement();
-           // if(cnt.getAndIncrement()%10000==9999) {
+            if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Completed: "+cnt.get());
-           // }
+            }
             List<Object[]> values = new ArrayList<>();
             int numValues = 0;
             for(int i = 0; i < pgNames.size(); i++) {
