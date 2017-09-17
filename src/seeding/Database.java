@@ -329,7 +329,7 @@ public class Database {
 	public synchronized static void setupSeedConn() throws SQLException {
 		if(seedConn==null) {
 			seedConn = DriverManager.getConnection(patentDBUrl);
-			//seedConn.setAutoCommit(false);
+			seedConn.setAutoCommit(false);
 		}
 	}
 
