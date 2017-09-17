@@ -87,7 +87,7 @@ public class DatabaseIterator {
         //runPatentGrant(transformationFunctionMap);
 
         // nested
-        runNestedTable("patent_grant_claims", new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);
+        runNestedTable("patent_grant_claim", new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);
     }
 
     private void runPatentGrant(Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException{

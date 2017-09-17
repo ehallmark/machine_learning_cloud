@@ -327,6 +327,6 @@ public class Constants {
 		PG_NAME_MAP.put(CLAIM_LENGTH,"word_count");
 		PG_NAME_MAP.put(PARENT_CLAIM_NUM, "parent_claim_id");
 		PG_NAME_MAP.put(MEANS_PRESENT, "means_present");
-		
+
 	}
 }
