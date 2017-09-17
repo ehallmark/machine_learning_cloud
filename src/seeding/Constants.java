@@ -331,7 +331,14 @@ public class Constants {
 		PG_NAME_MAP.put(CITATIONS+"."+CITED_DATE,"patent_cited_date");
 		PG_NAME_MAP.put(CITATIONS+"."+DOC_KIND,"patent_cited_kind");
 		PG_NAME_MAP.put(CITATIONS+"."+COUNTRY,"patent_cited_country");
-
+		PG_NAME_MAP.put(ASSIGNEE,"orgname");
+		PG_NAME_MAP.put(FIRST_NAME,"first_name");
+		PG_NAME_MAP.put(LAST_NAME,"last_name");
+		PG_NAME_MAP.put(RELATION_TYPE, "relation");
+		PG_NAME_MAP.put(PATENT_FAMILY+"."+NAME,"doc_number");
+		PG_NAME_MAP.put(CITY,"city");
+		PG_NAME_MAP.put(STATE,"state");
+		PG_NAME_MAP.put(ASSIGNEE_ROLE,"role");
 	}
 
 	public static final List<String> PG_PATENT_GRANT_ATTRIBUTES = Arrays.asList(
