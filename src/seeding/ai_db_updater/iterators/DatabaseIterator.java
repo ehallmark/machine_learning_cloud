@@ -115,10 +115,10 @@ public class DatabaseIterator {
                 if(cnt.getAndIncrement()%10000==9999) {
                     System.out.println("Completed: "+cnt.get());
                 }
-                computableAttributes.forEach(computableAttribute -> {
-                    computableAttribute.handlePatentData(patent.toString(),data);
-                });
-                DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
+                //computableAttributes.forEach(computableAttribute -> {
+                //    computableAttribute.handlePatentData(patent.toString(),data);
+                //});
+                //DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
             }
         }
 
