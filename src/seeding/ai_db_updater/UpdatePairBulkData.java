@@ -20,7 +20,7 @@ public class UpdatePairBulkData {
         downloader.pullMostRecentData();
         FileIterator pairIterator = new FileIterator(downloader.getDestinationFile(),(dir, name) -> {
             try {
-                return Integer.valueOf(name.substring(0,4)) >= LocalDate.now().minusYears(20).getYear();
+                return Integer.valueOf(name.substring(0,4)) >= LocalDate.now().minusYears(30).getYear();
             } catch(Exception e) {
                 return false;
             }
