@@ -151,10 +151,12 @@ public class DatabaseIterator {
         javaNames.addAll(otherAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList()));
         Stream.of(nestedAttribute.getAttributes().stream(),otherAttributes.stream()).flatMap(str->str).forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getName(),Flag.defaultTransformationFunction))));
 
-        StringJoiner selectJoin = new StringJoiner(",","select ", " from ");
+        StringJoiner selectJoin = new StringJoiner("), array_agg(n.","select array_agg(n.", ")");
         pgNames.forEach(name->selectJoin.add(name));
-        String patentDBQuery = selectJoin.toString() + " "+nestedTableName;
+        String patentDBQuery = selectJoin.toString() + ", p.pub_doc_number from "+nestedTableName+" as n join patent_grant as p on (p.pub_doc_number=n.pub_doc_number) and to_date(pub_date::varchar,'yyyymmdd') >= ? and to_date(pub_date::varchar,'yyyymmdd') < ? group by p.pub_doc_number";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
+        patentDBStatement.setDate(1, Date.valueOf(startDate));
+        patentDBStatement.setDate(2, Date.valueOf(endDate));
 
         patentDBStatement.setFetchSize(10);
 
@@ -163,30 +165,28 @@ public class DatabaseIterator {
         Collection<String> allPatents = new HashSet<>(new AssetToFilingMap().getPatentDataMap().keySet());
         ResultSet rs = patentDBStatement.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
+        System.out.println("starting");
         while(rs.next()) {
             // computable attrs
+            cnt.getAndIncrement();
            // if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Completed: "+cnt.get());
            // }
             Map<String,Object> data = new HashMap<>();
-            IntStream.range(0,javaNames.size()).forEach(i->{
-                try {
-                    Object value = i>=pgNames.size() ? "" : rs.getObject(i + 1);
-                    if(value!=null) {
-                        String name = javaNames.get(i);
-                        Flag flag = endFlag.flagMap.get(name);
-                        Object cleanValue = flag.apply(value.toString());
-                        if(cleanValue!=null) {
-                            if (debug) {
-                                System.out.println("Value type of " + javaNames.get(i) + ": " + (cleanValue.getClass().getName()));
-                            }
-                            data.put(javaNames.get(i), cleanValue);
+            for(int i = 0; i < javaNames.size(); i++) {
+                Object value = i>=pgNames.size() ? "" : rs.getObject(i + 1);
+                if(value!=null) {
+                    String name = javaNames.get(i);
+                    Flag flag = endFlag.flagMap.get(name);
+                    Object cleanValue = flag.apply(value.toString());
+                    if(cleanValue!=null) {
+                        if (debug) {
+                            System.out.println("Value type of " + javaNames.get(i) + ": " + (cleanValue.getClass().getName()));
                         }
+                        data.put(javaNames.get(i), cleanValue);
                     }
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
-            });
+            }
 
             Object patent = data.get(Constants.NAME);
             if(patent!=null) {
