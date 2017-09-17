@@ -13,29 +13,32 @@ public class UpdateAll {
     public static void main(String[] args) throws Exception {
         try {
             for (String arg : args) {
-                if (args.equals("0")) {
+                if(args.equals("0")) {
+                    UpdatePre2005DataFromPatentDB.main(args);
+                } else if (args.equals("1")) {
                     // udpate compdb
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
-                } else if (arg.equals("1")) {
-                    UpdateBaseApplicationData.main(args);
                 } else if (arg.equals("2")) {
-                    UpdateBasePatentData.main(args);
+                    UpdateBaseApplicationData.main(args);
                 } else if (arg.equals("3")) {
-                    UpdatePairBulkData.main(args);
+                    UpdateBasePatentData.main(args);
                 } else if (arg.equals("4")) {
-                    UpdateMaintenanceFeeData.main(args);
+                    UpdatePairBulkData.main(args);
                 } else if (arg.equals("5")) {
-                    UpdateClassificationHash.main(args);
+                    UpdateMaintenanceFeeData.main(args);
                 } else if (arg.equals("6")) {
-                    UpdateRelatedAssetsGraph.main(args);
+                    UpdateClassificationHash.main(args);
                 } else if (arg.equals("7")) {
-                    UpdateWIPOTechnologies.main(args);
+                    UpdateRelatedAssetsGraph.main(args);
                 } else if (arg.equals("8")) {
+                    UpdateWIPOTechnologies.main(args);
+                } else if (arg.equals("9")) {
                     UpdateAssignmentData.main(args);
-                } else if(arg.equals("9")) {
+                } else if(arg.equals("10")) {
+                    Database.main(args);
                     UpdateCompDBAndGatherData.main(args);
-                } else if (arg.equals("10")) {
+                } else if (arg.equals("11")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }
