@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UpdateWIPOTechnologies {
     static final AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) throws Exception {
-        File wipoDestinationFile = new File("data/wipo/");
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
         // Data loader
@@ -35,7 +34,7 @@ public class UpdateWIPOTechnologies {
         }
 
         // handle data
-        Arrays.stream(wipoDestinationFile.listFiles()).forEach(file->{
+        Arrays.stream(downloader.getDestinationFile().listFiles()).forEach(file->{
             try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().skip(1).parallel().forEach(line -> {
                     String[] fields = line.split("\t");
@@ -71,5 +70,6 @@ public class UpdateWIPOTechnologies {
             }
         });
 
+        downloader.cleanUp();
     }
 }

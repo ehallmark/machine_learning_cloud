@@ -29,7 +29,7 @@ public class WIPOTechnologyDownloader extends SingleFileDownloader {
     private Map<String,String> definitionMap;
 
     public WIPOTechnologyDownloader() {
-        super(new File("data/wipo/"), new File("data/wipo.zip"), Constants.WIPO_TECHNOLOGY_URL_CREATOR);
+        super(new File("wipo/"), new File("wipo.zip"), Constants.WIPO_TECHNOLOGY_URL_CREATOR);
     }
 
     @Override

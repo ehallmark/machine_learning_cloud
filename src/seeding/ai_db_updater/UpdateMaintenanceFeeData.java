@@ -23,6 +23,7 @@ public class UpdateMaintenanceFeeData {
         System.out.println("Starting to ingest data...");
         ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(assetToMaintenanceFeeReminderCountMap));
         assetToMaintenanceFeeReminderCountMap.save();
+        downloader.cleanUp();
     }
 
     public static void ingestMaintenanceFeeData(File destinationFile, MaintenanceEventHandler handler) throws Exception {

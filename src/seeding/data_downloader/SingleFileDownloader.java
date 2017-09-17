@@ -29,6 +29,24 @@ public abstract class SingleFileDownloader implements DataDownloader {
         this.zipFile=zipFile;
         this.urlCreator=urlCreator;
     }
+
+    public void cleanUp() {
+        boolean deleted;
+        try {
+            deleted = getDestinationFile().delete();
+        } catch (Exception e) {
+            deleted = false;
+        }
+        if(!deleted) {
+            // try to delete directory
+            try {
+                FileUtils.deleteDirectory(getDestinationFile());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     public void pullMostRecentData() {
         // pull and unzip

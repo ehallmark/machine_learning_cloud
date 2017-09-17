@@ -38,14 +38,15 @@ public class UpdateClassificationHash {
             AppCPCDataDownloader downloader = new AppCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new AppCPCHandler(assetToCPCMap.getApplicationDataMap()));
+            downloader.cleanUp();
         }
         {
             PatentCPCDataDownloader downloader = new PatentCPCDataDownloader();
             downloader.pullMostRecentData();
             setupClassificationsHash(downloader.getDestinationFile(), new PatentCPCHandler(assetToCPCMap.getPatentDataMap()));
+            downloader.cleanUp();
         }
         assetToCPCMap.save();
-
     }
 
     public static void setupClassificationsHash(File destinationFile, LineHandler handler) {

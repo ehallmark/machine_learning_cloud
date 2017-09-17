@@ -28,10 +28,8 @@ public class UpdatePairBulkData {
         PAIRHandler handler = new PAIRHandler(updatePostgres,updatePostgres,updateElasticSearch);
         handler.init();
         pairIterator.applyHandlers(handler);
-        try {
-            FileUtils.deleteDirectory(downloader.getDestinationFile());
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+
+        downloader.cleanUp();
+
     }
 }
