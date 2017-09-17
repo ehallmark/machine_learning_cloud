@@ -90,9 +90,9 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.CITATIONS+"."+Constants.NAME,Flag.unknownDocumentHandler);
         transformationFunctionMap.put(Constants.PRIORITY_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->{
-            if(text == null || text.length() < 5 ) return null;
+            if(text == null || text.trim().length() < 5 ) return null;
             try {
-                return Integer.valueOf(text.substring(4));
+                return Integer.valueOf(text.trim().substring(4,Math.min(text.trim().length(),9)));
             } catch(Exception e) {
                 e.printStackTrace();
                 return null;
@@ -104,7 +104,7 @@ public class DatabaseIterator {
 
         AtomicBoolean errors = new AtomicBoolean(false);
         // nested
-        ForkJoinPool pool = new ForkJoinPool(8);
+        ForkJoinPool pool = new ForkJoinPool(10);
         pool.execute(new RecursiveAction() {
              @Override
              protected void compute() {
@@ -132,8 +132,8 @@ public class DatabaseIterator {
             protected void compute() {
                 try {
                     runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                    errors.set(true);
                 } catch(Exception e) {
+                    errors.set(true);
                     e.printStackTrace();
                 }
             }
