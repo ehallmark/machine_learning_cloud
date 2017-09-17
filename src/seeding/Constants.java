@@ -327,6 +327,10 @@ public class Constants {
 		PG_NAME_MAP.put(CLAIM_LENGTH,"word_count");
 		PG_NAME_MAP.put(PARENT_CLAIM_NUM, "parent_claim_id");
 		PG_NAME_MAP.put(MEANS_PRESENT, "means_present");
+		PG_NAME_MAP.put(CITATIONS+"."+NAME,"patent_cited_doc_number");
+		PG_NAME_MAP.put(CITATIONS+"."+CITED_DATE,"patent_cited_date");
+		PG_NAME_MAP.put(CITATIONS+"."+DOC_KIND,"patent_cited_kind");
+		PG_NAME_MAP.put(CITATIONS+"."+COUNTRY,"patent_cited_country");
 
 	}
 
