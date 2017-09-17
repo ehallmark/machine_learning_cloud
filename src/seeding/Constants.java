@@ -329,4 +329,18 @@ public class Constants {
 		PG_NAME_MAP.put(MEANS_PRESENT, "means_present");
 
 	}
+
+	public static final List<String> PG_PATENT_GRANT_ATTRIBUTES = Arrays.asList(
+			NAME,
+			FILING_COUNTRY,
+			FILING_DATE,
+			FILING_NAME,
+			PUBLICATION_NAME,
+			DOC_KIND,
+			ABSTRACT,
+			INVENTION_TITLE,
+			COUNTRY,
+			CLAIM_STATEMENT,
+			LENGTH_OF_GRANT
+	);
 }

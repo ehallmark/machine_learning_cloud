@@ -91,7 +91,7 @@ public class DatabaseIterator {
     }
 
     private void runPatentGrant(Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException{
-        Map<String,String> pgNamesToAttrNames = topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr.getName()),attr->attr.getName()));
+        Map<String,String> pgNamesToAttrNames = Constants.PG_PATENT_GRANT_ATTRIBUTES.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr)).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr),attr->attr));
         List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
         List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
 
