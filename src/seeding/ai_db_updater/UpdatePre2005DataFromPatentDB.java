@@ -1,5 +1,6 @@
 package seeding.ai_db_updater;
 
+import elasticsearch.DataIngester;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.USPTOHandler;
@@ -25,7 +26,7 @@ public class UpdatePre2005DataFromPatentDB {
         computableAttributes.forEach(attr->attr.initMaps());
         DatabaseIterator.setComputableAttributes(computableAttributes);
         DatabaseIterator.setLookupTable(SimilarPatentFinder.getLookupTable());
-        LocalDate startYear = LocalDate.now().minusYears(20);
+        LocalDate startYear = LocalDate.now().minusYears(25);
         LocalDate endYear = LocalDate.of(2005,1,1);
         DatabaseIterator iterator = new DatabaseIterator(startYear,endYear);
         try {
@@ -34,6 +35,7 @@ public class UpdatePre2005DataFromPatentDB {
         } catch(Exception e) {
             e.printStackTrace();
         }
+        DataIngester.finishCurrentMongoBatch();
     }
 
     public static void main(String[] args) {

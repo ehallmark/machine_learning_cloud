@@ -20,21 +20,20 @@ import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
 
  */
 public class DatabaseIterator {
-    private static boolean debug = false;
+    private static boolean debug = true;
     @Setter
     protected static Map<String,INDArray> lookupTable;
     @Setter
@@ -60,21 +59,48 @@ public class DatabaseIterator {
         }
     }
 
-    private void saveElasticSearch(String name, String filingName, Map<String,Object> doc) {
-        if(filingName != null) {
-            if(debug)System.out.println("filing: "+filingName);
-            DataIngester.ingestBulk(name, filingName, doc, true);
-        }
-    }
-
     public void run() throws SQLException {
         Database.setupSeedConn();
         this.init();
 
-        String patentDBQuery = "select * from patentdb where pub_date::date >= ? and pub_date::date < ?";
+        Map<String,String> pgNamesToAttrNames = topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr),attr->attr.getFullName()));
+        List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
+        List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
+
+        StringJoiner selectJoin = new StringJoiner(",","select ", " from ");
+        pgNames.forEach(name->selectJoin.add(name));
+
+        String patentDBQuery = selectJoin.toString() + " patentdb where pub_date::date >= ? and pub_date::date < ?";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
         patentDBStatement.setDate(1, Date.valueOf(startDate));
         patentDBStatement.setDate(2, Date.valueOf(endDate));
+
+        patentDBStatement.setFetchSize(10);
+
+        ResultSet rs = patentDBStatement.executeQuery();
+        while(rs.next()) {
+            Map<String,Object> data = new HashMap<>();
+            IntStream.range(0,pgNames.size()).forEach(i->{
+                try {
+                    Object value = rs.getObject(i + 1);
+                    if(value!=null) {
+                        if (debug) {
+                            System.out.println("Value type of " + pgNames.get(i) + ": " + (value.getClass().getName()));
+                        }
+                        data.put(javaNames.get(i), value);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            Object patent = data.get(Constants.NAME);
+            Object filing = data.get(Constants.FILING_NAME);
+            if(patent!=null&&filing!=null) {
+                DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
+            }
+        }
+
+        patentDBStatement.close();
     }
 
 }

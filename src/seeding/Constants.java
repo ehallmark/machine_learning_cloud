@@ -309,4 +309,18 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram of");
 	}
 
+	public static final Map<String,String> PG_NAME_MAP = Collections.synchronizedMap(new HashMap<>());
+	static {
+		PG_NAME_MAP.put(NAME,"pub_doc_number");
+		PG_NAME_MAP.put(FILING_NAME, "app_doc_number");
+		PG_NAME_MAP.put(PUBLICATION_DATE,"pub_date");
+		PG_NAME_MAP.put(FILING_DATE,"app_date");
+		PG_NAME_MAP.put(DOC_KIND,"pub_kind");
+		PG_NAME_MAP.put(COUNTRY, "pub_country");
+		PG_NAME_MAP.put(ABSTRACT,"abstract");
+		PG_NAME_MAP.put(INVENTION_TITLE,"invention_title");
+		PG_NAME_MAP.put(CLAIM_STATEMENT,"us_claim_statement");
+		PG_NAME_MAP.put(LENGTH_OF_GRANT,"us_length_of_grant");
+		PG_NAME_MAP.put(FILING_COUNTRY,"app_country");
+	}
 }
