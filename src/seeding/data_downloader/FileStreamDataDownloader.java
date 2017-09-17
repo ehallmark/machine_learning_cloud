@@ -40,6 +40,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             this.name = pastLife.name;
             this.finishedFiles =  new HashSet<>(); //pastLife.finishedFiles;
             this.failedDates = pastLife.failedDates;
+            if(this.failedDates==null)this.failedDates=new HashSet<>();
         }
         try {
             this.zipDownloader = zipDownloader.newInstance();

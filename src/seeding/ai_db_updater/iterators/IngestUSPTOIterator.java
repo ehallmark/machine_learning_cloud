@@ -57,33 +57,34 @@ public abstract class IngestUSPTOIterator implements DateIterator {
                 };
                 action.fork();
                 tasks.add(action);
-            }
-            final String zipFilename = zipFilePrefix + startDate;
-            if(!new File(zipFilename).exists()) {
-                final LocalDate date = startDate;
-                RecursiveAction action = new RecursiveAction() {
-                    @Override
-                    protected void compute() {
-                        for (UrlCreator urlCreator : urlCreators) {
-                            try {
-                                URL website = new URL(urlCreator.create(date));
-                                System.out.println("Trying: " + website.toString());
-                                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
-                                FileOutputStream fos = new FileOutputStream(zipFilename);
-                                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                                fos.close();
-                                System.out.println("FOUND!!!!!!!!!!!!");
+            } else {
+                final String zipFilename = zipFilePrefix + startDate;
+                if (!new File(zipFilename).exists()) {
+                    final LocalDate date = startDate;
+                    RecursiveAction action = new RecursiveAction() {
+                        @Override
+                        protected void compute() {
+                            for (UrlCreator urlCreator : urlCreators) {
+                                try {
+                                    URL website = new URL(urlCreator.create(date));
+                                    System.out.println("Trying: " + website.toString());
+                                    ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                    FileOutputStream fos = new FileOutputStream(zipFilename);
+                                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                                    fos.close();
+                                    System.out.println("FOUND!!!!!!!!!!!!");
 
-                            } catch (Exception e) {
-                                System.out.println("... Failed");
+                                } catch (Exception e) {
+                                    System.out.println("... Failed");
+                                }
                             }
                         }
-                    }
-                };
-                action.fork();
-                tasks.add(action);
+                    };
+                    action.fork();
+                    tasks.add(action);
+                }
+                startDate = startDate.plusDays(1);
             }
-            startDate = startDate.plusDays(1);
             while(tasks.size()>Runtime.getRuntime().availableProcessors()*4) {
                 tasks.remove(0).join();
             }
