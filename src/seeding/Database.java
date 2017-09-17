@@ -333,6 +333,12 @@ public class Database {
 		}
 	}
 
+	public synchronized static Connection newSeedConn() throws SQLException {
+		Connection seedConn = DriverManager.getConnection(patentDBUrl);
+		seedConn.setAutoCommit(false);
+		return seedConn;
+	}
+
 	public synchronized static void setupCompDBConn() throws SQLException {
 		compDBConn = DriverManager.getConnection(compDBUrl);
 		compDBConn.setAutoCommit(false);
