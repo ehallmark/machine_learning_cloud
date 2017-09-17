@@ -160,14 +160,14 @@ public class DatabaseIterator {
 
         System.out.println("Executing query: "+patentDBStatement.toString());
 
-        Collection<String> allPatents = new AssetToFilingMap().getPatentDataMap().keySet();
+        Collection<String> allPatents = new HashSet<>(new AssetToFilingMap().getPatentDataMap().keySet());
         ResultSet rs = patentDBStatement.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         while(rs.next()) {
             // computable attrs
-            if(cnt.getAndIncrement()%10000==9999) {
+           // if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Completed: "+cnt.get());
-            }
+           // }
             Map<String,Object> data = new HashMap<>();
             IntStream.range(0,javaNames.size()).forEach(i->{
                 try {
@@ -204,7 +204,7 @@ public class DatabaseIterator {
             }
             endFlag.save();
         }
-
+        endFlag.flagMap.clear();
         patentDBStatement.close();
     }
 
