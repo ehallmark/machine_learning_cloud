@@ -153,7 +153,7 @@ public class DatabaseIterator {
 
         StringJoiner selectJoin = new StringJoiner("), array_agg(n.","select array_agg(n.", ")");
         pgNames.forEach(name->selectJoin.add(name));
-        String patentDBQuery = selectJoin.toString() + ", p.pub_doc_number from "+nestedTableName+" as n join patent_grant as p on (p.pub_doc_number=n.pub_doc_number) and to_date(pub_date::varchar,'yyyymmdd') >= ? and to_date(pub_date::varchar,'yyyymmdd') < ? group by p.pub_doc_number";
+        String patentDBQuery = selectJoin.toString() + ", n.pub_doc_number from "+nestedTableName+" as n join patent_grant as p on (p.pub_doc_number=n.pub_doc_number) and to_date(pub_date::varchar,'yyyymmdd') >= ? and to_date(pub_date::varchar,'yyyymmdd') < ? group by n.pub_doc_number";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
         patentDBStatement.setDate(1, Date.valueOf(startDate));
         patentDBStatement.setDate(2, Date.valueOf(endDate));
