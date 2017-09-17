@@ -24,6 +24,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     protected String zipFilePrefix;
     protected String name;
     protected Set<String> finishedFiles;
+    protected Set<LocalDate> failedDates;
     protected LocalDate lastUpdatedDate;
     protected transient DateIterator zipDownloader;
     public FileStreamDataDownloader(String name, Class<? extends DateIterator> zipDownloader, LocalDate lastUpdatedDate) {
@@ -33,10 +34,12 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             this.lastUpdatedDate = lastUpdatedDate;
             this.name = name;
             this.finishedFiles = new HashSet<>();
+            this.failedDates = new HashSet<>();
         } else {
             this.lastUpdatedDate = pastLife.lastUpdatedDate;
             this.name = pastLife.name;
-            this.finishedFiles = new HashSet<>(); // TODO pastLife.finishedFiles;
+            this.finishedFiles = pastLife.finishedFiles;
+            this.failedDates = pastLife.failedDates;
         }
         try {
             this.zipDownloader = zipDownloader.newInstance();
@@ -49,7 +52,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     @Override
     public synchronized void pullMostRecentData() {
         // pull zips only
-        zipDownloader.run(lastUpdatedDate);
+        zipDownloader.run(lastUpdatedDate,failedDates);
     }
 
     public Stream<File> zipFileStream() {
@@ -69,6 +72,13 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             return null;
         }
     }
+
+    public synchronized void errorOnFile(File file) {
+        System.out.println("Error on file: "+file.getName());
+        failedDates.add(dateFromFileName(file.getName()));
+    }
+
+    public abstract LocalDate dateFromFileName(String name);
 
     public synchronized void finishedIngestingFile(File file) {
         System.out.println("Finished file: "+file.getName());

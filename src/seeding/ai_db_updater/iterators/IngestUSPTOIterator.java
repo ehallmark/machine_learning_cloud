@@ -8,7 +8,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.RecursiveAction;
 
@@ -26,9 +28,36 @@ public abstract class IngestUSPTOIterator implements DateIterator {
         this.urlCreators=urlCreators;
     }
 
-    public void run(LocalDate startDate) {
+    @Override
+    public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
         List<RecursiveAction> tasks = new ArrayList<>();
-        while (startDate.isBefore(LocalDate.now())) {
+        List<LocalDate> failedDatesList = new ArrayList<>(failedDates);
+        while (startDate.isBefore(LocalDate.now())||failedDatesList.size()>0) {
+            if(failedDatesList.size()>0) {
+                final LocalDate date = failedDatesList.remove(0);
+                final String zipFilename = zipFilePrefix + date.format(DateTimeFormatter.ISO_DATE);
+                RecursiveAction action = new RecursiveAction() {
+                    @Override
+                    protected void compute() {
+                        for (UrlCreator urlCreator : urlCreators) {
+                            try {
+                                URL website = new URL(urlCreator.create(date));
+                                System.out.println("Trying: " + website.toString());
+                                ReadableByteChannel rbc = Channels.newChannel(website.openStream());
+                                FileOutputStream fos = new FileOutputStream(zipFilename);
+                                fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                                fos.close();
+                                System.out.println("FOUND!!!!!!!!!!!!");
+
+                            } catch (Exception e) {
+                                System.out.println("... Failed");
+                            }
+                        }
+                    }
+                };
+                action.fork();
+                tasks.add(action);
+            }
             final String zipFilename = zipFilePrefix + startDate;
             if(!new File(zipFilename).exists()) {
                 final LocalDate date = startDate;

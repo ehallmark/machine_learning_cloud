@@ -1,6 +1,7 @@
 package seeding.ai_db_updater.iterators;
 
 import lombok.Getter;
+import org.eclipse.collections.impl.bag.strategy.mutable.HashBagWithHashingStrategy;
 import seeding.Constants;
 
 import java.io.File;
@@ -9,7 +10,10 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -19,7 +23,8 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
     @Getter
     private String zipFilePrefix = Constants.ASSIGNMENT_ZIP_FOLDER;
 
-    public void run(LocalDate startDate) {
+    public void run(LocalDate startDate, Collection<LocalDate> failedDates) {
+        List<LocalDate> failedDatesList = new ArrayList<>(failedDates);
         // go through assignment xml data and update records using assignment sax handler
         LocalDate date = LocalDate.now();
         String endDateStr = String.valueOf(date.getYear()).substring(2, 4) + String.format("%02d", date.getMonthValue()) + String.format("%02d", date.getDayOfMonth());
@@ -33,7 +38,6 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         List<String> backYearDates = new ArrayList<>(numFilesForBackYearData);
 
         if(startDate.getYear()< 2016) {
-
             for (int i = backYearDataStartNum; i < backYearDataStartNum + numFilesForBackYearData; i++) {
                 backYearDates.add(String.format("%06d", backYearDataDate) + "-" + String.format("%02d", i));
             }
@@ -43,10 +47,17 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
         System.out.println("Starting with date: " + lastIngestedDate);
         System.out.println("Ending with date: " + endDateInt);
         String base_url = "http://patents.reedtech.com/downloads/PatentAssignmentText/---/ad20";
-        while (lastIngestedDate <= endDateInt||backYearDates.size()>0) {
+        while (lastIngestedDate <= endDateInt||backYearDates.size()>0||failedDatesList.size()>0) {
             String finalUrlString;
             String zipDate;
-            if (backYearDates.isEmpty()) {
+            boolean wasFailed = false;
+            if(failedDatesList.size()>0) {
+                wasFailed= true;
+                int failedDate = Integer.valueOf(failedDatesList.remove(0).format(DateTimeFormatter.BASIC_ISO_DATE)) % 20000000;
+                finalUrlString = base_url + String.format("%06d", failedDate) + ".zip";
+                finalUrlString = finalUrlString.replace("---", "20" + String.format("%02d", failedDate / 10000));
+                zipDate=String.valueOf(failedDate);
+            } else if (backYearDates.isEmpty()) {
                 lastIngestedDate = lastIngestedDate + 1;
                 // don't over search days
                 if (lastIngestedDate % 100 > 31) {
@@ -64,7 +75,7 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
                 finalUrlString = finalUrlString.replaceFirst("---", "1980-2015");
 
             }
-            if(! new File(zipFilePrefix+zipDate).exists()) {
+            if(wasFailed || ! new File(zipFilePrefix+zipDate).exists()) {
                 try {
                     // Unzip file
                     URL website = new URL(finalUrlString);
@@ -82,4 +93,5 @@ public class IngestUSPTOAssignmentIterator implements DateIterator {
             }
         }
     }
+
 }

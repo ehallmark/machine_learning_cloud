@@ -45,6 +45,7 @@ public class ZipFileIterator implements WebIterator {
         List<File> fileStream = dataDownloader.zipFileStream().sorted(Comparator.comparing(e->e.getName())).collect(Collectors.toList());
         (parallel ? fileStream.parallelStream() : fileStream.stream()).forEach(zipFile->{
             final String destinationFilename = destinationPrefix + zipFile.getName();
+            AtomicBoolean failed = new AtomicBoolean(false);
             try {
                 System.out.print("Starting to unzip: "+zipFile.getName()+"...");
                 // Unzip file
@@ -70,7 +71,6 @@ public class ZipFileIterator implements WebIterator {
 
                     FileReader fr = new FileReader(xmlFile);
                     BufferedReader br = new BufferedReader(fr);
-                    AtomicBoolean failed = new AtomicBoolean(false);
 
                     if(perDocument) {
                         String line;
@@ -116,6 +116,7 @@ public class ZipFileIterator implements WebIterator {
                             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(xmlFile))) {
                                 saxParser.parse(bis, handler.newInstance());
                             } catch (Exception e) {
+                                failed.set(true);
                                 e.printStackTrace();
                             }
                         }
@@ -126,12 +127,20 @@ public class ZipFileIterator implements WebIterator {
                         dataDownloader.finishedIngestingFile(zipFile);
                         dataDownloader.save();
                     }
+                } else {
+                    failed.set(true);
                 }
 
             } catch (Exception e) {
+                failed.set(true);
                 e.printStackTrace();
             } finally {
                 // cleanup
+                if(failed.get()) {
+                    dataDownloader.errorOnFile(zipFile);
+                    dataDownloader.save();
+                }
+
                 File xmlFile = new File(destinationFilename);
                 if (xmlFile.exists()) xmlFile.delete();
             }
