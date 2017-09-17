@@ -11,6 +11,6 @@ import java.time.LocalDate;
  */
 public class AssignmentDataDownloader extends FileStreamDataDownloader {
     public AssignmentDataDownloader() {
-        super(Constants.ASSIGNMENTS, IngestUSPTOAssignmentIterator.class, Constants.DEFAULT_START_DATE);
+        super(Constants.ASSIGNMENTS, IngestUSPTOAssignmentIterator.class, Constants.DEFAULT_ASSIGNMENT_START_DATE);
     }
 }

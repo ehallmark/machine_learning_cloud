@@ -148,7 +148,8 @@ public class Constants {
 	public static final UrlCreator APP_CPC_URL_CREATOR = maintenanceUrlCreator("https://bulkdata.uspto.gov/data/patent/classification/cpc/US_PGPub_CPC_MCF_Text_");
 	public static final UrlCreator PAIR_BULK_URL_CREATOR = date -> "https://pairbulkdata.uspto.gov/api/full-download?format=XML";
 
-	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
+	public static final LocalDate DEFAULT_ASSIGNMENT_START_DATE = LocalDate.of(2016, Month.JANUARY, 1);
+	public static final LocalDate DEFAULT_START_DATE = LocalDate.of(2005, Month.JANUARY, 1);
 	public static final String PATENT_ZIP_FOLDER = "data/patents/";
 	public static final String APP_ZIP_FOLDER = "data/applications/";
 	public static final String ASSIGNMENT_ZIP_FOLDER = "data/assignments/";
