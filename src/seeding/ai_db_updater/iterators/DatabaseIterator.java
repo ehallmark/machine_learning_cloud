@@ -73,8 +73,7 @@ public class DatabaseIterator {
 
         System.out.println("Attrs: "+String.join(", ",topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getName())).map(attr->attr.getName()).collect(Collectors.toList())));
 
-
-        EndFlag endFlag = new EndFlag("") {
+        EndFlag claimEndFlag = new EndFlag("") {
             @Override
             public void save() {
                 dataMap = new HashMap<>();
@@ -86,7 +85,7 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.ASSIGNEE,Flag.assigneeTransformationFunction);
-        transformationFunctionMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Flag.smallestIndClaimTransformationFunction(endFlag));
+        transformationFunctionMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Flag.smallestIndClaimTransformationFunction(claimEndFlag));
         transformationFunctionMap.put(Constants.CITED_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.CITATIONS+"."+Constants.NAME,Flag.unknownDocumentHandler);
         transformationFunctionMap.put(Constants.PRIORITY_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
@@ -121,7 +120,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -132,7 +131,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                     errors.set(true);
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -143,7 +142,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -154,7 +153,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -165,7 +164,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -176,7 +175,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_citation", Constants.NAME, new CitationsNestedAttribute(), Collections.emptyList(), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_citation", Constants.NAME, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -187,7 +186,7 @@ public class DatabaseIterator {
             @Override
             protected void compute() {
                 try {
-                    runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);
+                    runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), claimEndFlag, transformationFunctionMap);
                 } catch(Exception e) {
                     errors.set(true);
                     e.printStackTrace();
@@ -315,6 +314,16 @@ public class DatabaseIterator {
         }
 
         patentDBStatement.close();
+    }
+
+    private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, Collection<AbstractAttribute> otherAttributes, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
+        EndFlag endFlag = new EndFlag("") {
+            @Override
+            public void save() {
+                dataMap = new HashMap<>();
+            }
+        };
+        this.runNestedTable(nestedTableName, requiredAttr, nestedAttribute, otherAttributes, endFlag, transformationFunctionMap);
     }
 
     private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, Collection<AbstractAttribute> otherAttributes, EndFlag endFlag, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
