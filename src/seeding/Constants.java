@@ -336,6 +336,12 @@ public class Constants {
 		PG_NAME_MAP.put(LAST_NAME,"last_name");
 		PG_NAME_MAP.put(RELATION_TYPE, "relation");
 		PG_NAME_MAP.put(PATENT_FAMILY+"."+NAME,"doc_number");
+		PG_NAME_MAP.put(ASSIGNEES+"."+COUNTRY, "country");
+		PG_NAME_MAP.put(LATEST_ASSIGNEE+"."+COUNTRY, "country");
+		PG_NAME_MAP.put(PATENT_FAMILY+"."+COUNTRY, "country");
+		PG_NAME_MAP.put(AGENTS+"."+COUNTRY, "country");
+		PG_NAME_MAP.put(APPLICANTS+"."+COUNTRY, "country");
+		PG_NAME_MAP.put(PATENT_FAMILY+"."+DOC_KIND, "kind");
 		PG_NAME_MAP.put(CITY,"city");
 		PG_NAME_MAP.put(STATE,"state");
 		PG_NAME_MAP.put(ASSIGNEE_ROLE,"role");
