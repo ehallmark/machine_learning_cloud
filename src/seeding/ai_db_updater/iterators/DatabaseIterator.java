@@ -270,7 +270,7 @@ public class DatabaseIterator {
     private void runPriorityClaim(Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException{
         List<String> javaNames = Arrays.asList(Constants.PRIORITY_DATE);
 
-        String patentDBQuery = "select min(claim_date::integer), c.pub_doc_number from patent_grant_priority_claim as c join patent_grant as p on (c.pub_doc_number=p.pub_doc_number) where claim_date is not null and pub_date >= ? and pub_date < ? group by c.pub_doc_number";
+        String patentDBQuery = "select min(claim_date::integer), c.pub_doc_number from patent_grant_priority_claim as c join patent_grant as p on (c.pub_doc_number=p.pub_doc_number) where claim_date is not null and isnumeric(claim_date) and pub_date >= ? and pub_date < ? group by c.pub_doc_number";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
         patentDBStatement.setInt(1, Integer.valueOf(startDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
         patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));

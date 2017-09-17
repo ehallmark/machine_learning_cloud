@@ -108,7 +108,16 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
         T val = handleIncomingData(item,allData,patentDataMap,false);
         if(val!=null) {
             if(parent!=null) {
-                allData = (Map<String,Object>)allData.get(parent.getName());
+                Object _allData = allData.get(parent.getName());
+                if(_allData instanceof List) {
+                    if(((List)_allData).size()>0) {
+                        allData = (Map<String, Object>) (((List) _allData).get(0));
+                    } else {
+                        allData=null;
+                    }
+                } else {
+                    allData = (Map<String, Object>) _allData;
+                }
             }
             if(allData!=null) {
                 allData.put(getName(), val);
