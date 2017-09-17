@@ -84,7 +84,7 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->(text == null || text.length() < 5 ? null : Integer.valueOf(text.substring(4))));
 
 
-        runPatentGrant(transformationFunctionMap);
+       // runPatentGrant(transformationFunctionMap);
 
         // nested
         runNestedTable("patent_grant_claim", new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);
@@ -98,10 +98,10 @@ public class DatabaseIterator {
         StringJoiner selectJoin = new StringJoiner(",","select ", " from ");
         pgNames.forEach(name->selectJoin.add(name));
 
-        String patentDBQuery = selectJoin.toString() + " patent_grant where to_date(pub_date::varchar,'yyyymmdd') >= ? and to_date(pub_date::varchar,'yyyymmdd') < ?";
+        String patentDBQuery = selectJoin.toString() + " patent_grant where pub_date >= ? and pub_date < ?";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
-        patentDBStatement.setDate(1, Date.valueOf(startDate));
-        patentDBStatement.setDate(2, Date.valueOf(endDate));
+        patentDBStatement.setInt(1, Integer.valueOf(startDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
+        patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
         patentDBStatement.setFetchSize(10);
 
@@ -153,10 +153,10 @@ public class DatabaseIterator {
 
         StringJoiner selectJoin = new StringJoiner("), array_agg(n.","select array_agg(n.", ")");
         pgNames.forEach(name->selectJoin.add(name));
-        String patentDBQuery = selectJoin.toString() + ", n.pub_doc_number from "+nestedTableName+" as n join patent_grant as p on (p.pub_doc_number=n.pub_doc_number) and to_date(pub_date::varchar,'yyyymmdd') >= ? and to_date(pub_date::varchar,'yyyymmdd') < ? group by n.pub_doc_number";
+        String patentDBQuery = selectJoin.toString() + ", n.pub_doc_number from "+nestedTableName+" as n join patent_grant as p on (p.pub_doc_number=n.pub_doc_number) and pub_date >= ? and pub_date < ? group by n.pub_doc_number";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
-        patentDBStatement.setDate(1, Date.valueOf(startDate));
-        patentDBStatement.setDate(2, Date.valueOf(endDate));
+        patentDBStatement.setInt(1, Integer.valueOf(startDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
+        patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
 
         patentDBStatement.setFetchSize(10);
 
