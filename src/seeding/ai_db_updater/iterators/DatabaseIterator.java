@@ -81,7 +81,15 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Flag.smallestIndClaimTransformationFunction(endFlag));
-        transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->(text == null || text.length() < 5 ? null : Integer.valueOf(text.substring(4))));
+        transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->{
+            if(text == null || text.length() < 5 ) return null;
+            try {
+                return Integer.valueOf(text.substring(4));
+            } catch(Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
 
 
        // runPatentGrant(transformationFunctionMap);
