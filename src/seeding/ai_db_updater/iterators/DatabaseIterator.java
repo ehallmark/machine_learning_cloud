@@ -26,6 +26,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -77,7 +78,15 @@ public class DatabaseIterator {
         patentDBStatement.setDate(1, Date.valueOf(startDate));
         patentDBStatement.setDate(2, Date.valueOf(endDate));
 
+        Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap = Collections.synchronizedMap(new HashMap<>());
+        transformationFunctionMap.put(Constants.FILING_NAME, Flag.filingDocumentHandler);
+        transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
+        transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
+
+
         patentDBStatement.setFetchSize(10);
+
+        System.out.println("Executing query: "+patentDBStatement.toString());
 
         ResultSet rs = patentDBStatement.executeQuery();
         while(rs.next()) {
@@ -86,10 +95,13 @@ public class DatabaseIterator {
                 try {
                     Object value = rs.getObject(i + 1);
                     if(value!=null) {
+                        String name = javaNames.get(i);
+                        Flag flag = Flag.simpleFlag(name,name,null).withTransformationFunction(transformationFunctionMap.getOrDefault(name,Flag.defaultTransformationFunction));
+                        Object cleanValue = flag.apply(value.toString());
                         if (debug) {
                             System.out.println("Value type of " + pgNames.get(i) + ": " + (value.getClass().getName()));
                         }
-                        data.put(javaNames.get(i), value);
+                        data.put(javaNames.get(i), cleanValue);
                     }
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -98,6 +110,10 @@ public class DatabaseIterator {
             Object patent = data.get(Constants.NAME);
             Object filing = data.get(Constants.FILING_NAME);
             if(patent!=null&&filing!=null) {
+                // computable attrs
+                computableAttributes.forEach(computableAttribute -> {
+                    computableAttribute.handlePatentData(patent.toString(),data);
+                });
                 DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
             }
         }
