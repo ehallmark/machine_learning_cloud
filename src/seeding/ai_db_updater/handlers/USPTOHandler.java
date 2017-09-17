@@ -288,21 +288,8 @@ public class USPTOHandler extends NestedHandler {
             }
         }));
         claimFlag.addChild(Flag.integerFlag("claim",Constants.CLAIM_LENGTH,claimFlag).withTransformationFunction(f->s->s==null?0:s.split("\\s+").length));
-        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).setIsForeign(true).withTransformationFunction(f->
-                s->{
-                    if (s == null) s = "";
-                    String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
-                    boolean isIndependent = (parentClaimNum==null || parentClaimNum.isEmpty()) && !s.contains("(canceled)");
-                    if(isIndependent) {
-                        String previousWordCount = documentFlag.getDataMap().get(f);
-                        int wordCount = s.split("\\s+").length;
-                        if (previousWordCount == null || previousWordCount.isEmpty() || Integer.valueOf(previousWordCount) > wordCount) {
-                            documentFlag.getDataMap().put(f, String.valueOf(wordCount));
-                        }
-                    }
-                    return null; // prevent default behavior (must have isForeign set to true)
-                })
-        );
+        claimFlag.addChild(Flag.integerFlag("claim",Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,claimFlag).setIsForeign(true).withTransformationFunction(Flag.smallestIndClaimTransformationFunction(documentFlag)));
+
         Flag claimRefWrapper = Flag.parentFlag("claim-ref");
         claimFlag.addChild(claimRefWrapper);
         claimRefWrapper.addChild(Flag.integerFlag("idref",Constants.PARENT_CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{

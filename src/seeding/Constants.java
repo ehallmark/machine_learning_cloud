@@ -322,5 +322,11 @@ public class Constants {
 		PG_NAME_MAP.put(CLAIM_STATEMENT,"us_claim_statement");
 		PG_NAME_MAP.put(LENGTH_OF_GRANT,"us_length_of_grant");
 		PG_NAME_MAP.put(FILING_COUNTRY,"app_country");
+		PG_NAME_MAP.put(CLAIM,"claim_text");
+		PG_NAME_MAP.put(CLAIM_NUM,"number");
+		PG_NAME_MAP.put(CLAIM_LENGTH,"word_count");
+		PG_NAME_MAP.put(PARENT_CLAIM_NUM, "parent_claim_id");
+		PG_NAME_MAP.put(MEANS_PRESENT, "means_present");
+		
 	}
 }

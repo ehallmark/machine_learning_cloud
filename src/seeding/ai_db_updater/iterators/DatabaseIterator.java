@@ -14,8 +14,9 @@ import seeding.ai_db_updater.handlers.NestedHandler;
 import seeding.ai_db_updater.handlers.flags.EndFlag;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import user_interface.server.SimilarPatentServer;
-import user_interface.ui_models.attributes.AbstractAttribute;
+import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.sql.Date;
@@ -29,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /**
 
@@ -64,9 +66,32 @@ public class DatabaseIterator {
         Database.setupSeedConn();
         this.init();
 
-        System.out.println("Attrs: "+String.join(", ",topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())).map(attr->attr.getFullName()).collect(Collectors.toList())));
+        System.out.println("Attrs: "+String.join(", ",topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getName())).map(attr->attr.getName()).collect(Collectors.toList())));
 
-        Map<String,String> pgNamesToAttrNames = topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr.getFullName()),attr->attr.getFullName()));
+
+        EndFlag endFlag = new EndFlag("") {
+            @Override
+            public void save() {
+                dataMap = new HashMap<>();
+            }
+        };
+
+        Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap = Collections.synchronizedMap(new HashMap<>());
+        transformationFunctionMap.put(Constants.FILING_NAME, Flag.filingDocumentHandler);
+        transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
+        transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
+        transformationFunctionMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Flag.smallestIndClaimTransformationFunction(endFlag));
+        transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->(text == null || text.length() < 5 ? null : Integer.valueOf(text.substring(4))));
+
+
+        //runPatentGrant(transformationFunctionMap);
+
+        // nested
+        runNestedTable("patent_grant_claims", new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);
+    }
+
+    private void runPatentGrant(Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException{
+        Map<String,String> pgNamesToAttrNames = topLevelAttributes.stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.get(attr.getName()),attr->attr.getName()));
         List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
         List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
 
@@ -78,12 +103,6 @@ public class DatabaseIterator {
         patentDBStatement.setDate(1, Date.valueOf(startDate));
         patentDBStatement.setDate(2, Date.valueOf(endDate));
 
-        Map<String,Function<Flag,Function<String,?>>> transformationFunctionMap = Collections.synchronizedMap(new HashMap<>());
-        transformationFunctionMap.put(Constants.FILING_NAME, Flag.filingDocumentHandler);
-        transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
-        transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
-
-
         patentDBStatement.setFetchSize(10);
 
         System.out.println("Executing query: "+patentDBStatement.toString());
@@ -91,6 +110,10 @@ public class DatabaseIterator {
         ResultSet rs = patentDBStatement.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         while(rs.next()) {
+            // computable attrs
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Completed: "+cnt.get());
+            }
             Map<String,Object> data = new HashMap<>();
             IntStream.range(0,pgNames.size()).forEach(i->{
                 try {
@@ -111,15 +134,75 @@ public class DatabaseIterator {
             Object patent = data.get(Constants.NAME);
             Object filing = data.get(Constants.FILING_NAME);
             if(patent!=null&&filing!=null) {
-                // computable attrs
-                if(cnt.getAndIncrement()%10000==9999) {
-                    System.out.println("Completed: "+cnt.get());
-                }
-                //computableAttributes.forEach(computableAttribute -> {
-                //    computableAttribute.handlePatentData(patent.toString(),data);
-                //});
-                //DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
+                computableAttributes.forEach(computableAttribute -> {
+                    computableAttribute.handlePatentData(patent.toString(),data);
+                });
+                DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
             }
+        }
+
+        patentDBStatement.close();
+    }
+
+    private void runNestedTable(String nestedTableName, NestedAttribute nestedAttribute, Collection<AbstractAttribute> otherAttributes, EndFlag endFlag, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
+        Map<String,String> pgNamesToAttrNames = nestedAttribute.getAttributes().stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())||Constants.PG_NAME_MAP.containsKey(attr.getName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.getOrDefault(attr.getFullName(),Constants.PG_NAME_MAP.get(attr.getName())),attr->attr.getName()));
+        List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
+        List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
+        javaNames.addAll(otherAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList()));
+        Stream.of(nestedAttribute.getAttributes().stream(),otherAttributes.stream()).flatMap(str->str).forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getName(),Flag.defaultTransformationFunction))));
+
+        StringJoiner selectJoin = new StringJoiner(",","select ", " from ");
+        pgNames.forEach(name->selectJoin.add(name));
+        String patentDBQuery = selectJoin.toString() + " "+nestedTableName;
+        PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
+
+        patentDBStatement.setFetchSize(10);
+
+        System.out.println("Executing query: "+patentDBStatement.toString());
+
+        Collection<String> allPatents = new AssetToFilingMap().getPatentDataMap().keySet();
+        ResultSet rs = patentDBStatement.executeQuery();
+        AtomicLong cnt = new AtomicLong(0);
+        while(rs.next()) {
+            // computable attrs
+            if(cnt.getAndIncrement()%10000==9999) {
+                System.out.println("Completed: "+cnt.get());
+            }
+            Map<String,Object> data = new HashMap<>();
+            IntStream.range(0,javaNames.size()).forEach(i->{
+                try {
+                    Object value = i>=pgNames.size() ? "" : rs.getObject(i + 1);
+                    if(value!=null) {
+                        String name = javaNames.get(i);
+                        Flag flag = endFlag.flagMap.get(name);
+                        Object cleanValue = flag.apply(value.toString());
+                        if(cleanValue!=null) {
+                            if (debug) {
+                                System.out.println("Value type of " + javaNames.get(i) + ": " + (cleanValue.getClass().getName()));
+                            }
+                            data.put(javaNames.get(i), cleanValue);
+                        }
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            Object patent = data.get(Constants.NAME);
+            if(patent!=null) {
+                if(allPatents.contains(patent.toString())) {
+                    Map<String, Object> fullMap = new HashMap<>();
+                    fullMap.put(nestedAttribute.getName(), data);
+                    endFlag.getDataMap().forEach((flag,attr)->{
+                        fullMap.put(flag.dbName,attr);
+                    });
+                    computableAttributes.forEach(computableAttribute -> {
+                        computableAttribute.handlePatentData(patent.toString(), fullMap);
+                    });
+                    DataIngester.ingestBulk(patent.toString(), null, fullMap, false);
+                }
+            }
+            endFlag.save();
         }
 
         patentDBStatement.close();

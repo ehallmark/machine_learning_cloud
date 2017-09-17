@@ -33,6 +33,24 @@ public class Flag {
         };
     }
 
+    public static  Function<Flag,Function<String,?>> smallestIndClaimTransformationFunction(EndFlag documentFlag) {
+        return f->{
+            return s->{
+                if (s == null) s = "";
+                String parentClaimNum = f.getDataForField(Constants.PARENT_CLAIM_NUM);
+                boolean isIndependent = (parentClaimNum==null || parentClaimNum.isEmpty()) && !s.contains("(canceled)");
+                if(isIndependent) {
+                    String previousWordCount = documentFlag.getDataMap().get(f);
+                    int wordCount = s.split("\\s+").length;
+                    if (previousWordCount == null || previousWordCount.isEmpty() || Integer.valueOf(previousWordCount) > wordCount) {
+                        documentFlag.getDataMap().put(f, String.valueOf(wordCount));
+                    }
+                }
+                return null; // prevent default behavior (must have isForeign set to true)
+            };
+        };
+    }
+
     public static final Function<Flag,Function<String,Boolean>> endsWithCompareFunction = (flag) -> (str) ->{
         return flag.localName.endsWith(str);
     };
