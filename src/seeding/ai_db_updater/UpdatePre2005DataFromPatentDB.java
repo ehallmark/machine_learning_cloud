@@ -26,9 +26,9 @@ public class UpdatePre2005DataFromPatentDB {
         computableAttributes.forEach(attr->attr.initMaps());
         DatabaseIterator.setComputableAttributes(computableAttributes);
         DatabaseIterator.setLookupTable(SimilarPatentFinder.getLookupTable());
-        LocalDate startYear = LocalDate.now().minusYears(25);
-        LocalDate endYear = LocalDate.of(2005,1,1);
-        DatabaseIterator iterator = new DatabaseIterator(startYear,endYear);
+        LocalDate startDate = LocalDate.now().minusYears(25);
+        LocalDate endDate = LocalDate.of(2005,1,1);
+        DatabaseIterator iterator = new DatabaseIterator(startDate,endDate);
         try {
             iterator.run();
             iterator.save();

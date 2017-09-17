@@ -72,7 +72,7 @@ public class DatabaseIterator {
         StringJoiner selectJoin = new StringJoiner(",","select ", " from ");
         pgNames.forEach(name->selectJoin.add(name));
 
-        String patentDBQuery = selectJoin.toString() + " patent_grant where pub_date::date >= ? and pub_date::date < ?";
+        String patentDBQuery = selectJoin.toString() + " patent_grant where pub_date::varchar::date >= ? and pub_date::varchar::date < ?";
         PreparedStatement patentDBStatement = Database.seedConn.prepareStatement(patentDBQuery);
         patentDBStatement.setDate(1, Date.valueOf(startDate));
         patentDBStatement.setDate(2, Date.valueOf(endDate));
