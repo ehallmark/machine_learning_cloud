@@ -84,7 +84,7 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.PARENT_CLAIM_NUM,f->text->(text == null || text.length() < 5 ? null : Integer.valueOf(text.substring(4))));
 
 
-        //runPatentGrant(transformationFunctionMap);
+        runPatentGrant(transformationFunctionMap);
 
         // nested
         runNestedTable("patent_grant_claim", new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), endFlag, transformationFunctionMap);

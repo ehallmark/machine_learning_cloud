@@ -66,7 +66,7 @@ public class DataIngester {
     private static final AtomicInteger insertCounter = new AtomicInteger(0);
     private static final AtomicInteger updateCounter = new AtomicInteger(0);
 
-    private static void addToInsertMap(String collection, Document doc) {
+   /* private static void addToInsertMap(String collection, Document doc) {
         if(!insertBatchMap.containsKey(collection)) {
             insertBatchMap.put(collection, Collections.synchronizedList(new ArrayList<>()));
         }
@@ -75,7 +75,7 @@ public class DataIngester {
             insertCounter.set(0);
             insertBatch();
         }
-    }
+    } */
 
     private static void addToUpdateMap(String collection, WriteModel<Document> model) {
         if(!updateBatchMap.containsKey(collection)) {
@@ -104,8 +104,10 @@ public class DataIngester {
             assetDoc.put("_parent", parent);
             filingDoc.put("_id", parent);
             if(id!=null) {
-                assetDoc.put("_id", id);
-                addToInsertMap(TYPE_NAME,new Document(assetDoc));
+                Document upsertDoc = new Document("$set",assetDoc);
+                Document upsertQuery = new Document("_id", id);
+                WriteModel<Document> model = new UpdateOneModel<>(upsertQuery, upsertDoc, new UpdateOptions().upsert(true));
+                addToUpdateMap(TYPE_NAME, model);
             }
             // upsert
             Document upsertParentDoc = new Document("$set",filingDoc);

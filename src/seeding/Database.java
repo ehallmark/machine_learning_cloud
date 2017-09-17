@@ -703,7 +703,6 @@ public class Database {
 
 	public synchronized static Map<String,Integer> loadGatherValueMap() throws SQLException {
 		Database.setupGatherConn();
-		Database.setupSeedConn();
 		Map<String, Integer> map = Collections.synchronizedMap(new HashMap<>());
 		PreparedStatement ps = gatherDBConn.prepareStatement(selectGatherRatingsQuery);
 		ResultSet rs = ps.executeQuery();
@@ -727,7 +726,6 @@ public class Database {
 
 	public synchronized static Set<String> loadGatherAssets() throws SQLException {
 		Database.setupGatherConn();
-		Database.setupSeedConn();
 		PreparedStatement ps = gatherDBConn.prepareStatement("select distinct number from patents where number is not null");
 		ResultSet rs = ps.executeQuery();
 		Set<String> set = Collections.synchronizedSet(new HashSet<>());
@@ -769,7 +767,6 @@ public class Database {
 
 	public synchronized static Set<String> loadCompDBReelFrames() throws SQLException {
 		Database.setupCompDBConn();
-		Database.setupSeedConn();
 		PreparedStatement ps = compDBConn.prepareStatement("select distinct reel::text||':'||frame as rf from recordings where deal_id is not null and reel is not null and frame is not null");
 		ResultSet rs = ps.executeQuery();
 		Set<String> set = Collections.synchronizedSet(new HashSet<>());
