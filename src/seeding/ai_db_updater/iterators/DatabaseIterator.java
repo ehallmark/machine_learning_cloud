@@ -172,27 +172,37 @@ public class DatabaseIterator {
            // if(cnt.getAndIncrement()%10000==9999) {
                 System.out.println("Completed: "+cnt.get());
            // }
-            Map<String,Object> data = new HashMap<>();
-            for(int i = 0; i < javaNames.size(); i++) {
-                Object value = i>=pgNames.size() ? "" : rs.getObject(i + 1);
+            List<Object[]> values = new ArrayList<>();
+            int numValues = 0;
+            for(int i = 0; i < pgNames.size(); i++) {
+                Object[] value = (Object[])rs.getArray(i + 1).getArray();
                 if(value!=null) {
-                    String name = javaNames.get(i);
-                    Flag flag = endFlag.flagMap.get(name);
-                    Object cleanValue = flag.apply(value.toString());
-                    if(cleanValue!=null) {
-                        if (debug) {
-                            System.out.println("Value type of " + javaNames.get(i) + ": " + (cleanValue.getClass().getName()));
-                        }
-                        data.put(javaNames.get(i), cleanValue);
-                    }
+                    values.add(value);
+                    numValues = value.length;
                 }
             }
 
-            Object patent = data.get(Constants.NAME);
+            List<Map<String,Object>> dataList = new ArrayList<>();
+            for(int v = 0; v < numValues; v++) {
+                Map<String,Object> data = new HashMap<>();
+                for (int i = 0; i < javaNames.size(); i++) {
+                    String name = javaNames.get(i);
+                    Object value = i >= values.size() ? "" : values.get(i)[v];
+                    Object cleanValue = null;
+                    if(value!=null) {
+                        Flag flag = endFlag.flagMap.get(name);
+                        cleanValue = flag.apply(value.toString());
+                    }
+                    data.put(javaNames.get(i), cleanValue);
+                }
+                dataList.add(data);
+            }
+
+            String patent = rs.getString(pgNames.size()+1);
             if(patent!=null) {
                 if(allPatents.contains(patent.toString())) {
                     Map<String, Object> fullMap = new HashMap<>();
-                    fullMap.put(nestedAttribute.getName(), data);
+                    fullMap.put(nestedAttribute.getName(), dataList);
                     endFlag.getDataMap().forEach((flag,attr)->{
                         fullMap.put(flag.dbName,attr);
                     });
