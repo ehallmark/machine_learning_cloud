@@ -54,7 +54,7 @@ public class AbstractExcludeFilter extends AbstractFilter {
             if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
                 builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite()+".raw", labels));
             }
-            builder=builder.mustNot(QueryBuilders.matchQuery(getFullPrerequisite(),labels));
+            builder=builder.mustNot(QueryBuilders.matchPhraseQuery(getFullPrerequisite(),labels));
         } else {
             builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite(),labels));
         }
