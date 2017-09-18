@@ -25,8 +25,6 @@ public class UpdateModels {
         //models.classification_models.UpdateClassificationModels.main(args);
         UpdateValueModels.main(args);
 
-        UpdateCompDBAndGatherData.main(args);
-
         // test
         TestSpecificModels.main(args);
     }
