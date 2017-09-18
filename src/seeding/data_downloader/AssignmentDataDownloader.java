@@ -1,7 +1,6 @@
 package seeding.data_downloader;
 
 import seeding.Constants;
-import seeding.ai_db_updater.iterators.DateIterator;
 import seeding.ai_db_updater.iterators.IngestUSPTOAssignmentIterator;
 
 import java.time.LocalDate;
