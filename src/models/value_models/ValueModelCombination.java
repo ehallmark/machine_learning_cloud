@@ -16,30 +16,27 @@ import java.util.stream.Collectors;
 public class ValueModelCombination extends ValueAttr {
     public static final Double DEFAULT_START = 0.0;
     public static final Double DEFAULT_END = 100.0;
-    private static final boolean debug = false;
+    private static final boolean debug = true;
+    private static final double reducePercent = 0.15;
 
-    protected List<Pair<ValueAttr,Double>> pairs;
+    protected ValueAttr aiValue;
+    protected ValueAttr techValue;
     @Getter
     protected String name;
-    public ValueModelCombination(String name, List<ValueAttr> valueAttrs, List<Double> weights) {
-        if(valueAttrs.size()!=weights.size()) throw new RuntimeException("Weights and models must have same cardinality");
-        // normalize weights to sum to 1
+    public ValueModelCombination(String name, ValueAttr aiValue, ValueAttr techValue) {
+        this.techValue=techValue;
+        this.aiValue=aiValue;
         this.name=name;
-        this.pairs = new ArrayList<>();
-        for(int i = 0; i < weights.size(); i++ ){
-            pairs.add(new Pair<>(valueAttrs.get(i),weights.get(i)));
-        }
     }
 
     @Override
     public double evaluate(Item item) {
+        double score = (aiValue.evaluate(item) * DEFAULT_END) * ((1d-reducePercent) + (reducePercent * techValue.evaluate(item)));;
         if(debug) {
-            int i = 0;
-            for(Pair<ValueAttr,Double> pair : pairs) {
-                if(debug)System.out.println("Contribution "+i+": "+pair.getFirst().evaluate(item)*pair.getSecond());
-                i++;
-            }
+            System.out.println("Contribution AI: " + aiValue.evaluate(item));
+            System.out.println("Contribution Tech: " + techValue.evaluate(item));
+            System.out.println("Score: " + score);
         }
-        return pairs.stream().collect(Collectors.summingDouble(pair->pair.getFirst().evaluate(item)*pair.getSecond()));
+        return score;
     }
 }
