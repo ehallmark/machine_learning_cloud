@@ -121,7 +121,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
         try {
             failedDates.remove(dateFromFileName(file.getName()));
         } catch(Exception e) {
-            
+
         }
         finishedFiles.add(file.getAbsolutePath());
     }
