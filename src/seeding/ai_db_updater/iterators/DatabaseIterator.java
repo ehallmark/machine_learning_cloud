@@ -259,6 +259,7 @@ public class DatabaseIterator {
                 computableAttributes.forEach(computableAttribute -> {
                     computableAttribute.handlePatentData(patent.toString(),data);
                 });
+                data.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString()); // previous bug
                 DataIngester.ingestBulk(patent.toString(), filing.toString(), data, true);
             }
         }

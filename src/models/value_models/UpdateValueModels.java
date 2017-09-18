@@ -42,7 +42,7 @@ public class UpdateValueModels {
 
                 double aiValue = aiValueModel.evaluate(item);
                 if(debug) System.out.println("Value: "+aiValue);
-                boolean isPatent = item.getData(Constants.DOC_TYPE).toString().equals(PortfolioList.Type.patents.toString());
+                boolean isPatent = item.getDataMap().getOrDefault(Constants.DOC_TYPE, "patents").toString().equals(PortfolioList.Type.patents.toString());
                 if(isPatent) {
                     patentModel.put(item.getName(),aiValue);
                     if(patentCnt.getAndIncrement()%10000==0) {
