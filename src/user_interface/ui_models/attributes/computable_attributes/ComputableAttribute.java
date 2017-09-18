@@ -35,13 +35,14 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     }
 
     public T attributesFor(Collection<String> portfolio, int limit) {
+        if(applicationDataMap==null||patentDataMap==null) initMaps();
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item==null) return null;
         boolean probablyApplication = Database.isApplication(item);
         if(probablyApplication) {
-            return getApplicationDataMap().getOrDefault(item, getPatentDataMap().get(item));
+            return applicationDataMap.getOrDefault(item, patentDataMap.get(item));
         } else {
-            return getPatentDataMap().getOrDefault(item, getApplicationDataMap().get(item));
+            return patentDataMap.getOrDefault(item, applicationDataMap.get(item));
         }
     }
 

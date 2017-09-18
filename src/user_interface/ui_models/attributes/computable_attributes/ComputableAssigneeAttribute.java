@@ -10,18 +10,27 @@ import user_interface.ui_models.filters.AbstractFilter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Created by ehallmark on 6/15/17.
  */
 public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute<T> {
-    private static AssetToAssigneeMap assetToAssigneeMap;
+    private static Map<String,String> patentToAssigneeMap;
+    private static Map<String,String> appToAssigneeMap;
 
-    public static AssetToAssigneeMap getAssetToAssigneeMap() {
-        if(assetToAssigneeMap==null) {
-            assetToAssigneeMap = new AssetToAssigneeMap();
+    public static Map<String,String> getAppToAssigneeMap() {
+        if(appToAssigneeMap==null) {
+            appToAssigneeMap = new AssetToAssigneeMap().getApplicationDataMap();
         }
-        return assetToAssigneeMap;
+        return appToAssigneeMap;
+    }
+
+    public static Map<String,String> getPatentToAssigneeMap() {
+        if(patentToAssigneeMap==null) {
+            patentToAssigneeMap = new AssetToAssigneeMap().getPatentDataMap();
+        }
+        return patentToAssigneeMap;
     }
 
     public ComputableAssigneeAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
@@ -34,8 +43,8 @@ public abstract class ComputableAssigneeAttribute<T> extends ComputableAttribute
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
         boolean probablyApplication = Database.isApplication(item);
-        String assignee = probablyApplication ? getAssetToAssigneeMap().getApplicationDataMap().getOrDefault(item,getAssetToAssigneeMap().getPatentDataMap().get(item))
-                : getAssetToAssigneeMap().getPatentDataMap().getOrDefault(item,getAssetToAssigneeMap().getApplicationDataMap().get(item));
+        String assignee = probablyApplication ? getAppToAssigneeMap().getOrDefault(item,getPatentToAssigneeMap().get(item))
+                : getPatentToAssigneeMap().getOrDefault(item,getAppToAssigneeMap().get(item));
         if(assignee == null) return null;
         return attributesForAssigneeHelper(assignee);
     }

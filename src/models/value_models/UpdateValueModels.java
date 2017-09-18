@@ -34,6 +34,8 @@ public class UpdateValueModels {
 
         AtomicLong patentCnt = new AtomicLong(0);
         AtomicLong appCnt = new AtomicLong(0);
+        Map<String,Number> patentModel = aiValueModel.getPatentDataMap();
+        Map<String,Number> applicationModel = aiValueModel.getApplicationDataMap();
         ItemTransformer transformer = new ItemTransformer() {
             @Override
             public Item transform(Item item) {
@@ -42,12 +44,12 @@ public class UpdateValueModels {
                 if(debug) System.out.println("Value: "+aiValue);
                 boolean isPatent = item.getData(Constants.DOC_TYPE).toString().equals(PortfolioList.Type.patents.toString());
                 if(isPatent) {
-                    aiValueModel.getPatentDataMap().put(item.getName(),aiValue);
+                    patentModel.put(item.getName(),aiValue);
                     if(patentCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen patents: "+patentCnt.get());
                     }
                 } else {
-                    aiValueModel.getApplicationDataMap().put(item.getName(),aiValue);
+                    applicationModel.put(item.getName(),aiValue);
                     if(appCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen applications: "+appCnt.get());
                     }
