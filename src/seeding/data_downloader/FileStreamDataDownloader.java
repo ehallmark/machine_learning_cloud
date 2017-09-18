@@ -10,6 +10,7 @@ import seeding.ai_db_updater.iterators.url_creators.UrlCreator;
 
 import java.io.File;
 import java.io.Serializable;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -106,7 +107,11 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
 
     public synchronized void errorOnFile(File file) {
         System.out.println("Error on file: "+file.getName());
-        failedDates.add(dateFromFileName(file.getName()));
+        try {
+            failedDates.add(dateFromFileName(file.getName()));
+        } catch(DateTimeException e) {
+
+        }
     }
 
     public abstract LocalDate dateFromFileName(String name);
