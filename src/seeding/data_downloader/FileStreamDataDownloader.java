@@ -68,7 +68,13 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     private synchronized static FileStreamDataDownloader load(String name) {
         File file = new File(Constants.DATA_FOLDER+Constants.DATA_DOWNLOADERS_FOLDER+name);
         if(file.exists()) {
-            return (FileStreamDataDownloader) Database.tryLoadObject(file);
+            FileStreamDataDownloader ret;
+            try {
+                ret = (FileStreamDataDownloader) Database.tryLoadObject(file);
+            } catch(Exception e) {
+                ret = null;
+            }
+            return ret;
         } else {
             return null;
         }
