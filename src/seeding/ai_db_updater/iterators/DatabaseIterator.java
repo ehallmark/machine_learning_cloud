@@ -67,7 +67,7 @@ public class DatabaseIterator {
         }
     }
 
-    public void run() throws SQLException {
+    public void run(boolean patentGrantOnly) throws SQLException {
         Database.setupSeedConn();
         this.init();
 
@@ -102,108 +102,110 @@ public class DatabaseIterator {
 
         runPatentGrant(transformationFunctionMap);
 
-        AtomicBoolean errors = new AtomicBoolean(false);
-        // nested
-        ForkJoinPool pool = new ForkJoinPool(10);
-        pool.execute(new RecursiveAction() {
-             @Override
-             protected void compute() {
-                 try {
-                     runPriorityClaim(transformationFunctionMap);
-                 } catch(Exception e) {
-                     errors.set(true);
-                     e.printStackTrace();
-                 }
-             }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+        if(!patentGrantOnly) {
+            AtomicBoolean errors = new AtomicBoolean(false);
+            // nested
+            ForkJoinPool pool = new ForkJoinPool(10);
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runPriorityClaim(transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_citation", Constants.NAME, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
-        pool.execute(new RecursiveAction() {
-            @Override
-            protected void compute() {
-                try {
-                    runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), claimEndFlag, transformationFunctionMap);
-                } catch(Exception e) {
-                    errors.set(true);
-                    e.printStackTrace();
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_citation", Constants.NAME, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), claimEndFlag, transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
+                }
+            });
 
-        try {
-            pool.shutdown();
-            pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+            try {
+                pool.shutdown();
+                pool.awaitTermination(Long.MAX_VALUE, TimeUnit.MICROSECONDS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
-        if(errors.get()) {
-            System.out.println("Errors occured...");
-            System.exit(1);
+            if (errors.get()) {
+                System.out.println("Errors occured...");
+                System.exit(1);
+            }
         }
 
     }
