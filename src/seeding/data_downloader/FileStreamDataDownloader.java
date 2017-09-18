@@ -118,7 +118,11 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
 
     public synchronized void finishedIngestingFile(File file) {
         System.out.println("Finished file: "+file.getName());
-        failedDates.remove(dateFromFileName(file.getName()));
+        try {
+            failedDates.remove(dateFromFileName(file.getName()));
+        } catch(Exception e) {
+            
+        }
         finishedFiles.add(file.getAbsolutePath());
     }
 }
