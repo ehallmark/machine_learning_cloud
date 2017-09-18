@@ -16,7 +16,7 @@ public class UpdateModels {
         seeding.Database.main(args);
 
         UpdateCompDBAndGatherData.main(args);
-        
+
         //ParagraphVectorModel.main(args);
 
         // models

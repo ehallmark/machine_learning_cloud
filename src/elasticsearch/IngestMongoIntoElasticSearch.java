@@ -15,12 +15,10 @@ import com.mongodb.operation.ParallelCollectionScanOperation;
 import org.bson.Document;
 import org.bson.codecs.DocumentCodec;
 import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.client.transport.TransportClient;
 import seeding.Constants;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -68,7 +66,7 @@ public class IngestMongoIntoElasticSearch {
         System.out.println("Total count of "+type+": "+total.get());
         FindIterable<Document> iterator = collection.find(query);
 
-        iterator.batchSize(200).batchCursor((cursor,t)->{
+        iterator.batchSize(500).batchCursor((cursor,t)->{
             cursor.next(helper(cursor, type));
         });
         System.out.println("Total count of "+type+": "+cnt.get());
@@ -88,7 +86,9 @@ public class IngestMongoIntoElasticSearch {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
                 try {
-                    DataIngester.ingestBulkFromMongoDB(type, doc.getString("_id"), addCountsToDoc(doc));
+                    String id = doc.getString("_id");
+                    DataIngester.ingestBulkFromMongoDB(type, id, addCountsToDoc(doc));
+
                 } finally {
                     if (cnt.getAndIncrement() % 10000 == 9999) {
                         System.out.println("Ingested: " + cnt.get());
