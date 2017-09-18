@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class OverallEvaluator extends ValueModelCombination {
 
     public OverallEvaluator() {
-        super(Constants.AI_VALUE, Arrays.asList(new AIValueModel(),new WIPOValueModel()), Arrays.asList(85d,15d));
+        super(Constants.AI_VALUE, new AIValueModel(),new WIPOValueModel());
     }
 
 }

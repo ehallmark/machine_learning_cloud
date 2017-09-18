@@ -26,6 +26,6 @@ public class UpdateModels {
         UpdateValueModels.main(args);
 
         // test
-        TestSpecificModels.main(args);
+        //TestSpecificModels.main(args);
     }
 }
