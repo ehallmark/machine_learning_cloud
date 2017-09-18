@@ -1,6 +1,7 @@
 package seeding.data_downloader;
 
 import lombok.Getter;
+import org.apache.commons.io.FileUtils;
 import seeding.Constants;
 import seeding.Database;
 import seeding.ai_db_updater.iterators.DateIterator;
@@ -62,7 +63,26 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
 
     public synchronized void save() {
         this.lastUpdatedDate = LocalDate.now().minusDays(1);
-        Database.trySaveObject(this,new File(Constants.DATA_FOLDER,Constants.DATA_DOWNLOADERS_FOLDER+name));
+        safeSaveFile(this,new File(Constants.DATA_FOLDER,Constants.DATA_DOWNLOADERS_FOLDER+name));
+    }
+
+    protected static void safeSaveFile(Object obj, File file) {
+        try {
+            File backup;
+            if(file.exists()) {
+                backup = new File(file.getAbsolutePath()+"-backup");
+                if(backup.exists()) backup.delete();
+                backup = new File(backup.getAbsolutePath());
+                // copy to backup
+                FileUtils.copyFile(file, backup);
+            }
+            // write contents
+            Database.trySaveObject(obj, file);
+
+        } catch(Exception e) {
+            e.printStackTrace();
+            System.out.println("  ... While saving: "+file.getName());
+        }
     }
 
     private synchronized static FileStreamDataDownloader load(String name) {
@@ -72,7 +92,11 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
             try {
                 ret = (FileStreamDataDownloader) Database.tryLoadObject(file);
             } catch(Exception e) {
-                ret = null;
+                try {
+                    ret = (FileStreamDataDownloader) Database.tryLoadObject(new File(file.getAbsolutePath()+"-backup"));
+                } catch(Exception e2) {
+                    ret = null;
+                }
             }
             return ret;
         } else {
