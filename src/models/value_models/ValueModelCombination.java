@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 public class ValueModelCombination extends ValueAttr {
     public static final Double DEFAULT_START = 0.0;
     public static final Double DEFAULT_END = 100.0;
-    private static final boolean debug = true;
+    private static final boolean debug = false;
     private static final double reducePercent = 0.15;
 
     protected ValueAttr aiValue;
