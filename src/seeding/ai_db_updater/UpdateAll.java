@@ -35,10 +35,7 @@ public class UpdateAll {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("9")) {
                     UpdateAssignmentData.main(args);
-                } else if(arg.equals("10")) {
-                    Database.main(args);
-                    UpdateCompDBAndGatherData.main(args);
-                } else if (arg.equals("11")) {
+                } else if (arg.equals("10")) {
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }
