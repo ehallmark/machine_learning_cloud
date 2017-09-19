@@ -189,12 +189,15 @@ $(document).ready(function() {
 
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
     $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
-        var id = e.params.data.id;
-        var attrName = $(this).find('option').get(id).attr('name');
-        var values = $attrSelect.val();
-        if(!values.includes(attrName)) {
-            values.push(attrName);
-            $attrSelect.val(values).trigger('change');
+        var $elem = $(e.params.data.element);
+        var $parent = $elem.parent();
+        if($parent.is('optgroup')) {
+            var attrName = $parent.attr('name');
+            var values = $attrSelect.val();
+            if(!values.includes(attrName)) {
+                values.push(attrName);
+                $attrSelect.val(values).trigger('change');
+            }
         }
     });
 
