@@ -186,7 +186,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 200000);
     }
 
     private void runModel() {
