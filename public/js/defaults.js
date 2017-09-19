@@ -187,6 +187,10 @@ $(document).ready(function() {
         return true;
     });
 
+    $('select.nested-filter-select').on("select2:select", function() {
+
+    });
+
     $('.sidebar .nav-item .btn').click(function(e){
         $('.sidebar .nav-item .btn').removeClass('active');
         $(this).addClass('active');

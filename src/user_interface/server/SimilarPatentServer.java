@@ -150,7 +150,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
-            humanAttrToJavaAttrMap.put("Granted Applications", Constants.GRANTED);
+            humanAttrToJavaAttrMap.put("Granted", Constants.GRANTED);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
