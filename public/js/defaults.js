@@ -195,7 +195,7 @@ $(document).ready(function() {
             var attrName = $parent.attr('name');
             var parentName = null;
             var childName = null;
-            if(attrName.includes(".")) {
+            if(attrName.includes('.')) {
                 parentName = attrName.split('.')[0];
                 childName = attrName.split('.')[1];
             } else {
@@ -211,13 +211,13 @@ $(document).ready(function() {
 
             // handle any children
             if(childName != null) {
-                var $parentAttrSelect = $('#multiselect-nested-filter-select-'+parentName);
+                var $childAttrSelect = $('#multiselect-nested-filter-select-'+parentName);
                 if($parent.length > 0) {
                     // handle parent
-                    var childValues = $parentAttrSelect.val();
+                    var childValues = $childAttrSelect.val();
                     if(!childValues.includes(attrName)) {
-                        values.push(attrName);
-                        $parentAttrSelect.val(values).trigger('change');
+                        childValues.push(attrName);
+                        $childAttrSelect.val(childValues).trigger('change');
                     }
                 }
             }
