@@ -30,12 +30,17 @@ public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> 
     private static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
     public IsGrantedApplicationAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
+        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue));
     }
 
     @Override
     public QueryBuilder getQueryScope() {
         return QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
+    }
+
+    @Override
+    public String getScope() {
+        return PortfolioList.Type.applications.toString();
     }
 
     @Override

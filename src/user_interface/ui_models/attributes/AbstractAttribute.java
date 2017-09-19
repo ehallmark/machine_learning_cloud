@@ -39,6 +39,10 @@ public abstract class AbstractAttribute {
 
     public abstract String getName();
 
+    public String getScope() {
+        return null;
+    }
+
     public String getMongoDBName() {
         return getFullName();
     }
@@ -86,7 +90,15 @@ public abstract class AbstractAttribute {
             }
             return (filter instanceof AbstractNestedFilter ? div() : span()).withText(prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),name+"."));
         } else {
-            String prefix = parent!=null ? "":"The ";
+            String prefix;
+            if(parent==null) {
+                prefix = "The ";
+                if(getFieldType().equals(AbstractFilter.FieldType.Boolean)) {
+                    prefix += "asset is ";
+                }
+            } else {
+                prefix = "";
+            }
             String text = prefix+Constants.ATTRIBUTE_DESCRIPTION_MAP.getOrDefault(getFullName(),createSimpleNameText(getFullName())+".");
             if(parent!=null) text = capitalize(text);
             return (parent!=null?div():span()).withText(text);

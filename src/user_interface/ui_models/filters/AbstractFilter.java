@@ -127,39 +127,40 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
     }
 
 
-    protected static Tag getDescriptionFor(FilterType filterType) {
+    protected Tag getDescriptionFor(FilterType filterType) {
         String description;
+        String scope = attribute.getScope() != null ? attribute.getScope() : "results";
         switch(filterType) {
             case Exclude: {
-                description = "This filter excludes results that match";
+                description = "This filter excludes "+scope+" that match";
                 break;
             }
             case Include: {
-                description = "This filter only includes results that match";
+                description = "This filter only includes "+scope+" that match";
                 break;
             }
             case AdvancedKeyword: {
-                description = "This filter only includes results that match";
+                description = "This filter only includes "+scope+" that match";
                 break;
             }
             case Between: {
-                description = "This filter only includes results between";
+                description = "This filter only includes "+scope+" between";
                 break;
             }
             case GreaterThan: {
-                description = "This filter only includes results greater than";
+                description = "This filter only includes "+scope+" greater than";
                 break;
             }
             case LessThan: {
-                description = "This filter only includes results less than";
+                description = "This filter only includes "+scope+" less than";
                 break;
             }
             case PrefixExclude: {
-                description = "This filter only includes results starting with";
+                description = "This filter only includes "+scope+" starting with";
                 break;
             }
             case PrefixInclude: {
-                description = "This filter excludes results starting with";
+                description = "This filter excludes "+scope+" starting with";
                 break;
             }
             case Nested: {
@@ -167,11 +168,11 @@ public abstract class AbstractFilter extends AbstractAttribute implements Depend
                 break;
             }
             case BoolTrue: {
-                description = "This filter only includes results that are";
+                description = "This filter only includes "+scope+" that are";
                 break;
             }
             case BoolFalse: {
-                description = "This filter excludes results that are";
+                description = "This filter excludes "+scope+" that are";
                 break;
             }
             default: {

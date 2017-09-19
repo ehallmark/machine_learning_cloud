@@ -47,6 +47,11 @@ public class ExistsInGatherFilter extends AbstractIncludeFilter {
     public void extractRelevantInformationFromParams(Request params) {
 
     }
+    @Override
+    public Tag getDescription() {
+        return div().withText("This filter only includes results that exist in Gather.");
+    }
+
 
     @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {

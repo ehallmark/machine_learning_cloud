@@ -53,6 +53,11 @@ public class ExistsInCompDBFilter extends AbstractIncludeFilter {
     }
 
     @Override
+    public Tag getDescription() {
+        return div().withText("This filter only includes results that exist in CompDB.");
+    }
+
+    @Override
     public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
         return div();
     }
