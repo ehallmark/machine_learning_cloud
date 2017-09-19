@@ -26,16 +26,10 @@ import static user_interface.server.SimilarPatentServer.preProcess;
 /**
  * Created by Evan on 6/17/2017.
  */
-public class AbstractExcludeFilter extends AbstractFilter {
-    @Setter
-    protected List<String> labels;
-    protected FieldType fieldType;
+public class AbstractExcludeFilter extends AbstractIncludeFilter {
     public AbstractExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType, FieldType fieldType, List<String> labels) {
-        super(attribute,filterType);
-        this.fieldType=fieldType;
-        this.labels = labels;
+        super(attribute,filterType,fieldType,labels);
     }
-
 
     @Override
     public AbstractFilter dup() {
@@ -49,40 +43,30 @@ public class AbstractExcludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        BoolQueryBuilder builder = QueryBuilders.boolQuery();
+        final String preReq;
+        final boolean termQuery;
         if(!attribute.getType().equals("keyword")) {
             if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
-                builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite()+".raw", labels));
+                preReq = getFullPrerequisite()+".raw";
+                termQuery = true;
+            } else {
+                preReq = getFullPrerequisite();
+                termQuery = false;
             }
-            builder=builder.mustNot(QueryBuilders.matchPhraseQuery(getFullPrerequisite(),labels));
         } else {
-            builder=builder.mustNot(QueryBuilders.termsQuery(getFullPrerequisite(),labels));
+            preReq = getFullPrerequisite();
+            termQuery = true;
         }
-        return builder;
+
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        if(termQuery) {
+            boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.termsQuery(preReq, labels));
+        } else {
+            for (String label : labels) {
+                boolQueryBuilder = boolQueryBuilder.mustNot(QueryBuilders.matchPhraseQuery(preReq, label));
+            }
+        }
+        return boolQueryBuilder;
     }
 
-    public boolean isActive() { return labels!=null && labels.size() > 0; }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request req) {
-        if (fieldType.equals(FieldType.Text)) {
-            labels = preProcess(String.join("",SimilarPatentServer.extractArray(req, getName())), "\n", null);
-            System.out.println("Should remove labels for "+getName()+": "+String.join(", ",labels));
-        } else {
-            labels = SimilarPatentServer.extractArray(req, getName());
-        }
-    }
-
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        if (!fieldType.equals(FieldType.Multiselect)) {
-            return div().with(
-                    textarea().withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
-            );
-        } else {
-            return div().with(
-                    SimilarPatentServer.technologySelect(getName(), getAllValues())
-            );
-        }
-    }
 }

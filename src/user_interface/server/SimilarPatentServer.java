@@ -1045,7 +1045,7 @@ public class SimilarPatentServer {
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.trim().replaceAll(toReplace,""):str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").replace("\r","").replace("\t"," ").trim():null).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
     public static List<Tag> getTemplatesForUser(String username, boolean deletable) {

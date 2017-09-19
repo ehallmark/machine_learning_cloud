@@ -52,13 +52,29 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
+        final String preReq;
+        final boolean termQuery;
         if(!attribute.getType().equals("keyword")) {
             if (fieldType.equals(FieldType.Multiselect)&&attribute.getNestedFields() != null) {
-                return QueryBuilders.termsQuery(getFullPrerequisite()+".raw", labels);
+                preReq = getFullPrerequisite()+".raw";
+                termQuery = true;
+            } else {
+                preReq = getFullPrerequisite();
+                termQuery = false;
             }
-            return QueryBuilders.matchPhraseQuery(getFullPrerequisite(),labels);
         } else {
-            return QueryBuilders.termsQuery(getFullPrerequisite(), labels);
+            preReq = getFullPrerequisite();
+            termQuery = true;
+        }
+
+        if(termQuery) {
+            return QueryBuilders.termsQuery(preReq, labels);
+        } else {
+            BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+            for (String label : labels) {
+                boolQueryBuilder = boolQueryBuilder.should(QueryBuilders.matchPhraseQuery(preReq, label));
+            }
+            return boolQueryBuilder;
         }
     }
 
