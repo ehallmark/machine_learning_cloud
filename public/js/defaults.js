@@ -188,7 +188,7 @@ $(document).ready(function() {
     });
 
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
-    $('#filters-row .nested-form-list select.nested-filter-select').on("select2:select", function(e) {
+    $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
         var $elem = $(e.params.data.element);
         var $parent = $elem.parent();
         if($parent.is('optgroup')) {
