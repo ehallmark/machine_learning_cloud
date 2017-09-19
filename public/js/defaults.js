@@ -187,8 +187,41 @@ $(document).ready(function() {
         return true;
     });
 
-    $('select.nested-filter-select').on("select2:select", function() {
+    var $attrSelect = $('#multiselect-nested-filter-select-attributes');
+    $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
+        var $elem = $(e.params.data.element);
+        var $parent = $elem.parent();
+        if($parent.is('optgroup')) {
+            var attrName = $parent.attr('name');
+            var parentName = null;
+            var childName = null;
+            if(attrName.includes('.')) {
+                parentName = attrName.split('.')[0];
+                childName = attrName.split('.')[1];
+            } else {
+                parentName = attrName;
+            }
 
+            // handle parent
+            var values = $attrSelect.val();
+            if(!values.includes(parentName)) {
+                values.push(parentName);
+                $attrSelect.val(values).trigger('change');
+            }
+
+            // handle any children
+            if(childName != null) {
+                var $childAttrSelect = $('#multiselect-nested-filter-select-'+parentName);
+                if($parent.length > 0) {
+                    // handle parent
+                    var childValues = $childAttrSelect.val();
+                    if(!childValues.includes(attrName)) {
+                        childValues.push(attrName);
+                        $childAttrSelect.val(childValues).trigger('change');
+                    }
+                }
+            }
+        }
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
