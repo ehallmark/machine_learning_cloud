@@ -188,21 +188,40 @@ $(document).ready(function() {
     });
 
     var $attrSelect = $('#multiselect-nested-filter-select-attributes');
-    $('#filters-row select.nested-filter-select').on("select2:select", function(e) {
+    $('#filters-row .nested-form-list select.nested-filter-select').on("select2:select", function(e) {
         var $elem = $(e.params.data.element);
         var $parent = $elem.parent();
         if($parent.is('optgroup')) {
             var attrName = $parent.attr('name');
+            var parentName = null;
+            var childName = null;
+            if(attrName.includes(".")) {
+                parentName = attrName.split('.')[0];
+                childName = attrName.split('.')[1];
+            } else {
+                parentName = attrName;
+            }
+
+            // handle parent
             var values = $attrSelect.val();
-            if(!values.includes(attrName)) {
-                values.push(attrName);
+            if(!values.includes(parentName)) {
+                values.push(parentName);
                 $attrSelect.val(values).trigger('change');
             }
+
+            // handle any children
+            if(childName != null) {
+                var $parentAttrSelect = $('#multiselect-nested-filter-select-'+parentName);
+                if($parent.length > 0) {
+                    // handle parent
+                    var childValues = $parentAttrSelect.val();
+                    if(!childValues.includes(attrName)) {
+                        values.push(attrName);
+                        $parentAttrSelect.val(values).trigger('change');
+                    }
+                }
+            }
         }
-    });
-
-    $('#filters-row select.nested-filter-select select.nested-filter-select').on("select2:select", function() {
-
     });
 
     $('.sidebar .nav-item .btn').click(function(e){
