@@ -21,7 +21,6 @@ import user_interface.ui_models.charts.*;
 import user_interface.ui_models.engines.*;
 import user_interface.ui_models.excel.ExcelHandler;
 import user_interface.ui_models.templates.*;
-import util.Pair;
 import models.similarity_models.AbstractSimilarityModel;
 import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.dl4j_neural_nets.tools.MyPreprocessor;
@@ -151,7 +150,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Relation Type", Constants.RELATION_TYPE);
             humanAttrToJavaAttrMap.put("Filing Name", Constants.FILING_NAME);
             humanAttrToJavaAttrMap.put("CompDB", Constants.COMPDB);
-            humanAttrToJavaAttrMap.put("Granted", Constants.GRANTED);
+            humanAttrToJavaAttrMap.put("Granted Applications", Constants.GRANTED);
             humanAttrToJavaAttrMap.put("Filing Date", Constants.FILING_DATE);
             humanAttrToJavaAttrMap.put("Histogram",Constants.HISTOGRAM);
             humanAttrToJavaAttrMap.put("Assignee Role", Constants.ASSIGNEE_ROLE);
@@ -406,7 +405,7 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
             attributesMap.put(Constants.REEL_FRAME, new ReelFrameAttribute());
             attributesMap.put(Constants.NUM_ASSIGNMENTS, new NumAssignmentsAttribute());
-            attributesMap.put(Constants.GRANTED,new IsGrantedAttribute());
+            attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
             //attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
 
             // nested attrs

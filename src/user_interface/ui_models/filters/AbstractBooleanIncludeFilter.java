@@ -20,7 +20,7 @@ import static j2html.TagCreator.div;
  * Created by Evan on 6/13/2017.
  */
 public class AbstractBooleanIncludeFilter extends AbstractFilter {
-    private List<String> filters;
+    protected List<String> filters;
     public AbstractBooleanIncludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
@@ -32,11 +32,19 @@ public class AbstractBooleanIncludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
+        QueryBuilder scope = attribute.getQueryScope();
+        QueryBuilder query;
         if (isScriptFilter) {
-            return getScriptFilter();
+            query = getScriptFilter();
         } else {
-            return QueryBuilders.termQuery(getFullPrerequisite(), true);
+            query = QueryBuilders.termQuery(getFullPrerequisite(), true);
         }
+        if(scope!=null) {
+            query = QueryBuilders.boolQuery()
+                    .must(scope)
+                    .must(query);
+        }
+        return query;
     }
 
     @Override

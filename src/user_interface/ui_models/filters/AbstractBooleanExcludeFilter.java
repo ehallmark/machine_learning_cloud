@@ -17,8 +17,7 @@ import static j2html.TagCreator.div;
 /**
  * Created by Evan on 6/13/2017.
  */
-public class AbstractBooleanExcludeFilter extends AbstractFilter {
-    private List<String> filters;
+public class AbstractBooleanExcludeFilter extends AbstractBooleanIncludeFilter {
     public AbstractBooleanExcludeFilter(@NonNull AbstractAttribute attribute, FilterType filterType) {
         super(attribute,filterType);
     }
@@ -30,16 +29,19 @@ public class AbstractBooleanExcludeFilter extends AbstractFilter {
 
     @Override
     public QueryBuilder getFilterQuery() {
-        if(isScriptFilter) {
-            return getScriptFilter();
+        QueryBuilder scope = attribute.getQueryScope();
+        QueryBuilder query;
+        if (isScriptFilter) {
+            query = getScriptFilter();
         } else {
-            return QueryBuilders.termQuery(getFullPrerequisite(), false);
+            query = QueryBuilders.termQuery(getFullPrerequisite(), false);
         }
-    }
-
-    @Override
-    public void extractRelevantInformationFromParams(Request params) {
-        filters = SimilarPatentServer.extractArray(params, SimilarPatentServer.PRE_FILTER_ARRAY_FIELD);
+        if(scope!=null) {
+            query = QueryBuilders.boolQuery()
+                    .must(scope)
+                    .must(query);
+        }
+        return query;
     }
 
     @Override
@@ -47,12 +49,4 @@ public class AbstractBooleanExcludeFilter extends AbstractFilter {
         return "("+script+") < 0.5";
     }
 
-    @Override
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) {
-        return div();
-    }
-
-    public boolean isActive() {
-        return filters != null && filters.contains(getName());
-    }
 }

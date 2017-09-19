@@ -4,6 +4,7 @@ import j2html.tags.Tag;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.elasticsearch.index.query.QueryBuilder;
 import seeding.Constants;
 import seeding.Database;
 import spark.Request;
@@ -44,6 +45,10 @@ public abstract class AbstractAttribute {
 
     public String getFullName() {
         return parent==null? getName() : (parent.getName().replaceAll("[\\[\\]]","") + "." + getName()).trim();
+    }
+
+    public QueryBuilder getQueryScope() {
+        return null;
     }
 
     public String getRootName() {

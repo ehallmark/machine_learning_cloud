@@ -1,6 +1,8 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
 import j2html.tags.Tag;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import seeding.Constants;
@@ -11,6 +13,7 @@ import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
+import user_interface.ui_models.portfolios.PortfolioList;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,12 +25,17 @@ import static j2html.TagCreator.div;
 /**
  * Created by ehallmark on 7/20/17.
  */
-public class IsGrantedAttribute extends ComputableAttribute<Boolean> {
+public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> {
     private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
     private static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
-    public IsGrantedAttribute() {
+    public IsGrantedApplicationAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.BoolFalse, AbstractFilter.FilterType.BoolTrue));
+    }
+
+    @Override
+    public QueryBuilder getQueryScope() {
+        return QueryBuilders.termQuery(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
     }
 
     @Override
@@ -54,11 +62,6 @@ public class IsGrantedAttribute extends ComputableAttribute<Boolean> {
     @Override
     public AbstractFilter.FieldType getFieldType() {
         return AbstractFilter.FieldType.Boolean;
-    }
-
-    @Override // TODO Implement!!
-    public boolean isNotYetImplemented() {
-        return true;
     }
 
 }
