@@ -57,7 +57,7 @@ public class KeywordModelRunner {
 
 
         final int endYear = LocalDate.now().getYear();
-        final int startYear = endYear - 20;
+        final int startYear = endYear - 24;
 
         // stage 1
         Map<Integer,Stage1> stage1Map = Collections.synchronizedMap(new HashMap<>());
@@ -66,7 +66,6 @@ public class KeywordModelRunner {
             // group results by time windows in years
             Stage1 stage1 = new Stage1(year,model);
             stage1.run(runStage1);
-
             stage1Map.put(year,stage1);
         }
 
@@ -75,9 +74,9 @@ public class KeywordModelRunner {
         Map<Integer,Map<MultiStem,AtomicLong>> stage1TimeWindowStemMap = computeTimeWindowCountMap(startYear, endYear, windowSize, stage1Map);
         Map<Integer,Stage2> stage2Map = Collections.synchronizedMap(new HashMap<>());
         stage1TimeWindowStemMap.forEach((year,countMap)->{
+            System.out.println("Starting year: "+year);
             Stage2 stage2 = new Stage2(countMap, model, year);
             stage2.run(runStage2);
-
             stage2Map.put(year,stage2);
         });
 
@@ -86,9 +85,9 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map);
         Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
         stage2TimeWindowStemMap.forEach((year,multiStems)->{
+            System.out.println("Starting year: "+year);
             Stage3 stage3 = new Stage3(multiStems, model, year);
             stage3.run(runStage3);
-
             stage3Map.put(year,stage3);
         });
 
@@ -97,63 +96,53 @@ public class KeywordModelRunner {
         Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
         Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
+            System.out.println("Starting year: "+year);
             Stage4 stage4 = new Stage4(multiStems, model, year);
             stage4.run(runStage4);
-
             stage4Map.put(year,stage4);
         });
 
-        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
-        Database.trySaveObject(stage4TimeWindowStemMap, new File("data/keyword_model_stage_4_time_window_stage_map.jobj"));
-
         // stage 5
-        /*// cpc statistics
-        List<String> cpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
-        System.out.println("Num cpcs: "+cpcCodes.size());
-
-        Map<String,Integer> cpcToIndexMap = IntStream.range(0,cpcCodes.size()).mapToObj(i->i).collect(Collectors.toMap(i->cpcCodes.get(i),i->i));
-
-        /SparseRealMatrix matrix = new OpenMapRealMatrix(cpcCodes.size(),cpcCodes.size());
-        AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
-        assetToCPCMap.getApplicationDataMap().entrySet().parallelStream().forEach(e->{
-            Collection<String> cpcs = e.getValue().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
-            cpcs.forEach(cpc->{
-                int idx1 = cpcToIndexMap.get(cpc);
-                cpcs.forEach(cpc2->{
-                    int idx2 = cpcToIndexMap.get(cpc2);
-                    matrix.addToEntry(idx1,idx2,1);
-                });
-            });
-        });*/
-
         System.out.println("Starting stage 5...");
+        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
         Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
+            System.out.println("Starting year: "+year);
             Stage1 stage1 = stage1Map.get(year);
             if(stage1!=null) {
                 Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
                 stage5.run(runStage5);
-
                 stage5Map.put(year, stage5);
             }
         });
 
         Map<String,List<String>> assetToTechnologyMap = Collections.synchronizedMap(new HashMap<>());
         stage5Map.entrySet().stream().parallel().forEach((e)->{
+            System.out.println("Starting year: "+e.getKey());
             e.getValue().get().forEach((asset,techList)->{
                 assetToTechnologyMap.put(asset,techList);
             });
         });
 
-        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
+        saveModelMap(model,assetToTechnologyMap);
         System.out.println("Num assets classified: "+assetToTechnologyMap.size());
     }
 
+    public static Map<String,List<String>> loadModelMap(Model model) {
+        return (Map<String,List<String>>) Database.tryLoadObject(new File(Constants.DATA_FOLDER+"keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
+    }
+
+    public static void saveModelMap(Model model, Map<String,List<String>> assetToTechnologyMap) {
+        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
+    }
+
+
+
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
         Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = endYear; i >= startYear-windowSize; i--) {
+        for(int i = startYear; i < endYear; i++) {
             List<Collection<MultiStem>> multiStems = new ArrayList<>();
-            for(int j = i; j <= i + windowSize; j++) {
+            for(int j = i - (windowSize/2); j < Math.min(i + (windowSize/2), endYear); j++) {
                 Stage<Collection<MultiStem>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
                     multiStems.add(stage.get());
@@ -161,17 +150,17 @@ public class KeywordModelRunner {
             }
             if(multiStems.isEmpty()) continue;
             Collection<MultiStem> mergedStems = multiStems.stream().flatMap(list->list.stream()).distinct().collect(Collectors.toList());
-            timeWindowStemMap.put(i+windowSize,mergedStems);
-            System.out.println("Num stems in "+(i+windowSize)+": "+mergedStems.size());
+            timeWindowStemMap.put(i,mergedStems);
+            System.out.println("Num stems in "+i+": "+mergedStems.size());
         }
         return timeWindowStemMap;
     }
 
     private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Map<MultiStem,AtomicLong>>> stageMap) {
         Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = endYear; i >= startYear-windowSize; i--) {
+        for(int i = startYear; i < endYear; i++) {
             List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
-            for(int j = i; j <= Math.min(i + windowSize, endYear); j++) {
+            for(int j = i - (windowSize/2); j < Math.min(i + (windowSize/2), endYear); j++) {
                 Stage<Map<MultiStem,AtomicLong>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
                     multiStems.add(stage.get());
@@ -189,8 +178,8 @@ public class KeywordModelRunner {
                 return m3;
             }).get();
 
-            timeWindowStemMap.put(i+windowSize,mergedCounts);
-            System.out.println("Num stems in "+(i+windowSize)+": "+mergedCounts.size());
+            timeWindowStemMap.put(i,mergedCounts);
+            System.out.println("Num stems in "+i+": "+mergedCounts.size());
         }
         return timeWindowStemMap;
     }

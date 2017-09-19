@@ -1,22 +1,24 @@
 package user_interface.ui_models.attributes.computable_attributes;
 
+import models.keyphrase_prediction.KeywordModelRunner;
+import models.keyphrase_prediction.models.Model;
 import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.filters.AbstractFilter;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 6/17/2017.
  */
-public class TechnologyAttribute extends ComputableAttribute<String> {
-    public TechnologyAttribute() {
+public class TechnologyAttribute extends ComputableAttribute<List<String>> {
+    private Map<String,List<String>> modelMap;
+    private Model model;
+    public TechnologyAttribute(Model model) {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
+        this.model=model;
     }
 
     @Override
@@ -36,13 +38,16 @@ public class TechnologyAttribute extends ComputableAttribute<String> {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Multiselect;
+        return AbstractFilter.FieldType.Text;
     }
 
     @Override
-    public String attributesFor(Collection<String> items, int limit) {
+    public List<String> attributesFor(Collection<String> items, int limit) {
+        if(modelMap==null) {
+            modelMap = KeywordModelRunner.loadModelMap(model);
+        }
         if(items.isEmpty())return null;
-        return Database.getItemToTechnologyMap().get(items.stream().findAny().get());
+        return modelMap.get(items.stream().findAny().get());
     }
 
     @Override

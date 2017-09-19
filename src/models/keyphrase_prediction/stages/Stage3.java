@@ -165,7 +165,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 100000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, 200000);
         return matrix;
     }
 

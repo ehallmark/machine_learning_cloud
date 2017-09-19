@@ -170,7 +170,7 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
 
             return null;
         };
-        KeywordModelRunner.streamElasticSearchData(year, transformer,100000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer,200000);
         System.out.println("Starting to find best phrases for each stemmed phrase.");
         new ArrayList<>(multiStemMap.keySet()).parallelStream().forEach(stem->{
             String stemStr = stem.toString();

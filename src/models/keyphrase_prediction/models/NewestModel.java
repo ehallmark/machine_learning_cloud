@@ -52,7 +52,7 @@ public class NewestModel implements Model {
     double stage3Lower = 0.2;
 
     @Getter
-    double stage2Upper = 0.9;
+    double stage2Upper = 0.95;
     @Getter
-    double stage2Lower = 0.01;
+    double stage2Lower = 0.0;
 }
