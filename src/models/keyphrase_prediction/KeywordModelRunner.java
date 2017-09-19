@@ -57,12 +57,13 @@ public class KeywordModelRunner {
 
 
         final int endYear = LocalDate.now().getYear();
-        final int startYear = endYear - 24;
+        final int startYear = endYear - 25;
 
         // stage 1
         Map<Integer,Stage1> stage1Map = Collections.synchronizedMap(new HashMap<>());
         for(int i = startYear; i <= endYear; i++) {
             final int year = i;
+            System.out.println("Starting year: "+year);
             // group results by time windows in years
             Stage1 stage1 = new Stage1(year,model);
             stage1.run(runStage1);
@@ -136,13 +137,11 @@ public class KeywordModelRunner {
         Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
     }
 
-
-
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
         Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = startYear; i < endYear; i++) {
+        for(int i = startYear; i <= endYear; i++) {
             List<Collection<MultiStem>> multiStems = new ArrayList<>();
-            for(int j = i - (windowSize/2); j < Math.min(i + (windowSize/2), endYear); j++) {
+            for(int j = i-1-(windowSize/2); j <= Math.min(i-1+(windowSize/2), endYear); j++) {
                 Stage<Collection<MultiStem>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
                     multiStems.add(stage.get());
@@ -158,9 +157,9 @@ public class KeywordModelRunner {
 
     private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Map<MultiStem,AtomicLong>>> stageMap) {
         Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = startYear; i < endYear; i++) {
+        for(int i = startYear; i <= endYear; i++) {
             List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
-            for(int j = i - (windowSize/2); j < Math.min(i + (windowSize/2), endYear); j++) {
+            for(int j = i-1-(windowSize/2); j <= Math.min(i-1+(windowSize/2), endYear); j++) {
                 Stage<Map<MultiStem,AtomicLong>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
                     multiStems.add(stage.get());
