@@ -29,37 +29,22 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 9/12/17.
  */
-public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
+public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private static Collection<String> validPOS = Arrays.asList("JJ","JJR","JJS","NN","NNS","NNP","NNPS","VBG","VBN");
     private static Collection<String> adjectivesPOS = Arrays.asList("JJ","JJR","JJS");
 
     private static final boolean debug = false;
-    public static final File keywordCountsFile = new File("data/keyword_model_counts.jobj");
-    protected Map<MultiStem, AtomicLong> keywordsCounts;
     private int minTokenFrequency;
     private int maxTokenFrequency;
-    private int year;
-    private String name;
     public Stage1(int year, Model model) {
+        super(model,year);
         this.minTokenFrequency=model.getMinTokenFrequency();
         this.maxTokenFrequency=model.getMaxTokenFrequency();
-        this.year = year;
-        this.name=model.getModelName();
-    }
-
-    @Override
-    public File getFile(int year) {
-        return new File(keywordCountsFile.getAbsolutePath()+name+year);
-    }
-
-    @Override
-    public void loadData() {
-        keywordsCounts = (Map<MultiStem,AtomicLong>) Database.loadObject(getFile(year));
     }
 
     @Override
     public Map<MultiStem,AtomicLong> run(boolean run) {
-        if(getFile(year).exists()) {
+        if(getFile().exists()) {
             try {
                 loadData();
                 run = false;
@@ -68,16 +53,11 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
             }
         }
         if(run) {
-            keywordsCounts = buildVocabularyCounts();
-            keywordsCounts = truncateBetweenLengths(keywordsCounts, minTokenFrequency, maxTokenFrequency);
-            Database.trySaveObject(keywordsCounts, getFile(year));
+            data = buildVocabularyCounts();
+            data = truncateBetweenLengths(data, minTokenFrequency, maxTokenFrequency);
+            Database.trySaveObject(data, getFile());
         }
-        return keywordsCounts;
-    }
-
-    @Override
-    public Map<MultiStem, AtomicLong> get() {
-        return keywordsCounts;
+        return data;
     }
 
     private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {

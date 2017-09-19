@@ -34,45 +34,24 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 9/12/17.
  */
-public class Stage3 implements Stage<Collection<MultiStem>> {
-    private static final Random rand = new Random(235235);
+public class Stage3 extends Stage<Collection<MultiStem>> {
     private static final boolean debug = false;
-    private static final File stage3File = new File("data/keyword_model_keywords_set_stage3.jobj");
-    private Collection<MultiStem> multiStems;
     private Map<MultiStem,MultiStem> multiStemToSelfMap;
     private long targetCardinality;
-    private int year;
     private double lowerBound;
     private double upperBound;
-    private String name;
     public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
-        this.multiStems = new HashSet<>(multiStems);
+        super(model,year);
+        this.data = new HashSet<>(multiStems);
         this.multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-        this.year=year;
         this.targetCardinality=model.getK2()*model.getKw();
         this.lowerBound=model.getStage3Lower();
         this.upperBound=model.getStage3Upper();
-        this.name = model.getModelName();
-    }
-
-    @Override
-    public Collection<MultiStem> get() {
-        return multiStems;
-    }
-
-    @Override
-    public void loadData() {
-        multiStems = (Collection<MultiStem>)Database.loadObject(getFile(year));
-    }
-
-    @Override
-    public File getFile(int year) {
-        return new File(stage3File.getAbsolutePath()+name+year);
     }
 
     @Override
     public Collection<MultiStem> run(boolean run) {
-        if(getFile(year).exists()) {
+        if(getFile().exists()) {
             try {
                 loadData();
                 run = false;
@@ -82,24 +61,22 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
         }
         if(run) {
             // apply filter 2
-            KeywordModelRunner.reindex(multiStems);
+            KeywordModelRunner.reindex(data);
             System.out.println("Starting year: "+year);
-            System.out.println("Num keywords before stage 3: "+multiStems.size());
+            System.out.println("Num keywords before stage 3: "+data.size());
             SparseRealMatrix M = buildMMatrix();
+            data = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound,upperBound);
+            System.out.println("Num keywords after stage 3: "+data.size());
 
-            multiStems = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, multiStems, targetCardinality, lowerBound,upperBound);
-            M=null;
-            System.out.println("Num keywords after stage 3: "+multiStems.size());
-
-            Database.saveObject(multiStems, getFile(year));
+            Database.saveObject(data, getFile());
             // write to csv for records
-            KeywordModelRunner.writeToCSV(multiStems,new File("data/keyword_model_stage3"+year+name+".csv"));
+            KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));
         }
-        return multiStems;
+        return data;
     }
 
     private SparseRealMatrix buildMMatrix() {
-        SparseRealMatrix matrix = new OpenMapBigRealMatrix(multiStems.size(),multiStems.size());
+        SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         Function<SearchHit,Item> transformer = hit-> {
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
@@ -148,7 +125,7 @@ public class Stage3 implements Stage<Collection<MultiStem>> {
 
             Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
             documentStems.forEach(docStem->{
-                if(multiStems.contains(docStem)) {
+                if(data.contains(docStem)) {
                     cooccurringStems.add(multiStemToSelfMap.get(docStem));
                 }
             });

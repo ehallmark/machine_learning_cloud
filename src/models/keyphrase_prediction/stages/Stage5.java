@@ -35,46 +35,31 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 9/13/17.
  */
-public class Stage5 implements Stage<Map<String,List<String>>> {
+public class Stage5 extends Stage<Map<String,List<String>>> {
     private static final boolean debug = false;
-    private static final File stage5File = new File("data/keyword_model_keywords_set_stage5.jobj");
     private Collection<MultiStem> multiStems;
-    private int year;
     private int maxCpcLength;
-    private Map<String,List<String>> assetToKeywordMap;
+    private Map<String,List<String>> data;
     private SparseRealMatrix cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
     private Map<Integer,MultiStem> idxToMultiStemMap;
     private Collection<MultiStem> oldMultiStems;
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
-    private String name;
     private AtomicInteger defaultToWIPOCounter = new AtomicInteger(0);
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
     public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, Model model, int year) {
+        super(model,year);
         this.multiStems=multiStems;
         this.maxCpcLength=model.getMaxCpcLength();
         this.oldMultiStems=new HashSet<>(stage1.get().keySet());
         AtomicInteger cnt = new AtomicInteger(0);
-        this.name=model.getModelName();
         oldMultiStemToIdxMap = oldMultiStems.stream().collect(Collectors.toMap(s->s,s->cnt.getAndIncrement()));
         this.oldMultiStemsCountMap = stage1.get().entrySet().stream().collect(Collectors.toMap(e->oldMultiStemToIdxMap.get(e.getKey()),e->e.getValue()));
-        this.year=year;
     }
-
-    @Override
-    public void loadData() {
-        assetToKeywordMap = (Map<String,List<String>>) Database.loadObject(getFile(year));
-    }
-
-    @Override
-    public File getFile(int year) {
-        return new File(stage5File.getAbsolutePath()+name+year);
-    }
-
 
     @Override
     public Map<String, List<String>> run(boolean run) {
-        if(getFile(year).exists()) {
+        if(getFile().exists()) {
             try {
                 loadData();
                 run = false;
@@ -90,11 +75,11 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
             getCooccurrenceMap();
             // run model
             runModel();
-            Database.saveObject(assetToKeywordMap, getFile(year));
+            Database.saveObject(data, getFile());
             // print sample
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/keyword_asset_to_keyword_map"+year+name+".csv")))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getFile().getAbsolutePath()+".csv")))) {
                 writer.write("Asset,Technologies\n");
-                assetToKeywordMap.entrySet().stream().limit(10000).forEach(e -> {
+                data.entrySet().stream().limit(10000).forEach(e -> {
                     try {
                         writer.write(e.getKey()+","+String.join("; ",e.getValue())+"\n");
                     }catch(Exception _e) {
@@ -106,12 +91,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 e.printStackTrace();
             }
         }
-        return assetToKeywordMap;
-    }
-
-    @Override
-    public Map<String, List<String>> get() {
-        return assetToKeywordMap;
+        return data;
     }
 
     private void getCooccurrenceMap() {
@@ -197,16 +177,16 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
         Map<String,Set<String>> appCPCMap = new AssetToCPCMap().getApplicationDataMap();
 
 
-        assetToKeywordMap = Collections.synchronizedMap(new HashMap<>());
+        data = Collections.synchronizedMap(new HashMap<>());
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
 
             // handle design and plant patents
             if(asset.startsWith("P")) {
-                assetToKeywordMap.put(asset, Arrays.asList(WIPOHelper.PLANT_TECHNOLOGY));
+                data.put(asset, Arrays.asList(WIPOHelper.PLANT_TECHNOLOGY));
                 return null;
             } else if(asset.startsWith("D")) {
-                assetToKeywordMap.put(asset, Arrays.asList(WIPOHelper.DESIGN_TECHNOLOGY));
+                data.put(asset, Arrays.asList(WIPOHelper.DESIGN_TECHNOLOGY));
                 return null;
             }
 
@@ -296,7 +276,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                     List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         foundTechnology.set(true);
-                        assetToKeywordMap.put(asset, technologies);
+                        data.put(asset, technologies);
                         if (debug)
                             System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                     } else {
@@ -310,7 +290,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
                 Object wipoTechnology = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.WIPO_TECHNOLOGY));
                 if(wipoTechnology!=null) {
-                    assetToKeywordMap.put(asset, Arrays.asList(wipoTechnology.toString()));
+                    data.put(asset, Arrays.asList(wipoTechnology.toString()));
                     defaultToWIPOCounter.getAndIncrement();
                     if(defaultToWIPOCounter.get()%10000==9999) {
                         System.out.println("Defaulted to wipo cnt: "+defaultToWIPOCounter.get());

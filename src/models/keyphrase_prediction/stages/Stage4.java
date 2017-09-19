@@ -30,44 +30,25 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 9/12/17.
  */
-public class Stage4 implements Stage<Collection<MultiStem>> {
+public class Stage4 extends Stage<Collection<MultiStem>> {
     private static final boolean debug = false;
-    private static final File stage4File = new File("data/keyword_model_keywords_set_stage4.jobj");
-    private Collection<MultiStem> keywords;
+    private Collection<MultiStem> data;
     private long targetCardinality;
-    private int year;
     private final int maxCpcLength;
     private double lowerBound;
     private double upperBound;
-    private String name;
     public Stage4(Collection<MultiStem> keywords, Model model, int year) {
-        this.keywords = keywords;
-        this.year=year;
+        super(model,year);
+        this.data = keywords;
         this.maxCpcLength=model.getMaxCpcLength();
         this.targetCardinality=model.getKw()*model.getK3();
         this.upperBound=model.getStage4Upper();
         this.lowerBound=model.getStage4Lower();
-        this.name=model.getModelName();
-    }
-
-    @Override
-    public Collection<MultiStem> get() {
-        return keywords;
-    }
-
-    @Override
-    public void loadData() {
-        keywords = (Collection<MultiStem>)Database.loadObject(getFile(year));
-    }
-
-    @Override
-    public File getFile(int year) {
-        return new File(stage4File.getAbsolutePath()+name+year);
     }
 
     @Override
     public Collection<MultiStem> run(boolean run) {
-        if(getFile(year).exists()) {
+        if(getFile().exists()) {
             try {
                 loadData();
                 run = false;
@@ -78,15 +59,15 @@ public class Stage4 implements Stage<Collection<MultiStem>> {
         if(run) {
             // apply filter 3
             System.out.println("Starting year: "+year);
-            KeywordModelRunner.reindex(keywords);
-            RealMatrix T = buildTMatrix(keywords, year, maxCpcLength)._2;
+            KeywordModelRunner.reindex(data);
+            RealMatrix T = buildTMatrix(data, year, maxCpcLength)._2;
 
-            keywords = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, keywords, targetCardinality, lowerBound, upperBound);
-            Database.saveObject(keywords, getFile(year));
+            data = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound);
+            Database.saveObject(data, getFile());
             // write to csv for records
-            KeywordModelRunner.writeToCSV(keywords,new File("data/keyword_model_stage4-"+year+name+".csv"));
+            KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));
         }
-        return keywords;
+        return data;
     }
 
 
