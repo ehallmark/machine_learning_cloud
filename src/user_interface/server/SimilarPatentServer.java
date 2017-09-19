@@ -5,6 +5,7 @@ import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
 
+import models.keyphrase_prediction.models.NewestModel;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import spark.Session;
@@ -380,7 +381,7 @@ public class SimilarPatentServer {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute());
+            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(new NewestModel()));
             attributesMap.put(Constants.NAME, new AssetNumberAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
