@@ -37,9 +37,12 @@ public class AbstractBooleanExcludeFilter extends AbstractBooleanIncludeFilter {
             query = QueryBuilders.termQuery(getFullPrerequisite(), false);
         }
         if(scope!=null) {
+            // should return true if (in the scope and in the query) or if not in the scope
+            //   this equates to (should be in the complement of scope OR should be in the query)
+            QueryBuilder complementOfScope = QueryBuilders.boolQuery().mustNot(scope);
             query = QueryBuilders.boolQuery()
-                    .must(scope)
-                    .must(query);
+                    .should(complementOfScope)
+                    .should(query);
         }
         return query;
     }

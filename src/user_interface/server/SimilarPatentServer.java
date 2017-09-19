@@ -1044,7 +1044,8 @@ public class SimilarPatentServer {
 
     public static List<String> preProcess(String toSplit, String delim, String toReplace) {
         if(toSplit==null||toSplit.trim().length()==0) return new ArrayList<>();
-        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").replace("\r","").replace("\t"," ").trim():null).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
+        toSplit = toSplit.replace("\r","");
+        return Arrays.asList(toSplit.split(delim)).stream().filter(str->str!=null).map(str->toReplace!=null&&toReplace.length()>0?str.replaceAll(toReplace,"").trim():str).filter(str->str!=null&&!str.isEmpty()).collect(Collectors.toList());
     }
 
     public static List<Tag> getTemplatesForUser(String username, boolean deletable) {
@@ -1291,7 +1292,7 @@ public class SimilarPatentServer {
         try {
             String[] array = req.queryParamsValues(param);
             if (array != null) {
-                List<String> list = Arrays.stream(array).map(str->str.replaceAll("\\r","")).collect(Collectors.toList());
+                List<String> list = Arrays.stream(array).map(str->str.replace("\r","").trim()).collect(Collectors.toList());
                 return list;
             }
             else return Collections.emptyList();

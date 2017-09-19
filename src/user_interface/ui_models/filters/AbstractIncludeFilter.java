@@ -85,7 +85,8 @@ public class AbstractIncludeFilter extends AbstractFilter {
 
     @Override
     public void extractRelevantInformationFromParams(Request req) {
-        if (fieldType.equals(FieldType.Text)) {
+        if (!fieldType.equals(FieldType.Multiselect)) {
+            System.out.println("Params for "+getName()+": "+String.join("",SimilarPatentServer.extractArray(req, getName())));
             labels = preProcess(String.join("",SimilarPatentServer.extractArray(req, getName())), "\n", null);
             System.out.println("Should include labels for "+getName()+": "+String.join(", ",labels));
         } else {
