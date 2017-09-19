@@ -1,7 +1,9 @@
 package user_interface.ui_models.filters;
 
 import j2html.tags.Tag;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -31,6 +33,7 @@ import static user_interface.server.SimilarPatentServer.preProcess;
  * Created by Evan on 6/17/2017.
  */
 public class AbstractIncludeFilter extends AbstractFilter {
+    @Getter @Setter
     protected Collection<String> labels;
     protected FieldType fieldType;
 
