@@ -1,10 +1,8 @@
 package models.value_models.graphical;
 
 import elasticsearch.DataSearcher;
-import model.functions.normalization.DivideByPartition;
 import model.graphs.BayesianNet;
 import model.graphs.Graph;
-import model.graphs.MarkovNet;
 import model.nodes.FactorNode;
 import model.nodes.Node;
 import org.elasticsearch.search.sort.SortOrder;
@@ -13,14 +11,12 @@ import seeding.Database;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.ExistsInGatherFilter;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
 import user_interface.ui_models.portfolios.items.Item;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;

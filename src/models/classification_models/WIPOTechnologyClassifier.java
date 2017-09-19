@@ -1,10 +1,8 @@
 package models.classification_models;
 
 import org.deeplearning4j.berkeley.Pair;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 3/4/2017.

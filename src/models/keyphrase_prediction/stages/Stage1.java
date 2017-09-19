@@ -136,8 +136,8 @@ public class Stage1 implements Stage<Map<MultiStem,AtomicLong>> {
                                 // this is the POS tag of the token
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (validPOS.contains(pos)) {
-                                    // don't want to end in adjectives
-                                    if (!adjectivesPOS.contains(pos)) {
+                                    // don't want to end in adjectives (nor past tense verb)
+                                    if (!adjectivesPOS.contains(pos) && !pos.equals("VBD")) {
                                         multiStemChecker(new String[]{stem}, multiStemMap, word, stemToPhraseCountMap);
                                         if (prevStem != null) {
                                             multiStemChecker(new String[]{prevStem, stem}, multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);

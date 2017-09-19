@@ -1,17 +1,14 @@
 package seeding.ai_db_updater;
 
 import elasticsearch.DataIngester;
+import models.classification_models.WIPOHelper;
 import seeding.Constants;
 import seeding.data_downloader.WIPOTechnologyDownloader;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
-import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class UpdateWIPOTechnologies {
     static final AtomicLong cnt = new AtomicLong(0);
+
     public static void main(String[] args) throws Exception {
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
@@ -34,6 +32,7 @@ public class UpdateWIPOTechnologies {
         }
 
         // handle data
+        Map<String,String> patentFilingMap = assetToFilingMap.getPatentDataMap();
         Arrays.stream(downloader.getDestinationFile().listFiles()).forEach(file->{
             try(BufferedReader reader = new BufferedReader(new FileReader(file))) {
                 reader.lines().skip(1).parallel().forEach(line -> {
@@ -41,13 +40,13 @@ public class UpdateWIPOTechnologies {
                     String patent = fields[0];
                     String wipo = fields[1];
                     try {
-                        String filing = assetToFilingMap.getPatentDataMap().get(patent);
+                        String filing = patentFilingMap.get(patent);
                         if (filing != null) {
                             String wipoTechnology;
                             if (patent.startsWith("D")) {
-                                wipoTechnology = "Design";
+                                wipoTechnology = WIPOHelper.DESIGN_TECHNOLOGY;
                             } else if (patent.startsWith("P")) {
-                                wipoTechnology = "Plants";
+                                wipoTechnology = WIPOHelper.PLANT_TECHNOLOGY;
                             } else {
                                 wipoTechnology = definitionMap.get(wipo);
                             }

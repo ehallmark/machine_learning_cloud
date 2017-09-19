@@ -11,7 +11,7 @@ import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.ResultTypeAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ValueAttr;
-import user_interface.ui_models.attributes.computable_attributes.WIPOTechnologyAttribute;
+import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 import user_interface.ui_models.portfolios.items.ItemTransformer;

@@ -1,14 +1,18 @@
 package models.keyphrase_prediction.stages;
 
+import elasticsearch.DataIngester;
+import models.classification_models.WIPOHelper;
 import models.keyphrase_prediction.KeywordModelRunner;
 import models.keyphrase_prediction.MultiStem;
 import models.keyphrase_prediction.models.Model;
 import org.apache.commons.math3.linear.*;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import seeding.Constants;
 import seeding.Database;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
+import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
@@ -16,7 +20,10 @@ import util.Pair;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
@@ -41,6 +48,8 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
     private Collection<MultiStem> oldMultiStems;
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
     private String name;
+    private AtomicInteger defaultToWIPOCounter = new AtomicInteger(0);
+    private AtomicInteger notFoundCounter = new AtomicInteger(0);
     public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, Model model, int year) {
         this.multiStems=multiStems;
         this.maxCpcLength=model.getMaxCpcLength();
@@ -109,8 +118,6 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
         cooccurenceTable = new OpenMapBigRealMatrix(oldMultiStems.size(),multiStems.size());
 
         Function<SearchHit,Item> transformer = hit-> {
-            String asset = hit.getId();
-
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
             // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
@@ -186,11 +193,22 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
         Pair<Map<String,Integer>,RealMatrix> pair = Stage4.buildTMatrix(multiStems,year,maxCpcLength);
         RealMatrix T = pair._2;
         Map<String,Integer> cpcToIndexMap = pair._1;
-        AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
+        Map<String,Set<String>> patentCPCMap = new AssetToCPCMap().getPatentDataMap();
+        Map<String,Set<String>> appCPCMap = new AssetToCPCMap().getApplicationDataMap();
+
 
         assetToKeywordMap = Collections.synchronizedMap(new HashMap<>());
         Function<SearchHit,Item> transformer = hit-> {
             String asset = hit.getId();
+
+            // handle design and plant patents
+            if(asset.startsWith("P")) {
+                assetToKeywordMap.put(asset, Arrays.asList(WIPOHelper.PLANT_TECHNOLOGY));
+                return null;
+            } else if(asset.startsWith("D")) {
+                assetToKeywordMap.put(asset, Arrays.asList(WIPOHelper.DESIGN_TECHNOLOGY));
+                return null;
+            }
 
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
@@ -246,7 +264,7 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 return t1.add(t2);
             }).orElse(new ArrayRealVector(new double[]{})).toArray();
 
-            int[] cpcIndices = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().getOrDefault(asset,Collections.emptySet())).stream()
+            int[] cpcIndices = appCPCMap.getOrDefault(asset,patentCPCMap.getOrDefault(asset,Collections.emptySet())).stream()
                     .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
                     .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
 
@@ -270,17 +288,37 @@ public class Stage5 implements Stage<Map<String,List<String>>> {
                 }
             } else row = null;
 
+            AtomicBoolean foundTechnology = new AtomicBoolean(false);
             if(row!=null) {
                 double max = DoubleStream.of(row).max().getAsDouble();
                 if(max>0) {
                     if (debug) System.out.println("Max: " + max);
                     List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
                     if (technologies.size() > 0) {
+                        foundTechnology.set(true);
                         assetToKeywordMap.put(asset, technologies);
                         if (debug)
                             System.out.println("Technologies for " + asset + ": " + String.join("; ", technologies));
                     } else {
                         throw new RuntimeException("Technologies should never be empty...");
+                    }
+                }
+            }
+
+            if(!foundTechnology.get()) {
+                // default to wipo
+                SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+                Object wipoTechnology = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.WIPO_TECHNOLOGY));
+                if(wipoTechnology!=null) {
+                    assetToKeywordMap.put(asset, Arrays.asList(wipoTechnology.toString()));
+                    defaultToWIPOCounter.getAndIncrement();
+                    if(defaultToWIPOCounter.get()%10000==9999) {
+                        System.out.println("Defaulted to wipo cnt: "+defaultToWIPOCounter.get());
+                    }
+                } else {
+                    notFoundCounter.getAndIncrement();
+                    if(notFoundCounter.get()%10000==9999) {
+                        System.out.println("Missing technologies for: "+notFoundCounter.get());
                     }
                 }
             }

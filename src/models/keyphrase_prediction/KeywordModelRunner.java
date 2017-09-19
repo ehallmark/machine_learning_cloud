@@ -62,7 +62,7 @@ public class KeywordModelRunner {
         final int endYear = LocalDate.now().getYear();
         final int startYear = endYear - 20;
 
-        // stage 2
+        // stage 1
         Map<Integer,Stage1> stage1Map = Collections.synchronizedMap(new HashMap<>());
         for(int i = startYear; i <= endYear; i++) {
             final int year = i;
@@ -225,11 +225,6 @@ public class KeywordModelRunner {
                 .collect(Collectors.toList());
     }
 
-    private static double percentile(AbstractRealDistribution distribution, double val) {
-        return distribution.cumulativeProbability(val);
-    }
-
-
     public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
         QueryBuilder query;
         if(year>0) {
@@ -243,7 +238,7 @@ public class KeywordModelRunner {
             query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, boolQuery,false)
                     .innerHit(new InnerHitBuilder()
                             .setSize(1)
-                            .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE}, new String[]{}))
+                            .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
                     );
         } else {
             query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))

@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
  * Created by Evan on 6/18/2017.
  */
 public class WIPOHelper {
+    public static final String DESIGN_TECHNOLOGY = "Design";
+    public static final String PLANT_TECHNOLOGY = "Plants";
+
     public static final File definitionFile = new File("data/wipo_definition_map.jobj");
 
     private static Map<String, String> DEF_MAP;
