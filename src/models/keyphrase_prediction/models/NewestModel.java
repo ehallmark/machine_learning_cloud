@@ -7,7 +7,7 @@ import lombok.Getter;
  */
 public class NewestModel implements Model {
     @Getter
-    final long Kw = 5000;
+    final long Kw = 10000;
     @Getter
     final int k1 = 20;
     @Getter
@@ -23,7 +23,7 @@ public class NewestModel implements Model {
     @Getter
     final int windowSize = 4;
     @Getter
-    final int maxCpcLength = 9;
+    final int maxCpcLength = 7;
 
     @Getter
     boolean runStage1 = false;
