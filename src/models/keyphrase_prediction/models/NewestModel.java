@@ -26,11 +26,11 @@ public class NewestModel implements Model {
     final int maxCpcLength = 9;
 
     @Getter
-    boolean runStage1 = true;
+    boolean runStage1 = false;
     @Getter
-    boolean runStage2 = true;
+    boolean runStage2 = false;
     @Getter
-    boolean runStage3 = true;
+    boolean runStage3 = false;
     @Getter
     boolean runStage4 = true;
     @Getter

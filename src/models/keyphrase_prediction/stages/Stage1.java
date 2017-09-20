@@ -43,19 +43,17 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     }
 
     @Override
-    public Map<MultiStem,AtomicLong> run(boolean run) {
-        if(getFile().exists()) {
-            try {
-                loadData();
-                run = false;
-            } catch(Exception e) {
-                run = true;
-            }
-        }
-        if(run) {
+    public Map<MultiStem,AtomicLong> run(boolean alwaysRerun) {
+        if(alwaysRerun || !getFile().exists()) {
             data = buildVocabularyCounts();
             data = truncateBetweenLengths(data, minTokenFrequency, maxTokenFrequency);
             Database.trySaveObject(data, getFile());
+        } else {
+            try {
+                loadData();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return data;
     }
