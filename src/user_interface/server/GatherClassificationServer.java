@@ -1,6 +1,8 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import models.classification_models.TechnologyClassifier;
+import models.keyphrase_prediction.models.NewestModel;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 import user_interface.server.tools.SimpleAjaxMessage;
@@ -9,6 +11,7 @@ import spark.Response;
 import models.classification_models.ClassificationAttr;
 import models.classification_models.TechTaggerNormalizer;
 import models.classification_models.WIPOTechnologyClassifier;
+import user_interface.ui_models.attributes.computable_attributes.TechnologyAttribute;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -19,17 +22,12 @@ import static spark.Spark.*;
  * Created by ehallmark on 11/1/16.
  */
 public class GatherClassificationServer {
-    private static ClassificationAttr techTagger = TechTaggerNormalizer.getDefaultTechTagger();
+    private static ClassificationAttr techTagger = new TechnologyClassifier(TechnologyAttribute.getOrCreate(new NewestModel()));
     private static ClassificationAttr wipoTagger = new WIPOTechnologyClassifier();
     public static void StartServer() throws Exception {
-        get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> {
-            return Arrays.asList(wipoTagger.attributesFor(patents,1),techTagger.attributesFor(patents,tagLimit-1)).stream()
-                    .flatMap(list->list.stream()).collect(Collectors.toList());
-        }));
-        post("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> {
-            return Arrays.asList(wipoTagger.attributesFor(patents,1),techTagger.attributesFor(patents,tagLimit-1)).stream()
-                    .flatMap(list->list.stream()).collect(Collectors.toList());
-        }));
+        get("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents,tagLimit)));
+        post("/predict_patents", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> techTagger.attributesFor(patents,tagLimit)));
+
         post("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
         get("/predict_wipo", (req, res) -> handleRequest(req, res, (patents, tagLimit) -> wipoTagger.attributesFor(patents, tagLimit)));
     }

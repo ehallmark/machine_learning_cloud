@@ -15,11 +15,22 @@ import java.util.stream.Stream;
  * Created by Evan on 6/17/2017.
  */
 public class TechnologyAttribute extends ComputableAttribute<List<String>> {
+    private static final Map<String,TechnologyAttribute> MAP = Collections.synchronizedMap(new HashMap<>());
     private Map<String,List<String>> modelMap;
     private Model model;
-    public TechnologyAttribute(Model model) {
+    private TechnologyAttribute(Model model) {
         super(Arrays.asList(AbstractFilter.FilterType.Include, AbstractFilter.FilterType.Exclude, AbstractFilter.FilterType.AdvancedKeyword));
         this.model=model;
+    }
+
+    public static TechnologyAttribute getOrCreate(Model model) {
+        if(MAP.containsKey(model.getModelName())) {
+            return MAP.get(model.getModelName());
+        } else {
+            TechnologyAttribute attr = new TechnologyAttribute(model);
+            MAP.put(model.getModelName(),attr);
+            return attr;
+        }
     }
 
     @Override

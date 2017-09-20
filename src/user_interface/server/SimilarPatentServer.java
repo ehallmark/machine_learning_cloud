@@ -381,7 +381,7 @@ public class SimilarPatentServer {
         if(attributesMap.isEmpty()) {
             attributesMap.put(Constants.EXPIRED, new ExpiredAttribute());
             attributesMap.put(Constants.INVENTION_TITLE, new InventionTitleAttribute());
-            attributesMap.put(Constants.TECHNOLOGY, new TechnologyAttribute(new NewestModel()));
+            attributesMap.put(Constants.TECHNOLOGY, TechnologyAttribute.getOrCreate(new NewestModel()));
             attributesMap.put(Constants.NAME, new AssetNumberAttribute());
             attributesMap.put(Constants.WIPO_TECHNOLOGY, new WIPOTechnologyAttribute());
             attributesMap.put(Constants.AI_VALUE, new OverallEvaluator());
