@@ -23,7 +23,7 @@ public class NewestModel implements Model {
     @Getter
     final int windowSize = 4;
     @Getter
-    final int maxCpcLength = 10;
+    final int maxCpcLength = 9;
 
     @Getter
     boolean runStage1 = true;
