@@ -9,6 +9,7 @@ import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by Evan on 6/17/2017.
@@ -33,7 +34,8 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
 
     @Override
     public Collection<String> getAllValues() {
-        return SimilarPatentServer.getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList());
+        return null;
+       // return SimilarPatentServer.getTechTagger().getClassifications().stream().sorted().collect(Collectors.toList());
     }
 
     @Override
@@ -47,7 +49,14 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
             modelMap = KeywordModelRunner.loadModelMap(model);
         }
         if(items.isEmpty())return null;
-        return modelMap.get(items.stream().findAny().get());
+        List<String> techList = modelMap.get(items.stream().findAny().get());
+        if(techList==null) return null;
+        return techList.stream().map(tech->titleize(tech)).filter(t->t!=null).map(t->technologyCorrectionsMap.getOrDefault(t,t)).collect(Collectors.toList());
+    }
+
+    private static String titleize(String str) {
+        if(str==null||str.length()==0) return null;
+        return String.join(" ", Stream.of(str.split("\\s+")).map(s->capitalize(s)).collect(Collectors.toList()));
     }
 
     @Override
@@ -57,5 +66,10 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
         rawType.put("type","keyword");
         fields.put("raw",rawType);
         return fields;
+    }
+
+    private static Map<String,String> technologyCorrectionsMap = new HashMap<>();
+    static {
+        technologyCorrectionsMap.put("Electrical Circuits Surrounding","Electrical Circuits");
     }
 }
