@@ -32,7 +32,6 @@ import java.util.stream.Stream;
  */
 public class Stage4 extends Stage<Collection<MultiStem>> {
     private static final boolean debug = false;
-    private Collection<MultiStem> data;
     private long targetCardinality;
     private final int maxCpcLength;
     private double lowerBound;
