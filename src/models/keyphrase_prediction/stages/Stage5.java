@@ -39,7 +39,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private static final boolean debug = false;
     private Collection<MultiStem> multiStems;
     private int maxCpcLength;
-    private Map<String,List<String>> data;
     private SparseRealMatrix cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
     private Map<Integer,MultiStem> idxToMultiStemMap;
