@@ -248,7 +248,9 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                     .map(cpc->cpcToIndexMap.get(cpc)).filter(idx->idx!=null).mapToInt(i->i).toArray();
 
             double[] cpcRow = IntStream.of(cpcIndices).mapToObj(i->{
+                synchronized (T) {
                     return T.getColumnVector(i);
+                }
             }).reduce((t1,t2)->{
                 return t1.add(t2);
             }).orElse(new ArrayRealVector(new double[]{})).toArray();
