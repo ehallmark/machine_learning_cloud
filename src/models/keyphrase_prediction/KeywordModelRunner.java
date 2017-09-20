@@ -134,7 +134,7 @@ public class KeywordModelRunner {
     }
 
     public static void saveModelMap(Model model, Map<String,List<String>> assetToTechnologyMap) {
-        Database.trySaveObject(assetToTechnologyMap, new File("data/keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
+        Database.trySaveObject(assetToTechnologyMap, new File(Constants.DATA_FOLDER+"keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
     }
 
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
