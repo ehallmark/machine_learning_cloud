@@ -30,7 +30,7 @@ public class IsGrantedApplicationAttribute extends ComputableAttribute<Boolean> 
     private static final FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
     public IsGrantedApplicationAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.BoolTrue));
+        super(Arrays.asList(AbstractFilter.FilterType.BoolFalse));
     }
 
     @Override
