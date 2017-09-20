@@ -7,18 +7,18 @@ import lombok.Getter;
  */
 public class NewestModel implements Model {
     @Getter
-    final long Kw = 10000;
+    final long Kw = 5000;
     @Getter
-    final int k1 = 10;
+    final int k1 = 20;
     @Getter
     final int k2 = 5;
     @Getter
     final int k3 = 1;
 
     @Getter
-    final int minTokenFrequency = 10;
+    final int minTokenFrequency = 30;
     @Getter
-    final int maxTokenFrequency = 100000;
+    final int maxTokenFrequency = 200000;
 
     @Getter
     final int windowSize = 4;
