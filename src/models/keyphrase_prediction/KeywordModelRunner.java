@@ -191,25 +191,6 @@ public class KeywordModelRunner {
         });
     }
 
-    public static Collection<MultiStem> applyFilters(KeywordScorer scorer, RealMatrix matrix, Collection<MultiStem> keywords, long maxNumToKeep, double lowerBoundPercent, double upperBoundPercent) {
-        Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
-        long count = scoreMap.size();
-        double skipFirst = lowerBoundPercent*count;
-        double skipLast = (1.0-upperBoundPercent)*count;
-        return scoreMap.entrySet().stream()
-                .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))
-                .skip((long)skipLast)
-                .limit(Math.min(maxNumToKeep,count-(long)(skipFirst+skipLast)))
-                .map(e->{
-                    if(debug) {
-                        System.out.println("Value for "+e.getKey().toString()+": "+e.getValue());
-                    }
-                    e.getKey().setScore(e.getValue().floatValue());
-                    return e.getKey();
-                })
-                .collect(Collectors.toList());
-    }
-
     public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
         QueryBuilder query;
         if(year>0) {

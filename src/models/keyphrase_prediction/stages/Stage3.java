@@ -40,6 +40,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
     private long targetCardinality;
     private double lowerBound;
     private double upperBound;
+    private double minValue;
     public Stage3(Collection<MultiStem> multiStems, Model model, int year) {
         super(model,year);
         this.data = new HashSet<>(multiStems);
@@ -47,6 +48,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
         this.targetCardinality=model.getK2()*model.getKw();
         this.lowerBound=model.getStage3Lower();
         this.upperBound=model.getStage3Upper();
+        this.minValue = model.getStage3Min();
     }
 
     @Override
@@ -57,7 +59,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
             System.out.println("Starting year: " + year);
             System.out.println("Num keywords before stage 3: " + data.size());
             SparseRealMatrix M = buildMMatrix();
-            data = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound, upperBound);
+            data = applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound, upperBound, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
             Database.saveObject(data, getFile());

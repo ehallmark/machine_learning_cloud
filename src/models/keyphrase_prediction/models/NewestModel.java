@@ -7,11 +7,11 @@ import lombok.Getter;
  */
 public class NewestModel implements Model {
     @Getter
-    final long Kw = 10000;
+    final long Kw = 5000;
     @Getter
-    final int k1 = 20;
+    final int k1 = 10;
     @Getter
-    final int k2 = 5;
+    final int k2 = 3;
     @Getter
     final int k3 = 1;
 
@@ -26,11 +26,11 @@ public class NewestModel implements Model {
     final int maxCpcLength = 7;
 
     @Getter
-    boolean runStage1 = false;
+    boolean runStage1 = true;
     @Getter
-    boolean runStage2 = false;
+    boolean runStage2 = true;
     @Getter
-    boolean runStage3 = false;
+    boolean runStage3 = true;
     @Getter
     boolean runStage4 = true;
     @Getter
@@ -42,17 +42,23 @@ public class NewestModel implements Model {
     }
 
     @Getter
-    double stage4Upper = 0.95;
+    double stage4Upper = 1;
     @Getter
     double stage4Lower = 0.2;
+    @Getter
+    double stage4Min = 0.05;
 
     @Getter
     double stage3Upper = 0.95;
     @Getter
     double stage3Lower = 0.2;
+    @Getter
+    double stage3Min = 0d;
 
     @Getter
-    double stage2Upper = 0.95;
+    double stage2Upper = 0.80;
     @Getter
     double stage2Lower = 0.0;
+    @Getter
+    double stage2Min = minTokenFrequency;
 }

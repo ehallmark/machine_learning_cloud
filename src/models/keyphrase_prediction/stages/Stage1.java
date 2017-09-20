@@ -115,7 +115,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                                 String pos = token.get(CoreAnnotations.PartOfSpeechAnnotation.class);
                                 if (validPOS.contains(pos)) {
                                     // don't want to end in adjectives (nor past tense verb)
-                                    if (!adjectivesPOS.contains(pos) && !pos.equals("VBD")) {
+                                    if (!adjectivesPOS.contains(pos) && !pos.equals("VBD") && !(pos.startsWith("V")&&word.endsWith("ing"))) {
                                         multiStemChecker(new String[]{stem}, multiStemMap, word, stemToPhraseCountMap);
                                         if (prevStem != null) {
                                             multiStemChecker(new String[]{prevStem, stem}, multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);

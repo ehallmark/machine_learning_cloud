@@ -23,4 +23,8 @@ public interface Model {
     double getStage3Lower();
     double getStage3Upper();
     double getStage4Lower();
-    double getStage4Upper();}
+    double getStage4Upper();
+    double getStage4Min();
+    double getStage3Min();
+    double getStage2Min();
+}

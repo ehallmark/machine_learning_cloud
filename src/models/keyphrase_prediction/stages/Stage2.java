@@ -22,12 +22,14 @@ public class Stage2 extends Stage<Collection<MultiStem>> {
     private Map<MultiStem,AtomicLong> keywordsCounts;
     private double upperBound;
     private double lowerBound;
+    private double minValue;
     public Stage2(Map<MultiStem,AtomicLong> keywordsCounts, Model model, int year) {
         super(model, year);
         this.keywordsCounts=keywordsCounts;
         this.targetCardinality=model.getKw()*model.getK1();
         this.upperBound=model.getStage2Upper();
         this.lowerBound=model.getStage2Lower();
+        this.minValue = model.getStage2Min();
     }
 
     @Override
@@ -40,7 +42,7 @@ public class Stage2 extends Stage<Collection<MultiStem>> {
 
             // apply filter 1
             double[] F = buildFMatrix(keywordsCounts);
-            data = KeywordModelRunner.applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F}), data, targetCardinality, lowerBound,upperBound);
+            data = applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F}), data, targetCardinality, lowerBound,upperBound, minValue);
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));

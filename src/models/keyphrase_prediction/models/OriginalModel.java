@@ -5,7 +5,7 @@ import lombok.Getter;
 /**
  * Created by Evan on 9/15/2017.
  */
-public class OriginalModel implements Model {
+public abstract class OriginalModel implements Model {
     @Getter
     final long Kw = 5000;
     @Getter

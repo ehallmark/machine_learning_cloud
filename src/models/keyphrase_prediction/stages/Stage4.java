@@ -36,6 +36,7 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
     private final int maxCpcLength;
     private double lowerBound;
     private double upperBound;
+    private double minValue;
     public Stage4(Collection<MultiStem> keywords, Model model, int year) {
         super(model,year);
         this.data = keywords;
@@ -43,6 +44,7 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
         this.targetCardinality=model.getKw()*model.getK3();
         this.upperBound=model.getStage4Upper();
         this.lowerBound=model.getStage4Lower();
+        this.minValue = model.getStage4Min();
     }
 
     @Override
@@ -53,7 +55,8 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(data);
             RealMatrix T = buildTMatrix(data, year, maxCpcLength)._2;
 
-            data = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound);
+            data = applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound, minValue);
+            data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toList());
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
