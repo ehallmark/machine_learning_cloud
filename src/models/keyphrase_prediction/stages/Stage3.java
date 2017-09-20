@@ -50,27 +50,25 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
     }
 
     @Override
-    public Collection<MultiStem> run(boolean run) {
-        if(getFile().exists()) {
-            try {
-                loadData();
-                run = false;
-            } catch(Exception e) {
-                run = true;
-            }
-        }
-        if(run) {
+    public Collection<MultiStem> run(boolean alwaysRerun) {
+        if(alwaysRerun || !getFile().exists()) {
             // apply filter 2
             KeywordModelRunner.reindex(data);
-            System.out.println("Starting year: "+year);
-            System.out.println("Num keywords before stage 3: "+data.size());
+            System.out.println("Starting year: " + year);
+            System.out.println("Num keywords before stage 3: " + data.size());
             SparseRealMatrix M = buildMMatrix();
-            data = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound,upperBound);
-            System.out.println("Num keywords after stage 3: "+data.size());
+            data = KeywordModelRunner.applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound, upperBound);
+            System.out.println("Num keywords after stage 3: " + data.size());
 
             Database.saveObject(data, getFile());
             // write to csv for records
-            KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));
+            KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
+        } else {
+            try {
+                loadData();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
         return data;
     }

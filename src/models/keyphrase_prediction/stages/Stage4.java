@@ -46,25 +46,23 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
     }
 
     @Override
-    public Collection<MultiStem> run(boolean run) {
-        if(getFile().exists()) {
-            try {
-                loadData();
-                run = false;
-            } catch(Exception e) {
-                run = true;
-            }
-        }
-        if(run) {
+    public Collection<MultiStem> run(boolean alwaysRerun) {
+        if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
-            System.out.println("Starting year: "+year);
+            System.out.println("Starting year: " + year);
             KeywordModelRunner.reindex(data);
             RealMatrix T = buildTMatrix(data, year, maxCpcLength)._2;
 
             data = KeywordModelRunner.applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound);
             Database.saveObject(data, getFile());
             // write to csv for records
-            KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));
+            KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
+        } else {
+            try {
+                loadData();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
         return data;
     }

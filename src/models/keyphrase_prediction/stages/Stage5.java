@@ -58,35 +58,33 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     }
 
     @Override
-    public Map<String, List<String>> run(boolean run) {
-        if(getFile().exists()) {
-            try {
-                loadData();
-                run = false;
-            } catch(Exception e) {
-                run = true;
-            }
-        }
-        if(run) {
-            System.out.println("Starting year: "+year);
+    public Map<String, List<String>> run(boolean alwaysRerun) {
+        if(alwaysRerun || !getFile().exists()) {
+            System.out.println("Starting year: " + year);
             // get cooccurrence map
             KeywordModelRunner.reindex(multiStems);
-            idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s->s.getIndex(),s->s));
+            idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s -> s.getIndex(), s -> s));
             getCooccurrenceMap();
             // run model
             runModel();
             Database.saveObject(data, getFile());
             // print sample
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getFile().getAbsolutePath()+".csv")))) {
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(getFile().getAbsolutePath() + ".csv")))) {
                 writer.write("Asset,Technologies\n");
                 data.entrySet().stream().limit(10000).forEach(e -> {
                     try {
-                        writer.write(e.getKey()+","+String.join("; ",e.getValue())+"\n");
-                    }catch(Exception _e) {
+                        writer.write(e.getKey() + "," + String.join("; ", e.getValue()) + "\n");
+                    } catch (Exception _e) {
                         _e.printStackTrace();
                     }
                 });
                 writer.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                loadData();
             } catch(Exception e) {
                 e.printStackTrace();
             }
