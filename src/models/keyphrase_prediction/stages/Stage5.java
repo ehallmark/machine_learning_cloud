@@ -237,9 +237,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
             double[] stemRow = IntStream.of(documentStemIndices).mapToObj(i->{
                 double idf = (1+Math.log(Math.E+oldMultiStemsCountMap.get(i).get())); // inverse document frequency
-                synchronized (cooccurenceTable) {
-                    return cooccurenceTable.getRowVector(i).mapDivide(idf);
-                }
+                return cooccurenceTable.getRowVector(i).mapDivide(idf);
             }).reduce((t1,t2)->{
                 return t1.add(t2);
             }).orElse(new ArrayRealVector(new double[]{})).toArray();
@@ -258,9 +256,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
             double[] row;
             if(stemRow.length>0||cpcRow.length>0) {
-                synchronized (cooccurenceTable) {
-                    row = new double[cooccurenceTable.getColumnDimension()];
-                }
+                row = new double[cooccurenceTable.getColumnDimension()];
                 Arrays.fill(row,1d);
                 for (int i = 0; i < row.length; i++) {
                     if (stemRow.length>0) {
