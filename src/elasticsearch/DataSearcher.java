@@ -331,7 +331,9 @@ public class DataSearcher {
     }
 
     private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap) {
+        System.out.println("handling highlight fields....");
         if(highlightFieldMap != null) {
+            System.out.println(" Highlight fields: "+new Gson().toJson(highlightFieldMap));
             highlightFieldMap.entrySet().forEach(e->{
                 Text[] fragments = e.getValue().getFragments();
                 if(fragments!=null) {
