@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,7 +47,7 @@ public class DatabaseIteratorFactory {
         return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>0).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
     }
 
-    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, AtomicLong cnt) {
+    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, AtomicLong cnt, Queue<Sequence<VocabWord>> queue) {
         return (docList, t2) -> {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
@@ -77,21 +78,33 @@ public class DatabaseIteratorFactory {
 
                         if(sequence.size() > 0) {
                             // add to queue
-                            // TODO
-                            if (assigneeName != null) {
-                                Sequence<VocabWord> duplicatableSequence = sequence.dup();
-                                duplicatableSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
+                            while(!queue.offer(sequence)) {
+                                try {
+                                    TimeUnit.MILLISECONDS.sleep(200);
+                                } catch(Exception e) {
 
+                                }
+                            }
+                            if (assigneeName != null) {
+                                Sequence<VocabWord> assigneeSequence = sequence.dup();
+                                assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
+                                while(!queue.offer(assigneeSequence)) {
+                                    try {
+                                        TimeUnit.MILLISECONDS.sleep(200);
+                                    } catch(Exception e) {
+
+                                    }
+                                }
                             }
                         }
                     }
                 } finally {
-                    if (cnt.getAndIncrement() % 10000 == 9999) {
-                        System.out.println("Ingested: " + cnt.get());
+                    if (cnt.getAndIncrement() % 100000 == 99999) {
+                        System.out.println("Seen: " + cnt.get());
                     }
                 }
             });
-            cursor.next(helper(cursor, cnt));
+            cursor.next(helper(cursor, cnt, queue));
         };
     }
 
@@ -116,13 +129,14 @@ public class DatabaseIteratorFactory {
             }
         }
 
+        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(20000);
+
         FindIterable<Document> iterator = collection.find(new Document());
 
         iterator.batchSize(1000).batchCursor((cursor,t)->{
-            cursor.next(helper(cursor,cnt));
+            cursor.next(helper(cursor,cnt,queue));
         });
 
-        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(10000);
 
         return new SequenceIterator<VocabWord>() {
             @Override
