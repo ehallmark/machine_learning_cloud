@@ -185,13 +185,16 @@ public class DataSearcher {
 
            if(highlight) {
                // possible highlighting
-               List<String> highlightFields = Arrays.asList(Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.CLAIMS+"."+Constants.CLAIM);
-               HighlightBuilder highlighter = new HighlightBuilder().postTags("</span>").preTags("<span style=\"backgroun-color: yellow;\">");
-               HighlightBuilder innerHitHighlighter = new HighlightBuilder().postTags("</span>").preTags("<span style=\"backgroun-color: yellow;\">");
-               for(String field : highlightFields) {
-                   innerHitHighlighter = innerHitHighlighter.field(field);
-                   highlighter = highlighter.field(field);
-               }
+               HighlightBuilder highlighter = new HighlightBuilder()
+                       .postTags("</span>")
+                       .preTags("<span style=\"backgroun-color: yellow;\">")
+                       .requireFieldMatch(false)
+                       .field("*");
+               HighlightBuilder innerHitHighlighter = new HighlightBuilder()
+                       .postTags("</span>")
+                       .preTags("<span style=\"backgroun-color: yellow;\">")
+                       .requireFieldMatch(false)
+                       .field("*");
                request.set(request.get().highlighter(highlighter));
                innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(innerHitHighlighter));
             }
