@@ -53,8 +53,15 @@ public class BMCTest {
                 String assignee = Database.assigneeFor(e.getKey());
                 if(assignee==null) assignee = "";
                 if(assignee.toUpperCase().contains("BMC")) return;
-                if(assignee.contains(",")&&assignee.contains("assignee=")) {
-                    assignee = assignee.substring(assignee.indexOf("assignee=")+9,Math.min(assignee.length(),assignee.indexOf(",", assignee.indexOf("assignee="))));
+                int i1 = assignee.indexOf("assignee=");
+                if(i1>=0) {
+                    i1+="assignee=".length();
+                    int i2 = assignee.indexOf(",", i1);
+                    if(i2>=0) {
+                        assignee = assignee.substring(i1,i2);
+                    } else {
+                        assignee = assignee.substring(i1).replaceAll("[\\[\\]\\{\\}]","");
+                    }
                 }
                 writer.write(e.getKey()+","+assignee+","+String.join("; ",e.getValue())+"\n");
             } catch(Exception e2) {
