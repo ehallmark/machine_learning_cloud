@@ -176,7 +176,7 @@ public class DatabaseIteratorFactory {
             }
         };
 
-        iterator.reset();
+        //iterator.reset();
         return iterator;
     }
 
