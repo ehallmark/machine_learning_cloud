@@ -34,25 +34,25 @@ public class ParagraphVectorModel {
     }
 
     private ParagraphVectors net;
-    private double learningRate = 0.05;
+    private double learningRate = 0.025;
     private double negativeSampling = -1;//30;
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        int numEpochs = 5;
+        int numEpochs = 10;
         int numThreads = 40;
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
-                .batchSize(5000)
+                .batchSize(10000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
                 .windowSize(4)
                 .layerSize(VECTOR_SIZE)
                 .sampling(0.00001)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
-                .minLearningRate(0.00001)
+                .minLearningRate(0.000001)
                 .useAdaGrad(true)
                 .resetModel(true)
                 .minWordFrequency(500)
@@ -66,9 +66,9 @@ public class ParagraphVectorModel {
                 .elementsLearningAlgorithm(new SkipGram<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
-                .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",1000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                ))
+                //.setVectorsListeners(Arrays.asList(
+                 //       new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",1000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                //))
                 .iterate(sentenceIterator)
                 .build();
 

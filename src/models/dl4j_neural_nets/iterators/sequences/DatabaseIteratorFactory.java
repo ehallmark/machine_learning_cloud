@@ -73,18 +73,6 @@ public class DatabaseIteratorFactory {
         };
     }
 
-    static SearchRequestBuilder getRequestBuilder(TransportClient client) {
-        SearchRequestBuilder requestBuilder = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                .addStoredField("_parent")
-                .addStoredField("_source")
-                .setFetchSource(new String[]{Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
-                .setFrom(0)
-                .setSize(10000)
-                .setScroll(new TimeValue(60000))
-                .setExplain(false);
-        return requestBuilder;
-    }
 
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(50000);
@@ -136,6 +124,7 @@ public class DatabaseIteratorFactory {
 
 
         SequenceIterator<VocabWord> iterator = new SequenceIterator<VocabWord>() {
+            boolean firstRunThrough = true;
             RecursiveAction iter;
             @Override
             public boolean hasMoreSequences() {
@@ -157,6 +146,7 @@ public class DatabaseIteratorFactory {
 
             @Override
             public void reset() {
+
                 if(iter != null && iter.isCompletedAbnormally()) {
                     throw new RuntimeException("Error while iterating: "+iter.getException());
                 }
@@ -169,13 +159,14 @@ public class DatabaseIteratorFactory {
                     }
                 }
                 queue.clear();
-                iter = getNewIter(getRequestBuilder(client).get(),transformer);
+                iter = getNewIter(client,transformer, firstRunThrough, numEpochs);
                 iter.fork();
                 try {
                     TimeUnit.MILLISECONDS.sleep(2000);
                 } catch(Exception e) {
 
                 }
+                firstRunThrough=false;
             }
         };
 
@@ -183,12 +174,33 @@ public class DatabaseIteratorFactory {
         return iterator;
     }
 
-    static RecursiveAction getNewIter(SearchResponse searchResponse, Function<SearchHit,Item> transformer) {
+    static SearchRequestBuilder getRequestBuilder(TransportClient client) {
+        SearchRequestBuilder requestBuilder = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                .addStoredField("_parent")
+                .addStoredField("_source")
+                .setFetchSource(new String[]{Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
+                .setFrom(0)
+                .setSize(10000)
+                .setScroll(new TimeValue(60000))
+                .setExplain(false);
+        return requestBuilder;
+    }
+
+    static RecursiveAction getNewIter(TransportClient client, Function<SearchHit,Item> transformer, boolean firstRunThrough, int numEpochs) {
         return new RecursiveAction() {
             @Override
             protected void compute() {
                 System.out.println("GETTING NEW ITERATOR...");
-                DataSearcher.iterateOverSearchResults(searchResponse,transformer,-1,false);
+                if(firstRunThrough) {
+                    System.out.print("FIRST RUN THROUGH");
+                    DataSearcher.iterateOverSearchResults(getRequestBuilder(client).get(), transformer, -1, false);
+                } else {
+                    for(int i = 0; i < numEpochs; i++) {
+                        System.out.println("STARTING EPOCH: "+(i+1));
+                        DataSearcher.iterateOverSearchResults(getRequestBuilder(client).get(), transformer, -1, false);
+                    }
+                }
             }
         };
     }
