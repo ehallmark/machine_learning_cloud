@@ -187,9 +187,13 @@ public class DataSearcher {
                // possible highlighting
                List<String> highlightFields = Arrays.asList(Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.CLAIMS+"."+Constants.CLAIM);
                HighlightBuilder highlighter = new HighlightBuilder().postTags("</span>").preTags("<span style=\"backgroun-color: yellow;\">");
-               for(String field : highlightFields) { highlighter = highlighter.field(field); }
+               HighlightBuilder innerHitHighlighter = new HighlightBuilder().postTags("</span>").preTags("<span style=\"backgroun-color: yellow;\">");
+               for(String field : highlightFields) {
+                   innerHitHighlighter = innerHitHighlighter.field(field);
+                   highlighter = highlighter.field(field);
+               }
                request.set(request.get().highlighter(highlighter));
-               innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
+               innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(innerHitHighlighter));
             }
 
             // Set query
@@ -300,6 +304,7 @@ public class DataSearcher {
         if(debug) {
             System.out.println("fields: "+new Gson().toJson(hit.getFields()));
             System.out.println("source: "+new Gson().toJson(hit.getSource()));
+            System.out.println("highlights: "+new Gson().toJson(hit.getHighlightFields()));
         }
 
         hit.getSource().forEach((k,v)->{

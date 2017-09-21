@@ -87,7 +87,7 @@ public class DatabaseIteratorFactory {
     }
 
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
-        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(20000);
+        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(50000);
         TransportClient client = MyClient.get();
 
         Function<SearchHit,Item> transformer = hit-> {
@@ -121,7 +121,7 @@ public class DatabaseIteratorFactory {
                     while(!queue.offer(sequence)) {
                         try {
                             System.out.println("Waiting for offer...");
-                            TimeUnit.MILLISECONDS.sleep(200);
+                            TimeUnit.MILLISECONDS.sleep(10000);
                         } catch(Exception e) {
 
                         }
@@ -132,7 +132,7 @@ public class DatabaseIteratorFactory {
                         while(!queue.offer(assigneeSequence)) {
                             System.out.println("Waiting for offer...");
                             try {
-                                TimeUnit.MILLISECONDS.sleep(200);
+                                TimeUnit.MILLISECONDS.sleep(10000);
                             } catch(Exception e) {
 
                             }
@@ -144,21 +144,10 @@ public class DatabaseIteratorFactory {
             return null;
         };
 
-        RecursiveAction iterThread = new RecursiveAction() {
-            @Override
-            protected void compute() {
-                DataSearcher.iterateOverSearchResults(getRequestBuilder(client).get(),transformer,-1,false);
-            }
-        };
-        iterThread.fork();
-        try {
-            TimeUnit.MILLISECONDS.sleep(2000);
-        } catch(Exception e) {
 
-        }
 
-        return new SequenceIterator<VocabWord>() {
-            RecursiveAction iter = iterThread;
+        SequenceIterator<VocabWord> iterator = new SequenceIterator<VocabWord>() {
+            RecursiveAction iter;
             @Override
             public boolean hasMoreSequences() {
                 return queue.size()>0 || !(iter.isDone()||iter.isCancelled());
@@ -180,7 +169,7 @@ public class DatabaseIteratorFactory {
 
             @Override
             public void reset() {
-                if(!iter.isDone()) {
+                if(iter != null && !iter.isDone()) {
                     try {
                         iter.cancel(true);
                     } catch(Exception e) {
@@ -196,6 +185,9 @@ public class DatabaseIteratorFactory {
                 }
             }
         };
+
+        iterator.reset();
+        return iterator;
     }
 
     static RecursiveAction getNewIter(SearchResponse searchResponse, Function<SearchHit,Item> transformer) {
