@@ -45,7 +45,7 @@ public class GatherClassificationServer {
         res.type("application/json");
         if(req.queryParams("reelFrames")==null || req.queryParams("reelFrames").length()==0)  return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
 
-        Set<String> reelFrames = new HashSet<>(Arrays.asList(req.queryParams("reelFrames").split("\\s+")));
+        List<String> reelFrames = Arrays.asList(req.queryParams("reelFrames").split("\\s+"));
         int tmp = 3;
         if(req.queryParams("limit")!=null && req.queryParams("limit").length()>0) {
             try {
