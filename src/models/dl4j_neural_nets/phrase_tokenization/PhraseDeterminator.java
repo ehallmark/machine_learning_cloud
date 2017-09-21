@@ -130,7 +130,7 @@ public class PhraseDeterminator {
     }
 
     public static void main(String[] args) throws Exception {
-        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.SpecificPatentParagraphSequenceIterator(GetEtsiPatentsList.get4GPatents());
+        SequenceIterator<VocabWord> test = DatabaseIteratorFactory.PatentParagraphSequenceIterator(1);
         int maxNumResults = 300;
         PhraseDeterminator determinator = new PhraseDeterminator(test,maxNumResults);
         determinator.determinePhrases();

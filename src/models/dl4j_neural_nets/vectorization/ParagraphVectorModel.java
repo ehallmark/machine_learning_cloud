@@ -26,8 +26,7 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class ParagraphVectorModel {
-    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"all_paragraphs2017.paragraphvectors");
-    public static File testParagraphsModelFile = new File(Constants.DATA_FOLDER+"simple.pv");
+    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"titles_and_abstracts_2017-9-21.paragraphvectors");
     public static final int VECTOR_SIZE = 100;
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
@@ -38,42 +37,6 @@ public class ParagraphVectorModel {
     private double learningRate = 0.05;
     private double negativeSampling = -1;//30;
 
-
-    public static void runTestModel() throws Exception {
-        int numThreads = 30;
-
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSamplingSequenceIterator(1,1000),numThreads/2);
-
-        ParagraphVectors net = new ParagraphVectors.Builder()
-                .seed(41)
-                .batchSize(100)
-                .epochs(1) // hard coded to avoid learning rate from resetting
-                .windowSize(6)
-                .layerSize(50)
-                .sampling(0.00005)
-                .negativeSample(-1)
-                .learningRate(0.01)
-                .useAdaGrad(true)
-                .resetModel(true)
-                .minWordFrequency(30)
-                .workers(numThreads/2)
-                .iterations(1)
-                .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
-                .trainWordVectors(true)
-                .useHierarchicSoftmax(true)
-                .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
-                .elementsLearningAlgorithm(new SkipGram<>())
-                .sequenceLearningAlgorithm(new DBOW<>())
-                .tokenizerFactory(tokenizerFactory)
-                .iterate(sentenceIterator)
-                .build();
-
-        net.fit();
-        WordVectorSerializer.writeParagraphVectors(net, testParagraphsModelFile.getAbsolutePath());
-        net = WordVectorSerializer.readParagraphVectors(testParagraphsModelFile.getAbsolutePath());
-        System.out.println("Sample vector: "+net.getLookupTable().vectors().next());
-    }
     public void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 5;
         int numThreads = 40;
@@ -84,15 +47,15 @@ public class ParagraphVectorModel {
                 .seed(41)
                 .batchSize(5000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
-                .windowSize(6)
+                .windowSize(4)
                 .layerSize(VECTOR_SIZE)
-                .sampling(0.000001)
+                .sampling(0.00001)
                 .negativeSample(negativeSampling)
                 .learningRate(learningRate)
-                .minLearningRate(0.00005)
+                .minLearningRate(0.00001)
                 .useAdaGrad(true)
                 .resetModel(true)
-                .minWordFrequency(1000)
+                .minWordFrequency(500)
                 .workers(numThreads)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
@@ -115,11 +78,6 @@ public class ParagraphVectorModel {
 
     public static ParagraphVectors loadParagraphsModel() throws IOException {
         return loadModel(allParagraphsModelFile.getAbsolutePath());
-    }
-
-    public static ParagraphVectors loadTestParagraphsModel() throws IOException {
-        System.out.println("LOADING TEST MODEL!!! WARNING!!!!");
-        return loadModel(testParagraphsModelFile.getAbsolutePath());
     }
 
     public static ParagraphVectors loadModel(String path) throws IOException {

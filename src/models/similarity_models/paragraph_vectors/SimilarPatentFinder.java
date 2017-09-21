@@ -36,13 +36,8 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
 
     private static void loadLookupTable() {
         if(paragraphVectors!=null)return;
-        boolean testing = false;
         try {
-            if(testing==true) {
-                paragraphVectors = ParagraphVectorModel.loadTestParagraphsModel();
-            } else {
-                paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
-            }
+            paragraphVectors = ParagraphVectorModel.loadParagraphsModel();
         } catch(Exception e) {
             e.printStackTrace();
         }
