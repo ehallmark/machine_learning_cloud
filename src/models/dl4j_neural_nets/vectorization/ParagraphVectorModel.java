@@ -27,7 +27,7 @@ import java.util.Arrays;
  */
 public class ParagraphVectorModel {
     public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"titles_and_abstracts_2017-9-21.paragraphvectors");
-    public static final int VECTOR_SIZE = 100;
+    public static final int VECTOR_SIZE = 30;
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
@@ -67,7 +67,7 @@ public class ParagraphVectorModel {
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
                 .setVectorsListeners(Arrays.asList(
-                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",50000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                        new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",1000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
                 ))
                 .iterate(sentenceIterator)
                 .build();

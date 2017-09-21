@@ -143,8 +143,8 @@ public class DatabaseIteratorFactory {
                 if(!hasMore) {
                     System.out.println("NO MORE SEQUENCES FOUND :(");
                     System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                    System.out.println("ITER DONE? "+iter.isDone());
-                    System.out.println("ITER CANCELED? "+iter.isCancelled());
+                    System.out.println("ITER COMPLETED NORMALLY? "+iter.isCompletedNormally());
+                    System.out.println("Exception: "+iter.getException());
                 }
                 return hasMore;
             }
