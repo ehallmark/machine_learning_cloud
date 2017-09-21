@@ -37,7 +37,7 @@ public class BMCTest {
         });
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/bmc_cited_assets.csv")));
-        writer.write("Cited Asset,Assignee,BMC Asset\n");
+        writer.write("Cited Asset,Assignee,BMC Asset(s)\n");
         assetToBMCMap.entrySet().forEach(e->{
             try {
                 writer.write(e.getKey()+","+Database.assigneeFor(e.getKey())+","+String.join("; ",e.getValue())+"\n");
