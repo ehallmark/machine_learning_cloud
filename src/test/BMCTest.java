@@ -5,6 +5,7 @@ import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
+import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,6 +21,7 @@ public class BMCTest {
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         Collection<String> assignees = Database.possibleNamesForAssignee("BMC SOFTWARE");
         System.out.println("Num assignees found: "+assignees.size());
+        FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
 
         Collection<String> assets = assignees.stream().flatMap(assignee->assigneeToAssetsMap.getPatentDataMap().getOrDefault(assignee, Collections.emptyList()).stream()).collect(Collectors.toSet());
 
@@ -31,8 +33,16 @@ public class BMCTest {
         Map<String,Collection<String>> assetToBMCMap = new HashMap<>();
         citedAssets.forEach(p->{
             p.getSecond().forEach(cite->{
-                assetToBMCMap.putIfAbsent(cite,new HashSet<>());
-                assetToBMCMap.get(cite).add(p.getFirst());
+                Collection<String> coll;
+                if(cite.contains("/")) {
+                    coll = filingToAssetMap.getPatentDataMap().getOrDefault(cite,Collections.emptyList());
+                } else {
+                    coll = Arrays.asList(cite);
+                }
+                coll.forEach(a->{
+                    assetToBMCMap.putIfAbsent(a,new HashSet<>());
+                    assetToBMCMap.get(a).add(p.getFirst());
+                });
             });
         });
 
@@ -40,7 +50,13 @@ public class BMCTest {
         writer.write("Cited Asset,Assignee,BMC Asset(s)\n");
         assetToBMCMap.entrySet().forEach(e->{
             try {
-                writer.write(e.getKey()+","+Database.assigneeFor(e.getKey())+","+String.join("; ",e.getValue())+"\n");
+                String assignee = Database.assigneeFor(e.getKey());
+                if(assignee==null) assignee = "";
+                if(assignee.toUpperCase().contains("BMC")) return;
+                if(assignee.contains(",")&&assignee.contains("assignee=")) {
+                    assignee = assignee.substring(assignee.indexOf("assignee="),assignee.indexOf(",", assignee.indexOf("assignee=")));
+                }
+                writer.write(e.getKey()+","+assignee+","+String.join("; ",e.getValue())+"\n");
             } catch(Exception e2) {
                 e2.printStackTrace();
             }

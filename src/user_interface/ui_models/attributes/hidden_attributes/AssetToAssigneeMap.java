@@ -11,7 +11,11 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
     @Override
     public String handleIncomingData(String name, Map<String,Object> allData, Map<String, String> myData, boolean isApp) {
         Object assignee = allData.get(Constants.LATEST_ASSIGNEE);
-        if(assignee!=null&&assignee instanceof Map) {
+        if(assignee!=null&&(assignee instanceof Map || assignee instanceof List)) {
+            if(assignee instanceof List) {
+                if(((List) assignee).size() == 0) return null;
+                assignee = ((List)assignee).get(0);
+            }
             assignee = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
             // check execution date
             // TODO check execution date
