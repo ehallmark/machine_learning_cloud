@@ -143,6 +143,8 @@ public class DatabaseIteratorFactory {
                 if(!hasMore) {
                     System.out.println("NO MORE SEQUENCES FOUND :(");
                     System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                    System.out.println("ITER DONE? "+iter.isDone());
+                    System.out.println("ITER CANCELED? "+iter.isCancelled());
                 }
                 return hasMore;
             }
@@ -160,6 +162,7 @@ public class DatabaseIteratorFactory {
             public void reset() {
                 if(iter != null && !iter.isDone()) {
                     try {
+                        System.out.println("CANCELLING ITER!!!");
                         iter.cancel(true);
                     } catch(Exception e) {
 
