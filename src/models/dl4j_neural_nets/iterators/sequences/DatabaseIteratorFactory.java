@@ -6,11 +6,17 @@ import com.mongodb.async.client.FindIterable;
 import com.mongodb.async.client.MongoClient;
 import com.mongodb.async.client.MongoCollection;
 import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
 import elasticsearch.MongoDBClient;
 import elasticsearch.MyClient;
 import models.dl4j_neural_nets.tools.DuplicatableSequence;
 import org.bson.Document;
 import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.search.SearchHit;
 import seeding.Constants;
 import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
@@ -23,6 +29,8 @@ import org.deeplearning4j.text.tokenization.tokenizerfactory.TokenizerFactory;
 import tools.AssigneeTrimmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
+import user_interface.ui_models.portfolios.items.Item;
+import user_interface.ui_models.portfolios.items.ItemTransformer;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -30,8 +38,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.RecursiveAction;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,52 +62,7 @@ public class DatabaseIteratorFactory {
             //System.out.println("Ingesting batch of : "+docList.size());
             docList.parallelStream().forEach(doc->{
                 try {
-                    String id = doc.getString("_id");
-                    String inventionTitle = doc.getString(Constants.INVENTION_TITLE);
-                    String abstractText = doc.getString(Constants.ABSTRACT);
-                    String docType = doc.getString(Constants.DOC_TYPE);
-                    String assigneeName;
-                    if(docType.equals("patents")) {
-                        assigneeName = patentToAssigneeMap.get(id);
-                    } else {
-                        assigneeName = appToAssigneeMap.get(id);
-                    }
-                    String filing = doc.getString("_parent");
-                    if(filing!=null) {
 
-                        DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
-                        sequence.setSequenceLabel(new VocabWord(1.0,filing));
-
-                        if(inventionTitle!=null) {
-                            sequence.addElements(getSequence(inventionTitle));
-                        }
-
-                        if(abstractText!=null) {
-                            sequence.addElements(getSequence(abstractText));
-                        }
-
-                        if(sequence.size() > 0) {
-                            // add to queue
-                            while(!queue.offer(sequence)) {
-                                try {
-                                    TimeUnit.MILLISECONDS.sleep(200);
-                                } catch(Exception e) {
-
-                                }
-                            }
-                            if (assigneeName != null) {
-                                Sequence<VocabWord> assigneeSequence = sequence.dup();
-                                assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
-                                while(!queue.offer(assigneeSequence)) {
-                                    try {
-                                        TimeUnit.MILLISECONDS.sleep(200);
-                                    } catch(Exception e) {
-
-                                    }
-                                }
-                            }
-                        }
-                    }
                 } finally {
                     if (cnt.getAndIncrement() % 100000 == 99999) {
                         System.out.println("Seen: " + cnt.get());
@@ -108,40 +73,91 @@ public class DatabaseIteratorFactory {
         };
     }
 
+    static SearchRequestBuilder getRequestBuilder(TransportClient client) {
+        SearchRequestBuilder requestBuilder = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                .addStoredField("_parent")
+                .addStoredField("_source")
+                .setFetchSource(new String[]{Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
+                .setFrom(0)
+                .setSize(10000)
+                .setScroll(new TimeValue(60000))
+                .setExplain(false);
+        return requestBuilder;
+    }
+
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
-        MongoClient client = MongoDBClient.get();
+        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(20000);
+        TransportClient client = MyClient.get();
 
-        MongoCollection<Document> collection = client.getDatabase(DataIngester.INDEX_NAME).getCollection(DataIngester.TYPE_NAME);
+        Function<SearchHit,Item> transformer = hit-> {
+            String id = hit.getId();
+            Map<String,Object> source = hit.getSource();
+            Object inventionTitle = source.get(Constants.INVENTION_TITLE);
+            Object abstractText = source.get(Constants.ABSTRACT);
+            Object docType = source.get(Constants.DOC_TYPE);
+            String assigneeName;
+            if(docType.equals("patents")) {
+                assigneeName = patentToAssigneeMap.get(id);
+            } else {
+                assigneeName = appToAssigneeMap.get(id);
+            }
+            Object filing = source.getOrDefault("_parent", hit.getField("_parent"));
+            if(filing!=null) {
 
-        AtomicLong total = new AtomicLong(0);
-        AtomicLong cnt = new AtomicLong(0);
-        {
-            // get counts
-            collection.count(new Document(), (count,t)->{
-                total.set(count);
-            });
-            while(total.get()==0) {
-                try {
-                    TimeUnit.SECONDS.sleep(1);
-                } catch(Exception e) {
-                    e.printStackTrace();
+                DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
+                sequence.setSequenceLabel(new VocabWord(1.0,filing.toString()));
+
+                if(inventionTitle!=null) {
+                    sequence.addElements(getSequence(inventionTitle.toString()));
+                }
+
+                if(abstractText!=null) {
+                    sequence.addElements(getSequence(abstractText.toString()));
+                }
+
+                if(sequence.size() > 0) {
+                    // add to queue
+                    while(!queue.offer(sequence)) {
+                        try {
+                            System.out.println("Waiting for offer...");
+                            TimeUnit.MILLISECONDS.sleep(200);
+                        } catch(Exception e) {
+
+                        }
+                    }
+                    if (assigneeName != null) {
+                        Sequence<VocabWord> assigneeSequence = sequence.dup();
+                        assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
+                        while(!queue.offer(assigneeSequence)) {
+                            System.out.println("Waiting for offer...");
+                            try {
+                                TimeUnit.MILLISECONDS.sleep(200);
+                            } catch(Exception e) {
+
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(20000);
+            return null;
+        };
 
-        FindIterable<Document> iterator = collection.find(new Document());
+        RecursiveAction iterThread = new RecursiveAction() {
+            @Override
+            protected void compute() {
+                DataSearcher.iterateOverSearchResults(getRequestBuilder(client).get(),transformer,-1,false);
+            }
+        };
 
-        iterator.batchSize(1000).batchCursor((cursor,t)->{
-            cursor.next(helper(cursor,cnt,queue));
-        });
-
+        iterThread.fork();
 
         return new SequenceIterator<VocabWord>() {
+            RecursiveAction iter = iterThread;
             @Override
             public boolean hasMoreSequences() {
-                return cnt.get()<total.get();
+                return !(iter.isDone()||iter.isCancelled());
             }
 
             @Override
@@ -160,7 +176,24 @@ public class DatabaseIteratorFactory {
 
             @Override
             public void reset() {
-                System.out.println("Reset called: Not sure what to do here....");
+                if(!iter.isDone()) {
+                    try {
+                        iter.cancel(true);
+                    } catch(Exception e) {
+
+                    }
+                }
+                iter = getNewIter(getRequestBuilder(client).get(),transformer);
+                iter.fork();
+            }
+        };
+    }
+
+    static RecursiveAction getNewIter(SearchResponse searchResponse, Function<SearchHit,Item> transformer) {
+        return new RecursiveAction() {
+            @Override
+            protected void compute() {
+                DataSearcher.iterateOverSearchResults(searchResponse,transformer,-1,false);
             }
         };
     }

@@ -41,7 +41,7 @@ public class ParagraphVectorModel {
         int numEpochs = 5;
         int numThreads = 40;
 
-        SequenceIterator<VocabWord> sentenceIterator = new AsyncSequenceIterator(DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs),5);
+        SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
 
         net = new ParagraphVectors.Builder()
                 .seed(41)
