@@ -150,14 +150,18 @@ public class DatabaseIteratorFactory {
                 DataSearcher.iterateOverSearchResults(getRequestBuilder(client).get(),transformer,-1,false);
             }
         };
-
         iterThread.fork();
+        try {
+            TimeUnit.MILLISECONDS.sleep(2000);
+        } catch(Exception e) {
+
+        }
 
         return new SequenceIterator<VocabWord>() {
             RecursiveAction iter = iterThread;
             @Override
             public boolean hasMoreSequences() {
-                return !(iter.isDone()||iter.isCancelled());
+                return queue.size()>0 || !(iter.isDone()||iter.isCancelled());
             }
 
             @Override
@@ -185,6 +189,11 @@ public class DatabaseIteratorFactory {
                 }
                 iter = getNewIter(getRequestBuilder(client).get(),transformer);
                 iter.fork();
+                try {
+                    TimeUnit.MILLISECONDS.sleep(2000);
+                } catch(Exception e) {
+
+                }
             }
         };
     }
