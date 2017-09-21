@@ -393,7 +393,7 @@ public class DatabaseIterator {
                     fullMap.put(flag.dbName,attr);
                 });
                 computableAttributes.forEach(computableAttribute -> {
-                    computableAttribute.handlePatentData(patent.toString(), fullMap);
+                    computableAttribute.handlePatentData(patent, fullMap);
                 });
                 DataIngester.ingestBulk(patent, null, fullMap, false);
             }
