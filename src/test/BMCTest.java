@@ -54,7 +54,7 @@ public class BMCTest {
                 if(assignee==null) assignee = "";
                 if(assignee.toUpperCase().contains("BMC")) return;
                 if(assignee.contains(",")&&assignee.contains("assignee=")) {
-                    assignee = assignee.substring(assignee.indexOf("assignee="),assignee.indexOf(",", assignee.indexOf("assignee=")));
+                    assignee = assignee.substring(assignee.indexOf("assignee="),Math.min(assignee.length(),assignee.indexOf(",", assignee.indexOf("assignee="))));
                 }
                 writer.write(e.getKey()+","+assignee+","+String.join("; ",e.getValue())+"\n");
             } catch(Exception e2) {
