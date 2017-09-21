@@ -1,9 +1,16 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import elasticsearch.DataIngester;
+import elasticsearch.DataSearcher;
+import elasticsearch.MyClient;
 import models.classification_models.TechnologyClassifier;
 import models.keyphrase_prediction.models.NewestModel;
 import org.deeplearning4j.berkeley.Pair;
+import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.join.query.HasParentQueryBuilder;
+import seeding.Constants;
 import seeding.Database;
 import user_interface.server.tools.SimpleAjaxMessage;
 import spark.Request;
@@ -15,6 +22,7 @@ import user_interface.ui_models.attributes.computable_attributes.TechnologyAttri
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static spark.Spark.*;
 
@@ -35,9 +43,9 @@ public class GatherClassificationServer {
 
     private static String handleRequest(Request req, Response res, Function2<Collection<String>,Integer,List<Pair<String,Double>>> function) throws Exception {
         res.type("application/json");
-        if(req.queryParams("patents")==null || req.queryParams("patents").length()==0)  return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
+        if(req.queryParams("reelFrames")==null || req.queryParams("reelFrames").length()==0)  return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
 
-        Set<String> patents = new HashSet<>(Arrays.asList(req.queryParams("patents").split("\\s+")));
+        Set<String> reelFrames = new HashSet<>(Arrays.asList(req.queryParams("reelFrames").split("\\s+")));
         int tmp = 3;
         if(req.queryParams("limit")!=null && req.queryParams("limit").length()>0) {
             try {
@@ -49,6 +57,15 @@ public class GatherClassificationServer {
 
         // make sure patents exist
         // run model
+
+        TransportClient client = MyClient.get();
+
+        Collection<String> patents = Stream.of(client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                .setFetchSource(false)
+                .setSize(100)
+                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.termQuery(Constants.REEL_FRAME,reelFrames), false))
+                .get().getHits().getHits()).map(hit->hit.getId()).collect(Collectors.toList());
 
         List<Pair<String,Double>> topTags = new ArrayList<>(function.apply(patents,tagLimit));
 
