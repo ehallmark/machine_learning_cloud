@@ -97,7 +97,7 @@ public class DatabaseIteratorFactory {
             Object abstractText = source.get(Constants.ABSTRACT);
             Object docType = source.get(Constants.DOC_TYPE);
             String assigneeName;
-            if(docType.equals("patents")) {
+            if(docType==null||docType.equals("patents")) {
                 assigneeName = patentToAssigneeMap.get(id);
             } else {
                 assigneeName = appToAssigneeMap.get(id);
