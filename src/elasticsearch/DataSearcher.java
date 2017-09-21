@@ -183,13 +183,13 @@ public class DataSearcher {
                             .innerHit(innerHitBuilder.get())
             ));
 
-            // possible highlighting
-            List<String> highlightFields = Arrays.asList(Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.CLAIMS+"."+Constants.CLAIM);
-            if(highlight) {
-                HighlightBuilder highlighter = new HighlightBuilder();
-                for(String field : highlightFields) { highlighter = highlighter.field(field); }
-                request.set(request.get().highlighter(highlighter));
-                innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
+           if(highlight) {
+               // possible highlighting
+               List<String> highlightFields = Arrays.asList(Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.CLAIMS+"."+Constants.CLAIM);
+               HighlightBuilder highlighter = new HighlightBuilder().postTags("</span>").preTags("<span style=\"backgroun-color: yellow;\">");
+               for(String field : highlightFields) { highlighter = highlighter.field(field); }
+               request.set(request.get().highlighter(highlighter));
+               innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
             }
 
             // Set query
@@ -331,9 +331,7 @@ public class DataSearcher {
     }
 
     private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap) {
-        System.out.println("handling highlight fields....");
         if(highlightFieldMap != null) {
-            System.out.println(" Highlight fields: "+new Gson().toJson(highlightFieldMap));
             highlightFieldMap.entrySet().forEach(e->{
                 Text[] fragments = e.getValue().getFragments();
                 if(fragments!=null) {
