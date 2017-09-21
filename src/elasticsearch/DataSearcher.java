@@ -67,7 +67,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
-    private static final boolean debug = false;
+    private static final boolean debug = true;
 
     public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
         return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight);
@@ -193,7 +193,10 @@ public class DataSearcher {
             }
 
             // Set query
-            if(debug)System.out.println("\"query\": "+queryBuilder.get().toString());
+            if(debug) {
+               String searchReqStr = request.get().toString();
+               System.out.println(searchReqStr);
+            }
 
             request.set(request.get().setQuery(queryBuilder.get()));
 
