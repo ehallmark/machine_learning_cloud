@@ -141,10 +141,7 @@ public class DatabaseIteratorFactory {
             public boolean hasMoreSequences() {
                 boolean hasMore = queue.size()>0 || !(iter.isDone()||iter.isCancelled());
                 if(!hasMore) {
-                    System.out.println("NO MORE SEQUENCES FOUND :(");
-                    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                     System.out.println("ITER COMPLETED NORMALLY? "+iter.isCompletedNormally());
-                    System.out.println("Exception: "+iter.getException());
                 }
                 return hasMore;
             }
@@ -160,6 +157,9 @@ public class DatabaseIteratorFactory {
 
             @Override
             public void reset() {
+                if(iter != null && iter.isCompletedAbnormally()) {
+                    throw new RuntimeException("Error while iterating: "+iter.getException());
+                }
                 if(iter != null && !iter.isDone()) {
                     try {
                         System.out.println("CANCELLING ITER!!!");
