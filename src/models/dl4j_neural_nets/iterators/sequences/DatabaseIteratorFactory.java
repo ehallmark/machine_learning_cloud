@@ -118,32 +118,21 @@ public class DatabaseIteratorFactory {
 
                 if(sequence.size() > 0) {
                     // add to queue
-                    while(!queue.offer(sequence)) {
-                        try {
-                            System.out.println("Waiting for offer...");
-                            TimeUnit.MILLISECONDS.sleep(10000);
-                        } catch(Exception e) {
-
+                    try {
+                        queue.put(sequence);
+                        if (assigneeName != null) {
+                            Sequence<VocabWord> assigneeSequence = sequence.dup();
+                            assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
+                            queue.put(assigneeSequence);
                         }
-                    }
-                    if (assigneeName != null) {
-                        Sequence<VocabWord> assigneeSequence = sequence.dup();
-                        assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
-                        while(!queue.offer(assigneeSequence)) {
-                            System.out.println("Waiting for offer...");
-                            try {
-                                TimeUnit.MILLISECONDS.sleep(10000);
-                            } catch(Exception e) {
-
-                            }
-                        }
+                    } catch(Exception e) {
+                        
                     }
                 }
             }
 
             return null;
         };
-
 
 
         SequenceIterator<VocabWord> iterator = new SequenceIterator<VocabWord>() {
@@ -155,16 +144,11 @@ public class DatabaseIteratorFactory {
 
             @Override
             public Sequence<VocabWord> nextSequence() {
-                while(queue.isEmpty()) {
-                    // sleep
-                    System.out.println("Waiting for next seq...");
-                    try {
-                        TimeUnit.MILLISECONDS.sleep(1000);
-                    } catch(Exception e) {
-
-                    }
+                try {
+                    return queue.take();
+                } catch(Exception e) {
+                    return null;
                 }
-                return queue.poll();
             }
 
             @Override
@@ -194,6 +178,7 @@ public class DatabaseIteratorFactory {
         return new RecursiveAction() {
             @Override
             protected void compute() {
+                System.out.println("GETTING NEW ITERATOR...");
                 DataSearcher.iterateOverSearchResults(searchResponse,transformer,-1,false);
             }
         };
