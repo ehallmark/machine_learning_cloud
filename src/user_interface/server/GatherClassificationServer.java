@@ -42,43 +42,52 @@ public class GatherClassificationServer {
 
 
     private static String handleRequest(Request req, Response res, Function2<Collection<String>,Integer,List<Pair<String,Double>>> function) throws Exception {
-        res.type("application/json");
-        if(req.queryParams("reelFrames")==null || req.queryParams("reelFrames").length()==0)  return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
+        try {
+            res.type("application/json");
+            if (req.queryParams("reelFrames") == null || req.queryParams("reelFrames").length() == 0)
+                return new Gson().toJson(new SimpleAjaxMessage("Please provide at least one patent."));
 
-        List<String> reelFrames = Arrays.asList(req.queryParams("reelFrames").split("\\s+"));
-        int tmp = 3;
-        if(req.queryParams("limit")!=null && req.queryParams("limit").length()>0) {
-            try {
-                tmp=Integer.valueOf(req.queryParams("limit"));
-            } catch(Exception e) {
+            List<String> reelFrames = Arrays.asList(req.queryParams("reelFrames").split("\\s+"));
+            int tmp = 3;
+            if (req.queryParams("limit") != null && req.queryParams("limit").length() > 0) {
+                try {
+                    tmp = Integer.valueOf(req.queryParams("limit"));
+                } catch (Exception e) {
+                }
             }
+            final int tagLimit = tmp;
+
+            // make sure patents exist
+            // run model
+
+            TransportClient client = MyClient.get();
+            System.out.println("Searching for reel frames: " + String.join("; ", reelFrames));
+
+            Collection<String> patents = Stream.of(client.prepareSearch(DataIngester.INDEX_NAME)
+                    .setTypes(DataIngester.TYPE_NAME)
+                    .setFetchSource(false)
+                    .setSize(100)
+                    .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.termQuery(Constants.REEL_FRAME, reelFrames), false))
+                    .get().getHits().getHits()).map(hit -> hit.getId()).collect(Collectors.toList());
+            System.out.println("Found " + patents.size() + " patents");
+
+            List<Pair<String, Double>> topTags = new ArrayList<>(function.apply(patents, tagLimit));
+
+            long designCount = patents.stream().filter(p -> p.startsWith("D")).count();
+            long plantCount = patents.stream().filter(p -> p.startsWith("PP")).count();
+            if (designCount > 0) topTags.add(new Pair<>("Design", new Double(designCount) / patents.size()));
+            if (plantCount > 0) topTags.add(new Pair<>("Plant", new Double(plantCount) / patents.size()));
+
+            topTags = topTags.stream().sorted((p1, p2) -> Double.compare(p2.getSecond(), p1.getSecond())).limit(tagLimit).collect(Collectors.toList());
+
+            // return results
+            if (topTags.isEmpty())
+                return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));
+            return new Gson().toJson(topTags.stream().map(tag -> tag.getFirst()).collect(Collectors.toList()));
+        } catch(Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Error in request");
         }
-        final int tagLimit = tmp;
-
-        // make sure patents exist
-        // run model
-
-        TransportClient client = MyClient.get();
-
-        Collection<String> patents = Stream.of(client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                .setFetchSource(false)
-                .setSize(100)
-                .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.termQuery(Constants.REEL_FRAME,reelFrames), false))
-                .get().getHits().getHits()).map(hit->hit.getId()).collect(Collectors.toList());
-
-        List<Pair<String,Double>> topTags = new ArrayList<>(function.apply(patents,tagLimit));
-
-        long designCount = patents.stream().filter(p->p.startsWith("D")).count();
-        long plantCount = patents.stream().filter(p->p.startsWith("PP")).count();
-        if(designCount>0) topTags.add(new Pair<>("Design",new Double(designCount)/patents.size()));
-        if(plantCount>0) topTags.add(new Pair<>("Plant",new Double(plantCount)/patents.size()));
-
-        topTags = topTags.stream().sorted((p1,p2)->Double.compare(p2.getSecond(),p1.getSecond())).limit(tagLimit).collect(Collectors.toList());
-
-        // return results
-        if(topTags.isEmpty()) return new Gson().toJson(new SimpleAjaxMessage("Unable to predict any technologies"));
-        return new Gson().toJson(topTags.stream().map(tag->tag.getFirst()).collect(Collectors.toList()));
     }
 
 
