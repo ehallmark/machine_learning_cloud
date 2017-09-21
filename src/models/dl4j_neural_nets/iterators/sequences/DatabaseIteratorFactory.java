@@ -126,7 +126,7 @@ public class DatabaseIteratorFactory {
                             queue.put(assigneeSequence);
                         }
                     } catch(Exception e) {
-                        
+
                     }
                 }
             }
@@ -139,7 +139,12 @@ public class DatabaseIteratorFactory {
             RecursiveAction iter;
             @Override
             public boolean hasMoreSequences() {
-                return queue.size()>0 || !(iter.isDone()||iter.isCancelled());
+                boolean hasMore = queue.size()>0 || !(iter.isDone()||iter.isCancelled());
+                if(!hasMore) {
+                    System.out.println("NO MORE SEQUENCES FOUND :(");
+                    System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                }
+                return hasMore;
             }
 
             @Override
@@ -160,6 +165,7 @@ public class DatabaseIteratorFactory {
 
                     }
                 }
+                queue.clear();
                 iter = getNewIter(getRequestBuilder(client).get(),transformer);
                 iter.fork();
                 try {
