@@ -55,7 +55,7 @@ public class ParagraphVectorModel {
                 .minLearningRate(0.000001)
                 .useAdaGrad(true)
                 .resetModel(true)
-                .minWordFrequency(500)
+                .minWordFrequency(1000)
                 .workers(numThreads)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
