@@ -69,7 +69,7 @@ public class WIPOValueModel extends ValueAttr {
         Collection<AbstractFilter> filters = Arrays.asList(gatherFilter, new AbstractIncludeFilter(new ResultTypeAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, Arrays.asList("patents")));
         Map<String,NestedAttribute> nestedMap = new HashMap<>();
         nestedMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
-        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap)).stream().filter(item->Database.getGatherValueMap().containsKey(item.getName())).collect(Collectors.toList()));
+        List<Item> items = new ArrayList<>(Arrays.asList(DataSearcher.searchForAssets(attributes, filters, Constants.NAME, SortOrder.ASC, maxLimit, nestedMap,false)).stream().filter(item->Database.getGatherValueMap().containsKey(item.getName())).collect(Collectors.toList()));
         System.out.println("Num items: "+items.size());
         allItems = items.toArray(new Item[items.size()]);
 

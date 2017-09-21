@@ -13,6 +13,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery;
+import org.elasticsearch.common.text.Text;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
@@ -26,6 +27,8 @@ import org.elasticsearch.search.SearchHitField;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightField;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -66,11 +69,11 @@ public class DataSearcher {
     private static final int PAGE_LIMIT = 10000;
     private static final boolean debug = false;
 
-    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap) {
-        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true);
+    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
+        return searchForAssets(attributes,filters,comparator,sortOrder,maxLimit,nestedAttrNameMap,item->item,true, highlight);
     }
 
-    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge) {
+    public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String _comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, ItemTransformer transformer, boolean merge, boolean highlight) {
         try {
             if(debug) {
                 attributes.forEach(attr->{
@@ -179,6 +182,15 @@ public class DataSearcher {
                     new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME,parentQueryBuilder.get(),true)
                             .innerHit(innerHitBuilder.get())
             ));
+
+            // possible highlighting
+            List<String> highlightFields = Arrays.asList(Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.CLAIMS+"."+Constants.CLAIM);
+            if(highlight) {
+                HighlightBuilder highlighter = new HighlightBuilder();
+                for(String field : highlightFields) { highlighter = highlighter.field(field); }
+                request.set(request.get().highlighter(highlighter));
+                innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(highlighter));
+            }
 
             // Set query
             if(debug)System.out.println("\"query\": "+queryBuilder.get().toString());
@@ -296,20 +308,42 @@ public class DataSearcher {
         if(innerHit != null) {
             SearchHit[] innerHits = innerHit.getHits();
             if(innerHits != null && innerHits.length > 0) {
-                innerHits[0].getSource().forEach((k,v)->{
+                SearchHit firstHit = innerHits[0];
+                firstHit.getSource().forEach((k,v)->{
                     hitToItemHelper(k,v,item.getDataMap(),nestedAttrNameMap);
                 });
-                handleFields(item, innerHits[0]);
+                handleFields(item, firstHit);
                 if(debug) {
-                    System.out.println("  inner fields: " + new Gson().toJson(innerHits[0].getFields()));
-                    System.out.println("  inner source: " + new Gson().toJson(innerHits[0].getSource()));
+                    System.out.println("  inner fields: " + new Gson().toJson(firstHit.getFields()));
+                    System.out.println("  inner source: " + new Gson().toJson(firstHit.getSource()));
                 }
+                // handle highlight
+                handleHighlightFields(item, firstHit.getHighlightFields());
             }
         }
         if(isUsingScore) {
             item.addData(Constants.SIMILARITY, hit.getScore());
         }
+
+        // override highlights if any
+        handleHighlightFields(item, hit.getHighlightFields());
         return item;
+    }
+
+    private static void handleHighlightFields(Item item, Map<String,HighlightField> highlightFieldMap) {
+        if(highlightFieldMap != null) {
+            highlightFieldMap.entrySet().forEach(e->{
+                Text[] fragments = e.getValue().getFragments();
+                if(fragments!=null) {
+                    StringJoiner sj = new StringJoiner("","<b>","</b>");
+                    for(Text fragment : fragments) {
+                        sj.add(fragment.toString());
+                    }
+                    System.out.println("Adding highlight data for "+e.getKey()+": "+sj.toString());
+                    item.addData(e.getKey(),sj.toString());
+                }
+            });
+        }
     }
 
     private static void handleFields(Item item, SearchHit hit) {

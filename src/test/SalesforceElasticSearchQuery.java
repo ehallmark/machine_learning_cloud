@@ -102,7 +102,7 @@ public class SalesforceElasticSearchQuery {
                 e.printStackTrace();
             }
             return null;
-        },false);
+        },false,false);
 
         writer.flush();
         writer.close();
