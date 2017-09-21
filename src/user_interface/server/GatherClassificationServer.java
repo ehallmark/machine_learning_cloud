@@ -67,7 +67,7 @@ public class GatherClassificationServer {
                     .setTypes(DataIngester.TYPE_NAME)
                     .setFetchSource(false)
                     .setSize(100)
-                    .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.termQuery(Constants.REEL_FRAME, reelFrames), false))
+                    .setQuery(new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, QueryBuilders.termsQuery(Constants.REEL_FRAME, reelFrames), false))
                     .get().getHits().getHits()).map(hit -> hit.getId()).collect(Collectors.toList());
             System.out.println("Found " + patents.size() + " patents");
 
