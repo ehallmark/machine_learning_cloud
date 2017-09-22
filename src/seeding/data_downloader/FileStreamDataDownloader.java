@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,7 +56,14 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     @Override
     public synchronized void pullMostRecentData() {
         // pull zips only
-        zipDownloader.run(lastUpdatedDate,failedDates);
+        LocalDate dateToUse = lastUpdatedDate;
+        try {
+            LocalDate date = LocalDate.parse(zipFileStream().sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
+            dateToUse = date;
+        } catch(Exception e) {
+
+        }
+        zipDownloader.run(dateToUse,failedDates);
     }
 
     public Stream<File> zipFileStream() {
