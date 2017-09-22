@@ -10,13 +10,13 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Evan on 9/3/2017.
  */
 public abstract class RegressionValueModel extends ValueAttr {
     private static final boolean debug = false;
-
     protected List<AbstractAttribute> attributes;
     protected List<Double> weights;
     protected List<Pair<AbstractAttribute,Double>> attributesAndWeights;
@@ -42,6 +42,7 @@ public abstract class RegressionValueModel extends ValueAttr {
         Number val=null;
         Object obj = item.getDataMap().get(attribute.getFullName());
         if(obj == null && attribute instanceof ComputableAttribute) {
+            // check for filing
             obj = ((ComputableAttribute) attribute).getApplicationDataMap().getOrDefault(item.getName(),((ComputableAttribute) attribute).getPatentDataMap().get(item.getName()));
         }
         if(obj!=null) {

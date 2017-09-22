@@ -285,7 +285,7 @@ public class DatabaseIterator {
         }).collect(Collectors.toList());
 
         patentDBStatement.setFetchSize(10);
-
+        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
         System.out.println("Executing query: "+patentDBStatement.toString());
 
         ResultSet rs = patentDBStatement.executeQuery();
@@ -307,6 +307,7 @@ public class DatabaseIterator {
                 }
             });
             String patent = rs.getString(javaNames.size()+1);
+            String filing = assetToFilingMap.get(patent);
             if(patent!=null) {
                 // computable attrs
                 if(cnt.getAndIncrement()%100000==99999) {
@@ -315,7 +316,7 @@ public class DatabaseIterator {
                 computableAttributes.forEach(computableAttribute -> {
                     computableAttribute.handlePatentData(patent,data);
                 });
-                DataIngester.ingestBulk(patent, null, data, false);
+                DataIngester.ingestBulk(patent, filing, data, false);
             }
         }
 
@@ -349,6 +350,7 @@ public class DatabaseIterator {
         patentDBStatement.setFetchSize(10);
 
         System.out.println("Executing query: "+patentDBStatement.toString());
+        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
 
         Map<String,AtomicLong> validCountMap = new HashMap<>();
 
@@ -360,7 +362,7 @@ public class DatabaseIterator {
             int numValues = 0;
             for(int i = 0; i < pgNames.size(); i++) {
                 Object[] value = (Object[])rs.getArray(i + 1).getArray();
-                
+
                 if(value!=null&&value.length>0) {
                     values.add(value);
                     numValues = value.length;
@@ -390,6 +392,7 @@ public class DatabaseIterator {
             }
 
             String patent = rs.getString(pgNames.size()+1);
+            String filing = assetToFilingMap.get(patent);
             if(patent!=null) {
                 // computable attrs
                 if(cnt.getAndIncrement()%100000==99999) {
@@ -405,7 +408,7 @@ public class DatabaseIterator {
                     computableAttribute.handlePatentData(patent, fullMap);
                 });
                 if(debug)System.out.println("Post Data: "+new Gson().toJson(fullMap));
-                DataIngester.ingestBulk(patent, null, fullMap, false);
+                DataIngester.ingestBulk(patent, filing, fullMap, false);
             }
             endFlag.save();
         }
