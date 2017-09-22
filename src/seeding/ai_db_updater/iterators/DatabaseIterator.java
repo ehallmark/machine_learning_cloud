@@ -349,6 +349,8 @@ public class DatabaseIterator {
 
         System.out.println("Executing query: "+patentDBStatement.toString());
 
+        Map<String,AtomicLong> validCountMap = new HashMap<>();
+
         ResultSet rs = patentDBStatement.executeQuery();
         AtomicLong cnt = new AtomicLong(0);
         System.out.println("starting");
@@ -357,7 +359,12 @@ public class DatabaseIterator {
             int numValues = 0;
             for(int i = 0; i < pgNames.size(); i++) {
                 Object[] value = (Object[])rs.getArray(i + 1).getArray();
-                if(value!=null) {
+                if(debug) {
+                    if (value == null || value.length == 0) {
+                        System.out.println("Is null: " + pgNames.get(i));
+                    }
+                }
+                if(value!=null&&value.length>0) {
                     values.add(value);
                     numValues = value.length;
                 }
@@ -375,7 +382,9 @@ public class DatabaseIterator {
                         cleanValue = flag.apply(value.toString());
                     }
                     if(cleanValue!=null) {
-                        data.put(javaNames.get(i), cleanValue);
+                        validCountMap.putIfAbsent(name,new AtomicLong(0));
+                        validCountMap.get(name).getAndIncrement();
+                        data.put(name, cleanValue);
                     }
                 }
                 if(requiredAttr==null||data.containsKey(requiredAttr)) {
@@ -401,6 +410,10 @@ public class DatabaseIterator {
             }
             endFlag.save();
         }
+
+        validCountMap.forEach((name,num)->{
+            System.out.println("Valid Count for "+name+": "+num.get());
+        });
         endFlag.flagMap.clear();
         patentDBStatement.close();
     }

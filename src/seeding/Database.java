@@ -864,6 +864,11 @@ public class Database {
 		compDBPAssets = Collections.synchronizedCollection(new HashSet<>(compDBAssetToDealIDMap.keySet()));
 		rs.close();
 		ps.close();
+		
+		Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
+		Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
+		Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
+		Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
 	}
 
 
@@ -915,16 +920,6 @@ public class Database {
 			Database.trySaveObject(compdbReelFrames,compdbReelFramesFile);
 		} catch(SQLException sql) {
 			sql.printStackTrace();
-		}
-
-		try {
-			loadCompDBData();
-			Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
-			Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
-			Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
-			Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
-		} catch(Exception e) {
-			e.printStackTrace();
 		}
 
 		allClassCodes = Collections.synchronizedSet(new HashSet<>());
