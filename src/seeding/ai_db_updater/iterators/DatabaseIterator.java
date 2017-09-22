@@ -4,6 +4,7 @@ package seeding.ai_db_updater.iterators;
  * Created by ehallmark on 1/3/17.
  */
 
+import com.google.gson.Gson;
 import elasticsearch.DataIngester;
 import lombok.Setter;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -403,9 +404,11 @@ public class DatabaseIterator {
                 endFlag.getDataMap().forEach((flag,attr)->{
                     fullMap.put(flag.dbName,attr);
                 });
+                if(debug)System.out.println("Pre Data: "+new Gson().toJson(fullMap));
                 computableAttributes.forEach(computableAttribute -> {
                     computableAttribute.handlePatentData(patent, fullMap);
                 });
+                if(debug)System.out.println("Post Data: "+new Gson().toJson(fullMap));
                 DataIngester.ingestBulk(patent, null, fullMap, false);
             }
             endFlag.save();

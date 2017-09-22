@@ -15,9 +15,9 @@ public class AssetToAssigneeMap extends HiddenAttribute<String> {
             if(assignee instanceof List) {
                 if(((List) assignee).size() == 0) return null;
                 assignee = ((List)assignee).get(0);
-                System.out.println("FOUND ASSIGNEE");
             }
             assignee = ((Map<String,Object>)assignee).get(Constants.ASSIGNEE);
+            //System.out.println("FOUND ASSIGNEE: "+assignee);
             // check execution date
             // TODO check execution date
 
