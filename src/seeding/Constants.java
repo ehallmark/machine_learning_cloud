@@ -295,7 +295,6 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(CLAIMS+"."+PARENT_CLAIM_NUM, "parent claim number of the claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(SMALLEST_INDEPENDENT_CLAIM_LENGTH, "number of words in the document's smallest independent claim.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(AI_VALUE, "AI value of the document. Developed by GTT Group.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(JAPANESE_ASSIGNEE, "is japanese");
 		ATTRIBUTE_DESCRIPTION_MAP.put(NAME,"asset number.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(LAPSED,"lapsed.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(GRANTED,"granted.");
@@ -304,8 +303,6 @@ public class Constants {
 		ATTRIBUTE_DESCRIPTION_MAP.put(PUBLICATION_DATE, "publication date of the asset.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(FILING_DATE, "date of the patent filing.");
 		ATTRIBUTE_DESCRIPTION_MAP.put(ESTIMATED_EXPIRATION_DATE, "expiration date computed from the original expiration date and any term adjustment information.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(ASSIGNEES+"."+JAPANESE_ASSIGNEE,"original assignee is japanese.");
-		ATTRIBUTE_DESCRIPTION_MAP.put(LATEST_ASSIGNEE+"."+JAPANESE_ASSIGNEE,"latest assignee is japanese.");
 		ATTRIBUTE_DESCRIPTION_MAP.put("pie", "Create a pie chart of");
 		ATTRIBUTE_DESCRIPTION_MAP.put("line", "Create a timeline chart of");
 		ATTRIBUTE_DESCRIPTION_MAP.put("histogram", "Create a histogram of");

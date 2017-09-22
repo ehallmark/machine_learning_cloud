@@ -131,7 +131,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Reinstated", Constants.REINSTATED);
             humanAttrToJavaAttrMap.put("Result Type", Constants.DOC_TYPE);
             humanAttrToJavaAttrMap.put("Expired", Constants.EXPIRED);
-            humanAttrToJavaAttrMap.put("Japanese Assignee", Constants.JAPANESE_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Technology", Constants.COMPDB_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Deal ID", Constants.COMPDB_DEAL_ID);
             humanAttrToJavaAttrMap.put("GTT Group Technology", Constants.TECHNOLOGY);

@@ -242,7 +242,6 @@ public class USPTOHandler extends NestedHandler {
         assigneeFlag.addChild(Flag.simpleFlag("city",Constants.CITY, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("state",Constants.STATE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("country",Constants.COUNTRY, assigneeFlag));
-        assigneeFlag.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, assigneeFlag).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         assigneeFlag.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, assigneeFlag));
         assigneeFlag.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, assigneeFlag).withTransformationFunction(Flag.assigneeTransformationFunction));
 
@@ -263,7 +262,6 @@ public class USPTOHandler extends NestedHandler {
         latestAssignee.addChild(Flag.simpleFlag("city",Constants.CITY, latestAssignee));
         latestAssignee.addChild(Flag.simpleFlag("state",Constants.STATE, latestAssignee));
         latestAssignee.addChild(Flag.simpleFlag("country",Constants.COUNTRY, latestAssignee));
-        latestAssignee.addChild(Flag.booleanFlag("country",Constants.JAPANESE_ASSIGNEE, latestAssignee).withTransformationFunction(f->s->s.equals("JP")||s.equals("Japan")||s.equals("JPX")));
         latestAssignee.addChild(Flag.simpleFlag("role",Constants.ASSIGNEE_ROLE, latestAssignee));
         latestAssignee.addChild(Flag.simpleFlag("orgname", Constants.ASSIGNEE, latestAssignee).withTransformationFunction(Flag.assigneeTransformationFunction));
 
