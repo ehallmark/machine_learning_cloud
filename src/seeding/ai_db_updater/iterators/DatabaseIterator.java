@@ -178,7 +178,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_citation", Constants.NAME, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -388,6 +388,10 @@ public class DatabaseIterator {
                 }
                 if(requiredAttr==null||data.containsKey(requiredAttr)) {
                     dataList.add(data);
+                } else {
+                    javaNames.forEach(name->{
+                        validCountMap.getOrDefault(name,new AtomicLong(0)).getAndDecrement();
+                    });
                 }
             }
 
@@ -410,11 +414,11 @@ public class DatabaseIterator {
                     fullMap.put(flag.dbName,attr);
                 });
 
-                    if (debug) System.out.println("Pre Data: " + new Gson().toJson(fullMap));
-                    computableAttributes.forEach(computableAttribute -> {
-                        computableAttribute.handlePatentData(patent, fullMap);
-                    });
-                    if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
+                if (debug) System.out.println("Pre Data: " + new Gson().toJson(fullMap));
+                computableAttributes.forEach(computableAttribute -> {
+                    computableAttribute.handlePatentData(patent, fullMap);
+                });
+                if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
                 if(!fullMap.isEmpty()) {
                     DataIngester.ingestBulk(patent, filing, fullMap, false);
                 }
