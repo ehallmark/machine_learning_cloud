@@ -359,6 +359,8 @@ public class DatabaseIterator {
             List<Object[]> values = new ArrayList<>();
             int numValues = 0;
             for(int i = 0; i < pgNames.size(); i++) {
+                Object[] value = (Object[])rs.getArray(i + 1).getArray();
+                
                 if(value!=null&&value.length>0) {
                     values.add(value);
                     numValues = value.length;
