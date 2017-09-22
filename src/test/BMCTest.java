@@ -3,6 +3,7 @@ package test;
 import com.googlecode.concurrenttrees.radix.RadixTree;
 import org.deeplearning4j.berkeley.Pair;
 import seeding.Database;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCitedAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
@@ -18,6 +19,13 @@ import java.util.stream.Collectors;
  */
 public class BMCTest {
     public static void main(String[] args) throws Exception {
+        AssetToAssigneeMap map = new AssetToAssigneeMap();
+        Map<String,String> newPMap = run(map.getPatentDataMap());
+        Map<String,String> newAMap = run(map.getApplicationDataMap());
+        map.setApplicationDataMap(newAMap);
+        map.setPatentDataMap(newPMap);
+        map.save();
+
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         Collection<String> assignees = Database.possibleNamesForAssignee("BMC SOFTWARE");
         System.out.println("Num assignees found: "+assignees.size());
@@ -45,6 +53,7 @@ public class BMCTest {
                 });
             });
         });
+        Database.main(args);
 
         BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/bmc_cited_assets.csv")));
         writer.write("Cited Asset,Assignee,BMC Asset(s)\n");
@@ -52,17 +61,7 @@ public class BMCTest {
             try {
                 String assignee = Database.assigneeFor(e.getKey());
                 if(assignee==null) assignee = "";
-                if(assignee.toUpperCase().contains("BMC")) return;
-                int i1 = assignee.indexOf("assignee=");
-                if(i1>=0) {
-                    i1+="assignee=".length();
-                    int i2 = assignee.indexOf(",", i1);
-                    if(i2>=0) {
-                        assignee = assignee.substring(i1,i2);
-                    } else {
-                        assignee = assignee.substring(i1).replaceAll("[\\[\\]\\{\\}]","");
-                    }
-                }
+
                 writer.write(e.getKey()+","+assignee+","+String.join("; ",e.getValue())+"\n");
             } catch(Exception e2) {
                 e2.printStackTrace();
@@ -72,4 +71,26 @@ public class BMCTest {
         writer.close();
     }
 
+    static Map<String, String> run(Map<String,String> map) {
+        Map<String,String> newMap = Collections.synchronizedMap(new HashMap<>());
+        map.entrySet().stream().parallel().forEach(e->{
+            String assignee = e.getValue();
+            if(assignee.toUpperCase().contains("BMC")) return;
+            int i1 = assignee.indexOf("assignee=");
+            if(i1>=0) {
+                System.out.println("Fixing assignee: "+assignee);
+                i1+="assignee=".length();
+                int i2 = assignee.indexOf(",", i1);
+                if(i2>=0) {
+                    assignee = assignee.substring(i1,i2).trim();
+                } else {
+                    assignee = assignee.substring(i1).replaceAll("[\\[\\]\\{\\}]","").trim();
+                }
+                System.out.println("To: "+assignee);
+            }
+            newMap.put(e.getValue(),assignee);
+        });
+        return newMap;
+
+    }
 }
