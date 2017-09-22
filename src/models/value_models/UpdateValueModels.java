@@ -29,7 +29,7 @@ public class UpdateValueModels {
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);
 
-        ValueAttr aiValueModel = new OverallEvaluator();
+        ValueAttr aiValueModel = new OverallEvaluator(true);
         aiValueModel.initMaps();
 
         AtomicLong patentCnt = new AtomicLong(0);

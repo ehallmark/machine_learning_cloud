@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
  */
 public class OverallEvaluator extends ValueModelCombination {
 
-    public OverallEvaluator() {
-        super(Constants.AI_VALUE, new AIValueModel(),new WIPOValueModel());
+    public OverallEvaluator(boolean train) {
+        super(Constants.AI_VALUE, new AIValueModel(),new WIPOValueModel(), train);
     }
 
 }

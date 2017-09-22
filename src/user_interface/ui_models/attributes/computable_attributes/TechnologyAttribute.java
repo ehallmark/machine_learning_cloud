@@ -57,7 +57,11 @@ public class TechnologyAttribute extends ComputableAttribute<List<String>> {
     @Override
     public List<String> attributesFor(Collection<String> items, int limit) {
         if(modelMap==null) {
-            modelMap = KeywordModelRunner.loadModelMap(model);
+            synchronized (this) {
+                if(modelMap==null) {
+                    modelMap = KeywordModelRunner.loadModelMap(model);
+                }
+            }
         }
         if(items.isEmpty())return null;
         List<String> techList = modelMap.get(items.stream().findAny().get());
