@@ -24,7 +24,6 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     protected double defaultVal = 0;
     public ValueAttr() {
         super(Arrays.asList(AbstractFilter.FilterType.Between));
-        this.initMaps();
     }
 
     // Returns value between 1 and 5
@@ -39,6 +38,11 @@ public abstract class ValueAttr extends ComputableAttribute<Number> {
     }
 
     public double evaluate(Item item, boolean isApplication) {
+        if(applicationDataMap==null||patentDataMap==null) {
+            synchronized (this) {
+                this.initMaps();
+            }
+        }
         String token = item.getName();
         Map<String,Number> model;
         Map<String,Number> backupModel;
