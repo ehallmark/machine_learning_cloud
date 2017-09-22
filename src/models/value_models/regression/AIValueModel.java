@@ -12,7 +12,6 @@ import java.util.List;
 public class AIValueModel extends RegressionValueModel {
     private static final double INTERCEPT = -7.899e-1;
     private static final List<Double> WEIGHTS = Arrays.asList(
-            -9.028e-1,
             1.377e-2,
             -8.002e-2,
             7.559e-2,
@@ -21,12 +20,6 @@ public class AIValueModel extends RegressionValueModel {
     );
 
     public static final List<AbstractAttribute> MODELS = Arrays.asList(
-            new NestedAttribute(Arrays.asList(new JapaneseAttribute())) {
-                @Override
-                public String getName() {
-                    return Constants.LATEST_ASSIGNEE;
-                }
-            }.getAttributes().stream().findFirst().get(),
             new CountAttribute(Constants.CLAIMS+Constants.COUNT_SUFFIX),
             new NumAssignmentsAttribute(),
             new CountAttribute(Constants.PATENT_FAMILY+Constants.COUNT_SUFFIX),

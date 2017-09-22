@@ -100,13 +100,13 @@ public class DatabaseIterator {
         });
 
 
-        runPatentGrant(transformationFunctionMap);
+      //  runPatentGrant(transformationFunctionMap);
 
         if(!patentGrantOnly) {
             AtomicBoolean errors = new AtomicBoolean(false);
             // nested
             ForkJoinPool pool = new ForkJoinPool(10);
-            pool.execute(new RecursiveAction() {
+           /* pool.execute(new RecursiveAction() {
                 @Override
                 protected void compute() {
                     try {
@@ -149,7 +149,7 @@ public class DatabaseIterator {
                         e.printStackTrace();
                     }
                 }
-            });
+            });*/
             pool.execute(new RecursiveAction() {
                 @Override
                 protected void compute() {
@@ -161,6 +161,7 @@ public class DatabaseIterator {
                     }
                 }
             });
+            /*
             pool.execute(new RecursiveAction() {
                 @Override
                 protected void compute() {
@@ -194,6 +195,7 @@ public class DatabaseIterator {
                     }
                 }
             });
+            */
 
             try {
                 pool.shutdown();
