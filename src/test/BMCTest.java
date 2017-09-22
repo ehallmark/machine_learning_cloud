@@ -22,9 +22,12 @@ public class BMCTest {
         AssetToAssigneeMap map = new AssetToAssigneeMap();
         Map<String,String> newPMap = run(map.getPatentDataMap());
         Map<String,String> newAMap = run(map.getApplicationDataMap());
+        System.out.println("Size: "+newAMap.size());
         map.setApplicationDataMap(newAMap);
         map.setPatentDataMap(newPMap);
         map.save();
+
+        /*
 
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         Collection<String> assignees = Database.possibleNamesForAssignee("BMC SOFTWARE");
@@ -69,6 +72,7 @@ public class BMCTest {
         });
         writer.flush();
         writer.close();
+        */
     }
 
     static Map<String, String> run(Map<String,String> map) {
