@@ -139,8 +139,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     }
 
     public void save() {
-        if(patentDataMap!=null && patentDataMap.size()>originalPatentSize) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
-        if(applicationDataMap!=null && applicationDataMap.size()>originalApplicationSize) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
+        if(patentDataMap!=null && patentDataMap.size()>=originalPatentSize) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null && applicationDataMap.size()>=originalApplicationSize) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
     protected static void safeSaveFile(Object obj, File file) {

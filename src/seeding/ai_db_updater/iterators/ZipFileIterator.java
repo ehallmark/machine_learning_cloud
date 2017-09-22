@@ -125,6 +125,9 @@ public class ZipFileIterator implements WebIterator {
                     if(!failed.get()) {
                         System.out.println(" Parsed successfully!");
                         dataDownloader.finishedIngestingFile(zipFile);
+                        for(CustomHandler handler : handlers) {
+                            handler.save();
+                        }
                         dataDownloader.save();
                     }
                 } else {
