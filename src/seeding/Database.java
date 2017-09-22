@@ -864,7 +864,7 @@ public class Database {
 		compDBPAssets = Collections.synchronizedCollection(new HashSet<>(compDBAssetToDealIDMap.keySet()));
 		rs.close();
 		ps.close();
-		
+
 		Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
 		Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
 		Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
