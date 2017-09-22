@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 
  */
 public class DatabaseIterator {
-    private static boolean debug = true;
+    private static boolean debug = false;
     @Setter
     protected static Map<String,INDArray> lookupTable;
     @Setter
