@@ -24,6 +24,8 @@ public class UpdateCompDBAndGatherData {
     static AssetToFilingMap assetToFilingMap;
 
     public static void main(String[] args) {
+
+
         assetToFilingMap = new AssetToFilingMap();
 
         Collection<AbstractAttribute> gatherAttributes = Arrays.asList(new GatherNestedAttribute());
