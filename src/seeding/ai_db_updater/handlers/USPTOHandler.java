@@ -28,8 +28,6 @@ public class USPTOHandler extends NestedHandler {
     private static boolean debug = false;
     protected final String topLevelTag;
     @Setter
-    protected static Map<String,INDArray> lookupTable;
-    @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     protected boolean applications;
     public USPTOHandler(String topLevelTag, boolean applications) {
@@ -63,14 +61,6 @@ public class USPTOHandler extends NestedHandler {
                         toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.applications.toString());
                     } else {
                         toIngest.put(Constants.DOC_TYPE, PortfolioList.Type.patents.toString());
-                    }
-                    // try to add vector
-                    Object filingName = toIngest.get(Constants.FILING_NAME);
-                    if(filingName!=null) {
-                        INDArray vec = lookupTable.get(filingName.toString());
-                        if (vec != null) {
-                            toIngest.put("vector_obj", SimilarPatentServer.vectorToElasticSearchObject(vec));
-                        }
                     }
                     nestedEndFlags.forEach(endFlag -> {
                         List<Map<String, Object>> data = endFlag.dataQueue;

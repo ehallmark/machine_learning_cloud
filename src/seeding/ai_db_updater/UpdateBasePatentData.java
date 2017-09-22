@@ -24,7 +24,6 @@ public class UpdateBasePatentData {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         USPTOHandler.setComputableAttributes(computableAttributes);
-        USPTOHandler.setLookupTable(SimilarPatentFinder.getLookupTable());
         String topLevelTag;
         if(seedApplications) {
             topLevelTag = "us-patent-application";

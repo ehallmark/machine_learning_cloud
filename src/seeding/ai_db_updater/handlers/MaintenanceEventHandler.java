@@ -12,9 +12,7 @@ import java.util.Map;
  */
 public class MaintenanceEventHandler implements LineHandler {
     protected AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-    protected AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap;
-    public MaintenanceEventHandler(AssetToMaintenanceFeeReminderCountMap maintenanceFeeReminderCountMap) {
-        this.maintenanceFeeReminderCountMap = maintenanceFeeReminderCountMap;
+    public MaintenanceEventHandler() {
     }
 
     @Override
@@ -39,14 +37,6 @@ public class MaintenanceEventHandler implements LineHandler {
 
                     } else if (maintenanceCode.equals("REM.")) {
                         // reminder
-                        if (maintenanceFeeReminderCountMap.getPatentDataMap().containsKey(filing)) {
-                            maintenanceFeeReminderCountMap.getPatentDataMap().put(filing, maintenanceFeeReminderCountMap.getPatentDataMap().get(filing) + 1);
-                        } else {
-                            maintenanceFeeReminderCountMap.getPatentDataMap().put(filing, 1);
-                        }
-                        int maintenanceFeeCount = maintenanceFeeReminderCountMap.getPatentDataMap().get(filing);
-                        data.put(Constants.MAINTENANCE_FEE_REMINDERS, maintenanceFeeCount);
-
                     } else if (maintenanceCode.startsWith("M2") || maintenanceCode.startsWith("SM") || maintenanceCode.equals("LTOS") || maintenanceCode.equals("MTOS")) {
                         data.put(Constants.ASSIGNEE_ENTITY_TYPE, Constants.SMALL.toString());
                     } else if (maintenanceCode.startsWith("M1") || maintenanceCode.startsWith("LSM")) {

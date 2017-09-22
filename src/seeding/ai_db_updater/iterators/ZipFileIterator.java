@@ -125,10 +125,6 @@ public class ZipFileIterator implements WebIterator {
                     if(!failed.get()) {
                         System.out.println(" Parsed successfully!");
                         dataDownloader.finishedIngestingFile(zipFile);
-                        for(CustomHandler handler : handlers) {
-                            handler.save();
-                        }
-                        dataDownloader.save();
                     }
                 } else {
                     failed.set(true);
@@ -141,7 +137,6 @@ public class ZipFileIterator implements WebIterator {
                 // cleanup
                 if(failed.get()) {
                     dataDownloader.errorOnFile(zipFile);
-                    dataDownloader.save();
                 }
 
                 File xmlFile = new File(destinationFilename);
@@ -150,12 +145,11 @@ public class ZipFileIterator implements WebIterator {
 
         });
 
-        dataDownloader.save();
-
         // save
         for(CustomHandler handler : handlers) {
             handler.save();
         }
+        dataDownloader.save();
     }
 
 }

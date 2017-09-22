@@ -44,8 +44,6 @@ import java.util.stream.Stream;
 public class DatabaseIterator {
     private static boolean debug = false;
     @Setter
-    protected static Map<String,INDArray> lookupTable;
-    @Setter
     protected static Collection<ComputableAttribute> computableAttributes;
     private LocalDate startDate;
     private LocalDate endDate;

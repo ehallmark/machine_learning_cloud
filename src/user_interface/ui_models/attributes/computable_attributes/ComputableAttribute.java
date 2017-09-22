@@ -19,12 +19,10 @@ import static j2html.TagCreator.div;
  * Created by Evan on 5/9/2017.
  */
 public abstract class ComputableAttribute<T> extends AbstractAttribute {
-    @Setter
     protected Map<String,T> patentDataMap;
-    @Setter
     protected Map<String,T> applicationDataMap;
-    protected int originalPatentSize;
-    protected int originalApplicationSize;
+    protected boolean modifiedPatents = false;
+    protected boolean modifiedApps = false;
    // protected LocalDate saveDate;
 
     private static Map<String,Map<String,?>> allPatentDataMaps = Collections.synchronizedMap(new HashMap<>());
@@ -33,6 +31,17 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
     public ComputableAttribute(Collection<AbstractFilter.FilterType> filterTypes) {
         super(filterTypes);
     }
+
+    public void setPatentDataMap(Map<String,T> patentDataMap) {
+        this.patentDataMap=patentDataMap;
+        this.modifiedPatents=true;
+    }
+
+    public void setApplicationDataMap(Map<String,T> applicationDataMap) {
+        this.applicationDataMap=applicationDataMap;
+        this.modifiedApps=true;
+    }
+
 
     public T attributesFor(Collection<String> portfolio, int limit) {
         if(applicationDataMap==null||patentDataMap==null) initMaps();
@@ -63,8 +72,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                             System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
                         }
                     }
-                    originalPatentSize = patentDataMap.size();
                     allPatentDataMaps.put(getName(), patentDataMap);
+                    modifiedPatents=false;
                 }
             }
         }
@@ -87,8 +96,8 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                             System.out.println("WARNING:: LOADED BACKUP FILE FOR : "+dataFile.getName());
                         }
                     }
-                    originalApplicationSize = applicationDataMap.size();
                     allApplicationDataMaps.put(getName(),applicationDataMap);
+                    modifiedApps=false;
                 }
             }
         }
@@ -121,6 +130,7 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                 }
             }
             if(allData!=null) {
+                modifiedPatents=true;
                 allData.put(getName(), val);
             }
         }
@@ -133,14 +143,17 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                 allData = (Map<String,Object>)allData.get(parent.getName());
             }
             if(allData!=null) {
+                modifiedApps=true;
                 allData.put(getName(), val);
             }
         }
     }
 
     public void save() {
-        if(patentDataMap!=null && patentDataMap.size()>=originalPatentSize) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
-        if(applicationDataMap!=null && applicationDataMap.size()>=originalApplicationSize) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
+        if(patentDataMap!=null && modifiedPatents) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null && modifiedApps) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
+        modifiedApps = false;
+        modifiedPatents = false;
     }
 
     protected static void safeSaveFile(Object obj, File file) {

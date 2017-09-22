@@ -15,14 +15,15 @@ public class UpdateAll {
             for (String arg : args) {
                 if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
+
                 } else if (arg.equals("1")) {
+                    UpdateBaseApplicationData.main(args);
+                } else if (arg.equals("2")) {
+                    UpdateBasePatentData.main(args);
+                } else if (arg.equals("3")) {
                     // udpate compdb
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
-                } else if (arg.equals("2")) {
-                    UpdateBaseApplicationData.main(args);
-                } else if (arg.equals("3")) {
-                    UpdateBasePatentData.main(args);
                 } else if (arg.equals("4")) {
                     UpdatePairBulkData.main(args);
                 } else if (arg.equals("5")) {
@@ -42,14 +43,5 @@ public class UpdateAll {
         } finally {
             DataIngester.close();
         }
-    }
-
-    private static void saveComputableAttributes() {
-        // save computable attributes
-        SimilarPatentServer.getAllComputableAttributes().forEach(computableAttribute -> {
-            System.out.print("Saving: "+computableAttribute.getName()+" ...");
-            computableAttribute.save();
-            System.out.println("  Done.");
-        });
     }
 }

@@ -2,7 +2,6 @@ package seeding.ai_db_updater;
 
 import seeding.ai_db_updater.handlers.MaintenanceEventHandler;
 import seeding.data_downloader.MaintenanceFeeDataDownloader;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToMaintenanceFeeReminderCountMap;
 
 import java.io.*;
 import java.util.Arrays;
@@ -15,14 +14,11 @@ public class UpdateMaintenanceFeeData {
     private static AtomicInteger cnt = new AtomicInteger(0);
     public static void main(String[] args) throws Exception{
         // update latest assignees
-        AssetToMaintenanceFeeReminderCountMap assetToMaintenanceFeeReminderCountMap = new AssetToMaintenanceFeeReminderCountMap();
-        assetToMaintenanceFeeReminderCountMap.initMaps();
         System.out.println("Starting to update latest maintenance fee data...");
         MaintenanceFeeDataDownloader downloader = new MaintenanceFeeDataDownloader();
         downloader.pullMostRecentData();
         System.out.println("Starting to ingest data...");
-        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler(assetToMaintenanceFeeReminderCountMap));
-        assetToMaintenanceFeeReminderCountMap.save();
+        ingestMaintenanceFeeData(downloader.getDestinationFile(), new MaintenanceEventHandler());
         downloader.cleanUp();
     }
 

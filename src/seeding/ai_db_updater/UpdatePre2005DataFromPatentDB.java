@@ -11,8 +11,10 @@ import seeding.data_downloader.AppDataDownloader;
 import seeding.data_downloader.PatentDataDownloader;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
+import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -25,7 +27,7 @@ public class UpdatePre2005DataFromPatentDB {
         Collection<ComputableAttribute> computableAttributes = new HashSet<>(SimilarPatentServer.getAllComputableAttributes());
         computableAttributes.forEach(attr->attr.initMaps());
         DatabaseIterator.setComputableAttributes(computableAttributes);
-        DatabaseIterator.setLookupTable(SimilarPatentFinder.getLookupTable());
+
         LocalDate startDate = LocalDate.now().minusYears(25);
         LocalDate endDate = LocalDate.of(2005,1,1);
         DatabaseIterator iterator = new DatabaseIterator(startDate,endDate);
