@@ -13,9 +13,9 @@ public class UpdateAll {
     public static void main(String[] args) throws Exception {
         try {
             for (String arg : args) {
-                if(args.equals("0")) {
+                if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
-                } else if (args.equals("1")) {
+                } else if (arg.equals("1")) {
                     // udpate compdb
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
