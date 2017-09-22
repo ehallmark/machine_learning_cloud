@@ -42,7 +42,7 @@ import java.util.stream.Stream;
 
  */
 public class DatabaseIterator {
-    private static boolean debug = false;
+    private static boolean debug = true;
     @Setter
     protected static Map<String,INDArray> lookupTable;
     @Setter
@@ -245,9 +245,9 @@ public class DatabaseIterator {
                         String name = javaNames.get(i);
                         Flag flag = Flag.simpleFlag(name,name,null).withTransformationFunction(transformationFunctions.get(i));
                         Object cleanValue = flag.apply(value.toString());
-                        if (debug) {
-                            System.out.println("Value type of " + pgNames.get(i) + ": " + (value.getClass().getName()));
-                        }
+                        //if (debug) {
+                        //    System.out.println("Value type of " + pgNames.get(i) + ": " + (value.getClass().getName()));
+                        //}
                         data.put(javaNames.get(i), cleanValue);
                     }
                 } catch(Exception e) {
