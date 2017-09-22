@@ -19,16 +19,6 @@ import java.util.stream.Collectors;
  */
 public class BMCTest {
     public static void main(String[] args) throws Exception {
-        AssetToAssigneeMap map = new AssetToAssigneeMap();
-        Map<String,String> newPMap = run(map.getPatentDataMap());
-        Map<String,String> newAMap = run(map.getApplicationDataMap());
-        System.out.println("Size: "+newAMap.size());
-        map.setApplicationDataMap(newAMap);
-        map.setPatentDataMap(newPMap);
-        map.save();
-
-        /*
-
         AssigneeToAssetsMap assigneeToAssetsMap = new AssigneeToAssetsMap();
         Collection<String> assignees = Database.possibleNamesForAssignee("BMC SOFTWARE");
         System.out.println("Num assignees found: "+assignees.size());
@@ -72,29 +62,7 @@ public class BMCTest {
         });
         writer.flush();
         writer.close();
-        */
-    }
-
-    static Map<String, String> run(Map<String,String> map) {
-        Map<String,String> newMap = Collections.synchronizedMap(new HashMap<>());
-        map.entrySet().stream().parallel().forEach(e->{
-            String assignee = e.getValue();
-            if(assignee.toUpperCase().contains("BMC")) return;
-            int i1 = assignee.indexOf("assignee=");
-            if(i1>=0) {
-                System.out.println("Fixing assignee: "+assignee);
-                i1+="assignee=".length();
-                int i2 = assignee.indexOf(",", i1);
-                if(i2>=0) {
-                    assignee = assignee.substring(i1,i2).trim();
-                } else {
-                    assignee = assignee.substring(i1).replaceAll("[\\[\\]\\{\\}]","").trim();
-                }
-                System.out.println("To: "+assignee);
-            }
-            newMap.put(e.getValue(),assignee);
-        });
-        return newMap;
 
     }
+
 }
