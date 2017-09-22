@@ -399,16 +399,25 @@ public class DatabaseIterator {
                     System.out.println("Completed: "+cnt.get());
                 }
                 Map<String, Object> fullMap = new HashMap<>();
-                fullMap.put(nestedAttribute.getName(), dataList);
+                if(!dataList.isEmpty()) {
+                    if(nestedAttribute.isObject()) {
+                        fullMap.put(nestedAttribute.getName(), dataList.get(0));
+                    } else {
+                        fullMap.put(nestedAttribute.getName(), dataList);
+                    }
+                }
                 endFlag.getDataMap().forEach((flag,attr)->{
                     fullMap.put(flag.dbName,attr);
                 });
-                if(debug)System.out.println("Pre Data: "+new Gson().toJson(fullMap));
-                computableAttributes.forEach(computableAttribute -> {
-                    computableAttribute.handlePatentData(patent, fullMap);
-                });
-                if(debug)System.out.println("Post Data: "+new Gson().toJson(fullMap));
-                DataIngester.ingestBulk(patent, filing, fullMap, false);
+
+                    if (debug) System.out.println("Pre Data: " + new Gson().toJson(fullMap));
+                    computableAttributes.forEach(computableAttribute -> {
+                        computableAttribute.handlePatentData(patent, fullMap);
+                    });
+                    if (debug) System.out.println("Post Data: " + new Gson().toJson(fullMap));
+                if(!fullMap.isEmpty()) {
+                    DataIngester.ingestBulk(patent, filing, fullMap, false);
+                }
             }
             endFlag.save();
         }
