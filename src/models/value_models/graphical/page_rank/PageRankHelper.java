@@ -32,7 +32,7 @@ public class PageRankHelper {
 
 
         PageRank algorithm = new PageRank(citedPatentMap,0.75);
-        algorithm.solve(100);
+        algorithm.solve(25);
         System.out.println("Finished algorithm");
         Map<String,Float> rankTable = algorithm.getRankTable();
 

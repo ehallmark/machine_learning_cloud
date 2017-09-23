@@ -38,7 +38,7 @@ public class ParagraphVectorModel {
     private double negativeSampling = -1;//30;
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        int numEpochs = 10;
+        int numEpochs = 5;
         int numThreads = 40;
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
