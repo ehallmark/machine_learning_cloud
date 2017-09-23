@@ -62,7 +62,7 @@ public class ParagraphVectorModel {
                 .trainWordVectors(true)
                 .useHierarchicSoftmax(true)
                 .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(false)
+                .trainElementsRepresentation(true)
                 .elementsLearningAlgorithm(new SkipGram<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
