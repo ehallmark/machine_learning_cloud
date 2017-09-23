@@ -46,7 +46,7 @@ public class PageRankHelper {
         pageRankEvaluator.setApplicationDataMap(getDataMap(applications,rankTable,assetToFilingMap,false));
         pageRankEvaluator.save();
 
-        System.out.println("Rank Table size: "+rankTable.size());
+        System.out.println("Rank Table (patents) size: "+pageRankEvaluator.getPatentDataMap().size());
         long t2 = System.currentTimeMillis();
         System.out.println("Time to complete: "+(t2-t1)/1000+" seconds");
     }
