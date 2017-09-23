@@ -56,7 +56,7 @@ public class PageRankHelper {
         assets.parallelStream().forEach(asset->{
             String filing = (patents ? assetToFilingMap.getPatentDataMap() : assetToFilingMap.getApplicationDataMap()).get(asset);
             if(filing!=null) {
-                Float rank = rankTable.get(asset);
+                Float rank = rankTable.get(filing);
                 if (rank != null) {
                     data.put(asset, rank.doubleValue());
                 }
