@@ -83,7 +83,8 @@ public class DataSearcher {
                     System.out.println("Root name for filter "+filter.getName()+": "+filter.getAttribute().getRootName());
                 });
             }
-            String[] attrNames = attributes.stream().map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
+            String[] attrNames = attributes.stream().filter(attr->!Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
+            String[] filingAttrNames = attributes.stream().filter(attr->Constants.FILING_ATTRIBUTES_SET.contains(attr.getRootName())).map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
@@ -159,7 +160,7 @@ public class DataSearcher {
                 }
             }
             System.out.println("Starting ES attributes...");
-            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true,attrNames,new String[]{})));
+            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true,filingAttrNames,new String[]{})));
             for(AbstractAttribute attribute : attributes) {
                 boolean isFilingType = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
                 AtomicReference<BoolQueryBuilder> queryBuilderToUse = isFilingType ? parentQueryBuilder : queryBuilder;
