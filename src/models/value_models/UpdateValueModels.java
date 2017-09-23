@@ -26,8 +26,8 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
         final boolean debug = false;
-
-        UpdateGraphicalModels.main(args); // page rank
+        boolean rerunPageRank = false;
+        if(rerunPageRank)UpdateGraphicalModels.main(args); // page rank
 
         // train wipo
         SimilarPatentServer.initialize(true,false);

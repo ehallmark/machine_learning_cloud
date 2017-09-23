@@ -458,14 +458,14 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize) {
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize, Map<String,INDArray> lookupTable) {
         List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications);
+        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications,lookupTable);
         DataIngester.finishCurrentMongoBatch();
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
-        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents);
+        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents,lookupTable);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -477,17 +477,25 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type, Map<String,INDArray> lookupTable) {
         AtomicInteger cnt = new AtomicInteger(0);
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
+                Object filing = item.getData(Constants.FILING_NAME);
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     if(obj!=null) {
                         item.addData(model.getMongoDBName(),obj);
                     }
                 });
+                // vec
+                if(filing!=null) {
+                    INDArray vec = lookupTable.get(filing);
+                    if(vec!=null) {
+                        item.addData("vector_obj", vectorToElasticSearchObject(vec));
+                    }
+                }
                 if(debug) System.out.println("Item: "+item.getName());
                 return item;
             }).filter(item->item!=null).collect(Collectors.toList());

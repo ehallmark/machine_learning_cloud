@@ -54,43 +54,24 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         return LOOKUP_TABLE;
     }
     public static void main(String[] args) {
-        /*RelatedAssetsGraph relatedAssetsGraph = RelatedAssetsGraph.get();
-        WeightLookupTable<VocabWord> lookupTable = getWeightLookupTable();
-        Map<String,INDArray> toSave = Collections.synchronizedMap(new HashMap<>());
-        Database.getAllPatentsAndApplications().parallelStream().forEach(patent->{
-            int idx = relatedAssetsGraph.indexForAsset(patent);
-            if(idx>=0) {
-                INDArray vec = lookupTable.vector(String.valueOf(idx));
-                if (vec != null) toSave.put(patent, vec);
-            }
-        });
-        Database.getAssignees().parallelStream().forEach(assignee->{
-            INDArray vec = lookupTable.vector(assignee);
-            if(vec!=null) toSave.put(assignee,vec);
-        });
-        Database.trySaveObject(toSave,oldFile);*/
-        Map<String,INDArray> toSave = (Map<String,INDArray>)Database.tryLoadObject(oldFile);
-    // TODO clean up above this comment
+        // first run pvector model
+        ParagraphVectorModel.main(args);
+
+        System.out.println("Finished running pvector model...");
+        WeightLookupTable<VocabWord> lookup = getWeightLookupTable();
         // create filing map
         Map<String,INDArray> filingMap = Collections.synchronizedMap(new HashMap<>());
         FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-        Map<String,Collection<String>> filingToAllAssetsMap = filingToAssetMap.getAllDataMap();
-        filingToAllAssetsMap.entrySet().parallelStream().forEach(e->{
-            Collection<INDArray> vectors = new ArrayList<>();
-            e.getValue().forEach(asset->{
-                if(toSave.containsKey(asset)) {
-                    vectors.add(toSave.get(asset).get(NDArrayIndex.interval(0, SimilarityAttribute.vectorSize, false)));
-                }
-            });
-            if(vectors.isEmpty()) return;
-            INDArray avg = Nd4j.vstack(vectors).mean(0);
-            avg.divi(avg.norm2Number());
-            filingMap.put(e.getKey(), avg);
-        });
-        // assignees
-        Database.getAssignees().parallelStream().forEach(assignee->{
-            INDArray vec = toSave.get(assignee);
-            if(vec!=null) filingMap.put(assignee,vec.dup().divi(vec.norm2Number()));
+        Collection<String> allFilings = new HashSet<>();
+        allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
+        allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
+        allFilings.addAll(Database.getAssignees());
+        allFilings.parallelStream().forEach(filing->{
+            INDArray vec = lookup.vector(filing);
+            if(vec!=null) {
+                vec.divi(vec.norm2Number());
+                filingMap.put(filing, vec);
+            }
         });
         Database.trySaveObject(filingMap,file);
     }
