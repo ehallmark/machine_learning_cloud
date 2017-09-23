@@ -18,6 +18,7 @@ import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 /**
@@ -66,13 +67,18 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
         allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
         allFilings.addAll(Database.getAssignees());
+        AtomicLong missing = new AtomicLong(0);
         allFilings.parallelStream().forEach(filing->{
             INDArray vec = lookup.vector(filing);
             if(vec!=null) {
                 vec.divi(vec.norm2Number());
                 filingMap.put(filing, vec);
+            } else {
+                missing.getAndIncrement();
+                System.out.println("Missing: "+missing.get());
             }
         });
+        System.out.println("Num vectors: "+filingMap.size());
         Database.trySaveObject(filingMap,file);
     }
 }
