@@ -478,11 +478,12 @@ public class SimilarPatentServer {
     }
 
     public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type, Map<String,INDArray> lookupTable) {
+        Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
         chunked(inputs,batchSize).parallelStream().forEach(batch -> {
             Collection<Item> items = batch.parallelStream().map(label->{
                 Item item = new Item(label);
-                Object filing = item.getData(Constants.FILING_NAME);
+                String filing = assetToFiling.get(label);
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     if(obj!=null) {
@@ -493,6 +494,7 @@ public class SimilarPatentServer {
                 if(filing!=null) {
                     INDArray vec = lookupTable.get(filing);
                     if(vec!=null) {
+                        System.out.println("UPDATED VECTOR");
                         item.addData("vector_obj", vectorToElasticSearchObject(vec));
                     }
                 }

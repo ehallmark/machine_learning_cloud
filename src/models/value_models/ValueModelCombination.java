@@ -38,6 +38,7 @@ public class ValueModelCombination extends ValueAttr {
         if(train) {
             score = (aiValue.evaluate(item) * DEFAULT_END) * ((1d - reducePercent) + (reducePercent * techValue.evaluate(item)));
         } else {
+            System.out.println("EVALUATING AI MODEL");
             if(applicationDataMap==null) {
                 synchronized (this) {
                     if(applicationDataMap==null) {
@@ -48,7 +49,7 @@ public class ValueModelCombination extends ValueAttr {
             if(patentDataMap==null) {
                 synchronized (this) {
                     if(patentDataMap==null) {
-                        patentDataMap = getApplicationDataMap();
+                        patentDataMap = getPatentDataMap();
                     }
                 }
             }
