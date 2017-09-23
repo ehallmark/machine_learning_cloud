@@ -63,7 +63,6 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         // create filing map
         Map<String,INDArray> filingMap = Collections.synchronizedMap(new HashMap<>());
         Collection<String> allFilings = new HashSet<>();
-        AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
         allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
         allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
