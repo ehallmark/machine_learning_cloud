@@ -38,7 +38,7 @@ public class ParagraphVectorModel {
     private double negativeSampling = -1;//30;
 
     public void trainAndSaveParagraphVectorModel() throws SQLException {
-        int numEpochs = 5;
+        int numEpochs = 3;
         int numThreads = 40;
 
         SequenceIterator<VocabWord> sentenceIterator = DatabaseIteratorFactory.PatentParagraphSequenceIterator(numEpochs);
@@ -55,7 +55,7 @@ public class ParagraphVectorModel {
                 .minLearningRate(0.000001)
                 .useAdaGrad(true)
                 .resetModel(true)
-                .minWordFrequency(1000)
+                .minWordFrequency(5000)
                 .workers(numThreads)
                 .iterations(1)
                 .stopWords(new ArrayList<String>(Constants.CLAIM_STOP_WORD_SET))
