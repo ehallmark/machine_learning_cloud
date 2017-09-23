@@ -51,11 +51,13 @@ public class UpdateValueModels {
                     patentModel.put(item.getName(),aiValue);
                     if(patentCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen patents: "+patentCnt.get());
+                        System.out.println("Sample Patent "+item.getName()+": "+aiValue);
                     }
                 } else {
                     applicationModel.put(item.getName(),aiValue);
                     if(appCnt.getAndIncrement()%10000==0) {
                         System.out.println("Seen applications: "+appCnt.get());
+                        System.out.println("Sample App "+item.getName()+": "+aiValue);
                     }
                 }
                 return item;
