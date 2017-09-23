@@ -81,7 +81,6 @@ public class DatabaseIteratorFactory {
         Function<SearchHit,Item> transformer = hit-> {
             String id = hit.getId();
             Map<String,Object> source = hit.getSource();
-            Object inventionTitle = source.get(Constants.INVENTION_TITLE);
             Object abstractText = source.get(Constants.ABSTRACT);
             Object docType = source.get(Constants.DOC_TYPE);
             String assigneeName;
@@ -93,12 +92,11 @@ public class DatabaseIteratorFactory {
             Object filing = source.getOrDefault("_parent", hit.getField("_parent"));
             if(filing!=null) {
 
+                System.out.println("Filing: "+filing.toString());
+
                 DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
                 sequence.setSequenceLabel(new VocabWord(1.0,filing.toString()));
 
-                if(inventionTitle!=null) {
-                    sequence.addElements(getSequence(inventionTitle.toString()));
-                }
 
                 if(abstractText!=null) {
                     sequence.addElements(getSequence(abstractText.toString()));
@@ -179,7 +177,7 @@ public class DatabaseIteratorFactory {
                 .setTypes(DataIngester.TYPE_NAME)
                 .addStoredField("_parent")
                 .addStoredField("_source")
-                .setFetchSource(new String[]{Constants.INVENTION_TITLE,Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.DOC_TYPE,"_parent"}, new String[]{})
                 .setFrom(0)
                 .setSize(10000)
                 .setScroll(new TimeValue(60000))

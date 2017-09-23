@@ -56,13 +56,13 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
     }
     public static void main(String[] args) {
         // first run pvector model
-        //ParagraphVectorModel.main(args);
+        ParagraphVectorModel.main(args);
 
         System.out.println("Finished running pvector model...");
         WeightLookupTable<VocabWord> lookup = getWeightLookupTable();
         // create filing map
         Map<String,INDArray> filingMap = Collections.synchronizedMap(new HashMap<>());
-        boolean usingFilings = false;
+        boolean usingFilings = true;
         Collection<String> allFilings = new HashSet<>();
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
         if(usingFilings) {

@@ -62,13 +62,13 @@ public class ParagraphVectorModel {
                 .trainWordVectors(true)
                 .useHierarchicSoftmax(true)
                 .trainSequencesRepresentation(true)
-                .trainElementsRepresentation(true)
+                .trainElementsRepresentation(false)
                 .elementsLearningAlgorithm(new SkipGram<>())
                 .sequenceLearningAlgorithm(new DBOW<>())
                 .tokenizerFactory(tokenizerFactory)
-                //.setVectorsListeners(Arrays.asList(
-                 //       new CustomWordVectorListener(allParagraphsModelFile,"Paragraph Vectors All Paragraphs",1000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
-                //))
+                .setVectorsListeners(Arrays.asList(
+                        new CustomWordVectorListener(null,"Paragraph Vectors All Paragraphs",1000000,null,"7455590","claim","alkali_metal","device","femto","finance","touchscreen","smartphone","internet","semiconductor","artificial","intelligence")
+                ))
                 .iterate(sentenceIterator)
                 .build();
 
