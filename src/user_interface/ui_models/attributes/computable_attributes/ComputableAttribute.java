@@ -21,8 +21,6 @@ import static j2html.TagCreator.div;
 public abstract class ComputableAttribute<T> extends AbstractAttribute {
     protected Map<String,T> patentDataMap;
     protected Map<String,T> applicationDataMap;
-    protected boolean modifiedPatents = false;
-    protected boolean modifiedApps = false;
    // protected LocalDate saveDate;
 
     private static Map<String,Map<String,?>> allPatentDataMaps = Collections.synchronizedMap(new HashMap<>());
@@ -34,12 +32,10 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
 
     public void setPatentDataMap(Map<String,T> patentDataMap) {
         this.patentDataMap=patentDataMap;
-        this.modifiedPatents=true;
     }
 
     public void setApplicationDataMap(Map<String,T> applicationDataMap) {
         this.applicationDataMap=applicationDataMap;
-        this.modifiedApps=true;
     }
 
 
@@ -73,7 +69,6 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                         }
                     }
                     allPatentDataMaps.put(getName(), patentDataMap);
-                    modifiedPatents=false;
                 }
             }
         }
@@ -97,7 +92,6 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                         }
                     }
                     allApplicationDataMaps.put(getName(),applicationDataMap);
-                    modifiedApps=false;
                 }
             }
         }
@@ -130,7 +124,6 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                 }
             }
             if(allData!=null) {
-                modifiedPatents=true;
                 allData.put(getName(), val);
             }
         }
@@ -143,17 +136,14 @@ public abstract class ComputableAttribute<T> extends AbstractAttribute {
                 allData = (Map<String,Object>)allData.get(parent.getName());
             }
             if(allData!=null) {
-                modifiedApps=true;
                 allData.put(getName(), val);
             }
         }
     }
 
     public void save() {
-        if(patentDataMap!=null && modifiedPatents) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
-        if(applicationDataMap!=null && modifiedApps) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
-        modifiedApps = false;
-        modifiedPatents = false;
+        if(patentDataMap!=null&&patentDataMap.size()>0) synchronized (patentDataMap) { safeSaveFile(patentDataMap, dataFileFrom(Constants.PATENT_DATA_FOLDER,getName(),getType())); }
+        if(applicationDataMap!=null&&applicationDataMap.size()>0) synchronized (applicationDataMap) { safeSaveFile(applicationDataMap, dataFileFrom(Constants.APPLICATION_DATA_FOLDER,getName(),getType())); }
     }
 
     protected static void safeSaveFile(Object obj, File file) {
