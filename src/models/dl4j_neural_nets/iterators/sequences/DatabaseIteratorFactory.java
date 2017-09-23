@@ -92,7 +92,7 @@ public class DatabaseIteratorFactory {
             Object filing = hit.getField("_parent").getValue();
             if(filing!=null) {
 
-                System.out.println("Filing: "+filing..toString());
+                System.out.println("Filing: "+filing.toString());
 
                 DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
                 sequence.setSequenceLabel(new VocabWord(1.0,filing.toString()));
