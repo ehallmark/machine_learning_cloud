@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 #ufw allow 22
 cd /home/ehallmark1122/machine_learning_cloud
-#sudo -u ehallmark1122 bash -c '    sudo systemctl start mongodb'
 sudo -u ehallmark1122 bash -c '    echo "Changed Dirs"'
 sudo -u ehallmark1122 bash -c '    git pull origin master'
 sudo -u ehallmark1122 bash -c '    echo "Pulled from git"'
