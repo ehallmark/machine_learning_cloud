@@ -62,30 +62,15 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         WeightLookupTable<VocabWord> lookup = getWeightLookupTable();
         // create filing map
         Map<String,INDArray> filingMap = Collections.synchronizedMap(new HashMap<>());
-        boolean usingFilings = true;
         Collection<String> allFilings = new HashSet<>();
         AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
-        if(usingFilings) {
-            FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
-            allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
-            allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
-        } else {
-            allFilings.addAll(assetToFilingMap.getPatentDataMap().keySet());
-            allFilings.addAll(assetToFilingMap.getApplicationDataMap().keySet());
-        }
+        FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
+        allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
+        allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
         allFilings.addAll(Database.getAssignees());
         AtomicLong missing = new AtomicLong(0);
         allFilings.parallelStream().forEach(asset->{
             INDArray vec = lookup.vector(asset);
-            if(vec==null&&!usingFilings) {
-                String filing = assetToFilingMap.getPatentDataMap().getOrDefault(asset,assetToFilingMap.getApplicationDataMap().get(asset));
-                if(filing!=null) {
-                    vec = lookup.vector(filing);
-                    if (vec != null) {
-                        asset = filing;
-                    }
-                }
-            }
             if(vec!=null) {
                 vec.divi(vec.norm2Number());
                 filingMap.put(asset, vec);
