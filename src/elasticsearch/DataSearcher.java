@@ -83,6 +83,7 @@ public class DataSearcher {
                     System.out.println("Root name for filter "+filter.getName()+": "+filter.getAttribute().getRootName());
                 });
             }
+            String[] attrNames = attributes.stream().map(attr->(attr instanceof NestedAttribute) ? attr.getName()+".*" : attr.getFullName()).toArray(size->new String[size]);
             // Run elasticsearch
             String comparator = _comparator == null ? "" : _comparator;
             boolean isOverallScore = comparator.equals(Constants.SIMILARITY);
@@ -113,7 +114,7 @@ public class DataSearcher {
             AtomicReference<SearchRequestBuilder> request = new AtomicReference<>(client.prepareSearch(INDEX_NAME)
                     .setScroll(new TimeValue(60000))
                     .setTypes(TYPE_NAME)
-                    .setFetchSource(true)
+                    .setFetchSource(attrNames,new String[]{})
                     .setSize(Math.min(PAGE_LIMIT,maxLimit))
                     .setMinScore(isOverallScore&&similarityThreshold>0f?similarityThreshold:0f)
                     .setFrom(0));
@@ -158,7 +159,7 @@ public class DataSearcher {
                 }
             }
             System.out.println("Starting ES attributes...");
-            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true)));
+            AtomicReference<InnerHitBuilder> innerHitBuilder = new AtomicReference<>(new InnerHitBuilder().setSize(1).setFrom(0).setFetchSourceContext(new FetchSourceContext(true,attrNames,new String[]{})));
             for(AbstractAttribute attribute : attributes) {
                 boolean isFilingType = Constants.FILING_ATTRIBUTES_SET.contains(attribute.getRootName());
                 AtomicReference<BoolQueryBuilder> queryBuilderToUse = isFilingType ? parentQueryBuilder : queryBuilder;
