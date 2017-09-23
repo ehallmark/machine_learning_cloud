@@ -2,6 +2,7 @@ package models.value_models;
 
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
+import models.value_models.graphical.UpdateGraphicalModels;
 import models.value_models.graphical.WIPOValueModel;
 import models.value_models.regression.AIValueModel;
 import user_interface.ui_models.attributes.computable_attributes.OverallEvaluator;
@@ -25,6 +26,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
         final boolean debug = false;
+
+        UpdateGraphicalModels.main(args); // page rank
+
         // train wipo
         SimilarPatentServer.initialize(true,false);
         WIPOValueModel.main(args);

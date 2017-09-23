@@ -21,7 +21,6 @@ public class UpdateModels {
 
         // models
         //models.similarity_models.UpdateSimilarityModels.main(args);
-        UpdateGraphicalModels.main(args); // page rank
         //models.classification_models.UpdateClassificationModels.main(args);
         UpdateValueModels.main(args);
 

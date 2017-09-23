@@ -76,11 +76,6 @@ public class WIPOValueModel extends ValueAttr {
         Map<String,Boolean> gatherValueMap = Database.getGatherValueMap();
         final Map<String,List<String>> variableToValuesMap = Collections.synchronizedMap(new HashMap<>());
         Arrays.stream(allItems).parallel().forEach(item->{
-            // add gather value
-          //  Boolean value = gatherValueMap.get(item.getName());
-          //  if(value==null) value = false;
-          //  item.addData(valueVariableName, value ? 1 : 0);
-
             // add values
             attributes.forEach(attr->{
                 Object obj = item.getData(attr.getFullName());
@@ -98,10 +93,7 @@ public class WIPOValueModel extends ValueAttr {
                 }
             });
         });
-        // sanity check
-        //variableToValuesMap.forEach((var,values)->{
-            //System.out.println("Values for "+var+": "+String.join("; ",values));
-        //});
+
         attributes.forEach(attr->{
             if(!variableToValuesMap.keySet().contains(attr.getFullName())) {
                 System.out.println("Keys found: "+String.join("; ",variableToValuesMap.keySet()));
@@ -116,12 +108,8 @@ public class WIPOValueModel extends ValueAttr {
             graph.addNode(attr,values.size());
         });
 
-        //Node valueNode = graph.findNode(valueVariableName);
         Node wipoNode = graph.findNode(wipo.getFullName());
-        // connect and add factors
-       // graph.connectNodes(wipoNode, valueNode);
         graph.addFactorNode(null, wipoNode);
-        //graph.addFactorNode(null, valueNode, wipoNode);
 
         bayesianValueModel = new GraphicalValueModel(getName(),graph,alpha,allItems,variableToValuesMap, null);
         bayesianValueModel.train();
