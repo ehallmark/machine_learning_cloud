@@ -386,10 +386,6 @@ public class DatabaseIterator {
                 }
                 if(requiredAttr==null||data.containsKey(requiredAttr)) {
                     dataList.add(data);
-                } else {
-                    javaNames.forEach(name->{
-                        validCountMap.getOrDefault(name,new AtomicLong(0)).getAndDecrement();
-                    });
                 }
             }
 

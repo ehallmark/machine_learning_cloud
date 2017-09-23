@@ -15,7 +15,6 @@ public class UpdateAll {
             for (String arg : args) {
                 if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
-
                 } else if (arg.equals("1")) {
                     UpdateBaseApplicationData.main(args);
                 } else if (arg.equals("2")) {
