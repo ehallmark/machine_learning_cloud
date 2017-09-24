@@ -13,7 +13,7 @@ import seeding.ai_db_updater.UpdateCompDBAndGatherData;
 public class UpdateModels {
     public static void main(String[] args) throws Exception {
         // pre data
-        seeding.Database.main(args);
+        //seeding.Database.main(args);
 
         UpdateCompDBAndGatherData.main(args);
 
