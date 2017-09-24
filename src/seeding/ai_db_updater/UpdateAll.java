@@ -30,11 +30,11 @@ public class UpdateAll {
                 } else if (arg.equals("6")) {
                     UpdateClassificationHash.main(args);
                 } else if (arg.equals("7")) {
-                    UpdateAssetGraphs.main(args);
-                } else if (arg.equals("8")) {
                     UpdateWIPOTechnologies.main(args);
-                } else if (arg.equals("9")) {
+                } else if (arg.equals("8")) {
                     UpdateAssignmentData.main(args);
+                } else if (arg.equals("9")) {
+                    UpdateAssetGraphs.main(args);
                 } else if (arg.equals("10")) {
                     Database.main(args);
                     UpdateExtraneousComputableAttributeData.main(args);
