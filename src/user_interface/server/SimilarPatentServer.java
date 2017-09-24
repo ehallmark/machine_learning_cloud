@@ -182,6 +182,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Execution Date", Constants.EXECUTION_DATE);
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Number of Assignments", Constants.NUM_ASSIGNMENTS);
+            humanAttrToJavaAttrMap.put("Number of Related Docs", Constants.NUM_RELATED_ASSETS);
+            humanAttrToJavaAttrMap.put("Number of Backward Citations", Constants.NUM_BACKWARD_CITATIONS);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
             humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
@@ -199,7 +201,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Exists in CompDB", Constants.EXISTS_IN_COMPDB_FILTER);
             humanAttrToJavaAttrMap.put("Exists in Gather", Constants.EXISTS_IN_GATHER_FILTER);
-            humanAttrToJavaAttrMap.put("Related Assets", Constants.ALL_RELATED_ASSETS);
+            humanAttrToJavaAttrMap.put("Related Docs", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
@@ -207,9 +209,9 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
             humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
             humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
-            humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
+            humanAttrToJavaAttrMap.put("Forward Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Claims", Constants.CLAIMS);
-            humanAttrToJavaAttrMap.put("Prior Related Documents", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Prior Related Docs", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Assignments", Constants.ASSIGNMENTS);
 
             buildJavaToHumanAttrMap();
