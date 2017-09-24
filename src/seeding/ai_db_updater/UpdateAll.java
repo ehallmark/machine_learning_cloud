@@ -30,7 +30,7 @@ public class UpdateAll {
                 } else if (arg.equals("6")) {
                     UpdateClassificationHash.main(args);
                 } else if (arg.equals("7")) {
-                    UpdateRelatedAssetsGraph.main(args);
+                    //UpdateRelatedAssetsGraph.main(args);
                 } else if (arg.equals("8")) {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("9")) {

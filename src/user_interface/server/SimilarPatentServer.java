@@ -13,6 +13,8 @@ import user_interface.server.tools.PasswordHandler;
 import user_interface.server.tools.SimpleAjaxMessage;
 import user_interface.ui_models.attributes.*;
 import user_interface.ui_models.attributes.computable_attributes.*;
+import user_interface.ui_models.attributes.computable_attributes.asset_graphs.BackwardCitationAttribute;
+import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.attributes.script_attributes.*;
 import user_interface.ui_models.charts.highcharts.AbstractChart;
@@ -142,6 +144,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
+            humanAttrToJavaAttrMap.put("Asset Referenced By", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Gather", Constants.GATHER);
             humanAttrToJavaAttrMap.put("Stage Complete", Constants.GATHER_STAGE);
@@ -157,7 +160,6 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("WIPO Technology",Constants.WIPO_TECHNOLOGY);
             humanAttrToJavaAttrMap.put("Est. Remaining Life (Years)",Constants.REMAINING_LIFE);
             humanAttrToJavaAttrMap.put("Filing Country", Constants.FILING_COUNTRY);
-            humanAttrToJavaAttrMap.put("Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Original Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
@@ -197,6 +199,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Expiration Date (estimated)", Constants.ESTIMATED_EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Exists in CompDB", Constants.EXISTS_IN_COMPDB_FILTER);
             humanAttrToJavaAttrMap.put("Exists in Gather", Constants.EXISTS_IN_GATHER_FILTER);
+            humanAttrToJavaAttrMap.put("Related Assets", Constants.ALL_RELATED_ASSETS);
             // nested attrs
             humanAttrToJavaAttrMap.put("Latest Assignee", Constants.LATEST_ASSIGNEE);
             humanAttrToJavaAttrMap.put("Original Assignee", Constants.ASSIGNEES);
@@ -206,7 +209,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
             humanAttrToJavaAttrMap.put("Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Claims", Constants.CLAIMS);
-            humanAttrToJavaAttrMap.put("Related Assets", Constants.PATENT_FAMILY);
+            humanAttrToJavaAttrMap.put("Prior Related Documents", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Assignments", Constants.ASSIGNMENTS);
 
             buildJavaToHumanAttrMap();
@@ -396,7 +399,9 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.PRIORITY_DATE, new PriorityDateAttribute());
             attributesMap.put(Constants.FILING_DATE, new FilingDateAttribute());
             attributesMap.put(Constants.DOC_TYPE, new ResultTypeAttribute());
+            attributesMap.put(Constants.ALL_RELATED_ASSETS, new RelatedAssetsAttribute());
             attributesMap.put(Constants.ABSTRACT, new AbstractTextAttribute());
+            attributesMap.put(Constants.BACKWARD_CITATION, new BackwardCitationAttribute());
             attributesMap.put(Constants.PUBLICATION_DATE, new PublicationDateAttribute());
             attributesMap.put(Constants.FILING_NAME, new FilingNameAttribute());
             attributesMap.put(Constants.FILING_COUNTRY, new FilingCountryAttribute());

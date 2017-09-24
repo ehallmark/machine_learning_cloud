@@ -24,7 +24,6 @@ public class Constants {
 	public static final String COMPDB = "compDB";
 	public static final String COMPDB_TECHNOLOGY = "compDBTechnology";
 	public static final String COMPDB_DEAL_ID = "compDBDealId";
-	public static final String MAINTENANCE_FEE_REMINDERS = "maintenanceFeeReminders";
 	public static final String SMALL = "small";
 	public static final String MICRO = "micro";
 	public static final String LARGE = "large";
@@ -33,6 +32,7 @@ public class Constants {
 	public static final String REINSTATED = "reinstated";
 	public static final String FRAME_NO = "frameNo";
 	public static final String ADDRESS_1 = "addressOne";
+	public static final String BACKWARD_CITATION = "backwardCitation";
 	public static final String ADDRESS_2 = "addressTwo";
 	public static final String DATA_DOWNLOADERS_FOLDER = "dataDownloaders/";
 	public static final String ADDRESS_3 = "addressThree";
@@ -125,6 +125,7 @@ public class Constants {
 	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
 	public static final String REMAINING_LIFE = "remainingLife";
 	public static final String PATENT_FAMILY = "patentFamily";
+	public static final String ALL_RELATED_ASSETS = "allRelatedAssets";
 	public static final String ASSIGNORS = "assignors";
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
@@ -324,7 +325,6 @@ public class Constants {
 		PG_NAME_MAP.put(CLAIM_NUM,"number");
 		PG_NAME_MAP.put(CLAIM_LENGTH,"word_count");
 		PG_NAME_MAP.put(PARENT_CLAIM_NUM, "parent_claim_id");
-		PG_NAME_MAP.put(MEANS_PRESENT, "means_present");
 		PG_NAME_MAP.put(CITATIONS+"."+NAME,"patent_cited_doc_number");
 		PG_NAME_MAP.put(CITATIONS+"."+CITED_DATE,"patent_cited_date");
 		PG_NAME_MAP.put(CITATIONS+"."+DOC_KIND,"patent_cited_kind");

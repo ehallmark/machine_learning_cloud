@@ -84,7 +84,6 @@ public class DatabaseIterator {
         transformationFunctionMap.put(Constants.PUBLICATION_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.FILING_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.ASSIGNEE,Flag.assigneeTransformationFunction);
-        transformationFunctionMap.put(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Flag.smallestIndClaimTransformationFunction(claimEndFlag));
         transformationFunctionMap.put(Constants.CITED_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
         transformationFunctionMap.put(Constants.CITATIONS+"."+Constants.NAME,Flag.unknownDocumentHandler);
         transformationFunctionMap.put(Constants.PRIORITY_DATE,Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE));
@@ -120,7 +119,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runAggregateClaimData();
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -131,7 +130,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_related_doc", Constants.NAME, new RelatedDocumentsNestedAttribute(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -142,7 +141,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_agent", Constants.LAST_NAME, new AgentsNestedAttribute(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -153,7 +152,18 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_applicant", Constants.LAST_NAME, new ApplicantsNestedAttribute(), transformationFunctionMap);
+                    } catch (Exception e) {
+                        errors.set(true);
+                        e.printStackTrace();
+                    }
+                }
+            });
+            pool.execute(new RecursiveAction() {
+                @Override
+                protected void compute() {
+                    try {
+                        runNestedTable("patent_grant_assignee", Constants.ASSIGNEE, new LatestAssigneeNestedAttribute(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -165,7 +175,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_assignee", null, new AssigneesNestedAttribute(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -176,7 +186,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), Collections.emptyList(), transformationFunctionMap);
+                        runNestedTable("patent_grant_citation", Constants.DOC_KIND, new CitationsNestedAttribute(), transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -187,7 +197,7 @@ public class DatabaseIterator {
                 @Override
                 protected void compute() {
                     try {
-                        runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), Arrays.asList(new LengthOfSmallestIndependentClaimAttribute(), new MeansPresentAttribute()), claimEndFlag, transformationFunctionMap);
+                        runNestedTable("patent_grant_claim", Constants.CLAIM, new ClaimsNestedAttribute(), claimEndFlag, transformationFunctionMap);
                     } catch (Exception e) {
                         errors.set(true);
                         e.printStackTrace();
@@ -321,22 +331,63 @@ public class DatabaseIterator {
         patentDBStatement.close();
     }
 
-    private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, Collection<AbstractAttribute> otherAttributes, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
+    private void runAggregateClaimData() throws SQLException{
+        List<String> javaNames = Arrays.asList(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Constants.MEANS_PRESENT);
+
+        String patentDBQuery = "select min(word_count) as "+Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH+", bool_and(claim_text like '% means %') as "+Constants.MEANS_PRESENT+", c.pub_doc_number from patent_grant_priority_claim as c join patent_grant as p on (c.pub_doc_number=p.pub_doc_number) where claim_date is not null and isnumeric(claim_date) and pub_date >= ? and pub_date < ? group by c.pub_doc_number";
+        PreparedStatement patentDBStatement = Database.newSeedConn().prepareStatement(patentDBQuery);
+        patentDBStatement.setInt(1, Integer.valueOf(startDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
+        patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
+
+        patentDBStatement.setFetchSize(10);
+        Map<String,String> assetToFilingMap = new AssetToFilingMap().getPatentDataMap();
+        System.out.println("Executing query: "+patentDBStatement.toString());
+
+        ResultSet rs = patentDBStatement.executeQuery();
+        AtomicLong cnt = new AtomicLong(0);
+        while(rs.next()) {
+            Map<String,Object> data = new HashMap<>();
+            IntStream.range(0,javaNames.size()).forEach(i->{
+                try {
+                    Object value = rs.getObject(i + 1);
+                    if(value!=null) {
+                        String name = javaNames.get(i);
+                        data.put(name, value);
+                    }
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+            });
+            String patent = rs.getString(javaNames.size()+1);
+            String filing = assetToFilingMap.get(patent);
+            if(patent!=null) {
+                // computable attrs
+                if(cnt.getAndIncrement()%100000==99999) {
+                    System.out.println("Completed: "+cnt.get());
+                }
+                DataIngester.ingestBulk(patent, filing, data, false);
+            }
+        }
+
+        patentDBStatement.close();
+    }
+
+
+    private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
         EndFlag endFlag = new EndFlag("") {
             @Override
             public void save() {
                 dataMap = new HashMap<>();
             }
         };
-        this.runNestedTable(nestedTableName, requiredAttr, nestedAttribute, otherAttributes, endFlag, transformationFunctionMap);
+        this.runNestedTable(nestedTableName, requiredAttr, nestedAttribute, endFlag, transformationFunctionMap);
     }
 
-    private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, Collection<AbstractAttribute> otherAttributes, EndFlag endFlag, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
+    private void runNestedTable(String nestedTableName, String requiredAttr, NestedAttribute nestedAttribute, EndFlag endFlag, Map<String, Function<Flag,Function<String,?>>> transformationFunctionMap) throws SQLException {
         Map<String,String> pgNamesToAttrNames = nestedAttribute.getAttributes().stream().filter(attr->Constants.PG_NAME_MAP.containsKey(attr.getFullName())||Constants.PG_NAME_MAP.containsKey(attr.getName())).collect(Collectors.toMap(attr->Constants.PG_NAME_MAP.getOrDefault(attr.getFullName(),Constants.PG_NAME_MAP.get(attr.getName())),attr->attr.getName()));
         List<String> pgNames = new ArrayList<>(pgNamesToAttrNames.keySet());
         List<String> javaNames = pgNames.stream().map(pg->pgNamesToAttrNames.get(pg)).collect(Collectors.toList());
-        javaNames.addAll(otherAttributes.stream().map(attr->attr.getName()).collect(Collectors.toList()));
-        Stream.of(nestedAttribute.getAttributes().stream(),otherAttributes.stream()).flatMap(str->str).forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getFullName(), transformationFunctionMap.getOrDefault(attr.getName(), Flag.defaultTransformationFunction)))));
+        nestedAttribute.getAttributes().stream().map(str->str).forEach(attr->endFlag.addChild(Flag.simpleFlag(attr.getName(),attr.getName(),endFlag).withTransformationFunction(transformationFunctionMap.getOrDefault(attr.getFullName(), transformationFunctionMap.getOrDefault(attr.getName(), Flag.defaultTransformationFunction)))));
 
         StringJoiner selectJoin = new StringJoiner("), array_agg(n.","select array_agg(n.", ")");
         pgNames.forEach(name->selectJoin.add(name));

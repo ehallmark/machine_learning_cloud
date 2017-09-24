@@ -2,18 +2,13 @@ package models.similarity_models.paragraph_vectors;
 
 
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
-import org.nd4j.linalg.factory.Nd4j;
-import org.nd4j.linalg.indexing.NDArrayIndex;
-import seeding.ai_db_updater.tools.RelatedAssetsGraph;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.BaseSimilarityModel;
-import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
-import user_interface.ui_models.attributes.script_attributes.SimilarityAttribute;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
