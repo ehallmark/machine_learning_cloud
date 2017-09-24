@@ -20,7 +20,7 @@ public class UpdateAll {
                 } else if (arg.equals("2")) {
                     UpdateBasePatentData.main(args);
                 } else if (arg.equals("3")) {
-                    // udpate compdb
+                    // update compdb
                     Database.main(args);
                     CreateCompDBAssigneeTransactionData.main(args);
                 } else if (arg.equals("4")) {
@@ -30,12 +30,13 @@ public class UpdateAll {
                 } else if (arg.equals("6")) {
                     UpdateClassificationHash.main(args);
                 } else if (arg.equals("7")) {
-                    //UpdateRelatedAssetsGraph.main(args);
+                    UpdateAssetGraphs.main(args);
                 } else if (arg.equals("8")) {
                     UpdateWIPOTechnologies.main(args);
                 } else if (arg.equals("9")) {
                     UpdateAssignmentData.main(args);
                 } else if (arg.equals("10")) {
+                    Database.main(args);
                     UpdateExtraneousComputableAttributeData.main(args);
                 }
             }

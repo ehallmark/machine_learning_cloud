@@ -64,12 +64,9 @@ public class Database {
 	private static Map<String,Boolean> gatherBoolValueMap;
 	private static final File gatherBoolValueFile = new File(Constants.DATA_FOLDER+"gather_patent_to_value_bool_map.jobj");
 	private static File gatherPatentToStagesCompleteFile = new File(Constants.DATA_FOLDER+"gather_patent_to_stages_complete_map.jobj");
-	@Getter
-	public static Map<String,Set<String>> classCodeToPatentMap;
 	public static Map<String,LocalDate> patentToPubDateMap;
 	public static Map<String,LocalDate> appToPriorityDateMap;
 	public static final File patentToPubDateMapFile = new File(Constants.DATA_FOLDER+"patent_to_pubdate_map_file.jobj");
-	public static final File classCodeToPatentMapFile = new File(Constants.DATA_FOLDER+"class_code_to_patent_map.jobj");
 	public static File allClassCodesFile = new File(Constants.DATA_FOLDER+"all_class_codes.jobj");
 	public static File technologyMapFile = new File(Constants.DATA_FOLDER+"item_to_technology_map.jobj");
 	public static final File classCodeToClassTitleMapFile = new File(Constants.DATA_FOLDER+"class_code_to_class_title_map.jobj");
@@ -261,15 +258,7 @@ public class Database {
 
 	public synchronized static Set<String> getClassCodes() {
 		if(allClassCodes==null) {
-			// load dependent objects
-			File classCodeTempFile = new File(Constants.DATA_FOLDER+"all_cpc_codes.jobj");
-			if(!classCodeTempFile.exists()) {
-				allClassCodes = new AssetToCPCMap().getApplicationDataMap().values().parallelStream().flatMap(set->set.stream()).distinct().collect(Collectors.toSet());
-				Database.trySaveObject(allClassCodes,classCodeTempFile);
-			} else {
-				allClassCodes = (Set<String>) Database.tryLoadObject(classCodeTempFile);
-			}
-			// save to file
+			allClassCodes = (Set<String>) Database.tryLoadObject(allClassCodesFile);
 		}
 		return allClassCodes;
 	}
@@ -929,23 +918,6 @@ public class Database {
 			});
 		});
 		trySaveObject(allClassCodes,allClassCodesFile);
-
-		classCodeToPatentMap = Collections.synchronizedMap(new HashMap<>());
-		getPatentToClassificationMap().entrySet().parallelStream().forEach((e) -> {
-			String patent = e.getKey();
-			Collection<String> classes = e.getValue();
-			classes.forEach(klass -> {
-				if (classCodeToPatentMap.containsKey(klass)) {
-					classCodeToPatentMap.get(klass).add(patent);
-				} else {
-					Set<String> patents = new HashSet<>();
-					patents.add(patent);
-					classCodeToPatentMap.put(klass, patents);
-				}
-			});
-		});
-		trySaveObject(classCodeToPatentMap,classCodeToPatentMapFile);
-
 	}
 
 	public static void check(String name, Collection<String> collection) {
