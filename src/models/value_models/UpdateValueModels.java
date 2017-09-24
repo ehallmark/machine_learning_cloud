@@ -68,7 +68,6 @@ public class UpdateValueModels {
         toSearchFor.add(new WIPOTechnologyAttribute());
         toSearchFor.add(new ResultTypeAttribute());
         DataSearcher.searchForAssets(toSearchFor,Collections.emptyList(),null, SortOrder.ASC, 20000000,SimilarPatentServer.getNestedAttrMap(), transformer, false,false);
-        DataIngester.close();
         aiValueModel.save();
     }
 }

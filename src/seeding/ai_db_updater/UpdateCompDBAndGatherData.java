@@ -54,7 +54,6 @@ public class UpdateCompDBAndGatherData {
         Document query = new Document("_id", idMap);
         IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME,query);
 
-        DataIngester.close();
     }
 
     private static List<String> union(Collection<String> c1, Collection<String> c2) {
