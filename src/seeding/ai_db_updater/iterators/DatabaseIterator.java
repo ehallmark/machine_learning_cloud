@@ -66,7 +66,7 @@ public class DatabaseIterator {
         }
     }
 
-    public void run(boolean patentGrantOnly) throws SQLException {
+    public void run(boolean patentGrantOnly, boolean runAggOnly) throws SQLException {
         Database.setupSeedConn();
         this.init();
 
@@ -97,7 +97,6 @@ public class DatabaseIterator {
             }
         });
 
-        boolean runAggOnly = true;
         if(runAggOnly) {
             runAggregateClaimData();
         } else {
