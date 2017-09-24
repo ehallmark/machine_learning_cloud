@@ -338,7 +338,7 @@ public class DatabaseIterator {
     private void runAggregateClaimData() throws SQLException{
         List<String> javaNames = Arrays.asList(Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH,Constants.MEANS_PRESENT);
 
-        String patentDBQuery = "select min(word_count) as "+Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH+", bool_and(means_present) as "+Constants.MEANS_PRESENT+", c.pub_doc_number from patent_grant_claim as c join patent_grant as p on (c.pub_doc_number=p.pub_doc_number) where word_count is not null and means_present is not null and pub_date >= ? and pub_date < ? group by c.pub_doc_number";
+        String patentDBQuery = "select min(word_count) as "+Constants.SMALLEST_INDEPENDENT_CLAIM_LENGTH+", bool_and(means_present or parent_claim_id is not null) as "+Constants.MEANS_PRESENT+", c.pub_doc_number from patent_grant_claim as c join patent_grant as p on (c.pub_doc_number=p.pub_doc_number) where word_count is not null and means_present is not null and pub_date >= ? and pub_date < ? group by c.pub_doc_number";
         PreparedStatement patentDBStatement = Database.newSeedConn().prepareStatement(patentDBQuery);
         patentDBStatement.setInt(1, Integer.valueOf(startDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
         patentDBStatement.setInt(2, Integer.valueOf(endDate.format(DateTimeFormatter.BASIC_ISO_DATE)));
