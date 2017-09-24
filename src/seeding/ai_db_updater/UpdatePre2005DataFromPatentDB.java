@@ -36,6 +36,7 @@ public class UpdatePre2005DataFromPatentDB {
             iterator.save();
         } catch(Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
         DataIngester.finishCurrentMongoBatch();
     }
