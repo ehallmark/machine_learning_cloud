@@ -494,7 +494,6 @@ public class SimilarPatentServer {
                 if(filing!=null) {
                     INDArray vec = lookupTable.get(filing);
                     if(vec!=null) {
-                        System.out.println("UPDATED VECTOR");
                         item.addData("vector_obj", vectorToElasticSearchObject(vec));
                     }
                 }
