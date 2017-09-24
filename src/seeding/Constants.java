@@ -116,16 +116,18 @@ public class Constants {
 	public static final String INVENTION_TITLE = "inventionTitle";
 	public static final String PIE_CHART = "pieChart[]";
 	public static final String HISTOGRAM = "histogram[]";
+	public static final String ALL_RELATED_ASSETS = "allRelatedAssets";
 	public static final String PORTFOLIO_SIZE = "portfolioSize";
 	public static final String PATENT_TERM_ADJUSTMENT = "patentTermAdjustment";
 	public static final String NUM_ASSIGNMENTS = REEL_FRAME+COUNT_SUFFIX;
+	public static final String NUM_RELATED_ASSETS = ALL_RELATED_ASSETS+COUNT_SUFFIX;
+	public static final String NUM_BACKWARD_CITATIONS = BACKWARD_CITATION+COUNT_SUFFIX;
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";
 	public static final String TECHNOLOGY_SIMILARITY = "technologySimilarity";
 	public static final String REMAINING_LIFE = "remainingLife";
 	public static final String PATENT_FAMILY = "patentFamily";
-	public static final String ALL_RELATED_ASSETS = "allRelatedAssets";
 	public static final String ASSIGNORS = "assignors";
 	public static final String DATA_FOLDER = "data/";
 	public static final int MIN_WORDS_PER_SENTENCE = 3;
@@ -243,6 +245,10 @@ public class Constants {
 			WIPO_TECHNOLOGY,
 			TECHNOLOGY,
 			NUM_ASSIGNMENTS,
+			NUM_BACKWARD_CITATIONS,
+			BACKWARD_CITATION,
+			NUM_RELATED_ASSETS,
+			ALL_RELATED_ASSETS,
 			SIMILARITY,
 			GATHER,
 			COMPDB,

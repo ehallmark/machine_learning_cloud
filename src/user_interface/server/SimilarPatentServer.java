@@ -410,6 +410,8 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.DOC_KIND, new DocKindAttribute());
             attributesMap.put(Constants.REEL_FRAME, new ReelFrameAttribute());
             attributesMap.put(Constants.NUM_ASSIGNMENTS, new NumAssignmentsAttribute());
+            attributesMap.put(Constants.NUM_RELATED_ASSETS, new NumRelatedAssetsAttribute());
+            attributesMap.put(Constants.NUM_BACKWARD_CITATIONS, new NumBackwardCitationsAttribute());
             attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
             //attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
 
