@@ -87,10 +87,9 @@ public class DataIngester {
             updateBatch();
         }
     }
-
-    static Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
-
+    
     public static void ingestMongo(String id, String parent, Document query, Map<String,Object> doc, boolean create) {
+        Collection<String> filingAttributes = Constants.FILING_ATTRIBUTES_SET;
         Map<String,Object> assetDoc = new HashMap<>();
         Map<String,Object> filingDoc = new HashMap<>();
         doc.forEach((key,val)->{
