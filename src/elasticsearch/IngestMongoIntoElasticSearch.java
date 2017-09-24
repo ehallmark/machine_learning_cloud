@@ -30,8 +30,9 @@ import java.util.function.Function;
 public class IngestMongoIntoElasticSearch {
     static AtomicLong cnt = new AtomicLong(0);
     public static void main(String[] args) {
+        boolean noFilings = (args.length>0&&args[0].equals("1"));
         // ingest filings (aka parents)
-        ingestByType(DataIngester.PARENT_TYPE_NAME);
+        if(!noFilings) ingestByType(DataIngester.PARENT_TYPE_NAME);
         // ingest assets (aka children)
         ingestByType(DataIngester.TYPE_NAME);
         DataIngester.close();
