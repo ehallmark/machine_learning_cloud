@@ -22,7 +22,6 @@ public class ValueModelCombination extends ValueAttr {
 
     protected ValueAttr aiValue;
     protected ValueAttr techValue;
-    @Getter
     protected String name;
     protected boolean train;
     public ValueModelCombination(String name, ValueAttr aiValue, ValueAttr techValue, boolean train) {
