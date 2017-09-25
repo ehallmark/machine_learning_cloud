@@ -42,25 +42,8 @@ public class DatabaseIteratorFactory {
     static final Map<String,String> appToAssigneeMap = assetToAssigneeMap.getApplicationDataMap();
 
     static Collection<VocabWord> getSequence(String text) {
-        return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>0).map(w->new Stemmer().stem(w)).filter(w->w!=null&&w.length()>1).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
+        return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>1&&!Constants.CLAIM_STOP_WORD_SET.contains(w)).map(w->new Stemmer().stem(w)).filter(w->w!=null&&w.length()>1).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
     }
-
-    static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, AtomicLong cnt, Queue<Sequence<VocabWord>> queue) {
-        return (docList, t2) -> {
-            //System.out.println("Ingesting batch of : "+docList.size());
-            docList.parallelStream().forEach(doc->{
-                try {
-
-                } finally {
-                    if (cnt.getAndIncrement() % 100000 == 99999) {
-                        System.out.println("Seen: " + cnt.get());
-                    }
-                }
-            });
-            cursor.next(helper(cursor, cnt, queue));
-        };
-    }
-
 
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(50000);
