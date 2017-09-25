@@ -24,6 +24,7 @@ public class UpdateCompDBAndGatherData {
     static AssetToFilingMap assetToFilingMap;
 
     public static void main(String[] args) {
+        Database.main(args);
         try {
             Database.loadCompDBData();
         } catch(Exception e) {
