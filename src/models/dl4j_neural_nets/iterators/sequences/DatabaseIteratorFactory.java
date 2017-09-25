@@ -16,6 +16,7 @@ import seeding.Constants;
 import org.deeplearning4j.models.sequencevectors.interfaces.SequenceIterator;
 import org.deeplearning4j.models.word2vec.VocabWord;
 import org.deeplearning4j.text.tokenization.tokenizer.preprocessor.CommonPreprocessor;
+import tools.Stemmer;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToAssigneeMap;
 import user_interface.ui_models.portfolios.items.Item;
 
@@ -41,7 +42,7 @@ public class DatabaseIteratorFactory {
     static final Map<String,String> appToAssigneeMap = assetToAssigneeMap.getApplicationDataMap();
 
     static Collection<VocabWord> getSequence(String text) {
-        return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>0).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
+        return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>0).map(w->new Stemmer().stem(w)).filter(w->w!=null&&w.length()>1).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
     }
 
     static SingleResultCallback<List<Document>> helper(AsyncBatchCursor<Document> cursor, AtomicLong cnt, Queue<Sequence<VocabWord>> queue) {
