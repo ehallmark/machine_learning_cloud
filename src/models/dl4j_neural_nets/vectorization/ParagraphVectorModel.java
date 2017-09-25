@@ -26,7 +26,7 @@ import java.util.Arrays;
  * Created by ehallmark on 11/30/16.
  */
 public class ParagraphVectorModel {
-    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"titles_and_abstracts_2017-9-21.paragraphvectors");
+    public static File allParagraphsModelFile = new File(Constants.DATA_FOLDER+"titles_and_abstracts_2017-9-25.paragraphvectors");
     public static final int VECTOR_SIZE = 30;
     private static TokenizerFactory tokenizerFactory = new MyTokenizerFactory();
     static {
