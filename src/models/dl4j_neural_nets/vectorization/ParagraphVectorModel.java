@@ -1,5 +1,6 @@
 package models.dl4j_neural_nets.vectorization;
 
+import lombok.Getter;
 import models.dl4j_neural_nets.iterators.sequences.AsyncSequenceIterator;
 import models.dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import models.dl4j_neural_nets.listeners.CustomWordVectorListener;
@@ -33,11 +34,12 @@ public class ParagraphVectorModel {
         tokenizerFactory.setTokenPreProcessor(new MyPreprocessor());
     }
 
-    private ParagraphVectors net;
-    private double learningRate = 0.025;
-    private double negativeSampling = -1;//30;
+    @Getter
+    private static ParagraphVectors net;
+    private static double learningRate = 0.025;
+    private static double negativeSampling = -1;//30;
 
-    public void trainAndSaveParagraphVectorModel() throws SQLException {
+    public static void trainAndSaveParagraphVectorModel() throws SQLException {
         int numEpochs = 5;
         int numThreads = 30;
 
@@ -92,8 +94,7 @@ public class ParagraphVectorModel {
 
     public static void main(String[] args) {
         try {
-            ParagraphVectorModel model = new ParagraphVectorModel();
-            model.trainAndSaveParagraphVectorModel();
+            ParagraphVectorModel.trainAndSaveParagraphVectorModel();
         } catch(Exception e) {
             e.printStackTrace();
         }
