@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class UpdateValueModels {
     public static void main(String[] args) throws Exception{
         final boolean debug = false;
-        boolean rerunPageRank = false;
+        boolean rerunPageRank = true;
         if(rerunPageRank)UpdateGraphicalModels.main(args); // page rank
 
         // train wipo
