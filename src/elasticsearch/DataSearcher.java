@@ -193,7 +193,7 @@ public class DataSearcher {
                        .preTags("<span style=\"background-color: yellow;\">")
                        .requireFieldMatch(false)
                        .highlightFilter(true)
-                       .field(Constants.CLAIMS+"."+Constants.CL"claims.claim")
+                       .field(Constants.CLAIMS+"."+Constants.CLAIM)
                        .field(Constants.ABSTRACT)
                        .field(Constants.INVENTION_TITLE);
                request.set(request.get().highlighter(highlighter));
@@ -346,7 +346,7 @@ public class DataSearcher {
             highlightFieldMap.entrySet().forEach(e->{
                 Text[] fragments = e.getValue().getFragments();
                 if(fragments!=null) {
-                    StringJoiner sj = new StringJoiner(" ","","");
+                    StringJoiner sj = new StringJoiner("<br />","","");
                     for(Text fragment : fragments) {
                         sj.add(fragment.toString());
                     }
