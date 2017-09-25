@@ -193,9 +193,9 @@ public class DataSearcher {
                        .preTags("<span style=\"background-color: yellow;\">")
                        .requireFieldMatch(false)
                        .highlightFilter(true)
-                       .field("claims.claim")
-                       .field("abstract")
-                       .field("inventionTitle");
+                       .field(Constants.CLAIMS+"."+Constants.CLAIM)
+                       .field(Constants.ABSTRACT)
+                       .field(Constants.INVENTION_TITLE);
                request.set(request.get().highlighter(highlighter));
             }
 
