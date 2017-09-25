@@ -466,14 +466,14 @@ public class SimilarPatentServer {
     }
 
 
-    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, int batchSize, Map<String,INDArray> lookupTable) {
+    public static void loadAndIngestAllItemsWithAttributes(Collection<ComputableAttribute<?>> attributes, Map<String,INDArray> lookupTable) {
         List<String> applications = new AssetToFilingMap().getApplicationDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num applications found: "+applications.size());
-        handleItemsList(applications, attributes, batchSize, PortfolioList.Type.applications,lookupTable);
+        handleItemsList(applications, attributes, PortfolioList.Type.applications,lookupTable);
         DataIngester.finishCurrentMongoBatch();
         List<String> patents = new AssetToFilingMap().getPatentDataMap().keySet().stream().collect(Collectors.toList());
         System.out.println("Num patents found: "+patents.size());
-        handleItemsList(patents, attributes, batchSize, PortfolioList.Type.patents,lookupTable);
+        handleItemsList(patents, attributes, PortfolioList.Type.patents,lookupTable);
     }
 
     public static Map<String,Float> vectorToElasticSearchObject(INDArray vector) {
@@ -521,14 +521,14 @@ public class SimilarPatentServer {
         return false;
     }
 
-    private static Stream<Collection<String>> chunked(List<String> items, int batchSize) {
+    private static Stream<Collection<?>> chunked(List<?> items, int batchSize) {
         int numItems = items.size();
         int numBatches = numItems / batchSize;
         if(numItems % numBatches > 0) {
             // remaining
             numBatches++;
         }
-        return IntStream.range(0,numBatches).mapToObj(i->{
+        return IntStream.range(0,numBatches).parallel().mapToObj(i->{
             int startIdx = i * batchSize;
             int endIdx = Math.min(numItems,startIdx + batchSize);
             return items.subList(startIdx,endIdx);

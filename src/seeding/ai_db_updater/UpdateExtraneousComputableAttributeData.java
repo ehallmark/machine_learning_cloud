@@ -14,11 +14,10 @@ import java.util.stream.Collectors;
  * Created by Evan on 7/23/2017.
  */
 public class UpdateExtraneousComputableAttributeData {
-    private static final int batchSize = 20000;
     public static void main(String[] args) {
         SimilarPatentServer.initialize(true,false);
         Map<String,INDArray> lookupTable = SimilarPatentFinder.getLookupTable();
-        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toList()), batchSize,lookupTable);
+        SimilarPatentServer.loadAndIngestAllItemsWithAttributes(SimilarPatentServer.getAllComputableAttributes().stream().filter(a->!(a instanceof HiddenAttribute)).collect(Collectors.toList()),lookupTable);
     }
 
 }
