@@ -25,7 +25,7 @@ public class UpdateModels {
         //models.classification_models.UpdateClassificationModels.main(args);
         UpdateValueModels.main(args);
 
-        SimilarPatentFinder.main(args);
+        //SimilarPatentFinder.main(args);
         // test
         //TestSpecificModels.main(args);
     }
