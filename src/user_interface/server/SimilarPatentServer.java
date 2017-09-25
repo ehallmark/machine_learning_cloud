@@ -414,7 +414,6 @@ public class SimilarPatentServer {
             attributesMap.put(Constants.NUM_RELATED_ASSETS, new NumRelatedAssetsAttribute());
             attributesMap.put(Constants.NUM_BACKWARD_CITATIONS, new NumBackwardCitationsAttribute());
             attributesMap.put(Constants.GRANTED,new IsGrantedApplicationAttribute());
-            //attributesMap.put(Constants.NUM_ASSIGNMENTS, new CountAggregationScriptAttribute(new ReelFrameAttribute(),Constants.NUM_ASSIGNMENTS));
 
             // nested attrs
             attributesMap.put(Constants.LATEST_ASSIGNEE, new LatestAssigneeNestedAttribute());
