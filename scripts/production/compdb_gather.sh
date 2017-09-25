@@ -30,5 +30,3 @@ curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application
     }
 }
 '
-sudo -u ehallmark1122 bash -c '    sudo systemctl stop mongodb'
-sleep 30s
