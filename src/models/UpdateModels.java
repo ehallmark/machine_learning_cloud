@@ -2,6 +2,7 @@ package models;
 
 import elasticsearch.CreatePatentDBIndex;
 import elasticsearch.IngestMongoIntoElasticSearch;
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.value_models.UpdateValueModels;
 import models.model_testing.TestSpecificModels;
 import models.value_models.graphical.UpdateGraphicalModels;
@@ -24,6 +25,7 @@ public class UpdateModels {
         //models.classification_models.UpdateClassificationModels.main(args);
         UpdateValueModels.main(args);
 
+        SimilarPatentFinder.main(args);
         // test
         //TestSpecificModels.main(args);
     }
