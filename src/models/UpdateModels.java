@@ -16,7 +16,7 @@ public class UpdateModels {
         // pre data
         //seeding.Database.main(args);
 
-        UpdateCompDBAndGatherData.main(args);
+        //UpdateCompDBAndGatherData.main(args);
 
         //ParagraphVectorModel.main(args);
 

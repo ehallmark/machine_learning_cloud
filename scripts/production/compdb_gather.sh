@@ -14,7 +14,7 @@ sudo -u ehallmark1122 bash -c '    echo "in elasticsearch"'
 sudo -u ehallmark1122 bash -c '    sudo docker-compose up -d'
 sudo -u ehallmark1122 bash -c '    echo "Docker compose up"'
 cd /home/ehallmark1122/machine_learning_cloud
-sleep 2m
+sleep 90s
 curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application/json' -d'
 {
     "index" : {
@@ -26,7 +26,9 @@ sudo -u ehallmark1122 bash -c '    java -cp target/classes:"target/dependency/*"
 curl -XPUT 'localhost:9200/ai_db/_settings?pretty' -H 'Content-Type: application/json' -d'
 {
     "index" : {
-        "refresh_interval" : "30s"
+        "refresh_interval" : "60s"
     }
 }
 '
+sudo -u ehallmark1122 bash -c '    sudo systemctl stop mongodb'
+sleep 30s
