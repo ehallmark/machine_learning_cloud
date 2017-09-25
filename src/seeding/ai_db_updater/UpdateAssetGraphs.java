@@ -1,6 +1,8 @@
 package seeding.ai_db_updater;
 
 import user_interface.ui_models.attributes.computable_attributes.asset_graphs.AssetGraph;
+import user_interface.ui_models.attributes.computable_attributes.asset_graphs.BackwardCitationAttribute;
+import user_interface.ui_models.attributes.computable_attributes.asset_graphs.RelatedAssetsAttribute;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,7 +13,8 @@ import java.util.Collection;
 public class UpdateAssetGraphs {
     public static void main(String[] args) {
         Collection<AssetGraph> assetGraphs = Arrays.asList(
-
+                new RelatedAssetsAttribute(),
+                new BackwardCitationAttribute()
         );
 
         assetGraphs.forEach(graphAttr->{
