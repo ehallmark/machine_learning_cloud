@@ -188,17 +188,15 @@ public class DataSearcher {
            if(highlight) {
                // possible highlighting
                HighlightBuilder highlighter = new HighlightBuilder()
+                       .highlighterType("plain")
                        .postTags("</span>")
-                       .preTags("<span style=\"backgroun-color: yellow;\">")
+                       .preTags("<span style=\"background-color: yellow;\">")
                        .requireFieldMatch(false)
-                       .field("*");
-               HighlightBuilder innerHitHighlighter = new HighlightBuilder()
-                       .postTags("</span>")
-                       .preTags("<span style=\"backgroun-color: yellow;\">")
-                       .requireFieldMatch(false)
-                       .field("*");
+                       .highlightFilter(true)
+                       .field("claims.claim")
+                       .field("abstract")
+                       .field("inventionTitle");
                request.set(request.get().highlighter(highlighter));
-               innerHitBuilder.set(innerHitBuilder.get().setHighlightBuilder(innerHitHighlighter));
             }
 
             // Set query
