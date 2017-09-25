@@ -38,7 +38,6 @@ public class DataIngester {
     public static final String PARENT_TYPE_NAME = "filings";
     private static MongoDatabase mongoDB = MongoDBClient.get().getDatabase(INDEX_NAME);
     private static AtomicLong mongoCount = new AtomicLong(0);
-    private static final AssetToFilingMap assetToFilingMap = new AssetToFilingMap();
 
     public static void ingestBulk(String name, String parent, Map<String,Object> doc, boolean create) {
        // if(create) bulkProcessor.add(new IndexRequest(INDEX_NAME,TYPE_NAME, name).source(doc));
@@ -224,46 +223,14 @@ public class DataIngester {
         }
     }
 
-    public static void updateAssets(Map<String,Map<String,Object>> labelToTextMap) {
-        try {
-            labelToTextMap.entrySet().parallelStream().forEach(e->{
-                String name = e.getKey();
-                Map<String,Object> data = e.getValue();
-                String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(name,assetToFilingMap.getPatentDataMap().get(name));
-                if(filing == null) return;
-                ingestBulk(name,filing,data,false);
-            });
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            System.out.println("ERROR UPDATING BATCH");
-            //System.exit(1);
-        } finally {
-            labelToTextMap.clear();
-        }
-    }
-
-    private static XContentBuilder buildJson(Map<String,Object> data) throws Exception {
-        XContentBuilder builder = XContentFactory.jsonBuilder().startObject();
-        for(Map.Entry<String,Object> e : data.entrySet()) {
-            builder = builder.field(e.getKey(),e.getValue());
-        }
-        builder = builder.endObject();
-        return builder;
-    }
-
-    public static void updateItems(Collection<Item> items) {
-        Map<String,Map<String,Object>> data = Collections.synchronizedMap(new HashMap<>(items.size()));
-        items.parallelStream().forEach(item->{
-            Map<String,Object> itemData = new HashMap<>();
-            for(Map.Entry<String,Object> e : item.getDataMap().entrySet()) {
-                itemData.put(e.getKey(), e.getValue());
+    public static void ingestItem(Item item, String filing) {
+        Map<String,Object> itemData = item.getDataMap();
+        String name = item.getName();
+        if(itemData.size()>0) {
+            if(filing!=null) {
+                ingestBulk(name,filing,itemData,false);
             }
-            if(itemData.size()>0) {
-                data.put(item.getName(), itemData);
-            }
-        });
-        updateAssets(data);
+        }
     }
 
 }

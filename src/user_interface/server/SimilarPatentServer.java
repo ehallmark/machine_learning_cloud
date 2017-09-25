@@ -53,6 +53,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static j2html.TagCreator.*;
@@ -65,7 +66,6 @@ import static spark.Spark.*;
 public class SimilarPatentServer {
     private static final boolean debug = false;
     static final String GENERATE_REPORTS_FORM_ID = "generate-reports-form";
-    private static ClassificationAttr tagger;
     private static final String PROTECTED_URL_PREFIX = "/secure";
     public static final String EXCEL_SESSION = "excel_data";
     public static final String PATENTS_TO_SEARCH_FOR_FIELD = "patentsToSearchFor";
@@ -306,7 +306,6 @@ public class SimilarPatentServer {
         loadAttributes(loadHidden);
         if(!onlyAttributes) {
             loadFilterModels();
-            loadTechTaggerModel();
             loadChartModels();
             loadSimilarityModels();
         }
@@ -486,35 +485,32 @@ public class SimilarPatentServer {
         return obj;
     }
 
-    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, int batchSize, PortfolioList.Type type, Map<String,INDArray> lookupTable) {
+    public static void handleItemsList(List<String> inputs, Collection<ComputableAttribute<?>> attributes, PortfolioList.Type type, Map<String,INDArray> lookupTable) {
         Map<String,String> assetToFiling = type.equals(PortfolioList.Type.patents) ? new AssetToFilingMap().getPatentDataMap() : new AssetToFilingMap().getApplicationDataMap();
         AtomicInteger cnt = new AtomicInteger(0);
-        chunked(inputs,batchSize).parallelStream().forEach(batch -> {
-            Collection<Item> items = batch.parallelStream().map(label->{
+        inputs.parallelStream().forEach(label->{
+            String filing = assetToFiling.get(label);
+            // vec
+            if(filing!=null) {
                 Item item = new Item(label);
-                String filing = assetToFiling.get(label);
                 attributes.forEach(model -> {
                     Object obj = ((ComputableAttribute)model).attributesFor(Arrays.asList(item.getName()), 1);
                     if(obj!=null) {
                         item.addData(model.getMongoDBName(),obj);
                     }
                 });
-                // vec
-                if(filing!=null) {
-                    INDArray vec = lookupTable.get(filing);
-                    if(vec!=null) {
-                        item.addData("vector_obj", vectorToElasticSearchObject(vec));
-                    }
+                INDArray vec = lookupTable.get(filing);
+                if(vec!=null) {
+                    item.addData("vector_obj", vectorToElasticSearchObject(vec));
                 }
+                DataIngester.ingestItem(item,filing);
                 if(debug) System.out.println("Item: "+item.getName());
-                return item;
-            }).filter(item->item!=null).collect(Collectors.toList());
+            }
 
-            DataIngester.updateItems(items);
-            cnt.getAndAdd(items.size());
-            System.out.println("Seen "+cnt.get()+" "+type.toString());
+            if(cnt.getAndIncrement()%100000==99999) {
+                System.out.println("Seen "+cnt.get());
+            }
         });
-        if(debug)System.out.println("Finished Batch");
     }
 
     private static boolean canCreateUser(String creatorRole, String childRole) {
@@ -525,25 +521,18 @@ public class SimilarPatentServer {
         return false;
     }
 
-    private static List<Collection<String>> chunked(List<String> items, int batchSize) {
-        List<Collection<String>> chunks = new ArrayList<>((items.size()+1)/batchSize);
-        for(int i = 0; i < items.size(); i+= batchSize) {
-            List<String> chunk = new ArrayList<>(batchSize);
-            for(int j = i; j < (Math.min(i+ batchSize, items.size())); j++) {
-                chunk.add(items.get(j));
-            }
-            if(chunk.size() > 0) chunks.add(chunk);
+    private static Stream<Collection<String>> chunked(List<String> items, int batchSize) {
+        int numItems = items.size();
+        int numBatches = numItems / batchSize;
+        if(numItems % numBatches > 0) {
+            // remaining
+            numBatches++;
         }
-        return chunks;
-    }
-
-    public static void loadTechTaggerModel() {
-        if(tagger==null)tagger = TechTaggerNormalizer.getDefaultTechTagger();
-    }
-
-    public static ClassificationAttr getTechTagger() {
-        if(tagger==null) loadTechTaggerModel();
-        return tagger;
+        return IntStream.range(0,numBatches).mapToObj(i->{
+            int startIdx = i * batchSize;
+            int endIdx = Math.min(numItems,startIdx + batchSize);
+            return items.subList(startIdx,endIdx);
+        });
     }
 
     private static void authorize(Request req, Response res) {
