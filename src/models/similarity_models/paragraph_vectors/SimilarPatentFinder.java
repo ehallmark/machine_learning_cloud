@@ -68,14 +68,18 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         allFilings.addAll(filingToAssetMap.getApplicationDataMap().keySet());
         allFilings.addAll(Database.getAssignees());
         AtomicLong missing = new AtomicLong(0);
+        AtomicLong seen = new AtomicLong(0);
         allFilings.parallelStream().forEach(asset->{
             INDArray vec = lookup.vector(asset);
+            seen.getAndIncrement();
             if(vec!=null) {
                 vec.divi(vec.norm2Number());
                 filingMap.put(asset, vec);
             } else {
                 missing.getAndIncrement();
-                System.out.println("Missing: "+missing.get());
+                if(seen.get()%100000==99999) {
+                    System.out.println("Missing %: " + ((missing.get() * 100) / seen.get())+"%");
+                }
             }
         });
         System.out.println("Num vectors: "+filingMap.size());
