@@ -47,7 +47,7 @@ public class ParagraphVectorModel {
                 .seed(41)
                 .batchSize(10000)
                 .epochs(1) // hard coded to avoid learning rate from resetting
-                .windowSize(4)
+                .windowSize(6)
                 .layerSize(VECTOR_SIZE)
                 .sampling(0.00001)
                 .negativeSample(negativeSampling)
