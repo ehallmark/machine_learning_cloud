@@ -70,14 +70,19 @@ public class AssigneePortfolioAnalysis {
                 List<String> assigneeCpcCodes = assigneeCpcCodesWithDups.stream().distinct().collect(Collectors.toList());
                 if(Pac.size()!=assigneeCpcCodes.size()) throw new RuntimeException("Error in assignee cpc codes size");
 
-                RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, assigneeToPatentMap);
+                double score;
+                if(assigneeCpcCodes.size()>0) {
+                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, assigneeToPatentMap);
 
-                double score = assigneeCpcCodes.isEmpty() ? Integer.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes).entrySet().stream()
-                        .mapToDouble(e->{
-                            double Kc = e.getValue();
-                            return Kc * Pac.get(e.getKey());
-                        }).sum()/assigneeCpcCodes.size();
-                System.out.println("Score for assignee "+assignee+": "+score);
+                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes).entrySet().stream()
+                            .mapToDouble(e -> {
+                                double Kc = e.getValue();
+                                return Kc * Pac.get(e.getKey());
+                            }).sum() / assigneeCpcCodes.size();
+                    System.out.println("Score for assignee " + assignee + ": " + score);
+                } else {
+                    score = Double.MAX_VALUE;
+                }
                 return new Pair<>(assignee,score);
             }).sorted(Comparator.comparing(p->p.getSecond()))
                     .limit(N2).map(p->p.getFirst())
