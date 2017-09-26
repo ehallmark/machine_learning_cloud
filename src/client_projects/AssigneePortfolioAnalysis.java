@@ -70,12 +70,12 @@ public class AssigneePortfolioAnalysis {
             System.out.println("Num assignees found after stage 2: "+allAssignees2.size());
         }
 
-        List<String> allAssignees3;
+        List<Pair<String,Double>> allAssignees3WithScores;
         {
             // step 3
             //  calculate assignee density per cpc
             AtomicInteger cnt = new AtomicInteger(0);
-            allAssignees3 = allAssignees2.parallelStream().map(assignee->{
+            allAssignees3WithScores = allAssignees2.parallelStream().map(assignee->{
                 System.out.println("Computing density per assignee");
                 Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
                 List<String> assigneeCpcCodesWithDups = assigneePatents.stream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
@@ -101,22 +101,23 @@ public class AssigneePortfolioAnalysis {
                 }
                 return new Pair<>(assignee,score);
             }).sorted(Comparator.comparing(p->p.getSecond()))
-                    .limit(N2).map(p->p.getFirst())
+                    .limit(N2)
                     .collect(Collectors.toList());
-            System.out.println("Num assignees found after stage 3: "+allAssignees3.size());
+            System.out.println("Num assignees found after stage 3: "+allAssignees3WithScores.size());
         }
 
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/low_value_assignees.csv")))) {
-            writer.write("Assignee,Portfolio Size\n");
-            for(String assignee : allAssignees3) {
-                writer.write(assignee+","+finalAssigneeToPatentMap.get(assignee).size()+"\n");
+            writer.write("Score,Assignee,Portfolio Size\n");
+            for(Pair<String,Double> assigneeScorePair : allAssignees3WithScores) {
+                String assignee = assigneeScorePair.getFirst();
+                Double score = assigneeScorePair.getSecond();
+                writer.write(score.toString()+","+assignee+","+finalAssigneeToPatentMap.get(assignee).size()+"\n");
             }
             writer.flush();
         } catch(Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println("Assignees: "+String.join("; "+allAssignees3));
+        System.out.println("FINISHED!!!");
     }
 
     private static Map<String,Integer> buildIdxMap(List<String> entries) {
