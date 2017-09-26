@@ -88,8 +88,8 @@ public class AssigneePortfolioAnalysis {
     }
 
     private static RealMatrix buildMatrix(List<String> allAssignees, List<String> allCpcCodes, Map<String,Set<String>> patentToCpcCodeMap, Map<String,Collection<String>> assigneeToPatentMap) {
-        Map<String,Integer> assigneeToIndexMap = IntStream.of(0,allAssignees.size()).mapToObj(i->new Pair<>(allAssignees.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
-        Map<String,Integer> cpcCodeToIndexMap = IntStream.of(0,allCpcCodes.size()).mapToObj(i->new Pair<>(allCpcCodes.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+        Map<String,Integer> assigneeToIndexMap = IntStream.range(0,allAssignees.size()).mapToObj(i->new Pair<>(allAssignees.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+        Map<String,Integer> cpcCodeToIndexMap = IntStream.range(0,allCpcCodes.size()).mapToObj(i->new Pair<>(allCpcCodes.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
         int numAssignees = allAssignees.size();
         int numCpcCodes = allCpcCodes.size();
         System.out.println("Matrix Dim: ["+numAssignees+"x"+numCpcCodes+"]");
@@ -124,7 +124,7 @@ public class AssigneePortfolioAnalysis {
     private static Map<String,Double> computeDensity(RealMatrix matrix, List<String> entries, boolean rowWise) {
         // get row sums
         int length = rowWise ? matrix.getRowDimension() : matrix.getColumnDimension();
-        Map<String,Integer> idxMap = IntStream.of(0,entries.size()).mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+        Map<String,Integer> idxMap = IntStream.range(0,entries.size()).mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
         if(length!=entries.size()) throw new RuntimeException("Invalid list size.");
 
         double[] squaredSums = new double[length];
