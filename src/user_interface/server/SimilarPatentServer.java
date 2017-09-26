@@ -89,6 +89,7 @@ public class SimilarPatentServer {
     public static final String SHOW_CHART_URL = PROTECTED_URL_PREFIX+"/charts";
     public static final String RANDOM_TOKEN = "<><><>";
     public static final String SUPER_USER = "form_creator";
+    public static final String USE_HIGHLIGHTER_FIELD = "useHighlighter";
     public static final String ANALYST_USER = "analyst";
     public static final String INTERNAL_USER = "internal";
     public static final List<String> USER_ROLES = Arrays.asList(ANALYST_USER,INTERNAL_USER);
@@ -144,7 +145,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Applications",PortfolioList.Type.applications.toString());
             humanAttrToJavaAttrMap.put("Pie Chart", Constants.PIE_CHART);
             humanAttrToJavaAttrMap.put("Cited Date", Constants.CITED_DATE);
-            humanAttrToJavaAttrMap.put("Asset Referenced By", Constants.BACKWARD_CITATION);
+            humanAttrToJavaAttrMap.put("Forward Citation", Constants.BACKWARD_CITATION);
             humanAttrToJavaAttrMap.put("Means Present", Constants.MEANS_PRESENT);
             humanAttrToJavaAttrMap.put("Gather", Constants.GATHER);
             humanAttrToJavaAttrMap.put("Stage Complete", Constants.GATHER_STAGE);
@@ -183,7 +184,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("First Name", Constants.FIRST_NAME);
             humanAttrToJavaAttrMap.put("Number of Assignments", Constants.NUM_ASSIGNMENTS);
             humanAttrToJavaAttrMap.put("Number of Related Docs", Constants.NUM_RELATED_ASSETS);
-            humanAttrToJavaAttrMap.put("Number of Backward Citations", Constants.NUM_BACKWARD_CITATIONS);
+            humanAttrToJavaAttrMap.put("Number of Forward Citations", Constants.NUM_BACKWARD_CITATIONS);
             humanAttrToJavaAttrMap.put("Last Name", Constants.LAST_NAME);
             humanAttrToJavaAttrMap.put("Country", Constants.COUNTRY);
             humanAttrToJavaAttrMap.put("City", Constants.CITY);
@@ -209,7 +210,7 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Assignors", Constants.ASSIGNORS);
             humanAttrToJavaAttrMap.put("Inventors", Constants.INVENTORS);
             humanAttrToJavaAttrMap.put("Agents", Constants.AGENTS);
-            humanAttrToJavaAttrMap.put("Forward Citations", Constants.CITATIONS);
+            humanAttrToJavaAttrMap.put("Backward Citations", Constants.CITATIONS);
             humanAttrToJavaAttrMap.put("Claims", Constants.CLAIMS);
             humanAttrToJavaAttrMap.put("Prior Related Docs", Constants.PATENT_FAMILY);
             humanAttrToJavaAttrMap.put("Assignments", Constants.ASSIGNMENTS);
@@ -1272,22 +1273,33 @@ public class SimilarPatentServer {
                         h5("Search Options")
                 ), div().withClass("col-12").with(
                         div().withClass("row collapsible-form").with(
-                                div().withClass("col-12 attributeElement").with(
-                                        label("Sort By"),br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
-                                                Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
-                                                        getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)).map(attr->attr.getFullName())).flatMap(stream->stream)
-                                                        .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
+                                div().withClass("col-6 attributeElement").with(
+                                        label("Sort By").with(
+                                                br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
+                                                        Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
+                                                                getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)).map(attr->attr.getFullName())).flatMap(stream->stream)
+                                                                .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
+                                                )
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Sort Direction"),br(),
-                                        select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
-                                                option("Ascending").withValue("asc"),
-                                                option("Descending").withValue("desc").attr("selected","selected")
+                                        label("Sort Direction").with(
+                                                br(),
+                                                select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
+                                                        option("Ascending").withValue("asc"),
+                                                        option("Descending").withValue("desc").attr("selected","selected")
+                                                )
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Result Limit"),br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        label("Result Limit").with(
+                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        )
+                                ),
+                                div().withClass("col-6 attributeElement").with(
+                                        label("Use Highlighting").with(
+                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").withName(USE_HIGHLIGHTER_FIELD)
+                                        )
                                 )
                         )
                 )
@@ -1337,7 +1349,7 @@ public class SimilarPatentServer {
         }
     }
 
-    static boolean extractBool(Request req, String param) {
+    public static boolean extractBool(Request req, String param) {
         return extractBool(req.queryMap(),param);
     }
     static boolean extractBool(QueryParamsMap req, String param) {

@@ -104,7 +104,9 @@ public class SimilarityEngineController {
             } else return attr;
         }).collect(Collectors.toList());
 
-        Item[] scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), true);
+        boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
+
+        Item[] scope = DataSearcher.searchForAssets(topLevelAttributes, preFilters, comparator, sortOrder, limit, SimilarPatentServer.getNestedAttrMap(), useHighlighter);
         System.out.println("Elasticsearch found: "+scope.length+ " assets");
 
         portfolioList = new PortfolioList(scope);
