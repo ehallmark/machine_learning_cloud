@@ -29,13 +29,14 @@ public class AssigneePortfolioAnalysis {
         List<String> allCpcCodes = Database.getClassCodes().parallelStream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         List<String> allAssignees;
         Map<String,Collection<String>> assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
+        Map<String,Collection<String>> assigneeToAppMap = new AssigneeToAssetsMap().getApplicationDataMap();
         Map<String,Set<String>> patentToCpcCodeMap = new AssetToCPCMap().getPatentDataMap();
         {
             // step 1
             //  get all assignees with portfolio size > 1000
 
             allAssignees = Database.getAssignees().parallelStream().filter(assignee->{
-                return assigneeToPatentMap.getOrDefault(assignee, Collections.emptyList()).size() >= minPortfolioSize;
+                return assigneeToPatentMap.getOrDefault(assignee, assigneeToAppMap.getOrDefault(assignee, Collections.emptyList())).size() >= minPortfolioSize;
             }).collect(Collectors.toList());
             System.out.println("Found assignees after stage 1: "+allAssignees.size());
         }
