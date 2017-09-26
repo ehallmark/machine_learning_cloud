@@ -31,19 +31,20 @@ public class AssigneePortfolioAnalysis {
     private static final int N2 = 50;
     public static void main(String[] args) {
         List<String> allCpcCodes = Database.getClassCodes().parallelStream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
-        List<String> allAssignees;
+        List<String> allAssignees = new ArrayList<>(Database.getAssignees());
         Map<String,Set<String>> patentToCpcCodeMap = new AssetToCPCMap().getPatentDataMap();
         Map<String,Collection<String>> finalAssigneeToPatentMap;
+        List<String> allAssignees1;
         {
             // step 1
             //  get all assignees with portfolio size > 1000
             Map<String,Collection<String>> assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
-            allAssignees = Database.getAssignees().parallelStream().filter(assignee->{
+            allAssignees1 = allAssignees.parallelStream().filter(assignee->{
                 return Database.possibleNamesForAssignee(assignee).stream().mapToInt(possibleName->{
                     return assigneeToPatentMap.getOrDefault(possibleName, Collections.emptyList()).size();
                 }).sum() >= minPortfolioSize;
             }).collect(Collectors.toList());
-            System.out.println("Found assignees after stage 1: "+allAssignees.size());
+            System.out.println("Found assignees after stage 1: "+allAssignees1.size());
 
             finalAssigneeToPatentMap = allAssignees.parallelStream().map(assignee->{
                 Collection<String> allAssets = Database.possibleNamesForAssignee(assignee).stream().flatMap(name->assigneeToPatentMap.getOrDefault(name,Collections.emptyList()).stream())
@@ -56,7 +57,7 @@ public class AssigneePortfolioAnalysis {
         {
             // step 2
             //  calculate tech density per assignee
-            RealMatrix matrix = buildMatrix(allAssignees,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap);
+            RealMatrix matrix = buildMatrix(allAssignees1,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap);
             System.out.println("Computing density per assignee");
             Map<String,Double> densityPerAssignee = computeRowWiseDensity(matrix, allAssignees);
 
