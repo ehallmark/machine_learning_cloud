@@ -78,30 +78,30 @@ public class AssigneePortfolioAnalysis {
             allAssignees3WithScores = allAssignees2.parallelStream().map(assignee->{
                 System.out.println("Computing density per assignee");
                 Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
-                List<String> assigneeCpcCodesWithDups = assigneePatents.stream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
+                List<String> assigneeCpcCodesWithDups = assigneePatents.parallelStream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
                         .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
                         .collect(Collectors.toList());
-
-                Map<String,Long> Pac = assigneeCpcCodesWithDups.stream().collect(Collectors.groupingBy(e->e,Collectors.counting()));
-                List<String> assigneeCpcCodes = assigneeCpcCodesWithDups.stream().distinct().collect(Collectors.toList());
+                long numPac = assigneeCpcCodesWithDups.size();
+                Map<String,Long> Pac = assigneeCpcCodesWithDups.parallelStream().collect(Collectors.groupingBy(e->e,Collectors.counting()));
+                List<String> assigneeCpcCodes = assigneeCpcCodesWithDups.parallelStream().distinct().collect(Collectors.toList());
                 if(Pac.size()!=assigneeCpcCodes.size()) throw new RuntimeException("Error in assignee cpc codes size");
 
                 double score;
                 if(assigneeCpcCodes.size()>0) {
                     Map<String,Integer> cpcIdxMap = buildIdxMap(assigneeCpcCodes);
                     RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, finalAssigneeToPatentMap, allAssigneeToIndexMap, cpcIdxMap);
-                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes, cpcIdxMap).entrySet().stream()
+                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes, cpcIdxMap).entrySet().parallelStream()
                             .mapToDouble(e -> {
                                 double Kc = e.getValue();
                                 return Kc * Pac.get(e.getKey());
-                            }).sum() / assigneeCpcCodes.size();
+                            }).sum() / numPac;
                     System.out.println("Found "+cnt.getAndIncrement()+")" + assignee + ": " + score);
                 } else {
                     score = Double.MAX_VALUE;
                 }
                 return new Pair<>(assignee,score);
             }).sorted(Comparator.comparing(p->p.getSecond()))
-                    .limit(N2)
+                    //.limit(N2)
                     .collect(Collectors.toList());
             System.out.println("Num assignees found after stage 3: "+allAssignees3WithScores.size());
         }
