@@ -28,24 +28,31 @@ public class AssigneePortfolioAnalysis {
     public static void main(String[] args) {
         List<String> allCpcCodes = Database.getClassCodes().parallelStream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         List<String> allAssignees;
-        Map<String,Collection<String>> assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
-        Map<String,Collection<String>> assigneeToAppMap = new AssigneeToAssetsMap().getApplicationDataMap();
         Map<String,Set<String>> patentToCpcCodeMap = new AssetToCPCMap().getPatentDataMap();
+        Map<String,Collection<String>> finalAssigneeToPatentMap;
         {
             // step 1
             //  get all assignees with portfolio size > 1000
-
+            Map<String,Collection<String>> assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
             allAssignees = Database.getAssignees().parallelStream().filter(assignee->{
-                return assigneeToPatentMap.getOrDefault(assignee, assigneeToAppMap.getOrDefault(assignee, Collections.emptyList())).size() >= minPortfolioSize;
+                return Database.possibleNamesForAssignee(assignee).stream().mapToInt(possibleName->{
+                    return assigneeToPatentMap.getOrDefault(possibleName, Collections.emptyList()).size();
+                }).sum() >= minPortfolioSize;
             }).collect(Collectors.toList());
             System.out.println("Found assignees after stage 1: "+allAssignees.size());
+
+            finalAssigneeToPatentMap = allAssignees.parallelStream().map(assignee->{
+                Collection<String> allAssets = Database.possibleNamesForAssignee(assignee).stream().flatMap(name->assigneeToPatentMap.getOrDefault(name,Collections.emptyList()).stream())
+                        .collect(Collectors.toSet());
+                return new Pair<>(assignee,allAssets);
+            }).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
         }
 
         List<String> allAssignees2;
         {
             // step 2
             //  calculate tech density per assignee
-            RealMatrix matrix = buildMatrix(allAssignees,allCpcCodes,patentToCpcCodeMap,assigneeToPatentMap);
+            RealMatrix matrix = buildMatrix(allAssignees,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap);
             System.out.println("Computing density per assignee");
             Map<String,Double> densityPerAssignee = computeRowWiseDensity(matrix, allAssignees);
 
@@ -61,7 +68,7 @@ public class AssigneePortfolioAnalysis {
             //  calculate assignee density per cpc
             allAssignees3 = allAssignees2.parallelStream().map(assignee->{
                 System.out.println("Computing density per assignee");
-                Collection<String> assigneePatents = assigneeToPatentMap.get(assignee);
+                Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
                 List<String> assigneeCpcCodesWithDups = assigneePatents.stream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
                         .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
                         .collect(Collectors.toList());
@@ -72,7 +79,7 @@ public class AssigneePortfolioAnalysis {
 
                 double score;
                 if(assigneeCpcCodes.size()>0) {
-                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, assigneeToPatentMap);
+                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, finalAssigneeToPatentMap);
 
                     score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes).entrySet().stream()
                             .mapToDouble(e -> {
