@@ -4,6 +4,8 @@ import models.keyphrase_prediction.scorers.TermhoodScorer;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.deeplearning4j.berkeley.Pair;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Database;
 import tools.OpenMapBigRealMatrix;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAssigneeAttribute;
@@ -25,7 +27,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/26/17.
  */
 public class AssigneePortfolioAnalysis {
-    private static final int minPortfolioSize = 500;
+    private static final int minPortfolioSize = 250;
     private static final int maxCpcLength = 10;
     private static final int N1 = 1000;
     private static final int N2 = 50;
@@ -33,26 +35,25 @@ public class AssigneePortfolioAnalysis {
         List<String> allCpcCodes = Database.getClassCodes().parallelStream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         List<String> allAssignees = new ArrayList<>(Database.getAssignees());
         Map<String,Set<String>> patentToCpcCodeMap = new AssetToCPCMap().getPatentDataMap();
-        Map<String,Collection<String>> finalAssigneeToPatentMap;
+        Map<String,Collection<String>> assigneeToPatentMap;
         Map<String,Integer> allCpcCodeToIndexMap = buildIdxMap(allCpcCodes);
-        Map<String,Integer> allAssigneeToIndexMap = buildIdxMap(allAssignees);
+        Map<String,AtomicInteger> cpcToTotalCountMap = Collections.synchronizedMap(new HashMap<>());
+        patentToCpcCodeMap.entrySet().parallelStream().forEach(e->{
+            e.getValue().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).collect(Collectors.toList()).forEach(cpc->{
+                cpcToTotalCountMap.putIfAbsent(cpc,new AtomicInteger(0));
+                cpcToTotalCountMap.get(cpc).getAndIncrement();
+            });
+        });
         List<String> allAssignees1;
         {
             // step 1
             //  get all assignees with portfolio size > 1000
-            Map<String,Collection<String>> assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
+            assigneeToPatentMap = new AssigneeToAssetsMap().getPatentDataMap();
             allAssignees1 = allAssignees.parallelStream().filter(assignee->{
-                return Database.possibleNamesForAssignee(assignee).stream().mapToInt(possibleName->{
-                    return assigneeToPatentMap.getOrDefault(possibleName, Collections.emptyList()).size();
-                }).sum() >= minPortfolioSize;
+                return assigneeToPatentMap.getOrDefault(assignee, Collections.emptyList()).size() >= minPortfolioSize;
             }).collect(Collectors.toList());
             System.out.println("Found assignees after stage 1: "+allAssignees1.size());
 
-            finalAssigneeToPatentMap = allAssignees.parallelStream().map(assignee->{
-                Collection<String> allAssets = Database.possibleNamesForAssignee(assignee).stream().flatMap(name->assigneeToPatentMap.getOrDefault(name,Collections.emptyList()).stream())
-                        .collect(Collectors.toSet());
-                return new Pair<>(assignee,allAssets);
-            }).collect(Collectors.toMap(e->e.getFirst(),e->e.getSecond()));
         }
 
         List<String> allAssignees2;
@@ -60,7 +61,7 @@ public class AssigneePortfolioAnalysis {
             // step 2
             //  calculate tech density per assignee
             Map<String,Integer> assignee1ToIndexMap = buildIdxMap(allAssignees1);
-            RealMatrix matrix = buildMatrix(allAssignees1,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap, assignee1ToIndexMap, allCpcCodeToIndexMap);
+            RealMatrix matrix = buildMatrix(allAssignees1,allCpcCodes,patentToCpcCodeMap,assigneeToPatentMap, assignee1ToIndexMap, allCpcCodeToIndexMap);
             System.out.println("Computing density per assignee");
             Map<String,Double> densityPerAssignee = computeRowWiseDensity(matrix, allAssignees1, assignee1ToIndexMap);
 
@@ -77,30 +78,29 @@ public class AssigneePortfolioAnalysis {
             AtomicInteger cnt = new AtomicInteger(0);
             allAssignees3WithScores = allAssignees2.parallelStream().map(assignee->{
                 System.out.println("Computing density per assignee");
-                Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
+                Collection<String> assigneePatents = assigneeToPatentMap.get(assignee);
                 List<String> assigneeCpcCodesWithDups = assigneePatents.parallelStream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
                         .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc)
                         .collect(Collectors.toList());
-                long numPac = assigneeCpcCodesWithDups.size();
                 Map<String,Long> Pac = assigneeCpcCodesWithDups.parallelStream().collect(Collectors.groupingBy(e->e,Collectors.counting()));
                 List<String> assigneeCpcCodes = assigneeCpcCodesWithDups.parallelStream().distinct().collect(Collectors.toList());
                 if(Pac.size()!=assigneeCpcCodes.size()) throw new RuntimeException("Error in assignee cpc codes size");
 
                 double score;
                 if(assigneeCpcCodes.size()>0) {
-                    Map<String,Integer> cpcIdxMap = buildIdxMap(assigneeCpcCodes);
-                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, finalAssigneeToPatentMap, allAssigneeToIndexMap, cpcIdxMap);
-                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes, cpcIdxMap).entrySet().parallelStream()
-                            .mapToDouble(e -> {
-                                double Kc = e.getValue();
-                                return Kc * Pac.get(e.getKey());
-                            }).sum() / numPac;
-                    System.out.println("Found "+cnt.getAndIncrement()+")" + assignee + ": " + score);
+                    INDArray cpcVec = Nd4j.create(IntStream.range(0,assigneeCpcCodes.size()).mapToDouble(i->Pac.get(assigneeCpcCodes.get(i)).doubleValue()).toArray());
+                    double cpcSum = cpcVec.sumNumber().doubleValue();
+                    double[] cpcArray = cpcVec.data().asDouble();
+                    INDArray globalCpcVec = Nd4j.create(IntStream.range(0,assigneeCpcCodes.size()).mapToDouble(i->cpcToTotalCountMap.get(assigneeCpcCodes.get(i)).doubleValue()).toArray());
+                    double[] percentages = cpcVec.div(globalCpcVec.addi(1d)).data().asDouble();
+                    score = IntStream.range(0,assigneeCpcCodes.size()).mapToDouble(i->percentages[i]*cpcArray[i]).sum()/cpcSum;
+                    System.out.println("Finished "+cnt.getAndIncrement());
+                    System.out.println("Coverage Per Patent for assignee " + assignee + ": " + score);
                 } else {
                     score = Double.MAX_VALUE;
                 }
                 return new Pair<>(assignee,score);
-            }).sorted(Comparator.comparing(p->p.getSecond()))
+            }).sorted((p1,p2)->p2.getSecond().compareTo(p1.getSecond()))
                     //.limit(N2)
                     .collect(Collectors.toList());
             System.out.println("Num assignees found after stage 3: "+allAssignees3WithScores.size());
@@ -111,7 +111,7 @@ public class AssigneePortfolioAnalysis {
             for(Pair<String,Double> assigneeScorePair : allAssignees3WithScores) {
                 String assignee = assigneeScorePair.getFirst();
                 Double score = assigneeScorePair.getSecond();
-                writer.write(score.toString()+","+assignee+","+finalAssigneeToPatentMap.get(assignee).size()+"\n");
+                writer.write(score.toString()+","+assignee+","+assigneeToPatentMap.get(assignee).size()+"\n");
             }
             writer.flush();
         } catch(Exception e) {
