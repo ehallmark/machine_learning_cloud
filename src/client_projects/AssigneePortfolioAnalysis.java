@@ -34,6 +34,8 @@ public class AssigneePortfolioAnalysis {
         List<String> allAssignees = new ArrayList<>(Database.getAssignees());
         Map<String,Set<String>> patentToCpcCodeMap = new AssetToCPCMap().getPatentDataMap();
         Map<String,Collection<String>> finalAssigneeToPatentMap;
+        Map<String,Integer> allCpcCodeToIndexMap = buildIdxMap(allCpcCodes);
+        Map<String,Integer> allAssigneeToIndexMap = buildIdxMap(allAssignees);
         List<String> allAssignees1;
         {
             // step 1
@@ -57,9 +59,10 @@ public class AssigneePortfolioAnalysis {
         {
             // step 2
             //  calculate tech density per assignee
-            RealMatrix matrix = buildMatrix(allAssignees1,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap);
+            Map<String,Integer> assignee1ToIndexMap = buildIdxMap(allAssignees1);
+            RealMatrix matrix = buildMatrix(allAssignees1,allCpcCodes,patentToCpcCodeMap,finalAssigneeToPatentMap, assignee1ToIndexMap, allCpcCodeToIndexMap);
             System.out.println("Computing density per assignee");
-            Map<String,Double> densityPerAssignee = computeRowWiseDensity(matrix, allAssignees);
+            Map<String,Double> densityPerAssignee = computeRowWiseDensity(matrix, allAssignees1, assignee1ToIndexMap);
 
             allAssignees2 = densityPerAssignee.entrySet().parallelStream().sorted((e1,e2)->{
                 return e2.getValue().compareTo(e1.getValue());
@@ -85,9 +88,9 @@ public class AssigneePortfolioAnalysis {
 
                 double score;
                 if(assigneeCpcCodes.size()>0) {
-                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, finalAssigneeToPatentMap);
-
-                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes).entrySet().stream()
+                    Map<String,Integer> cpcIdxMap = buildIdxMap(assigneeCpcCodes);
+                    RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, finalAssigneeToPatentMap, allAssigneeToIndexMap, cpcIdxMap);
+                    score = assigneeCpcCodes.isEmpty() ? Double.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes, cpcIdxMap).entrySet().stream()
                             .mapToDouble(e -> {
                                 double Kc = e.getValue();
                                 return Kc * Pac.get(e.getKey());
@@ -116,9 +119,11 @@ public class AssigneePortfolioAnalysis {
         System.out.println("Assignees: "+String.join("; "+allAssignees3));
     }
 
-    private static RealMatrix buildMatrix(List<String> allAssignees, List<String> allCpcCodes, Map<String,Set<String>> patentToCpcCodeMap, Map<String,Collection<String>> assigneeToPatentMap) {
-        Map<String,Integer> assigneeToIndexMap = IntStream.range(0,allAssignees.size()).mapToObj(i->new Pair<>(allAssignees.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
-        Map<String,Integer> cpcCodeToIndexMap = IntStream.range(0,allCpcCodes.size()).mapToObj(i->new Pair<>(allCpcCodes.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+    private static Map<String,Integer> buildIdxMap(List<String> entries) {
+        return IntStream.range(0,entries.size()).mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+    }
+
+    private static RealMatrix buildMatrix(List<String> allAssignees, List<String> allCpcCodes, Map<String,Set<String>> patentToCpcCodeMap, Map<String,Collection<String>> assigneeToPatentMap, Map<String,Integer> assigneeToIndexMap, Map<String,Integer> cpcCodeToIndexMap) {
         int numAssignees = allAssignees.size();
         int numCpcCodes = allCpcCodes.size();
         System.out.println("Matrix Dim: ["+numAssignees+"x"+numCpcCodes+"]");
@@ -143,18 +148,17 @@ public class AssigneePortfolioAnalysis {
         return matrix;
     }
 
-    private static Map<String,Double> computeRowWiseDensity(RealMatrix matrix, List<String> entries) {
-        return computeDensity(matrix,entries,true);
+    private static Map<String,Double> computeRowWiseDensity(RealMatrix matrix, List<String> entries, Map<String,Integer> idxMap) {
+        return computeDensity(matrix,entries,idxMap,true);
     }
 
-    private static Map<String,Double> computeColumnWiseDensity(RealMatrix matrix, List<String> entries) {
-        return computeDensity(matrix,entries,false);
+    private static Map<String,Double> computeColumnWiseDensity(RealMatrix matrix, List<String> entries, Map<String,Integer> idxMap) {
+        return computeDensity(matrix,entries,idxMap,false);
     }
 
-    private static Map<String,Double> computeDensity(RealMatrix matrix, List<String> entries, boolean rowWise) {
+    private static Map<String,Double> computeDensity(RealMatrix matrix, List<String> entries, Map<String,Integer> idxMap, boolean rowWise) {
         // get row sums
         int length = rowWise ? matrix.getRowDimension() : matrix.getColumnDimension();
-        Map<String,Integer> idxMap = IntStream.range(0,entries.size()).mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
         if(length!=entries.size()) throw new RuntimeException("Invalid list size.");
 
         double[] squaredSums = new double[length];
