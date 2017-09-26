@@ -21,10 +21,10 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/26/17.
  */
 public class AssigneePortfolioAnalysis {
-    private static final int minPortfolioSize = 500;
+    private static final int minPortfolioSize = 400;
     private static final int maxCpcLength = 10;
-    private static final int N1 = 10000;
-    private static final int N2 = 100;
+    private static final int N1 = 1000;
+    private static final int N2 = 50;
     public static void main(String[] args) {
         List<String> allCpcCodes = Database.getClassCodes().parallelStream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         List<String> allAssignees;
