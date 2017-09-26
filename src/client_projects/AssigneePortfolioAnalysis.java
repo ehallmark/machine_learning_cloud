@@ -121,7 +121,7 @@ public class AssigneePortfolioAnalysis {
     }
 
     private static Map<String,Integer> buildIdxMap(List<String> entries) {
-        return IntStream.range(0,entries.size()).mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
+        return IntStream.range(0,entries.size()).parallel().mapToObj(i->new Pair<>(entries.get(i),i)).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }
 
     private static RealMatrix buildMatrix(List<String> allAssignees, List<String> allCpcCodes, Map<String,Set<String>> patentToCpcCodeMap, Map<String,Collection<String>> assigneeToPatentMap, Map<String,Integer> assigneeToIndexMap, Map<String,Integer> cpcCodeToIndexMap) {
@@ -129,13 +129,10 @@ public class AssigneePortfolioAnalysis {
         int numCpcCodes = allCpcCodes.size();
         System.out.println("Matrix Dim: ["+numAssignees+"x"+numCpcCodes+"]");
         OpenMapBigRealMatrix matrix = new OpenMapBigRealMatrix(numAssignees,numCpcCodes);
-
         // data stream
-        Stream<Pair<Integer,String>> allAssigneePatentPairs = allAssignees.parallelStream().flatMap(assignee->{
+       allAssignees.parallelStream().flatMap(assignee->{
             return assigneeToPatentMap.get(assignee).stream().map(patent->new Pair<>(assigneeToIndexMap.get(assignee),patent));
-        });
-
-        allAssigneePatentPairs.forEach(pair->{
+        }).forEach(pair->{
             Collection<String> cpcs = patentToCpcCodeMap.getOrDefault(pair.getSecond(),Collections.emptySet()).stream()
                     .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc)
                     .filter(cpc->cpcCodeToIndexMap.containsKey(cpc))
@@ -143,7 +140,9 @@ public class AssigneePortfolioAnalysis {
             int assigneeIdx = pair.getFirst();
             cpcs.forEach(cpc->{
                 int cpcIdx = cpcCodeToIndexMap.get(cpc);
-                matrix.addToEntry(assigneeIdx,cpcIdx, 1d);
+                synchronized (matrix) {
+                    matrix.addToEntry(assigneeIdx, cpcIdx, 1d);
+                }
             });
         });
         return matrix;
