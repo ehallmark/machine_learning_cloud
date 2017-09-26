@@ -1274,8 +1274,8 @@ public class SimilarPatentServer {
                 ), div().withClass("col-12").with(
                         div().withClass("row collapsible-form").with(
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Sort By").with(
-                                                br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").attr("style","width: 90%; margin-left: 5%; margin-right: 5%;").withName(COMPARATOR_FIELD).with(
+                                        label("Sort By").attr("style","width: 100%;").with(
+                                                br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
                                                                 getAllTopLevelAttributes().stream().filter(attr->attr.getFullName().endsWith(Constants.COUNT_SUFFIX)).map(AbstractAttribute::getFullName)).flatMap(stream->stream)
                                                                 .map(key->option(humanAttributeFor(key)).withValue(key)).collect(Collectors.toList())
@@ -1283,22 +1283,22 @@ public class SimilarPatentServer {
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Sort Direction").with(
+                                        label("Sort Direction").attr("style","width: 100%;").with(
                                                 br(),
-                                                select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").attr("style","width: 90%; margin-left: 5%; margin-right: 5%;").withName(SORT_DIRECTION_FIELD).with(
+                                                select().withId("main-options-"+SORT_DIRECTION_FIELD).withClass("form-control single-select2").withName(SORT_DIRECTION_FIELD).with(
                                                         option("Ascending").withValue("asc"),
                                                         option("Descending").withValue("desc").attr("selected","selected")
                                                 )
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Result Limit").with(
-                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px; width: 90%; margin-left: 5%; margin-right: 5%;").withType("number").withValue("10").withName(LIMIT_FIELD)
+                                        label("Result Limit").attr("style","width: 100%;").with(
+                                                br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 ),
                                 div().withClass("col-6 attributeElement").with(
-                                        label("Use Highlighting").with(
-                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").withName(USE_HIGHLIGHTER_FIELD)
+                                        label("Use Highlighting").attr("style","width: 100%;").with(
+                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").withName(USE_HIGHLIGHTER_FIELD)
                                         )
                                 )
                         )
