@@ -103,6 +103,7 @@ public class AssigneePortfolioAnalysis {
         allAssigneePatentPairs.forEach(pair->{
             Collection<String> cpcs = patentToCpcCodeMap.getOrDefault(pair.getSecond(),Collections.emptySet()).stream()
                     .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc)
+                    .filter(cpc->cpcCodeToIndexMap.containsKey(cpc))
                     .collect(Collectors.toSet());
             int assigneeIdx = pair.getFirst();
             cpcs.forEach(cpc->{
