@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  * Created by ehallmark on 9/26/17.
  */
 public class AssigneePortfolioAnalysis {
-    private static final int minPortfolioSize = 1000;
+    private static final int minPortfolioSize = 500;
     private static final int maxCpcLength = 10;
     private static final int N1 = 10000;
     private static final int N2 = 100;
@@ -68,7 +68,7 @@ public class AssigneePortfolioAnalysis {
                 Map<String,Long> Pac = assigneeCpcCodesWithDups.stream().collect(Collectors.groupingBy(e->e,Collectors.counting()));
                 List<String> assigneeCpcCodes = assigneeCpcCodesWithDups.stream().distinct().collect(Collectors.toList());
                 if(Pac.size()!=assigneeCpcCodes.size()) throw new RuntimeException("Error in assignee cpc codes size");
-                
+
                 RealMatrix matrix = buildMatrix(allAssignees, assigneeCpcCodes, patentToCpcCodeMap, assigneeToPatentMap);
 
                 double score = assigneeCpcCodes.isEmpty() ? Integer.MAX_VALUE : computeColumnWiseDensity(matrix, assigneeCpcCodes).entrySet().stream()
