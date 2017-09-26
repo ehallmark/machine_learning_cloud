@@ -79,7 +79,7 @@ public class AssigneePortfolioAnalysis {
                 System.out.println("Computing density per assignee");
                 Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
                 List<String> assigneeCpcCodesWithDups = assigneePatents.parallelStream().flatMap(p->patentToCpcCodeMap.getOrDefault(p,Collections.emptySet()).stream())
-                        .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct()
+                        .map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc)
                         .collect(Collectors.toList());
                 long numPac = assigneeCpcCodesWithDups.size();
                 Map<String,Long> Pac = assigneeCpcCodesWithDups.parallelStream().collect(Collectors.groupingBy(e->e,Collectors.counting()));
