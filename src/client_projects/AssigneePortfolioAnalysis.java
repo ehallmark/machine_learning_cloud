@@ -11,7 +11,11 @@ import user_interface.ui_models.attributes.computable_attributes.PortfolioSizeAt
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.attributes.hidden_attributes.AssigneeToAssetsMap;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
@@ -66,6 +70,7 @@ public class AssigneePortfolioAnalysis {
         {
             // step 3
             //  calculate assignee density per cpc
+            AtomicInteger cnt = new AtomicInteger(0);
             allAssignees3 = allAssignees2.parallelStream().map(assignee->{
                 System.out.println("Computing density per assignee");
                 Collection<String> assigneePatents = finalAssigneeToPatentMap.get(assignee);
@@ -86,7 +91,7 @@ public class AssigneePortfolioAnalysis {
                                 double Kc = e.getValue();
                                 return Kc * Pac.get(e.getKey());
                             }).sum() / assigneeCpcCodes.size();
-                    System.out.println("Score for assignee " + assignee + ": " + score);
+                    System.out.println("Found "+cnt.getAndIncrement()+")" + assignee + ": " + score);
                 } else {
                     score = Double.MAX_VALUE;
                 }
@@ -95,6 +100,16 @@ public class AssigneePortfolioAnalysis {
                     .limit(N2).map(p->p.getFirst())
                     .collect(Collectors.toList());
             System.out.println("Num assignees found after stage 3: "+allAssignees3.size());
+        }
+
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/low_value_assignees.csv")))) {
+            writer.write("Assignee,Portfolio Size\n");
+            for(String assignee : allAssignees3) {
+                writer.write(assignee+","+finalAssigneeToPatentMap.get(assignee).size()+"\n");
+            }
+            writer.flush();
+        } catch(Exception e) {
+            e.printStackTrace();
         }
 
         System.out.println("Assignees: "+String.join("; "+allAssignees3));
