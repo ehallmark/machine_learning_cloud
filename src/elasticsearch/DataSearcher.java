@@ -33,6 +33,7 @@ import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.Constants;
+import seeding.ai_db_updater.tools.Helper;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.NestedAttribute;
@@ -67,6 +68,7 @@ public class DataSearcher {
     private static final String INDEX_NAME = DataIngester.INDEX_NAME;
     private static final String TYPE_NAME = DataIngester.TYPE_NAME;
     private static final int PAGE_LIMIT = 10000;
+    private static final String CLAIM_TEXT_ATTR_NAME = Constants.CLAIMS+"."+Constants.CLAIM;
     private static final boolean debug = false;
 
     public static Item[] searchForAssets(Collection<AbstractAttribute> attributes, Collection<AbstractFilter> filters, String comparator, SortOrder sortOrder, int maxLimit, Map<String,NestedAttribute> nestedAttrNameMap, boolean highlight) {
@@ -351,11 +353,13 @@ public class DataSearcher {
                         sj.add(fragment.toString());
                     }
                     System.out.println("Adding highlight data for "+e.getKey()+": "+sj.toString());
-                    item.addData(e.getKey(),sj.toString());
+                    item.addData(e.getKey(), Helper.fixPunctuationSpaces(sj.toString()));
                 }
             });
         }
     }
+
+
 
     private static void handleFields(Item item, SearchHit hit) {
         hit.getFields().forEach((k,v)->{
@@ -417,9 +421,10 @@ public class DataSearcher {
                 }
             }
         } else {
-            if (v != null) {
-                itemDataMap.put(attrName, v);
+            if(attrName.equals(CLAIM_TEXT_ATTR_NAME)) {
+                v = Helper.fixPunctuationSpaces(v.toString());
             }
+            itemDataMap.put(attrName, v);
         }
     }
 }

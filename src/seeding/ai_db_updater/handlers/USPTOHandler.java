@@ -127,20 +127,6 @@ public class USPTOHandler extends NestedHandler {
         documentFlag.addChild(priorityClaims);
         priorityClaims.addChild(Flag.dateFlag("date",Constants.PRIORITY_DATE, documentFlag).withTransformationFunction(Flag.dateTransformationFunction(DateTimeFormatter.BASIC_ISO_DATE)));
 
-
-        EndFlag claimTextFlag = new EndFlag("claim") {
-            {
-                isArray=true;
-                dbName = Constants.CLAIM;
-            }
-            @Override
-            public void save() {
-                dataQueue.add(getTransform(attrsToIngest));
-            }
-        };
-        endFlags.add(claimTextFlag);
-        claimTextFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimTextFlag));
-
         EndFlag citationFlag = new EndFlag("citation") {
             {
                 dbName = Constants.CITATIONS;
@@ -267,7 +253,7 @@ public class USPTOHandler extends NestedHandler {
             }
         };
         endFlags.add(claimFlag);
-        claimFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimFlag));
+        claimFlag.addChild(Flag.simpleFlag("claim",Constants.CLAIM,claimFlag).withTransformationFunction(Flag.claimTextFunction));
         claimFlag.addChild(Flag.integerFlag("num",Constants.CLAIM_NUM,claimFlag).isAttributesFlag(true).withTransformationFunction(f->s->{
             try {
                 return Integer.valueOf(s);

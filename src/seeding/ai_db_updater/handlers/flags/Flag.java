@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import seeding.Constants;
+import seeding.ai_db_updater.tools.Helper;
 import tools.AssigneeTrimmer;
 
 import java.time.LocalDate;
@@ -32,6 +33,11 @@ public class Flag {
             return list.contains(str);
         };
     }
+
+    public static final Function<Flag,Function<String,?>> claimTextFunction = f -> s -> {
+        if(s==null) return null;
+        return Helper.fixPunctuationSpaces(s);
+    };
 
     public static  Function<Flag,Function<String,?>> smallestIndClaimTransformationFunction(EndFlag documentFlag) {
         return f->{
