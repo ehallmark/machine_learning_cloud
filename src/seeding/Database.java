@@ -566,16 +566,18 @@ public class Database {
 
 	public synchronized static Collection<String> selectPatentNumbersFromExactAssignee(String assignee){
 		Set<String> patents = new HashSet<>();
-		if(getAssigneeToPatentsMap().containsKey(assignee)) {
-			patents.addAll(getAssigneeToPatentsMap().get(assignee));
+		if(assigneeToPatentsMap == null) getAssigneeToPatentsMap();
+		if(assigneeToPatentsMap.containsKey(assignee)) {
+			patents.addAll(assigneeToPatentsMap.get(assignee));
 		}
 		return patents;
 	}
 
 	public synchronized static Collection<String> selectApplicationNumbersFromExactAssignee(String assignee) {
 		Set<String> apps = new HashSet<>();
-		if(getAssigneeToAppsMap().containsKey(assignee)) {
-			apps.addAll(getAssigneeToAppsMap().get(assignee));
+		if(assigneeToAppsMap == null) getAssigneeToAppsMap();
+		if(assigneeToAppsMap.containsKey(assignee)) {
+			apps.addAll(assigneeToAppsMap.get(assignee));
 		}
 		return apps;
 	}
