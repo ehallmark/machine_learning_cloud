@@ -13,7 +13,10 @@ public class UpdateAll {
     public static void main(String[] args) throws Exception {
         try {
             for (String arg : args) {
-                if(arg.equals("0")) {
+                if(arg.equals("-1")) {
+                    // pg_restore
+                    
+                } else if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
                 } else if (arg.equals("1")) {
                     UpdateBaseApplicationData.main(args);

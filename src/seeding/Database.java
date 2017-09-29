@@ -865,7 +865,6 @@ public class Database {
 
 	public static void main(String[] args) {
 		// updates the database
-
 		try {
 			loadGatherPatentToStages();
 			Database.trySaveObject(gatherPatentToStagesCompleteMap,gatherPatentToStagesCompleteFile);
