@@ -56,7 +56,7 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
     @Override
     public synchronized void pullMostRecentData() {
         // pull zips only
-        LocalDate dateToUse = lastUpdatedDate;
+        LocalDate dateToUse = null;
         try {
             LocalDate date = LocalDate.parse(zipFileStream().sorted((f1,f2)->f2.getName().compareTo(f1.getName())).findFirst().orElse(null).getName(), DateTimeFormatter.ISO_DATE);
             dateToUse = date;
@@ -73,10 +73,10 @@ public abstract class FileStreamDataDownloader implements DataDownloader, Serial
                     dateToUse = date;
                 }
             } catch(Exception e2) {
-
+                throw new RuntimeException("Unable to parse date from current files...");
             }
         }
-        zipDownloader.run(dateToUse,failedDates);
+        if(dateToUse!=null) zipDownloader.run(dateToUse,failedDates);
     }
 
     public Stream<File> zipFileStream() {
