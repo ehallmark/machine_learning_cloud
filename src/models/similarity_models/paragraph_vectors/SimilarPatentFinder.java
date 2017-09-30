@@ -1,10 +1,17 @@
 package models.similarity_models.paragraph_vectors;
 
 
+import elasticsearch.DataSearcher;
+import elasticsearch.MyClient;
+import models.dl4j_neural_nets.iterators.sequences.DatabaseIteratorFactory;
 import models.dl4j_neural_nets.vectorization.ParagraphVectorModel;
 import org.deeplearning4j.models.embeddings.WeightLookupTable;
 import org.deeplearning4j.models.paragraphvectors.ParagraphVectors;
+import org.deeplearning4j.models.sequencevectors.sequence.Sequence;
 import org.deeplearning4j.models.word2vec.VocabWord;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import seeding.Database;
 import models.similarity_models.BaseSimilarityModel;
@@ -12,8 +19,10 @@ import user_interface.ui_models.attributes.hidden_attributes.FilingToAssetMap;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +53,11 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         }
     }
 
+    public static void save() {
+        System.out.println("Num vectors: "+LOOKUP_TABLE.size());
+        Database.trySaveObject(LOOKUP_TABLE,file);
+    }
+
     public SimilarPatentFinder(Collection<String> candidateSet) {
         super(candidateSet.stream().map(str->new Item(str)).collect(Collectors.toList()), getLookupTable());
     }
@@ -61,7 +75,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
         System.out.println("Finished running pvector model...");
         WeightLookupTable<VocabWord> lookup = getWeightLookupTable();
         // create filing map
-        Map<String,INDArray> filingMap = Collections.synchronizedMap(new HashMap<>());
+        LOOKUP_TABLE = Collections.synchronizedMap(new HashMap<>());
         Collection<String> allFilings = new HashSet<>();
         FilingToAssetMap filingToAssetMap = new FilingToAssetMap();
         allFilings.addAll(filingToAssetMap.getPatentDataMap().keySet());
@@ -74,7 +88,7 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
             seen.getAndIncrement();
             if(vec!=null) {
                 vec.divi(vec.norm2Number());
-                filingMap.put(asset, vec);
+                LOOKUP_TABLE.put(asset, vec);
             } else {
                 missing.getAndIncrement();
                 if(seen.get()%100000==99999) {
@@ -82,7 +96,27 @@ public class SimilarPatentFinder extends BaseSimilarityModel {
                 }
             }
         });
-        System.out.println("Num vectors: "+filingMap.size());
-        Database.trySaveObject(filingMap,file);
+        save();
+    }
+
+    public static void updateLatest(Collection<String> newAssets) throws IOException {
+        ParagraphVectors model = ParagraphVectorModel.loadParagraphsModel();
+        Map<String,INDArray> vectorMap = SimilarPatentFinder.getLookupTable();
+        // get paragraphs for new assets
+        Function<SearchHit,Item> transformer = searchHit -> {
+            Sequence<VocabWord> sequence = DatabaseIteratorFactory.extractSequence(searchHit);
+            INDArray vec = model.inferVector(sequence.getElements());
+            if(vec!=null) {
+                vec = vec.div(vec.norm2Number());
+                vectorMap.put(sequence.getSequenceLabel().getLabel(),vec);
+            }
+            return null;
+        };
+
+        SearchRequestBuilder searchRequest = DatabaseIteratorFactory.getRequestBuilder(MyClient.get());
+        searchRequest = searchRequest.setQuery(QueryBuilders.idsQuery().addIds(newAssets.toArray(new String[]{})));
+        DataSearcher.iterateOverSearchResults(searchRequest.get(), transformer, -1, false);
+        // save
+        SimilarPatentFinder.save();
     }
 }

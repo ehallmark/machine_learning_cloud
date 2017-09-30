@@ -1,14 +1,22 @@
 package seeding;
 
+import elasticsearch.DataIngester;
+import elasticsearch.IngestMongoIntoElasticSearch;
+
+import models.keyphrase_prediction.KeywordModelRunner;
+import models.similarity_models.paragraph_vectors.SimilarPatentFinder;
 import models.value_models.UpdateValueModels;
-import seeding.ai_db_updater.UpdateAll;
+import org.bson.Document;
+
 import seeding.ai_db_updater.UpdateCompDBAndGatherData;
 import seeding.ai_db_updater.UpdateExtraneousComputableAttributeData;
+
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
+
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 9/29/2017.
@@ -31,6 +39,9 @@ public class IngestRecentUpdatesPart2 {
         // then update everything for the new assets
         Collection<String> newAssets = (Collection<String>)Database.tryLoadObject(newAssetsFile);
 
+        // update elasticsearch
+        updateElasticSearch(newAssets);
+
         // run value models
         try {
             UpdateValueModels.runModels(newAssets);
@@ -41,21 +52,51 @@ public class IngestRecentUpdatesPart2 {
         }
 
         // run tech tag (incrementally on new assets)
-
+        try {
+            KeywordModelRunner.updateLatest();
+        } catch(Exception e) {
+            System.out.println("Error during tech tag models...");
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         // run similarity (inference on new assets)
-
+        try {
+            SimilarPatentFinder.updateLatest(newAssets);
+        } catch(Exception e) {
+            System.out.println("Error during similarity models...");
+            e.printStackTrace();
+            System.exit(1);
+        }
 
         // update mongo
         try {
             UpdateExtraneousComputableAttributeData.main(args);
         } catch(Exception e) {
-            e.printStackTrace();
             System.out.println("Error updating mongo computable attrs...");
+            e.printStackTrace();
             System.exit(1);
         }
 
+        // update elasticsearch
+        updateElasticSearch(newAssets);
+
         if(newAssetsFile.exists()) newAssetsFile.delete();
         System.out.println("Updates completed successfully.");
+    }
+
+    public static void updateElasticSearch(Collection<String> newAssets) {
+        try {
+            List<String> filings = newAssets.parallelStream().map(asset->new AssetToFilingMap().getPatentDataMap().getOrDefault(asset,new AssetToFilingMap().getApplicationDataMap().get(asset))).filter(a->a!=null).collect(Collectors.toList());
+            List<String> assets = newAssets.stream().collect(Collectors.toList());
+            Document parentQuery = new Document("_id", new Document("$in",filings));
+            Document query = new Document("_id", new Document("$in",assets));
+            IngestMongoIntoElasticSearch.ingestByType(DataIngester.PARENT_TYPE_NAME, parentQuery);
+            IngestMongoIntoElasticSearch.ingestByType(DataIngester.TYPE_NAME, query);
+        } catch(Exception e) {
+            System.out.println("Error during elasticsearch ingest...");
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 }

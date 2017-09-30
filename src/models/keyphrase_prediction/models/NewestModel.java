@@ -26,15 +26,15 @@ public class NewestModel implements Model {
     final int maxCpcLength = 7;
 
     @Getter
-    boolean runStage1 = true;
+    boolean runStage1 = false;
     @Getter
-    boolean runStage2 = true;
+    boolean runStage2 = false;
     @Getter
-    boolean runStage3 = true;
+    boolean runStage3 = false;
     @Getter
-    boolean runStage4 = true;
+    boolean runStage4 = false;
     @Getter
-    boolean runStage5 = true;
+    boolean runStage5 = false;
 
     @Override
     public String getModelName() {

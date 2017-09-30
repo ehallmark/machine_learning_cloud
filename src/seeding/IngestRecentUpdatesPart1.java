@@ -1,12 +1,17 @@
 package seeding;
 
+import elasticsearch.DataIngester;
+import elasticsearch.IngestMongoIntoElasticSearch;
 import models.value_models.UpdateValueModels;
+import org.bson.Document;
 import seeding.ai_db_updater.UpdateAll;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToFilingMap;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by Evan on 9/29/2017.

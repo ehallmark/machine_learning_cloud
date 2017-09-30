@@ -44,7 +44,12 @@ import java.util.stream.Collectors;
  */
 public class KeywordModelRunner {
     public static final boolean debug = false;
+
     public static void main(String[] args) {
+        runModel(false);
+    }
+
+    public static void runModel(boolean thisYearOnly) {
         Model model = new NewestModel();
 
         final int windowSize = model.getWindowSize();
@@ -66,7 +71,7 @@ public class KeywordModelRunner {
             System.out.println("Starting year: "+year);
             // group results by time windows in years
             Stage1 stage1 = new Stage1(year,model);
-            stage1.run(runStage1);
+            stage1.run(runStage1 || (thisYearOnly&&year==endYear));
             stage1Map.put(year,stage1);
         }
 
@@ -77,7 +82,7 @@ public class KeywordModelRunner {
         stage1TimeWindowStemMap.forEach((year,countMap)->{
             System.out.println("Starting year: "+year);
             Stage2 stage2 = new Stage2(countMap, model, year);
-            stage2.run(runStage2);
+            stage2.run(runStage2 || (thisYearOnly&&year==endYear));
             stage2Map.put(year,stage2);
         });
 
@@ -88,7 +93,7 @@ public class KeywordModelRunner {
         stage2TimeWindowStemMap.forEach((year,multiStems)->{
             System.out.println("Starting year: "+year);
             Stage3 stage3 = new Stage3(multiStems, model, year);
-            stage3.run(runStage3);
+            stage3.run(runStage3 || (thisYearOnly&&year==endYear));
             stage3Map.put(year,stage3);
         });
 
@@ -99,7 +104,7 @@ public class KeywordModelRunner {
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
             System.out.println("Starting year: "+year);
             Stage4 stage4 = new Stage4(multiStems, model, year);
-            stage4.run(runStage4);
+            stage4.run(runStage4 || (thisYearOnly&&year==endYear));
             stage4Map.put(year,stage4);
         });
 
@@ -112,7 +117,7 @@ public class KeywordModelRunner {
             Stage1 stage1 = stage1Map.get(year);
             if(stage1!=null) {
                 Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
-                stage5.run(runStage5);
+                stage5.run(runStage5 || (thisYearOnly&&year==endYear));
                 stage5Map.put(year, stage5);
             }
         });
@@ -128,6 +133,12 @@ public class KeywordModelRunner {
         saveModelMap(model,assetToTechnologyMap);
         System.out.println("Num assets classified: "+assetToTechnologyMap.size());
     }
+
+
+    public static void updateLatest() {
+        runModel(true);
+    }
+
 
     public static Map<String,List<String>> loadModelMap(Model model) {
         return (Map<String,List<String>>) Database.tryLoadObject(new File(Constants.DATA_FOLDER+"keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
@@ -191,6 +202,27 @@ public class KeywordModelRunner {
         });
     }
 
+    public static void streamElasticSearchData(QueryBuilder query, Function<SearchHit,Item> transformer, int sampling) {
+        TransportClient client = DataSearcher.getClient();
+        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
+                .setTypes(DataIngester.TYPE_NAME)
+                .setScroll(new TimeValue(60000))
+                .setExplain(false)
+                .setFrom(0)
+                .setSize(10000)
+                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
+                .setQuery(query);
+        if(sampling>0) {
+            search = search.addSort(SortBuilders.scoreSort());
+        }
+        if(debug) {
+            System.out.println(search.request().toString());
+        }
+
+        SearchResponse response = search.get();
+        DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
+    }
+
     public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
         QueryBuilder query;
         if(year>0) {
@@ -210,24 +242,7 @@ public class KeywordModelRunner {
             query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))
                     : QueryBuilders.matchAllQuery();
         }
-        TransportClient client = DataSearcher.getClient();
-        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                .setScroll(new TimeValue(60000))
-                .setExplain(false)
-                .setFrom(0)
-                .setSize(10000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(query);
-        if(sampling>0) {
-            search = search.addSort(SortBuilders.scoreSort());
-        }
-        if(debug) {
-            System.out.println(search.request().toString());
-        }
-
-        SearchResponse response = search.get();
-        DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
+        streamElasticSearchData(query,transformer,sampling);
     }
 
 

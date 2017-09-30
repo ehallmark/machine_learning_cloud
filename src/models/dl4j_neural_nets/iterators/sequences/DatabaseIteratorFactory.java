@@ -45,48 +45,57 @@ public class DatabaseIteratorFactory {
         return Stream.of(new CommonPreprocessor().preProcess(text).split("\\s+")).filter(w->w!=null&&w.length()>1&&!Constants.CLAIM_STOP_WORD_SET.contains(w)).map(w->new Stemmer().stem(w)).filter(w->w!=null&&w.length()>1).map(word->new VocabWord(1.0,word)).collect(Collectors.toList());
     }
 
+    public static DuplicatableSequence<VocabWord> extractSequence(SearchHit hit) {
+        Map<String,Object> source = hit.getSource();
+        Object abstractText = source.get(Constants.ABSTRACT);
+        Object filing = hit.getField("_parent").getValue();
+        if(filing!=null) {
+            DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
+            sequence.setSequenceLabel(new VocabWord(1.0,filing.toString()));
+
+
+            if(abstractText!=null) {
+                sequence.addElements(getSequence(abstractText.toString()));
+            }
+
+            if(sequence.size() > 0) {
+                return sequence;
+            }
+        }
+        return null;
+    }
+
     public static SequenceIterator<VocabWord> PatentParagraphSequenceIterator(int numEpochs) throws SQLException {
         ArrayBlockingQueue<Sequence<VocabWord>> queue = new ArrayBlockingQueue<Sequence<VocabWord>>(50000);
         TransportClient client = MyClient.get();
 
         Function<SearchHit,Item> transformer = hit-> {
-            String id = hit.getId();
-            Map<String,Object> source = hit.getSource();
-            Object abstractText = source.get(Constants.ABSTRACT);
-            Object docType = source.get(Constants.DOC_TYPE);
-            String assigneeName;
-            if(docType==null||docType.equals("patents")) {
-                assigneeName = patentToAssigneeMap.get(id);
-            } else {
-                assigneeName = appToAssigneeMap.get(id);
-            }
-            Object filing = hit.getField("_parent").getValue();
-            if(filing!=null) {
-                DuplicatableSequence<VocabWord> sequence = new DuplicatableSequence<>();
-                sequence.setSequenceLabel(new VocabWord(1.0,filing.toString()));
-
-
-                if(abstractText!=null) {
-                    sequence.addElements(getSequence(abstractText.toString()));
-                }
-
-                if(sequence.size() > 0) {
-                    // add to queue
-                    try {
-                        queue.put(sequence);
-                        if (assigneeName != null) {
-                            Sequence<VocabWord> assigneeSequence = sequence.dup();
-                            assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
-                            queue.put(assigneeSequence);
-                        }
-                    } catch(Exception e) {
-
+            DuplicatableSequence<VocabWord> sequence = extractSequence(hit);
+            if(sequence!=null) {
+                // add to queue
+                try {
+                    String id = hit.getId();
+                    queue.put(sequence);
+                    Object docType = hit.getSource().get(Constants.DOC_TYPE);
+                    String assigneeName;
+                    if(docType==null||docType.equals("patents")) {
+                        assigneeName = patentToAssigneeMap.get(id);
+                    } else {
+                        assigneeName = appToAssigneeMap.get(id);
                     }
+                    if (assigneeName != null) {
+                        Sequence<VocabWord> assigneeSequence = sequence.dup();
+                        assigneeSequence.setSequenceLabel(new VocabWord(1.0, assigneeName));
+                        queue.put(assigneeSequence);
+                    }
+                } catch(Exception e) {
+
                 }
             }
-
             return null;
         };
+
+
 
 
         SequenceIterator<VocabWord> iterator = new SequenceIterator<VocabWord>() {
@@ -140,7 +149,7 @@ public class DatabaseIteratorFactory {
         return iterator;
     }
 
-    static SearchRequestBuilder getRequestBuilder(TransportClient client) {
+    public static SearchRequestBuilder getRequestBuilder(TransportClient client) {
         SearchRequestBuilder requestBuilder = client.prepareSearch(DataIngester.INDEX_NAME)
                 .setTypes(DataIngester.TYPE_NAME)
                 .addStoredField("_parent")
