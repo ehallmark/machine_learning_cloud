@@ -15,7 +15,7 @@ public class UpdateAll {
             for (String arg : args) {
                 if(arg.equals("-1")) {
                     // pg_restore
-                    
+                    RestoreGatherAndCompDB.main(args);
                 } else if(arg.equals("0")) {
                     UpdatePre2005DataFromPatentDB.main(args);
                 } else if (arg.equals("1")) {

@@ -41,8 +41,9 @@ public class PGDumpLatest {
         scheduler.start();
     }
 
-    static void startProcess(String statement) throws IOException {
+    public static void startProcess(String statement) throws Exception {
         ProcessBuilder ps = new ProcessBuilder("/bin/bash", "-c", statement);
-        ps.start();
+        Process process = ps.start();
+        process.waitFor();
     }
 }

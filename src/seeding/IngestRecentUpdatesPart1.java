@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class IngestRecentUpdatesPart1 {
     static File newAssetsFile = new File("newest_assets.jobj");
     public static void main(String[] args) {
-        String[] updates = new String[]{"1","2","3","4","5","6","7","8","9","10"};
+        String[] updates = new String[]{"-1","1","2","3","4","5","6","7","8","9","10"};
 
         Collection<String> newAssets;
         try {
