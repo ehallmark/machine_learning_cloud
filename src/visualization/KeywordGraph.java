@@ -114,7 +114,7 @@ public class KeywordGraph {
         Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
 
         Visualizer visualizer = new Visualizer();
-        double scoreThreshold = 20f;
+        double scoreThreshold = 100f;
         Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Color color = Color.BLUE;
