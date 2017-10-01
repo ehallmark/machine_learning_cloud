@@ -115,6 +115,7 @@ public class KeywordGraph {
 
         Visualizer visualizer = new Visualizer();
         double scoreThreshold = 20f;
+        Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Color color = Color.BLUE;
             // now we have keywords
@@ -124,17 +125,25 @@ public class KeywordGraph {
             double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
             Node[] nodes = new Node[matrix.length];
             multiStems.forEach(multiStem->{
-                nodes[multiStem.getIndex()] = visualizer.addNode(multiStem.getBestPhrase(),(float)sums[multiStem.getIndex()],color);
+                float score = (float)sums[multiStem.getIndex()];
+                if(score >= scoreThreshold) {
+                    Node node = nodeMap.get(multiStem.getBestPhrase());
+                    if(node==null) {
+                        node = visualizer.addNode(multiStem.getBestPhrase(), score, color);
+                        nodeMap.put(multiStem.getBestPhrase(),node);
+                    }
+                    nodes[multiStem.getIndex()] = node;
+                }
             });
             multiStems.forEach(stem->{
                 Node node = nodes[stem.getIndex()];
+                if(node==null)return;
                 multiStems.forEach(stem2->{
                     Node node2 = nodes[stem2.getIndex()];
+                    if(node2==null)return;
                     if(!node.getLabel().equals(node2.getLabel())) {
                         float score = (float) matrix[stem.getIndex()][stem2.getIndex()];
-                        if(score >= scoreThreshold) {
-                            visualizer.addEdge(node, node2, score, Color.BLACK);
-                        }
+                        visualizer.addEdge(node, node2, score, Color.BLACK);
                     }
                 });
             });
