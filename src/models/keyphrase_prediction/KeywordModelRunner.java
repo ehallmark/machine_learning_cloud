@@ -242,6 +242,17 @@ public class KeywordModelRunner {
             query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))
                     : QueryBuilders.matchAllQuery();
         }
+        if(sampling > 0) {
+            // remove plant and design patents
+            QueryBuilders.boolQuery()
+                    .must(query)
+                    .filter(
+                            QueryBuilders.boolQuery()
+                                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "PP"))
+                                    .mustNot(QueryBuilders.prefixQuery(Constants.NAME, "D"))
+                    );
+        }
+
         streamElasticSearchData(query,transformer,sampling);
     }
 

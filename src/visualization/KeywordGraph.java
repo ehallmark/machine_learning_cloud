@@ -114,7 +114,7 @@ public class KeywordGraph {
         Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
 
         Visualizer visualizer = new Visualizer();
-        double scoreThreshold = 500f;
+        double scoreThreshold = 200f;
         Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Color color = Color.BLUE;
@@ -206,49 +206,6 @@ public class KeywordGraph {
         multiStems.parallelStream().forEach(multiStem -> {
             multiStem.setIndex(cnt.getAndIncrement());
         });
-    }
-
-    public static void streamElasticSearchData(QueryBuilder query, Function<SearchHit,Item> transformer, int sampling) {
-        TransportClient client = DataSearcher.getClient();
-        SearchRequestBuilder search = client.prepareSearch(DataIngester.INDEX_NAME)
-                .setTypes(DataIngester.TYPE_NAME)
-                .setScroll(new TimeValue(60000))
-                .setExplain(false)
-                .setFrom(0)
-                .setSize(10000)
-                .setFetchSource(new String[]{Constants.ABSTRACT,Constants.INVENTION_TITLE},new String[]{})
-                .setQuery(query);
-        if(sampling>0) {
-            search = search.addSort(SortBuilders.scoreSort());
-        }
-        if(debug) {
-            System.out.println(search.request().toString());
-        }
-
-        SearchResponse response = search.get();
-        DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
-    }
-
-    public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
-        QueryBuilder query;
-        if(year>0) {
-            LocalDate dateMin = LocalDate.of(year, 1, 1);
-            LocalDate dateMax = dateMin.plusYears(1);
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString()));
-            if(sampling>0) {
-                boolQuery = boolQuery.must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)));
-            }
-            query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, boolQuery,false)
-                    .innerHit(new InnerHitBuilder()
-                            .setSize(1)
-                            .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
-                    );
-        } else {
-            query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))
-                    : QueryBuilders.matchAllQuery();
-        }
-        streamElasticSearchData(query,transformer,sampling);
     }
 
 
