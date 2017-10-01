@@ -115,6 +115,7 @@ public class KeywordGraph {
 
         Visualizer visualizer = new Visualizer();
         double scoreThreshold = 200f;
+        double minEdgeScore = 20f;
         Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             Color color = Color.BLUE;
@@ -143,7 +144,9 @@ public class KeywordGraph {
                     if(node2==null)return;
                     if(!node.getLabel().equals(node2.getLabel())) {
                         float score = (float) matrix[stem.getIndex()][stem2.getIndex()];
-                        visualizer.addEdge(node, node2, score, Color.BLACK);
+                        if(score>=minEdgeScore) {
+                            visualizer.addEdge(node, node2, score, Color.BLACK);
+                        }
                     }
                 });
             });
