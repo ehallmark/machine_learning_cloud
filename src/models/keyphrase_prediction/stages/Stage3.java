@@ -51,6 +51,8 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
         this.minValue = model.getStage3Min();
     }
 
+
+
     @Override
     public Collection<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
@@ -58,7 +60,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(data);
             System.out.println("Starting year: " + year);
             System.out.println("Num keywords before stage 3: " + data.size());
-            SparseRealMatrix M = buildMMatrix();
+            SparseRealMatrix M = buildMMatrix(data,multiStemToSelfMap,year);
             data = applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound, upperBound, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
@@ -75,7 +77,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
         return data;
     }
 
-    private SparseRealMatrix buildMMatrix() {
+    public static SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, int year) {
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         Function<SearchHit,Item> transformer = hit-> {
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -123,12 +125,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
                 }
             }
 
-            Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
-            documentStems.forEach(docStem->{
-                if(data.contains(docStem)) {
-                    cooccurringStems.add(multiStemToSelfMap.get(docStem));
-                }
-            });
+            Collection<MultiStem> cooccurringStems = documentStems.stream().filter(docStem->data.contains(docStem)).map(docStem->multiStemToSelfMap.get(docStem)).collect(Collectors.toList());
 
             if(debug)
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
