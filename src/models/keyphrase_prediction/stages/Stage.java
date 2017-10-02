@@ -50,7 +50,7 @@ public abstract class Stage<V> {
         Map<MultiStem,Double> scoreMap = scorer.scoreKeywords(keywords,matrix);
         long count = scoreMap.size();
         double skipFirst = lowerBoundPercent*count;
-        double skipLast = (1.0-upperBoundPercent)*count;
+        double skipLast = (1.0-Math.min(1d,upperBoundPercent))*count;
         return scoreMap.entrySet().stream()
                 .filter(e->e.getValue()>minValue)
                 .sorted((e1,e2)->e2.getValue().compareTo(e1.getValue()))

@@ -97,7 +97,7 @@ public class KeywordModelRunner {
                 }).toArray();
                 timeDensityMatrix[stem.getIndex()]=row;
             });
-            Collection<MultiStem> filteredStems = new HashSet<>(Stage.applyFilters(new TechnologyScorer(), new Array2DRowRealMatrix(timeDensityMatrix,false),multiStems,Math.round(0.6*multiStems.size()),0.4,Double.MAX_VALUE,0));
+            Collection<MultiStem> filteredStems = new HashSet<>(Stage.applyFilters(new TechnologyScorer(), new Array2DRowRealMatrix(timeDensityMatrix,false),multiStems,Math.round(0.6*multiStems.size()),0.4,1.0,0));
             e.getValue().set(e.getValue().get().entrySet().parallelStream().filter(e2->filteredStems.contains(e2.getKey())).collect(Collectors.toMap(e2->e2.getKey(),e2->e2.getValue())));
             System.out.println("Finished time densities for year "+e.getKey());
         });
