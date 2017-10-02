@@ -21,8 +21,10 @@ public abstract class Stage<V> {
     protected File mainDir;
     protected int year;
     protected V data;
+    protected int sampling;
     public Stage(Model model, int year) {
         this.year=year;
+        this.sampling=model.getSampling();
         if(!baseDir.exists()) baseDir.mkdir();
         if(!baseDir.isDirectory()) throw new RuntimeException(baseDir.getAbsolutePath()+" must be a directory.");
         this.mainDir = new File(baseDir, model.getModelName());
@@ -34,6 +36,9 @@ public abstract class Stage<V> {
     }
     public V get() {
         return data;
+    }
+    public void set(V data) {
+        this.data=data;
     }
     public File getFile() {
         return new File(mainDir,this.getClass().getSimpleName()+year);

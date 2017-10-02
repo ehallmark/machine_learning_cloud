@@ -162,11 +162,11 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 200000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, sampling);
     }
 
     private void runModel() {
-        Pair<Map<String,Integer>,RealMatrix> pair = Stage4.buildTMatrix(multiStems,year,maxCpcLength);
+        Pair<Map<String,Integer>,RealMatrix> pair = Stage4.buildTMatrix(multiStems,year,maxCpcLength, sampling);
         RealMatrix T = pair._2;
         Map<String,Integer> cpcToIndexMap = pair._1;
         Map<String,Set<String>> patentCPCMap = new AssetToCPCMap().getPatentDataMap();

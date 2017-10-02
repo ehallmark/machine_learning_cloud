@@ -53,7 +53,7 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
             // apply filter 3
             System.out.println("Starting year: " + year);
             KeywordModelRunner.reindex(data);
-            RealMatrix T = buildTMatrix(data, year, maxCpcLength)._2;
+            RealMatrix T = buildTMatrix(data, year, maxCpcLength,sampling)._2;
 
             data = applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound, minValue);
             data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toList());
@@ -71,7 +71,7 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
     }
 
 
-    public static Pair<Map<String,Integer>,RealMatrix> buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength) {
+    public static Pair<Map<String,Integer>,RealMatrix> buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength, int sampling) {
         // create cpc code co-occurrrence statistics
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
@@ -153,7 +153,7 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 200000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, sampling);
         return new Pair<>(cpcCodeIndexMap,matrix);
     }
 

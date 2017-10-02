@@ -7,34 +7,34 @@ import lombok.Getter;
  */
 public class NewestModel implements Model {
     @Getter
-    final long Kw = 5000;
+    final long Kw = 8000;
     @Getter
-    final int k1 = 10;
+    final int k1 = 15;
     @Getter
-    final int k2 = 3;
+    final int k2 = 5;
     @Getter
     final int k3 = 1;
 
     @Getter
     final int minTokenFrequency = 30;
     @Getter
-    final int maxTokenFrequency = 200000;
+    final int maxTokenFrequency = Math.round(getSampling() * 0.3f);
 
     @Getter
     final int windowSize = 4;
     @Getter
-    final int maxCpcLength = 7;
+    final int maxCpcLength = 8;
 
     @Getter
-    boolean runStage1 = false;
+    boolean runStage1 = true;
     @Getter
-    boolean runStage2 = false;
+    boolean runStage2 = true;
     @Getter
-    boolean runStage3 = false;
+    boolean runStage3 = true;
     @Getter
-    boolean runStage4 = false;
+    boolean runStage4 = true;
     @Getter
-    boolean runStage5 = false;
+    boolean runStage5 = true;
 
     @Override
     public String getModelName() {
@@ -42,23 +42,24 @@ public class NewestModel implements Model {
     }
 
     @Getter
-    double stage4Upper = 1;
+    double stage4Upper = 1d;
     @Getter
     double stage4Lower = 0.2;
     @Getter
     double stage4Min = 0.05;
 
     @Getter
-    double stage3Upper = 0.95;
+    double stage3Upper = 1d;
     @Getter
     double stage3Lower = 0.2;
     @Getter
     double stage3Min = 0d;
 
     @Getter
-    double stage2Upper = 0.80;
+    double stage2Upper = 0.95;
     @Getter
-    double stage2Lower = 0.0;
+    double stage2Lower = 0.05;
     @Getter
     double stage2Min = minTokenFrequency;
+
 }

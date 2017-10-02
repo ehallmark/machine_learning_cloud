@@ -36,8 +36,10 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     private static final boolean debug = false;
     private int minTokenFrequency;
     private int maxTokenFrequency;
+    private Map<MultiStem,AtomicLong> documentsAppearedInCounter;
     public Stage1(int year, Model model) {
         super(model,year);
+        this.documentsAppearedInCounter = Collections.synchronizedMap(new HashMap<>());
         this.minTokenFrequency=model.getMinTokenFrequency();
         this.maxTokenFrequency=model.getMaxTokenFrequency();
     }
@@ -46,7 +48,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
     public Map<MultiStem,AtomicLong> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             data = buildVocabularyCounts();
-            data = truncateBetweenLengths(data, minTokenFrequency, maxTokenFrequency);
+            data = truncateBetweenLengths();
             Database.trySaveObject(data, getFile());
         } else {
             try {
@@ -58,8 +60,11 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
         return data;
     }
 
-    private static Map<MultiStem,AtomicLong> truncateBetweenLengths(Map<MultiStem,AtomicLong> stemMap, int min, int max) {
-        return stemMap.entrySet().parallelStream().filter(e->e.getValue().get()>=min&&e.getValue().get()<=max).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
+    private Map<MultiStem,AtomicLong> truncateBetweenLengths() {
+        return data.entrySet().parallelStream().filter(e->{
+            double val = documentsAppearedInCounter.getOrDefault(e.getKey(), new AtomicLong(0)).get();
+            return val>=minTokenFrequency&&val<=maxTokenFrequency;
+        }).collect(Collectors.toMap(e->e.getKey(), e->e.getValue()));
     }
 
     private Map<MultiStem,AtomicLong> buildVocabularyCounts() {
@@ -87,6 +92,7 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
             pipeline.annotate(doc, d -> {
                 if(debug) System.out.println("Text: "+text);
                 List<CoreMap> sentences = d.get(CoreAnnotations.SentencesAnnotation.class);
+                Set<MultiStem> appeared = new HashSet<>();
                 for(CoreMap sentence: sentences) {
                     // traversing the words in the current sentence
                     // a CoreLabel is a CoreMap with additional token-specific methods
@@ -116,11 +122,11 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                                 if (validPOS.contains(pos)) {
                                     // don't want to end in adjectives (nor past tense verb)
                                     if (!adjectivesPOS.contains(pos) && !pos.equals("VBD") && !(pos.startsWith("V")&&word.endsWith("ing"))) {
-                                        multiStemChecker(new String[]{stem}, multiStemMap, word, stemToPhraseCountMap);
+                                        multiStemChecker(new String[]{stem}, multiStemMap, word, stemToPhraseCountMap, appeared);
                                         if (prevStem != null) {
-                                            multiStemChecker(new String[]{prevStem, stem}, multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap);
+                                            multiStemChecker(new String[]{prevStem, stem}, multiStemMap, String.join(" ", prevWord, word), stemToPhraseCountMap, appeared);
                                             if (prevPrevStem != null) {
-                                                multiStemChecker(new String[]{prevPrevStem, prevStem, stem}, multiStemMap, String.join(" ", prevPrevWord, prevWord, word), stemToPhraseCountMap);
+                                                multiStemChecker(new String[]{prevPrevStem, prevStem, stem}, multiStemMap, String.join(" ", prevPrevWord, prevWord, word), stemToPhraseCountMap, appeared);
                                             }
                                         }
                                     }
@@ -144,11 +150,19 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                         }
                     }
                 }
+                appeared.forEach(stem->{
+                    AtomicLong docCnt = documentsAppearedInCounter.get(stem);
+                    if(docCnt==null) {
+                        documentsAppearedInCounter.put(stem,new AtomicLong(1));
+                    } else {
+                        docCnt.getAndIncrement();
+                    }
+                });
             });
 
             return null;
         };
-        KeywordModelRunner.streamElasticSearchData(year, transformer,200000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer,sampling);
         System.out.println("Starting to find best phrases for each stemmed phrase.");
         new ArrayList<>(multiStemMap.keySet()).parallelStream().forEach(stem->{
             String stemStr = stem.toString();
@@ -161,18 +175,21 @@ public class Stage1 extends Stage<Map<MultiStem,AtomicLong>> {
                     multiStemMap.remove(stem);
                 }
                 if(debug) System.out.println("Best phrase for "+stemStr+": "+bestPhrase);
+            } else {
+                multiStemMap.remove(stem);
             }
         });
         return multiStemMap;
     }
 
-    private static void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems, String label, Map<String,Map<String,AtomicInteger>> phraseCountMap) {
+    private void multiStemChecker(String[] stems, Map<MultiStem,AtomicLong> multiStems, String label, Map<String,Map<String,AtomicInteger>> phraseCountMap, Set<MultiStem> appeared) {
         MultiStem multiStem = new MultiStem(stems, multiStems.size());
         String stemPhrase = multiStem.toString();
         phraseCountMap.putIfAbsent(stemPhrase,Collections.synchronizedMap(new HashMap<>()));
         Map<String,AtomicInteger> innerMap = phraseCountMap.get(stemPhrase);
         innerMap.putIfAbsent(label,new AtomicInteger(0));
         innerMap.get(label).getAndIncrement();
+        appeared.add(multiStem);
         synchronized (multiStems) {
             AtomicLong currentCount = multiStems.get(multiStem);
             if(currentCount == null) {

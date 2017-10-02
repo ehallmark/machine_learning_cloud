@@ -60,7 +60,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
             KeywordModelRunner.reindex(data);
             System.out.println("Starting year: " + year);
             System.out.println("Num keywords before stage 3: " + data.size());
-            SparseRealMatrix M = buildMMatrix(data,multiStemToSelfMap,year);
+            SparseRealMatrix M = buildMMatrix(data,multiStemToSelfMap,year,sampling);
             data = applyFilters(new TermhoodScorer(), M, data, targetCardinality, lowerBound, upperBound, minValue);
             System.out.println("Num keywords after stage 3: " + data.size());
 
@@ -77,7 +77,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
         return data;
     }
 
-    public static SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, int year) {
+    public static SparseRealMatrix buildMMatrix(Collection<MultiStem> data, Map<MultiStem,MultiStem> multiStemToSelfMap, int year, int sampling) {
         SparseRealMatrix matrix = new OpenMapBigRealMatrix(data.size(),data.size());
         Function<SearchHit,Item> transformer = hit-> {
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
@@ -139,7 +139,7 @@ public class Stage3 extends Stage<Collection<MultiStem>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, 200000);
+        KeywordModelRunner.streamElasticSearchData(year, transformer, sampling);
         return matrix;
     }
 

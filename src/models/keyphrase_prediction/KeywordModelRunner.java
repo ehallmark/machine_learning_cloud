@@ -5,6 +5,7 @@ import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
 import models.keyphrase_prediction.scorers.KeywordScorer;
 
+import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.stages.*;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -23,21 +24,29 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 
+import org.gephi.graph.api.Node;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 
 import user_interface.ui_models.portfolios.items.Item;
+import visualization.Visualizer;
 
+import java.awt.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.time.LocalDate;
 import java.util.*;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/11/17.
@@ -75,6 +84,24 @@ public class KeywordModelRunner {
             stage1Map.put(year,stage1);
         }
 
+        // time density stage
+        System.out.println("Computing time densities...");
+        stage1Map.entrySet().parallelStream().forEach(e->{
+            Collection<MultiStem> multiStems = new ArrayList<>(e.getValue().get().keySet());
+            reindex(multiStems);
+            double[][] timeDensityMatrix = new double[multiStems.size()][endYear-startYear+1];
+            multiStems.parallelStream().forEach(stem->{
+                double[] row = stage1Map.entrySet().stream().sorted().mapToDouble(e2->{
+                    return e2.getValue().get().getOrDefault(stem,new AtomicLong(0)).doubleValue();
+                }).toArray();
+                timeDensityMatrix[stem.getIndex()]=row;
+            });
+            Collection<MultiStem> filteredStems = new HashSet<>(Stage.applyFilters(new TechnologyScorer(), new Array2DRowRealMatrix(timeDensityMatrix,false),multiStems,Math.round(0.6*multiStems.size()),0.4,Double.MAX_VALUE,0));
+            e.getValue().set(e.getValue().get().entrySet().parallelStream().filter(e2->filteredStems.contains(e2.getKey())).collect(Collectors.toMap(e2->e2.getKey(),e2->e2.getValue())));
+            System.out.println("Finished time densities for year "+e.getKey());
+        });
+
+
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
         Map<Integer,Map<MultiStem,AtomicLong>> stage1TimeWindowStemMap = computeTimeWindowCountMap(startYear, endYear, windowSize, stage1Map);
@@ -88,7 +115,7 @@ public class KeywordModelRunner {
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
-        Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map);
+        Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map, 2);
         Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
         stage2TimeWindowStemMap.forEach((year,multiStems)->{
             System.out.println("Starting year: "+year);
@@ -99,7 +126,7 @@ public class KeywordModelRunner {
 
         // stage 4
         System.out.println("Pre-grouping data for stage 4...");
-        Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map);
+        Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map, 3);
         Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
         stage3TimeWindowStemMap.forEach((year,multiStems)->{
             System.out.println("Starting year: "+year);
@@ -110,7 +137,7 @@ public class KeywordModelRunner {
 
         // stage 5
         System.out.println("Starting stage 5...");
-        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map);
+        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map, 4);
         Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
         stage4TimeWindowStemMap.forEach((year,multiStems)->{
             System.out.println("Starting year: "+year);
@@ -148,7 +175,7 @@ public class KeywordModelRunner {
         Database.trySaveObject(assetToTechnologyMap, new File(Constants.DATA_FOLDER+"keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
     }
 
-    private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap) {
+    private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap, int stageNum) {
         Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = startYear; i <= endYear; i++) {
             List<Collection<MultiStem>> multiStems = new ArrayList<>();
@@ -163,10 +190,16 @@ public class KeywordModelRunner {
             timeWindowStemMap.put(i,mergedStems);
             System.out.println("Num stems in "+i+": "+mergedStems.size());
         }
+        double scoreThreshold = 200f;
+        double minEdgeScore = 20f;
+        File visualizationFile = new File("data/visualizations-"+stageNum+"-"+LocalDate.now().toString());
+        System.out.println("Starting to create visualization: "+visualizationFile.getName());
+        createVisualization(timeWindowStemMap,scoreThreshold,minEdgeScore,new File("data/keyword-visualization"));
+        System.out.println("Done.");
         return timeWindowStemMap;
     }
 
-    private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Map<MultiStem,AtomicLong>>> stageMap) {
+    private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,Stage1> stageMap) {
         Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
         for(int i = startYear; i <= endYear; i++) {
             List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
@@ -271,5 +304,48 @@ public class KeywordModelRunner {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void createVisualization(Map<Integer,Collection<MultiStem>> yearToMultiStemMap, double scoreThreshold, double minEdgeScore, File file) {
+        Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
+        Visualizer visualizer = new Visualizer(file.getAbsolutePath());
+        yearToMultiStemMap.forEach((year,multiStems)->{
+            Color color = Color.BLUE;
+            // now we have keywords
+            reindex(multiStems);
+            Map<MultiStem,MultiStem> multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
+            double[][] matrix = Stage3.buildMMatrix(multiStems,multiStemToSelfMap,year,100000).getData();
+            double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
+            Node[] nodes = new Node[matrix.length];
+            multiStems.forEach(multiStem->{
+                float score = (float)sums[multiStem.getIndex()];
+                if(score >= scoreThreshold) {
+                    Node node = nodeMap.get(multiStem.getBestPhrase());
+                    if(node==null) {
+                        node = visualizer.addNode(multiStem.getBestPhrase(), score, color);
+                        nodeMap.put(multiStem.getBestPhrase(),node);
+                    }
+                    nodes[multiStem.getIndex()] = node;
+                }
+            });
+            multiStems.forEach(stem->{
+                Node node = nodes[stem.getIndex()];
+                if(node==null)return;
+                multiStems.forEach(stem2->{
+                    Node node2 = nodes[stem2.getIndex()];
+                    if(node2==null)return;
+                    if(!node.getLabel().equals(node2.getLabel())) {
+                        float score = (float) matrix[stem.getIndex()][stem2.getIndex()];
+                        if(score>=minEdgeScore) {
+                            visualizer.addEdge(node, node2, score, Color.BLACK);
+                        }
+                    }
+                });
+            });
+            System.out.println("Saving visualizer...");
+            visualizer.save();
+
+        });
+        visualizer.save();
     }
 }

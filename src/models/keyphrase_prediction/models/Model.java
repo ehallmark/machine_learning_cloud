@@ -27,4 +27,5 @@ public interface Model {
     double getStage4Min();
     double getStage3Min();
     double getStage2Min();
+    default int getSampling() { return 400000; }
 }

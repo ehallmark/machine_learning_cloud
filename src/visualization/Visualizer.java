@@ -26,7 +26,14 @@ import java.util.concurrent.TimeUnit;
 public class Visualizer {
     private GraphModel graphModel;
     private Graph graph;
+    private String name;
     public Visualizer() {
+        this("data/technology-graph-gephi");
+    }
+
+    public Visualizer(String name) {
+        this.name=name;
+
         setupWorkspace();
 
         //Get a graph model - it exists because we have a workspace
@@ -56,7 +63,7 @@ public class Visualizer {
     public void save() {
         // execute layout
         executeLayout();
-        saveCurrentGraph("data/technology-graph-gephi");
+        saveCurrentGraph(name);
     }
 
     private void executeLayout() {
