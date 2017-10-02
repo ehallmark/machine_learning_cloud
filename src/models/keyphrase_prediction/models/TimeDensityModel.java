@@ -26,7 +26,7 @@ public class TimeDensityModel implements Model {
     final int maxCpcLength = 8;
 
     @Getter
-    boolean runStage1 = true;
+    boolean runStage1 = false;
     @Getter
     boolean runStage2 = true;
     @Getter
