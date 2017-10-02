@@ -191,8 +191,8 @@ public class KeywordModelRunner {
             timeWindowStemMap.put(i,mergedStems);
             System.out.println("Num stems in "+i+": "+mergedStems.size());
         }
-        double scoreThreshold = 200f;
-        double minEdgeScore = 20f;
+        double scoreThreshold = 100f;
+        double minEdgeScore = 50f;
         File visualizationFile = new File("data/visualizations-"+stageNum+"-"+LocalDate.now().toString());
         System.out.println("Starting to create visualization: "+visualizationFile.getName());
         createVisualization(timeWindowStemMap,scoreThreshold,minEdgeScore,visualizationFile);
