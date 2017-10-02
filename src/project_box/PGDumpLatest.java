@@ -32,7 +32,7 @@ public class PGDumpLatest {
                     .build();
             Trigger gatherDBTrigger = newTrigger()
                     .withIdentity("trigger2", "group2")
-                    .withSchedule(CronScheduleBuilder.cronSchedule("0 0 10 * * SAT"))
+                    .withSchedule(CronScheduleBuilder.cronSchedule("0 30 10 * * SAT"))
                     .build();
             scheduler.scheduleJob(gatherDBJob, gatherDBTrigger);
         }
