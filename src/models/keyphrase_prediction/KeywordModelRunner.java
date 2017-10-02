@@ -195,7 +195,7 @@ public class KeywordModelRunner {
         double minEdgeScore = 20f;
         File visualizationFile = new File("data/visualizations-"+stageNum+"-"+LocalDate.now().toString());
         System.out.println("Starting to create visualization: "+visualizationFile.getName());
-        createVisualization(timeWindowStemMap,scoreThreshold,minEdgeScore,new File("data/keyword-visualization"));
+        createVisualization(timeWindowStemMap,scoreThreshold,minEdgeScore,visualizationFile);
         System.out.println("Done.");
         return timeWindowStemMap;
     }
