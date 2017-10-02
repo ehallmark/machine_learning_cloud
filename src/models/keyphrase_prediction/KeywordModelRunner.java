@@ -59,7 +59,7 @@ public class KeywordModelRunner {
     }
 
     public static void runModel(boolean thisYearOnly) {
-        Model model = new NewestModel();
+        Model model = new TimeDensityModel();
 
         final int windowSize = model.getWindowSize();
 
