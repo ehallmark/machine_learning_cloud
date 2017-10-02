@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -178,16 +179,22 @@ public class KeywordModelRunner {
 
     private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap, int stageNum) {
         Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
+        Random rand = new Random(System.currentTimeMillis());
         for(int i = startYear; i <= endYear; i++) {
-            List<Collection<MultiStem>> multiStems = new ArrayList<>();
+            Map<Integer,Collection<MultiStem>> multiStems = new HashMap<>();
             for(int j = i-1-(windowSize/2); j <= Math.min(i-1+(windowSize/2), endYear); j++) {
                 Stage<Collection<MultiStem>> stage = stageMap.get(j);
                 if(stage!=null&&stage.get()!=null) {
-                    multiStems.add(stage.get());
+                    multiStems.put(i,stage.get());
                 }
             }
             if(multiStems.isEmpty()) continue;
-            Collection<MultiStem> mergedStems = multiStems.stream().flatMap(list->list.stream()).distinct().collect(Collectors.toList());
+            final int currentYear = i;
+            Collection<MultiStem> mergedStems = multiStems.entrySet().stream().flatMap(e->{
+                int year = e.getKey();
+                double prob = Math.expm1(Math.abs(currentYear-year));
+                return e.getValue().stream().filter(s->rand.nextDouble()<prob);
+            }).distinct().collect(Collectors.toList());
             timeWindowStemMap.put(i,mergedStems);
             System.out.println("Num stems in "+i+": "+mergedStems.size());
         }
