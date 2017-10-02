@@ -1,5 +1,6 @@
 package models.keyphrase_prediction;
 
+import edu.stanford.nlp.util.*;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
@@ -91,7 +92,7 @@ public class KeywordModelRunner {
             reindex(multiStems);
             double[][] timeDensityMatrix = new double[multiStems.size()][endYear-startYear+1];
             multiStems.parallelStream().forEach(stem->{
-                double[] row = stage1Map.entrySet().stream().sorted().mapToDouble(e2->{
+                double[] row = stage1Map.entrySet().stream().sorted(Comparator.comparing(e2->e2.getKey())).mapToDouble(e2->{
                     return e2.getValue().get().getOrDefault(stem,new AtomicLong(0)).doubleValue();
                 }).toArray();
                 timeDensityMatrix[stem.getIndex()]=row;
