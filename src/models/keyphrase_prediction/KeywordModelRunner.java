@@ -191,7 +191,7 @@ public class KeywordModelRunner {
             timeWindowStemMap.put(i,mergedStems);
             System.out.println("Num stems in "+i+": "+mergedStems.size());
         }
-        double scoreThreshold = 100f;
+        double scoreThreshold = 200f;
         double minEdgeScore = 50f;
         File visualizationFile = new File("data/visualizations-"+stageNum+"-"+LocalDate.now().toString());
         System.out.println("Starting to create visualization: "+visualizationFile.getName());
@@ -307,41 +307,43 @@ public class KeywordModelRunner {
         }
     }
 
+    private static Node getNode(Map<String,Node> nodeMap, MultiStem stem, Visualizer visualizer, float score) {
+        Color color = Color.BLUE;
+
+        Node node = nodeMap.get(stem.getBestPhrase());
+        if (node == null) {
+            node = visualizer.addNode(stem.getBestPhrase(), score, color);
+            nodeMap.put(stem.getBestPhrase(), node);
+        }
+
+        return node;
+    }
+
     public static void createVisualization(Map<Integer,Collection<MultiStem>> yearToMultiStemMap, double scoreThreshold, double minEdgeScore, File file) {
         Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
         Visualizer visualizer = new Visualizer(file.getAbsolutePath());
         yearToMultiStemMap.forEach((year,multiStems)->{
-            Color color = Color.BLUE;
             // now we have keywords
             reindex(multiStems);
             Map<MultiStem,MultiStem> multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
             double[][] matrix = Stage3.buildMMatrix(multiStems,multiStemToSelfMap,year,100000).getData();
             double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
-            Node[] nodes = new Node[matrix.length];
-            multiStems.forEach(multiStem->{
-                float score = (float)sums[multiStem.getIndex()];
-                if(score >= scoreThreshold) {
-                    Node node = nodeMap.get(multiStem.getBestPhrase());
-                    if(node==null) {
-                        node = visualizer.addNode(multiStem.getBestPhrase(), score, color);
-                        nodeMap.put(multiStem.getBestPhrase(),node);
-                    }
-                    nodes[multiStem.getIndex()] = node;
-                }
-            });
+
             multiStems.forEach(stem->{
-                Node node = nodes[stem.getIndex()];
-                if(node==null)return;
-                multiStems.forEach(stem2->{
-                    Node node2 = nodes[stem2.getIndex()];
-                    if(node2==null)return;
-                    if(!node.getLabel().equals(node2.getLabel())) {
-                        float score = (float) matrix[stem.getIndex()][stem2.getIndex()];
-                        if(score>=minEdgeScore) {
-                            visualizer.addEdge(node, node2, score, Color.BLACK);
+                float score = (float)sums[stem.getIndex()];
+                if(score >= scoreThreshold) {
+                    Node node = getNode(nodeMap,stem,visualizer,score);
+                    for(MultiStem stem2 : multiStems) {
+                        if(stem.equals(stem2)) continue;
+                        float score2 = (float) matrix[stem.getIndex()][stem2.getIndex()];
+                        if(score2 > minEdgeScore) {
+                            Node node2 = getNode(nodeMap, stem2, visualizer, score2);
+                            if (score2 >= minEdgeScore) {
+                                visualizer.addEdge(node, node2, score2, Color.BLACK);
+                            }
                         }
                     }
-                });
+                }
             });
             System.out.println("Saving visualizer...");
             visualizer.save();
