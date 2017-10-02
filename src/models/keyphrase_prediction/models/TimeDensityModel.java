@@ -28,7 +28,7 @@ public class TimeDensityModel implements Model {
     @Getter
     boolean runStage1 = false;
     @Getter
-    boolean runStage2 = true;
+    boolean runStage2 = false;
     @Getter
     boolean runStage3 = true;
     @Getter
