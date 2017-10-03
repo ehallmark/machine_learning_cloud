@@ -785,8 +785,8 @@ public class Database {
 		Database.setupCompDBConn();
 		Map<String,List<String>> buyers = Collections.synchronizedMap(new HashMap<>());
 		Map<String,List<String>> sellers = Collections.synchronizedMap(new HashMap<>());
-		PreparedStatement ps = compDBConn.prepareStatement("select reel::text||':'||frame as rf, b.name as buyer, s.name as seller from recordings as r join recordings_buyers as rb on (rb.recording_id=r.id) join companies as b on (b.id=rb.buyer_id)" +
-				" join recordings_sellers as rs on (rs.recording_id=r.id) join companies as s on (s.id=rs.seller_id) where deal_id is not null and reel is not null and frame is not null");
+		PreparedStatement ps = compDBConn.prepareStatement("select reel::text||':'||frame as rf, b.name as buyer, s.name as seller from recordings as r join recordings_buyers as rb on (rb.recording_id=r.id) join companies as b on (b.id=rb.company_id)" +
+				" join recordings_sellers as rs on (rs.recording_id=r.id) join companies as s on (s.id=rs.company_id) where deal_id is not null and reel is not null and frame is not null");
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
 			String patent = rs.getString(1);
