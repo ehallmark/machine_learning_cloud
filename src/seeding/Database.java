@@ -13,7 +13,9 @@ import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
 import tools.AssigneeTrimmer;
 import user_interface.ui_models.attributes.AssetNumberAttribute;
+import user_interface.ui_models.attributes.BuyerAttribute;
 import user_interface.ui_models.attributes.ReelFrameAttribute;
+import user_interface.ui_models.attributes.SellerAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
@@ -29,6 +31,10 @@ import java.util.stream.Stream;
 
 
 public class Database {
+	private static Map<String,List<String>> compDBReelFramesToBuyersMap;
+	private static Map<String,List<String>> compDBReelFramesToSellersMap;
+	private static File compDBBuyersFile = new File(Constants.DATA_FOLDER+"compdb_buyers_map");
+	private static File compDBSellersFile = new File(Constants.DATA_FOLDER+"compdb_sellers_map");
 	private static Map<String,Set<String>> patentToClassificationMap;
 	private static Map<String,Set<String>> appToClassificationMap;
 	private static Map<String,String> classCodeToClassTitleMap;
@@ -775,11 +781,60 @@ public class Database {
 		return set;
 	}
 
+	public synchronized static void loadReelFramesToCompDBBuyersAndSellers() throws SQLException {
+		Database.setupCompDBConn();
+		Map<String,List<String>> buyers = Collections.synchronizedMap(new HashMap<>());
+		Map<String,List<String>> sellers = Collections.synchronizedMap(new HashMap<>());
+		PreparedStatement ps = compDBConn.prepareStatement("select reel::text||':'||frame as rf, b.name as buyer, s.name as seller from recordings as r join recordings_buyers as rb on (rb.recording_id=r.id) join buyers as b on (b.id=rb.buyer_id)" +
+				" join recordings_sellers as rs on (rs.recording_id=r.id) join sellers as s on (s.id=rs.seller_id) where deal_id is not null and reel is not null and frame is not null");
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			String patent = rs.getString(1);
+			String buyer = rs.getString(2);
+			String seller = rs.getString(3);
+			if(buyer!=null) {
+				buyers.putIfAbsent(patent,new ArrayList<>());
+				List<String> b = buyers.get(patent);
+				if(!b.contains(buyer)) b.add(buyer);
+			}
+			if(seller!=null) {
+				sellers.putIfAbsent(patent,new ArrayList<>());
+				List<String> s = sellers.get(patent);
+				if(!s.contains(seller)) s.add(seller);
+			}
+		}
+		ps.close();
+		// save stuff
+		Database.trySaveObject(buyers,compDBBuyersFile);
+		Database.trySaveObject(sellers,compDBSellersFile);
+	}
+
+	public synchronized static Map<String,List<String>> getCompDBReelFrameToBuyersMap() {
+		if(compDBReelFramesToBuyersMap==null) {
+			compDBReelFramesToBuyersMap = (Map<String,List<String>>) Database.tryLoadObject(compDBBuyersFile);
+		}
+		return compDBReelFramesToBuyersMap;
+	}
+
+	public synchronized static Map<String,List<String>> getCompDBReelFrameToSellersMap() {
+		if(compDBReelFramesToSellersMap==null) {
+			compDBReelFramesToSellersMap = (Map<String,List<String>>) Database.tryLoadObject(compDBSellersFile);
+		}
+		return compDBReelFramesToSellersMap;
+	}
+
 
 
 	public synchronized static void loadCompDBData() throws SQLException {
 		Database.setupCompDBConn();
 		Database.setupSeedConn();
+
+		// buyers and sellers
+		Map<String,List<String>> rfToBuyersMap = getCompDBReelFrameToBuyersMap();
+		Map<String,List<String>> rfToSellersMap = getCompDBReelFrameToSellersMap();
+		Map<String,List<String>> patentToBuyersMap = Collections.synchronizedMap(new HashMap<>());
+		Map<String,List<String>> patentToSellersMap = Collections.synchronizedMap(new HashMap<>());
+
 		// get Reelframes Map
 		Set<String> reelFrames = getCompDBReelFrames();
 		// Collect patent numbers
@@ -790,6 +845,15 @@ public class Database {
 			if(reelFrameStr==null) return;
 			String[] reelFramesStr = reelFrameStr.toString().split("; ");
 			if(reelFramesStr.length==0) return;
+
+			List<String> buyers = Stream.of(reelFramesStr).flatMap(rf->rfToBuyersMap.getOrDefault(rf,new ArrayList<>()).stream()).distinct().collect(Collectors.toList());
+			if(buyers.size()>0) {
+				patentToBuyersMap.put(item.getName(),buyers);
+			}
+			List<String> sellers = Stream.of(reelFramesStr).flatMap(rf->rfToSellersMap.getOrDefault(rf,new ArrayList<>()).stream()).distinct().collect(Collectors.toList());
+			if(sellers.size()>0) {
+				patentToSellersMap.put(item.getName(),sellers);
+			}
 			Stream.of(reelFramesStr).forEach(reelFrame->{
 				if(reelFrameToAssetsMap.containsKey(reelFrame)) {
 					reelFrameToAssetsMap.get(reelFrame).add(item.getName());
@@ -851,8 +915,11 @@ public class Database {
 				}
 			});
 		});
+
 		// patent set
 		compDBPAssets = Collections.synchronizedCollection(new HashSet<>(compDBAssetToDealIDMap.keySet()));
+
+
 		rs.close();
 		ps.close();
 
@@ -860,6 +927,12 @@ public class Database {
 		Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
 		Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
 		Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
+		BuyerAttribute buyerAttribute = new BuyerAttribute();
+		buyerAttribute.setPatentDataMap(patentToBuyersMap);
+		SellerAttribute sellerAttribute = new SellerAttribute();
+		sellerAttribute.setPatentDataMap(patentToSellersMap);
+		buyerAttribute.save();
+		sellerAttribute.save();
 	}
 
 
@@ -908,6 +981,12 @@ public class Database {
 		try {
 			compdbReelFrames = loadCompDBReelFrames();
 			Database.trySaveObject(compdbReelFrames,compdbReelFramesFile);
+		} catch(SQLException sql) {
+			sql.printStackTrace();
+		}
+
+		try {
+			loadReelFramesToCompDBBuyersAndSellers();
 		} catch(SQLException sql) {
 			sql.printStackTrace();
 		}

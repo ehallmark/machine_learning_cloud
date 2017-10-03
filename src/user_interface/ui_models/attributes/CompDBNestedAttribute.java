@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class CompDBNestedAttribute extends NestedAttribute {
 
     public CompDBNestedAttribute() {
-        super(Arrays.asList(new CompDBTechnologyAttribute(),new CompDBDealIDAttribute()));
+        super(Arrays.asList(new CompDBTechnologyAttribute(),new CompDBDealIDAttribute(),new BuyerAttribute(), new SellerAttribute()));
         this.isObject=true;
     }
 
