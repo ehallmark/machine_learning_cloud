@@ -1191,17 +1191,17 @@ public class SimilarPatentServer {
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12 form-top").with(
-                                        ul().withClass("nav nav-pills").with(
-                                                li().withClass("active").with(
-                                                        a("Sort and Filter Options").attr("data-toggle","pill").withHref("#tab1")
-                                                ),li().with(
-                                                        a("Chart and Data Options").attr("data-toggle","pill").withHref("#tab2")
+                                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
+                                                li().withClass("active nav-item").with(
+                                                        a("Sort and Filter Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                                ),li().withClass("nav-item").with(
+                                                        a("Chart and Data Options").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                                 )
                                         )
                                 ),
                                 div().withClass("col-12").with(
                                         div().withClass("row tab-content").with(
-                                                div().withClass("col-12 tab-pane fade in active").withId("tab1").with(
+                                                div().withClass("col-12 tab-pane fade in active").attr("role","tabpanel").withId("tab1").with(
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("searchOptionsForm").with(
                                                                         mainOptionsRow()
@@ -1212,7 +1212,7 @@ public class SimilarPatentServer {
                                                                 )
                                                         )
                                                 ),
-                                                div().withClass("col-12 tab-pane fade").withId("tab2").with(
+                                                div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("chartsForm").with(
                                                                         customFormRow("charts",allCharts, userRoleFunction)
