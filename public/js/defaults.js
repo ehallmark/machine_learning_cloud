@@ -331,6 +331,9 @@ var showTemplateFormHelper = function(formSelector,json) {
     $.each(dataMap,function(id,value) {
         var $elem = $('#'+id);
         $elem.closest('draggable').parent().show();
+        //if($elem.attr('type')==="checkbox") {
+
+        //}
         $elem.val(value);
         $elem.trigger('change');
     });

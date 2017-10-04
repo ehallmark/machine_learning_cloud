@@ -1300,7 +1300,7 @@ public class SimilarPatentServer {
                                 ),
                                 div().withClass("col-6 attributeElement").attr("style","margin-top: 15px;").with(
                                         label("Use Highlighting").attr("style","width: 100%;").with(
-                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").withName(USE_HIGHLIGHTER_FIELD)
+                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                         )
                                 )
                         )
