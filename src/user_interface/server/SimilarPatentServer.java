@@ -1190,8 +1190,8 @@ public class SimilarPatentServer {
                 span().withId("main-content-id").withClass("collapse").with(
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
-                                div().withClass("col-12").with(
-                                        ul().withClass("nav nav-tabs").with(
+                                div().withClass("col-12 form-top").with(
+                                        ul().withClass("nav nav-pills").with(
                                                 li().withClass("active").with(
                                                         a("Sort and Filter Options").attr("data-toggle","pill").withHref("#tab1")
                                                 ),li().with(
@@ -1203,22 +1203,22 @@ public class SimilarPatentServer {
                                         div().withClass("row tab-content").with(
                                                 div().withClass("col-12 tab-pane fade in active").withId("tab1").with(
                                                         div().withClass("row").with(
-                                                                div().withClass("col-12 form-top").withId("searchOptionsForm").with(
+                                                                div().withClass("col-12").withId("searchOptionsForm").with(
                                                                         mainOptionsRow()
                                                                 )
                                                         ),div().withClass("row").with(
-                                                                div().withClass("col-12 form-bottom").withId("filtersForm").with(
+                                                                div().withClass("col-12").withId("filtersForm").with(
                                                                         customFormRow("filters", allFilters, userRoleFunction)
                                                                 )
                                                         )
                                                 ),
                                                 div().withClass("col-12 tab-pane fade").withId("tab2").with(
                                                         div().withClass("row").with(
-                                                                div().withClass("col-12 form-top").withId("chartsForm").with(
+                                                                div().withClass("col-12").withId("chartsForm").with(
                                                                         customFormRow("charts",allCharts, userRoleFunction)
                                                                 )
                                                         ), div().withClass("row").with(
-                                                                div().withClass("col-12 form-bottom").withId("attributesForm").with(
+                                                                div().withClass("col-12").withId("attributesForm").with(
                                                                         customFormRow("attributes", allAttributes, userRoleFunction)
                                                                 )
                                                         )
