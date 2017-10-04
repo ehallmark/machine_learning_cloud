@@ -113,20 +113,8 @@ label {
     padding-bottom: 20px;
 }
 
-.form-right {
-}
-
-.form-left {
-    border-right: 1px rgba(0,0,0,.1) solid;
-}
-
 .form-top {
     padding-top: 20px;
-    border-bottom: 1px rgba(0,0,0,.1) solid;
-}
-
-.form-bottom {
-    border-bottom: 1px rgba(0,0,0,.1) solid;
 }
 
 .header-main {
