@@ -1193,31 +1193,35 @@ public class SimilarPatentServer {
                                 div().withClass("col-12").with(
                                         ul().withClass("nav nav-tabs").with(
                                                 li().withClass("active").with(
-                                                        a("Sort and Filter Options").withHref("#tab1")
+                                                        a("Sort and Filter Options").attr("data-toggle","pill").withHref("#tab1")
                                                 ),li().with(
-                                                        a("Chart and Data Options").withHref("#tab2")
+                                                        a("Chart and Data Options").attr("data-toggle","pill").withHref("#tab2")
                                                 )
                                         )
                                 ),
-                                div().withClass("col-12 tab-pane fade in active").withId("tab1").with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-12 form-top").withId("searchOptionsForm").with(
-                                                        mainOptionsRow()
-                                                )
-                                        ),div().withClass("row").with(
-                                                div().withClass("col-12 form-bottom").withId("filtersForm").with(
-                                                        customFormRow("filters", allFilters, userRoleFunction)
-                                                )
-                                        )
-                                ),
-                                div().withClass("col-12 tab-pane fade").withId("tab2").with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-12 form-top").withId("chartsForm").with(
-                                                        customFormRow("charts",allCharts, userRoleFunction)
-                                                )
-                                        ), div().withClass("row").with(
-                                                div().withClass("col-12 form-bottom").withId("attributesForm").with(
-                                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                div().withClass("col-12").with(
+                                        div().withClass("row tab-content").with(
+                                                div().withClass("col-12 tab-pane fade in active").withId("tab1").with(
+                                                        div().withClass("row").with(
+                                                                div().withClass("col-12 form-top").withId("searchOptionsForm").with(
+                                                                        mainOptionsRow()
+                                                                )
+                                                        ),div().withClass("row").with(
+                                                                div().withClass("col-12 form-bottom").withId("filtersForm").with(
+                                                                        customFormRow("filters", allFilters, userRoleFunction)
+                                                                )
+                                                        )
+                                                ),
+                                                div().withClass("col-12 tab-pane fade").withId("tab2").with(
+                                                        div().withClass("row").with(
+                                                                div().withClass("col-12 form-top").withId("chartsForm").with(
+                                                                        customFormRow("charts",allCharts, userRoleFunction)
+                                                                )
+                                                        ), div().withClass("row").with(
+                                                                div().withClass("col-12 form-bottom").withId("attributesForm").with(
+                                                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                                                )
+                                                        )
                                                 )
                                         )
                                 ),
