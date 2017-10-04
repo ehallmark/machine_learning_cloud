@@ -164,6 +164,8 @@ public class SimilarPatentServer {
             humanAttrToJavaAttrMap.put("Original Expiration Date", Constants.EXPIRATION_DATE);
             humanAttrToJavaAttrMap.put("Term Adjustments (Days)", Constants.PATENT_TERM_ADJUSTMENT);
             humanAttrToJavaAttrMap.put("CPC Codes", Constants.CPC_CODES);
+            humanAttrToJavaAttrMap.put("Buyer",Constants.BUYER);
+            humanAttrToJavaAttrMap.put("Seller",Constants.SELLER);
             humanAttrToJavaAttrMap.put("Original Priority Date", Constants.PRIORITY_DATE);
             humanAttrToJavaAttrMap.put("Recorded Date", Constants.RECORDED_DATE);
             humanAttrToJavaAttrMap.put("Publication Date", Constants.PUBLICATION_DATE);
