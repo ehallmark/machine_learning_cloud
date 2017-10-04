@@ -115,6 +115,7 @@ label {
 
 .form-top {
     padding-top: 20px;
+    border-bottom: 1px solid #ddd;
 }
 
 .header-main {

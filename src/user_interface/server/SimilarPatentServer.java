@@ -1193,9 +1193,9 @@ public class SimilarPatentServer {
                                 div().withClass("col-12 form-top").with(
                                         ul().withClass("nav nav-tabs").attr("role","tablist").with(
                                                 li().withClass("nav-item").with(
-                                                        a("Sort and Filter Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
+                                                        a("1. Search Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                                 ),li().withClass("nav-item").with(
-                                                        a("Chart and Data Options").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
+                                                        a("2. Data Options").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
                                                 )
                                         )
                                 ),
@@ -1293,10 +1293,10 @@ public class SimilarPatentServer {
     private static Tag mainOptionsRow() {
         return div().withClass("row").with(
                 div().withClass("col-12").with(
-                        h5("Search Options")
+                        h5("Sort and Limit")
                 ), div().withClass("col-12").with(
                         div().withClass("row collapsible-form").with(
-                                div().withClass("col-6 attributeElement").with(
+                                div().withClass("col-12 attributeElement").with(
                                         label("Sort By").attr("style","width: 100%;").with(
                                                 br(),select().withId("main-options-"+COMPARATOR_FIELD).withClass("form-control single-select2").withName(COMPARATOR_FIELD).with(
                                                         Stream.of(Stream.of(Constants.SIMILARITY, Constants.AI_VALUE, Constants.LATEST_ASSIGNEE+"."+Constants.PORTFOLIO_SIZE, Constants.REMAINING_LIFE, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_PURCHASED, Constants.LATEST_ASSIGNEE+"."+Constants.COMPDB_ASSETS_SOLD),
@@ -1319,7 +1319,7 @@ public class SimilarPatentServer {
                                                 br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 ),
-                                div().withClass("col-6 attributeElement").attr("style","margin-top: 15px;").with(
+                                div().withClass("col-6 attributeElement").attr("style","margin-top: 15px; display: none !important;").with(
                                         label("Use Highlighting").attr("style","width: 100%;").with(
                                                 br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                         )
