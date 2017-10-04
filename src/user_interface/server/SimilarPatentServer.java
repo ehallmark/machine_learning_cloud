@@ -1191,20 +1191,37 @@ public class SimilarPatentServer {
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12").with(
-                                        div().withClass("row").with(
-                                                div().withClass("col-6 form-left form-top").withId("searchOptionsForm").with(
-                                                        mainOptionsRow()
-                                                ),div().withClass("col-6 form-right form-top").withId("chartsForm").with(
-                                                        customFormRow("charts",allCharts, userRoleFunction)
+                                        ul().withClass("nav nav-tabs").with(
+                                                li().withClass("active").with(
+                                                        a("Sort and Filter Options").withHref("#tab1")
+                                                ),li().with(
+                                                        a("Chart and Data Options").withHref("#tab2")
                                                 )
-                                        ), div().withClass("row").with(
-                                                div().withClass("col-6 form-left form-bottom").withId("attributesForm").with(
-                                                        customFormRow("attributes", allAttributes, userRoleFunction)
-                                                ),div().withClass("col-6 form-right form-bottom").withId("filtersForm").with(
+                                        )
+                                ),
+                                div().withClass("col-12 tab-pane fade in active").withId("tab1").with(
+                                        div().withClass("row").with(
+                                                div().withClass("col-12 form-top").withId("searchOptionsForm").with(
+                                                        mainOptionsRow()
+                                                )
+                                        ),div().withClass("row").with(
+                                                div().withClass("col-12 form-bottom").withId("filtersForm").with(
                                                         customFormRow("filters", allFilters, userRoleFunction)
                                                 )
                                         )
-                                ),div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
+                                ),
+                                div().withClass("col-12 tab-pane fade").withId("tab2").with(
+                                        div().withClass("row").with(
+                                                div().withClass("col-12 form-top").withId("chartsForm").with(
+                                                        customFormRow("charts",allCharts, userRoleFunction)
+                                                )
+                                        ), div().withClass("row").with(
+                                                div().withClass("col-12 form-bottom").withId("attributesForm").with(
+                                                        customFormRow("attributes", allAttributes, userRoleFunction)
+                                                )
+                                        )
+                                ),
+                                div().withClass("btn-group").attr("style","margin-left: 20%; margin-right: 20%;").with(
                                         div().withText("Generate Report").withClass("btn btn-secondary div-button").withId(GENERATE_REPORTS_FORM_ID+"-button"),
                                         div().withText("Download to Excel").withClass("btn btn-secondary div-button").withId("download-to-excel-button")
                                 )
