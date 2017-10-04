@@ -1191,7 +1191,7 @@ public class SimilarPatentServer {
                         form().withAction(REPORT_URL).withMethod("post").attr("style","margin-bottom: 0px;").withId(GENERATE_REPORTS_FORM_ID).with(
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12 form-top").with(
-                                        ul().withClass("nav nav-tabs").attr("role","tablist").with(
+                                        ul().withClass("nav nav-tabs").attr("role","tablist").attr("style","border-bottom: none !important;").with(
                                                 li().withClass("nav-item").with(
                                                         a("1. Search Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                                 ),li().withClass("nav-item").with(
@@ -1314,12 +1314,12 @@ public class SimilarPatentServer {
                                                 )
                                         )
                                 ),
-                                div().withClass("col-6 attributeElement").attr("style","margin-top: 15px;").with(
+                                div().withClass("col-6 attributeElement").with(
                                         label("Result Limit").attr("style","width: 100%;").with(
                                                 br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
                                         )
                                 ),
-                                div().withClass("col-6 attributeElement").attr("style","margin-top: 15px; display: none !important;").with(
+                                div().withClass("col-6 attributeElement").attr("style","display: none !important;").with(
                                         label("Use Highlighting").attr("style","width: 100%;").with(
                                                 br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                         )
