@@ -834,6 +834,7 @@ public class Database {
 		Map<String,List<String>> rfToSellersMap = getCompDBReelFrameToSellersMap();
 		Map<String,List<String>> patentToBuyersMap = Collections.synchronizedMap(new HashMap<>());
 		Map<String,List<String>> patentToSellersMap = Collections.synchronizedMap(new HashMap<>());
+		//Map<String,List<String>> patentToCompDBRecordedDate = Collections.synchronizedMap(new HashMap<>());
 
 		// get Reelframes Map
 		Set<String> reelFrames = getCompDBReelFrames();
