@@ -1192,7 +1192,7 @@ public class SimilarPatentServer {
                                 input().withType("hidden").withName("onlyExcel").withId("only-excel-hidden-input"),
                                 div().withClass("col-12 form-top").with(
                                         ul().withClass("nav nav-tabs").attr("role","tablist").with(
-                                                li().withClass("active nav-item").with(
+                                                li().withClass("nav-item").with(
                                                         a("Sort and Filter Options").withClass("nav-link active").attr("data-toggle","tab").withHref("#tab1").attr("role","tab")
                                                 ),li().withClass("nav-item").with(
                                                         a("Chart and Data Options").withClass("nav-link").attr("data-toggle","tab").withHref("#tab2").attr("role","tab")
@@ -1201,7 +1201,7 @@ public class SimilarPatentServer {
                                 ),
                                 div().withClass("col-12").with(
                                         div().withClass("row tab-content").with(
-                                                div().withClass("col-12 tab-pane fade in active").attr("role","tabpanel").withId("tab1").with(
+                                                div().withClass("col-12 tab-pane fade show active").attr("role","tabpanel").withId("tab1").with(
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("searchOptionsForm").with(
                                                                         mainOptionsRow()
