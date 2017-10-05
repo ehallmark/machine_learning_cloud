@@ -12,27 +12,15 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CompDBDealIDAttribute extends ComputableAttribute<String> {
-
+public class CompDBDealIDAttribute extends ComputableCompDBAttribute<String> {
     public CompDBDealIDAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
-    }
-
-    @Override
-    public String attributesFor(Collection<String> items, int limit) {
-        return Database.getCompDBAssetToDealIDMap().get(items.stream().findAny().get());
-    }
-
-    @Override
-    public String getName() {
-        return Constants.COMPDB_DEAL_ID;
+        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude), Constants.COMPDB_DEAL_ID);
     }
 
     @Override
     public String getType() {
         return "keyword";
     }
-
 
     @Override
     public AbstractFilter.FieldType getFieldType() {

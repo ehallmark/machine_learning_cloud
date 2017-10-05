@@ -12,15 +12,10 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CompDBTechnologyAttribute extends ComputableCompDBAttribute<Collection<String>> {
+public class CompDBTechnologyAttribute extends ComputableCompDBAttribute<String> {
 
     public CompDBTechnologyAttribute() {
-        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword));
-    }
-
-    @Override
-    public Collection<String> attributesFor(Collection<String> items, int limit) {
-        return Database.getCompdbAssetToTechnologiesMap().get(items.stream().findAny().get());
+        super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword), Constants.COMPDB_TECHNOLOGY);
     }
 
     @Override
@@ -41,7 +36,7 @@ public class CompDBTechnologyAttribute extends ComputableCompDBAttribute<Collect
 
     @Override
     public Collection<String> getAllValues() {
-        return Database.getCompDBTechnologyToAssetsMap().keySet();
+        return Database.getCompDBTechnologies();
     }
 
     @Override

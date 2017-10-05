@@ -20,7 +20,7 @@ public abstract class ComputableCompDBAttribute<T> extends ComputableAttribute<C
 
     public static Map<String,List<Map<String,Object>>> getCompDBNestedData() {
         if(compDBNestedData==null) {
-            compDBNestedData = Database.getCompDBAssetToNestedData();
+            compDBNestedData = Database.getCompDBAssetToNestedDataMap();
         }
         return compDBNestedData;
     }
@@ -40,7 +40,7 @@ public abstract class ComputableCompDBAttribute<T> extends ComputableAttribute<C
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
-        List<T> data = compDBNestedData.getOrDefault(item, Collections.emptyList()).stream().map(obj->{
+        List<T> data = getCompDBNestedData().getOrDefault(item, Collections.emptyList()).stream().map(obj->{
             return (T)obj.get(name);
         }).filter(obj->obj!=null).distinct().collect(Collectors.toList());
         if(data.isEmpty()) return null;

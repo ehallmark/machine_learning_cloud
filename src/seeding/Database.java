@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 
 
 public class Database {
+	private static final File compDBTechnologiesFile = new File(Constants.DATA_FOLDER+"compdb_technologies_set.jobj");
+	private static Collection<String> compDBTechnologies;
 	private static File compDBBuyersFile = new File(Constants.DATA_FOLDER+"compdb_buyers_map");
 	private static File compDBSellersFile = new File(Constants.DATA_FOLDER+"compdb_sellers_map");
 	private static Map<String,List<String>> compDBReelFramesToBuyersMap;
@@ -763,6 +765,12 @@ public class Database {
 		return compDBReelFramesToSellersMap;
 	}
 
+	public synchronized static Collection<String> getCompDBTechnologies() {
+		if(compDBTechnologies==null) {
+			compDBTechnologies = (Collection<String>) Database.tryLoadObject(compDBTechnologiesFile);
+		}
+		return compDBTechnologies;
+	}
 
 
 	public synchronized static void loadCompDBData() throws SQLException {
@@ -811,6 +819,7 @@ public class Database {
 		ResultSet rs = ps.executeQuery();
 
 		System.out.println("Finished collecting reelframe to assets map.");
+		compDBTechnologies = new HashSet<>();
 		while(rs.next()) {
 			Collection<String> technologies = new HashSet<>();
 			for(Integer tech : (Integer[])rs.getArray(1).getArray()) {
@@ -818,6 +827,7 @@ public class Database {
 				technologies.add(technologyMap.get(tech));
 			}
 			if(technologies.isEmpty()) continue;
+			compDBTechnologies.addAll(technologies);
 			Integer dealID = rs.getInt(6);
 			if(dealID==null) continue;
 
@@ -864,12 +874,14 @@ public class Database {
 
 		Database.trySaveObject(compDBAssetToNestedDataMap,compDBAssetToNestedDataMapFile);
 		Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
+		Database.trySaveObject(compDBTechnologies,compDBTechnologiesFile);
 		BuyerAttribute buyerAttribute = new BuyerAttribute();
 		buyerAttribute.setPatentDataMap(patentToBuyersMap);
 		SellerAttribute sellerAttribute = new SellerAttribute();
 		sellerAttribute.setPatentDataMap(patentToSellersMap);
 		buyerAttribute.save();
 		sellerAttribute.save();
+		System.out.println("Total number of technologies: "+compDBTechnologies.size());
 	}
 
 
