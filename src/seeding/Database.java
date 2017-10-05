@@ -794,9 +794,9 @@ public class Database {
 		Map<String,List<Map<String,Object>>> patentToCompDBNestedData = Collections.synchronizedMap(new HashMap<>());
 
 		// get Reelframes Map
-		Set<String> reelFrames = getCompDBReelFrames();
+		Set<String> allCompDBReelFrames = getCompDBReelFrames();
 		// Collect patent numbers
-		Item[] items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, reelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false);
+		Item[] items = DataSearcher.searchForAssets(Arrays.asList(new AssetNumberAttribute(), new ReelFrameAttribute()),Arrays.asList(new AbstractIncludeFilter(new ReelFrameAttribute(), AbstractFilter.FilterType.Include, AbstractFilter.FieldType.Text, allCompDBReelFrames)),null, SortOrder.ASC, 100000, Collections.emptyMap(),false);
 		Map<String,Collection<String>> reelFrameToAssetsMap = Collections.synchronizedMap(new HashMap<>());
 		Stream.of(items).parallel().forEach(item->{
 			Object reelFrameStr = item.getData(Constants.REEL_FRAME);
@@ -854,7 +854,17 @@ public class Database {
 						list.addAll(patents);
 					});
 					patents.forEach(patent -> {
-						compDBAssetToDealIDMap.put(patent, dealID.toString());
+						Map<String,Object> nestedData = Collections.synchronizedMap(new HashMap<>());
+						// add nested attrs
+						nestedData.put(Constants.COMPDB_DEAL_ID, dealID.toString());
+						nestedData.put(Constants.COMPDB_TECHNOLOGY, technologies.stream().collect(Collectors.toList()));
+						nestedData.put(Constants.REEL_FRAME, (List<String>) Arrays.asList(reelFramesStr));
+						nestedData.put(Constants.NAME, patents);
+						nestedData.put(Constants.NUM_ASSIGNMENTS, reelFramesStr.length);
+						nestedData.put(Constants.NUM_ASSETS, patents.size());
+						nestedData.put(Constants.BUYER)
+						patentToCompDBNestedData.putIfAbsent(patent, Collections.synchronizedList(new ArrayList<>()));
+						patentToCompDBNestedData.get(patent).add(nestedData);
 					});
 				}
 			}
