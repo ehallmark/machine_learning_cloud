@@ -152,6 +152,7 @@ label {
 
 input.form-control {
     border: 1px solid #aaa;
+    height: 32px;
 }
 
 .placeholder {

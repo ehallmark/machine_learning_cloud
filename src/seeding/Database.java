@@ -140,31 +140,6 @@ public class Database {
 	}
 
 
-	public static void ingestRecords(String patentNumber, Collection<String> assigneeData, List<List<String>> documents) throws SQLException {
-		if(patentNumber==null)return;
-		String queryPrefix = "INSERT INTO paragraph_tokens (pub_doc_number,assignees,tokens) VALUES ";
-		String querySuffix = " ON CONFLICT DO NOTHING";
-		String query = queryPrefix;
-		for(int i = 0; i < documents.size(); i++) {
-			query += "(?,?,?)";
-			if(i!=documents.size()-1)
-				query += ", ";
-		}
-		query += querySuffix;
-		PreparedStatement ps = conn.prepareStatement(query);
-		final Collection<String> cleanAssigneeData = assigneeData==null ? Collections.emptySet() : assigneeData;
-		Array assigneeArray = conn.createArrayOf("varchar", cleanAssigneeData.toArray());
-		for(int i = 0; i < documents.size(); i++) {
-			List<String> doc = documents.get(i);
-			ps.setString(1+(i*3), patentNumber);
-			ps.setArray(2+(i*3), assigneeArray);
-			ps.setArray(3+(i*3), conn.createArrayOf("varchar", doc.toArray()));
-		}
-		ps.executeUpdate();
-		ps.close();
-	}
-
-
 	public static void ingestPairRecords(Map<Flag,String> data, String tableName) throws SQLException {
 		List<Map.Entry<Flag,String>> entries = data.entrySet().stream().collect(Collectors.toList());
 		String queryPrefix = "INSERT INTO "+tableName+" ("+String.join(",",entries.stream().map(e->e.getKey().dbName).collect(Collectors.toList()))+") VALUES ";
@@ -182,24 +157,6 @@ public class Database {
 		ps.close();
 	}
 
-	public static void ingestTextRecords(String patentNumber, PortfolioList.Type type, List<String> documents) throws SQLException {
-		if(patentNumber==null||documents.isEmpty())return;
-		String query = "INSERT INTO patents_and_applications (pub_doc_number,doc_type,tokens) VALUES (?,?,to_tsvector('english', ";
-		for(int i = 0; i < documents.size(); i++) {
-			query += "coalesce(?,' ')";
-			if(i!=documents.size()-1) query += " || ' ' || ";
-		}
-		query+= ")) ON CONFLICT DO NOTHING";
-		PreparedStatement ps = conn.prepareStatement(query);
-		ps.setString(1,patentNumber);
-		ps.setString(2,type.toString());
-		for(int i = 0; i < documents.size(); i++) {
-			ps.setString(3+i, documents.get(i));
-		}
-		//    System.out.println("Prepared Query: "+ps);
-		ps.executeUpdate();
-		ps.close();
-	}
 
 	public static synchronized void commit() throws SQLException {
 		conn.commit();
@@ -834,7 +791,7 @@ public class Database {
 		Map<String,List<String>> rfToSellersMap = getCompDBReelFrameToSellersMap();
 		Map<String,List<String>> patentToBuyersMap = Collections.synchronizedMap(new HashMap<>());
 		Map<String,List<String>> patentToSellersMap = Collections.synchronizedMap(new HashMap<>());
-		//Map<String,List<String>> patentToCompDBRecordedDate = Collections.synchronizedMap(new HashMap<>());
+		Map<String,List<Map<String,Object>>> patentToCompDBNestedData = Collections.synchronizedMap(new HashMap<>());
 
 		// get Reelframes Map
 		Set<String> reelFrames = getCompDBReelFrames();
