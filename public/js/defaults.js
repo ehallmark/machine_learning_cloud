@@ -342,6 +342,8 @@ var showTemplateFormHelper = function(formSelector,json) {
 var showTemplateFunction = function(e){
     e.preventDefault();
     var $this = $(this);
+    $('button.template-show-button').removeClass('active');
+    $this.addClass('active');
     resetSearchForm();
     showTemplateFormHelper("#searchOptionsForm",$this.attr("data-searchOptionsMap"));
     showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
