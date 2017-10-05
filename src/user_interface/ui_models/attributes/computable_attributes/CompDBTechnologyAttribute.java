@@ -12,7 +12,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class CompDBTechnologyAttribute extends ComputableAttribute<Collection<String>> {
+public class CompDBTechnologyAttribute extends ComputableCompDBAttribute<Collection<String>> {
 
     public CompDBTechnologyAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude,AbstractFilter.FilterType.AdvancedKeyword));

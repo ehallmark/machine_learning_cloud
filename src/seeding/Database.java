@@ -25,16 +25,17 @@ import user_interface.ui_models.portfolios.items.Item;
 import java.io.*;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 public class Database {
-	private static Map<String,List<String>> compDBReelFramesToBuyersMap;
-	private static Map<String,List<String>> compDBReelFramesToSellersMap;
 	private static File compDBBuyersFile = new File(Constants.DATA_FOLDER+"compdb_buyers_map");
 	private static File compDBSellersFile = new File(Constants.DATA_FOLDER+"compdb_sellers_map");
+	private static Map<String,List<String>> compDBReelFramesToBuyersMap;
+	private static Map<String,List<String>> compDBReelFramesToSellersMap;
 	private static Map<String,Set<String>> patentToClassificationMap;
 	private static Map<String,Set<String>> appToClassificationMap;
 	private static Map<String,String> classCodeToClassTitleMap;
@@ -59,12 +60,8 @@ public class Database {
 	private static Map<String,Collection<String>> patentToCitedPatentsMap;
 	private static Map<String,Collection<String>> appToCitedPatentsMap;
 	private static Map<String,Collection<String>> gatherPatentToStagesCompleteMap;
-	private static Map<String,Collection<String>> compDBTechnologyToAssetsMap;
-	private static final File compDBTechnologyToAssetsMapFile = new File(Constants.DATA_FOLDER+"compdb_technology_to_assets_map.jobj");
-	private static Map<String,Collection<String>> compdbAssetToTechnologiesMap;
-	private static final File compdbAssetToTechnologiesMapFile = new File(Constants.DATA_FOLDER+"compdb_asset_to_technologies_map.jobj");
-	private static Map<String,String> compDBAssetToDealIDMap;
-	private static final File compDBAssetToDealIDMapFile = new File(Constants.DATA_FOLDER+"compdb_assets_to_deal_id_map.jobj");
+	private static Map<String,List<Map<String,Object>>> compDBAssetToNestedDataMap;
+	private static final File compDBAssetToNestedDataMapFile = new File(Constants.DATA_FOLDER+"compdb_technology_to_assets_map.jobj");
 	private static Collection<String> compDBPAssets;
 	private static final File compDBPAssetsFile = new File(Constants.DATA_FOLDER+"compdb_assets_set.jobj");
 	private static Map<String,Boolean> gatherBoolValueMap;
@@ -704,27 +701,6 @@ public class Database {
 		return compdbReelFrames;
 	}
 
-	public synchronized static Map<String,Collection<String>> getCompDBTechnologyToAssetsMap() {
-		if(compDBTechnologyToAssetsMap==null) {
-			compDBTechnologyToAssetsMap=(Map<String,Collection<String>>)Database.tryLoadObject(compDBTechnologyToAssetsMapFile);
-		}
-		return compDBTechnologyToAssetsMap;
-	}
-
-	public synchronized static Map<String,Collection<String>> getCompdbAssetToTechnologiesMap() {
-		if(compdbAssetToTechnologiesMap==null) {
-			compdbAssetToTechnologiesMap=(Map<String,Collection<String>>)Database.tryLoadObject(compdbAssetToTechnologiesMapFile);
-		}
-		return compdbAssetToTechnologiesMap;
-	}
-
-	public synchronized static Map<String,String> getCompDBAssetToDealIDMap() {
-		if(compDBAssetToDealIDMap==null) {
-			compDBAssetToDealIDMap=(Map<String,String>)Database.tryLoadObject(compDBAssetToDealIDMapFile);
-		}
-		return compDBAssetToDealIDMap;
-	}
-
 	public synchronized static Set<String> loadCompDBReelFrames() throws SQLException {
 		Database.setupCompDBConn();
 		PreparedStatement ps = compDBConn.prepareStatement("select distinct reel::text||':'||frame as rf from recordings where deal_id is not null and reel is not null and frame is not null");
@@ -766,6 +742,13 @@ public class Database {
 		Database.trySaveObject(sellers,compDBSellersFile);
 	}
 
+	public synchronized static Map<String,List<Map<String,Object>>> getCompDBAssetToNestedDataMap() {
+		if(compDBAssetToNestedDataMap==null) {
+			compDBAssetToNestedDataMap = (Map<String,List<Map<String,Object>>>) Database.tryLoadObject(compDBAssetToNestedDataMapFile);
+		}
+		return compDBAssetToNestedDataMap;
+	}
+
 	public synchronized static Map<String,List<String>> getCompDBReelFrameToBuyersMap() {
 		if(compDBReelFramesToBuyersMap==null) {
 			compDBReelFramesToBuyersMap = (Map<String,List<String>>) Database.tryLoadObject(compDBBuyersFile);
@@ -791,7 +774,7 @@ public class Database {
 		Map<String,List<String>> rfToSellersMap = getCompDBReelFrameToSellersMap();
 		Map<String,List<String>> patentToBuyersMap = Collections.synchronizedMap(new HashMap<>());
 		Map<String,List<String>> patentToSellersMap = Collections.synchronizedMap(new HashMap<>());
-		Map<String,List<Map<String,Object>>> patentToCompDBNestedData = Collections.synchronizedMap(new HashMap<>());
+		compDBAssetToNestedDataMap = Collections.synchronizedMap(new HashMap<>());
 
 		// get Reelframes Map
 		Set<String> allCompDBReelFrames = getCompDBReelFrames();
@@ -822,9 +805,7 @@ public class Database {
 				}
 			});
 		});
-		compDBTechnologyToAssetsMap = Collections.synchronizedMap(new HashMap<>());
-		compDBAssetToDealIDMap = Collections.synchronizedMap(new HashMap<>());
-		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id)  WHERE inactive='f' AND asset_count < 25 AND r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) GROUP BY r.deal_id");
+		PreparedStatement ps = compDBConn.prepareStatement("SELECT array_agg(distinct t.id) as technologies, array_agg(distinct (reel||':'||frame)) AS reelframes, min(r.recording_date) as recording_date, bool_or(coalesce(r.inactive,'t')) as inactive, bool_and(coalesce(d.acquisition_deal,'f')) as acquisition, r.deal_id FROM recordings as r inner join deals_technologies as dt on (r.deal_id=dt.deal_id) INNER JOIN technologies AS t ON (t.id=dt.technology_id) join deals as d on(r.deal_id=d.id)  WHERE r.deal_id IS NOT NULL AND t.name is not null AND t.id!=ANY(?) and recording_date is not null GROUP BY r.deal_id");
 		ps.setArray(1, compDBConn.createArrayOf("int4",badCompDBTechnologyIds.toArray()));
 		Map<Integer, String> technologyMap = Database.compdbTechnologyMap();
 		ResultSet rs = ps.executeQuery();
@@ -837,8 +818,12 @@ public class Database {
 				technologies.add(technologyMap.get(tech));
 			}
 			if(technologies.isEmpty()) continue;
-			Integer dealID = rs.getInt(3);
+			Integer dealID = rs.getInt(6);
 			if(dealID==null) continue;
+
+			boolean acquisition = rs.getBoolean(5);
+			boolean inactive = rs.getBoolean(4);
+			String recordingDate = rs.getDate(3).toLocalDate().format(DateTimeFormatter.ISO_DATE);
 
 			Array reelFramesForDeal = rs.getArray(2);
 			if(reelFramesForDeal==null) continue;
@@ -846,13 +831,6 @@ public class Database {
 			if(reelFramesStr.length>0) {
 				Collection<String> patents = Stream.of(reelFramesStr).flatMap(reelFrame->reelFrameToAssetsMap.getOrDefault(reelFrame,Collections.emptyList()).stream()).collect(Collectors.toList());
 				if(patents.size()>0) {
-					technologies.forEach(tech -> {
-						if (!compDBTechnologyToAssetsMap.containsKey(tech)) {
-							compDBTechnologyToAssetsMap.put(tech, Collections.synchronizedCollection(new HashSet<>()));
-						}
-						Collection<String> list = compDBTechnologyToAssetsMap.get(tech);
-						list.addAll(patents);
-					});
 					patents.forEach(patent -> {
 						Map<String,Object> nestedData = Collections.synchronizedMap(new HashMap<>());
 						// add nested attrs
@@ -862,41 +840,29 @@ public class Database {
 						nestedData.put(Constants.NAME, patents);
 						nestedData.put(Constants.NUM_ASSIGNMENTS, reelFramesStr.length);
 						nestedData.put(Constants.NUM_ASSETS, patents.size());
+						nestedData.put(Constants.RECORDED_DATE, recordingDate);
+						nestedData.put(Constants.INACTIVE_DEAL, inactive);
+						nestedData.put(Constants.ACQUISITION_DEAL, acquisition);
+
 						List<String> buyers = patentToBuyersMap.get(patent);
 						List<String> sellers = patentToSellersMap.get(patent);
 						if(buyers!=null)nestedData.put(Constants.BUYER, buyers);
 						if(sellers!=null)nestedData.put(Constants.SELLER, sellers);
-						patentToCompDBNestedData.putIfAbsent(patent, Collections.synchronizedList(new ArrayList<>()));
-						patentToCompDBNestedData.get(patent).add(nestedData);
+						compDBAssetToNestedDataMap.putIfAbsent(patent, Collections.synchronizedList(new ArrayList<>()));
+						compDBAssetToNestedDataMap.get(patent).add(nestedData);
 					});
 				}
 			}
 
 		}
-		// invert
-		compdbAssetToTechnologiesMap = Collections.synchronizedMap(new HashMap<>());
-		compDBTechnologyToAssetsMap.entrySet().forEach(e->{
-			e.getValue().forEach(asset->{
-				if(compdbAssetToTechnologiesMap.containsKey(asset)) {
-					compdbAssetToTechnologiesMap.get(asset).add(e.getKey());
-				} else {
-					Set<String> tech = Collections.synchronizedSet(new HashSet<>());
-					tech.add(e.getKey());
-					compdbAssetToTechnologiesMap.put(asset,tech);
-				}
-			});
-		});
 
 		// patent set
-		compDBPAssets = Collections.synchronizedCollection(new HashSet<>(compDBAssetToDealIDMap.keySet()));
-
+		compDBPAssets = Collections.synchronizedCollection(new HashSet<>(compDBAssetToNestedDataMap.keySet()));
 
 		rs.close();
 		ps.close();
 
-		Database.trySaveObject(compDBAssetToDealIDMap,compDBAssetToDealIDMapFile);
-		Database.trySaveObject(compDBTechnologyToAssetsMap,compDBTechnologyToAssetsMapFile);
-		Database.trySaveObject(compdbAssetToTechnologiesMap,compdbAssetToTechnologiesMapFile);
+		Database.trySaveObject(compDBAssetToNestedDataMap,compDBAssetToNestedDataMapFile);
 		Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
 		BuyerAttribute buyerAttribute = new BuyerAttribute();
 		buyerAttribute.setPatentDataMap(patentToBuyersMap);
