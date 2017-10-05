@@ -124,6 +124,7 @@ public class Constants {
 	public static final String NUM_ASSIGNMENTS = REEL_FRAME+COUNT_SUFFIX;
 	public static final String NUM_RELATED_ASSETS = ALL_RELATED_ASSETS+COUNT_SUFFIX;
 	public static final String NUM_BACKWARD_CITATIONS = BACKWARD_CITATION+COUNT_SUFFIX;
+	public static final String NUM_ASSETS = NAME+COUNT_SUFFIX;
 	public static final String WIPO_TECHNOLOGY = "wipoTechnology";
 	public static final String PATENT_SIMILARITY = "patentSimilarity";
 	public static final String ASSIGNEE_SIMILARITY = "assigneeSimilarity";

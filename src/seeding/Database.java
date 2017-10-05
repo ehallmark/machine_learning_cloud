@@ -862,7 +862,10 @@ public class Database {
 						nestedData.put(Constants.NAME, patents);
 						nestedData.put(Constants.NUM_ASSIGNMENTS, reelFramesStr.length);
 						nestedData.put(Constants.NUM_ASSETS, patents.size());
-						nestedData.put(Constants.BUYER)
+						List<String> buyers = patentToBuyersMap.get(patent);
+						List<String> sellers = patentToSellersMap.get(patent);
+						if(buyers!=null)nestedData.put(Constants.BUYER, buyers);
+						if(sellers!=null)nestedData.put(Constants.SELLER, sellers);
 						patentToCompDBNestedData.putIfAbsent(patent, Collections.synchronizedList(new ArrayList<>()));
 						patentToCompDBNestedData.get(patent).add(nestedData);
 					});
