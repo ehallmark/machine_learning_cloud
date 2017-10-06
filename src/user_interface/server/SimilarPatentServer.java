@@ -1213,6 +1213,13 @@ public class SimilarPatentServer {
                                                         )
                                                 ),
                                                 div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
+                                                        div().withClass("collapsible-form row").with(
+                                                                div().withClass("col-12 attributeElement").attr("style","display: none !important;").with(
+                                                                        label("Use Highlighting").attr("style","width: 100%;").with(
+                                                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                        )
+                                                                )
+                                                        ),
                                                         div().withClass("row").with(
                                                                 div().withClass("col-12").withId("chartsForm").with(
                                                                         customFormRow("charts",allCharts, userRoleFunction)
@@ -1317,11 +1324,6 @@ public class SimilarPatentServer {
                                 div().withClass("col-6 attributeElement").with(
                                         label("Result Limit").attr("style","width: 100%;").with(
                                                 br(),input().withId("main-options-"+LIMIT_FIELD).withClass("form-control").attr("style","height: 28px;").withType("number").withValue("10").withName(LIMIT_FIELD)
-                                        )
-                                ),
-                                div().withClass("col-6 attributeElement").attr("style","display: none !important;").with(
-                                        label("Use Highlighting").attr("style","width: 100%;").with(
-                                                br(), input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                         )
                                 )
                         )

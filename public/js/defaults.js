@@ -266,6 +266,14 @@ $(document).ready(function() {
     $('.nested-form-list').disableSelection();
 
     $('#main-content-id').addClass('show');
+
+    $('#main-options-useHighlighter').click(function(e) {
+        if($(this).is(":checked")) {
+            $(this).val('on');
+        } else {
+            $(this).val('off');
+        }
+    });
 });
 
 var resetSearchForm = function() {
