@@ -32,7 +32,7 @@ public class UpdatePre2005DataFromPatentDB {
         LocalDate endDate = LocalDate.of(2005,1,1);
         DatabaseIterator iterator = new DatabaseIterator(startDate,endDate);
         try {
-            iterator.run(false,false); // TODO SET BOTH TO FALSE
+            iterator.run(true,false); // TODO SET BOTH TO FALSE
             iterator.save();
         } catch(Exception e) {
             e.printStackTrace();
