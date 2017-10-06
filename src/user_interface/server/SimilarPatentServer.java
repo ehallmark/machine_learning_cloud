@@ -750,7 +750,7 @@ public class SimilarPatentServer {
             if(map==null) return null;
             List<String> headers = (List<String>)map.getOrDefault("headers",Collections.emptyList());
             System.out.println("Number of headers: "+headers.size());
-            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows",Collections.emptyList());
+            List<Map<String,String>> data = (List<Map<String,String>>)map.getOrDefault("rows-highlighted",Collections.emptyList());
             long totalCount = data.size();
             // check for search
             List<Map<String,String>> queriedData;
@@ -941,7 +941,13 @@ public class SimilarPatentServer {
 
             System.out.println("Rendering table...");
             boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
-            List<Map<String,String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, useHighlighter));
+            List<Map<String, String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, false));
+            List<Map<String, String>> tableDataHighlighted;
+            if(useHighlighter) {
+                tableDataHighlighted = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, true));
+            } else {
+                tableDataHighlighted = tableData;
+            }
 
             boolean onlyExcel = extractBool(req, "onlyExcel");
             String html;
@@ -949,6 +955,7 @@ public class SimilarPatentServer {
             Map<String,Object> excelRequestMap = new HashMap<>();
             excelRequestMap.put("headers", tableHeaders);
             excelRequestMap.put("rows", tableData);
+            excelRequestMap.put("rows-highlighted", tableDataHighlighted);
             req.session().attribute(EXCEL_SESSION, excelRequestMap);
 
             if(onlyExcel) {
