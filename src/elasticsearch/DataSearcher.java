@@ -352,7 +352,6 @@ public class DataSearcher {
                     for(Text fragment : fragments) {
                         sj.add(fragment.toString());
                     }
-                    System.out.println("Adding highlight data for "+e.getKey()+": "+sj.toString());
                     item.addData(e.getKey()+Constants.HIGHLIGHTED, Helper.fixPunctuationSpaces(sj.toString()));
                 }
             });
