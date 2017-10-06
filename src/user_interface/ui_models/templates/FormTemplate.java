@@ -21,11 +21,14 @@ public class FormTemplate {
     protected String chartsMap;
     @Getter
     protected String searchOptionsMap;
-    public FormTemplate(String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap) {
+    @Getter
+    protected String highlightMap;
+    public FormTemplate(String name, String searchOptionsMap, String attributesMap, String filtersMap, String chartsMap, String highlightMap) {
         this.name=name;
         this.searchOptionsMap=searchOptionsMap;
         this.attributesMap=attributesMap;
         this.filtersMap=filtersMap;
         this.chartsMap=chartsMap;
+        this.highlightMap=highlightMap;
     }
 }

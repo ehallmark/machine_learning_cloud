@@ -1070,8 +1070,10 @@ public class SimilarPatentServer {
                 Object attributesMap = templateMap.get("attributesMap");
                 Object chartsMap = templateMap.get("chartsMap");
                 Object filtersMap = templateMap.get("filtersMap");
+                Object highlightMap = templateMap.get("highlightMap");
+                if(highlightMap==null) highlightMap="";
                 if(name!=null&&searchObjectsMap!=null&&attributesMap!=null&&chartsMap!=null&&filtersMap!=null) {
-                    FormTemplate template = new FormTemplate(name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString());
+                    FormTemplate template = new FormTemplate(name.toString(), searchObjectsMap.toString(), attributesMap.toString(), filtersMap.toString(), chartsMap.toString(), highlightMap.toString());
                     return templateHelper(template, deletable ? file : null);
                 } else return null;
             }).filter(t->t!=null).collect(Collectors.toList());
@@ -1155,6 +1157,7 @@ public class SimilarPatentServer {
     public static Tag templateHelper(FormTemplate template, File file) {
         return li().withClass("nav-item").with(
                 button(template.getName()).withClass("btn btn-secondary template-show-button").attr("style","width: "+(file==null?80:70)+"%;").attr("data-name",template.getName()).attr("data-chartsMap", template.getChartsMap())
+                        .attr("data-highlight", template.getHighlightMap())
                         .attr("data-attributesMap", template.getAttributesMap()).attr("data-filtersMap", template.getFiltersMap()).attr("data-searchOptionsMap", template.getSearchOptionsMap()),
                 file==null?span():span("X").attr("data-action",DELETE_TEMPLATE_URL).attr("data-file",file.getName()).withClass("template-remove-button")
         );
