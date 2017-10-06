@@ -940,7 +940,8 @@ public class SimilarPatentServer {
 
 
             System.out.println("Rendering table...");
-            List<Map<String,String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders));
+            boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
+            List<Map<String,String>> tableData = new ArrayList<>(getTableRowData(portfolioList.getItemList(), tableHeaders, useHighlighter));
 
             boolean onlyExcel = extractBool(req, "onlyExcel");
             String html;
@@ -1041,8 +1042,8 @@ public class SimilarPatentServer {
         }).collect(Collectors.toList());
     }
 
-    static List<Map<String,String>> getTableRowData(Item[] items, List<String> attributes) {
-        return Arrays.stream(items).map(item -> item.getDataAsMap(attributes)).collect(Collectors.toList());
+    static List<Map<String,String>> getTableRowData(Item[] items, List<String> attributes, boolean useHighlighter) {
+        return Arrays.stream(items).map(item -> item.getDataAsMap(attributes,useHighlighter)).collect(Collectors.toList());
     }
 
     public static Tag addAttributesToRow(ContainerTag tag, List<String> data, List<String> headers) {

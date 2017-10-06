@@ -54,9 +54,9 @@ public class Item implements Comparable<Item> {
         }).collect(Collectors.toList());
     }
 
-    public Map<String,String> getDataAsMap(List<String> attributes) {
+    public Map<String,String> getDataAsMap(List<String> attributes,boolean useHighlighter) {
         return attributes.stream().map(attr->{
-            Object cell = dataMap.get(attr);
+            Object cell = useHighlighter ? dataMap.getOrDefault(attr+Constants.HIGHLIGHTED, dataMap.get(attr)) : dataMap.get(attr);
             return new Pair<>(attr,cell==null? "": ((cell instanceof Double || cell instanceof Float) ? (((Number)cell).doubleValue()==(double) ((Number)cell).intValue() ? String.valueOf(((Number)cell).intValue()) : String.format("%.1f",cell)) : cell.toString()));
         }).collect(Collectors.toMap(p->p.getFirst(),p->p.getSecond()));
     }

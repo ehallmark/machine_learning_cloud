@@ -34,6 +34,7 @@ public class Constants {
 	public static final String BUYER = "buyer";
 	public static final String SELLER = "seller";
 	public static final String ADDRESS_1 = "addressOne";
+	public static final String HIGHLIGHTED = "highlighted";
 	public static final String BACKWARD_CITATION = "backwardCitation";
 	public static final String ADDRESS_2 = "addressTwo";
 	public static final String DATA_DOWNLOADERS_FOLDER = "dataDownloaders/";
