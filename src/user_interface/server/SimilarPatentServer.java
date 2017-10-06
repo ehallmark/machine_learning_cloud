@@ -1121,16 +1121,17 @@ public class SimilarPatentServer {
                                                                         input().withType("hidden").withName("filtersMap").withId("filtersMap"),
                                                                         input().withType("hidden").withName("attributesMap").withId("attributesMap"),
                                                                         input().withType("hidden").withName("searchOptionsMap").withId("searchOptionsMap"),
+                                                                        input().withType("hidden").withName("highlightMap").withId("highlightMap"),
                                                                         input().withType("text").withClass("form-control").attr("placeholder","Template Name").withName("name").withId("template_name").attr("style","width: 80%; margin-left: 10%; margin-right: 10%; display: inline-block; text-align: center;"),
                                                                         button().withType("submit").withText("Save").withClass("btn btn-secondary").withId("save-template-form-id-button")
                                                                 )
-                                                        ), div().attr("style","max-height: 50%; overflow-y: auto;").with(
+                                                        ), div().attr("style","height: 55%;").with(
                                                                 h5("Default Forms"),
-                                                                div().with(
+                                                                div().attr("style","max-height: 100%; overflow-y: auto;").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
-                                                                div().withId("my-templates").with(
+                                                                div().attr("style","max-height: 100%; overflow-y: auto;").withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )
@@ -1214,9 +1215,9 @@ public class SimilarPatentServer {
                                                 ),
                                                 div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                         div().withClass("collapsible-form row").with(
-                                                                div().withClass("col-12 attributeElement").with(
+                                                                div().withClass("col-12 attributeElement").withId("highlightForm").with(
                                                                         h5("Highlighting").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; width: 20px; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                                                         )
                                                                 )
                                                         ),

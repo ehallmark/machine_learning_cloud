@@ -31,6 +31,7 @@ $(document).ready(function() {
         saveTemplateFormHelper("#attributesForm",".attributeElement","#save-template-form-id #attributesMap");
         saveTemplateFormHelper("#filtersForm",".attributeElement","#save-template-form-id #filtersMap");
         saveTemplateFormHelper("#chartsForm",".attributeElement","#save-template-form-id #chartsMap");
+        saveTemplateFormHelper("#highlightForm",".attributeElement","#save-template-form-id #hightlightMap");
 
         var $this = $(this);
 
@@ -40,16 +41,17 @@ $(document).ready(function() {
           data: $(this).serialize(),
           success: function(data) {
             // add button
-            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
+            if(!(data.hasOwnProperty('name') && data.hasOwnProperty('chartsMap') && data.hasOwnProperty('highlightMap') && data.hasOwnProperty('attributesMap') && data.hasOwnProperty('filtersMap') && data.hasOwnProperty('searchOptionsMap') && data.hasOwnProperty('file'))) {
                 alert('Error saving template: '+data.message);
             } else {
                 var name = data.name;
                 var charts = data.chartsMap;
+                var highlight = data.highlightMap;
                 var attributes = data.attributesMap;
                 var filters = data.filtersMap;
                 var searchOptions = data.searchOptionsMap;
                 var file = data.file;
-                $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
+                $('#my-templates').append($("<li class='nav-item'><button class='btn btn-secondary template-show-button' style='width: 70%;' data-highlight='"+highlight+"' data-name='"+name+"' data-chartsmap='"+charts+"' data-attributesmap='"+attributes+"' data-filtersmap='"+filters+"' data-searchoptionsmap='"+searchOptions+"'>"+name+"</button><span data-action='/secure/delete_template' data-file='"+file+"' class='template-remove-button' >X</span></li>"));
                 $('.template-show-button').filter(':last').click(showTemplateFunction);
                 $('.template-remove-button').filter(':last').click(removeTemplateFunction);
                 $('#template_name').val(null);
@@ -357,6 +359,11 @@ var showTemplateFunction = function(e){
     showTemplateFormHelper("#attributesForm",$this.attr("data-attributesMap"));
     showTemplateFormHelper("#filtersForm",$this.attr("data-filtersMap"));
     showTemplateFormHelper("#chartsForm",$this.attr("data-chartsMap"));
+    try {
+        showTemplateFormHelper("#highlightForm",$this.attr("data-highlight"));
+    } catch(err) {
+
+    }
     return false;
 };
 
