@@ -840,12 +840,13 @@ public class SimilarPatentServer {
         String attributesMap = req.queryParams("attributesMap");
         String searchOptionsMap = req.queryParams("searchOptionsMap");
         String filtersMap = req.queryParams("filtersMap");
+        String highlightMap = req.queryParams("highlightMap");
         String chartsMap = req.queryParams("chartsMap");
         String name = req.queryParams("name");
         String message;
         Random random = new Random(System.currentTimeMillis());
         Map<String,Object> responseMap = new HashMap<>();
-        if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
+        if(attributesMap!=null&&searchOptionsMap!=null&&chartsMap!=null&&highlightMap!=null&&filtersMap!=null&&name!=null&&name.length()>0) {
             System.out.println("Form "+name+" attributes: "+attributesMap);
             Map<String,String> formMap = new HashMap<>();
             formMap.put("name",name);
@@ -853,6 +854,7 @@ public class SimilarPatentServer {
             formMap.put("searchOptionsMap",searchOptionsMap);
             formMap.put("filtersMap",filtersMap);
             formMap.put("chartsMap",chartsMap);
+            formMap.put("highlightMap", highlightMap);
             String username = req.session().attribute("username");
             if(username!=null&&username.length()>0) {
                 String templateFolderStr = Constants.DATA_FOLDER+Constants.USER_TEMPLATE_FOLDER+username+"/";
