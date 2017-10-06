@@ -31,7 +31,7 @@ $(document).ready(function() {
         saveTemplateFormHelper("#attributesForm",".attributeElement","#save-template-form-id #attributesMap");
         saveTemplateFormHelper("#filtersForm",".attributeElement","#save-template-form-id #filtersMap");
         saveTemplateFormHelper("#chartsForm",".attributeElement","#save-template-form-id #chartsMap");
-        saveTemplateFormHelper("#highlightForm",".attributeElement","#save-template-form-id #hightlightMap");
+        saveTemplateFormHelper("#highlightForm",".attributeElement","#save-template-form-id #highlightMap");
 
         var $this = $(this);
 
