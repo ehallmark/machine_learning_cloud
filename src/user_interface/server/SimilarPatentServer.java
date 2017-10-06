@@ -1215,8 +1215,8 @@ public class SimilarPatentServer {
                                                 div().withClass("col-12 tab-pane fade").attr("role","tabpanel").withId("tab2").with(
                                                         div().withClass("collapsible-form row").with(
                                                                 div().withClass("col-12 attributeElement").with(
-                                                                        label("Use Highlighting").attr("style","width: 100%;").with(
-                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
+                                                                        h5("Highlighting").attr("style","width: 100%;").with(
+                                                                                input().withId("main-options-"+USE_HIGHLIGHTER_FIELD).withClass("form-control").withType("checkbox").attr("style","margin-top: 5px; margin-left: auto; margin-right: auto;").withValue("on").attr("checked","checked").withName(USE_HIGHLIGHTER_FIELD)
                                                                         )
                                                                 )
                                                         ),
