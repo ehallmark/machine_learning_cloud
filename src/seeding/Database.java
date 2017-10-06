@@ -5,9 +5,6 @@ import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.concurrenttrees.radix.node.concrete.DefaultByteArrayNodeFactory;
 
 import elasticsearch.DataSearcher;
-import lombok.Getter;
-import net.lingala.zip4j.core.ZipFile;
-import org.deeplearning4j.berkeley.Pair;
 import org.elasticsearch.search.sort.SortOrder;
 import seeding.ai_db_updater.handlers.flags.Flag;
 import seeding.compdb.CreateCompDBAssigneeTransactionData;
@@ -19,7 +16,6 @@ import user_interface.ui_models.attributes.SellerAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.*;
 import user_interface.ui_models.filters.AbstractFilter;
 import user_interface.ui_models.filters.AbstractIncludeFilter;
-import user_interface.ui_models.portfolios.PortfolioList;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.io.*;
@@ -875,12 +871,6 @@ public class Database {
 		Database.trySaveObject(compDBAssetToNestedDataMap,compDBAssetToNestedDataMapFile);
 		Database.trySaveObject(compDBPAssets,compDBPAssetsFile);
 		Database.trySaveObject(compDBTechnologies,compDBTechnologiesFile);
-		BuyerAttribute buyerAttribute = new BuyerAttribute();
-		buyerAttribute.setPatentDataMap(patentToBuyersMap);
-		SellerAttribute sellerAttribute = new SellerAttribute();
-		sellerAttribute.setPatentDataMap(patentToSellersMap);
-		buyerAttribute.save();
-		sellerAttribute.save();
 		System.out.println("Total number of technologies: "+compDBTechnologies.size());
 	}
 

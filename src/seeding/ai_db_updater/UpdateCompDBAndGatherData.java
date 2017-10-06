@@ -3,6 +3,7 @@ package seeding.ai_db_updater;
 import elasticsearch.DataIngester;
 import elasticsearch.IngestMongoIntoElasticSearch;
 import org.bson.Document;
+import seeding.Constants;
 import seeding.Database;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
@@ -40,11 +41,9 @@ public class UpdateCompDBAndGatherData {
         ingestAttributesForAssets(gatherAttributes,gatherAssets);
         DataIngester.finishCurrentMongoBatch();
 
-        Collection<AbstractAttribute> compDBAttributes = Arrays.asList(new CompDBNestedAttribute());
         Collection<String> compDBAssets = Database.getCompDBAssets();
-
         System.out.println("Starting to update compdb data...");
-        ingestAttributesForAssets(compDBAttributes,compDBAssets);
+        ingestCompDBNestedData(compDBAssets);
         DataIngester.finishCurrentMongoBatch();
 
         {
@@ -61,6 +60,20 @@ public class UpdateCompDBAndGatherData {
     private static List<String> union(Collection<String> c1, Collection<String> c2) {
         List<String> c3 = Stream.of(c1,c2).flatMap(c->c.stream()).distinct().collect(Collectors.toList());
         return c3;
+    }
+
+    private static void ingestCompDBNestedData(Collection<String> assets) {
+        Map<String,List<Map<String,Object>>> compDBData = Database.getCompDBAssetToNestedDataMap();
+        assets.parallelStream().forEach(asset->{
+            String filing = assetToFilingMap.getApplicationDataMap().getOrDefault(asset,assetToFilingMap.getPatentDataMap().get(asset));
+            if(filing == null) return;
+            Map<String,Object> data = new HashMap<>();
+            List<Map<String,Object>> compdb = compDBData.get(asset);
+            if(compdb!=null&&compdb.size()>0) {
+                data.put(Constants.COMPDB, compdb);
+                DataIngester.ingestBulk(asset, filing, data, false);
+            }
+        });
     }
 
     private static void ingestAttributesForAssets(Collection<AbstractAttribute> attributes, Collection<String> assets) {

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public abstract class ComputableCompDBAttribute<T> extends ComputableAttribute<Collection<T>> {
+public abstract class ComputableCompDBAttribute extends ComputableAttribute<List<Map<String,Object>>> {
     private static Map<String,List<Map<String,Object>>> compDBNestedData;
 
     public static Map<String,List<Map<String,Object>>> getCompDBNestedData() {
@@ -24,27 +24,21 @@ public abstract class ComputableCompDBAttribute<T> extends ComputableAttribute<C
         }
         return compDBNestedData;
     }
-    protected String name;
-    public ComputableCompDBAttribute(Collection<AbstractFilter.FilterType> filterTypes, String name) {
-        super(filterTypes);
-        this.name = name;
+    public ComputableCompDBAttribute() {
+        super(Collections.emptyList());
     }
 
     @Override
     public String getName() {
-        return name;
+        return null;
     }
 
     @Override
-    public Collection<T> attributesFor(Collection<String> portfolio, int limit) {
+    public List<Map<String,Object>> attributesFor(Collection<String> portfolio, int limit) {
         if(portfolio.isEmpty()) return null;
         String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
         if(item == null) return null;
-        List<T> data = getCompDBNestedData().getOrDefault(item, Collections.emptyList()).stream().map(obj->{
-            return (T)obj.get(name);
-        }).filter(obj->obj!=null).distinct().collect(Collectors.toList());
-        if(data.isEmpty()) return null;
-        return data;
+        return getCompDBNestedData().get(item);
     }
 }
 

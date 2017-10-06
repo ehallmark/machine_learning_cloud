@@ -2,6 +2,7 @@ package user_interface.ui_models.attributes;
 
 import seeding.Constants;
 import seeding.Database;
+import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.computable_attributes.ComputableAttribute;
 import user_interface.ui_models.filters.AbstractFilter;
 
@@ -10,7 +11,7 @@ import java.util.*;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class BuyerAttribute extends ComputableAttribute<List<String>> {
+public class BuyerAttribute extends AbstractAttribute {
     public BuyerAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword));
     }
@@ -38,11 +39,4 @@ public class BuyerAttribute extends ComputableAttribute<List<String>> {
         return fields;
     }
 
-    @Override
-    public List<String> attributesFor(Collection<String> portfolio, int limit) {
-        if(patentDataMap==null) initMaps();
-        String item = portfolio.stream().filter(i->i!=null).findAny().orElse(null);
-        if(item==null) return null;
-        return patentDataMap.get(item);
-    }
 }

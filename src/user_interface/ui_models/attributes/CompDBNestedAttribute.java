@@ -1,7 +1,6 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
-import user_interface.ui_models.attributes.computable_attributes.*;
 
 import java.util.Arrays;
 
