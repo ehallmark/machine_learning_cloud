@@ -1129,11 +1129,11 @@ public class SimilarPatentServer {
                                                                 )
                                                         ), div().attr("style","height: 55%;").with(
                                                                 h5("Default Forms"),
-                                                                div().attr("style","max-height: 100%; overflow-y: auto;").with(
+                                                                div().attr("style","max-height: 40%; overflow-y: auto;").with(
                                                                         getTemplatesForUser(SUPER_USER,false)
                                                                 ),
                                                                 h5("My Forms"),
-                                                                div().attr("style","max-height: 100%; overflow-y: auto;").withId("my-templates").with(
+                                                                div().attr("style","max-height: 45%; overflow-y: auto;").withId("my-templates").with(
                                                                         getTemplatesForUser(req.session().attribute("username"),true)
                                                                 )
                                                         )

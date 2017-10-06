@@ -272,9 +272,12 @@ $(document).ready(function() {
     $('#main-options-useHighlighter').click(function(e) {
         if($(this).is(":checked")) {
             $(this).val('on');
+            $(this).prop('checked',true);
         } else {
             $(this).val('off');
+            $(this).prop('checked',false);
         }
+        return true;
     });
 });
 
