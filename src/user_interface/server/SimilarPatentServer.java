@@ -918,6 +918,7 @@ public class SimilarPatentServer {
             System.out.println("While pinging platform starter...");
         }
         try {
+            if(req.session(false).attribute(EXCEL_SESSION)!=null) req.session(false).removeAttribute(EXCEL_SESSION);
             System.out.println("Getting parameters...");
             System.out.println("Getting models...");
             long timeStart = System.currentTimeMillis();
