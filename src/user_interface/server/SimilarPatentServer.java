@@ -738,7 +738,7 @@ public class SimilarPatentServer {
                 results = allResults.subList(start,Math.min(allResults.size(),end)).stream().map(result->{
                     Map<String,Object> map = new HashMap<>();
                     map.put("id", result);
-                    map.put("text", result);
+                    map.put("text", result + " (" + Database.getAssetCountFor(result)+")");
                     return map;
                 }).collect(Collectors.toList());
             }

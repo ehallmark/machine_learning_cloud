@@ -363,7 +363,7 @@ public class Database {
 	}
 
 	public synchronized static int getAssetCountFor(String assignee) {
-		return getAssigneeToAppsMap().getOrDefault(assignee,Collections.emptySet()).size() + getAssigneeToPatentsMap().getOrDefault(assignee,Collections.emptySet()).size();
+		return Math.max(getAssigneeToAppsMap().getOrDefault(assignee,Collections.emptySet()).size(),getAssigneeToPatentsMap().getOrDefault(assignee,Collections.emptySet()).size());
 	}
 
 	public synchronized static int getAssetsSoldCountFor(String assignee) {
