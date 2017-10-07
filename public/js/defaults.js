@@ -254,6 +254,8 @@ $(document).ready(function() {
         var $this = $(this);
         var url = $this.attr("data-url");
         $this.select2({
+          width: "100%",
+          ajax: {
             url: url,
             dataType: "json",
             delay: 100,
@@ -265,6 +267,7 @@ $(document).ready(function() {
 
                 return query;
             }
+          }
         });
     });
 
