@@ -18,14 +18,14 @@ import tools.ClassCodeHandler;
 import user_interface.server.SimilarPatentServer;
 import user_interface.ui_models.attributes.AbstractAttribute;
 import user_interface.ui_models.attributes.script_attributes.AbstractScriptAttribute;
+import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.portfolios.items.Item;
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.textarea;
+import static j2html.TagCreator.*;
 import static user_interface.server.SimilarPatentServer.extractString;
 import static user_interface.server.SimilarPatentServer.preProcess;
 
@@ -101,9 +101,19 @@ public class AbstractIncludeFilter extends AbstractFilter {
                     textarea().attr("data-attribute",attribute.getName()).attr("data-filtertype",filterType.toString()).withId(getName().replaceAll("[\\[\\]]","")+filterType.toString()).withClass("form-control").attr("placeholder","1 per line.").withName(getName())
             );
         } else {
-            return div().with(
-                    SimilarPatentServer.technologySelect(getName(), getAllValues())
-            );
+            if(attribute instanceof AjaxMultiselect) {
+                return div().with(
+                        ajaxMultiSelect(getName(), ((AjaxMultiselect) attribute).ajaxUrl())
+                );
+            } else {
+                return div().with(
+                        SimilarPatentServer.technologySelect(getName(), getAllValues())
+                );
+            }
         }
+    }
+
+    public Tag ajaxMultiSelect(String name, String url) {
+        return select().attr("style","width:100%;").withName(name).withId(("multiselect-multiselect-"+name).replaceAll("[\\[\\] ]","")).withClass("multiselect-ajax").attr("data-url",url).attr("multiple","multiple");
     }
 }

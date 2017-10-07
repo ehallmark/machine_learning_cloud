@@ -1,6 +1,7 @@
 package user_interface.ui_models.attributes;
 
 import seeding.Constants;
+import user_interface.ui_models.attributes.tools.AjaxMultiselect;
 import user_interface.ui_models.filters.AbstractFilter;
 
 import java.util.Arrays;
@@ -10,7 +11,7 @@ import java.util.Map;
 /**
  * Created by ehallmark on 6/15/17.
  */
-public class AssigneeNameAttribute extends AbstractAttribute {
+public class AssigneeNameAttribute extends AbstractAttribute implements AjaxMultiselect {
     public AssigneeNameAttribute() {
         super(Arrays.asList(AbstractFilter.FilterType.AdvancedKeyword,AbstractFilter.FilterType.Include,AbstractFilter.FilterType.Exclude));
     }
@@ -21,7 +22,7 @@ public class AssigneeNameAttribute extends AbstractAttribute {
 
     @Override
     public AbstractFilter.FieldType getFieldType() {
-        return AbstractFilter.FieldType.Text;
+        return AbstractFilter.FieldType.Multiselect;
     }
 
     @Override
@@ -36,5 +37,10 @@ public class AssigneeNameAttribute extends AbstractAttribute {
         rawType.put("type","keyword");
         fields.put("raw",rawType);
         return fields;
+    }
+
+    @Override
+    public String ajaxUrl() {
+        return Constants.ASSIGNEE_NAME_AJAX_URL;
     }
 }

@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Constants {
+	public static final String ASSIGNEE_NAME_AJAX_URL = "/data/assignee/02395328523985293085923dgkld0938592385902835902";
 	public static final String GATHER = "gather";
 	public static final String GATHER_VALUE = "gatherValue";
 	public static final String GATHER_STAGE = "gatherStage";

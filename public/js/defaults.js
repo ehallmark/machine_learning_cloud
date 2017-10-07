@@ -250,6 +250,24 @@ $(document).ready(function() {
         closeOnSelect: false
     });
 
+    $('.multiselect-ajax').each(function() {
+        var $this = $(this);
+        var url = $this.attr("data-url");
+        $this.select2({
+            url: url,
+            dataType: "json",
+            delay: 100,
+            data: function(params) {
+                var query = {
+                    search: params.term,
+                    page: params.page || 1
+                };
+
+                return query;
+            }
+        });
+    });
+
 
     $('.single-select2').select2({
         minimumResultsForSearch: 5,

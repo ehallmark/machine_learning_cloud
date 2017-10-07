@@ -1,6 +1,7 @@
 package user_interface.server;
 
 import com.google.gson.Gson;
+import com.googlecode.concurrenttrees.radix.RadixTree;
 import com.googlecode.wickedcharts.highcharts.jackson.JsonRenderer;
 import elasticsearch.DataIngester;
 import lombok.Getter;
@@ -713,6 +714,43 @@ public class SimilarPatentServer {
             out.close();
             response.status(200);
             return response.body();
+        });
+
+
+        // setup select2 ajax remote data sources
+        get(Constants.ASSIGNEE_NAME_AJAX_URL, (req,res)->{
+            int PER_PAGE = 30;
+            String search = req.queryParams("search");
+            int page = Integer.valueOf(req.queryParamOrDefault("page","1"));
+
+            System.out.println("Search: "+search);
+            System.out.println("Page: "+page);
+
+            List<String> allResults = Database.sortedPossibleAssignees(search);
+
+            int start = (page-1) * PER_PAGE;
+            int end = start + PER_PAGE;
+
+            List<Map<String,Object>> results;
+            if(start >= allResults.size()) {
+                results = Collections.emptyList();
+            } else {
+                results = allResults.subList(start,Math.min(allResults.size(),end)).stream().map(result->{
+                    Map<String,Object> map = new HashMap<>();
+                    map.put("id", result);
+                    map.put("text", result);
+                    return map;
+                }).collect(Collectors.toList());
+            }
+
+            Map<String,Boolean> pagination = new HashMap<>();
+            pagination.put("more", end >= allResults.size());
+
+            Map<String,Object> response = new HashMap<>();
+            response.put("results",results);
+            response.put("pagination", pagination);
+
+            return new Gson().toJson(response);
         });
     }
 

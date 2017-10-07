@@ -434,6 +434,16 @@ public class Database {
 		return possible;
 	}
 
+	public synchronized static List<String> sortedPossibleAssignees(String base) {
+		if(base==null||base.isEmpty()) return Collections.emptyList();
+		final String cleanBase = AssigneeTrimmer.standardizedAssignee(base);
+		if(cleanBase.isEmpty()) return Collections.emptyList();
+		SortedSet<String> possible = new TreeSet<>();
+		if(getAssignees().contains(cleanBase)) possible.add(cleanBase);
+		getAssigneePrefixTrie().getValuesForKeysStartingWith(cleanBase).forEach(a->possible.add(a));
+		return new ArrayList<>(possible);
+	}
+
 	public synchronized static Set<String> subClassificationsForClass(String formattedCPC) {
 		if(formattedCPC==null||formattedCPC.isEmpty()) return new HashSet<>();
 		Set<String> possible = new HashSet<>();
