@@ -744,7 +744,7 @@ public class SimilarPatentServer {
             }
 
             Map<String,Boolean> pagination = new HashMap<>();
-            pagination.put("more", end >= allResults.size());
+            pagination.put("more", end < allResults.size());
 
             Map<String,Object> response = new HashMap<>();
             response.put("results",results);
