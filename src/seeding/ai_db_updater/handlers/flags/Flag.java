@@ -5,7 +5,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import seeding.Constants;
 import seeding.ai_db_updater.tools.Helper;
-import tools.AssigneeTrimmer;
+import assignee_normalization.AssigneeTrimmer;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

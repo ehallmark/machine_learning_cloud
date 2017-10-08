@@ -1,4 +1,4 @@
-package tools;
+package assignee_normalization;
 
 import seeding.Database;
 
@@ -102,7 +102,7 @@ public class AssigneeTrimmer {
         if(assignee==null)return null;
         assignee=cleanAssignee(assignee);
 
-        // remove suffixes
+       /* // remove suffixes
         boolean hasSuffixProblem = true;
         while(hasSuffixProblem) {
             if(assignee.length()<=6) break;
@@ -118,14 +118,14 @@ public class AssigneeTrimmer {
         // check for standardized assignee name
         if(standardizedAssigneeMap.containsKey(assignee)) {
             assignee=standardizedAssigneeMap.get(assignee);
-        }
+        }*/
         return assignee;
     }
 
     public static String cleanAssignee(String toExtract) {
-        String data = toExtract.toUpperCase().replace("-"," ").replace("."," ").replaceAll("[^A-Z0-9 ]","");
-        while(data.contains("   ")) data=data.replaceAll("   "," "); // strip triple spaces (might be faster)
-        while(data.contains("  ")) data=data.replaceAll("  "," "); // strip double spaces
-        return data.trim();
+        toExtract = toExtract.toUpperCase().replaceAll("\\s+"," ");
+        while(toExtract.contains("   ")) toExtract=toExtract.replaceAll("   "," "); // strip triple spaces (might be faster)
+        while(toExtract.contains("  ")) toExtract=toExtract.replaceAll("  "," "); // strip double spaces
+        return toExtract.trim();
     }
 }

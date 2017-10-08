@@ -2,7 +2,7 @@ package seeding.compdb;
 
 import seeding.Constants;
 import seeding.Database;
-import tools.AssigneeTrimmer;
+import assignee_normalization.AssigneeTrimmer;
 
 import java.io.File;
 import java.sql.Connection;
@@ -10,9 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by ehallmark on 3/28/17.

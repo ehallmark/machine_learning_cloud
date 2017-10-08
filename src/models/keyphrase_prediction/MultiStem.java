@@ -14,6 +14,7 @@ import java.util.*;
  */
 public class MultiStem implements Serializable{
     private static final long serialVersionUID = 1L;
+    @Getter
     protected String[] stems;
     @Getter @Setter
     protected int index;

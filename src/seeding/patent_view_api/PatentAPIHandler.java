@@ -1,5 +1,6 @@
 package seeding.patent_view_api;
 
+import assignee_normalization.AssigneeTrimmer;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -210,7 +211,7 @@ public class PatentAPIHandler {
             patent.getAssignees().forEach(assignee->{
                 if(assignee.getAssignee()==null) return;
                 String assigneeName = assignee.getAssignee();
-                assigneeName = tools.AssigneeTrimmer.standardizedAssignee(assigneeName);
+                assigneeName = AssigneeTrimmer.standardizedAssignee(assigneeName);
                 if(map.containsKey(assigneeName)) {
                     map.get(assigneeName).add(patNum);
                 } else {
