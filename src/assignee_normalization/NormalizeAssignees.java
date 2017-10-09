@@ -154,7 +154,11 @@ public class NormalizeAssignees {
                 words = Arrays.copyOf(words,words.length-1);
             }
             String newWord = String.join(" ",words);
-            if(newWord.length() <= 1) return null;
+            if(newWord.length() <= 1) {
+                System.out.println(assignee+" => "+newWord);
+                System.out.println("BAD!!!");
+                System.exit(1);
+            }
             int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
             int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
             assigneeToPortfolioSizeMap.put(newWord, Math.max(portfolioSize,newSize));
