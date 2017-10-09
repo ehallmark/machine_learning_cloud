@@ -136,12 +136,13 @@ public class NormalizeAssignees {
         Set<String> badSuffixes = buildBadSuffixes(allAssignees);
 
         allAssignees = allAssignees.parallelStream().map(assignee->{
+            if(assignee.length()<=1) return null;
             // get assignee words
             String[] words = assignee.split("\\s+");
             if(words[0].equals("THE")) words = Arrays.copyOfRange(words,1,words.length);
 
             // get rid of lone characters at the end
-            while(assignee.length() > 5 && words.length > 2) {
+            while(String.join(" ",words).length() >= 5 && words.length > 2) {
                 if(words[words.length-1].length()<=2) {
                     words = Arrays.copyOf(words,words.length-1);
                 } else {
@@ -149,16 +150,24 @@ public class NormalizeAssignees {
                 }
             }
 
-            while(words.length >= 2 && badSuffixes.contains(words[words.length-1])) {
+            while(words.length >= 2 && String.join(" ", Arrays.copyOf(words,words.length-1)).length() > 5 && badSuffixes.contains(words[words.length-1])) {
                 words = Arrays.copyOf(words,words.length-1);
             }
             String newWord = String.join(" ",words);
+            if(newWord.length() <= 1) return null;
             int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
             int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
             assigneeToPortfolioSizeMap.put(newWord, Math.max(portfolioSize,newSize));
-            return String.join(" ",words);
+            return newWord;
 
-        }).distinct().collect(Collectors.toList());
+        }).filter(a->a!=null).distinct().collect(Collectors.toList());
+
+        // check assignees
+        allAssignees.parallelStream().forEach(a->{
+            if(a.length()==1) {
+                throw new RuntimeException("BAD ASSIGNEE: "+a);
+            }
+        });
 
         Levenshtein levenshtein = new Levenshtein();
         rawToNormalizedAssigneeNameMapWithScores = Collections.synchronizedMap(new HashMap<>());
