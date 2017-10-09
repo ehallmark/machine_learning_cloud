@@ -33,12 +33,13 @@ public class NormalizeAssignees {
     private static Map<String,String> rawToNormalizedAssigneeNameMap;
     private static final File rawToNormalizedAssigneeNameFile = new File(Constants.DATA_FOLDER+"raw_to_normalized_assignee_name_map.jobj");
 
-    public static void save() {
+    public static void saveAs(String name) {
+        System.out.println("Starting to save: "+name);
         rawToNormalizedAssigneeNameMap = rawToNormalizedAssigneeNameMapWithScores.entrySet().parallelStream().collect(Collectors.toMap(e->e.getKey(),e->e.getValue()._1));
-        Database.trySaveObject(rawToNormalizedAssigneeNameMap,rawToNormalizedAssigneeNameFile);
+        Database.trySaveObject(rawToNormalizedAssigneeNameMap,new File(name));
         // save to csv
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(new File("data/raw_to_normalized_map.csv")));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(new File(name+".csv")));
             writer.write("Original Name, Normalized Name\n");
             rawToNormalizedAssigneeNameMap.forEach((raw, norm) -> {
                 try {
@@ -52,6 +53,10 @@ public class NormalizeAssignees {
         } catch(Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void save() {
+        saveAs(rawToNormalizedAssigneeNameFile.getAbsolutePath());
     }
 
     public static Map<String,String> getRawToNormalizedAssigneeNameMap() {
@@ -91,37 +96,92 @@ public class NormalizeAssignees {
         });
     }
 
-    public static void main(String[] args) {
-        Levenshtein levenshtein = new Levenshtein();
-        rawToNormalizedAssigneeNameMapWithScores = Collections.synchronizedMap(new HashMap<>());
+    private static void mergeLargestAssignees(Collection<String> largestAssignees, Map<String,Integer> assigneeToPortfolioSizeMap, StringDistance distance) {
+        RadixTree<String> radix = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
+        largestAssignees.forEach(assignee->radix.put(assignee,assignee));
+        prefixSearchHelper(largestAssignees, radix, distance, assigneeToPortfolioSizeMap);
+        // check if any large assignees have been normalized
+        Collection<String> updatedFromLargeAssignees = largestAssignees.parallelStream().filter(assignee->rawToNormalizedAssigneeNameMapWithScores.containsKey(assignee)).collect(Collectors.toList());
+        largestAssignees.removeAll(updatedFromLargeAssignees);
+        System.out.println("Num Large Assignees Merged: "+updatedFromLargeAssignees.size());
+    }
 
+    private static Set<String> buildBadSuffixes(Collection<String> allAssignees) {
+        Map<String,Long> suffixes = allAssignees.parallelStream().map(assignee->{
+            String[] words = assignee.split("\\s+");
+            if(words.length < 3) return null;
+            return words[words.length-1];
+        }).filter(word->word!=null).collect(Collectors.groupingBy(w->w,Collectors.counting()));
+
+        double minSuffixScore = 10d;//allAssignees.size() * 0.01;
+        List<Pair<String,Double>> suffixList = suffixes.entrySet().parallelStream()
+                .map(e->new Pair<>(e.getKey(),e.getValue()/Math.pow(e.getKey().length(),3)))
+                .filter(p->p._2>minSuffixScore).sorted((e1,e2)->e2._2.compareTo(e1._2))
+                .collect(Collectors.toList());
+        suffixList.forEach(p->{
+            System.out.println(p._1+": "+p._2);
+        });
+        System.out.println("Total num bad suffixes: "+suffixList.size());
+        return suffixList.stream().map(p->p._1).collect(Collectors.toSet());
+    }
+
+    public static void main(String[] args) {
+        // find most common suffixes
         List<String> allAssignees = Collections.synchronizedList(new ArrayList<>(Database.getAssignees()));
 
         Map<String,Integer> assigneeToPortfolioSizeMap = allAssignees.parallelStream().collect(Collectors.toMap(a->a,a->{
             return Database.getAssetCountFor(a);
         }));
 
-        int minPortfolioSize = 50;
+        Set<String> badSuffixes = buildBadSuffixes(allAssignees);
+
+        allAssignees = allAssignees.parallelStream().map(assignee->{
+            // get assignee words
+            String[] words = assignee.split("\\s+");
+            if(words[0].equals("THE")) words = Arrays.copyOfRange(words,1,words.length);
+
+            // get rid of lone characters at the end
+            while(assignee.length() > 5 && words.length > 2) {
+                if(words[words.length-1].length()<=2) {
+                    words = Arrays.copyOf(words,words.length-1);
+                } else {
+                    break;
+                }
+            }
+
+            while(words.length >= 2 && badSuffixes.contains(words[words.length-1])) {
+                words = Arrays.copyOf(words,words.length-1);
+            }
+            String newWord = String.join(" ",words);
+            int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
+            int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
+            assigneeToPortfolioSizeMap.put(newWord, Math.max(portfolioSize,newSize));
+            return String.join(" ",words);
+
+        }).distinct().collect(Collectors.toList());
+
+        Levenshtein levenshtein = new Levenshtein();
+        rawToNormalizedAssigneeNameMapWithScores = Collections.synchronizedMap(new HashMap<>());
+
+        int minPortfolioSize = 25;
         Collection<String> largestAssignees = new HashSet<>(assigneeToPortfolioSizeMap.entrySet().parallelStream().filter(e->e.getValue()>=minPortfolioSize)
                 .map(e->e.getKey()).collect(Collectors.toList()));
         System.out.println("Num large assignees: "+largestAssignees.size());
 
-        // first merge any mistakes in the large assignees
-        {
-            RadixTree<String> radix = new ConcurrentRadixTree<>(new DefaultByteArrayNodeFactory());
-            largestAssignees.forEach(assignee->radix.put(assignee,assignee));
-            prefixSearchHelper(largestAssignees, radix, levenshtein, assigneeToPortfolioSizeMap);
-            // check if any large assignees have been normalized
-            Collection<String> updatedFromLargeAssignees = largestAssignees.parallelStream().filter(assignee->rawToNormalizedAssigneeNameMapWithScores.containsKey(assignee)).collect(Collectors.toList());
-            largestAssignees.removeAll(updatedFromLargeAssignees);
-            System.out.println("Num Updated Large assignees: "+updatedFromLargeAssignees.size());
-        }
+        mergeLargestAssignees(largestAssignees, assigneeToPortfolioSizeMap, levenshtein);
+
+        saveAs("test1");
 
 
         RadixTree<String> assigneePrefixTrie = Database.getAssigneePrefixTrie();
         prefixSearchHelper(largestAssignees, assigneePrefixTrie, levenshtein, assigneeToPortfolioSizeMap);
 
         System.out.println("Total normalizations after prefix search: "+rawToNormalizedAssigneeNameMapWithScores.size() + " / "+allAssignees.size());
+        saveAs("test 2");
+
+        mergeLargestAssignees(largestAssignees, assigneeToPortfolioSizeMap, levenshtein);
+
+        saveAs("test 3");
 
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger changes = new AtomicInteger(0);
@@ -144,9 +204,10 @@ public class NormalizeAssignees {
 
         });
 
-        System.out.println("Total normalizations after distance search: "+rawToNormalizedAssigneeNameMap.size() + " / "+allAssignees.size());
-
         save();
+
+        System.out.println("Total normalizations after distance search: "+rawToNormalizedAssigneeNameMapWithScores.size() + " / "+allAssignees.size());
+
 
         /*
         int MAX_DOC_FREQUENCY = 70000;
