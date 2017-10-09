@@ -30,33 +30,29 @@ import java.util.stream.Stream;
 /**
  * Created by ehallmark on 9/12/17.
  */
-public class Stage4 extends Stage<Collection<MultiStem>> {
+public class CPCDensityStage extends Stage<Set<MultiStem>> {
     private static final boolean debug = false;
-    private long targetCardinality;
     private final int maxCpcLength;
     private double lowerBound;
     private double upperBound;
     private double minValue;
-    public Stage4(Collection<MultiStem> keywords, Model model, int year) {
-        super(model,year);
+    public CPCDensityStage(Set<MultiStem> keywords, Model model) {
+        super(model);
         this.data = keywords;
         this.maxCpcLength=model.getMaxCpcLength();
-        this.targetCardinality=model.getKw()*model.getK3();
         this.upperBound=model.getStage4Upper();
         this.lowerBound=model.getStage4Lower();
         this.minValue = model.getStage4Min();
     }
 
     @Override
-    public Collection<MultiStem> run(boolean alwaysRerun) {
+    public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             // apply filter 3
-            System.out.println("Starting year: " + year);
-            KeywordModelRunner.reindex(data);
-            RealMatrix T = buildTMatrix(data, year, maxCpcLength,sampling)._2;
+            RealMatrix T = buildTMatrix(maxCpcLength)._2;
 
-            data = applyFilters(new TechnologyScorer(), T, data, targetCardinality, lowerBound, upperBound, minValue);
-            data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toList());
+            data = applyFilters(new TechnologyScorer(), T, data, lowerBound, upperBound, minValue);
+            data = data.parallelStream().filter(d->d.getScore()>0f).collect(Collectors.toSet());
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data, new File(getFile().getAbsoluteFile() + ".csv"));
@@ -71,19 +67,25 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
     }
 
 
-    public static Pair<Map<String,Integer>,RealMatrix> buildTMatrix(Collection<MultiStem> multiStems, int year, int maxCpcLength, int sampling) {
+    public Pair<Map<String,Integer>,RealMatrix> buildTMatrix(int maxCpcLength) {
+        KeywordModelRunner.reindex(data);
+        Map<MultiStem,Integer> multiStemIdxMap = data.parallelStream().collect(Collectors.toMap(e->e,e->e.getIndex()));
+
         // create cpc code co-occurrrence statistics
         List<String> allCpcCodes = Database.getClassCodes().stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).distinct().collect(Collectors.toList());
         System.out.println("Num cpc codes found: "+allCpcCodes.size());
         Map<String,Integer> cpcCodeIndexMap = Collections.synchronizedMap(new HashMap<>());
-        AtomicInteger idx = new AtomicInteger(0);
-        allCpcCodes.forEach(cpc->cpcCodeIndexMap.put(cpc,idx.getAndIncrement()));
 
-        RealMatrix matrix = new OpenMapBigRealMatrix(multiStems.size(),allCpcCodes.size());
+        {
+            AtomicInteger idx = new AtomicInteger(0);
+            allCpcCodes.forEach(cpc -> cpcCodeIndexMap.put(cpc, idx.getAndIncrement()));
+        }
+
+        RealMatrix matrix = new OpenMapBigRealMatrix(data.size(),allCpcCodes.size());
 
         final AssetToCPCMap assetToCPCMap = new AssetToCPCMap();
-        Function<SearchHit,Item> transformer = hit-> {
-            String asset = hit.getId();
+        Function<Map<String,Object>,Void> attributesFunction = attributes-> {
+            String asset = (String)attributes.get(ASSET_ID);
 
             Collection<String> currentCpcs = assetToCPCMap.getApplicationDataMap().getOrDefault(asset,assetToCPCMap.getPatentDataMap().get(asset));
             if(currentCpcs==null||currentCpcs.isEmpty()) return null;
@@ -91,52 +93,12 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
             int[] cpcIndices = currentCpcs.stream().map(cpc->cpc.length()>maxCpcLength?cpc.substring(0,maxCpcLength):cpc).map(cpc->cpcCodeIndexMap.get(cpc)).filter(cpc->cpc!=null).mapToInt(i->i).toArray();
             if(cpcIndices==null||cpcIndices.length==0) return null;
 
-            String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
-            String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-
-            String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
-
-            Collection<MultiStem> documentStems = new HashSet<>();
-
-            if(debug) System.out.println("Text: "+text);
-            String prevWord = null;
-            String prevPrevWord = null;
-            for (String word: text.split("\\s+")) {
-                word = word.replace(".","").replace(",","").trim();
-                // this is the text of the token
-
-                String lemma = word; // no lemmatizer
-                if(Constants.STOP_WORD_SET.contains(lemma)) {
-                    continue;
-                }
-
-                try {
-                    String stem = new Stemmer().stem(lemma);
-                    if (stem.length() > 3 && !Constants.STOP_WORD_SET.contains(stem)) {
-                        // this is the POS tag of the token
-                        documentStems.add(new MultiStem(new String[]{stem},-1));
-                        if(prevWord != null) {
-                            documentStems.add(new MultiStem(new String[]{prevWord,stem},-1));
-                            if (prevPrevWord != null) {
-                                documentStems.add(new MultiStem(new String[]{prevPrevWord,prevWord,stem},-1));
-                            }
-                        }
-                    } else {
-                        stem = null;
-                    }
-                    prevPrevWord = prevWord;
-                    prevWord = stem;
-
-                } catch(Exception e) {
-                    System.out.println("Error while stemming: "+lemma);
-                    prevWord = null;
-                    prevPrevWord = null;
-                }
-            }
-
             Collection<MultiStem> cooccurringStems = Collections.synchronizedCollection(new ArrayList<>());
+
+            Collection<MultiStem> multiStems = (Collection<MultiStem>)attributes.get(APPEARED);
             multiStems.parallelStream().forEach(stem->{
-                if(documentStems.contains(stem)) {
+                Integer idx = multiStemIdxMap.get(stem);
+                if(idx!=null) {
                     cooccurringStems.add(stem);
                 }
             });
@@ -145,15 +107,17 @@ public class Stage4 extends Stage<Collection<MultiStem>> {
                 System.out.println("Num coocurrences: "+cooccurringStems.size());
 
             for(MultiStem stem : cooccurringStems) {
+                int stemIdx = multiStemIdxMap.get(stem);
                 for (int cpcIdx : cpcIndices) {
-                    matrix.addToEntry(stem.getIndex(), cpcIdx, 1);
+                    matrix.addToEntry(stemIdx, cpcIdx, 1);
                 }
             }
 
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, sampling);
+        runSamplingIterator(attributesFunction);
+
         return new Pair<>(cpcCodeIndexMap,matrix);
     }
 

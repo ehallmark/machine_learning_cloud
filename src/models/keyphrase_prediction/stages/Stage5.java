@@ -12,7 +12,6 @@ import seeding.Constants;
 import seeding.Database;
 import tools.OpenMapBigRealMatrix;
 import tools.Stemmer;
-import user_interface.ui_models.attributes.WIPOTechnologyAttribute;
 import user_interface.ui_models.attributes.hidden_attributes.AssetToCPCMap;
 import user_interface.ui_models.portfolios.items.Item;
 import util.Pair;
@@ -37,7 +36,7 @@ import java.util.stream.Stream;
  */
 public class Stage5 extends Stage<Map<String,List<String>>> {
     private static final boolean debug = false;
-    private Collection<MultiStem> multiStems;
+    private Set<MultiStem> multiStems;
     private int maxCpcLength;
     private final SparseRealMatrix cooccurenceTable;
     private Map<MultiStem,Integer> oldMultiStemToIdxMap;
@@ -46,8 +45,8 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     private Map<Integer,AtomicLong> oldMultiStemsCountMap;
     private AtomicInteger defaultToWIPOCounter = new AtomicInteger(0);
     private AtomicInteger notFoundCounter = new AtomicInteger(0);
-    public Stage5(Stage1 stage1, Collection<MultiStem> multiStems, Model model, int year) {
-        super(model,year);
+    public Stage5(Stage1 stage1, Set<MultiStem> multiStems, Model model) {
+        super(model);
         this.multiStems=multiStems;
         this.maxCpcLength=model.getMaxCpcLength();
         this.oldMultiStems=new HashSet<>(stage1.get().keySet());
@@ -60,7 +59,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
     @Override
     public Map<String, List<String>> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
-            System.out.println("Starting year: " + year);
             // get cooccurrence map
             KeywordModelRunner.reindex(multiStems);
             idxToMultiStemMap = this.multiStems.stream().collect(Collectors.toMap(s -> s.getIndex(), s -> s));
@@ -162,11 +160,11 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, sampling);
+        KeywordModelRunner.streamElasticSearchData(transformer, sampling);
     }
 
     private void runModel() {
-        Pair<Map<String,Integer>,RealMatrix> pair = Stage4.buildTMatrix(multiStems,year,maxCpcLength, sampling);
+        Pair<Map<String,Integer>,RealMatrix> pair = new CPCDensityStage(multiStems,model).buildTMatrix(maxCpcLength);
         RealMatrix T = pair._2;
         Map<String,Integer> cpcToIndexMap = pair._1;
         Map<String,Set<String>> patentCPCMap = new AssetToCPCMap().getPatentDataMap();
@@ -188,9 +186,9 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
             String inventionTitle = hit.getSourceAsMap().getOrDefault(Constants.INVENTION_TITLE, "").toString().toLowerCase();
             String abstractText = hit.getSourceAsMap().getOrDefault(Constants.ABSTRACT, "").toString().toLowerCase();
-            // SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
-            // Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
-            // LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
+            SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
+            Object dateObj = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.FILING_DATE));
+            LocalDate date = dateObj == null ? null : (LocalDate.parse(dateObj.toString(), DateTimeFormatter.ISO_DATE));
             String text = String.join(". ", Stream.of(inventionTitle, abstractText).filter(t -> t != null && t.length() > 0).collect(Collectors.toList())).replaceAll("[^a-z .,]", " ");
 
             Collection<MultiStem> documentStems = new HashSet<>();
@@ -271,7 +269,7 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
                 double max = DoubleStream.of(row).max().getAsDouble();
                 if(max>1d) {
                     if (debug) System.out.println("Max: " + max);
-                    List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().collect(Collectors.toList());
+                    List<String> technologies = IntStream.range(0, row.length).filter(i -> row[i] >= max).mapToObj(i -> idxToMultiStemMap.get(i)).filter(tech -> tech != null).map(stem -> stem.getBestPhrase()).distinct().limit(3).collect(Collectors.toList());
                     if (technologies.size() > 0) {
                         foundTechnology.set(true);
                         data.put(asset, technologies);
@@ -285,7 +283,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
 
             if(!foundTechnology.get()) {
                 // default to wipo
-                SearchHits innerHits = hit.getInnerHits().get(DataIngester.PARENT_TYPE_NAME);
                 Object wipoTechnology = innerHits == null ? null : (innerHits.getHits()[0].getSourceAsMap().get(Constants.WIPO_TECHNOLOGY));
                 if(wipoTechnology!=null) {
                     data.put(asset, Arrays.asList(wipoTechnology.toString()));
@@ -303,6 +300,6 @@ public class Stage5 extends Stage<Map<String,List<String>>> {
             return null;
         };
 
-        KeywordModelRunner.streamElasticSearchData(year, transformer, -1);
+        KeywordModelRunner.streamElasticSearchData(transformer, -1);
     }
 }

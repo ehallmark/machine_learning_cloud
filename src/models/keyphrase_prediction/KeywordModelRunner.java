@@ -1,21 +1,14 @@
 package models.keyphrase_prediction;
 
-import edu.stanford.nlp.util.*;
 import elasticsearch.DataIngester;
 import elasticsearch.DataSearcher;
 import models.keyphrase_prediction.models.*;
-import models.keyphrase_prediction.scorers.KeywordScorer;
 
-import models.keyphrase_prediction.scorers.TechnologyScorer;
 import models.keyphrase_prediction.stages.*;
-import org.apache.commons.math3.distribution.AbstractRealDistribution;
-import org.apache.commons.math3.distribution.NormalDistribution;
-import org.apache.commons.math3.linear.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.unit.TimeValue;
-import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.InnerHitBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -26,8 +19,6 @@ import org.elasticsearch.search.fetch.subphase.FetchSourceContext;
 import org.elasticsearch.search.sort.SortBuilders;
 
 import org.gephi.graph.api.Node;
-import org.nd4j.linalg.api.ndarray.INDArray;
-import org.nd4j.linalg.factory.Nd4j;
 import seeding.Constants;
 import seeding.Database;
 
@@ -43,11 +34,9 @@ import java.util.*;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -56,116 +45,72 @@ import java.util.stream.Stream;
 public class KeywordModelRunner {
     public static final boolean debug = false;
 
+
     public static void main(String[] args) {
-        runModel(false);
+        runModel();
     }
 
-    public static void runModel(boolean thisYearOnly) {
+    public static void runModel() {
         Model model = new TimeDensityModel();
 
-        final int windowSize = model.getWindowSize();
-
-        boolean runStage1 = model.isRunStage1();
-        boolean runStage2 = model.isRunStage2();
-        boolean runStage3 = model.isRunStage3();
-        boolean runStage4 = model.isRunStage4();
-        boolean runStage5 = model.isRunStage5();
-
-
-        final int endYear = LocalDate.now().getYear();
-        final int startYear = endYear - 25;
+        boolean runStage1 = true;
+        boolean runStage2 = true;
+        boolean runStage3 = true;
+        boolean runStage4 = true;
+        boolean runStage5 = true;
 
         // stage 1
-        Map<Integer,Stage1> stage1Map = Collections.synchronizedMap(new HashMap<>());
-        for(int i = startYear; i <= endYear; i++) {
-            final int year = i;
-            System.out.println("Starting year: "+year);
-            // group results by time windows in years
-            Stage1 stage1 = new Stage1(year,model);
-            stage1.run(runStage1 || (thisYearOnly&&year==endYear));
-            stage1Map.put(year,stage1);
-        }
+
+        Stage1 stage1 = new Stage1(model);
+        stage1.run(runStage1);
+        stage1.createVisualization();
 
         // time density stage
         System.out.println("Computing time densities...");
-        stage1Map.entrySet().parallelStream().forEach(e->{
-            Collection<MultiStem> multiStems = new ArrayList<>(e.getValue().get().keySet());
-            reindex(multiStems);
-            double[][] timeDensityMatrix = new double[multiStems.size()][endYear-startYear+1];
-            multiStems.parallelStream().forEach(stem->{
-                double[] row = stage1Map.entrySet().stream().sorted(Comparator.comparing(e2->e2.getKey())).mapToDouble(e2->{
-                    return e2.getValue().get().getOrDefault(stem,new AtomicLong(0)).doubleValue();
-                }).toArray();
-                timeDensityMatrix[stem.getIndex()]=row;
-            });
-            Collection<MultiStem> filteredStems = new HashSet<>(Stage.applyFilters(new TechnologyScorer(), new Array2DRowRealMatrix(timeDensityMatrix,false),multiStems,Math.round(0.6*multiStems.size()),0.4,1.0,0));
-            e.getValue().set(e.getValue().get().entrySet().parallelStream().filter(e2->filteredStems.contains(e2.getKey())).collect(Collectors.toMap(e2->e2.getKey(),e2->e2.getValue())));
-            System.out.println("Finished time densities for year "+e.getKey());
-        });
 
+        Set<MultiStem> multiStems;
 
         // stage 2
         System.out.println("Pre-grouping data for stage 2...");
-        Map<Integer,Map<MultiStem,AtomicLong>> stage1TimeWindowStemMap = computeTimeWindowCountMap(startYear, endYear, windowSize, stage1Map);
-        Map<Integer,Stage2> stage2Map = Collections.synchronizedMap(new HashMap<>());
-        stage1TimeWindowStemMap.forEach((year,countMap)->{
-            System.out.println("Starting year: "+year);
-            Stage2 stage2 = new Stage2(countMap, model, year);
-            stage2.run(runStage2 || (thisYearOnly&&year==endYear));
-            stage2Map.put(year,stage2);
-        });
+        Stage2 stage2 = new Stage2(stage1.get(), model);
+        stage2.run(runStage2);
+        stage2.createVisualization();
+        multiStems = stage2.get();
+
+
+        System.out.println("Pre-grouping data for stage 4...");
+        TimeDensityStage timeDensityStage = new TimeDensityStage(multiStems, model);
+        timeDensityStage.run(runStage4);
+        timeDensityStage.createVisualization();
+        multiStems = timeDensityStage.get();
 
         // stage 3
         System.out.println("Pre-grouping data for stage 3...");
-        Map<Integer,Collection<MultiStem>> stage2TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage2Map, 2);
-        Map<Integer,Stage3> stage3Map = Collections.synchronizedMap(new HashMap<>());
-        stage2TimeWindowStemMap.forEach((year,multiStems)->{
-            System.out.println("Starting year: "+year);
-            Stage3 stage3 = new Stage3(multiStems, model, year);
-            stage3.run(runStage3 || (thisYearOnly&&year==endYear));
-            stage3Map.put(year,stage3);
-        });
+        Stage3 stage3 = new Stage3(multiStems, model);
+        stage3.run(runStage3);
+        stage3.createVisualization();
+        multiStems = stage3.get();
 
         // stage 4
         System.out.println("Pre-grouping data for stage 4...");
-        Map<Integer,Collection<MultiStem>> stage3TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage3Map, 3);
-        Map<Integer,Stage4> stage4Map = Collections.synchronizedMap(new HashMap<>());
-        stage3TimeWindowStemMap.forEach((year,multiStems)->{
-            System.out.println("Starting year: "+year);
-            Stage4 stage4 = new Stage4(multiStems, model, year);
-            stage4.run(runStage4 || (thisYearOnly&&year==endYear));
-            stage4Map.put(year,stage4);
-        });
+        CPCDensityStage CPCDensityStage = new CPCDensityStage(multiStems, model);
+        CPCDensityStage.run(runStage4);
+        CPCDensityStage.createVisualization();
+        multiStems = CPCDensityStage.get();
 
         // stage 5
         System.out.println("Starting stage 5...");
-        Map<Integer,Collection<MultiStem>> stage4TimeWindowStemMap = computeTimeWindowStemMap(startYear, endYear, windowSize, stage4Map, 4);
-        Map<Integer,Stage5> stage5Map = Collections.synchronizedMap(new HashMap<>());
-        stage4TimeWindowStemMap.forEach((year,multiStems)->{
-            System.out.println("Starting year: "+year);
-            Stage1 stage1 = stage1Map.get(year);
-            if(stage1!=null) {
-                Stage5 stage5 = new Stage5(stage1, multiStems, model, year);
-                stage5.run(runStage5 || (thisYearOnly&&year==endYear));
-                stage5Map.put(year, stage5);
-            }
-        });
+        Stage5 stage5 = new Stage5(stage1, multiStems, model);
+        stage5.run(runStage5);
 
-        Map<String,List<String>> assetToTechnologyMap = Collections.synchronizedMap(new HashMap<>());
-        stage5Map.entrySet().stream().parallel().forEach((e)->{
-            System.out.println("Starting year: "+e.getKey());
-            e.getValue().get().forEach((asset,techList)->{
-                assetToTechnologyMap.put(asset,techList);
-            });
-        });
 
-        saveModelMap(model,assetToTechnologyMap);
-        System.out.println("Num assets classified: "+assetToTechnologyMap.size());
+        saveModelMap(model,stage5.get());
+        System.out.println("Num assets classified: "+stage5.get().size());
     }
 
 
     public static void updateLatest() {
-        runModel(true);
+        runModel();
     }
 
 
@@ -175,64 +120,6 @@ public class KeywordModelRunner {
 
     public static void saveModelMap(Model model, Map<String,List<String>> assetToTechnologyMap) {
         Database.trySaveObject(assetToTechnologyMap, new File(Constants.DATA_FOLDER+"keyword_asset_to_keyword_final_model_"+model.getModelName()+"_map.jobj"));
-    }
-
-    private static Map<Integer,Collection<MultiStem>> computeTimeWindowStemMap(int startYear, int endYear, int windowSize, Map<Integer,? extends Stage<Collection<MultiStem>>> stageMap, int stageNum) {
-        Map<Integer,Collection<MultiStem>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        Random rand = new Random(System.currentTimeMillis());
-        for(int i = startYear; i <= endYear; i++) {
-            Map<Integer,Collection<MultiStem>> multiStems = new HashMap<>();
-            for(int j = i-1-(windowSize/2); j <= Math.min(i-1+(windowSize/2), endYear); j++) {
-                Stage<Collection<MultiStem>> stage = stageMap.get(j);
-                if(stage!=null&&stage.get()!=null) {
-                    multiStems.put(i,stage.get());
-                }
-            }
-            if(multiStems.isEmpty()) continue;
-            final int currentYear = i;
-            Collection<MultiStem> mergedStems = multiStems.entrySet().stream().flatMap(e->{
-                int year = e.getKey();
-                double prob = Math.expm1(Math.abs(currentYear-year));
-                return e.getValue().stream().filter(s->rand.nextDouble()<prob);
-            }).distinct().collect(Collectors.toList());
-            timeWindowStemMap.put(i,mergedStems);
-            System.out.println("Num stems in "+i+": "+mergedStems.size());
-        }
-        double scoreThreshold = 200f;
-        double minEdgeScore = 50f;
-        File visualizationFile = new File("data/visualizations-"+stageNum+"-"+LocalDate.now().toString());
-        System.out.println("Starting to create visualization: "+visualizationFile.getName());
-        createVisualization(timeWindowStemMap,scoreThreshold,minEdgeScore,visualizationFile);
-        System.out.println("Done.");
-        return timeWindowStemMap;
-    }
-
-    private static Map<Integer,Map<MultiStem,AtomicLong>> computeTimeWindowCountMap(int startYear, int endYear, int windowSize, Map<Integer,Stage1> stageMap) {
-        Map<Integer,Map<MultiStem,AtomicLong>> timeWindowStemMap = Collections.synchronizedMap(new HashMap<>());
-        for(int i = startYear; i <= endYear; i++) {
-            List<Map<MultiStem,AtomicLong>> multiStems = new ArrayList<>();
-            for(int j = i-1-(windowSize/2); j <= Math.min(i-1+(windowSize/2), endYear); j++) {
-                Stage<Map<MultiStem,AtomicLong>> stage = stageMap.get(j);
-                if(stage!=null&&stage.get()!=null) {
-                    multiStems.add(stage.get());
-                }
-            }
-            if(multiStems.isEmpty()) continue;
-
-            Map<MultiStem,AtomicLong> mergedCounts = multiStems.parallelStream().reduce((m1,m2)-> {
-                Map<MultiStem, AtomicLong> m3 = Collections.synchronizedMap(new HashMap<>());
-                m1.entrySet().forEach(e -> m3.put(e.getKey(), e.getValue()));
-                m2.entrySet().forEach(e -> {
-                    m3.putIfAbsent(e.getKey(), new AtomicLong(0));
-                    m3.get(e.getKey()).getAndAdd(e.getValue().get());
-                });
-                return m3;
-            }).get();
-
-            timeWindowStemMap.put(i,mergedCounts);
-            System.out.println("Num stems in "+i+": "+mergedCounts.size());
-        }
-        return timeWindowStemMap;
     }
 
 
@@ -264,25 +151,19 @@ public class KeywordModelRunner {
         DataSearcher.iterateOverSearchResults(response, transformer, sampling, false);
     }
 
-    public static void streamElasticSearchData(int year, Function<SearchHit,Item> transformer, int sampling) {
+    public static void streamElasticSearchData(Function<SearchHit,Item> transformer, int sampling) {
         QueryBuilder query;
-        if(year>0) {
-            LocalDate dateMin = LocalDate.of(year, 1, 1);
-            LocalDate dateMax = dateMin.plusYears(1);
-            BoolQueryBuilder boolQuery = QueryBuilders.boolQuery()
-                    .filter(QueryBuilders.rangeQuery(Constants.FILING_DATE).gte(dateMin.toString()).lt(dateMax.toString()));
-            if(sampling>0) {
-                boolQuery = boolQuery.must(QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23)));
-            }
-            query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, boolQuery,false)
-                    .innerHit(new InnerHitBuilder()
-                            .setSize(1)
-                            .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
-                    );
+        if(sampling>0) {
+            query = QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(),ScoreFunctionBuilders.randomFunction(23));
         } else {
-            query = sampling>0 ? QueryBuilders.functionScoreQuery(QueryBuilders.matchAllQuery(), ScoreFunctionBuilders.randomFunction(69))
-                    : QueryBuilders.matchAllQuery();
+            query = QueryBuilders.matchAllQuery();
         }
+        query = new HasParentQueryBuilder(DataIngester.PARENT_TYPE_NAME, query,false)
+                .innerHit(new InnerHitBuilder()
+                        .setSize(1)
+                        .setFetchSourceContext(new FetchSourceContext(true, new String[]{Constants.FILING_DATE,Constants.WIPO_TECHNOLOGY}, new String[]{}))
+                );
+
         if(sampling > 0) {
             // remove plant and design patents
             QueryBuilders.boolQuery()
@@ -296,7 +177,6 @@ public class KeywordModelRunner {
 
         streamElasticSearchData(query,transformer,sampling);
     }
-
 
     public static void writeToCSV(Collection<MultiStem> multiStems, File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
@@ -314,48 +194,4 @@ public class KeywordModelRunner {
         }
     }
 
-    private static Node getNode(Map<String,Node> nodeMap, MultiStem stem, Visualizer visualizer, float score) {
-        Color color = Color.BLUE;
-
-        Node node = nodeMap.get(stem.getBestPhrase());
-        if (node == null) {
-            node = visualizer.addNode(stem.getBestPhrase(), score, color);
-            nodeMap.put(stem.getBestPhrase(), node);
-        }
-
-        return node;
-    }
-
-    public static void createVisualization(Map<Integer,Collection<MultiStem>> yearToMultiStemMap, double scoreThreshold, double minEdgeScore, File file) {
-        Map<String,Node> nodeMap = Collections.synchronizedMap(new HashMap<>());
-        Visualizer visualizer = new Visualizer(file.getAbsolutePath());
-        yearToMultiStemMap.forEach((year,multiStems)->{
-            // now we have keywords
-            reindex(multiStems);
-            Map<MultiStem,MultiStem> multiStemToSelfMap = multiStems.parallelStream().collect(Collectors.toMap(e->e,e->e));
-            double[][] matrix = Stage3.buildMMatrix(multiStems,multiStemToSelfMap,year,100000).getData();
-            double[] sums = Stream.of(matrix).mapToDouble(row-> DoubleStream.of(row).sum()).toArray();
-
-            multiStems.forEach(stem->{
-                float score = (float)sums[stem.getIndex()];
-                if(score >= scoreThreshold) {
-                    Node node = getNode(nodeMap,stem,visualizer,score);
-                    for(MultiStem stem2 : multiStems) {
-                        if(stem.equals(stem2)) continue;
-                        float score2 = (float) matrix[stem.getIndex()][stem2.getIndex()];
-                        if(score2 > minEdgeScore) {
-                            Node node2 = getNode(nodeMap, stem2, visualizer, score2);
-                            if (score2 >= minEdgeScore) {
-                                visualizer.addEdge(node, node2, score2, Color.BLACK);
-                            }
-                        }
-                    }
-                }
-            });
-            System.out.println("Saving visualizer...");
-            visualizer.save();
-
-        });
-        visualizer.save();
-    }
 }

@@ -9,40 +9,42 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import seeding.Database;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by ehallmark on 9/12/17.
  */
-public class Stage2 extends Stage<Collection<MultiStem>> {
+public class Stage2 extends Stage<Set<MultiStem>> {
     private long targetCardinality;
-    private Map<MultiStem,AtomicLong> keywordsCounts;
-    private double upperBound;
-    private double lowerBound;
-    private double minValue;
-    public Stage2(Map<MultiStem,AtomicLong> keywordsCounts, Model model, int year) {
-        super(model, year);
-        this.keywordsCounts=keywordsCounts;
+    private Map<MultiStem,AtomicLong> documentsAppearedInCounter;
+    public Stage2(Map<MultiStem,AtomicLong> documentsAppearedInCounter, Model model) {
+        super(model);
+        this.documentsAppearedInCounter=documentsAppearedInCounter;
         this.targetCardinality=model.getKw()*model.getK1();
-        this.upperBound=model.getStage2Upper();
-        this.lowerBound=model.getStage2Lower();
-        this.minValue = model.getStage2Min();
     }
 
     @Override
-    public Collection<MultiStem> run(boolean alwaysRerun) {
+    public Set<MultiStem> run(boolean alwaysRerun) {
         if(alwaysRerun || !getFile().exists()) {
             // filter outliers
-            data = new HashSet<>(keywordsCounts.keySet());
 
             KeywordModelRunner.reindex(data);
 
-            // apply filter 1
-            double[] F = buildFMatrix(keywordsCounts);
-            data = applyFilters(new UnithoodScorer(), MatrixUtils.createRealMatrix(new double[][]{F}), data, targetCardinality, lowerBound,upperBound, minValue);
+            // compute scores
+            data = new ArrayList<>(documentsAppearedInCounter.entrySet()).parallelStream().map(e->{
+                MultiStem multiStem = e.getKey();
+                double score = e.getValue().doubleValue();
+                if(multiStem.getStems().length > 1) {
+                    double denom = Math.pow(Stream.of(multiStem.getStems()).map(s -> documentsAppearedInCounter.getOrDefault(new MultiStem(new String[]{s}, -1), new AtomicLong(1))).mapToDouble(d -> d.doubleValue()).reduce((d1, d2) -> d1 * d2).getAsDouble(), 1d / multiStem.getStems().length);
+                    score = (score * e.getValue().doubleValue() * multiStem.getStems().length) / denom;
+                }
+                multiStem.setScore((float)score);
+                return multiStem;
+            }).sorted((s1,s2)->Float.compare(s2.getScore(),s1.getScore())).limit(targetCardinality).collect(Collectors.toSet());
+
             Database.saveObject(data, getFile());
             // write to csv for records
             KeywordModelRunner.writeToCSV(data,new File(getFile().getAbsoluteFile()+".csv"));
@@ -55,14 +57,5 @@ public class Stage2 extends Stage<Collection<MultiStem>> {
         }
         return data;
     }
-
-    private static double[] buildFMatrix(Map<MultiStem,AtomicLong> multiStemMap) {
-        double[] array = new double[multiStemMap.size()];
-        multiStemMap.entrySet().parallelStream().forEach(e->{
-            array[e.getKey().getIndex()]=e.getValue().get();
-        });
-        return array;
-    }
-
 
 }
