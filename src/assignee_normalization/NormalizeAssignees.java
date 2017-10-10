@@ -85,7 +85,7 @@ public class NormalizeAssignees {
                             return;
                         }
                     }
-                    double distance = distanceFunction.distance(assignee, val);
+                    double distance = distanceFunction.distance(assignee, val) / Math.log(Math.E+portfolioSizeMap.get(assignee));
                     Pair<String, Double> previousNormalization = rawToNormalizedAssigneeNameMapWithScores.get(val);
                     if (previousNormalization == null || previousNormalization._2 > distance) {
                         rawToNormalizedAssigneeNameMapWithScores.put(val, new Pair<>(assignee, distance));
@@ -139,7 +139,7 @@ public class NormalizeAssignees {
             if(assignee.length()<=1) return null;
             // get assignee words
             String[] words = assignee.split("\\s+");
-            if(words[0].equals("THE")) words = Arrays.copyOfRange(words,1,words.length);
+            if(words[0].equals("THE") && assignee.length()<5) words = Arrays.copyOfRange(words,1,words.length);
 
             // get rid of lone characters at the end
             while(String.join(" ",words).length() >= 5 && words.length > 2) {
