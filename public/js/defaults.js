@@ -397,6 +397,7 @@ var showTemplateFormHelper = function(formSelector,json) {
             $elem.trigger('change');
         }
     });
+    $('.nested-form-list').sortable('destroy');
     $('.nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().remove();
