@@ -99,7 +99,8 @@ $(document).ready(function() {
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
          if(!onlyExcel) {  $('#results').html('');  }  // clears results div
-         $.post({
+         $.ajax({
+           type: 'POST',
            dataType: 'json',
            url: url,
            data: data,
@@ -296,7 +297,12 @@ $(document).ready(function() {
 
     resetSearchForm();
 
-    $('.nested-form-list').sortable();
+    $('.nested-form-list').sortable({
+        update: function(event, ui) {
+            var pos = ui.item.index();
+            alert(pos);
+        }
+    });
     $('.nested-form-list').disableSelection();
 
     $('#main-content-id').addClass('show');
