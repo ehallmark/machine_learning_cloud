@@ -963,7 +963,11 @@ public class SimilarPatentServer {
             // Sorted by
             // Get Models to use
             List<String> attributes = extractArray(req, ATTRIBUTES_ARRAY_FIELD);
-            List<String> nestedAttributes = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).flatMap(attr->extractArray(req, attr+"[]").stream()).collect(Collectors.toList());
+            List<String> nestedAttributeParents = getNestedAttrMap().keySet().stream().filter(attr->attributes.contains(attr)).collect(Collectors.toList());
+            Map<String,List<String>> nestedAttributeParentMap = nestedAttributeParents.stream().collect(Collectors.toMap(attr->attr,attr->{
+                return extractArray(req, attr+"[]");
+            }));
+            List<String> nestedAttributes = nestedAttributeParentMap.entrySet().stream().flatMap(e->e.getValue().stream()).collect(Collectors.toList());
             List<String> itemAttributes = Stream.of(attributes.stream().filter(attr->!getNestedAttrMap().containsKey(attr)),nestedAttributes.stream()).flatMap(stream->stream).collect(Collectors.toList());
 
             System.out.println("FOUND ATTRIBUTES: "+String.join("; ",itemAttributes));
@@ -973,10 +977,24 @@ public class SimilarPatentServer {
             similarityEngine.extractRelevantInformationFromParams(req);
             PortfolioList portfolioList = similarityEngine.getPortfolioList();
 
-            List<String> tableHeaders = new ArrayList<>(itemAttributes);
 
             res.type("application/json");
 
+            // build ordering
+
+            Map<String,Integer> baseOrderMap = new HashMap<>();
+            attributes.forEach(attr->{
+                baseOrderMap.put(attr, extractInt(req, "order_"+attr, 0) * itemAttributes.size());
+            });
+            nestedAttributeParentMap.entrySet().forEach(e->{
+                int baseOrder = baseOrderMap.get(e.getKey());
+                e.getValue().forEach(nested->{
+                    baseOrderMap.put(nested,baseOrder + extractInt(req,"order_"+nested,0));
+                });
+            });
+
+            List<String> tableHeaders = new ArrayList<>(itemAttributes);
+            tableHeaders.sort(Comparator.comparing(h->baseOrderMap.get(h)));
 
             System.out.println("Rendering table...");
             boolean useHighlighter = extractBool(req, USE_HIGHLIGHTER_FIELD);
