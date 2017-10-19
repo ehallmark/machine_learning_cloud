@@ -296,9 +296,10 @@ $(document).ready(function() {
         content: function() { return $(this).attr('title'); }
     });
 
-    resetSearchForm();
+    $('.nested-form-list').sortable();
+    $('.nested-form-list').disableSelection();
 
-    setupLists();
+    resetSearchForm();
 
     $('#main-content-id').addClass('show');
 
@@ -371,11 +372,6 @@ var setCollapsibleHeaders = function(selector) {
         }
     });
 };
-
-var setupLists = function() {
-    $('.nested-form-list').sortable();
-    $('.nested-form-list').disableSelection();
-}
 
 var showTemplateFormHelper = function(formSelector,json) {
     var dataMap = jQuery.parseJSON(json);
