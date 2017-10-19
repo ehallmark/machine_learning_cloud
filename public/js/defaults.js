@@ -86,7 +86,7 @@ $(document).ready(function() {
          $button.attr('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
-         $("#attributesForm attributeElement").each(function() {
+         $("#attributesForm .attributeElement").each(function() {
             var name = $(this).attr('data-model');
             var index = $(this).attr('index');
             var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');
@@ -162,7 +162,7 @@ $(document).ready(function() {
          });
 
          // remove orderings
-         $form.find('hidden-remove').remove();
+         $form.find('.hidden-remove').remove();
 
          return false;
      };
@@ -302,7 +302,7 @@ $(document).ready(function() {
             $(ui.item).children().attr('index',pos);
         }
     }).each(function() {
-        $(this).children('attributeElement').each(function(i,elem) {
+        $(this).children('.attributeElement').each(function(i,elem) {
             $(elem).attr('index',i);
         });
     });
