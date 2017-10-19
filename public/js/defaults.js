@@ -304,7 +304,7 @@ $(document).ready(function() {
     }).each(function() {
         $(this).children('attributeElement').each(function(i,elem) {
             $(elem).attr('index',i);
-        }
+        });
     });
 
     $('.nested-form-list').disableSelection();
