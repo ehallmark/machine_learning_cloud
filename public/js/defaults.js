@@ -84,7 +84,7 @@ $(document).ready(function() {
          var url = $form.attr('action');
          var tempScrollTop = $(window).scrollTop();
 
-         $button.attr('disabled',true).text(buttonTextWhileSearching);
+         $button.prop('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
          $("#attributesForm .attributeElement").each(function() {
@@ -102,7 +102,7 @@ $(document).ready(function() {
            url: url,
            data: $form.serialize(),
            complete: function(jqxhr,status) {
-             $button.attr('disabled',false).text(buttonText);
+             $button.prop('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
            },
            error: function(jqxhr,status,error) {
@@ -189,14 +189,14 @@ $(document).ready(function() {
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea, div.attribute').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
             $draggable.parent().hide();
             return true;
         });
         $options.each(function(i,option){
             var id = $(option).val();
             var $draggable = $('.attributeElement[data-model="'+id+'"]');
-            $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
+            $draggable.find('input, select, textarea, div.attribute').prop('disabled', false).filter('.nested-filter-select').trigger('change');
             $draggable.parent().show();
         });
         return true;
@@ -317,7 +317,7 @@ $(document).ready(function() {
 
 var resetSearchForm = function() {
     $('.target .collapsible-header .remove-button').click();
-    $('.draggable').find('select,textarea,input').prop("disabled",true).val(null).trigger('change');
+    $('.draggable').find('select,textarea,input,div.attribute').prop("disabled",true).val(null).trigger('change');
     $('#results').html('');
 };
 
