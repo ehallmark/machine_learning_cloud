@@ -92,7 +92,7 @@ $(document).ready(function() {
             data[$(this).name]=$(this).value;
          });
          data['attributeOrder']=orderedAttributes;
-         data = $.param(data); // turn to query string
+         data = JQuery.param(data); // turn to query string
          alert(data);
 
          $button.attr('disabled',true).text(buttonTextWhileSearching);
