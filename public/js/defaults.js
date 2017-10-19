@@ -393,19 +393,19 @@ var showTemplateFormHelper = function(formSelector,json) {
             $elem.trigger('change');
         }
     });
-    $('.nested-form-list').sortable('destroy');
+    //$('.nested-form-list').sortable('destroy');
     $('.nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().detach();
         elems.sort(function(a,b) {
-            var a = parseInt($(a).attr("sort-order"));
-            var b = parseInt($(b).attr("sort-order"));
-            return (a > b) ? -1 : (a < b) ? 1 : 0;
+            var i = parseInt($(a).attr("sort-order"));
+            var j = parseInt($(b).attr("sort-order"));
+            return (i > j) ? -1 : (i < j) ? 1 : 0;
         })
         list.append(elems);
     });
-    $('.nested-form-list').sortable();
-    $('.nested-form-list').disableSelection();
+    //$('.nested-form-list').sortable('refresh');
+    //$('.nested-form-list').disableSelection();
 };
 
 var showTemplateFunction = function(e){
