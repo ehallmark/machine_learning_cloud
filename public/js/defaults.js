@@ -302,8 +302,8 @@ $(document).ready(function() {
             $(ui.item).children().attr('index',pos);
         }
     }).each(function() {
-        $(this).children('.attributeElement').each(function(i,elem) {
-            $(elem).attr('index',i);
+        $(this).children().each(function(i,elem) {
+            $(elem).children().attr('index',i);
         });
     });
 
