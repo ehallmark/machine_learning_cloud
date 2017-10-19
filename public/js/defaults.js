@@ -85,7 +85,7 @@ $(document).ready(function() {
 
          // get order
          var orderedAttributes = $('#attributesForm attributeElement').sortable('toArray', {attribute: 'data-model'});
-         alert(JSON.stringify(orderedAttributes));
+         //alert(JSON.stringify(orderedAttributes));
 
          var data = {};
          $.each($form.serializeArray(),function() {
