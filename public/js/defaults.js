@@ -188,14 +188,14 @@ $(document).ready(function() {
         var $hiddenOptions = $(e.currentTarget).find("option").not($options);
         $hiddenOptions.each(function(i,option){
             var id = $(option).val();
-            var $draggable = $('.draggable[data-model="'+id+'"]');
+            var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', true).val(null).filter('.nested-filter-select').trigger('change');
             $draggable.parent().hide();
             return true;
         });
         $options.each(function(i,option){
             var id = $(option).val();
-            var $draggable = $('.draggable[data-model="'+id+'"]');
+            var $draggable = $('.attributeElement[data-model="'+id+'"]');
             $draggable.find('input, select, textarea').prop('disabled', false).filter('.nested-filter-select').trigger('change');
             $draggable.parent().show();
         });
@@ -383,7 +383,7 @@ var showTemplateFormHelper = function(formSelector,json) {
             }
 
             var $elem = $('#'+id);
-            var $draggable = $elem.closest(".draggable");
+            var $draggable = $elem.closest(".attributeElement");
             $draggable.parent().show();
             $draggable.parent().attr("sort-order",order);
             if($elem.attr('type')==="checkbox") {
@@ -404,7 +404,7 @@ var showTemplateFormHelper = function(formSelector,json) {
         })
         list.append(elems);
     });
-    //$('.nested-form-list').sortable('refresh');
+    $('.nested-form-list').sortable('refresh');
     //$('.nested-form-list').disableSelection();
 };
 
