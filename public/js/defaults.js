@@ -397,7 +397,7 @@ var showTemplateFormHelper = function(formSelector,json) {
             $elem.trigger('change');
         }
     });
-    $('.nested-form-list').sortable('destroy');
+    //$('.nested-form-list').sortable('destroy');
     $('.nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().remove();
@@ -408,7 +408,9 @@ var showTemplateFormHelper = function(formSelector,json) {
         })
         list.append(elems);
     });
-    setupLists();
+    $('.nested-form-list').sortable('refreshPositions');
+    $('.nested-form-list').sortable('refresh');
+    //setupLists();
 };
 
 var showTemplateFunction = function(e){
