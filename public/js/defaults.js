@@ -14,10 +14,11 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector).find('textarea,input,select').each(function() {
+        $(containerSelector+" "+itemSelector).find('textarea,input,select').each(function(i,e) {
             var $elem = $(this);
             if($elem.attr('id') && ! $elem.prop('disabled')) {
                 dataMap[$elem.attr("id")]=$elem.val();
+                dataMap["order_"+$elem.attr("id")]=i;
             }
         });
         var json = JSON.stringify(dataMap);
@@ -297,8 +298,7 @@ $(document).ready(function() {
 
     resetSearchForm();
 
-    $('.nested-form-list').sortable();
-    $('.nested-form-list').disableSelection();
+    setupLists();
 
     $('#main-content-id').addClass('show');
 
@@ -372,17 +372,42 @@ var setCollapsibleHeaders = function(selector) {
     });
 };
 
+var setupLists = function() {
+    $('.nested-form-list').sortable();
+    $('.nested-form-list').disableSelection();
+}
+
 var showTemplateFormHelper = function(formSelector,json) {
     var dataMap = jQuery.parseJSON(json);
     $.each(dataMap,function(id,value) {
-        var $elem = $('#'+id);
-        $elem.closest('draggable').parent().show();
-        if($elem.attr('type')==="checkbox") {
-            $elem.prop('checked',value==='on');
+        if(!id.startsWith("order_")) {
+            var order = 0;
+            if(dataMap.hasOwnProperty("order_"+id)) {
+                order = dataMap["order_"+id];
+            }
+
+            var $elem = $('#'+id);
+            var $draggable = $elem.closest(".draggable");
+            $draggable.parent().show();
+            $draggable.parent().attr("sort-order",order);
+            if($elem.attr('type')==="checkbox") {
+                $elem.prop('checked',value==='on');
+            }
+            $elem.val(value);
+            $elem.trigger('change');
         }
-        $elem.val(value);
-        $elem.trigger('change');
     });
+    $('.nested-form-list').each(function() {
+        var list = $(this);
+        var elems = list.children().remove();
+        elems.sort(function(a,b)->{
+            var a = parseInt($(a).attr("sort-order"));
+            var b = parseInt($(b).attr("sort-order"));
+            return (a > b) ? -1 : (a < b) ? 1 : 0;
+        })
+        list.append(elems);
+    });
+    setupLists();
 };
 
 var showTemplateFunction = function(e){
