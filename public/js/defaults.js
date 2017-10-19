@@ -401,7 +401,7 @@ var showTemplateFormHelper = function(formSelector,json) {
     $('.nested-form-list').each(function() {
         var list = $(this);
         var elems = list.children().remove();
-        elems.sort(function(a,b)->{
+        elems.sort(function(a,b) {
             var a = parseInt($(a).attr("sort-order"));
             var b = parseInt($(b).attr("sort-order"));
             return (a > b) ? -1 : (a < b) ? 1 : 0;
