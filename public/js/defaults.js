@@ -85,21 +85,21 @@ $(document).ready(function() {
 
          // get order
          var orderedAttributes = $('#attributesForm attributeElement').sortable('toArray', {attribute: 'data-model'});
-         alert(orderedAttributes);
+         alert(JSON.stringify(orderedAttributes));
 
          var data = {};
          $.each($form.serializeArray(),function() {
             data[$(this).name]=$(this).value;
          });
          data['attributeOrder']=orderedAttributes;
+         data = $.param(data); // turn to query string
          alert(data);
 
          $button.attr('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
          if(!onlyExcel) {  $('#results').html('');  }  // clears results div
-         $.ajax({
-           type: 'POST',
+         $.post({
            dataType: 'json',
            url: url,
            data: data,
