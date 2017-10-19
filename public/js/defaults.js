@@ -83,27 +83,22 @@ $(document).ready(function() {
          var url = $form.attr('action');
          var tempScrollTop = $(window).scrollTop();
 
-         // get order
-         var orderedAttributes = $('#attributesForm .nested-form-list').sortable('toArray', {attribute: 'data-model'});
-         //alert(JSON.stringify(orderedAttributes));
-
-         var data = {};
-         $.each($form.serializeArray(),function() {
-            data[$(this).name]=$(this).value;
-         });
-         data['attributeOrder']=orderedAttributes;
-         data = JQuery.param(data); // turn to query string
-         alert(data);
-
          $button.attr('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
+
+         $("#attributesForm attributeElement").each(function() {
+            var name = $(this).attr('data-model');
+            var index = $(this).attr('index');
+            var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');
+            $form.append($hiddenOrder);
+         });
 
          if(!onlyExcel) {  $('#results').html('');  }  // clears results div
          $.ajax({
            type: 'POST',
            dataType: 'json',
            url: url,
-           data: data,
+           data: $form.serialize(),
            complete: function(jqxhr,status) {
              $button.attr('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
@@ -165,6 +160,10 @@ $(document).ready(function() {
              }
            }
          });
+
+         // remove orderings
+         $form.find('hidden-remove').remove();
+
          return false;
      };
 
@@ -300,9 +299,14 @@ $(document).ready(function() {
     $('.nested-form-list').sortable({
         update: function(event, ui) {
             var pos = ui.item.index();
-            alert(pos);
+            $(ui.item).children().attr('index',pos);
+        }
+    }).each(function() {
+        $(this).children('attributeElement').each(function(i,elem)) {
+            $(elem).attr('index',i);
         }
     });
+
     $('.nested-form-list').disableSelection();
 
     $('#main-content-id').addClass('show');
