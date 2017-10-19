@@ -84,7 +84,7 @@ $(document).ready(function() {
          var tempScrollTop = $(window).scrollTop();
 
          // get order
-         var orderedAttributes = $('#attributesForm attributeElement').sortable('toArray', {attribute: 'data-model'});
+         var orderedAttributes = $('#attributesForm .attributeElement').sortable('toArray', {attribute: 'data-model'});
          //alert(JSON.stringify(orderedAttributes));
 
          var data = {};
