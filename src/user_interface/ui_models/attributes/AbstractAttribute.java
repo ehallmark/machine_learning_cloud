@@ -17,12 +17,11 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static j2html.TagCreator.div;
-import static j2html.TagCreator.p;
-import static j2html.TagCreator.span;
-
 import java.util.Arrays;
 import java.util.List;
+
+import static j2html.TagCreator.*;
+
 /**
  * Created by Evan on 5/9/2017.
  */
@@ -59,7 +58,7 @@ public abstract class AbstractAttribute {
         return parent==null? getName() : parent.getRootName();
     }
 
-    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) { return div(); }
+    public Tag getOptionsTag(Function<String,Boolean> userRoleFunction) { return div().with(div().withClass("attribute hide").withId(getFullName())); }
 
     public abstract String getType();
 

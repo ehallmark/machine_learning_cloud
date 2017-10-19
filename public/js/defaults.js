@@ -14,7 +14,7 @@ $(document).ready(function() {
 
     var saveTemplateFormHelper = function(containerSelector,itemSelector,hiddenValueSelector) {
         var dataMap = {};
-        $(containerSelector+" "+itemSelector).find('textarea,input,select').each(function(i,e) {
+        $(containerSelector+" "+itemSelector).find('textarea,input,select,div.attribute').each(function(i,e) {
             var $elem = $(this);
             if($elem.attr('id') && ! $elem.prop('disabled')) {
                 dataMap[$elem.attr("id")]=$elem.val();
@@ -400,7 +400,7 @@ var showTemplateFormHelper = function(formSelector,json) {
         elems.sort(function(a,b) {
             var i = parseInt($(a).attr("sort-order"));
             var j = parseInt($(b).attr("sort-order"));
-            return (i > j) ? -1 : (i < j) ? 1 : 0;
+            return (i > j) ? 1 : (i < j) ? -1 : 0;
         });
         list.append(elems);
     });
