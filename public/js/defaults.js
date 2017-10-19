@@ -89,7 +89,7 @@ $(document).ready(function() {
          $("#attributesForm .attributeElement").each(function() {
             var name = $(this).attr('data-model');
             if(typeof name === 'undefined') return;
-            var index = $(this).attr('index');
+            var index = $(this).index();
             var $hiddenOrder = $('<input class="hidden-remove" type="hidden" name="order_'+ name +'" value="'+ index+'" />');
             $form.append($hiddenOrder);
          });
@@ -297,17 +297,7 @@ $(document).ready(function() {
 
     resetSearchForm();
 
-    $('.nested-form-list').sortable({
-        update: function(event, ui) {
-            var pos = ui.item.index();
-            $(ui.item).children().attr('index',pos);
-        }
-    }).each(function() {
-        $(this).children().each(function(i,elem) {
-            $(elem).children().attr('index',i);
-        });
-    });
-
+    $('.nested-form-list').sortable();
     $('.nested-form-list').disableSelection();
 
     $('#main-content-id').addClass('show');
