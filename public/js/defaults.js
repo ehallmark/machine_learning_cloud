@@ -393,20 +393,18 @@ var showTemplateFormHelper = function(formSelector,json) {
             $elem.trigger('change');
         }
     });
-    //$('.nested-form-list').sortable('destroy');
+    $('.nested-form-list').sortable('destroy');
     $('.nested-form-list').each(function() {
         var list = $(this);
-        var elems = list.children().remove();
+        var elems = list.children().detach();
         elems.sort(function(a,b) {
-            var a = parseInt($(a).children().first().attr("sort-order"));
-            var b = parseInt($(b).children().first().attr("sort-order"));
+            var a = parseInt($(a).attr("sort-order"));
+            var b = parseInt($(b).attr("sort-order"));
             return (a > b) ? -1 : (a < b) ? 1 : 0;
         })
         list.append(elems);
     });
-    //$('.nested-form-list').sortable('refreshPositions');
-    $('.nested-form-list').sortable('refresh');
-    //setupLists();
+    setupLists();
 };
 
 var showTemplateFunction = function(e){
