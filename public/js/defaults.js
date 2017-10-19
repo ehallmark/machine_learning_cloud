@@ -396,12 +396,12 @@ var showTemplateFormHelper = function(formSelector,json) {
     //$('.nested-form-list').sortable('destroy');
     $('.nested-form-list').each(function() {
         var list = $(this);
-        var elems = list.children().find('[sort-order]').detach();
+        var elems = list.children().is('[sort-order]').detach();
         elems.sort(function(a,b) {
             var i = parseInt($(a).attr("sort-order"));
             var j = parseInt($(b).attr("sort-order"));
             return (i > j) ? -1 : (i < j) ? 1 : 0;
-        })
+        });
         list.append(elems);
     });
     $('.nested-form-list').sortable('refreshPositions');
