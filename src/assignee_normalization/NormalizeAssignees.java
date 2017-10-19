@@ -164,8 +164,6 @@ public class NormalizeAssignees {
 
         allAssignees = allAssignees.parallelStream().map(assignee->{
             if(assignee.length()<=1) return null;
-            // do manual cleans
-            assignee = manualCleanse(assignee);
 
             // get assignee words
             String[] words = assignee.split("\\s+");
@@ -180,15 +178,14 @@ public class NormalizeAssignees {
                 }
             }
 
-            while(words.length >= 2 && String.join(" ", Arrays.copyOf(words,words.length-1)).length() > 5 && badSuffixes.contains(words[words.length-1])) {
+            while(words.length >= MIN_ASSIGNEE_LENGTH && String.join(" ", Arrays.copyOf(words,words.length-1)).length() > MIN_ASSIGNEE_LENGTH+2 && badSuffixes.contains(words[words.length-1])) {
                 words = Arrays.copyOf(words,words.length-1);
             }
             String newWord = String.join(" ",words);
-            if(newWord.length() <= 1) {
-                System.out.println(assignee+" => "+newWord);
-                System.out.println("BAD!!!");
-                System.exit(1);
-            }
+
+            // do manual cleans
+            newWord = manualCleanse(newWord);
+
             int portfolioSize = assigneeToPortfolioSizeMap.get(assignee);
             int newSize = assigneeToPortfolioSizeMap.getOrDefault(newWord, 0);
             assigneeToPortfolioSizeMap.put(newWord, Math.max(portfolioSize,newSize));

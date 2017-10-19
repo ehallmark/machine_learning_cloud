@@ -83,6 +83,17 @@ $(document).ready(function() {
          var url = $form.attr('action');
          var tempScrollTop = $(window).scrollTop();
 
+         // get order
+         var orderedAttributes = $('#attributesForm attributeElement').sortable('toArray', {attribute: 'data-model'});
+         alert(orderedAttributes);
+
+         var data = {};
+         $.each($form.serializeArray(),function() {
+            data[$(this).name]=$(this).value;
+         });
+         data['attributeOrder']=orderedAttributes;
+         alert(data);
+
          $button.attr('disabled',true).text(buttonTextWhileSearching);
          $form.find('#only-excel-hidden-input').val(onlyExcel);
 
@@ -91,7 +102,7 @@ $(document).ready(function() {
            type: 'POST',
            dataType: 'json',
            url: url,
-           data: $form.serialize(),
+           data: data,
            complete: function(jqxhr,status) {
              $button.attr('disabled',false).text(buttonText);
              $(window).scrollTop(tempScrollTop);
